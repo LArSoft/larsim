@@ -1,0 +1,15 @@
+#include "simulationservices.fcl"
+
+BEGIN_PROLOG
+
+
+lbnefd_largeantparameters:   @local::standard_largeantparameters
+lbnefd_larvoxelcalculator:   @local::standard_larvoxelcalculator
+lbnefd_largeantparameters.UseLitePhotons: true
+
+lbne35t_largeantparameters:   @local::standard_largeantparameters
+lbne35t_larvoxelcalculator:   @local::standard_larvoxelcalculator
+
+
+
+END_PROLOG

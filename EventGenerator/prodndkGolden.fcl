@@ -1,0 +1,78 @@
+#include "services.fcl"
+#include "nuance.fcl"
+#include "largeantmodules.fcl"
+#include "detsimmodules.fcl"
+#include "mccheatermodules.fcl"
+
+
+process_name: NdkGen
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "ndk_hist_p2K+nubar.root" }
+  Timing:       {}
+  RandomNumberGenerator: {} #ART native random number generator
+  user:         @local::microboone_simulation_services
+}
+
+services.user.LArFFT.FFTOption: "" 
+
+#Start each new event with an empty event.
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  400
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:
+ {
+   generator: @local::argoneut_nuance
+   largeant:  @local::microboone_largeant	  
+   daq:       @local::microboone_simwire       
+   backtrack: @local::standard_backtrackerloader
+ }
+
+ analyzers:
+ {
+   largana:   @local::microboone_largeantana
+ } 
+
+ #define the producer and filter modules for this path, order matters, 
+ #filters reject all following items.  see lines starting physics.producers below
+ simulate: [ generator, largeant, daq, backtrack ] 
+ larana: [ largana ] 
+
+ #define the output stream, there could be more than one if using filters 
+ stream1:  [ out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [simulate] 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [larana, stream1]  
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "p2K+nubar_2.root" #default file name, can override from command line with -o or --output
+ }
+}
+
+physics.producers.generator.module_type: "NDKGen"
+physics.producers.generator.NdkFile: "/lbne/app/users/echurch/larsoft/ndk/p2K+nubar.out"
+#physics.producers.largeant.DumpParticleList: true

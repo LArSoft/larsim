@@ -1,0 +1,25 @@
+#include "genie.fcl"
+
+BEGIN_PROLOG
+
+
+lbnefd_genie_hist:                    @local::standard_genie
+lbnefd_genie_simple_neutrino:         @local::standard_genie
+
+lbnefd_genie_simple_neutrino.TopVolume:        "volDetEnclosure"
+lbnefd_genie_hist.BeamCenter:       [-100., -351., 10.] # just aiming for now move back to zero  
+lbnefd_genie_hist.BeamDirection:    [0., 0., 0.]
+
+
+
+
+lbne35t_genie_hist:                           @local::standard_genie
+lbne35t_genie_simple_neutrino:                @local::standard_genie
+
+lbne35t_genie_simple_neutrino.TopVolume:      "volCryostat"
+lbne35t_genie_hist.BeamCenter:                [100., 50., 0.]
+lbne35t_genie_hist.BeamDirection:             [0., 0., 0.]
+
+
+
+END_PROLOG

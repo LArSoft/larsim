@@ -1,0 +1,9 @@
+#include "simulationservices.fcl"
+
+BEGIN_PROLOG
+
+jp250L_largeantparameters:     @local::standard_largeantparameters
+
+jp250L_larvoxelcalculator:     @local::standard_larvoxelcalculator
+
+END_PROLOG

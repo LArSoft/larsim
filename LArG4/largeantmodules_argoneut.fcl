@@ -1,0 +1,9 @@
+#include "largeantmodules.fcl"
+
+BEGIN_PROLOG
+
+argoneut_largeant:   @local::standard_largeant
+
+argoneut_largeantana:   @local::standard_largeantana
+
+END_PROLOG

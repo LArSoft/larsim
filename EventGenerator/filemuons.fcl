@@ -1,0 +1,17 @@
+BEGIN_PROLOG
+
+#no experiment specific configurations because SingleMuons is detector agnostic
+
+standard_singlemu:
+{
+ module_type:  "FileMuons"
+ MuonsFileType: "root"
+ PDG:       [ 13 ]
+ InitialXYZOffsets: [ 875.0, -1395.0, -1362.36] # meters. Got these by histogramming deJong's xdet,ydet,zdet. Add 3 in z for moving plate up that much.
+ FileName:  "out/jdjmuons.root"
+ TreeName:  "DetectorNtuple"
+ BranchNames: ["x", "y", "z", "px", "py", "pz", "q"] # To read in from above Tree.
+ EventNumberOffset: 0
+}
+
+END_PROLOG

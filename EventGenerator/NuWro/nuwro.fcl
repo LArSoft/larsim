@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+
+microboone_nuwro:
+{
+ module_type:      "NuWroGen"
+ NuWroFile:       "output.root"
+}
+
+END_PROLOG

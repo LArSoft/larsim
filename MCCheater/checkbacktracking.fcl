@@ -1,0 +1,47 @@
+#include "services.fcl"
+#include "caldata.fcl"
+#include "hitfindermodules.fcl"
+#include "mccheatermodules.fcl"
+
+process_name: BackTrack
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "backtrack_hist.root" }
+  message:      @local::standard_info
+  user:         @local::argoneut_simulation_services 	     
+}
+
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  10        # Number of events to create
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+  producers:
+ {
+  caldata: @local::argoneut_calwire	    
+  ffthit:  @local::argoneut_hitfinder	    
+ }
+  
+ analyzers:
+ {
+  backtrack: @local::standard_checkbacktrack
+ }
+
+ reco: [ caldata, ffthit ]
+ ana:  [ backtrack       ]
+
+ trigger_paths: [ reco ]
+ end_paths:     [ ana  ]  
+}
+
+

@@ -1,0 +1,38 @@
+BEGIN_PROLOG
+
+standard_largeant:
+{
+ module_type:            "LArG4"
+ GeantCommandFile:       "LArG4.mac"
+ DumpParticleList:       false
+ DumpLArVoxelList:       false
+ DebugVoxelAccumulation: 0
+ VisualizeEvents:        false
+ SmartStacking:          0	# non-0 turns it on. The 0x4 bit 
+	                        # will shut off primary showering.
+ DisableWireplanes:      false
+ UseModBoxRecomb:        false   # use Modified Box recombination model
+}
+argoneut_largeant:   @local::standard_largeant
+microboone_largeant: @local::standard_largeant
+
+standard_largeantana:
+{
+ module_type:      "LArG4Ana"
+ GeantModuleLabel: "largeant"
+ TruthModuleLabel: "generator"
+ Ndaughters:        20
+}
+argoneut_largeantana:   @local::standard_largeantana
+microboone_largeantana: @local::standard_largeantana
+
+
+
+standard_larsimchannelana:
+{
+  module_type:         "LArSimChannelAna"
+  LArGeantModuleLabel: "largeant"
+}
+
+
+END_PROLOG

@@ -1,0 +1,85 @@
+#include "services.fcl" 
+#include "caldata.fcl"
+#include "hitfindermodules.fcl"
+#include "clustermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "matchtracksmodule.fcl"
+#include "vertexfindermodules.fcl"
+#include "analysistreemodule.fcl"
+#include "calorimetry.fcl"
+#include "muonanamodules.fcl"
+#include "ccqeanalysistreemodule.fcl"
+#include "mccheatermodules.fcl"
+
+process_name: CheaterAna
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "cheatertree.root" }
+  user:         @local::argoneut_simulation_services
+  RandomNumberGenerator: {}
+}
+
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1      # Number of events to create
+}
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "standard_reco.root"
+ }
+
+ 
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:{}
+ analyzers:{}
+# recopath: [ caldata, ffthit, dbcluster, hough, linemerger, vertex2d, spacepts, track3d, matchtracks  ]
+#recopath: [ caldata, ffthit, dbcluster, hough, linemerger, vertex2d, kingacluster, track3d, matchtracks  ]
+recopath: [ caldata, ffthit, dbcluster, hough, linemerger, track3d ]
+ anapath:  [ backtrack ]
+ stream1:  [ out1 ]
+ trigger_paths: [recopath] 
+# end_paths:     [ anapath ] 
+ end_paths:     [ stream1, anapath]
+}
+
+
+physics.producers.caldata:     @local::argoneut_calwire	
+physics.producers.ffthit:      @local::argoneut_hitfinder	
+physics.producers.dbcluster:   @local::argoneut_dbcluster	
+physics.producers.hough:       @local::argoneut_houghlinefinder
+physics.producers.linemerger:  @local::argoneut_linemerger
+#physics.producers.vertex2d:    @local::argoneut_vertex2d
+#physics.producers.kingacluster:    @local::argoneut_kingacluster
+##physics.producers.track3d:     @local::argoneut_spacepts
+physics.producers.track3d:     @local::argoneut_track
+#physics.producers.spacepts:     @local::argoneut_spacepts
+#physics.producers.track3dkinga:     @local::argoneut_track
+#physics.producers.spacepts:    @local::argoneut_spacepts
+#physics.producers.kalman:     @local::argoneut_kalman
+#physics.producers.matchtracks: @local::argoneut_matchtracks
+#physics.analyzers.calo:        @local::argoneut_calo
+physics.analyzers.backtrack: @local::standard_recocheck
+physics.analyzers.backtrack.HitModuleLabel: "ffthit"
+physics.analyzers.backtrack.ClusterModuleLabel: "linemerger"
+physics.analyzers.backtrack.TrackModuleLabel: "track3d"
+physics.analyzers.backtrack.CheckClusters: true
+physics.analyzers.backtrack.CheckShowers: false
+physics.analyzers.backtrack.CheckTracks: true
+physics.analyzers.backtrack.CheckVertices: false
+physics.analyzers.backtrack.CheckEvents: false

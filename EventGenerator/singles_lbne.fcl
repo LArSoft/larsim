@@ -1,0 +1,36 @@
+#include "singles.fcl"
+
+BEGIN_PROLOG
+
+
+################
+###### FD ######
+################
+
+lbnefd_singlep: @local::standard_singlep
+lbnefd_singlep.Theta0YZ:               [ 0.0 ]     # beam is along the z axis
+lbnefd_singlep.Theta0XZ:               [ 0.0 ]     # beam is along the z axis
+lbnefd_singlep.P0:                     [ 6. ]
+
+# Start it in the first TPC, first cryostat
+lbnefd_singlep.X0:                     [ -1474. ]
+lbnefd_singlep.Y0:                     [ -351. ]
+lbnefd_singlep.Z0:                     [ 0. ]   
+
+
+
+#################
+###### 35t ######
+#################
+
+lbne35t_singlep: @local::standard_singlep
+lbne35t_singlep.Theta0YZ:                [ 0.0 ] # beam is along the z axis
+lbne35t_singlep.Theta0XZ:                [ 0.0 ] # beam is along the z axis
+lbne35t_singlep.X0:                      [ 100.0 ]     # move it into a region of x covering a drift volume
+lbne35t_singlep.Y0:                      [ 50.0 ]      # move it above the APA vertical gap
+lbne35t_singlep.Z0:                      [ 0.0 ]       # move it up a touch just in case
+
+
+
+
+END_PROLOG

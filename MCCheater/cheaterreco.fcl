@@ -1,0 +1,67 @@
+#include "services.fcl"
+#include "caldata.fcl"
+#include "hitfindermodules.fcl"
+#include "clustermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "vertexfindermodules.fcl"
+#include "showerfindermodules.fcl"
+#include "eventfindermodules.fcl"
+#include "mccheatermodules.fcl"
+
+process_name: CheaterReco
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "cheater_hist.root" }
+  message:      @local::standard_info
+  user:         @local::argoneut_simulation_services 	     
+}
+
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  10       
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:
+ {
+  caldata: @local::argoneut_calwire	    
+  hit:     @local::standard_hitcheater
+  cluster: @local::standard_clustercheater
+  shower:  @local::standard_showercheater
+  track:   @local::standard_trackcheater
+  vertex:  @local::standard_vertexcheater
+  event:   @local::standard_eventcheater
+ }
+
+ analyzers:
+ {
+  check:   @local::standard_recocheck
+ }
+
+ reco:  [ caldata, hit, cluster, track, shower, vertex, event ]
+ ana:   [ check ]
+ 
+ stream1:        [ out1           ]
+ trigger_paths:  [ reco           ]
+ end_paths:      [ ana, stream1   ]  
+}
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "cheater_reco.root"
+   fastCloning: false
+ }
+}

@@ -1,0 +1,56 @@
+# Geant4 macro file for controlling Geant4 operations in LArG4.
+
+# Place any G4 commands in this file.  Don't include /run/initialize
+# or /run/beamOn; that's handled by LArG4.cxx.
+
+# Sets some verbose levels.  Note that these lines can be commented
+# out if you don't need the Geant4 status information.
+
+# The following line, if enabled, will display the contents of this
+# file as G4 executes them.
+#/control/verbose 2
+
+# The following line, if enabled, will trace through the execution of
+# some Geant4 routines.
+#/run/verbose 2
+
+# The following line will display every track and step for every
+# event. Don't enable it unless you're prepared to handle a lot of
+# output!
+#/tracking/verbose 1
+
+#################################################################
+
+# An example of Geant4 graphics visualization commands.  Note that
+# unless the visualization parameters are set in LArG4.xml, the
+# following commands won't do anything.  To activate them, un-comment
+# the lines beginning with "/vis".
+
+# (If you don't turn on visualization in LArG4.xml, and you include
+# the "/vis" commands below, the processing of this file with stop with
+# the first "/vis" command.  However, LArG4 will continue to run.
+
+#
+# create an empty scene
+#
+#/vis/scene/create
+#
+# Create a scene handler for a specific graphics system
+# (Edit the next line(s) to choose another graphics system)
+#
+# Activate at most _one_ of the following /vis/open commands.
+#
+# For information on the DAWNFILE driver, see
+# <http://geant4.kek.jp/~tanaka/GEANT4/DAWNFILE_driver.html>
+# OGLIX is a nice one to use, but it doesn't work at Nevis.
+#
+#/vis/open DAWNFILE
+#/vis/open OGLIX
+#
+# draw scene
+#
+#/vis/viewer/set/viewpointThetaPhi 270 0 deg
+#/vis/viewer/zoom 8
+#
+# Refresh ready for run
+#/vis/viewer/flush

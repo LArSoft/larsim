@@ -1,0 +1,37 @@
+#include "detsimmodules.fcl"
+
+BEGIN_PROLOG
+
+lbnefd_simwire:  
+{ 
+ module_type:        "SimWireLBNE10kt"
+ DriftEModuleLabel:  "largeant"
+ NoiseFactU:          0.0132       #Noise Scale for U plane
+ NoiseWidthU:         62.4         #Exponential Noise width (kHz) for U plane
+ LowCutoffU:          7.5          #Low frequency filter cutoff (kHz) for U plane
+ NoiseFactV:          0.0132       #Noise Scale for V plane
+ NoiseWidthV:         62.4         #Exponential Noise width (kHz) for V plane
+ LowCutoffV:          7.5          #Low frequency filter cutoff (kHz) for V plane
+ NoiseFactZ:          0.0132       #Noise Scale for Z plane
+ NoiseWidthZ:         62.4         #Exponential Noise width (kHz) for Z plane
+ LowCutoffZ:          7.5          #Low frequency filter cutoff (kHz) for Z plane
+ CompressionType:    "ZeroSuppression"       #could also be none
+ ZeroThreshold:      "10"        #Threshold for zero suppression
+ NearestNeighbor:    "25"        #Maximum distance between hits above threshold before they are separated into different blocks
+ NoiseArrayPoints:   "1000"     #number of points in noise array
+ NoiseOn:            "0"        #1 for noise on, 0 for noise off
+}
+
+lbnefd_simwireana:            @local::standard_simwireana
+lbnefd_wienerfilterana:       @local::standard_wienerfilterana
+
+
+# For now treat the other lbne geometries like FD
+
+lbne35t_simwire:		@local::lbnefd_simwire
+lbne35t_simwireana:             @local::lbnefd_simwireana
+lbne35t_wienerfilterana:        @local::lbnefd_wienerfilterana
+lbne35t_simwire.module_type:    "SimWireLBNE35t"
+
+
+END_PROLOG

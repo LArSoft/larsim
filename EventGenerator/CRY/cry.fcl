@@ -1,0 +1,33 @@
+BEGIN_PROLOG
+
+
+#for now all experiments have the same configuration - should change eventually
+
+standard_cry:
+{
+ module_type:         "CosmicsGen"
+ SampleTime:           60e-6              #integration time in seconds
+ TimeOffset:          -30e-6              #time in seconds before a spill to begin the interactions
+ EnergyThreshold:      50e-3              #in GeV, particles only tracked with E > threshold
+ Latitude:            "latitude 41.8 "    #latitude of detector, must have tailing blank space
+ Altitude:            "altitude 0 "       #altitude of detector, must have tailing blank space
+ SubBoxLength:        "subboxLength 75 "  #length of subbox surrounding detector in m, must have trailing blank space
+}
+
+argoneut_cry:   @local::standard_cry
+
+microboone_cry:            @local::standard_cry
+microboone_cry.SampleTime: 4.8e-3               #the maximum time it would take an electron to drift through the volume is 1.62 ms
+                                                #the DAQ reads 1.6 ms before and 3.2 ms after the beam trigger
+lbne35t_cry:              @local::standard_cry
+lbne35t_cry.SampleTime:   1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
+lbne35t_cry.Latitude:     "latitude 44.35 "
+lbne35t_cry.SubBoxLength: "subboxLength 75 "
+
+lbnefd_cry:               @local::standard_cry
+lbnefd_cry.SampleTime:    1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
+lbne1fdcry.Latitude:      "latitude 44.35 "
+lbnefd_cry.SubBoxLength:  "subboxLength 75 "
+
+
+END_PROLOG

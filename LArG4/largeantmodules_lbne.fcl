@@ -1,0 +1,15 @@
+#include "largeantmodules.fcl"
+
+BEGIN_PROLOG
+
+lbnefd_largeant:                   @local::standard_largeant
+lbnefd_largeantana:                @local::standard_largeantana
+lbnefd_largeantana.SmartStacking:  1
+
+# For now, treat other lbne geometries like FD
+
+lbne35t_largeant:                    @local::lbnefd_largeant
+lbne35t_largeantana:                 @local::lbnefd_largeantana
+
+
+END_PROLOG

@@ -1,0 +1,30 @@
+#include "photpropservices.fcl"
+
+BEGIN_PROLOG
+
+lbne35t_photonvisibilityservice:
+{
+
+  NX: 100
+  NY: 100
+  NZ: 100
+  UseCryoBoundary: true
+
+  DoNotLoadLibrary: false
+
+  LibraryBuildJob: false
+
+  LibraryFile: "PhotonPropagation/LibraryData/lib11225235.root"
+
+ #These are not used when usecryoboundary=true
+  XMin: -120
+  XMax: 120
+  YMin: -120
+  YMax: 120
+  ZMin: 0
+  ZMax: 1200
+}
+
+lbnefd_photonvisibilityservice: @local::standard_photonvisibilityservice
+
+END_PROLOG

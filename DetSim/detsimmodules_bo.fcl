@@ -1,0 +1,7 @@
+#include "detsimmodules.fcl"
+
+BEGIN_PROLOG
+
+bo_wienerfilterana:         @local::standard_wienerfilterana
+
+END_PROLOG

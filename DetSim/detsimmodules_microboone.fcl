@@ -1,0 +1,23 @@
+#include "detsimmodules.fcl"
+
+BEGIN_PROLOG
+
+microboone_simwire:  
+{ 
+ module_type:        "SimWireMicroBooNE"
+ DriftEModuleLabel:  "largeant"
+ NoiseFact:          0.0132       #Noise Scale
+ #NoiseFact:          0.15       #Noise Scale to use with histogram
+ NoiseWidth:         62.4         #Exponential Noise width (kHz)
+ LowCutoff:          7.5          #Low frequency filter cutoff (kHz)
+ CompressionType:    "none"       #could also be none		
+ GetNoiseFromHisto:   false  
+ NoiseFileFname:      "uboone_noise_v0.1.root"
+ NoiseHistoName:      "NoiseFreq"    
+
+}
+microboone_simwireana: @local::standard_simwireana
+
+microboone_wienerfilterana: @local::standard_wienerfilterana
+
+END_PROLOG

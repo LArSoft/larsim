@@ -1,0 +1,80 @@
+BEGIN_PROLOG
+
+#for now the parameter sets for the different experiments are all the same
+
+standard_largeantparameters:
+{
+ OpticalSimVerbosity:      0       #verbosity of optical simulation, soon to be depricated
+ ParticleKineticEnergyCut: 0.01e-3  #in GeV
+ StoreTrajectories:        true
+ VisualizationEnergyCut:   10.e-3  #depricated, in GeV
+ VisualizeNeutrals:        false   #depricated
+ UseCustomPhysics:         false   #Whether to use a custom list of physics processes or the default
+ KeepEMShowerDaughters:    false   #save secondary, tertiary, etc particles in EM showers
+ LongitudinalDiffusion:    6.2e-9  #in cm^2/ns
+ TransverseDiffusion:      16.3e-9 #in cm^2/ns
+ ElectronClusterSize:      600.0   #number of ionization electrons to drift in a unit
+ EnabledPhysics:           [ "Em", "SynchrotronAndGN", "Ion", "Hadron", 
+                             "Decay", "HadronElastic", "Stopping", "NeutronTrackingCut" ]
+ CosmogenicK0Bias:         0 # 0 is off. N is the number of secondaries to produce.
+ CosmogenicXSMNBiasOn:     0 # 0 is off. 1 works. 2 still in development.
+ CosmogenicXSMNBiasFactor: 1 # Not more than 5-ish cuz of numerical instabilities.
+ DisableWireplanes:        false #if set true, charge drift simulation does not run - used for optical sim jobs OR just when you don't wanna drift the e's.
+ UseModBoxRecomb:          false   # use Modified Box recombination instead of Birks
+
+ # The following parameters specify details of wireplanes or similar
+ #  areas with optically parameterized transmissions (Ben J 2013)
+
+ #  volume names to be associated with an optical wireplane model
+ OpticalParamVolumes:      ["volTPCPlaneVert_PV"]
+
+ #  specification of which model to use for each volume
+ OpticalParamModels:       ["OverlaidWireplanes"]
+
+ # orientation of each wireplane set
+ #  0 = Xdrift, 1 = Ydrift, 2 = Zdrift
+ OpticalParamOrientations: [0]
+
+ # This a set of floats which is specific to the particular model used.
+ # For overlaid wireplanes, should be a vector of vectors of 
+ #                                 [plane angle, pitch/mm, wire diameter/mm]
+ #
+ # This format is chosen to allow for future extensions to the model
+ #  for, eg, LBNE wireplane development.
+ #
+ OpticalParamParameters:   [ [ [30,  3, 0.15], 
+ 	 		       [-30, 3, 0.15],
+                               [0,   3, 0.15],
+                               [90,  3.5, 0.2],
+                               [0,   3.5, 0.2] ] ]	
+ UseLitePhotons: false 
+}
+
+jp250L_largeantparameters:     @local::standard_largeantparameters
+bo_largeantparameters:         @local::standard_largeantparameters
+argoneut_largeantparameters:   @local::standard_largeantparameters
+microboone_largeantparameters: @local::standard_largeantparameters
+lbne35t_largeantparameters:    @local::standard_largeantparameters
+lbnefd_largeantparameters:   @local::standard_largeantparameters
+
+standard_larvoxelcalculator:
+{
+ VoxelSizeX:     0.03    #in cm
+ VoxelSizeY:     0.03    #in cm
+ VoxelSizeZ:     0.03    #in cm
+ VoxelSizeT:     5000.0  #in ns
+ VoxelOffsetX:   0.0     #in cm
+ VoxelOffsetY:   0.0     #in cm
+ VoxelOffsetZ:   0.0     #in cm
+ VoxelOffsetT:   -2500.0 #in ns
+ VoxelEnergyCut: 1.e-6   #in GeV
+}
+
+bo_larvoxelcalculator:         @local::standard_larvoxelcalculator
+jp250L_larvoxelcalculator:     @local::standard_larvoxelcalculator
+argoneut_larvoxelcalculator:   @local::standard_larvoxelcalculator
+microboone_larvoxelcalculator: @local::standard_larvoxelcalculator
+lbne35t_larvoxelcalculator:    @local::standard_larvoxelcalculator
+lbnefd_larvoxelcalculator:     @local::standard_larvoxelcalculator
+
+END_PROLOG

@@ -1,0 +1,17 @@
+#include "nuance.fcl"
+
+BEGIN_PROLOG
+
+argoneut_nuance:
+{
+ module_type:      "NUANCEGen"
+ NuanceFile:       "/argoneut/app/users/saima/NuanceFiles/nuance_100events.txt"
+}
+
+argoneut_nuance_batch:
+{
+ module_type:      "NUANCEGen"
+ NuanceFile:       "./nuance_events.txt"
+}
+
+END_PROLOG

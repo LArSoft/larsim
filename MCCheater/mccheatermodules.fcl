@@ -1,0 +1,36 @@
+BEGIN_PROLOG
+
+standard_checkbacktrack:
+{
+ module_type:       "CheckBackTracking"
+ HitModuleLabel:    "hit"
+ G4ModuleLabel:     "largeant"
+}
+
+standard_recocheck:
+{
+ module_type:        "RecoCheckAna"
+ HitModuleLabel:     "hit"
+ ClusterModuleLabel: "cluster"
+ ShowerModuleLabel:  "shower"
+ TrackModuleLabel:   "track"
+ VertexModuleLabel:  "vertex"
+ EventModuleLabel:   "event"
+ CheckClusters:      true
+ CheckShowers:       true
+ CheckTracks:        true
+ CheckVertices:      true
+ CheckEvents:        true
+}
+
+standard_cosmicraybackground:
+{
+ module_type:        "CosmicRayBackground"
+}
+
+standard_backtrackerloader:
+{
+ module_type:        "BackTrackerLoader"
+}
+
+END_PROLOG

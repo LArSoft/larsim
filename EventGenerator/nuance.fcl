@@ -1,0 +1,17 @@
+BEGIN_PROLOG
+
+argoneut_nuance:
+{
+ module_type:       "NUANCEGen"
+ NuanceFile:        "/argoneut/app/users/saima/NuanceFiles/nuance_100events.txt"
+ BeamVerticalAngle: -3.3      # vertical angle of beam w.r.t. detector coordinates 
+}
+
+argoneut_nuance_batch:
+{
+ module_type:       "NUANCEGen"
+ NuanceFile:        "./nuance_events.txt"
+ BeamVerticalAngle: -3.3      # vertical angle of beam w.r.t. detector coordinates 
+}
+
+END_PROLOG

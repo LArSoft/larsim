@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+standard_textfilegen:
+{
+ module_type:   "TextFileGen"
+ InputFileName: "input.txt"   #name of file containing events in hepevt format to
+                              #put into simb::MCTruth objects for use in LArSoft
+}
+
+END_PROLOG 

@@ -1,0 +1,7 @@
+#include lightsource.fcl
+
+BEGIN_PROLOG
+
+microboone_lightsource: @local::standard_lightsource
+
+END_PROLOG

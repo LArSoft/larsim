@@ -1,0 +1,77 @@
+BEGIN_PROLOG
+
+
+standard_photonvisibilityservice:
+{
+
+  NX: 75
+  NY: 75
+  NZ: 400
+  UseCryoBoundary: true
+
+  DoNotLoadLibrary: false
+	
+  LibraryBuildJob: false
+ 		
+  LibraryFile: "PhotonPropagation/LibraryData/lib8984855.root"	 
+
+ #These are not used when usecryoboundary=true	
+  XMin: -120
+  XMax: 120
+  YMin: -120
+  YMax: 120
+  ZMin: 0
+  ZMax: 1200
+}
+
+
+standard_photonvisibilityservice_buildlib:
+{
+
+  NX: 75
+  NY: 75
+  NZ: 400
+  UseCryoBoundary: true
+
+  DoNotLoadLibrary: true
+
+  LibraryBuildJob: true
+ 		
+  LibraryFile: "PhotonPropagation/LibraryData/Not_A_Library.root"	 
+ 
+
+ #These are not used  when usecryoboundary=true
+  XMin: 100
+  XMax: 110
+  YMin: -100
+  YMax: 100
+  ZMin: 500
+  ZMax: 600
+
+}
+
+
+standard_photonvisibilityservice_par:
+{
+  NX: 125
+  NY: 1
+  NZ: 1
+  UseCryoBoundary: false
+  LBNE10ktParameterization: true
+  DoNotLoadLibrary: true
+
+  LibraryBuildJob: false
+
+  LibraryFile: "PhotonPropagation/LibraryData/Not_A_Library.root"
+  XMin: -627
+  XMax: -389
+  YMin: -1.
+  YMax: 1.
+  ZMin: -1.00
+  ZMax: 1.00
+
+}
+
+microboone_photonvisibilityservice: @local::standard_photonvisibilityservice
+
+END_PROLOG

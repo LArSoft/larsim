@@ -1,0 +1,26 @@
+#
+# Configuration of trigger algorithm service class -- Kazu 08/22/13
+#
+
+
+BEGIN_PROLOG
+
+standard_triggeralgo:
+{
+  PreceedingWindow:            25600         # N time slices for readout window BEFORE the trigger timestamp in unit of trigger time slice
+  ProceedingWindow:            76800         # N time slices for readout window AFTER  the trigger timestamp in unit of trigger time slice
+  DeadTime:                    102400        # N time slices for trigger deadtime after the trigger timestamp in unit of trigger time slice 
+  ModuleName_PMT:              "optreadout"  # Input LArSoft module name key for FIFOChannel and PMTTrigger objects
+  ModuleName_DAQ:              "daq"         # Input LArSoft module name key for RawDigit object
+  ModuleName_BeamSim:          "generator"   # Input LArSoft module name key for BeamGateInfo object
+  ClockFrequency_Trigger:      16            # Clock frequency of trigger module in MHz ... for now we use same as PMT --Kazu 08/22/13
+  ClockFrequency_PMT:          64            # Clock freqnency of PMT FEM module in MHz
+  ClockFrequency_TPC:          2             # Clock frequency of TPC FEM module in MHz
+  FrameSize_PMT:               102400        # Frame size of PMT FEM data in terms of PMT FEM time slice unit
+  FrameSize_TPC:               3200          # Frame size of TPC FEM data in terms of TPC FEM time slice unit
+  FrameSize_Trigger:           25600         # Frame size of Trigger data in terms of Trigger time slice unit
+}
+
+microboone_triggeralgo:                @local::standard_triggeralgo
+
+END_PROLOG
