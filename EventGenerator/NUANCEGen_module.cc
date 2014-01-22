@@ -722,7 +722,7 @@ namespace evgen{
 
 namespace evgen{
 
-  DEFINE_ART_MODULE(NUANCEGen);
+  DEFINE_ART_MODULE(NUANCEGen)
 
 }
 
