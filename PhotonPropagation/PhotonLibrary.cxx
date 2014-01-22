@@ -98,8 +98,8 @@ namespace phot{
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
 
-    TFile *f;
-    TTree *tt;
+    TFile *f = nullptr;
+    TTree *tt = nullptr;
       
     try
       {
