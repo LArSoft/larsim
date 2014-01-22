@@ -1,0 +1,33 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent	larsim	v1_00_00
+defaultqual	e4
+#
+fcldir product_dir job
+#
+product         version
+larevt		v1_00_00
+gcc		v4_8_1
+genie_xsec      R-2_8_0 
+genie_phyopt    R-2_8_0 
+
+# list products required ONLY for the build
+# any products here must NOT have qualifiers
+only_for_build  cetbuildtools   v3_07_04
+  
+# e4  - with gcc 4.8.1 and -std=c++11
+qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	notes
+e4:debug	e4:debug	default		dkcharmtau	-nq-
+e4:opt		e4:opt		default		dkcharmtau	-nq-
+e4:prof		e4:prof		default		dkcharmtau	-nq-
+
+# table file fragment to set FW_SEARCH_PATH
+table_fragment_begin
+    pathPrepend(FW_SEARCH_PATH, ${LARSIM_LIB})
+table_fragment_end
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
