@@ -55,6 +55,11 @@ art_make( BASENAME_ONLY
 			${ROOT_BASIC_LIB_LIST}
                         ${G4_LIB_LIST}
 		)
+
+# install macro files in lib
+file(GLOB g4_macros *.mac )
+install( FILES ${g4_macros} DESTINATION ${${product}_lib_dir} )
+
 install_headers()
 install_fhicl()
 install_source()
