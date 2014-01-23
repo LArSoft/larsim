@@ -1,7 +1,6 @@
 
 art_make( BASENAME_ONLY
           MODULE_LIBRARIES
-	                TriggerAlgoMicroBoone_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
