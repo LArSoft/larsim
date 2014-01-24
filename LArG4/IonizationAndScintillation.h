@@ -44,6 +44,9 @@ namespace larg4 {
                                                ///< produced by an energy deposition
     std::string           fISCalculator;       ///< name of calculator to use, NEST or Separate
     G4Step const*         fStep;               ///< pointer to the current G4 step
+    int                   fStepNumber;         ///< last StepNumber checked
+    int                   fTrkID;              ///< last TrkID checked
+
     TH1F*                 fElectronsPerStep;   ///< histogram of electrons per step
     TH1F*                 fStepSize;           ///< histogram of the step sizes
     TH1F*                 fPhotonsPerStep;     ///< histogram of the photons per step
