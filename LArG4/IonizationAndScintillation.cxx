@@ -54,6 +54,9 @@ namespace larg4 {
     // Reset the values for the electrons, photons, and energy to 0
     // in the calculator
     fISCalc->Reset();
+    //set the current track and step number values to bogus so that it will run the first reset:
+    fStepNumber=-1;
+    fTrkID=-1;
 
     // initialize the calculator
     fISCalc->Initialize();
@@ -94,7 +97,12 @@ namespace larg4 {
   //......................................................................
   void IonizationAndScintillation::Reset(const G4Step* step)
   {
-    if(step == fStep) return;
+
+    if(fStepNumber==step->GetTrack()->GetCurrentStepNumber() && fTrkID==step->GetTrack()->GetTrackID())
+      return;
+    
+    fStepNumber=step->GetTrack()->GetCurrentStepNumber(); 
+    fTrkID=step->GetTrack()->GetTrackID();
 
     fStep = step;
 
