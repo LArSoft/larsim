@@ -9,7 +9,7 @@
 #include "art/Framework/Principal/Event.h"
 
 // Base include
-#include "TriggerAlgoBase_service.cc"
+#include "TriggerAlgo/TriggerAlgoBase.h"
 
 // LArSoft include
 #include "OpticalDetectorData/OpticalTypes.h"
