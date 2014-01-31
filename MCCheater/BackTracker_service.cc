@@ -163,7 +163,7 @@ namespace cheat{
     // find the entry in the MCTruth collection for this track id
     size_t mct = fTrackIDToMCTruthIndex.find(abs(id))->second;
 
-    if(mct < 0 || mct > fMCTruthList.size() ) 
+    if(/* mct < 0 || */ mct > fMCTruthList.size() ) 
       throw cet::exception("BackTracker") << "attempting to find MCTruth index for "
 					  << "out of range value: " << mct
 					  << "/" << fMCTruthList.size();
