@@ -28,7 +28,7 @@ namespace larg4
   {
   }
   
-  double OpParamAction::GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition)
+  double OpParamAction::GetAttenuationFraction(G4ThreeVector /*PhotonDirection*/, G4ThreeVector /*PhotonPosition*/)
   {
     return 0;
   }
@@ -63,7 +63,7 @@ namespace larg4
   //  of incident light projected into the plane perpendicular to the 
   //  wires.  The photon position is not used.
   //
-  double SimpleWireplaneAction::GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition)
+  double SimpleWireplaneAction::GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector /*PhotonPosition*/)
   {
     G4ThreeVector ProjDirection = PhotonDirection - fWireDirection*(fWireDirection.dot(PhotonDirection));
     double CosTheta = std::abs(fPlaneNormal.dot(ProjDirection));
@@ -134,7 +134,7 @@ namespace larg4
 
   //-----------------------------------------------
 
-  double OverlaidWireplanesAction::GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition)
+  double OverlaidWireplanesAction::GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector /*PhotonPosition*/)
   {
 
     double AttenFraction=1.;

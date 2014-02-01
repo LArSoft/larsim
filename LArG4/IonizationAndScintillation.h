@@ -30,10 +30,10 @@ namespace larg4 {
     // This method should be called at the start of any G4Step
     void Reset(const G4Step* step); 
 
-    const double EnergyDeposit()              const { return fISCalc->EnergyDeposit();              } 
-    const int    NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  } 
-    const int    NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); } 
-    const double StepSizeLimit()              const { return fISCalc->StepSizeLimit();              }
+    double EnergyDeposit()              const { return fISCalc->EnergyDeposit();              } 
+    int    NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  } 
+    int    NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); } 
+    double StepSizeLimit()              const { return fISCalc->StepSizeLimit();              }
 
   private:
 

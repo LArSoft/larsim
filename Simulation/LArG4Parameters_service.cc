@@ -19,7 +19,7 @@
 namespace sim {
 
   //--------------------------------------------------------------------------
-  LArG4Parameters::LArG4Parameters(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg)
+  LArG4Parameters::LArG4Parameters(fhicl::ParameterSet const& pset, art::ActivityRegistry& /* reg */)
   {
     this->reconfigure(pset);
   }

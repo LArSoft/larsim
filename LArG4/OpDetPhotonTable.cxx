@@ -28,7 +28,7 @@ namespace larg4 {
   }
 
   //--------------------------------------------------
-  OpDetPhotonTable * OpDetPhotonTable::Instance(bool LitePhotons )
+  OpDetPhotonTable * OpDetPhotonTable::Instance(bool /*LitePhotons*/ )
   {
     if(!TheOpDetPhotonTable){
       TheOpDetPhotonTable = new OpDetPhotonTable;

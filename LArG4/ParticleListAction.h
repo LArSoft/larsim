@@ -50,7 +50,7 @@ namespace larg4 {
     virtual void     	     SteppingAction    (const G4Step* );
 
     // TrackID of the current particle, EveID if the particle is from an EM shower
-    static const int         GetCurrentTrackID()  { return fCurrentTrackID; }
+    static int               GetCurrentTrackID()  { return fCurrentTrackID; }
 			                                                     
     void                     ResetTrackIDOffset() { fTrackIDOffset = 0;     }
 

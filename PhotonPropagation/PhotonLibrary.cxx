@@ -158,7 +158,7 @@ namespace phot{
 
   float PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) 
   { 
-    if((Voxel<0)||(Voxel>fNVoxels)||(OpChannel<0)||(OpChannel>fNOpChannels))
+    if(/*(Voxel<0)||*/(Voxel>=fNVoxels)||/*(OpChannel<0)||*/(OpChannel>=fNOpChannels))
       return 0;   
     else
       return fLookupTable[Voxel]->at(OpChannel); 
@@ -168,7 +168,7 @@ namespace phot{
 
   void PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count) 
   { 
-    if((Voxel<0)||(Voxel>=fNVoxels))
+    if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
       mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range"; 
     else
       fLookupTable[Voxel]->at(OpChannel) = Count; 
@@ -178,8 +178,8 @@ namespace phot{
 
   std::vector<float>* PhotonLibrary::GetCounts(size_t Voxel) 
   { 
-    if((Voxel<0)||(Voxel>fNVoxels))
-      return new std::vector<float>();
+    if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
+      return new std::vector<float>(); // FIXME!!! memory leak
     else 
       return fLookupTable[Voxel];    
   }

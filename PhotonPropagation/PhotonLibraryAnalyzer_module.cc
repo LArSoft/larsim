@@ -72,7 +72,7 @@ namespace phot {
   }
 
   //----------------------------------------------------------------------------
-  void PhotonLibraryAnalyzer::reconfigure(fhicl::ParameterSet const& pset)
+  void PhotonLibraryAnalyzer::reconfigure(fhicl::ParameterSet const& /*pset*/)
   {
     
   }
@@ -191,7 +191,7 @@ namespace phot {
   }
 
   //----------------------------------------------------------------------------
-  void PhotonLibraryAnalyzer::analyze(const art::Event& evt)
+  void PhotonLibraryAnalyzer::analyze(const art::Event& /*evt*/)
   {
   
   }

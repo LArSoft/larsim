@@ -140,7 +140,7 @@ namespace larg4 {
   }
 
 
-  void MaterialPropertyLoader::SetReflectances(std::string Material, std::map<std::string,std::map<double, double> > Reflectances,  std::map<std::string,std::map<double, double> >  DiffuseFractions)
+  void MaterialPropertyLoader::SetReflectances(std::string /*Material*/, std::map<std::string,std::map<double, double> > Reflectances,  std::map<std::string,std::map<double, double> >  DiffuseFractions)
   {
     std::map<double, double> ReflectanceToStore;
     std::map<double, double> DiffuseToStore;

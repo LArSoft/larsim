@@ -22,13 +22,13 @@ namespace larg4{
    ISCalculation();
    virtual ~ISCalculation();
 
-   virtual       void                 Initialize()                                            = 0;
-   virtual       void                 Reset()                            		      = 0;
-   virtual       void                 CalculateIonizationAndScintillation(const G4Step* step) = 0;
-   virtual const double               EnergyDeposit()              const                      = 0;
-   virtual const int    	      NumberIonizationElectrons()  const 		      = 0;
-   virtual const int    	      NumberScintillationPhotons() const 		      = 0;
-   virtual const double               StepSizeLimit()              const 		      = 0;
+   virtual void                 Initialize()                                            = 0;
+   virtual void                 Reset()                            		      = 0;
+   virtual void                 CalculateIonizationAndScintillation(const G4Step* step) = 0;
+   virtual double               EnergyDeposit()              const                      = 0;
+   virtual int    	      NumberIonizationElectrons()  const 		      = 0;
+   virtual int    	      NumberScintillationPhotons() const 		      = 0;
+   virtual double               StepSizeLimit()              const 		      = 0;
 
  protected:
 

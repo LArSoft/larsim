@@ -17,11 +17,11 @@ class NestAlg {
   const G4VParticleChange& CalculateIonizationAndScintillation(G4Track const& aTrack,
 							       G4Step  const& aStep);
 
-  void         SetScintillationYieldFactor(double const& yf)     { fYieldFactor = yf;       } 
-  void         SetScintillationExcitationRatio(double const& er) { fExcitationRatio = er;   } 
-  const int    NumberScintillationPhotons() const                { return fNumScintPhotons; }
-  const int    NumberIonizationElectrons()  const                { return fNumIonElectrons; }
-  const double EnergyDeposition()           const                { return fEnergyDep;       }
+  void   SetScintillationYieldFactor(double const& yf)     { fYieldFactor = yf;       } 
+  void   SetScintillationExcitationRatio(double const& er) { fExcitationRatio = er;   } 
+  int    NumberScintillationPhotons() const                { return fNumScintPhotons; }
+  int    NumberIonizationElectrons()  const                { return fNumIonElectrons; }
+  double EnergyDeposition()           const                { return fEnergyDep;       }
 
  private:
 

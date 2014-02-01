@@ -34,33 +34,33 @@ namespace sim {
     
     void reconfigure(fhicl::ParameterSet const& pset);
     
-    const int    OpVerbosity()                                const { return fOpVerbosity;            }
-    const double ParticleKineticEnergyCut()          	      const { return fParticleKineticECut;    }
-    const bool   StoreTrajectories()                 	      const { return fStoreTrajectories;      }
-    const bool   DrawNeutrals()                      	      const { return fDrawNeutrals;           }
-    const double VisualizationEnergyCut()            	      const { return fVisualizationEnergyCut; }
-    const bool   UseCustomPhysics()                  	      const { return fUseCustomPhysics;       }
-    const double RecombA()                           	      const { return util::kRecombA;          }
-    const double Recombk()                           	      const { return util::kRecombk;          }
-    const double ModBoxA()                           	      const { return util::kModBoxA;          }
-    const double ModBoxB()                           	      const { return util::kModBoxB;          }
-    const bool   UseModBoxRecomb()                   	      const { return fUseModBoxRecomb;        }
-    const double GeVToElectrons()                    	      const { return util::kGeVToElectrons;   }
-    const double LongitudinalDiffusion()             	      const { return fLongitudinalDiffusion;  }
-    const double TransverseDiffusion()               	      const { return fTransverseDiffusion;    }
-    const double ElectronClusterSize()      	     	      const { return fElectronClusterSize;    }
-    const std::vector<std::string>& EnabledPhysics() 	      const { return fEnabledPhysics;         }
-    const int    K0Bias()                            	      const { return fK0Bias;                 }
-    const int    MNXBias()                  	     	      const { return fXBias; 		      }
-    const int    MNXSBias()                 	     	      const { return fXSBias;		      }
-    const bool   KeepEMShowerDaughters()             	      const { return fKeepEMShowerDaughters;  }
-    const bool   DisableWireplanes()                 	      const { return fDisableWireplanes;      }
+    int    OpVerbosity()                                      const { return fOpVerbosity;            }
+    double ParticleKineticEnergyCut()                         const { return fParticleKineticECut;    }
+    bool   StoreTrajectories()                                const { return fStoreTrajectories;      }
+    bool   DrawNeutrals()                                     const { return fDrawNeutrals;           }
+    double VisualizationEnergyCut()                           const { return fVisualizationEnergyCut; }
+    bool   UseCustomPhysics()                                 const { return fUseCustomPhysics;       }
+    double RecombA()                                          const { return util::kRecombA;          }
+    double Recombk()                                          const { return util::kRecombk;          }
+    double ModBoxA()                                          const { return util::kModBoxA;          }
+    double ModBoxB()                                          const { return util::kModBoxB;          }
+    bool   UseModBoxRecomb()                                  const { return fUseModBoxRecomb;        }
+    double GeVToElectrons()                                   const { return util::kGeVToElectrons;   }
+    double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
+    double TransverseDiffusion()                              const { return fTransverseDiffusion;    }
+    double ElectronClusterSize()                              const { return fElectronClusterSize;    }
+    const std::vector<std::string>& EnabledPhysics()          const { return fEnabledPhysics;         }
+    int    K0Bias()                                           const { return fK0Bias;                 }
+    int    MNXBias()                                          const { return fXBias;                  }
+    int    MNXSBias()                                         const { return fXSBias;                 }
+    bool   KeepEMShowerDaughters()                            const { return fKeepEMShowerDaughters;  }
+    bool   DisableWireplanes()                                const { return fDisableWireplanes;      }
     const std::string IonAndScintCalculator()                 const { return fIonAndScintCalculator;  }
     const std::vector<std::string> OpticalParamVolumes()      const { return fOpticalParamVolumes;    }
     const std::vector<std::string> OpticalParamModels()       const { return fOpticalParamModels;     }
     const std::vector<int>         OpticalParamOrientations() const { return fOpticalParamOrientations;}
-    const std::vector<std::vector<std::vector<double> > > OpticalParamParameters() const{return fOpticalParamParameters;  }
-    const bool UseLitePhotons()                               const { return fLitePhotons;            }
+    const std::vector<std::vector<std::vector<double>>> OpticalParamParameters() const{return fOpticalParamParameters;  }
+    bool UseLitePhotons()                                     const { return fLitePhotons;            }
 
   private:
     int                      fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
