@@ -34,7 +34,7 @@
 namespace phot{
 
   //--------------------------------------------------------------------
-  PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &reg) 
+  PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &/*reg*/) 
   {
     this->reconfigure(pset);
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
@@ -137,7 +137,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Eventually we will calculate the light quenching factor here
-  double PhotonVisibilityService::GetQuenchingFactor(double dQdx)
+  double PhotonVisibilityService::GetQuenchingFactor(double /* dQdx */)
   {
     // for now, no quenching
     return 1.0;

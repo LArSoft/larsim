@@ -235,7 +235,7 @@ namespace detsim{
   }
 
   //-----------------------------------------------
-   void SimWireT962::beginRun(art::Run& run) 
+   void SimWireT962::beginRun(art::Run& /* run */) 
   { 
     // set field response and electronics response, then convolute them
     SetFieldResponse();
