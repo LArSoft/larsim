@@ -33,6 +33,7 @@ cet_cmake_env()
 
 set_install_root()
 
+# -Wno-unused-variable needed because of CLHEP
 cet_set_compiler_flags(DIAGS VIGILANT
   WERROR
   NO_UNDEFINED
