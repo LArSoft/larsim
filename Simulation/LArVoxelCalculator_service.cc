@@ -24,7 +24,7 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   LArVoxelCalculator::LArVoxelCalculator(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry &reg) 
+					 art::ActivityRegistry & /* reg */) 
   {
 
     this->reconfigure(pset);

@@ -1040,8 +1040,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 }
 
 //----------------------------------------------------------------------------
-G4double NestAlg::GetGasElectronDriftSpeed(G4double efieldinput, 
-					   G4double density) 
+G4double NestAlg::GetGasElectronDriftSpeed(G4double /*efieldinput*/, 
+					   G4double /*density*/) 
 {
   std::cout << "WARNING: NestAlg::GetGasElectronDriftSpeed(G4double, G4double) "
 	    << "is not defined, returning bogus value of -999." << std::endl;

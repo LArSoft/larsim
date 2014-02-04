@@ -96,7 +96,7 @@ namespace sim
       SimPhotons& operator+=(const SimPhotons &rhs);
       const SimPhotons operator+(const SimPhotons &rhs) const;
 
-      const int OpChannel() const;
+      int       OpChannel() const;
       void      SetChannel(int ch);
 
 #endif
@@ -149,7 +149,7 @@ namespace sim
 
 #ifndef __GCCXML__
 
-inline const int   sim::SimPhotons::OpChannel()       const                     { return fOpChannel;      }
+inline int         sim::SimPhotons::OpChannel()       const                     { return fOpChannel;      }
 inline void        sim::SimPhotons::SetChannel(int ch)                          { fOpChannel = ch;        }
 inline std::string sim::SimPhotonsCollection::GetSDName()                       { return fTheSDName;      }
 inline void        sim::SimPhotonsCollection::SetSDName(std::string TheSDName)  { fTheSDName = TheSDName; }

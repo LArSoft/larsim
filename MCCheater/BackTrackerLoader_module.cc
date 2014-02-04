@@ -33,7 +33,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & p)
+cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & /*p*/)
 {
   // Call appropriate Produces<>() functions here.
 }

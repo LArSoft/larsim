@@ -1,7 +1,7 @@
-#include "services.fcl"
+#include "services_lbne.fcl"
 #include "nuance.fcl"
-#include "largeantmodules.fcl"
-#include "detsimmodules.fcl"
+#include "largeantmodules_lbne.fcl"
+#include "detsimmodules_lbne.fcl"
 #include "mccheatermodules.fcl"
 
 
@@ -12,17 +12,20 @@ services:
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "ndk_hist_p2K+nubar.root" }
   Timing:       {}
+  SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::microboone_simulation_services
+  user:         @local::lbnefd_simulation_services
 }
 
 services.user.LArFFT.FFTOption: "" 
+services.user.Geometry.GDML: "lbne34kt.gdml"
+services.user.Geometry.ROOT: "lbne34kt.gdml"
 
 #Start each new event with an empty event.
 source:
 {
   module_type: EmptyEvent
-  maxEvents:  400
+  maxEvents:  4000
 }
 
 # Define and configure some modules to do work on each event.
@@ -34,8 +37,8 @@ physics:
  producers:
  {
    generator: @local::argoneut_nuance
-   largeant:  @local::microboone_largeant	  
-   daq:       @local::microboone_simwire       
+   largeant:  @local::lbnefd_largeant	  
+   daq:       @local::lbnefd_simwire       
    backtrack: @local::standard_backtrackerloader
  }
 
@@ -74,5 +77,5 @@ outputs:
 }
 
 physics.producers.generator.module_type: "NDKGen"
-physics.producers.generator.NdkFile: "/lbne/app/users/echurch/larsoft/ndk/p2K+nubar.out"
+physics.producers.generator.NdkFile: "/lbne/app/users/echurch/lgm/in/ndkGolden.out"
 #physics.producers.largeant.DumpParticleList: true

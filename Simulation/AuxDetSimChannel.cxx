@@ -46,7 +46,7 @@ namespace sim{
                        float inputEntryX,
                        float inputEntryY,
                        float inputEntryZ,
-                       float inputEntryT,
+                       float /*inputEntryT*/,
                        float inputExitX,
                        float inputExitY,
                        float inputExitZ,

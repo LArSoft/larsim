@@ -25,13 +25,13 @@ namespace larg4 {
    ISCalculationSeparate();
    virtual ~ISCalculationSeparate();
 
-   void         Initialize();
-   void         Reset();
-   void         CalculateIonizationAndScintillation(const G4Step* step);
-   const double EnergyDeposit()              const { return fEnergyDeposit;       }
-   const int    NumberIonizationElectrons()  const { return fNumIonElectrons;     }
-   const int    NumberScintillationPhotons() const { return fNumScintPhotons;     }
-   const double StepSizeLimit()              const { return fStepSize;            }
+   void   Initialize();
+   void   Reset();
+   void   CalculateIonizationAndScintillation(const G4Step* step);
+   double EnergyDeposit()              const { return fEnergyDeposit;       }
+   int    NumberIonizationElectrons()  const { return fNumIonElectrons;     }
+   int    NumberScintillationPhotons() const { return fNumScintPhotons;     }
+   double StepSizeLimit()              const { return fStepSize;            }
 
  private:
 

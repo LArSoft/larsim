@@ -310,7 +310,7 @@ namespace evgen{
       if (k.find("FLAGS") != std::string::npos) break; // Event end.
 
       //      if (!k.compare(26,1,"3") || !k.compare(26,1,"1")) ; // New event or stable particles.
-      if (!k.compare(26,1,"1")) ; // New event or stable particles.
+      if (!k.compare(26,1,"1"))  // New event or stable particles.
       {
 
 	std::istringstream in;

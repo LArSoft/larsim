@@ -232,7 +232,7 @@ void cheat::RecoCheckAna::reconfigure(fhicl::ParameterSet const & p)
 }
 
 //-------------------------------------------------------------------
-void cheat::RecoCheckAna::beginRun(art::Run const &r) 
+void cheat::RecoCheckAna::beginRun(art::Run const &/*r*/) 
 {
   art::ServiceHandle<art::TFileService> tfs;
 

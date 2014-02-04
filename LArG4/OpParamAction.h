@@ -62,7 +62,7 @@ namespace larg4
   public:
     TransparentPlaneAction() {};
     ~TransparentPlaneAction() {};
-    double GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition) {return 1;}
+    double GetAttenuationFraction(G4ThreeVector /*PhotonDirection*/, G4ThreeVector /*PhotonPosition*/) {return 1;}
 
   private:
 
