@@ -286,8 +286,8 @@ namespace larg4 {
 
       art::Handle< std::vector<simb::MCTruth> > mclistHandle = mclists[mcl];
 
-      for(size_t i = 0; i < mclistHandle->size(); ++i){
-	art::Ptr<simb::MCTruth> mct(mclistHandle,i);
+      for(size_t m = 0; m < mclistHandle->size(); ++m){
+	art::Ptr<simb::MCTruth> mct(mclistHandle, m);
 
 	LOG_DEBUG("LArG4") << *(mct.get());
 
@@ -295,9 +295,9 @@ namespace larg4 {
 	fG4Help->G4Run(mct);
 
 	const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
-	for(auto i = particleList.begin(); i != particleList.end(); ++i){
+	for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){
 	  // copy the particle so that it isnt const
-	  simb::MCParticle p(*(*i).second);
+	  simb::MCParticle p(*(*pitr).second);
 	  partCol->push_back(p);
 
 	  util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));

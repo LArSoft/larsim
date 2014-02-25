@@ -51,7 +51,7 @@ namespace larg4 {
 
     // If the step size is such that the particle appears to be "stuck"
     // in its trajectory, give it a kick.
-    const double epsilon   = 1000. * std::numeric_limits<double>::epsilon();
+    const double epsilon   = 5000. * std::numeric_limits<double>::epsilon();
     const double stepSize  = step->GetStepLength();
     G4Track* nonConstTrack = const_cast<G4Track*>( step->GetTrack() );
 
