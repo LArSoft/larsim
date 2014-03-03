@@ -38,7 +38,7 @@ namespace larg4 {
 
 
   //--------------------------------------------------
-  void OpDetPhotonTable::AddPhoton(int opchannel, sim::OnePhoton* photon)
+  void OpDetPhotonTable::AddPhoton(int opchannel, std::unique_ptr<sim::OnePhoton> photon)
   {
     if(!fDetectedPhotons[opchannel]) 
       {
