@@ -366,8 +366,7 @@ namespace larg4 {
 	    /// \todo check on what happens if we allow the tdc value to be
 	    /// \todo beyond the end of the expected number of ticks
 	    // Add potential decay/capture/etc delay effect, simTime.
-	    unsigned int tdc = (unsigned int)((TDiff + simTime) / fSampleRate);
-	    tdc += fTriggerOffset;
+	    unsigned int tdc = (unsigned int)((TDiff + simTime) / fSampleRate + fTriggerOffset);
 
 	    // on the first time we decide a tdc for a radiological, throw a random time for it.
 	    // save it for other clusters, planes, and second (or subsequent) calls to this function
