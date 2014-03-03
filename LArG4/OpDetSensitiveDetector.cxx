@@ -41,7 +41,7 @@ namespace larg4{
 
   G4bool OpDetSensitiveDetector::ProcessHits(G4Step * aStep, G4TouchableHistory *)
   {
-    sim::OnePhoton * ThePhoton = new sim::OnePhoton();
+    std::unique_ptr<sim::OnePhoton> ThePhoton(new sim::OnePhoton());
     
     
     // Get photon data to store in the hit
@@ -64,7 +64,7 @@ namespace larg4{
     int OpDetChannel = fTheOpDetLookup->GetChannel(aStep->GetPreStepPoint()->GetPhysicalVolume());
 
     // Add this photon to the detected photons table
-    fThePhotonTable->AddPhoton(OpDetChannel, ThePhoton);
+    fThePhotonTable->AddPhoton(OpDetChannel, std::move(ThePhoton));
     
     // Kill this photon track
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);

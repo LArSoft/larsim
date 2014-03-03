@@ -32,6 +32,7 @@
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 #include <map>
+#include <memory>
 
 #ifndef OPDETPHOTONTABLE_h
 #define OPDETPHOTONTABLE_h 1
