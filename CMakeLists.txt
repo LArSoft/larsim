@@ -42,6 +42,16 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 )
 cet_enable_asserts()
 
+# issue 5589: if we are not in a debugging build, disable the dispatch of debug messages in messagefacility
+string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+if( ${BTYPE_UC} STREQUAL "OPT" OR
+    ${BTYPE_UC} STREQUAL "PROF" OR
+    ${BTYPE_UC} STREQUAL "RELEASE" OR
+    ${BTYPE_UC} STREQUAL "MINSIZEREL" )
+  message ( STATUS "Disabling LOG_DEBUG from messagefacility library" )
+  add_definitions(-DML_NDEBUG)
+endif()
+
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
