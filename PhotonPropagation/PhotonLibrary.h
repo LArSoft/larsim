@@ -20,7 +20,7 @@ namespace phot{
     float GetCount(size_t Voxel, size_t OpChannel);
     void   SetCount(size_t Voxel, size_t OpChannel, float Count);
     
-    std::vector<float>* GetCounts(size_t Voxel);
+    const std::vector<float>* GetCounts(size_t Voxel) const;
 
     
     void StoreLibraryToFile(std::string LibraryFile);
@@ -32,9 +32,14 @@ namespace phot{
     
   private:
     // fLookupTable[Voxel]->at(OpChannel) = Count
-    std::vector<std::vector<float>* > fLookupTable;
+    std::vector<std::vector<float> > fLookupTable;
     size_t fNOpChannels;
     size_t fNVoxels;
+    
+    static std::vector<float> EmptyChannelsList;
+    
+    static std::vector<float>* EmptyList()
+      { EmptyChannelsList.clear(); return &EmptyChannelsList; }
   };
 
 }

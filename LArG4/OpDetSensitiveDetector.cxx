@@ -41,23 +41,23 @@ namespace larg4{
 
   G4bool OpDetSensitiveDetector::ProcessHits(G4Step * aStep, G4TouchableHistory *)
   {
-    std::unique_ptr<sim::OnePhoton> ThePhoton(new sim::OnePhoton());
+    sim::OnePhoton ThePhoton;
     
     
     // Get photon data to store in the hit
 
-    ThePhoton->SetInSD      = true;
+    ThePhoton.SetInSD      = true;
 
-    ThePhoton->InitialPosition     = TVector3(
+    ThePhoton.InitialPosition     = TVector3(
 					      aStep->GetTrack()->GetVertexPosition().x(),
 					      aStep->GetTrack()->GetVertexPosition().y(),
 					      aStep->GetTrack()->GetVertexPosition().z()	
 					      );
     
-    ThePhoton->Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
+    ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
     
 
-    ThePhoton->Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();
+    ThePhoton.Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();
     
     // Lookup which OpDet we are in
 

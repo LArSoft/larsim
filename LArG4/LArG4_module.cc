@@ -252,6 +252,9 @@ namespace larg4 {
       fG4Help->GetRunManager()->SetUserAction(stacking_action);
     }
 
+    // Clear the detected photon table
+    OpDetPhotonTable::Instance()->ClearTable();
+
   }
 
   //----------------------------------------------------------------------
@@ -269,9 +272,6 @@ namespace larg4 {
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-
-    // Clear the detected photon table
-    OpDetPhotonTable::Instance()->ClearTable();
 
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
@@ -463,6 +463,9 @@ namespace larg4 {
     if(!fUseLitePhotons) evt.put(std::move(PhotonCol));
     else evt.put(std::move(LitePhotonCol));
     evt.put(std::move(tpassn));
+
+    // Clear the detected photon table
+    OpDetPhotonTable::Instance()->ClearTable();
 
     return;
   }

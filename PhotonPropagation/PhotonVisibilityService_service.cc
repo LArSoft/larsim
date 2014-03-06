@@ -150,7 +150,7 @@ namespace phot{
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point xyz
 
-  std::vector<float>* PhotonVisibilityService::GetAllVisibilities(double * xyz)
+  const std::vector<float>* PhotonVisibilityService::GetAllVisibilities(double * xyz) const
   {
     int VoxID = fVoxelDef.GetVoxelID(xyz);
     return GetLibraryEntries(VoxID);
@@ -231,7 +231,7 @@ namespace phot{
 
   
 
-  std::vector<float>* PhotonVisibilityService::GetLibraryEntries(int VoxID)
+  const std::vector<float>* PhotonVisibilityService::GetLibraryEntries(int VoxID) const
   {
     return fTheLibrary->GetCounts(VoxID);
   }

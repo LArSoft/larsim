@@ -15,6 +15,8 @@
 
 namespace phot{
   
+  std::vector<float> PhotonLibrary::EmptyChannelsList; // used for invalid return value
+  
   //------------------------------------------------------------
 
   PhotonLibrary::PhotonLibrary()
@@ -27,8 +29,6 @@ namespace phot{
 
   PhotonLibrary::~PhotonLibrary()
   {
-    for(size_t ivox=0; ivox!=fLookupTable.size(); ++ivox)
-      delete fLookupTable[ivox];
     fLookupTable.clear();
   }
   
@@ -55,13 +55,13 @@ namespace phot{
 
     for(size_t ivox=0; ivox!=fLookupTable.size(); ++ivox)
       {
-	for(size_t ichan=0; ichan!=fLookupTable.at(ivox)->size(); ++ichan)
+	for(size_t ichan=0; ichan!=fLookupTable.at(ivox).size(); ++ichan)
 	  {
-	    if(fLookupTable[ivox]->at(ichan) > 0)
+	    if(fLookupTable[ivox].at(ichan) > 0)
 	      {
 		Voxel      = ivox;
 		OpChannel  = ichan;
-		Visibility = fLookupTable[ivox]->at(ichan);
+		Visibility = fLookupTable[ivox][ichan];
 		tt->Fill();
 	      }
 	  }	
@@ -82,7 +82,7 @@ namespace phot{
 
     for(size_t ivox=0; ivox!=NVoxels; ivox++)
       {
-	fLookupTable[ivox] = new std::vector<float>(NOpChannels,0);
+        fLookupTable[ivox].resize(NOpChannels,0);
       }
   }
 
@@ -122,7 +122,7 @@ namespace phot{
 
     for(size_t ivox=0; ivox!=NVoxels; ivox++)
       {
-	fLookupTable[ivox] = new std::vector<float>(NOpChannels,0);
+	fLookupTable[ivox].resize(NOpChannels,0);
       }
     
     tt->SetBranchAddress("Voxel",      &Voxel);
@@ -140,7 +140,7 @@ namespace phot{
 	  }
 	else
 	  {
-	    fLookupTable[Voxel]->at(OpChannel) = Visibility;
+	    fLookupTable[Voxel].at(OpChannel) = Visibility;
 	  }
       }
 
@@ -161,7 +161,7 @@ namespace phot{
     if(/*(Voxel<0)||*/(Voxel>=fNVoxels)||/*(OpChannel<0)||*/(OpChannel>=fNOpChannels))
       return 0;   
     else
-      return fLookupTable[Voxel]->at(OpChannel); 
+      return fLookupTable[Voxel].at(OpChannel); 
   }
 
   //----------------------------------------------------
@@ -171,17 +171,17 @@ namespace phot{
     if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
       mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range"; 
     else
-      fLookupTable[Voxel]->at(OpChannel) = Count; 
+      fLookupTable[Voxel].at(OpChannel) = Count; 
   }
 
   //----------------------------------------------------
 
-  std::vector<float>* PhotonLibrary::GetCounts(size_t Voxel) 
+  const std::vector<float>* PhotonLibrary::GetCounts(size_t Voxel) const
   { 
     if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
-      return new std::vector<float>(); // FIXME!!! memory leak
+      return EmptyList(); // FIXME!!! better to throw an exception!
     else 
-      return fLookupTable[Voxel];    
+      return &(fLookupTable[Voxel]);
   }
 
   

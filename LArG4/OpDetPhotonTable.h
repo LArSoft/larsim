@@ -51,7 +51,7 @@ namespace larg4 {
       ~OpDetPhotonTable(){}
       static OpDetPhotonTable * Instance(bool LitePhotons = false);
    
-      void AddPhoton(int opchannel, std::unique_ptr<sim::OnePhoton> photon);
+      void AddPhoton(int opchannel, sim::OnePhoton&& photon);
       void AddPhoton( std::map<int, std::map<int, int>>* StepPhoton);
 
       std::map<int, sim::SimPhotons* >   GetPhotons();

@@ -368,7 +368,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   xyz[2]=x0[2]/cm;
 
   // Get the visibility vector for this point
-  std::vector<float>* Visibilities = nullptr;
+  const std::vector<float>* Visibilities = nullptr;
   if(!pvs->UseParameterization())Visibilities = pvs->GetAllVisibilities(xyz);
 
 
@@ -725,11 +725,11 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             float Time = aSecondaryTime;
 		
             // Make a photon object for the collection
-	    std::unique_ptr<sim::OnePhoton> PhotToAdd(new sim::OnePhoton());
-            PhotToAdd->InitialPosition  = PhotonPosition;
-            PhotToAdd->Energy           = Energy;
-            PhotToAdd->Time             = Time;
-            PhotToAdd->SetInSD          = false;
+	    sim::OnePhoton PhotToAdd;
+            PhotToAdd.InitialPosition  = PhotonPosition;
+            PhotToAdd.Energy           = Energy;
+            PhotToAdd.Time             = Time;
+            PhotToAdd.SetInSD          = false;
 			
             fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
         }

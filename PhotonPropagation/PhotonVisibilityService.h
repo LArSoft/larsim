@@ -34,7 +34,7 @@ namespace phot{
     double SolidAngleFactor(                double* xyz, unsigned int OpChannel );
     float GetVisibility(                    double* xyz, unsigned int OpChannel );         
 
-    std::vector<float>* GetAllVisibilities( double* xyz );
+    const std::vector<float>* GetAllVisibilities( double* xyz ) const;
     
     void StoreLibrary();
     
@@ -44,7 +44,7 @@ namespace phot{
     
     void SetLibraryEntry(   int VoxID, int OpChannel, float N);
     float GetLibraryEntry( int VoxID, int OpChannel);
-    std::vector<float>* GetLibraryEntries( int VoxID );
+    const std::vector<float>* GetLibraryEntries( int VoxID ) const;
 
     
     bool IsBuildJob() { return fLibraryBuildJob; }

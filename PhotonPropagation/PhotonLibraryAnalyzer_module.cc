@@ -160,7 +160,7 @@ namespace phot {
     
       std::vector<int> Coords = TheVoxelDef.GetVoxelCoords(i);
                 
-      std::vector<float>* Visibilities = pvs->GetLibraryEntries(i);
+      const std::vector<float>* Visibilities = pvs->GetLibraryEntries(i);
       
       float TotalVis=0;
       for(size_t ichan=0; ichan!=Visibilities->size(); ++ichan)
