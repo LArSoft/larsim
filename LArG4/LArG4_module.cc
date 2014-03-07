@@ -287,28 +287,30 @@ namespace larg4 {
       art::Handle< std::vector<simb::MCTruth> > mclistHandle = mclists[mcl];
 
       for(size_t m = 0; m < mclistHandle->size(); ++m){
-	art::Ptr<simb::MCTruth> mct(mclistHandle, m);
+        art::Ptr<simb::MCTruth> mct(mclistHandle, m);
 
-	LOG_DEBUG("LArG4") << *(mct.get());
+        LOG_DEBUG("LArG4") << *(mct.get());
 
-	// The following tells Geant4 to track the particles in this interaction.
-	fG4Help->G4Run(mct);
+        // The following tells Geant4 to track the particles in this interaction.
+        fG4Help->G4Run(mct);
 
-	const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
-	for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){
-	  // copy the particle so that it isnt const
-	  simb::MCParticle p(*(*pitr).second);
-	  partCol->push_back(p);
+        const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
+        
+        partCol->reserve(partCol->size() + particleList.size()); // not very useful here...
+        for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){
+          // copy the particle so that it isnt const
+          simb::MCParticle p(*(*pitr).second);
+          partCol->push_back(p);
 
-	  util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
-	}
+          util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
+        }
 
-	// Has the user request a detailed dump of the output objects?
-	if (fdumpParticleList){
-	  mf::LogInfo("LArG4") << "Dump sim::ParticleList; size()="
-			       << particleList.size() << "\n"
-			       << particleList;
-	}
+        // Has the user request a detailed dump of the output objects?
+        if (fdumpParticleList){
+          mf::LogInfo("LArG4") << "Dump sim::ParticleList; size()="
+                               << particleList.size() << "\n"
+                               << particleList;
+        }
 
       }
 
@@ -330,10 +332,11 @@ namespace larg4 {
         std::map<int, sim::SimPhotons*> ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
 	
         if(ThePhotons.size() > 0){
-	  for(auto const& it : ThePhotons){
-	    sim::SimPhotons ph(*(it.second));
-	    PhotonCol->push_back(ph);
-	  }
+          PhotonCol->reserve(ThePhotons.size());
+          for(auto const& it : ThePhotons){
+            sim::SimPhotons ph(*(it.second));
+            PhotonCol->push_back(ph);
+          }
         }
       }
       else{
@@ -342,6 +345,7 @@ namespace larg4 {
         std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons();
 	
         if(ThePhotons.size() > 0){
+          LitePhotonCol->reserve(ThePhotons.size());
           for(auto const& it : ThePhotons){
             sim::SimPhotonsLite ph;
             ph.OpChannel = it.first;
@@ -433,6 +437,7 @@ namespace larg4 {
     // only put the sim::AuxDetSimChannels into the event once, not once for every
     // MCTruth in the event
 
+    adCol->reserve(geom->NAuxDets());
     for(unsigned int a = 0; a < geom->NAuxDets(); ++a){
       
       std::stringstream name;
