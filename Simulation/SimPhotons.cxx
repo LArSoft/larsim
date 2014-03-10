@@ -22,30 +22,32 @@ namespace sim
   }
 
   //----------------------------------------------------------------------------
-  SimPhotons * SimPhotonsCollection::GetHit(int key)
+  /*
+    SimPhotons SimPhotonsCollection::GetHit(int key)
   {
     if( !((*this)[key]) )
       (*this)[key] = new SimPhotons();
-    return (*this)[key];
-      
+     return (*this)[key];
   }
-  
+  */ 
   //----------------------------------------------------------------------------
+  /*
   SimPhotonsCollection & SimPhotonsCollection::operator+=(const SimPhotonsCollection &rhs)
   {
     for(SimPhotonsCollection::const_iterator it = rhs.begin(); it!=rhs.end(); it++){
-      GetHit(it->first)->operator+=(*(it->second));
+      GetHit(it->first).operator+=(it->second);
     }
     SetSDName("CompositeHitCollection");
     return *this;
   }
-  
+  */
   //----------------------------------------------------------------------------
+  /*
   const SimPhotonsCollection SimPhotonsCollection::operator+(const SimPhotonsCollection &rhs) const
   {
     return SimPhotonsCollection(*this)+=rhs;
   }
-
+  */
   //----------------------------------------------------------------------------
   OnePhoton::OnePhoton()
   {
