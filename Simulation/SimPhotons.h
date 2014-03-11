@@ -28,9 +28,10 @@
 //
 
 #ifndef SimPhotons_h
-#define SimPhotons_h 1
+#define SimPhotons_h
 
 #include "TLorentzVector.h"
+
 #include <map>
 
 
@@ -108,17 +109,18 @@ namespace sim
   // The OpDet Hit collection is the set of all OpDet Hits indexed
   // by OpDet ID 
 
-  class SimPhotonsCollection : public std::map<int, SimPhotons *>{
+  class SimPhotonsCollection : public std::map<int, SimPhotons>{
   public:
+
     SimPhotonsCollection();
-    
+
   private:
     std::string fTheSDName;
     
 #ifndef __GCCXML__
     
   public:
-    typedef std::map<int,SimPhotons *>         list_type;
+    typedef std::map<int,SimPhotons>           list_type;
     typedef list_type::key_type                key_type;
     typedef list_type::mapped_type             mapped_type;
     typedef list_type::value_type              value_type;
@@ -131,12 +133,13 @@ namespace sim
     typedef list_type::key_compare             key_compare;
     typedef list_type::allocator_type          allocator_type;
     
-    SimPhotons * GetHit(int);
+    //SimPhotons&  GetHit(int);
+    //SimPhotons  GetHit(int);
     
     // define addition operators for combining hit collections
     //   (add each hit in the collection)
-    SimPhotonsCollection& operator+=(const SimPhotonsCollection &rhs);
-    const SimPhotonsCollection operator+(const SimPhotonsCollection &rhs) const; 
+    //SimPhotonsCollection& operator+=(const SimPhotonsCollection &rhs);
+    //const SimPhotonsCollection operator+(const SimPhotonsCollection &rhs) const; 
     
   public:
     void SetSDName(std::string TheSDName);

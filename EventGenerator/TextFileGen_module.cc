@@ -152,7 +152,7 @@ void evgen::TextFileGen::produce(art::Event & e)
   simb::MCTruth truth;  
 
   // declare the variables for reading in the event record
-  unsigned short event          = 0;
+  int            event          = 0;
   unsigned short nParticles 	= 0;
   int            status         = 0; 
   int 	 	 pdg            = 0; 

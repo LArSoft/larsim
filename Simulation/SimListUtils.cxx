@@ -90,18 +90,30 @@ namespace sim{
     const std::vector<sim::SimPhotons>& pmt(*pmtHandle);
 
     sim::SimPhotonsCollection pmtList;
+    pmtList.clear();
+    //std::cout << "Building SimPhotonsCollection" << std::endl;
 
     /// loop over the pmthits and put them into the list
     for(auto itr = pmt.begin(); itr != pmt.end(); ++itr){
-      /// make an entry in the list for this pmt id
-      pmtList.GetHit((*itr).OpChannel())->SetChannel((*itr).OpChannel());
 
+      int ch = (*itr).OpChannel();
+      /// make an entry in the list for this pmt id
+      if(pmtList.find(ch) == pmtList.end()) {
+	// Create new photon object
+	sim::SimPhotons new_photons;
+	new_photons.clear();
+	new_photons.SetChannel(ch);
+	new_photons.reserve((*itr).size());
+	pmtList.insert(std::pair<int,sim::SimPhotons>(ch,new_photons));
+      }
+      
       /// add the photons to the entry
       for(auto pitr = (*itr).begin(); pitr != (*itr).end(); ++pitr)
-	pmtList.GetHit((*itr).OpChannel())->push_back((*pitr));
+	pmtList[ch].push_back(sim::OnePhoton((*pitr)));
     }
-
-    return pmtList;      
+    
+    return pmtList;
+    //return std::move(pmtList);
   }
 
 
