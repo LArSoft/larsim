@@ -3,6 +3,8 @@
 #include "largeantmodules_lbne.fcl"
 #include "detsimmodules_lbne.fcl"
 #include "mccheatermodules.fcl"
+#include "caldata_lbne.fcl"
+##include "cluster_lbne.fcl"
 
 
 process_name: NdkGen
@@ -18,8 +20,8 @@ services:
 }
 
 services.user.LArFFT.FFTOption: "" 
-services.user.Geometry.GDML: "lbne34kt.gdml"
-services.user.Geometry.ROOT: "lbne34kt.gdml"
+services.user.Geometry.GDML: "lbne4apa36deg.gdml"
+services.user.Geometry.ROOT: "lbne4apa36deg.gdml"
 
 #Start each new event with an empty event.
 source:
@@ -40,6 +42,12 @@ physics:
    largeant:  @local::lbnefd_largeant	  
    daq:       @local::lbnefd_simwire       
    backtrack: @local::standard_backtrackerloader
+   caldata:   @local::lbnefd_calwire
+   gaushit:   @local::lbnefd_gaushitfinder
+   hitcheat:  @local::lbnefd_hitcheater
+   apahit:    @local::lbnefd_apahitfinder
+#   fuzzy:     @local::lbnefd_fuzzycluster
+    rns: { module_type: "RandomNumberSaver" }
  }
 
  analyzers:
@@ -49,7 +57,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant, daq, backtrack ] 
+ simulate: [ generator, largeant, daq, backtrack, caldata, gaushit, hitcheat, apahit, rns ] 
  larana: [ largana ] 
 
  #define the output stream, there could be more than one if using filters 
@@ -78,4 +86,5 @@ outputs:
 
 physics.producers.generator.module_type: "NDKGen"
 physics.producers.generator.NdkFile: "/lbne/app/users/echurch/lgm/in/ndkGolden.out"
+physics.producers.generator.fseed: 314159
 #physics.producers.largeant.DumpParticleList: true

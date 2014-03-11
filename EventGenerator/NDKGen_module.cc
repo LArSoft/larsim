@@ -25,6 +25,8 @@
 #include "TDatabasePDG.h"
 #include "TSystem.h"
 
+#include "CLHEP/Random/RandGaussQ.h"
+
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -33,12 +35,15 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
 
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "SimulationBase/MCNeutrino.h"
+#include "EventGeneratorBase/evgenbase.h"
 #include "Geometry/Geometry.h"
 #include "SummaryData/RunData.h"
 
@@ -75,7 +80,7 @@ namespace evgen {
 	std::string         fNdkFile;
 	std::ifstream      *fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
-	
+        unsigned int        fSeed;           ///< random number seed    	
 	
 	std::string fNDKModuleLabel;
 	
@@ -124,6 +129,11 @@ namespace evgen{
     produces< sumdata::RunData, art::InRun >();
 
     fEventFile = new ifstream(fNdkFile.c_str());
+    // get the random number seed, use a random default if not specified    
+    // in the configuration file.  
+    fSeed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
+    createEngine( fSeed );
+
    }
 
   //____________________________________________________________________________
@@ -298,6 +308,32 @@ namespace evgen{
         
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
+
+    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandGaussQ gauss(engine);
+
+    // appropriate to 4APA lbne geom
+    double X0 =  0.0 + gauss.fire(0,1.0*geo->DetHalfWidth());
+    double Y0 = 0.0  + gauss.fire(0,1.*geo->DetHalfHeight());
+    double Z0 = geo->DetLength() + 0.5*gauss.fire(0,geo->DetLength());
+    double fvCut (5.0); // force vtx to be this far from any wall.
+    //    if (X0 < fvCut) X0 = fvCut;
+    if (X0 > 2.0*geo->DetHalfWidth() - fvCut ) X0 = 2.0*geo->DetHalfWidth()-fvCut;
+    if (X0 < -2.0*geo->DetHalfWidth() + fvCut ) X0 = -2.0*geo->DetHalfWidth()+fvCut;
+    if (Y0 < -2.0*geo->DetHalfHeight() + fvCut) Y0 = -2.0*geo->DetHalfHeight()+fvCut;
+    if (Y0 > 2.0*geo->DetHalfHeight() - fvCut) Y0 = 2.0*geo->DetHalfHeight()-fvCut;
+    if (Z0 < fvCut) Z0 = fvCut;
+    if (Z0 > 2.0*geo->DetLength() - fvCut) Z0 = 2.0*geo->DetLength() - fvCut;
+    /*
+	X0 = geo->DetHalfWidth();
+	Y0 = 0.0;
+	Z0 = 0.5*geo->DetLength();
+	*/
+
+    std::cout << "NDKGen_module: X, Y, Z of vtx: " << X0 << ", "<< Y0 << ", "<< Z0 << std::endl;
+
     
     if(!fEventFile->good())
       std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
@@ -307,7 +343,9 @@ namespace evgen{
       if (k.find("Fin-Init") != std::string::npos) continue; // Meh.
       if (k.find("Ar") != std::string::npos) continue; // Meh.
       if (k.find("HadrBlob") != std::string::npos) continue; // Meh.
-      if (k.find("FLAGS") != std::string::npos) break; // Event end.
+      if (k.find("NucBindE") != std::string::npos) continue; // Meh. atmo
+      if (k.find("FLAGS") != std::string::npos) break; // Event end. gevgen_ndcy
+      if (k.find("Vertex") != std::string::npos) break; // Event end. atmo
 
       //      if (!k.compare(26,1,"3") || !k.compare(26,1,"1")) ; // New event or stable particles.
       if (!k.compare(26,1,"1"))  // New event or stable particles.
@@ -342,13 +380,8 @@ namespace evgen{
 	P = std::sqrt(pow(E,2.) - pow(Mass,2.)); // GeV/c
 	std::cout << "Momentum = " << P << std::endl;
 	
-	art::ServiceHandle<geo::Geometry> geo;
-	  
-	double X0 =  geo->DetHalfWidth();
-	double Y0 = 0.0;
-	double Z0 = 0.5*geo->DetLength();
-	
 	TLorentzVector pos(X0, Y0, Z0, 0);
+
 	Tpos = pos; // for target
 	
 	TLorentzVector mom(Px,Py,Pz, E);
