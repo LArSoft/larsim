@@ -91,7 +91,7 @@ namespace sim{
 
     sim::SimPhotonsCollection pmtList;
     pmtList.clear();
-    std::cout << "Building SimPhotonsCollection" << std::endl;
+    //std::cout << "Building SimPhotonsCollection" << std::endl;
 
     /// loop over the pmthits and put them into the list
     for(auto itr = pmt.begin(); itr != pmt.end(); ++itr){
