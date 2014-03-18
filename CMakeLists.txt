@@ -124,6 +124,7 @@ add_subdirectory(MCCheater)
 add_subdirectory(PhotonPropagation)
 add_subdirectory(Simulation)
 add_subdirectory(TriggerAlgo)
+add_subdirectory(SimFilters)
 
 # ups - table and config files
 add_subdirectory(ups)
