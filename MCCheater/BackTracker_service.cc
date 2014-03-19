@@ -371,6 +371,42 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
+  double BackTracker::HitChargeCollectionPurity(std::set<int>                              trackIDs, 
+					  std::vector< art::Ptr<recob::Hit> > const& hits)
+  {
+    // get the list of EveIDs that correspond to the hits in this collection
+    // if the EveID shows up in the input list of trackIDs, then it counts
+    float total   = 0;
+    float desired = 0.;
+
+    // don't have to check the view in the hits collection because
+    // those are assumed to be from the object we are testing and will
+    // the correct view by definition then.
+    for(size_t h = 0; h < hits.size(); ++h){
+      art::Ptr<recob::Hit> hit = hits[h];
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+       
+      total+=hit->Charge(); // sum up the charge in the cluster
+
+      // don't double count if this hit has more than one of the
+      // desired track IDs associated with it
+      for(size_t e = 0; e < hitTrackIDs.size(); ++e){
+	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
+	  desired += hit->Charge();
+	  break;
+	}
+      }
+
+    }// end loop over hits
+
+    double purity = 0.;
+    if(total > 0) purity = desired/total;
+
+    return purity;
+  }
+
+
+  //----------------------------------------------------------------------
   double BackTracker::HitCollectionEfficiency(std::set<int>                              trackIDs, 
 					      std::vector< art::Ptr<recob::Hit> > const& hits,
 					      std::vector< art::Ptr<recob::Hit> > const& allhits,
@@ -432,6 +468,71 @@ namespace cheat{
 
     return efficiency;
   }
+
+  //----------------------------------------------------------------------
+  double BackTracker::HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
+					      std::vector< art::Ptr<recob::Hit> > const& hits,
+					      std::vector< art::Ptr<recob::Hit> > const& allhits,
+					      geo::View_t                         const& view)
+  {
+    // get the list of EveIDs that correspond to the hits in this collection
+    // and the energy associated with the desired trackID
+    float desired = 0.;
+    float total   = 0.;
+
+    // don't have to check the view in the hits collection because
+    // those are assumed to be from the object we are testing and will
+    // the correct view by definition then.
+    for(size_t h = 0; h < hits.size(); ++h){
+
+      art::Ptr<recob::Hit> hit = hits[h];
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+
+      // don't worry about hits where the energy fraction for the chosen
+      // trackID is < 0.1
+      // also don't double count if this hit has more than one of the
+      // desired track IDs associated with it
+      for(size_t e = 0; e < hitTrackIDs.size(); ++e){
+	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+	  desired += hit->Charge();
+	  break;
+	}
+      }
+    }// end loop over hits
+
+    // now figure out how many hits in the whole collection are associated with this id
+    for(size_t h = 0; h < allhits.size(); ++h){
+
+      art::Ptr<recob::Hit> hit = allhits[h];
+
+      // check that we are looking at the appropriate view here
+      // in the case of 3D objects we take all hits
+      if(hit->View() != view && view != geo::k3D ) continue;
+
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+
+      for(size_t e = 0; e < hitTrackIDs.size(); ++e){
+	// don't worry about hits where the energy fraction for the chosen
+	// trackID is < 0.1
+	// also don't double count if this hit has more than one of the
+	// desired track IDs associated with it
+	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+	  total += hit->Charge();
+	  break;
+	}
+      }
+
+    }// end loop over all hits
+    
+    double efficiency = 0.;
+    if(total > 0.) efficiency = desired/total;
+
+    return efficiency;
+  }
+
+
 
   //----------------------------------------------------------------------
   const sim::SimChannel* BackTracker::FindSimChannel(uint32_t channel) const

@@ -113,7 +113,18 @@ namespace cheat{
 						std::vector< art::Ptr<recob::Hit> > const& hits,
 						std::vector< art::Ptr<recob::Hit> > const& allhits,
 						geo::View_t                         const& view);
+
+    // method to return the fraction of charge in a collection that come from the specified Geant4 track ids 
+    double              HitChargeCollectionPurity(std::set<int>                              trackIDs, 
+					    std::vector< art::Ptr<recob::Hit> > const& hits);
     
+    // method to return the fraction of all charge in an event from a specific set of Geant4 track IDs that are 
+    // represented in a collection of hits
+    double              HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
+						std::vector< art::Ptr<recob::Hit> > const& hits,
+						std::vector< art::Ptr<recob::Hit> > const& allhits,
+						geo::View_t                         const& view);  
+  
     // method to return all EveIDs corresponding to the current sim::ParticleList
     std::set<int>       GetSetOfEveIDs();
 
