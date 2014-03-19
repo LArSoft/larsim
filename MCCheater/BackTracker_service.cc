@@ -387,6 +387,7 @@ namespace cheat{
       std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
        
       total+=hit->Charge(); // sum up the charge in the cluster
+
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
