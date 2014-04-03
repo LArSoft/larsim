@@ -22,12 +22,14 @@ simple_plugin(BackTracker "service"
 
 simple_plugin(BackTrackerLoader "module"
               BackTracker_service
+        			${ART_FRAMEWORK_SERVICES_REGISTRY}              
               BASENAME_ONLY
 )
 
 simple_plugin(CheckBackTracking "module"
                         BackTracker_service
                         RecoBase
+                        Simulation
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -43,6 +45,7 @@ simple_plugin(CheckBackTracking "module"
 simple_plugin(RecoCheckAna "module"
                         BackTracker_service
                         RecoBase
+      Simulation
 			${SIMULATIONBASE}
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}
@@ -57,6 +60,7 @@ simple_plugin(RecoCheckAna "module"
 			${MF_UTILITIES}
 			${FHICLCPP}
 			${CETLIB}
+			${ROOT_BASIC_LIB_LIST}
              BASENAME_ONLY
 )
 

@@ -22,6 +22,7 @@ art_make( BASENAME_ONLY
 			${CETLIB}
 			${CLHEP}
 			${ROOT_BASIC_LIB_LIST}
+			${ROOT_EG}
         )
 
 install_headers()

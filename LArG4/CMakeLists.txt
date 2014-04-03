@@ -53,7 +53,9 @@ art_make( BASENAME_ONLY
 			${FHICLCPP}
 			${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-                        ${G4_LIB_LIST}
+      G4Base      
+      CLHEP
+      ${G4_LIB_LIST}
 		)
 
 install_headers()

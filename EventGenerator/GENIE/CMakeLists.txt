@@ -4,6 +4,7 @@ include_directories ( $ENV{GENIE_INC}/GENIE )
 art_make( BASENAME_ONLY
           MODULE_LIBRARIES 
 			Simulation
+                        SimulationBase
 			SummaryData
 	                Geometry
 	                Geometry_service

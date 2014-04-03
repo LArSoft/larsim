@@ -20,6 +20,7 @@ qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	notes
 e4:debug	e4:debug	default		dkcharmtau	-nq-
 e4:opt		e4:opt		default		dkcharmtau	-nq-
 e4:prof		e4:prof		default		dkcharmtau	-nq-
+e4:debug:noifdh	e4:debug	default		dkcharmtau	-nq-
 
 # table file fragment to set FW_SEARCH_PATH
 table_fragment_begin
