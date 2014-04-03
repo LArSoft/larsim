@@ -25,11 +25,11 @@ namespace trigger{
   void TriggerAlgoBase::Config(fhicl::ParameterSet const& pset) {
   //****************************************************************************
     
-    _preceeding_slices = pset.get< trigdata::TrigTimeSlice_t >("PreceedingWindow");
+    _preceeding_slices = pset.get< int >("PreceedingWindow");
 
-    _proceeding_slices = pset.get< trigdata::TrigTimeSlice_t >("ProceedingWindow");
+    _proceeding_slices = pset.get< int >("ProceedingWindow");
 
-    _deadtime          = pset.get< trigdata::TrigTimeSlice_t >("DeadTime");
+    _deadtime          = pset.get< int >("DeadTime");
 
   }
 
