@@ -13,16 +13,15 @@
 #include "Simulation/ParticleList.h"
 #include "Simulation/EveIdCalculator.h"
 
+#include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TLorentzVector.h>
 
 #include <set>
-#include <iterator>
-#include <cmath>
-#include <cassert>
-#include <iostream>
-#include <memory>
+// #include <iterator>
+//#include <cmath>
+// #include <memory>
 
 namespace sim {
 
@@ -275,10 +274,9 @@ namespace sim {
       m_particleList.insert( insertion, value_type( trackID, particle ) );
     }
     else if ( (*insertion).first == trackID ){
-      mf::LogError("ParticleList") << "sim::ParticleList::insert - ERROR - "
+      throw cet::exception("ParticleList") << "sim::ParticleList::insert - ERROR - "
 				   << "track ID=" << trackID 
 				   << " is already in the list";
-      assert(kFALSE);
     }
     else{
       // It turns out that the best hint we can give is one more

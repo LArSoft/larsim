@@ -13,6 +13,9 @@
 // LArSoft includes
 
 #include "LArG4/OpParamSD.h"
+
+#include "cetlib/exception.h"
+
 #include "LArG4/OpDetPhotonTable.h"
 #include "LArG4/OpDetLookup.h"
 #include "Simulation/SimPhotons.h"
@@ -47,8 +50,7 @@ namespace larg4{
     
     else
       {
-	mf::LogError("OpParamSD")<<"Error: Optical parameterization model " << ModelName <<" not found.";
-	assert(0);
+        throw cet::exception("OpParamSD")<<"Error: Optical parameterization model " << ModelName <<" not found.";
       }
     
   }

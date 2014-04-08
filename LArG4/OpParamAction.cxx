@@ -4,9 +4,11 @@
 
 
 #include "LArG4/OpParamAction.h"
+
+#include "cetlib/exception.h"
+
 #include "Geant4/G4Material.hh"
 #include <cmath>
-#include <cassert>
 
 
 
@@ -105,15 +107,13 @@ namespace larg4
       }
     else
       {
-	mf::LogError("OpParamAction") << "Unrecognized wireplane orientation. Options are 1=Xdrift, 2=Ydrift, 3=Zdrift";
-	assert(0);
+	throw cet::exception("OpParamAction") << "Unrecognized wireplane orientation. Options are 1=Xdrift, 2=Ydrift, 3=Zdrift";
       }
     for(size_t i=0; i!=InputVectors.size(); ++i)
       {
 	if(InputVectors.at(i).size()!=3)
 	  {
-	    mf::LogError("OpParamAction") << "Unrecognized wireplane parameter format. Expected vector(3)'s with v[0] = wire angle, v[1] = wire pitch, v[2] = wire diameter";
-	    assert(0);
+	    throw cet::exception("OpParamAction") << "Unrecognized wireplane parameter format. Expected vector(3)'s with v[0] = wire angle, v[1] = wire pitch, v[2] = wire diameter";
 	  }
 	else
 	  {
