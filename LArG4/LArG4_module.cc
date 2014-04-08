@@ -227,8 +227,10 @@ namespace larg4 {
     // The techniques used in this UserAction are not to be repeated
     // as in general they are a very bad idea, ie they take a const
     // pointer and jump through hoops to change it
-    larg4::G4BadIdeaAction *bia = new larg4::G4BadIdeaAction(fSmartStacking);
-    uaManager->AddAndAdoptAction(bia);
+    // 08-Apr-2014 WGS: It appears that with the shift to Geant 4.9.6 or
+    // above, there's no longer any need for the "Bad Idea Action" fix.
+    //    larg4::G4BadIdeaAction *bia = new larg4::G4BadIdeaAction(fSmartStacking);
+    //    uaManager->AddAndAdoptAction(bia);
 
     // remove IonizationAndScintillationAction for now as we are ensuring
     // the Reset for each G4Step within the G4SensitiveVolumes
