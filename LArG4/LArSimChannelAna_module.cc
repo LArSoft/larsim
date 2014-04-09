@@ -202,8 +202,7 @@ namespace larg {
   {
 
     if (evt.isRealData()) {
-      throw cet::exception("LArSimChannelAna") << "Not for use on Data yet... " 
-					     << "\n";
+      throw cet::exception("LArSimChannelAna") << "Not for use on Data yet...\n";
     }
     
     ensureHists();

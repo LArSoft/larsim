@@ -276,7 +276,7 @@ namespace sim {
     else if ( (*insertion).first == trackID ){
       throw cet::exception("ParticleList") << "sim::ParticleList::insert - ERROR - "
 				   << "track ID=" << trackID 
-				   << " is already in the list";
+				   << " is already in the list\n";
     }
     else{
       // It turns out that the best hint we can give is one more
@@ -342,7 +342,7 @@ namespace sim {
   {
     const_iterator i = m_particleList.find(abs(key));
     if( i == m_particleList.end() ) 
-      throw cet::exception("ParticleList") << "i == m_particleList.end()";
+      throw cet::exception("ParticleList") << "i == m_particleList.end()\n";
 
     return (*i).second;
   }
@@ -352,7 +352,7 @@ namespace sim {
   {
     const_iterator i = m_particleList.find(abs(key));
     if( i == m_particleList.end() ) 
-      throw cet::exception("ParticleList") << "i == m_particleList.end()";
+      throw cet::exception("ParticleList") << "i == m_particleList.end()\n";
 
     return (*i).second;
   }

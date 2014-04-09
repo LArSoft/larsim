@@ -166,7 +166,7 @@ namespace cheat{
     if(/* mct < 0 || */ mct > fMCTruthList.size() ) 
       throw cet::exception("BackTracker") << "attempting to find MCTruth index for "
 					  << "out of range value: " << mct
-					  << "/" << fMCTruthList.size();
+					  << "/" << fMCTruthList.size() << "\n";
 
     return fMCTruthList[mct];
   }
@@ -645,7 +645,7 @@ namespace cheat{
     // the obviously stupid default values
     if(w < 1.e-5)
       throw cet::exception("BackTracker") << "No sim::IDEs providing non-zero number of electrons"
-					  << " can't determine originating location from truth";
+					  << " can't determine originating location from truth\n";
 
     xyz[0] = x/w;
     xyz[1] = y/w;
@@ -752,7 +752,7 @@ namespace cheat{
 
     // get the average position
     if(nhits < 1) 
-      throw cet::exception("BackTracker") << "No hits to determine originating location from truth";
+      throw cet::exception("BackTracker") << "No hits to determine originating location from truth\n";
 
     
     xyz[0] /= nhits;

@@ -114,7 +114,7 @@ namespace larg4 {
        (OpParamModels.size()!=OpParamOrientations.size())||
        (OpParamModels.size()!=OpParamParameters.size()))
       {
-        throw cet::exception("OpDetReadoutGeometry")<<"sizes of OpParam specification vectors do not match";
+        throw cet::exception("OpDetReadoutGeometry")<<"sizes of OpParam specification vectors do not match\n";
       }
     
     for(size_t imodel=0; imodel!=OpParamVolumes.size(); ++imodel)

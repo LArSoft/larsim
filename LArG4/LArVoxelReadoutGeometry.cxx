@@ -147,7 +147,7 @@ namespace larg4 {
 	  else{
 	    throw cet::exception("LArVoxelReadoutGeometry") << "Unknown shape in readout geometry"
 							    << "The LAr TPC volume is not a box or a tube. "
-							    << "This routine can't convert any other shapes.";
+							    << "This routine can't convert any other shapes.\n";
 	  }
 	}
 
@@ -379,7 +379,7 @@ namespace larg4 {
 
     throw cet::exception("LArVoxelReadoutGeometry") << "could not find the desired "
 						    << daughterName
-						    << " to make LArVoxelReadoutGeometry";
+						    << " to make LArVoxelReadoutGeometry\n";
     
     return 0;
   }

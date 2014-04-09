@@ -179,7 +179,7 @@ namespace larg4 {
       // failed to resolve the file name
       throw cet::exception("NoG4Macro") << "G4 macro file "
 					<< fG4MacroPath
-					<< " not found!";
+					<< " not found!\n";
 
   }
 
@@ -383,7 +383,7 @@ namespace larg4 {
 	if ( !sd ){
 	  throw cet::exception("LArG4") << "Sensitive detector '"
 					<< name 
-					<< "' does not exist";
+					<< "' does not exist\n";
 	}
 
 	// Convert the G4VSensitiveDetector* to a LArVoxelReadout*.
@@ -394,7 +394,7 @@ namespace larg4 {
 	if ( !larVoxelReadout ){
 	  throw cet::exception("LArG4") << "Sensitive detector '"
 					<< name
-					<< "' is not a LArVoxelReadout object";
+					<< "' is not a LArVoxelReadout object\n";
 	}
 
 	LOG_DEBUG("LArG4") << "now put the SimChannels in the event";
@@ -451,7 +451,7 @@ namespace larg4 {
 	    if ( !sd ){
 	      throw cet::exception("LArG4") << "Sensitive detector '"
 			  		<< name
-				  	<< "' does not exist";
+				  	<< "' does not exist\n";
 	    }
 
 	    // Convert the G4VSensitiveDetector* to a AuxDetReadout*.

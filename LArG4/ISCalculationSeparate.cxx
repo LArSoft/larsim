@@ -130,7 +130,7 @@ namespace larg4{
     if( !mpt) 
       throw cet::exception("ISCalculationSeparate") << "Cannot find materials property table"
 						    << " for this step! "
-						    << step->GetTrack()->GetMaterial();
+						    << step->GetTrack()->GetMaterial() << "\n";
 
     // if not doing the scintillation by particle type, use the saturation
     double scintYield = mpt->GetConstProperty("SCINTILLATIONYIELD");

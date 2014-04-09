@@ -50,7 +50,7 @@ namespace larg4{
     
     else
       {
-        throw cet::exception("OpParamSD")<<"Error: Optical parameterization model " << ModelName <<" not found.";
+        throw cet::exception("OpParamSD")<<"Error: Optical parameterization model " << ModelName <<" not found.\n";
       }
     
   }

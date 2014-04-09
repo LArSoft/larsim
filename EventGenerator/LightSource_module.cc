@@ -269,7 +269,7 @@ namespace evgen{
 
       }
     else{
-      throw cet::exception("LightSource") << "EVGEN Light Source : Unrecognised light source mode";
+      throw cet::exception("LightSource") << "EVGEN Light Source : Unrecognised light source mode\n";
     }
     
 
@@ -334,7 +334,7 @@ namespace evgen{
 	
 	if(!fInputFile.is_open() || fInputFile.fail() ){
 	  throw cet::exception("LightSource") << "EVGEN Light Source : File error in " 
-					      << fFileName.c_str();
+					      << fFileName << "\n";
 	}
 	else{ 
 	  // read in one line
@@ -377,7 +377,7 @@ namespace evgen{
     //  - neither file or scan mode, probably a config file error
 
     else{
-      throw cet::exception("LightSource") <<"EVGEN : Light Source, unrecognised source mode";
+      throw cet::exception("LightSource") <<"EVGEN : Light Source, unrecognised source mode\n";
     }
     
 

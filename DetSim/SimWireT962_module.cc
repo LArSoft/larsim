@@ -180,7 +180,7 @@ namespace detsim{
     if( !sp.find_file(p.get<std::string>("ResponseFile"), fResponseFile) )
       throw cet::exception("SimWireT962") << "Unable to find electronics response file in\n"
 					  << sp.to_string()
-					  << "\n bailing ungracefully.";
+					  << "\n bailing ungracefully.\n";
 
     fDriftEModuleLabel= p.get< std::string         >("DriftEModuleLabel");
     fNoiseFact        = p.get< double              >("NoiseFact");
@@ -516,7 +516,7 @@ namespace detsim{
 
     TFile inFile(fResponseFile.c_str(),"READ");        
     if(inFile.IsZombie()){      
-      throw cet::exception("SimWireT962") << "Cannot open response file" << fResponseFile.c_str();
+      throw cet::exception("SimWireT962") << "Cannot open response file" << fResponseFile << "\n";
     }    
     
     TH1D * shape = (TH1D*)inFile.Get("shape");    

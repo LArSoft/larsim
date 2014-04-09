@@ -227,7 +227,7 @@ G4VParticleChange* MuNuclearSplittingProcessXSecBias::AlongStepDoIt(
     if (xBiasMode!=1 && xBiasMode!=2)
       {
   throw cet::exception("Incorrectly set Bias Mode. ")
-    << "Set XBiasMode to 0 or 1. " << xBiasMode << " not allowed!";
+    << "Set XBiasMode to 0 or 1. " << xBiasMode << " not allowed!\n";
       }
   fParticleChange.Initialize(track) ;
   return &fParticleChange;

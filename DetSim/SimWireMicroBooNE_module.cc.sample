@@ -158,7 +158,7 @@ namespace detsim {
 	temp->Copy(*fNoiseHist);
       }
       else
-	throw cet::exception("SimWireMicroBooNE") << " Could not find noise histogram in Root file ";
+	throw cet::exception("SimWireMicroBooNE") << " Could not find noise histogram in Root file \n";
       in->Close();
     
       }
