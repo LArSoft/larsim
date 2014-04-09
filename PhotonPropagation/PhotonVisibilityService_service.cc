@@ -54,7 +54,7 @@ namespace phot{
 	cet::search_path sp("FW_SEARCH_PATH");
 
 	if( !sp.find_file(fLibraryFile, LibraryFileWithPath) )
-	  throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string();
+	  throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string() << "\n";
 
     if(!fParameterization) fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, NOpChannels);
       }

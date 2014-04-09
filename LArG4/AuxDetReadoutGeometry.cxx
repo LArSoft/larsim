@@ -173,7 +173,7 @@ namespace larg4 {
 
     throw cet::exception("AuxDetReadoutGeometry") << "could not find the desired "
 						    << daughterName
-						    << " to make AuxDetReadoutGeometry";
+						    << " to make AuxDetReadoutGeometry\n";
     
     return 0;
   }// end FindNestedVolume

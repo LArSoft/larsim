@@ -164,7 +164,7 @@ namespace detsim{
 	cet::exception("WrongSizeUncompress") 
 	  << "uncompression does not produce same size vector as original: " 
 	  << "original = " << rdvec[rd]->Samples() << " uncompress = " 
-	  << uncompressed.size();
+	  << uncompressed.size() << "\n";
       }
     
       for(unsigned int t = 0; t <  uncompressed.size(); ++t){

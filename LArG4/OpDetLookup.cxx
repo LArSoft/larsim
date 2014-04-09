@@ -86,7 +86,7 @@ namespace larg4 {
       }
     if(ClosestChannel<0) 
       {
-	throw cet::exception("OpDetLookup Error") << "No nearby OpDet found!"<<std::endl; 
+	throw cet::exception("OpDetLookup Error") << "No nearby OpDet found!\n"; 
       }
     
     distance = MinDistance;

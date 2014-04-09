@@ -117,7 +117,7 @@ void evgen::TextFileGen::beginJob()
   if( !fInputFile->good() )
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
-					<< " cannot be read.";
+					<< " cannot be read.\n";
 
   return;
 }
@@ -145,7 +145,7 @@ void evgen::TextFileGen::produce(art::Event & e)
   if( !fInputFile->good() )
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
-					<< " cannot be read in produce().";
+					<< " cannot be read in produce().\n";
 
 
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);

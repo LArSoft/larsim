@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////////////////
 #include "G4Base/DetectorConstruction.h"
 
+#include "cetlib/exception.h"
+
 #include "Simulation/LArG4Parameters.h"
 #include "LArG4/OpDetReadoutGeometry.h"
 #include "LArG4/OpDetLookup.h"
@@ -13,7 +15,7 @@
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/G4VSolid.hh"
 #include "Geant4/G4SDManager.hh"
-#include "sstream"
+#include <sstream>
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -112,8 +114,7 @@ namespace larg4 {
        (OpParamModels.size()!=OpParamOrientations.size())||
        (OpParamModels.size()!=OpParamParameters.size()))
       {
-	mf::LogError("OpDetReadoutGeometry")<<"Error: sizes of OpParam specification vectors do not match. Aborting";
-	assert(0);
+        throw cet::exception("OpDetReadoutGeometry")<<"sizes of OpParam specification vectors do not match\n";
       }
     
     for(size_t imodel=0; imodel!=OpParamVolumes.size(); ++imodel)

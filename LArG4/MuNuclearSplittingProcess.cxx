@@ -13,6 +13,9 @@
 
 
 #include "LArG4/MuNuclearSplittingProcess.h"
+
+#include <stdexcept> // std::runtime_error
+
 #include "Geant4/G4WrapperProcess.hh"
 #include "Geant4/G4VParticleChange.hh"
 
@@ -46,7 +49,8 @@ G4VParticleChange* MuNuclearSplittingProcess::PostStepDoIt(const G4Track& track,
   // secondaries, which will be a different sample of species/momenta each time.
   for (unsigned int ii=0; ii<(unsigned int)fNSplit; ii++) {
     particleChange = pRegProcess->PostStepDoIt(track, step);
-    assert (0 != particleChange);
+    if (!particleChange)
+      throw std::runtime_error("MuNuclearSplittingProcess::PostStepDoIt(): no particle change");
     G4int j(0);
     G4int numSec(particleChange->GetNumberOfSecondaries());
     for (j=0; j<numSec; j++)

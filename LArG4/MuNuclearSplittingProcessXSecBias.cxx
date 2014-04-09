@@ -108,7 +108,8 @@ namespace larg4 {
 
     for (unsigned int ii=0; ii<(unsigned int)fNSplit; ii++) {
       particleChange = pRegProcess->PostStepDoIt(track, step);
-      assert (0 != particleChange);
+      if (!particleChange)
+        throw std::runtime_error("MuNuclearSplittingProcessXSecBias::PostStepDoIt(): no particle change");
       G4int j(0);
       G4int numSec(particleChange->GetNumberOfSecondaries());
       // Don't change weight of last secondary. It's the just-added primary in this mode.
@@ -226,7 +227,7 @@ G4VParticleChange* MuNuclearSplittingProcessXSecBias::AlongStepDoIt(
     if (xBiasMode!=1 && xBiasMode!=2)
       {
   throw cet::exception("Incorrectly set Bias Mode. ")
-    << "Set XBiasMode to 0 or 1. " << xBiasMode << " not allowed!";
+    << "Set XBiasMode to 0 or 1. " << xBiasMode << " not allowed!\n";
       }
   fParticleChange.Initialize(track) ;
   return &fParticleChange;

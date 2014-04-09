@@ -90,7 +90,7 @@ namespace sim{
       if(!insertResult.second)
         throw cet::exception("BadAuxDetIDEInsert") << "Track ID: "
                                                    << inputTrackID
-                                                   << " already in fAuxDetIDEs set";
+                                                   << " already in fAuxDetIDEs set\n";
     }//else
   
   
