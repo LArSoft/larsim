@@ -1,12 +1,13 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	larsim	v1_00_07
+parent	larsim	v1_00_08
 defaultqual	e4
 #
-fcldir product_dir job
+fcldir  product_dir job
+gdmldir product_dir G4
 #
 product         version
-larevt		v1_00_07
+larevt		v1_00_08
 gcc		v4_8_1
 genie_xsec      R-2_8_0 
 genie_phyopt    R-2_8_0 
@@ -24,7 +25,7 @@ e4:debug:noifdh	e4:debug	default		dkcharmtau	-nq-
 
 # table file fragment to set FW_SEARCH_PATH
 table_fragment_begin
-    pathPrepend(FW_SEARCH_PATH, ${LARSIM_LIB})
+    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}/G4)
 table_fragment_end
 
 # Preserve tabs and formatting in emacs and vi / vim:
