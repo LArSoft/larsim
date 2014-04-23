@@ -64,16 +64,4 @@ install_source()
 
 # install macro files in lib
 file(GLOB g4_macros *.mac )
-install( FILES ${g4_macros} DESTINATION ${${product}_lib_dir} )
-# copy into build for tests
-# mrb will add g4macropath to FW_SEARCH_PATH
-set( mrbdir $ENV{MRB_BUILDDIR} )
-if( mrbdir )
-  set( g4macropath ${mrbdir}/${product}/lib )
-else()
-  set( g4macropath ${CETPKG_BUILD}/lib )
-endif()
-foreach( g4m ${g4_macros} )
-  get_filename_component( g4nm ${g4m} NAME )
-  configure_file( ${g4m} ${g4macropath}/${g4nm} COPYONLY )
-endforeach( g4m )
+install_gdml( LIST ${g4_macros} )
