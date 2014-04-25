@@ -1,14 +1,14 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	larsim	v1_00_08
-defaultqual	e4
+parent	larsim	v1_01_00
+defaultqual	e5
 #
 fcldir  product_dir job
 gdmldir product_dir G4
 #
 product         version
-larevt		v1_00_08
-gcc		v4_8_1
+larevt		v1_01_00
+gcc		v4_8_2
 genie_xsec      R-2_8_0 
 genie_phyopt    R-2_8_0 
 
@@ -16,12 +16,12 @@ genie_phyopt    R-2_8_0
 # any products here must NOT have qualifiers
 only_for_build  cetbuildtools   v3_07_11
   
-# e4  - with gcc 4.8.1 and -std=c++11
+# e5  - with gcc 4.8.1 and -std=c++11
 qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	notes
-e4:debug	e4:debug	default		dkcharmtau	-nq-
-e4:opt		e4:opt		default		dkcharmtau	-nq-
-e4:prof		e4:prof		default		dkcharmtau	-nq-
-e4:debug:noifdh	e4:debug	default		dkcharmtau	-nq-
+e5:debug	e5:debug	default		dkcharmtau	-nq-
+e5:opt		e5:opt		default		dkcharmtau	-nq-
+e5:prof		e5:prof		default		dkcharmtau	-nq-
+e5:debug:noifdh	e5:debug	default		dkcharmtau	-nq-
 
 # table file fragment to set FW_SEARCH_PATH
 table_fragment_begin
