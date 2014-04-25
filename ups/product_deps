@@ -14,7 +14,7 @@ genie_phyopt    R-2_8_0
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
-only_for_build  cetbuildtools   v3_07_11
+only_for_build  cetbuildtools   v3_10_01
   
 # e5  - with gcc 4.8.1 and -std=c++11
 qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	notes
