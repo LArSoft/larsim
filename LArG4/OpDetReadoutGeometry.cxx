@@ -77,7 +77,7 @@ namespace larg4 {
 
 	  G4VSolid * TheSolid = OpDetVolumes.at(i)->GetSolid();
 	  G4Material * TheMaterial = OpDetVolumes.at(i)->GetMaterial();
-	  G4LogicalVolume * TheLogVolume = new G4LogicalVolume(TheSolid,TheMaterial,"VolumeName.str().c_str()");
+	  G4LogicalVolume * TheLogVolume = new G4LogicalVolume(TheSolid,TheMaterial,VolumeName.str().c_str());
 	  
 	  TheLogVolume->SetSensitiveDetector(TheSD   );
 	 
