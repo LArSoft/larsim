@@ -226,6 +226,46 @@ namespace cheat{
 
     return trackIDEs;
   }
+  
+  //----------------------------------------------------------------------
+  const std::vector<std::vector<art::Ptr<recob::Hit>>> BackTracker::TrackIDsToHits(
+    std::vector<art::Ptr<recob::Hit>> const& allhits, std::vector<int> const& tkIDs)
+  {
+    // returns a subset of the hits in the allhits collection that are matched
+    // to MC particles listed in tkIDs
+    
+    // temporary vector of TrackIDs and Ptrs to hits so only one
+    // loop through the (possibly large) allhits collection is needed
+    std::vector<std::pair<int, art::Ptr<recob::Hit>>> hitList;
+    std::vector<cheat::TrackIDE> tids;
+    for(auto itr = allhits.begin(); itr != allhits.end(); ++itr) {
+      tids.clear();
+      art::Ptr<recob::Hit> const& hit = *itr;
+      this->ChannelToTrackID(tids, hit->Channel(), hit->StartTime(), hit->EndTime());
+      for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
+        for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
+          if(itid->trackID == *itkid) {
+            if(itid->energyFrac > fMinHitEnergyFraction) 
+              hitList.push_back(std::make_pair(*itkid, hit));
+          }
+        } // itkid 
+      } // itid
+    } // itr
+    
+    // now build the truHits vector that will be returned to the caller
+    std::vector<std::vector<art::Ptr<recob::Hit>>> truHits;
+    // temporary vector containing hits assigned to one MC particle
+    std::vector<art::Ptr<recob::Hit>> tmpHits;
+    for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
+      tmpHits.clear();
+      for(auto itr = hitList.begin(); itr != hitList.end(); ++itr) {
+        if(*itkid == (*itr).first) tmpHits.push_back((*itr).second);
+      }
+      truHits.push_back(tmpHits);
+    }
+    
+    return truHits;
+  }
 
   //----------------------------------------------------------------------
   // plist is assumed to have adopted the appropriate EveIdCalculator prior to 
