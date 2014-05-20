@@ -30,7 +30,8 @@
  <class name="sim::IDE"                      ClassVersion="10"                   >
   <version ClassVersion="10" checksum="3981386861"/>
  </class>
- <class name="sim::BeamGateInfo"             ClassVersion="10"              	 >
+ <class name="sim::BeamGateInfo"             ClassVersion="11"              	 >
+  <version ClassVersion="11" checksum="1122283400"/>
   <version ClassVersion="10" checksum="2225942541"/>
  </class>
  <class name="std::vector<int>"                                             	 />
