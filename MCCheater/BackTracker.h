@@ -81,6 +81,11 @@ namespace cheat{
     // the particles contributing ionization electrons to the identified hit
     const std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
     
+    // method to return a subset of allhits that are matched to a list of TrackIDs
+    const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(
+      std::vector<art::Ptr<recob::Hit>> const& allhits, std::vector<int> const& tkIDs);
+    
+    
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
     const std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
