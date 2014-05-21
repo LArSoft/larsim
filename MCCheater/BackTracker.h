@@ -25,6 +25,8 @@
 #include "Simulation/LArVoxelList.h"
 #include "SimpleTypesAndConstants/geo_types.h"
 
+#include "Utilities/TimeService.h"
+
 namespace recob{
   class Hit;
   class SpacePoint;
@@ -79,56 +81,67 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    const std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
+    const std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit,
+					     double tpc_start_time=0);
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
-    const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(
-      std::vector<art::Ptr<recob::Hit>> const& allhits, std::vector<int> const& tkIDs);
-    
+    const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,
+									std::vector<int> const& tkIDs,
+									double tpc_start_time=0);
     
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
-    const std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
+    const std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit,
+					   double tpc_start_time = 0);
     
     // method to return sim::IDE objects associated with a given hit
     void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				      std::vector<sim::IDE>&      ides);
+				      std::vector<sim::IDE>&      ides,
+				      double tpc_start_time=0);
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
     std::vector<double>  SimIDEsToXYZ(std::vector<sim::IDE> const& ides);
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
-    std::vector<double>  HitToXYZ(art::Ptr<recob::Hit> const& hit);
-
+    std::vector<double>  HitToXYZ(art::Ptr<recob::Hit> const& hit,
+				  double tpc_start_time=0);
+				  
+    
     // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
     std::vector<double> SpacePointToXYZ(art::Ptr<recob::SpacePoint> const& spt,
 					art::Event                  const& evt,
-					std::string                 const& label);
+					std::string                 const& label,
+					double tpc_start_time=0);
 
     // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
-    std::vector<double> SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits);
+    std::vector<double> SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits,
+					    double tpc_start_time = 0);
     
     // method to return the fraction of hits in a collection that come from the specified Geant4 track ids 
     double              HitCollectionPurity(std::set<int>                              trackIDs, 
-					    std::vector< art::Ptr<recob::Hit> > const& hits);
+					    std::vector< art::Ptr<recob::Hit> > const& hits,
+					    double tpc_start_time = 0);
     
     // method to return the fraction of all hits in an event from a specific set of Geant4 track IDs that are 
     // represented in a collection of hits
     double              HitCollectionEfficiency(std::set<int>                              trackIDs, 
 						std::vector< art::Ptr<recob::Hit> > const& hits,
 						std::vector< art::Ptr<recob::Hit> > const& allhits,
-						geo::View_t                         const& view);
+						geo::View_t                         const& view,
+						double tpc_start_time = 0);
 
     // method to return the fraction of charge in a collection that come from the specified Geant4 track ids 
     double              HitChargeCollectionPurity(std::set<int>                              trackIDs, 
-					    std::vector< art::Ptr<recob::Hit> > const& hits);
+						  std::vector< art::Ptr<recob::Hit> > const& hits,
+						  double tpc_start_time = 0);
     
     // method to return the fraction of all charge in an event from a specific set of Geant4 track IDs that are 
     // represented in a collection of hits
     double              HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::Hit> > const& hits,
-						std::vector< art::Ptr<recob::Hit> > const& allhits,
-						geo::View_t                         const& view);  
+						      std::vector< art::Ptr<recob::Hit> > const& hits,
+						      std::vector< art::Ptr<recob::Hit> > const& allhits,
+						      geo::View_t                         const& view,
+						      double tpc_start_time = 0);  
   
     // method to return all EveIDs corresponding to the current sim::ParticleList
     std::set<int>       GetSetOfEveIDs();
@@ -137,10 +150,12 @@ namespace cheat{
     std::set<int>       GetSetOfTrackIDs();
 
     // method to return all EveIDs corresponding to the given list of hits
-    std::set<int>       GetSetOfEveIDs(std::vector< art::Ptr<recob::Hit> > const& hits);
+    std::set<int>       GetSetOfEveIDs(std::vector< art::Ptr<recob::Hit> > const& hits,
+				       double tpc_start_time = 0);
 
     // method to return all TrackIDs corresponding to the given list of hits
-    std::set<int>       GetSetOfTrackIDs(std::vector< art::Ptr<recob::Hit> > const& hits);
+    std::set<int>       GetSetOfTrackIDs(std::vector< art::Ptr<recob::Hit> > const& hits,
+					 double tpc_start_time = 0);
 
     const std::vector<const sim::SimChannel*>& SimChannels() const { return fSimChannels; } 
 
@@ -148,8 +163,9 @@ namespace cheat{
 
     void ChannelToTrackID(std::vector<TrackIDE>& trackIDEs,
 			  uint32_t               channel,
-			  double                 startTime,
-			  double                 endTime);
+			  const double hit_start_time,
+			  const double hit_end_time,
+			  double tpc_start_time = 0);
 
     const sim::SimChannel* FindSimChannel(uint32_t channel) const;
 
@@ -166,7 +182,7 @@ namespace cheat{
                                                                    ///< contribute to a hit to be counted in
                                                                    ///< purity and efficiency calculations 
                                                                    ///< based on hit collections
-
+    ::util::ElecClock                      fTPCClock;              ///< TPC electronics clock
   };
 } // namespace
 

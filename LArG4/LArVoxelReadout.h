@@ -52,8 +52,11 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/TPCGeo.h"
 #include "Utilities/LArProperties.h"
+#include "Utilities/TimeService.h"
 #include "Simulation/LArG4Parameters.h"
 #include "LArG4/IonizationAndScintillation.h"
+
+
 
 // Forward declarations
 class G4HCofThisEvent;
@@ -126,7 +129,6 @@ namespace larg4 {
     double 				      fElectronLifetime;       
     double 				      fElectronClusterSize;    
     double    				      fSampleRate; 	    
-    int    				      fTriggerOffset;  
     double                                    fArgon39DecayRate;
     bool                                      fDontDriftThem;
 
@@ -137,6 +139,8 @@ namespace larg4 {
     art::ServiceHandle<util::LArProperties>   fLarpHandle; ///< Handle to the LArProperties parameters service
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat
+
+    ::util::ElecClock                         fClock;      ///< TPC electronics clock
   };
 
 }

@@ -12,6 +12,7 @@ art_make( BASENAME_ONLY
                         PhotonVisibilityService_service
                         Simulation
                         Utilities
+			TimeService_service
                         LArProperties_service
                         DetectorProperties_service
 	                Geometry
