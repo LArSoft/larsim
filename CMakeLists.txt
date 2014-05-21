@@ -52,8 +52,6 @@ find_ups_product( art v1_06_00 )
 find_ups_product( cetbuildtools v3_05_00 )
 find_ups_geant4( geant4 v4_9_6 )
 
-cet_check_gcc()
-
 #  Find all the libraries needed by our dependent CMakeList.txt files
 cet_find_library( BOOST_SERIALIZATION NAMES boost_serialization PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
 cet_find_library( BOOST_DATE_TIME     NAMES boost_date_time     PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
