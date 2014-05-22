@@ -47,8 +47,6 @@ namespace cheat{
   {
     fG4ModuleLabel        = pset.get<std::string>("G4ModuleLabel",            "largeant");
     fMinHitEnergyFraction = pset.get<double     >("MinimumHitEnergyFraction", 0.1);
-    art::ServiceHandle<util::TimeService> ts;
-    fTPCClock = ts->TPCClock();
   }
 
   //----------------------------------------------------------------------
@@ -217,23 +215,22 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit,
-							double tpc_start_time)
+  const std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<TrackIDE> trackIDEs;
-    
+    art::ServiceHandle<util::TimeService> ts;
+
     double start = hit->StartTime();
     double end   = hit->EndTime();
 	
-    this->ChannelToTrackID(trackIDEs, hit->Channel(), start, end, tpc_start_time);
+    this->ChannelToTrackID(trackIDEs, hit->Channel(), start, end);
 
     return trackIDEs;
   }
   
   //----------------------------------------------------------------------
   const std::vector<std::vector<art::Ptr<recob::Hit>>> BackTracker::TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits, 
-										   std::vector<int> const& tkIDs,
-										   double tpc_start_time)
+										   std::vector<int> const& tkIDs)
   {
     // returns a subset of the hits in the allhits collection that are matched
     // to MC particles listed in tkIDs
@@ -245,7 +242,7 @@ namespace cheat{
     for(auto itr = allhits.begin(); itr != allhits.end(); ++itr) {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
-      this->ChannelToTrackID(tids, hit->Channel(), hit->StartTime(), hit->EndTime(), tpc_start_time);
+      this->ChannelToTrackID(tids, hit->Channel(), hit->StartTime(), hit->EndTime());
       for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
           if(itid->trackID == *itkid) {
@@ -275,11 +272,10 @@ namespace cheat{
   // plist is assumed to have adopted the appropriate EveIdCalculator prior to 
   // having been passed to this method. It is likely that the EmEveIdCalculator is
   // the one you always want to use
-  const std::vector<TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit,
-						      double tpc_start_time)
+  const std::vector<TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<TrackIDE> eveides;
-    std::vector<TrackIDE> trackides = this->HitToTrackID(hit,tpc_start_time);
+    std::vector<TrackIDE> trackides = this->HitToTrackID(hit);
 
     // make a map of evd ID values and fraction of energy represented by
     // that eve id in this hit
@@ -336,8 +332,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::set<int> BackTracker::GetSetOfEveIDs(std::vector< art::Ptr<recob::Hit> > const& hits,
-					    double tpc_start_time)
+  std::set<int> BackTracker::GetSetOfEveIDs(std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     std::set<int> eveIDs;
 
@@ -345,7 +340,7 @@ namespace cheat{
     while(itr != hits.end() ){
       
       // get the eve ids corresponding to this hit
-      const std::vector<TrackIDE> ides = HitToEveID(*itr,tpc_start_time);
+      const std::vector<TrackIDE> ides = HitToEveID(*itr);
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < ides.size(); ++i) eveIDs.insert(ides[i].trackID);
@@ -357,8 +352,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::set<int> BackTracker::GetSetOfTrackIDs(std::vector< art::Ptr<recob::Hit> > const& hits,
-					      double tpc_start_time)
+  std::set<int> BackTracker::GetSetOfTrackIDs(std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     std::set<int> trackIDs;
 
@@ -371,7 +365,7 @@ namespace cheat{
       double start = (*itr)->StartTime();
       double end   = (*itr)->EndTime();
 
-      this->ChannelToTrackID(trackIDEs, (*itr)->Channel(), start, end, tpc_start_time);
+      this->ChannelToTrackID(trackIDEs, (*itr)->Channel(), start, end);
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < trackIDEs.size(); ++i) {
@@ -386,8 +380,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double BackTracker::HitCollectionPurity(std::set<int>                              trackIDs, 
-					  std::vector< art::Ptr<recob::Hit> > const& hits,
-					  double tpc_start_time)
+					  std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -399,7 +392,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
@@ -420,8 +413,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double BackTracker::HitChargeCollectionPurity(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::Hit> > const& hits,
-						double tpc_start_time)
+						std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -433,7 +425,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
        
       total+=hit->Charge(); // sum up the charge in the cluster
 
@@ -459,8 +451,7 @@ namespace cheat{
   double BackTracker::HitCollectionEfficiency(std::set<int>                              trackIDs, 
 					      std::vector< art::Ptr<recob::Hit> > const& hits,
 					      std::vector< art::Ptr<recob::Hit> > const& allhits,
-					      geo::View_t                         const& view,
-					      double tpc_start_time)
+					      geo::View_t                         const& view)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // and the energy associated with the desired trackID
@@ -473,7 +464,7 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
 
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't worry about hits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -497,7 +488,7 @@ namespace cheat{
       // in the case of 3D objects we take all hits
       if(hit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	// don't worry about hits where the energy fraction for the chosen
@@ -523,8 +514,7 @@ namespace cheat{
   double BackTracker::HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
 						    std::vector< art::Ptr<recob::Hit> > const& hits,
 						    std::vector< art::Ptr<recob::Hit> > const& allhits,
-						    geo::View_t                         const& view,
-						    double tpc_start_time)
+						    geo::View_t                         const& view)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // and the energy associated with the desired trackID
@@ -537,7 +527,7 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
 
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't worry about hits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -561,7 +551,7 @@ namespace cheat{
       // in the case of 3D objects we take all hits
       if(hit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit,tpc_start_time);
+      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	// don't worry about hits where the energy fraction for the chosen
@@ -605,8 +595,7 @@ namespace cheat{
   void BackTracker::ChannelToTrackID(std::vector<TrackIDE>&   trackIDEs,
 				     uint32_t                 channel,
 				     const double hit_start_time,
-				     const double hit_end_time,
-				     double tpc_start_time)
+				     const double hit_end_time)
   {
     trackIDEs.clear();
 
@@ -617,8 +606,12 @@ namespace cheat{
       
       // loop over the electrons in the channel and grab those that are in time 
       // with the identified hit start and stop times
-      unsigned int start_tdc = fTPCClock.Ticks( fTPCClock.TickPeriod() * hit_start_time + fTPCClock.Time(tpc_start_time) );
-      unsigned int end_tdc   = fTPCClock.Ticks( fTPCClock.TickPeriod() * hit_end_time   + fTPCClock.Time(tpc_start_time) );
+      art::ServiceHandle<util::TimeService> ts;
+      ::util::ElecClock tpc_clock = ts->TPCClock();
+      int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit_start_time ) );
+      int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit_end_time   ) );
+      if(start_tdc<0) start_tdc = 0;
+      if(end_tdc<0) end_tdc = 0;
       std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
       
       // first get the total energy represented by all track ids for 
@@ -655,13 +648,15 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   void BackTracker::HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				 std::vector<sim::IDE>&      ides,
-				 double tpc_start_time)
+				 std::vector<sim::IDE>&      ides)
   {
     // Get services.
-
-    unsigned int start_tdc = fTPCClock.Ticks( fTPCClock.TickPeriod() * (hit->StartTime()) + tpc_start_time );
-    unsigned int end_tdc   = fTPCClock.Ticks( fTPCClock.TickPeriod() * (hit->EndTime()) + tpc_start_time );
+    art::ServiceHandle<util::TimeService> ts;
+    ::util::ElecClock tpc_clock = ts->TPCClock();
+    int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit->StartTime() ) );
+    int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit->EndTime()   ) );
+    if(start_tdc<0) start_tdc = 0;
+    if(end_tdc<0) end_tdc = 0;
 
     ides = this->FindSimChannel(hit->Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
   }
@@ -703,19 +698,17 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::vector<double> BackTracker::HitToXYZ(art::Ptr<recob::Hit> const& hit,
-					    double tpc_start_time)
+  std::vector<double> BackTracker::HitToXYZ(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<sim::IDE> ides;
-    HitToSimIDEs(hit, ides, tpc_start_time);
+    HitToSimIDEs(hit, ides);
     return SimIDEsToXYZ(ides);
   }
 
   //----------------------------------------------------------------------
   std::vector<double> BackTracker::SpacePointToXYZ(art::Ptr<recob::SpacePoint>         const& spt,
 						   art::Event                          const& evt,
-						   std::string                         const& label,
-						   double tpc_start_time)
+						   std::string                         const& label)
   {
     // Get hits that make up this space point.
     art::PtrVector<recob::SpacePoint> spv;
@@ -727,12 +720,11 @@ namespace cheat{
     art::PtrVector<recob::Hit> hits;
     for(size_t h = 0; h < hitv.size(); ++h) hits.push_back(hitv[h]);
 
-    return this->SpacePointHitsToXYZ(hits,tpc_start_time);
+    return this->SpacePointHitsToXYZ(hits);
   }
 
   //----------------------------------------------------------------------
-  std::vector<double> BackTracker::SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits,
-						       double tpc_start_time)
+  std::vector<double> BackTracker::SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits)
   {
     // Get services.
     art::ServiceHandle<geo::Geometry> geom;
@@ -766,7 +758,7 @@ namespace cheat{
 
       // use the HitToXYZ and Geometry::PositionToTPC 
       // to figure out which drift volume the hit originates from
-      std::vector<double> hitOrigin = this->HitToXYZ(*ihit,tpc_start_time);
+      std::vector<double> hitOrigin = this->HitToXYZ(*ihit);
       unsigned int cstat = 0;
       unsigned int tpc   = 0;
       const double worldLoc[3] = {hitOrigin[0], hitOrigin[1], hitOrigin[2]};
