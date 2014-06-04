@@ -67,7 +67,7 @@ namespace larg4 {
     OpDetLookup              * fTheOpDetLookup;
     OpDetPhotonTable         * fThePhotonTable;
 
-    double                     fGlobalTimeOffset;
+    //double                     fGlobalTimeOffset;
   };
 }
 

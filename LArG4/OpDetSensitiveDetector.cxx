@@ -33,7 +33,7 @@ namespace larg4{
     fThePhotonTable        = OpDetPhotonTable::Instance();
     
     art::ServiceHandle<util::DetectorProperties> det;
-    fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
+    //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
   }
 
   
@@ -54,7 +54,8 @@ namespace larg4{
 					      aStep->GetTrack()->GetVertexPosition().z()	
 					      );
     
-    ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
+    //ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
+    ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime();
     
 
     ThePhoton.Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();

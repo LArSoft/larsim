@@ -267,7 +267,7 @@ private:
 
         G4EmSaturation* emSaturation;
 
-        double fGlobalTimeOffset;
+  //double fGlobalTimeOffset;
   
 };
 

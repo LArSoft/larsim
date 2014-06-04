@@ -161,7 +161,7 @@ namespace larg4{
 
         BuildThePhysicsTable();
         art::ServiceHandle<util::DetectorProperties> det;                 
-        fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
+        //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
 
         emSaturation = NULL;
 }
@@ -180,7 +180,7 @@ namespace larg4{
     emSaturation                = rhs.GetSaturation();
 
     art::ServiceHandle<util::DetectorProperties> det;                 
-    fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
+    //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
 
     BuildThePhysicsTable();
   }
@@ -356,7 +356,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
   G4ThreeVector x0 = pPreStepPoint->GetPosition();
   G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
-  G4double      t0 = pPreStepPoint->GetGlobalTime() - fGlobalTimeOffset;
+  //G4double      t0 = pPreStepPoint->GetGlobalTime() - fGlobalTimeOffset;
+  G4double      t0 = pPreStepPoint->GetGlobalTime();
   
   
   G4MaterialPropertiesTable* aMaterialPropertiesTable =

@@ -9,6 +9,7 @@
 #include "LArG4/LArVoxelReadout.h"
 #include "LArG4/ParticleListAction.h"
 #include "Utilities/DetectorProperties.h"
+#include "Utilities/TimeService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -38,9 +39,8 @@ namespace larg4 {
     fChannelMap.clear();
     fChannels.clear();
 
-    art::ServiceHandle<util::DetectorProperties> detprop;
-    fSampleRate       = detprop->SamplingRate();
-    fTriggerOffset    = detprop->TriggerOffset();
+    art::ServiceHandle<util::TimeService> ts;
+    fClock = ts->TPCClock();
 
     sscanf(name.c_str(),"%*19s%1u%*4s%u",&fCstat,&fTPC);
   }
@@ -94,8 +94,8 @@ namespace larg4 {
       
       
       art::ServiceHandle<util::DetectorProperties> detprop;
-      double samplerate  = detprop->SamplingRate(); // in ns/tick
-      int readwindow = detprop->ReadOutWindowSize(); // in clock ticks
+      double samplerate  = fClock.TickPeriod(); // in ns/tick
+      int readwindow = detprop->NumberTimeSamples(); // in clock ticks
       double timewindow = samplerate*readwindow;
       double width = tpcg.HalfWidth()*2.0;
       double height = tpcg.HalfHeight()*2.0;
@@ -260,8 +260,8 @@ namespace larg4 {
 						 Radio_t radiological,
 						 unsigned int tickmax)
   {
-
-
+    art::ServiceHandle<util::TimeService> time_service;
+    
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to
     // increase its execution speed.
@@ -366,7 +366,7 @@ namespace larg4 {
 	    /// \todo check on what happens if we allow the tdc value to be
 	    /// \todo beyond the end of the expected number of ticks
 	    // Add potential decay/capture/etc delay effect, simTime.
-	    unsigned int tdc = (unsigned int)((TDiff + simTime) / fSampleRate + fTriggerOffset);
+	    unsigned int tdc = fClock.Ticks(time_service->G4ToElecTime(TDiff + simTime));
 
 	    // on the first time we decide a tdc for a radiological, throw a random time for it.
 	    // save it for other clusters, planes, and second (or subsequent) calls to this function

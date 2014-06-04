@@ -218,7 +218,8 @@ namespace cheat{
   const std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<TrackIDE> trackIDEs;
-    
+    art::ServiceHandle<util::TimeService> ts;
+
     double start = hit->StartTime();
     double end   = hit->EndTime();
 	
@@ -228,8 +229,8 @@ namespace cheat{
   }
   
   //----------------------------------------------------------------------
-  const std::vector<std::vector<art::Ptr<recob::Hit>>> BackTracker::TrackIDsToHits(
-    std::vector<art::Ptr<recob::Hit>> const& allhits, std::vector<int> const& tkIDs)
+  const std::vector<std::vector<art::Ptr<recob::Hit>>> BackTracker::TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits, 
+										   std::vector<int> const& tkIDs)
   {
     // returns a subset of the hits in the allhits collection that are matched
     // to MC particles listed in tkIDs
@@ -412,7 +413,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double BackTracker::HitChargeCollectionPurity(std::set<int>                              trackIDs, 
-					  std::vector< art::Ptr<recob::Hit> > const& hits)
+						std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -511,9 +512,9 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double BackTracker::HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-					      std::vector< art::Ptr<recob::Hit> > const& hits,
-					      std::vector< art::Ptr<recob::Hit> > const& allhits,
-					      geo::View_t                         const& view)
+						    std::vector< art::Ptr<recob::Hit> > const& hits,
+						    std::vector< art::Ptr<recob::Hit> > const& allhits,
+						    geo::View_t                         const& view)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // and the energy associated with the desired trackID
@@ -591,26 +592,26 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void BackTracker::ChannelToTrackID(std::vector<TrackIDE>& trackIDEs,
-				     uint32_t               channel,
-				     double                 startTime,
-				     double                 endTime)
+  void BackTracker::ChannelToTrackID(std::vector<TrackIDE>&   trackIDEs,
+				     uint32_t                 channel,
+				     const double hit_start_time,
+				     const double hit_end_time)
   {
     trackIDEs.clear();
 
     double totalE = 0.;
-
-    // Get services.
-    art::ServiceHandle<util::DetectorProperties> detprop;
 
     try{
       const sim::SimChannel* schannel = this->FindSimChannel(channel);
       
       // loop over the electrons in the channel and grab those that are in time 
       // with the identified hit start and stop times
-
-      unsigned int start_tdc = detprop->ConvertTicksToTDC(startTime);
-      unsigned int end_tdc = detprop->ConvertTicksToTDC(endTime);
+      art::ServiceHandle<util::TimeService> ts;
+      ::util::ElecClock tpc_clock = ts->TPCClock();
+      int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit_start_time ) );
+      int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit_end_time   ) );
+      if(start_tdc<0) start_tdc = 0;
+      if(end_tdc<0) end_tdc = 0;
       std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
       
       // first get the total energy represented by all track ids for 
@@ -650,10 +651,12 @@ namespace cheat{
 				 std::vector<sim::IDE>&      ides)
   {
     // Get services.
-    art::ServiceHandle<util::DetectorProperties> detprop;
-
-    unsigned int start_tdc = detprop->ConvertTicksToTDC(hit->StartTime());
-    unsigned int end_tdc   = detprop->ConvertTicksToTDC(hit->EndTime());
+    art::ServiceHandle<util::TimeService> ts;
+    ::util::ElecClock tpc_clock = ts->TPCClock();
+    int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit->StartTime() ) );
+    int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit->EndTime()   ) );
+    if(start_tdc<0) start_tdc = 0;
+    if(end_tdc<0) end_tdc = 0;
 
     ides = this->FindSimChannel(hit->Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
   }

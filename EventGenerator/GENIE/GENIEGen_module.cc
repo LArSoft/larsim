@@ -77,6 +77,7 @@ namespace evgen {
 
     double fGlobalTimeOffset;             /// The start of a simulated "beam gate".
     double fRandomTimeOffset;             /// The width of a simulated "beam gate".
+    ::sim::BeamType_t fBeamType;          /// The type of beam
 
     TH1F* fGenerated[6];  ///< Spectra as generated
 
@@ -119,6 +120,7 @@ namespace evgen{
     , fPassEmptySpills (pset.get< bool   >("PassEmptySpills"))
     , fGlobalTimeOffset(pset.get< double >("GlobalTimeOffset",0))
     , fRandomTimeOffset(pset.get< double >("RandomTimeOffset",1600.)) // BNB default value
+    , fBeamType(::sim::kBNB)
   {  
     fStopwatch.Start();
 
@@ -130,6 +132,20 @@ namespace evgen{
     produces< art::Assns<simb::MCTruth, simb::MCFlux> >();
     produces< art::Assns<simb::MCTruth, simb::GTruth> >();
     produces< std::vector<sim::BeamGateInfo> >();
+
+    std::string beam_type_name = pset.get<std::string>("BeamName");
+
+    if(beam_type_name == "numi") 
+
+      fBeamType = ::sim::kNuMI;
+
+    else if(beam_type_name == "booster") 
+
+      fBeamType = ::sim::kBNB;
+
+    else
+
+      fBeamType = ::sim::kUnknown;
 
     art::ServiceHandle<geo::Geometry> geo;
 
@@ -288,7 +304,7 @@ namespace evgen{
     // We're creating a vector of these because, in a
     // distant-but-possible future, we may be generating more than one
     // beam gate within a simulated time window.
-    gateCollection->push_back(sim::BeamGateInfo( fGlobalTimeOffset, fRandomTimeOffset ));
+    gateCollection->push_back(sim::BeamGateInfo( fGlobalTimeOffset, fRandomTimeOffset, fBeamType ));
 
     // put the collections in the event 
     evt.put(std::move(truthcol));

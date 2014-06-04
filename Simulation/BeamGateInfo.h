@@ -6,6 +6,8 @@
 #ifndef Simulation_BeamGateInfo_h
 #define Simulation_BeamGateInfo_h
 
+#include "BeamTypes.h"
+
 namespace sim {
 
   class BeamGateInfo 
@@ -15,9 +17,10 @@ namespace sim {
     // Simple constructors/destructors. 
     // Units are nanoseconds (ns).
     // The default values are those of the BNB beam gate.
-    BeamGateInfo( double start = 0, double width = 1600. ) 
+    BeamGateInfo( double start = 0, double width = 1600., BeamType_t type = kBNB ) 
       : fm_start(start)
       , fm_width(width)
+      , fm_beam_type(type)
     {}
 
     ~BeamGateInfo() {};
@@ -30,12 +33,15 @@ namespace sim {
     // them when you create a BeamGateInfo object.
     double Start() const { return fm_start; }
     double Width() const { return fm_width; }
+    BeamType_t BeamType() const { return fm_beam_type; }
 
 #endif
     
   private:
     double fm_start; // Start of the beam gate relative to the t0 of the initial simulated event window, in ns.
     double fm_width; // Width of the beam gate.
+    BeamType_t fm_beam_type; ///< Type of beam
+    
   };
 
 #ifndef __GCCXML__
