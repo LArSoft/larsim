@@ -218,7 +218,6 @@ namespace cheat{
   const std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<TrackIDE> trackIDEs;
-    art::ServiceHandle<util::TimeService> ts;
 
     double start = hit->StartTime();
     double end   = hit->EndTime();
@@ -607,9 +606,8 @@ namespace cheat{
       // loop over the electrons in the channel and grab those that are in time 
       // with the identified hit start and stop times
       art::ServiceHandle<util::TimeService> ts;
-      ::util::ElecClock tpc_clock = ts->TPCClock();
-      int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit_start_time ) );
-      int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit_end_time   ) );
+      int start_tdc = ts->TPCTick2TDC( hit_start_time );
+      int end_tdc   = ts->TPCTick2TDC( hit_end_time   );
       if(start_tdc<0) start_tdc = 0;
       if(end_tdc<0) end_tdc = 0;
       std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
@@ -652,9 +650,8 @@ namespace cheat{
   {
     // Get services.
     art::ServiceHandle<util::TimeService> ts;
-    ::util::ElecClock tpc_clock = ts->TPCClock();
-    int start_tdc = tpc_clock.Ticks( ts->TPCTick2TDC( hit->StartTime() ) );
-    int end_tdc   = tpc_clock.Ticks( ts->TPCTick2TDC( hit->EndTime()   ) );
+    int start_tdc = ts->TPCTick2TDC( hit->StartTime() );
+    int end_tdc   = ts->TPCTick2TDC( hit->EndTime()   );
     if(start_tdc<0) start_tdc = 0;
     if(end_tdc<0) end_tdc = 0;
 
