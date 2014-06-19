@@ -1,13 +1,13 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	larsim	v02_01_00
+parent	larsim	v02_01_01
 defaultqual	e5
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt		v02_01_00
+larevt		v02_01_01
 gcc		v4_8_2
 genie_xsec      R-2_8_0 
 genie_phyopt    R-2_8_0 
