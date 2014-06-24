@@ -6,45 +6,85 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/LArVoxelReadout.h"
-#include "LArG4/ParticleListAction.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/TimeService.h"
+// C/C++ standard library
+#include <cstdio>
+#include <iostream>
+#include <ctime>
+#include <vector>
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
+// GEANT
 #include "Geant4/G4HCofThisEvent.hh"
 #include "Geant4/G4TouchableHistory.hh"
+#include "Geant4/G4TouchableHandle.hh"
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/Randomize.hh"
 #include "Geant4/G4Poisson.hh"
 
-#include <iostream>
-#include <ctime>
-#include <vector>
+// framework libraries
+#include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include <stdio.h>
+// LArSoft code
+#include "Utilities/DetectorProperties.h"
+#include "Utilities/TimeService.h"
+#include "LArG4/LArVoxelReadout.h"
+#include "LArG4/ParticleListAction.h"
+
 
 namespace larg4 {
-
+  
+  
+  //---------------------------------------------------------------------------------------
   // Constructor.  Note that we force the name of this sensitive
   // detector to be the value expected by LArVoxelListAction.
   LArVoxelReadout::LArVoxelReadout(std::string const& name)
     : G4VSensitiveDetector(name)
   {
     // Initialize values for the electron-cluster calculation.
-    fChannelMap.clear();
-    fChannels.clear();
+    ClearSimChannels();
 
     art::ServiceHandle<util::TimeService> ts;
     fClock = ts->TPCClock();
 
-    sscanf(name.c_str(),"%*19s%1u%*4s%u",&fCstat,&fTPC);
-  }
+    // the standard name contains cryostat and TPC;
+    // if we don't find it, we will detect the TPC at each Geant hit
+    unsigned int cryostat, tpc;
+    if (std::sscanf(name.c_str(),"%*19s%1u%*4s%u",&cryostat, &tpc) == 2)
+      SetSingleTPC(cryostat, tpc);
+    else
+      SetDiscoverTPC();
+    
+  } // LArVoxelReadout::LArVoxelReadout()
 
+  //---------------------------------------------------------------------------------------
+  // Constructor.  Note that we force the name of this sensitive
+  // detector to be the value expected by LArVoxelListAction.
+  LArVoxelReadout::LArVoxelReadout
+    (std::string const& name, unsigned int cryostat, unsigned int tpc)
+    : LArVoxelReadout(name)
+    { SetSingleTPC(cryostat, tpc); }
+
+  
+  //---------------------------------------------------------------------------------------
+  void LArVoxelReadout::SetSingleTPC(unsigned int cryostat, unsigned int tpc) {
+    bSingleTPC = true;
+    fCstat = cryostat;
+    fTPC = tpc;
+    LOG_DEBUG("LArVoxelReadout")
+      << GetName() << "covers C=" << fCstat << " T=" << fTPC;
+  } // LArVoxelReadout::SetSingleTPC()
+
+  void LArVoxelReadout::SetDiscoverTPC() {
+    bSingleTPC = false;
+    fCstat = 0;
+    fTPC = 0;
+    LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
+  } // LArVoxelReadout::SetDiscoverTPC()
+  
+  
   //---------------------------------------------------------------------------------------
   LArVoxelReadout::~LArVoxelReadout() {}
 
@@ -56,7 +96,7 @@ namespace larg4 {
     fArgon39DecayRate      = fLarpHandle->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
       fDriftVelocity[i]    = fLarpHandle->DriftVelocity(fLarpHandle->Efield(i),
-							fLarpHandle->Temperature())/1000.;
+                                                        fLarpHandle->Temperature())/1000.;
 
     fElectronClusterSize   = fLgpHandle->ElectronClusterSize();
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
@@ -64,10 +104,10 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
 
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
-				  << "\n Temperature: "     << fLarpHandle->Temperature()
-				  << "\n Drift velocity: "  << fDriftVelocity[0]
-				  <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2]
-				  << "\n Argon 39 Decay Rate: " << fArgon39DecayRate;
+                                  << "\n Temperature: "     << fLarpHandle->Temperature()
+                                  << "\n Drift velocity: "  << fDriftVelocity[0]
+                                  <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2]
+                                  << "\n Argon 39 Decay Rate: " << fArgon39DecayRate;
   }
 
   //---------------------------------------------------------------------------------------
@@ -90,127 +130,161 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
-      const geo::TPCGeo &tpcg = fGeoHandle->TPC(fTPC,fCstat);
-      
-      
       art::ServiceHandle<util::DetectorProperties> detprop;
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
       double timewindow = samplerate*readwindow;
-      double width = tpcg.HalfWidth()*2.0;
-      double height = tpcg.HalfHeight()*2.0;
-      double length = tpcg.Length();
-      double tpcvolume = length*width*height;
       
-      double e39 = 0.565;  // Beta energy in MeV
-      double expected_decays = tpcvolume*fArgon39DecayRate*timewindow*1E-9;  // the 1E-9 is to convert the ns to seconds
-      double dx = 0.565/2.12; // range assuming MIP (use Eloss to get a better range)
-      double d2 = dx*0.5;
-
-      // TPC global position
+      const double e39 = 0.565;  // Beta energy in MeV
+      const double dx = 0.565/2.12; // range assuming MIP (use Eloss to get a better range)
+      const double d2 = dx*0.5;
       
-      double xyz1[3] = {0.,0.,0.};
-      double xyz2[3] = {0.,0.,0.};
-      tpcg.LocalToWorld(xyz1,xyz2);  // gives a point in the middle
-      xyz2[0] -= width * 0.5;
-      xyz2[1] -= height * 0.5;
-      xyz2[2] -= length * 0.5;
-      
-      int ndecays = G4Poisson(expected_decays);
-      for (int i=0;i<ndecays;++i){
-	// randomize the simulation time and position
-	
-	double xyz3[3]={0.,0.,0.};
-	
-	bool scc = false;
-	xyz3[0] = G4UniformRand();
-	xyz3[1] = G4UniformRand();
-	xyz3[2] = G4UniformRand();
-	
-	xyz3[0] = (xyz3[0]*width  + xyz2[0])*cm;
-	xyz3[1] = (xyz3[1]*height + xyz2[1])*cm;
-	xyz3[2] = (xyz3[2]*length + xyz2[2])*cm;
-	
-	G4ThreeVector midpoint1(xyz3[0],xyz3[1],xyz3[2]);
-	G4ThreeVector midpoint2;
-	
-	scc = false;
-	for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
-	
-	  G4ThreeVector decpath(1.0,0.0,0.0);  
-	  decpath.setMag(d2*cm);  // displacement between midpoints is half the total length
-	  double angle = G4UniformRand()*TMath::Pi()*2.0;
-	  decpath.setPhi(angle);
-	  double ct=2.0*(G4UniformRand()-0.5);
-	  if (ct<-1.0) ct=-1.0;
-	  if (ct>1.0) ct=1.0;
-	  angle = TMath::ACos(ct);
-	  decpath.setTheta(angle);
-	  midpoint2 = midpoint1 + decpath;
-	  if (  (midpoint2.x() > xyz2[0]*cm && midpoint2.x() < (xyz2[0]+width)*cm) &&
-		(midpoint2.y() > xyz2[1]*cm && midpoint2.y() < (xyz2[1]+height)*cm) &&
-		(midpoint2.z() > xyz2[2]*cm && midpoint2.z() < (xyz2[2]+length)*cm) ){
-	    scc = true;
-	    break;
-	  }
-	}
+      for (unsigned short int cryo = 0; cryo < fGeoHandle->Ncryostats(); ++cryo) {
+        for (unsigned short int tpc = 0; tpc < fGeoHandle->NTPC(cryo); ++tpc) {
+          const geo::TPCGeo &tpcg = fGeoHandle->TPC(fTPC,fCstat);
+          double width = tpcg.HalfWidth()*2.0;
+          double height = tpcg.HalfHeight()*2.0;
+          double length = tpcg.Length();
+          double tpcvolume = length*width*height;
+          
+          const double expected_decays = tpcvolume*fArgon39DecayRate*timewindow*1E-9;  // the 1E-9 is to convert the ns to seconds
 
-	if (scc){
-	  // Have to make a G4Step in order to use the IonizationAndScintillation service
+          // TPC global position
+          
+          double xyz1[3] = {0.,0.,0.};
+          double xyz2[3] = {0.,0.,0.};
+          tpcg.LocalToWorld(xyz1,xyz2);  // gives a point in the middle
+          xyz2[0] -= width * 0.5;
+          xyz2[1] -= height * 0.5;
+          xyz2[2] -= length * 0.5;
+          
+          int ndecays = G4Poisson(expected_decays);
+          for (int i=0;i<ndecays;++i){
+            // randomize the simulation time and position
+            
+            double xyz3[3]={0.,0.,0.};
+            
+            bool scc = false;
+            xyz3[0] = G4UniformRand();
+            xyz3[1] = G4UniformRand();
+            xyz3[2] = G4UniformRand();
+            
+            xyz3[0] = (xyz3[0]*width  + xyz2[0])*cm;
+            xyz3[1] = (xyz3[1]*height + xyz2[1])*cm;
+            xyz3[2] = (xyz3[2]*length + xyz2[2])*cm;
+            
+            G4ThreeVector midpoint1(xyz3[0],xyz3[1],xyz3[2]);
+            G4ThreeVector midpoint2;
+            
+            scc = false;
+            for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
+            
+              G4ThreeVector decpath(1.0,0.0,0.0);  
+              decpath.setMag(d2*cm);  // displacement between midpoints is half the total length
+              double angle = G4UniformRand()*TMath::Pi()*2.0;
+              decpath.setPhi(angle);
+              double ct=2.0*(G4UniformRand()-0.5);
+              if (ct<-1.0) ct=-1.0;
+              if (ct>1.0) ct=1.0;
+              angle = TMath::ACos(ct);
+              decpath.setTheta(angle);
+              midpoint2 = midpoint1 + decpath;
+              if (  (midpoint2.x() > xyz2[0]*cm && midpoint2.x() < (xyz2[0]+width)*cm) &&
+                    (midpoint2.y() > xyz2[1]*cm && midpoint2.y() < (xyz2[1]+height)*cm) &&
+                    (midpoint2.z() > xyz2[2]*cm && midpoint2.z() < (xyz2[2]+length)*cm) ){
+                scc = true;
+                break;
+              }
+            } // for itt
 
-	  // make a G4Step to be passed to the IonizationAndScintillation instance to reset it
-	  G4ThreeVector pretv(0., 0., 0.);
-	  G4ThreeVector posttv(0., 0., dx);
-	  G4StepPoint preStep  = G4StepPoint();
-	  G4StepPoint postStep = G4StepPoint();
-	  preStep.SetPosition(pretv);
-	  postStep.SetPosition(posttv);
+            if (scc){
+              // Have to make a G4Step in order to use the IonizationAndScintillation service
 
-	  // we only use the magnitude of the step and the energy
-	  // deposited in the service, so only set those.
-	  /// \todo Make sure the decays are handled properly if using the NEST version of ISCalculation.
-	  G4Step step = G4Step();
-	  step.SetTotalEnergyDeposit(0.5*e39);
-	  step.SetPreStepPoint(&preStep);
-	  step.SetPostStepPoint(&postStep);
-	  larg4::IonizationAndScintillation::Instance()->Reset(&step);
+              // make a G4Step to be passed to the IonizationAndScintillation instance to reset it
+              G4ThreeVector pretv(0., 0., 0.);
+              G4ThreeVector posttv(0., 0., dx);
+              G4StepPoint preStep  = G4StepPoint();
+              G4StepPoint postStep = G4StepPoint();
+              preStep.SetPosition(pretv);
+              postStep.SetPosition(posttv);
 
-	  DriftIonizationElectrons(midpoint1,0.0,-(UINT_MAX - 10),firstrad,readwindow);
-	  DriftIonizationElectrons(midpoint2,0.0,-(UINT_MAX - 10),subsequentrad,readwindow);
-	}
-      }
-    }
-  }
+              // we only use the magnitude of the step and the energy
+              // deposited in the service, so only set those.
+              /// \todo Make sure the decays are handled properly if using the NEST version of ISCalculation.
+              G4Step step = G4Step();
+              step.SetTotalEnergyDeposit(0.5*e39);
+              step.SetPreStepPoint(&preStep);
+              step.SetPostStepPoint(&postStep);
+              larg4::IonizationAndScintillation::Instance()->Reset(&step);
+
+              DriftIonizationElectrons
+                (midpoint1,0.0,-(UINT_MAX - 10), cryo, tpc, firstrad, readwindow);
+              DriftIonizationElectrons
+                (midpoint2,0.0,-(UINT_MAX - 10), cryo, tpc, subsequentrad, readwindow);
+            } // if scc
+          } // for decays
+        } // for tpc
+      } // for cryostat
+    } // if argon decay
+  } // LArVoxelReadout::EndOfEvent()
 
   //---------------------------------------------------------------------------------------
   void LArVoxelReadout::clear()
   {
   }
 
-  //---------------------------------------------------------------------------------------
-  void LArVoxelReadout::MakeSimChannelVector()
-  {
-    // iterate over the map and fill the vector of channels
-    std::map<uint32_t, sim::SimChannel>::const_iterator itr = fChannelMap.begin();
-    while( itr != fChannelMap.end() ){
-
-      fChannels.push_back((itr->second));
-      itr++;
-    }
-
-    return;
-  }
-
   //--------------------------------------------------------------------------------------
-  void LArVoxelReadout::ClearSimChannelVector()
-  {
-    fChannelMap.clear();
-    fChannels.clear();
-  }
+  void LArVoxelReadout::ClearSimChannels() {
+    fChannelMaps.resize(fGeoHandle->Ncryostats());
+    size_t cryo = 0;
+    for (auto& cryoData: fChannelMaps) { // each, a vector of maps
+      cryoData.resize(fGeoHandle->NTPC(cryo++));
+      for (auto& channelsMap: cryoData) channelsMap.clear(); // each, a map
+    } // for cryostats
+  } // LArVoxelReadout::ClearSimChannels()
 
+  
+  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() const
+  {
+    if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
+    throw cet::exception("LArVoxelReadout") << "TPC not specified";
+  } // LArVoxelReadout::GetSimChannelMap() const
+  
+  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() {
+    if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
+    throw cet::exception("LArVoxelReadout") << "TPC not specified";
+  } // LArVoxelReadout::GetSimChannelMap()
+  
+  
+  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap
+    (unsigned short cryo, unsigned short tpc) const
+    { return fChannelMaps.at(cryo).at(tpc); }
+  
+  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap
+    (unsigned short cryo, unsigned short tpc)
+    { return fChannelMaps.at(cryo).at(tpc); }
+  
+  
+  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels() const {
+    if (bSingleTPC) return GetSimChannels(fCstat, fTPC);
+    throw cet::exception("LArVoxelReadout") << "TPC not specified";
+  } // LArVoxelReadout::GetSimChannels()
+  
+  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels
+    (unsigned short cryo, unsigned short tpc) const
+  { 
+    std::vector<sim::SimChannel> channels;
+    const ChannelMap_t& chmap = fChannelMaps.at(cryo).at(tpc);
+    channels.reserve(chmap.size());
+    for(const auto& chpair: chmap) channels.push_back(chpair.second);
+    return channels;
+  } // LArVoxelReadout::GetSimChannels(short, short)
+  
+  
+  
   //---------------------------------------------------------------------------------------
   // Called for each step.
-  G4bool LArVoxelReadout::ProcessHits( G4Step* step, G4TouchableHistory* )
+  G4bool LArVoxelReadout::ProcessHits( G4Step* step, G4TouchableHistory* pHistory)
   {
     // All work done for the "parallel world" "box of voxels" in
     // LArVoxelReadoutGeometry makes this a fairly simple routine.
@@ -234,18 +308,57 @@ namespace larg4 {
 
       if( !fDontDriftThem ){
 
-	G4ThreeVector midPoint = 0.5*( step->GetPreStepPoint()->GetPosition()
-				       + step->GetPostStepPoint()->GetPosition() );
-	double g4time = step->GetPreStepPoint()->GetGlobalTime();
-	
-	// Find the Geant4 track ID for the particle responsible for depositing the
-	// energy.  if we are only storing primary EM shower particles, and this energy
-	// is from a secondary etc EM shower particle, the ID returned is the primary
-	const int trackID = ParticleListAction::GetCurrentTrackID();
-	
-	// Note that if there is no particle ID for this energy deposit, the
-	// trackID will be sim::NoParticleId.
-	DriftIonizationElectrons(midPoint, g4time, trackID);
+        G4ThreeVector midPoint = 0.5*( step->GetPreStepPoint()->GetPosition()
+                                       + step->GetPostStepPoint()->GetPosition() );
+        double g4time = step->GetPreStepPoint()->GetGlobalTime();
+        
+        // Find the Geant4 track ID for the particle responsible for depositing the
+        // energy.  if we are only storing primary EM shower particles, and this energy
+        // is from a secondary etc EM shower particle, the ID returned is the primary
+        const int trackID = ParticleListAction::GetCurrentTrackID();
+        
+        // Find out which TPC we are in.
+        // If this readout object covers just one, we already know it.
+        // Otherwise, we have to ask Geant where we are.
+        unsigned short int cryostat, tpc;
+        if (bSingleTPC) {
+          cryostat = fCstat;
+          tpc = fTPC;
+        }
+        else {
+          // detect the TPC we are in
+          const G4VTouchable* pTouchable = step->GetPreStepPoint()->GetTouchable();
+          if (!pTouchable) {
+            throw cet::exception
+              ("LArG4") << "Untouchable step in LArVoxelReadout::ProcessHits()";
+          }
+          
+          // one of the ancestors of the touched volume is supposed to be
+          // actually a G4PVPlacementInTPC that knows which TPC it covers;
+          // currently, it's the 4th in the ladder:
+          // [0] voxel [1] voxel tower [2] voxel plane [3] the full box;
+          G4int depth = 0;
+          while (depth < pTouchable->GetHistoryDepth()) {
+            const G4PVPlacementInTPC* pPVinTPC = 
+              dynamic_cast<const G4PVPlacementInTPC*>
+              (pTouchable->GetVolume(depth++));
+            if (!pPVinTPC) continue;
+            cryostat = pPVinTPC->ID.Cryostat;
+            tpc = pPVinTPC->ID.TPC;
+            break;
+          } // while
+          if (depth < pTouchable->GetHistoryDepth()) {
+            // this is a fundamental error where the step does not happen in
+            // any TPC; this should not happen in the readout geometry!
+            throw cet::exception
+              ("LArG4") << "No TPC ID found in LArVoxelReadout::ProcessHits()";
+          } // if
+          LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
+        } // if more than one TPC
+        
+        // Note that if there is no particle ID for this energy deposit, the
+        // trackID will be sim::NoParticleId.
+        DriftIonizationElectrons(midPoint, g4time, trackID, cryostat, tpc);
       } // end we are drifting
     } // end there is non-zero energy deposition
 
@@ -255,10 +368,11 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
   void LArVoxelReadout::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
-						 const double simTime,
-						 int trackID,
-						 Radio_t radiological,
-						 unsigned int tickmax)
+                                                 const double simTime,
+                                                 int trackID,
+                                                 unsigned short int cryostat, unsigned short int tpc,
+                                                 Radio_t radiological /* = notradiological */,
+                                                 unsigned int tickmax /* = 4096 */)
   {
     art::ServiceHandle<util::TimeService> time_service;
     
@@ -270,8 +384,8 @@ namespace larg4 {
     static double LDiff_const        = std::sqrt(2.*fLongitudinalDiffusion);
     static double TDiff_const        = std::sqrt(2.*fTransverseDiffusion);
     static double RecipDriftVel[3]   = {1./fDriftVelocity[0], 
-					1./fDriftVelocity[1], 
-					1./fDriftVelocity[2]};
+                                        1./fDriftVelocity[1], 
+                                        1./fDriftVelocity[2]};
 
     static int radiologicaltdcoffset=0;  // static so remembers for subsequent calls for radiological sim
 
@@ -282,14 +396,13 @@ namespace larg4 {
     static double xyz1[3] = {0.};
 
     double xyz[3] = {stepMidPoint.x() / cm,
-		     stepMidPoint.y() / cm,
-		     stepMidPoint.z() / cm};
+                     stepMidPoint.y() / cm,
+                     stepMidPoint.z() / cm};
 
-    // Already know which TPC we're in because each LArVoxelReadout instance is
-    // associated with just one
+    // Already know which TPC we're in because we have been told
 
     try{
-      const geo::TPCGeo &tpcg = fGeoHandle->TPC(fTPC,fCstat);
+      const geo::TPCGeo &tpcg = fGeoHandle->TPC(tpc, cryostat);
 
       // X drift distance - the drift direction can be either in
       // the positive or negative direction, so use std::abs
@@ -300,10 +413,10 @@ namespace larg4 {
       // Drift time (nano-sec)
       double TDrift             = XDrift * RecipDriftVel[0];
       if (tpcg.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
-	TDrift = ((XDrift - tpcg.PlanePitch(0,1)) * RecipDriftVel[0] 
-		  + tpcg.PlanePitch(0,1) * RecipDriftVel[1]);
+        TDrift = ((XDrift - tpcg.PlanePitch(0,1)) * RecipDriftVel[0] 
+                  + tpcg.PlanePitch(0,1) * RecipDriftVel[1]);
       }
-	  
+          
       double lifetimecorrection = TMath::Exp(TDrift / LifetimeCorr_const);
       double nElectrons         = larg4::IonizationAndScintillation::Instance()->NumberIonizationElectrons();
              nElectrons        *= lifetimecorrection;
@@ -326,8 +439,8 @@ namespace larg4 {
       nElDiff[nClus-1] = nElectrons - (nClus-1)*fElectronClusterSize;
 
       for(size_t xx = 0; xx < nElDiff.size(); ++xx){
-	if(nElectrons > 0) nEnDiff[xx] = energy/nElectrons*nElDiff[xx];
-	else               nEnDiff[xx] = 0.;
+        if(nElectrons > 0) nEnDiff[xx] = energy/nElectrons*nElDiff[xx];
+        else               nEnDiff[xx] = 0.;
       }
 
       // Smear drift times by x position and drift time
@@ -340,91 +453,92 @@ namespace larg4 {
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
 
-	double Plane0Pitch = tpcg.Plane0Pitch(p);
-	
-	// "-" sign is because Plane0Pitch output is positive. Andrzej
-	xyz1[0] = tpcg.PlaneLocation(0)[0] - Plane0Pitch;
-	
-	// Drift nClus electron clusters to the induction plane
-	for(int k = 0; k < nClus; ++k){
-	  // Correct drift time for longitudinal diffusion and plane
-	  double TDiff = TDrift + XDiff[k] * RecipDriftVel[0];
-	  // Take into account different Efields between planes
-	  // Also take into account special case for ArgoNeuT where Nplanes = 2.
-	  for (size_t ip = 0; ip<p; ++ip){
-	    TDiff += tpcg.PlanePitch(ip,ip+1) * RecipDriftVel[tpcg.Nplanes()==3?ip+1:ip+2];
-	  }
-	  xyz1[1] = YDiff[k];
-	  xyz1[2] = ZDiff[k];
-	  
-	  /// \todo think about effects of drift between planes
-	  
-	  // grab the nearest channel to the xyz position
-	  try{
-	    uint32_t channel = fGeoHandle->NearestChannel(xyz1, p, fTPC, fCstat);
-	    
-	    /// \todo check on what happens if we allow the tdc value to be
-	    /// \todo beyond the end of the expected number of ticks
-	    // Add potential decay/capture/etc delay effect, simTime.
-	    unsigned int tdc = fClock.Ticks(time_service->G4ToElecTime(TDiff + simTime));
+        double Plane0Pitch = tpcg.Plane0Pitch(p);
+        
+        // "-" sign is because Plane0Pitch output is positive. Andrzej
+        xyz1[0] = tpcg.PlaneLocation(0)[0] - Plane0Pitch;
+        
+        // Drift nClus electron clusters to the induction plane
+        for(int k = 0; k < nClus; ++k){
+          // Correct drift time for longitudinal diffusion and plane
+          double TDiff = TDrift + XDiff[k] * RecipDriftVel[0];
+          // Take into account different Efields between planes
+          // Also take into account special case for ArgoNeuT where Nplanes = 2.
+          for (size_t ip = 0; ip<p; ++ip){
+            TDiff += tpcg.PlanePitch(ip,ip+1) * RecipDriftVel[tpcg.Nplanes()==3?ip+1:ip+2];
+          }
+          xyz1[1] = YDiff[k];
+          xyz1[2] = ZDiff[k];
+          
+          /// \todo think about effects of drift between planes
+          
+          // grab the nearest channel to the xyz position
+          try{
+            uint32_t channel = fGeoHandle->NearestChannel(xyz1, p, tpc, cryostat);
+            
+            /// \todo check on what happens if we allow the tdc value to be
+            /// \todo beyond the end of the expected number of ticks
+            // Add potential decay/capture/etc delay effect, simTime.
+            unsigned int tdc = fClock.Ticks(time_service->G4ToElecTime(TDiff + simTime));
 
-	    // on the first time we decide a tdc for a radiological, throw a random time for it.
-	    // save it for other clusters, planes, and second (or subsequent) calls to this function
+            // on the first time we decide a tdc for a radiological, throw a random time for it.
+            // save it for other clusters, planes, and second (or subsequent) calls to this function
 
             if (radiological != notradiological){
-	      if (p == 0 && k == 0){
-		double tmptdc = ((double) tickmax) * G4UniformRand();
-		if (radiological == firstrad) radiologicaltdcoffset = tmptdc - tdc;
-	      }
-	      if ( (int) tdc >= -radiologicaltdcoffset)  {
-		tdc += radiologicaltdcoffset;
-	      }
-	      // skip the radiological deposition if it results in a negative tdc.
-	      // should only happen due to diffusion or wire plane spacing.
-	      else 
-		continue;  
-		
-	    }
-	    
-	    // Add electrons produced by each cluster to the map
-	    EnergyToStore[channel][tdc]    += nEnDiff[k];
-	    ElectronsToStore[channel][tdc] += nElDiff[k];
-	  }
-	  catch(cet::exception &e){
-	    mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
-					      << xyz[0] << "," << xyz[1] << "," << xyz[2]
-					      << ") with exception " << e;
-	  }
-	} // end loop over clusters
+              if (p == 0 && k == 0){
+                double tmptdc = ((double) tickmax) * G4UniformRand();
+                if (radiological == firstrad) radiologicaltdcoffset = tmptdc - tdc;
+              }
+              if ( (int) tdc >= -radiologicaltdcoffset)  {
+                tdc += radiologicaltdcoffset;
+              }
+              // skip the radiological deposition if it results in a negative tdc.
+              // should only happen due to diffusion or wire plane spacing.
+              else 
+                continue;  
+                
+            }
+            
+            // Add electrons produced by each cluster to the map
+            EnergyToStore[channel][tdc]    += nEnDiff[k];
+            ElectronsToStore[channel][tdc] += nElDiff[k];
+          }
+          catch(cet::exception &e){
+            mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
+                                              << xyz[0] << "," << xyz[1] << "," << xyz[2]
+                                              << ") with exception " << e;
+          }
+        } // end loop over clusters
       } // end loop over planes
       
       // Now store them in SimChannels
+      ChannelMap_t& ChannelMap = fChannelMaps[cryostat][tpc];
       
       // check if the current channel is already in the map, otherwise add it
       for(auto const& itread : ElectronsToStore){
-	
-	uint32_t channel = itread.first;
-	std::map<uint32_t, sim::SimChannel>::iterator itchannelmap = fChannelMap.find(channel);
-	
-	if( itchannelmap != fChannelMap.end() ){
-	  for(auto const& itreadinner : itread.second)
-	    itchannelmap->second.AddIonizationElectrons(trackID,
-							itreadinner.first,
-							itreadinner.second,
-							xyz,
-							EnergyToStore[channel][itreadinner.first]);
-	}
-	else{
-	  sim::SimChannel sc(channel);
-	  for(auto const& itreadinner : itread.second)
-	    sc.AddIonizationElectrons(trackID,
-				      itreadinner.first,
-				      itreadinner.second,
-				      xyz,
-				      EnergyToStore[channel][itreadinner.first]);
-	  
-	  fChannelMap[channel] = sc;
-	}
+        
+        uint32_t channel = itread.first;
+        std::map<uint32_t, sim::SimChannel>::iterator itchannelmap = ChannelMap.find(channel);
+        
+        if( itchannelmap != ChannelMap.end() ){
+          for(auto const& itreadinner : itread.second)
+            itchannelmap->second.AddIonizationElectrons(trackID,
+                                                        itreadinner.first,
+                                                        itreadinner.second,
+                                                        xyz,
+                                                        EnergyToStore[channel][itreadinner.first]);
+        }
+        else{
+          sim::SimChannel sc(channel);
+          for(auto const& itreadinner : itread.second)
+            sc.AddIonizationElectrons(trackID,
+                                      itreadinner.first,
+                                      itreadinner.second,
+                                      xyz,
+                                      EnergyToStore[channel][itreadinner.first]);
+          
+          ChannelMap[channel] = std::move(sc);
+        }
       }
       ElectronsToStore.clear();
       EnergyToStore.clear();
@@ -432,7 +546,7 @@ namespace larg4 {
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
       mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"
-					<< e;
+                                        << e;
     }
     
     return;

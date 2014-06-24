@@ -13,6 +13,7 @@
 #include <cmath>
 #include <map>
 #include <memory> // std::unique_ptr()
+#include <sstream> // std::ostringstream
 #include <iostream> // std::endl
 
 // Framework includes
@@ -107,14 +108,14 @@ int DumpPhysicalVolume
 		
 		G4int nDaughters = LV->GetNoDaughters();
 		if (nDaughters > 0) {
-			out << " with " << nDaughters << " subvolumes:" << std::endl;
+			out << " with " << nDaughters << " subvolumes:\n";
 			for (G4int i = 0; i < nDaughters; ++i) {
 				count += DumpPhysicalVolume(out, *LV->GetDaughter(i), indentstr + "  ");
 			}
 		}
-		else out << std::endl;
+		else out << '\n';
 	}
-	else out << " with no logical volume (!?)" << std::endl;
+	else out << " with no logical volume (!?)\n";
 	
 	return count;
 } // DumpPhysicalVolume()
@@ -187,6 +188,8 @@ namespace larg4 {
           return false;
         } // operator<
     }; // VoxelSpecs_t
+    
+    // TODO we don't need to cache the cell any more: a simple map will suffice
     struct VoxelVolumes_t {
       G4LogicalVolume* pBox;
       G4LogicalVolume* pCell;
@@ -196,6 +199,19 @@ namespace larg4 {
         pBox(box), pCell(cell) {}
     }; // VoxelVolumes_t
     
+    
+    // Define the sensitive detector for the voxel readout.  This class
+    // routines will be called every time a particle deposits energy in
+    // a voxel that overlaps the LAr TPC.
+    LArVoxelReadout* larVoxelReadout = new LArVoxelReadout("LArVoxelSD");
+    if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat(0).NTPC() == 1))
+      larVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
+
+    // Tell Geant4's sensitive-detector manager that the voxel SD
+    // class exists.
+    G4SDManager* sdManager = G4SDManager::GetSDMpointer();
+    sdManager->AddNewDetector(larVoxelReadout);
+
     // hope hashing doubles is reliable...
     typedef std::map<VoxelSpecs_t, VoxelVolumes_t> VoxelCache_t;
     VoxelCache_t VoxelCache;
@@ -401,9 +417,13 @@ namespace larg4 {
           iVoxelVol = VoxelCache.emplace(VoxelSpecs,
             VoxelVolumes_t(voxelBoxLogical, voxelLogical)
             ).first; // iterator to the inserted element
+
+          // Set the sensitive detector of this LAr TPC (logical) volume
+          // to be the voxel readout.
+          voxelLogical->SetSensitiveDetector(larVoxelReadout);
+          
         } // if not cached yet
         G4LogicalVolume* voxelBoxLogical = iVoxelVol->second.pBox;
-        G4LogicalVolume* voxelLogical = iVoxelVol->second.pCell;
         
         // We have a "box of voxels" that's the right dimensions, but we
         // have to know exactly where to put it.  The user has the option
@@ -432,38 +452,31 @@ namespace larg4 {
                                              << ", offsetY=" << offsetY
                                              << ", offsetZ=" << offsetZ;
         
+        // suffix representing this TPC
+        std::ostringstream nums;
+        nums << "_Cryostat" << c << "_TPC" << t;
+        
         // Place the box of voxels, with the accumulated transformations
         // computed above.
-        new G4PVPlacement( transform,
-                           "VoxelizationPhysicalVolume",
-                           voxelBoxLogical,
-                           parallelPhysical,
-                           false,           // Only one volume
-                           0);              // Copy number
-
-        // Define the sensitive detector for the voxel readout.  This
-        // routine will be called every time a particle deposits energy in
-        // a voxel that overlaps the LAr TPC.
-        std::string name("LArVoxelSD");
-        char nums[32];
-        sprintf(nums, "_Cryostat%u_TPC%u", c, t);
-        name += nums;
-        LArVoxelReadout* larVoxelReadout = new LArVoxelReadout(name);
-
-        // Tell Geant4's sensitive-detector manager that the voxel SD
-        // class exists.
-        G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-        sdManager->AddNewDetector(larVoxelReadout);
-
-        // Set the sensitive detector of the LAr TPC to be the voxel readout.
-        voxelLogical->SetSensitiveDetector(larVoxelReadout);
+        new G4PVPlacementInTPC( transform,
+          "VoxelizationPhysicalVolume" + nums.str(),
+          voxelBoxLogical,
+          parallelPhysical,
+          false,                                             // Only one volume
+          0,                                                 // Copy number
+          false,                                             // No surface check
+          { (unsigned short int) c, (unsigned short int) t } // TPC ID
+          );
+        
       } // end loop over tpcs
     } // end loop over cryostats
 
     if (mf::isDebugEnabled()) {
       LOG_DEBUG("LArVoxelReadoutGeometryDump") << "Dump of voxelized volume";
-      mf::LogDebug log("LArVoxelReadoutGeometryDump");
-      DumpPhysicalVolume(log, *parallelPhysical);
+      {
+        mf::LogDebug log("LArVoxelReadoutGeometryDump");
+        DumpPhysicalVolume(log, *parallelPhysical);
+      }
       LOG_DEBUG("LArVoxelReadoutGeometryDump")
         << "End of dump of voxelized volume";
     }
@@ -488,7 +501,7 @@ namespace larg4 {
     for ( G4int i = 0; i != numberDaughters; ++i ){
       G4VPhysicalVolume* d = logicalVolume->GetDaughter(i);
 
-      LOG_DEBUG("LArVoxelReadoutGeometry") << d->GetName() << ":" << mother->GetName();
+    //  LOG_DEBUG("LArVoxelReadoutGeometry") << d->GetName() << ":" << mother->GetName();
 
       if(d->GetName().contains(daughterName)){
 
