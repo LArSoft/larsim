@@ -78,6 +78,21 @@ namespace sim {
     
     bool operator< (const SimChannel& other)     const;
 
+    //@{
+    /**
+	  * @brief Dumps the full content of the SimChannel into a stream
+	  * @param OSTREAM an ostream-line stream object
+	  * @param out the stream to send the information into
+	  * @param indent indentation of the lines
+	  * @param indent_first indentation for the first line (default: as indent)
+	  */
+	 template <class OSTREAM>
+	 void Dump(OSTREAM& out, std::string indent, std::string first_indent) const;
+	 template <class OSTREAM>
+	 void Dump(OSTREAM& out, std::string indent = "") const
+	   { Dump(out, indent, indent); }
+    //@}
+
 #endif
 
   };
@@ -89,6 +104,40 @@ namespace sim {
 inline bool sim::SimChannel::operator< (const sim::SimChannel& other)                       const { return fChannel < other.Channel(); }
 inline const std::map<unsigned short, std::vector<sim::IDE> >& sim::SimChannel::TDCIDEMap() const { return fTDCIDEs; }
 inline uint32_t sim::SimChannel::Channel()                                                  const { return fChannel; }
+
+// -----------------------------------------------------------------------------
+// ---  template implementation
+// ---
+template <class OSTREAM>
+void sim::SimChannel::Dump
+  (OSTREAM& out, std::string indent, std::string first_indent) const
+{
+  out << first_indent << "channel #" << Channel() << " read " << fTDCIDEs.size()
+    << " TDCs:\n";
+  double channel_energy = 0., channel_charge = 0.;
+  for (const auto& TDCinfo: fTDCIDEs) {
+    unsigned short int tdc = TDCinfo.first;
+    out << indent << "  TDC #" << tdc
+      << " with " << TDCinfo.second.size() << " IDEs\n";
+    double tdc_energy = 0., tdc_charge = 0.;
+    for (const sim::IDE& ide: TDCinfo.second) {
+      out << indent
+        << "    (" << ide.x << ", " << ide.y << ", " << ide.z << ") "
+        << ide.numElectrons << " electrons, " << ide.energy << " MeV (trkID="
+        << ide.trackID << ")\n";
+      tdc_energy += ide.energy;
+      tdc_charge += ide.numElectrons;
+    } // for IDEs
+    out << indent << "    => TDC #" << tdc << " CH #" << Channel()
+      << " collected " << tdc_energy << " electrons and " << tdc_energy
+      << " MeV\n";
+    channel_energy += tdc_energy;
+    channel_charge += tdc_charge;
+  } // for TDCs
+  out << indent << "  => channel #" << Channel() << " collected "
+    << channel_charge << " electrons and " << channel_energy << " MeV\n";
+} // sim::SimChannel::Dump<>()
+
 #endif
 
 #endif // SIM_SIMCHANNEL_H

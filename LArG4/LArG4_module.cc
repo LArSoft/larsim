@@ -130,6 +130,7 @@ namespace larg4 {
     std::string                fG4MacroPath;        ///< directory path for Geant4 macro file to be 
                                                     ///< executed before main MC processing.
     bool                       fdumpParticleList;   ///< Whether each event's sim::ParticleList will be displayed.
+    bool                       fdumpSimChannels;    ///< Whether each event's sim::Channel will be displayed.
     bool                       fUseLitePhotons;
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
                                                     ///< dictate how tracks are put on stack.	
@@ -148,6 +149,7 @@ namespace larg4 {
     , fparticleListAction    (0)
     , fG4PhysListName        (pset.get< std::string >("G4PhysListName","larg4::PhysicsList"))
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList")                   )
+    , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
@@ -464,6 +466,17 @@ namespace larg4 {
 	
 	  } // Loop over AuxDets
 	
+    if (fdumpSimChannels) {
+      mf::LogInfo out("DumpSimChannels");
+      out << "Wires: " << scCol->size() << " channels with signal" << std::endl;
+      unsigned int nChannels = 0;
+      for (const sim::SimChannel& sc: *scCol) {
+        out << " #" << nChannels << ": ";
+        // dump indenting with "    ", but not on the first line
+        sc.Dump(out, "  ");
+        ++nChannels;
+      } // for
+    } // if dump SimChannels
     evt.put(std::move(scCol));
     evt.put(std::move(adCol));
     evt.put(std::move(partCol));
