@@ -276,9 +276,10 @@ namespace larg4 {
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<geo::Geometry> geom;
 
     // Clear the detected photon table
-    OpDetPhotonTable::Instance()->ClearTable();
+    OpDetPhotonTable::Instance()->ClearTable(geom->NOpChannels());
 
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
@@ -336,15 +337,10 @@ namespace larg4 {
       if(!fUseLitePhotons){      
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
         
-        std::map<int, sim::SimPhotons*> ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
-        
-        if(ThePhotons.size() > 0){
-          PhotonCol->reserve(ThePhotons.size());
-          for(auto const& it : ThePhotons){
-            sim::SimPhotons ph(*(it.second));
-            PhotonCol->push_back(ph);
-          }
-        }
+	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
+	PhotonCol->reserve(ThePhotons.size());
+	for(auto& it : ThePhotons)
+	  PhotonCol->push_back(std::move(it));
       }
       else{
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
@@ -368,7 +364,6 @@ namespace larg4 {
 
     std::set<LArVoxelReadout*> ReadoutList; // to be cleared later on
     
-    art::ServiceHandle<geo::Geometry> geom;
     for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
 
       // map to keep track of which channels we already have SimChannels for in scCol
