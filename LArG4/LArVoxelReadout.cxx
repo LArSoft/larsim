@@ -320,7 +320,7 @@ namespace larg4 {
         // Find out which TPC we are in.
         // If this readout object covers just one, we already know it.
         // Otherwise, we have to ask Geant where we are.
-        unsigned short int cryostat, tpc;
+        unsigned short int cryostat = 0, tpc = 0;
         if (bSingleTPC) {
           cryostat = fCstat;
           tpc = fTPC;

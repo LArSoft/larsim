@@ -408,7 +408,6 @@ namespace larg4 {
                                         << "' is not a LArVoxelReadout object\n";
         }
 
-        // TODO move the channels instead of just copying them
         LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
         if (!channels.empty()) {
           LOG_DEBUG("LArG4") << "now put " << channels.size() << " SimChannels"
@@ -426,12 +425,12 @@ namespace larg4 {
             std::map<unsigned int, unsigned int>::iterator itertest = channelToscCol.find(ichan);
             if (itertest == channelToscCol.end()) {
               channelToscCol[ichan] = scCol->size();
-              scCol->push_back(sc);
+              scCol->push_back(std::move(sc));
             }
             else {
               unsigned int idtest = itertest->second;
               auto const tdcideMap = sc.TDCIDEMap();
-                 for(auto const& tdcide : tdcideMap){
+              for(auto const& tdcide : tdcideMap){
                  for(auto const& ide : tdcide.second){
                     double xyz[3] = {ide.x, ide.y, ide.z};
                     scCol->at(idtest).AddIonizationElectrons(ide.trackID,
@@ -444,7 +443,7 @@ namespace larg4 {
             } // end if check to see if we've put SimChannels in for ichan yet or not
           }
           else {
-            scCol->push_back(sc);
+            scCol->push_back(std::move(sc));
           } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
         } // end loop over simchannels for this TPC
         // mark it for clearing
@@ -465,24 +464,24 @@ namespace larg4 {
       std::stringstream name;
       name << "AuxDetSD_AuxDet" << a;
 
-            G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
-            // If this didn't work, then a sensitive detector with
-            // the name "AuxDetSD" does not exist.
-            if ( !sd ){
-              throw cet::exception("LArG4") << "Sensitive detector '"
-                                          << name
-                                          << "' does not exist\n";
-            }
+      G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
+      // If this didn't work, then a sensitive detector with
+      // the name "AuxDetSD" does not exist.
+      if ( !sd ){
+        throw cet::exception("LArG4") << "Sensitive detector '"
+                                    << name
+                                    << "' does not exist\n";
+      }
 
-            // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
-            larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
+      // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
+      larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
 
-            LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
+      LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
 
-            const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
-            adCol->push_back(adsc);
-        
-          } // Loop over AuxDets
+      const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
+      adCol->push_back(adsc);
+    
+    } // Loop over AuxDets
         
     if (fdumpSimChannels) {
       mf::LogInfo out("DumpSimChannels");
