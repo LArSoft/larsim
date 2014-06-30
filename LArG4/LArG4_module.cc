@@ -255,7 +255,7 @@ namespace larg4 {
       G4UserStackingAction* stacking_action = new LArStackingAction(fSmartStacking);
       fG4Help->GetRunManager()->SetUserAction(stacking_action);
     }
-
+  
   }
 
   //----------------------------------------------------------------------
@@ -319,14 +319,14 @@ namespace larg4 {
       }
 
     }// end loop over interactions
-    
+   
     // get the electrons from the LArVoxelReadout sensitive detector
     // Get the sensitive-detector manager.
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     
     // Find the sensitive detector with the name "LArVoxelSD".
     OpDetSensitiveDetector *theOpDetDet = dynamic_cast<OpDetSensitiveDetector*>(sdManager->FindSensitiveDetector("OpDetSensitiveDetector"));
-  
+ 
     // Store the contents of the detected photon table
     //
     if(theOpDetDet){
@@ -463,6 +463,7 @@ namespace larg4 {
 
 	    const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
 	    adCol->push_back(adsc);
+      auxDetReadout->clear();
 	
 	  } // Loop over AuxDets
 	

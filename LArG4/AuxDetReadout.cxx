@@ -28,27 +28,27 @@ namespace larg4 {
   AuxDetReadout::AuxDetReadout(std::string const& name)
   : G4VSensitiveDetector(name)
   , fAuxDet(atoi( name.substr(15,name.size()).c_str() ))
-  , fAuxDetSimChannel(sim::AuxDetSimChannel(fAuxDet))
   {
   }
   
-  //---------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------
   AuxDetReadout::~AuxDetReadout() {}
   
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
   void AuxDetReadout::Initialize(G4HCofThisEvent*)
-  {
-    //fAuxDetSimChannel.clear();
-  }
+  {}
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
   void AuxDetReadout::EndOfEvent(G4HCofThisEvent*)
   {
+    sim::AuxDetSimChannel temp(fAuxDet, fAuxDetIDEs);
+    fAuxDetSimChannel = temp;
   }
   //---------------------------------------------------------------------------------------
   void AuxDetReadout::clear()
   {
+    fAuxDetIDEs.clear();
   }
 
   //---------------------------------------------------------------------------------------
@@ -62,36 +62,90 @@ namespace larg4 {
 
     G4double energyDeposited =   step->GetTotalEnergyDeposit()/GeV;
 
-		G4ThreeVector startG4(step->GetPreStepPoint()->GetPosition() );
-		double startWorld[3]={startG4.getX()/cm,startG4.getY()/cm,startG4.getZ()/cm};
+	G4ThreeVector startG4(step->GetPreStepPoint()->GetPosition() );
+	double startWorld[3]={startG4.getX()/cm,startG4.getY()/cm,startG4.getZ()/cm};
 		
-		double startTime = step->GetPreStepPoint()->GetGlobalTime()/ns;
+	double startTime = step->GetPreStepPoint()->GetGlobalTime()/ns;
 
     G4ThreeVector stopG4( step->GetPostStepPoint()->GetPosition());
-		double stopWorld[3]={stopG4.getX()/cm,stopG4.getY()/cm,stopG4.getZ()/cm};
+	double stopWorld[3]={stopG4.getX()/cm,stopG4.getY()/cm,stopG4.getZ()/cm};
     
     G4ThreeVector stopG4Momentum( step->GetPostStepPoint()->GetMomentum());
     double stopWorldMomVector[3]={stopG4Momentum.getX()/cm,stopG4Momentum.getY()/cm,stopG4Momentum.getZ()/cm};
 
 		double stopTime = step->GetPostStepPoint()->GetGlobalTime()/ns;
 		
-    fAuxDetSimChannel.AddParticleStep( trackID,
-                                       energyDeposited,
-                                       startWorld[0],
-                                       startWorld[1],
-                                       startWorld[2],
-                                       startTime,
-                                       stopWorld[0],
-                                       stopWorld[1],
-                                       stopWorld[2],
-                                       stopTime,
-                                       stopWorldMomVector[0],
-                                       stopWorldMomVector[1],
-                                       stopWorldMomVector[2]
-                                     );
+    this->AddParticleStep( trackID,
+                           energyDeposited,
+                           startWorld[0],
+                           startWorld[1],
+                           startWorld[2],
+                           startTime,
+                           stopWorld[0],
+                           stopWorld[1],
+                           stopWorld[2],
+                           stopTime,
+                           stopWorldMomVector[0],
+                           stopWorldMomVector[1],
+                           stopWorldMomVector[2]
+                           );
     
     return true;
   }
+
+  // Moved here from AuxDetSimChannel.cxx
+  void AuxDetReadout::AddParticleStep(
+  			int	inputTrackID,
+			float	inputEnergyDeposited,
+			float	inputEntryX,
+			float	inputEntryY,
+			float	inputEntryZ,
+			float	inputEntryT,
+			float	inputExitX,
+			float	inputExitY,
+			float	inputExitZ,
+			float	inputExitT,
+			float	inputExitMomentumX,
+			float	inputExitMomentumY,
+			float	inputExitMomentumZ){
+
+    sim::AuxDetIDE auxDetIDE;
+    auxDetIDE.trackID		= inputTrackID;
+    auxDetIDE.energyDeposited	= inputEnergyDeposited;
+    auxDetIDE.entryX		= inputEntryX;
+    auxDetIDE.entryY		= inputEntryY;
+    auxDetIDE.entryZ		= inputEntryZ;
+    auxDetIDE.entryT		= inputEntryT;
+    auxDetIDE.exitX		= inputExitX;
+    auxDetIDE.exitY		= inputExitY;
+    auxDetIDE.exitZ		= inputExitZ;
+    auxDetIDE.exitT		= inputExitT;
+    auxDetIDE.exitMomentumX	= inputExitMomentumX;
+    auxDetIDE.exitMomentumY	= inputExitMomentumY;
+    auxDetIDE.exitMomentumZ	= inputExitMomentumZ;
+
+    std::set<sim::AuxDetIDE>::iterator setItr = fAuxDetIDEs.find(auxDetIDE);
+
+    if(setItr != fAuxDetIDEs.end()){ //If trackID is already in the map, update it
+
+      (*setItr).energyDeposited += inputEnergyDeposited;
+      (*setItr).exitX		 = inputExitX;
+      (*setItr).exitY		 = inputExitY;
+      (*setItr).exitZ		 = inputExitZ;
+      (*setItr).exitT		 = inputExitT;
+      (*setItr).exitMomentumX	 = inputExitMomentumX;
+      (*setItr).exitMomentumY	 = inputExitMomentumY;
+      (*setItr).exitMomentumZ	 = inputExitMomentumZ;
+    }
+    else{  //if trackID is not in the set yet, add it
+
+      auto insertResult = fAuxDetIDEs.insert(auxDetIDE);
+      if(!insertResult.second)
+        throw cet::exception("BadAuxDetIDEInsert") << "Track ID: "
+						   << inputTrackID
+						   << " already in fAuxDetIDEs set\n";
+    }//else
+  }//AddParticleStep
   
   //---------------------------------------------------------------------------------------
   // Never used but still have to be defined for G4
