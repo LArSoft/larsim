@@ -72,7 +72,7 @@ namespace larg4 {
     for(size_t i=0; i<fDetectedPhotons.size(); ++i) {
       fDetectedPhotons.at(i).clear();
       fDetectedPhotons.at(i).SetChannel(i);
-      fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
+      //fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
     }
 
     for(std::map<int,std::map<int, int>>::iterator it=fLitePhotons.begin(); it!=fLitePhotons.end(); ++it)
