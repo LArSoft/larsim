@@ -46,19 +46,35 @@ namespace larg4 {
     // in the G4Step in the ?.
     virtual G4bool ProcessHits( G4Step*, G4TouchableHistory* );
     
+    // Moved here from AuxDetSimChannel
+    virtual void AddParticleStep(int	inputTrackID,
+				 float	inputEnergyDeposited,
+				 float	inputEntryX,
+				 float	inputEntryY,
+				 float	inputEntryZ,
+				 float	inputEntryT,
+				 float	inputExitX,
+				 float	inputExitY,
+				 float	inputExitZ,
+				 float	inputExitT,
+				 float	inputExitMomentumX,
+				 float	inputExitMomentumY,
+				 float	inputExitMomentumZ);
+
     // Empty methods; they have to be defined, but they're rarely
     // used in Geant4 applications.
     virtual void DrawAll();
     virtual void PrintAll();
     
     // Independent method; returns the accumulated information
-    sim::AuxDetSimChannel const& GetAuxDetSimChannel() const { return fAuxDetSimChannel; };
+    sim::AuxDetSimChannel const GetAuxDetSimChannel() const { return fAuxDetSimChannel; };
     
   private:
-	  art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
-		uint32_t    					  					fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
+    art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
+    uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
     sim::AuxDetSimChannel             fAuxDetSimChannel; ///< Contains the sim::AuxDetSimChannel for this AuxDet
-  };
+    std::set<sim::AuxDetIDE>          fAuxDetIDEs;  
+};
 }
 
 #endif // LARG4_AUXDETREADOUT_H

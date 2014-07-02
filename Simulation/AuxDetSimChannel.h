@@ -48,6 +48,7 @@ namespace sim {
     
   public:
     AuxDetSimChannel();
+    AuxDetSimChannel(uint32_t inputAuxDetID, std::set<sim::AuxDetIDE> inputAuxDetIDEs);
     
   private:
     uint32_t                 fAuxDetID;   ///< geo->AuxDet(auxDetID), integer used to retrieve AuxDetGeo object
@@ -56,26 +57,13 @@ namespace sim {
 #ifndef __GCCXML__
   public:
     
-    AuxDetSimChannel(uint32_t fAuxDetID);
-    
-    void AddParticleStep(int   inputTrackID,
-                         float inputEnergyDeposited,
-                         float inputEntryX,
-                         float inputEntryY,
-                         float inputEntryZ,
-                         float inputEntryT,
-                         float inputExitX,
-                         float inputExitY,
-                         float inputExitZ,
-                         float inputExitT,
-                         float inputExitMomentumX,
-                         float inputExitMomentumY,
-                         float inputExitMomentumZ);
-    
     //getters
     uint32_t AuxDetID() const;
 
     std::set<sim::AuxDetIDE> const& AuxDetIDEs() const;
+
+    //setters
+//    void SetAuxDetIDEs(std::set<sim::AuxDetIDE> inputAuxDetIDEs) {fAuxDetIDEs = inputAuxDetIDEs;};
 
 #endif
 		
