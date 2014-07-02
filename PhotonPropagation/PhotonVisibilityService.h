@@ -24,7 +24,6 @@ namespace phot{
   public:
     
     PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~PhotonVisibilityService();
     
     void reconfigure(fhicl::ParameterSet const& p);
     
@@ -36,21 +35,22 @@ namespace phot{
 
     const std::vector<float>* GetAllVisibilities( double* xyz ) const;
     
+    void LoadLibrary() const;
     void StoreLibrary();
     
     
     void StoreLightProd(    int  VoxID,  double  N );
-    void RetrieveLightProd( int& VoxID,  double& N );
+    void RetrieveLightProd( int& VoxID,  double& N ) const;
     
     void SetLibraryEntry(   int VoxID, int OpChannel, float N);
-    float GetLibraryEntry( int VoxID, int OpChannel);
+    float GetLibraryEntry( int VoxID, int OpChannel) const;
     const std::vector<float>* GetLibraryEntries( int VoxID ) const;
 
     
-    bool IsBuildJob() { return fLibraryBuildJob; }
-    bool UseParameterization() {return fParameterization;}
+    bool IsBuildJob() const { return fLibraryBuildJob; }
+    bool UseParameterization() const {return fParameterization;}
 
-    sim::PhotonVoxelDef GetVoxelDef() {return fVoxelDef; }
+    sim::PhotonVoxelDef GetVoxelDef() const {return fVoxelDef; }
 
   private:
     
@@ -68,7 +68,7 @@ namespace phot{
     bool                 fDoNotLoadLibrary;
     bool                 fParameterization;
     std::string          fLibraryFile;      
-    PhotonLibrary *      fTheLibrary;
+    mutable PhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
     
     

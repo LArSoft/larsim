@@ -34,45 +34,69 @@
 namespace phot{
 
   //--------------------------------------------------------------------
-  PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &/*reg*/) 
+  PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &/*reg*/) :
+    fCurrentVoxel(0),
+    fCurrentValue(0.),
+    fXmin(0.),
+    fXmax(0.),
+    fYmin(0.),
+    fYmax(0.),
+    fZmin(0.),
+    fZmax(0.),
+    fNx(0),
+    fNy(0),
+    fNz(0),
+    fUseCryoBoundary(false),
+    fLibraryBuildJob(false),
+    fDoNotLoadLibrary(false),
+    fParameterization(false),
+    fTheLibrary(0)
   {
     this->reconfigure(pset);
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
-    
-    fTheLibrary = new PhotonLibrary();
-    
-    art::ServiceHandle<geo::Geometry> geom;
+  }
 
-    size_t NVoxels = GetVoxelDef().GetNVoxels();
-    size_t NOpChannels = geom->NOpChannels();
-    
+  //--------------------------------------------------------------------
+  void PhotonVisibilityService::LoadLibrary() const
+  {
+    // Don't do anything if the library has already been loaded.
 
-    
-    if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary))
-      {
+    if(fTheLibrary == 0) {
+      fTheLibrary = new PhotonLibrary();
+
+      art::ServiceHandle<geo::Geometry> geom;
+
+      size_t NVoxels = GetVoxelDef().GetNVoxels();
+      size_t NOpChannels = geom->NOpChannels();
+
+      if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
 	std::string LibraryFileWithPath;
 	cet::search_path sp("FW_SEARCH_PATH");
 
 	if( !sp.find_file(fLibraryFile, LibraryFileWithPath) )
 	  throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string() << "\n";
 
-    if(!fParameterization) fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, NOpChannels);
+	if(!fParameterization) {
+	  mf::LogInfo("PhotonVisibilityService") << "PhotonVisibilityService Loading photon library from file "
+						 << LibraryFileWithPath
+						 << std::endl;
+	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, NOpChannels);
+	}
       }
-    else
-      {
+      else {
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
 	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpChannels);
       }
+    }
   }
 
   //--------------------------------------------------------------------
-  PhotonVisibilityService::~PhotonVisibilityService() 
-  {
-  }
-  
   void PhotonVisibilityService::StoreLibrary()
   {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
     if(fLibraryBuildJob )
       {
 	mf::LogInfo("PhotonVisibilityService") << " Vis service "
@@ -213,7 +237,7 @@ namespace phot{
   //------------------------------------------------------
 
   
-  void PhotonVisibilityService::RetrieveLightProd(int& VoxID, double& N)
+  void PhotonVisibilityService::RetrieveLightProd(int& VoxID, double& N) const
   {
     N     = fCurrentValue;
     VoxID = fCurrentVoxel;
@@ -223,6 +247,9 @@ namespace phot{
 
   void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N)
   {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
     fTheLibrary->SetCount(VoxID,OpChannel, N);
     mf::LogInfo("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
@@ -233,13 +260,19 @@ namespace phot{
 
   const std::vector<float>* PhotonVisibilityService::GetLibraryEntries(int VoxID) const
   {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
     return fTheLibrary->GetCounts(VoxID);
   }
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetLibraryEntry(int VoxID, int Channel)
+  float PhotonVisibilityService::GetLibraryEntry(int VoxID, int Channel) const
   {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
     return fTheLibrary->GetCount(VoxID, Channel);
   }
 
