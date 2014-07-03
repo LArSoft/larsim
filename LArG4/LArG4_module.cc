@@ -25,7 +25,14 @@
 #include "G4Base/G4Helper.h"
 #include "G4Base/ConvertMCTruthToG4.h"
 
-#include <cstring>
+// C++ Includes
+#include <sstream> // std::ostringstream
+#include <vector> // std::ostringstream
+#include <map> // std::ostringstream
+#include <set> // std::ostringstream
+#include <iostream>
+// #include <cstring>
+#include <sys/stat.h>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -90,10 +97,6 @@
 
 // ROOT Includes
 
-// C++ Includes
-#include <iostream>
-#include <cstring>
-#include <sys/stat.h>
 
 // Forward declarations
 class G4RunManager;
@@ -122,9 +125,9 @@ namespace larg4 {
 
   private:
 
-    g4b::G4Helper*             fG4Help;             ///< G4 interface object					   
+    g4b::G4Helper*             fG4Help;             ///< G4 interface object                                           
     larg4::LArVoxelListAction* flarVoxelListAction; ///< Geant4 user action to accumulate LAr voxel information.
-    larg4::ParticleListAction* fparticleListAction; ///< Geant4 user action to particle information.		   
+    larg4::ParticleListAction* fparticleListAction; ///< Geant4 user action to particle information.                   
 
     std::string                fG4PhysListName;     ///< predefined physics list to use if not making a custom one
     std::string                fG4MacroPath;        ///< directory path for Geant4 macro file to be 
@@ -133,7 +136,7 @@ namespace larg4 {
     bool                       fdumpSimChannels;    ///< Whether each event's sim::Channel will be displayed.
     bool                       fUseLitePhotons;
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
-                                                    ///< dictate how tracks are put on stack.	
+                                                    ///< dictate how tracks are put on stack.        
 
   };
 
@@ -180,8 +183,8 @@ namespace larg4 {
     if (fG4MacroPath.empty() || stat(fG4MacroPath.c_str(), &sb)!=0)
       // failed to resolve the file name
       throw cet::exception("NoG4Macro") << "G4 macro file "
-					<< fG4MacroPath
-					<< " not found!\n";
+                                        << fG4MacroPath
+                                        << " not found!\n";
 
   }
 
@@ -242,8 +245,8 @@ namespace larg4 {
     // User-action class for accumulating particles and trajectories
     // produced in the detector.
     fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
-							lgp->StoreTrajectories(),
-							lgp->KeepEMShowerDaughters());
+                                                        lgp->StoreTrajectories(),
+                                                        lgp->KeepEMShowerDaughters());
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
@@ -273,9 +276,10 @@ namespace larg4 {
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<geo::Geometry> geom;
 
     // Clear the detected photon table
-    OpDetPhotonTable::Instance()->ClearTable();
+    OpDetPhotonTable::Instance()->ClearTable(geom->NOpChannels());
 
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
@@ -332,22 +336,17 @@ namespace larg4 {
     if(theOpDetDet){
       if(!fUseLitePhotons){      
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
-	
-        std::map<int, sim::SimPhotons*> ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
-	
-        if(ThePhotons.size() > 0){
-          PhotonCol->reserve(ThePhotons.size());
-          for(auto const& it : ThePhotons){
-            sim::SimPhotons ph(*(it.second));
-            PhotonCol->push_back(ph);
-          }
-        }
+        
+	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
+	PhotonCol->reserve(ThePhotons.size());
+	for(auto& it : ThePhotons)
+	  PhotonCol->push_back(std::move(it));
       }
       else{
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
-	
+        
         std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons();
-	
+        
         if(ThePhotons.size() > 0){
           LitePhotonCol->reserve(ThePhotons.size());
           for(auto const& it : ThePhotons){
@@ -363,7 +362,8 @@ namespace larg4 {
     // only put the sim::SimChannels into the event once, not once for every
     // MCTruth in the event
 
-    art::ServiceHandle<geo::Geometry> geom;
+    std::set<LArVoxelReadout*> ReadoutList; // to be cleared later on
+    
     for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
 
       // map to keep track of which channels we already have SimChannels for in scCol
@@ -374,70 +374,82 @@ namespace larg4 {
 
       unsigned int ntpcs =  geom->Cryostat(c).NTPC();
       for(unsigned int t = 0; t < ntpcs; ++t){
-	std::string name("LArVoxelSD");
-	char nums[32];
-	sprintf(nums, "_Cryostat%u_TPC%d", c, t);
-	name += nums;
+        std::string name("LArVoxelSD");
+        std::ostringstream sstr;
+        sstr << name << "_Cryostat" << c << "_TPC" << t;
 
-	G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name);
-	// If this didn't work, then a sensitive detector with
-	// the name "LArVoxelSD" does not exist.
-	if ( !sd ){
-	  throw cet::exception("LArG4") << "Sensitive detector '"
-					<< name 
-					<< "' does not exist\n";
-	}
+        // try first to find the sensitive detector specific for this TPC;
+        // do not bother writing on screen if there is none (yet)
+        G4VSensitiveDetector* sd
+          = sdManager->FindSensitiveDetector(sstr.str(), false);
+        // if there is none, catch the general one (called just "LArVoxelSD")
+        if (!sd) sd = sdManager->FindSensitiveDetector(name, false);
+        // If this didn't work, then a sensitive detector with
+        // the name "LArVoxelSD" does not exist.
+        if ( !sd ){
+          throw cet::exception("LArG4") << "Sensitive detector for cryostat "
+            << c << " TPC " << t << " not found (neither '"
+            << sstr.str() << "' nor '" << name  << "' exist)\n";
+        }
 
-	// Convert the G4VSensitiveDetector* to a LArVoxelReadout*.
-	LArVoxelReadout *larVoxelReadout = dynamic_cast<LArVoxelReadout*>(sd);
+        // Convert the G4VSensitiveDetector* to a LArVoxelReadout*.
+        LArVoxelReadout* larVoxelReadout = dynamic_cast<LArVoxelReadout*>(sd);
 
-	// If this didn't work, there is a "LArVoxelSD" detector, but
-	// it's not a LArVoxelReadout object.
-	if ( !larVoxelReadout ){
-	  throw cet::exception("LArG4") << "Sensitive detector '"
-					<< name
-					<< "' is not a LArVoxelReadout object\n";
-	}
+        // If this didn't work, there is a "LArVoxelSD" detector, but
+        // it's not a LArVoxelReadout object.
+        if ( !larVoxelReadout ){
+          throw cet::exception("LArG4") << "Sensitive detector '"
+                                        << sd->GetName()
+                                        << "' is not a LArVoxelReadout object\n";
+        }
 
-	LOG_DEBUG("LArG4") << "now put the SimChannels in the event";
+        LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
+        if (!channels.empty()) {
+          LOG_DEBUG("LArG4") << "now put " << channels.size() << " SimChannels"
+            " from C=" << c << " T=" << t << " into the event";
+        }
 
-	larVoxelReadout->MakeSimChannelVector();
-	std::vector<sim::SimChannel> channels = larVoxelReadout->GetSimChannels();
-	for(auto const& sc : channels){
+        for(auto ch_pair: channels){
+          sim::SimChannel& sc = ch_pair.second;
 
-	  // push sc onto scCol but only if we haven't already put something in scCol for this channel.
-	  // if we have, then merge the ionization deposits.  Skip the check if we only have one TPC
+          // push sc onto scCol but only if we haven't already put something in scCol for this channel.
+          // if we have, then merge the ionization deposits.  Skip the check if we only have one TPC
 
-	  if (ntpcs > 1) {
-	    unsigned int ichan = sc.Channel();
-	    std::map<unsigned int, unsigned int>::iterator itertest = channelToscCol.find(ichan);
-	    if (itertest == channelToscCol.end()) {
-	      channelToscCol[ichan] = scCol->size();
-              scCol->push_back(sc);
-	    }
-	    else {
-	      unsigned int idtest = itertest->second;
-	      auto const tdcideMap = sc.TDCIDEMap();
-   	      for(auto const& tdcide : tdcideMap){
+          if (ntpcs > 1) {
+            unsigned int ichan = sc.Channel();
+            std::map<unsigned int, unsigned int>::iterator itertest = channelToscCol.find(ichan);
+            if (itertest == channelToscCol.end()) {
+              channelToscCol[ichan] = scCol->size();
+              scCol->push_back(std::move(sc));
+            }
+            else {
+              unsigned int idtest = itertest->second;
+              auto const tdcideMap = sc.TDCIDEMap();
+              for(auto const& tdcide : tdcideMap){
                  for(auto const& ide : tdcide.second){
- 	           double xyz[3] = {ide.x, ide.y, ide.z};
- 	           scCol->at(idtest).AddIonizationElectrons(ide.trackID,
- 				       tdcide.first,
- 				       ide.numElectrons,
- 				       xyz,
- 				       ide.energy);
- 	         } // end loop to add ionization electrons to  scCol->at(idtest)
- 	      }// end loop over tdc to vector<sim::IDE> map
-	    } // end if check to see if we've put SimChannels in for ichan yet or not
-	  }
-	  else {
-	    scCol->push_back(sc);
-	  } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
-	} // end loop over simchannels for this TPC
-	larVoxelReadout->ClearSimChannelVector();
+                    double xyz[3] = {ide.x, ide.y, ide.z};
+                    scCol->at(idtest).AddIonizationElectrons(ide.trackID,
+                                        tdcide.first,
+                                        ide.numElectrons,
+                                        xyz,
+                                        ide.energy);
+                  } // end loop to add ionization electrons to  scCol->at(idtest)
+               }// end loop over tdc to vector<sim::IDE> map
+            } // end if check to see if we've put SimChannels in for ichan yet or not
+          }
+          else {
+            scCol->push_back(std::move(sc));
+          } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
+        } // end loop over simchannels for this TPC
+        // mark it for clearing
+        ReadoutList.insert(const_cast<LArVoxelReadout*>(larVoxelReadout));
       } // end loop over tpcs
     }// end loop over cryostats
 
+    for (LArVoxelReadout* larVoxelReadout: ReadoutList)
+      larVoxelReadout->ClearSimChannels();
+    
+    
     // only put the sim::AuxDetSimChannels into the event once, not once for every
     // MCTruth in the event
 
@@ -447,25 +459,25 @@ namespace larg4 {
       std::stringstream name;
       name << "AuxDetSD_AuxDet" << a;
 
-	    G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
-	    // If this didn't work, then a sensitive detector with
-	    // the name "AuxDetSD" does not exist.
-	    if ( !sd ){
-	      throw cet::exception("LArG4") << "Sensitive detector '"
-			  		<< name
-				  	<< "' does not exist\n";
-	    }
+      G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
+      // If this didn't work, then a sensitive detector with
+      // the name "AuxDetSD" does not exist.
+      if ( !sd ){
+        throw cet::exception("LArG4") << "Sensitive detector '"
+                                    << name
+                                    << "' does not exist\n";
+      }
 
-	    // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
+      // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
       larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
 
-	    LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
+      LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
 
-	    const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
-	    adCol->push_back(adsc);
+      const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
+      adCol->push_back(adsc);
       auxDetReadout->clear();
 	
-	  } // Loop over AuxDets
+    } // Loop over AuxDets
 	
     if (fdumpSimChannels) {
       mf::LogInfo out("DumpSimChannels");
@@ -479,6 +491,7 @@ namespace larg4 {
       } // for
     } // if dump SimChannels
     evt.put(std::move(scCol));
+    
     evt.put(std::move(adCol));
     evt.put(std::move(partCol));
     if(!fUseLitePhotons) evt.put(std::move(PhotonCol));
@@ -486,7 +499,7 @@ namespace larg4 {
     evt.put(std::move(tpassn));
 
     return;
-  }
+  } // LArG4::produce()
 
 } // namespace LArG4
 

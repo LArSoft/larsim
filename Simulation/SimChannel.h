@@ -13,6 +13,7 @@
 #ifndef SIM_SIMCHANNEL_H
 #define SIM_SIMCHANNEL_H
 
+#include <string>
 #include <vector>
 #include <map>
 #include <stdint.h>
@@ -92,7 +93,7 @@ namespace sim {
 	 void Dump(OSTREAM& out, std::string indent = "") const
 	   { Dump(out, indent, indent); }
     //@}
-
+    
 #endif
 
   };
@@ -104,6 +105,7 @@ namespace sim {
 inline bool sim::SimChannel::operator< (const sim::SimChannel& other)                       const { return fChannel < other.Channel(); }
 inline const std::map<unsigned short, std::vector<sim::IDE> >& sim::SimChannel::TDCIDEMap() const { return fTDCIDEs; }
 inline uint32_t sim::SimChannel::Channel()                                                  const { return fChannel; }
+
 
 // -----------------------------------------------------------------------------
 // ---  template implementation

@@ -46,6 +46,7 @@
 #include <stdint.h>
 
 #include "Geant4/G4VSensitiveDetector.hh"
+#include "Geant4/G4PVPlacement.hh"
 #include "Geant4/globals.hh"
 
 #include "Simulation/SimChannel.h"
@@ -65,15 +66,78 @@ class G4Step;
 
 namespace larg4 {
 
+  /// Simple structure holding a TPC and cryostat number
+  struct TPCID_t {
+    unsigned short int Cryostat, TPC;
+    bool operator< (const TPCID_t& than) const
+      {
+        return (Cryostat < than.Cryostat)
+          || ((Cryostat == than.Cryostat) && (TPC < than.TPC));
+      } // operator< ()
+  }; // TPCID_t
+  
+  /**
+   * @brief A G4PVPlacement with an additional identificator
+   * @param IDTYPE type of ID class
+   * 
+   * This class is a G4PVPlacement with in addition an ID parameter.
+   * The ID type is an object which can be default-constructed and copied,
+   * better to be a POD.
+   * 
+   * This being a very stupid utility class, only the constructor that we
+   * actually use is available. The others can be implemented in the same way.
+   * Also the merry company of copy and move constuctors and operators is left
+   * to the good will of the compiler, despite the destructor is specified.
+   */
+  template <class IDTYPE>
+  class G4PVPlacementWithID: public G4PVPlacement {
+      public:
+    typedef IDTYPE ID_t;
+    
+    ID_t ID; ///< Physical Volume identificator
+    
+    /// Constructor
+    G4PVPlacementWithID(const G4Transform3D& Transform3D, const G4String &pName,
+      G4LogicalVolume* pLogical, G4VPhysicalVolume* pMother,
+      G4bool pMany, G4int pCopyNo, G4bool pSurfChk = false,
+      ID_t id = ID_t()
+      ):
+      G4PVPlacement
+        (Transform3D, pName, pLogical, pMother, pMany, pCopyNo, pSurfChk),
+      ID(id)
+      {}
+    
+    /// Virtual destructor: does nothing more
+    virtual ~G4PVPlacementWithID() {}
+  }; // G4PVPlacementWithID<>
+  
+  /// A physical volume with a TPC ID
+  typedef G4PVPlacementWithID<TPCID_t> G4PVPlacementInTPC;
+  
+  
   class LArVoxelReadout : public G4VSensitiveDetector
   {
   public:
-    // Constructor.  
+    /// Type of map channel -> sim::SimChannel
+    typedef std::map<unsigned int, sim::SimChannel> ChannelMap_t;
+    
+    /// Constructor. Can detect which TPC to cover by the name
     LArVoxelReadout(std::string const& name);
+    
+    /// Constructor. Sets which TPC to work on
+    LArVoxelReadout
+      (std::string const& name, unsigned int cryostat, unsigned int tpc);
 
     // Destructor
     virtual ~LArVoxelReadout();
 
+    /// Associates this readout to one specific TPC
+    void SetSingleTPC(unsigned int cryostat, unsigned int tpc);
+    
+    /// Sets this readout to discover the TPC of each processed hit
+    void SetDiscoverTPC();
+    
+    
     // Required for classes that inherit from G4VSensitiveDetector.
     //
     // Called at start and end of each event.
@@ -93,19 +157,32 @@ namespace larg4 {
     virtual void DrawAll();
     virtual void PrintAll();
 
-    // Independent method; accumulates the information in an organized manner
-    // call it after all MCTruth objects have been fed through Geant4
-    void MakeSimChannelVector();
-
     // Independent method; clears the vector of SimChannels as well as the
     // channel number to SimChannel map.  Has to be separate from the 
     // clear method above because that run is run for every G4 event, ie
     // each MCTruth in the art::Event, while we want to only run this at 
     // the end of the G4 processing for each art::Event.
-    void ClearSimChannelVector();
+    void ClearSimChannels();
 
-    // Independent method; returns the accumulated information
-    const std::vector<sim::SimChannel>& GetSimChannels() const { return fChannels; }
+    /// Creates a list with the accumulated information for the single TPC
+    std::vector<sim::SimChannel> GetSimChannels() const;
+    
+    /// Creates a list with the accumulated information for specified TPC
+    std::vector<sim::SimChannel> GetSimChannels
+      (unsigned short cryo, unsigned short tpc) const;
+
+    //@{
+    /// Returns the accumulated channel -> SimChannel map for the single TPC
+    const ChannelMap_t& GetSimChannelMap() const;
+    ChannelMap_t& GetSimChannelMap();
+    //@}
+    
+    //@{
+    /// Returns the accumulated channel -> SimChannel map for the specified TPC
+    const ChannelMap_t& GetSimChannelMap
+      (unsigned short cryo, unsigned short tpc) const;
+    ChannelMap_t& GetSimChannelMap(unsigned short cryo, unsigned short tpc);
+    //@}
 
   private:
 
@@ -115,30 +192,32 @@ namespace larg4 {
       subsequentrad } Radio_t;
 
     void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
-				  const double g4time,
-				  int trackID,
-				  Radio_t radiological=notradiological, 
-				  unsigned int tickmax=4096); // used to randomize the TDC tick values  
+                                  const double g4time,
+                                  int trackID,
+                                  unsigned short int cryostat, unsigned short int tpc,
+                                  Radio_t radiological=notradiological, 
+                                  unsigned int tickmax=4096); // used to randomize the TDC tick values  
 
     // Used in electron-cluster calculations
     // External parameters for the electron-cluster calculation.
     // obtained from LArG4Parameters, LArProperties, and DetectorProperties services
-    double                                    fDriftVelocity[3];	       
-    double 				      fLongitudinalDiffusion;  
-    double 				      fTransverseDiffusion;    
-    double 				      fElectronLifetime;       
-    double 				      fElectronClusterSize;    
-    double    				      fSampleRate; 	    
+    double                                    fDriftVelocity[3];
+    double                                    fLongitudinalDiffusion;
+    double                                    fTransverseDiffusion;
+    double                                    fElectronLifetime;
+    double                                    fElectronClusterSize;
+    double                                    fSampleRate;
+    int                                       fTriggerOffset;
     double                                    fArgon39DecayRate;
     bool                                      fDontDriftThem;
 
-    std::map<unsigned int, sim::SimChannel  > fChannelMap; ///< Map of channel number to SimChannel object
-    std::vector<sim::SimChannel>              fChannels;   ///< Collection of SimChannels
+    std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service
     art::ServiceHandle<sim::LArG4Parameters>  fLgpHandle;  ///< Handle to the LArG4 parameters service
     art::ServiceHandle<util::LArProperties>   fLarpHandle; ///< Handle to the LArProperties parameters service
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
-    unsigned int                              fCstat;      ///< and in which cryostat
+    unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
+    bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
 
     ::util::ElecClock                         fClock;      ///< TPC electronics clock
   };

@@ -92,7 +92,7 @@ namespace sim{
       
       std::vector<sim::IDE> idelist;
       idelist.push_back(ide);
-      fTDCIDEs[tdc] = idelist;
+      fTDCIDEs[tdc] = std::move(idelist);
     }
 
     return;

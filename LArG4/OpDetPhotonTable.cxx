@@ -38,16 +38,18 @@ namespace larg4 {
 
 
   //--------------------------------------------------
-  void OpDetPhotonTable::AddPhoton(int opchannel, sim::OnePhoton&& photon)
+  void OpDetPhotonTable::AddPhoton(size_t opchannel, sim::OnePhoton&& photon)
   {
-    if(!fDetectedPhotons[opchannel]) 
-      {
-	fDetectedPhotons[opchannel] = new sim::SimPhotons;
-	fDetectedPhotons[opchannel]->SetChannel(opchannel);
-      }
-    fDetectedPhotons[opchannel]->push_back(photon);
-    //    mf::LogInfo("OpDetPhotonTable") << "Registering detection of a photon in opchannel " <<opchannel<<std::endl;
-    
+    if( opchannel >= fDetectedPhotons.size() ) {
+
+      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>"
+		<< "\033[93m"
+		<< "Invalid channel: " << opchannel
+		<< "\033[00m"
+		<< std::endl;
+      throw std::exception();
+    }
+    fDetectedPhotons.at(opchannel).push_back(photon);
   }
 
   void OpDetPhotonTable::AddPhoton(std::map<int, std::map<int, int>>* StepPhotonTable)
@@ -64,32 +66,40 @@ namespace larg4 {
 
 
   //--------------------------------------------------
-  void OpDetPhotonTable::ClearTable()
+  void OpDetPhotonTable::ClearTable(const size_t nch)
   {
-    for(std::map<int,sim::SimPhotons*>::iterator it=fDetectedPhotons.begin(); it!=fDetectedPhotons.end(); ++it)
-      delete it->second;
-    fDetectedPhotons.clear();
+    if(fDetectedPhotons.size() != nch) fDetectedPhotons.resize(nch);
+    for(size_t i=0; i<fDetectedPhotons.size(); ++i) {
+      fDetectedPhotons.at(i).clear();
+      fDetectedPhotons.at(i).SetChannel(i);
+      //fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
+    }
+
     for(std::map<int,std::map<int, int>>::iterator it=fLitePhotons.begin(); it!=fLitePhotons.end(); ++it)
       (it->second).clear();
     fLitePhotons.clear();
   }
 
   //--------------------------------------------------
-  std::map<int, sim::SimPhotons* > OpDetPhotonTable::GetPhotons()
-  {
-    return fDetectedPhotons;
-  }
-  //--------------------------------------------------
   std::map<int, std::map<int, int>> OpDetPhotonTable::GetLitePhotons()
   {
     return fLitePhotons;
   }
 
+  std::vector<sim::SimPhotons >& OpDetPhotonTable::GetPhotons() 
+  { return fDetectedPhotons; }
+
   //--------------------------------------------------
-  sim::SimPhotons* OpDetPhotonTable::GetPhotonsForOpChannel(int opchannel)
+  sim::SimPhotons& OpDetPhotonTable::GetPhotonsForOpChannel(size_t opchannel)
   {
-    return fDetectedPhotons[opchannel];
+    if(opchannel >= fDetectedPhotons.size()) {
+      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>" 
+		<< "Invalid channel Number: " << opchannel 
+		<< std::endl;
+    }
+    return fDetectedPhotons.at(opchannel);
   }
+
   std::map<int,int>& OpDetPhotonTable::GetLitePhotonsForOpChannel(int opchannel)
   {
     return fLitePhotons[opchannel];
