@@ -33,7 +33,7 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 #include <map>
 #include <memory>
-
+#include <exception>
 #ifndef OPDETPHOTONTABLE_h
 #define OPDETPHOTONTABLE_h 1
 
@@ -51,22 +51,30 @@ namespace larg4 {
       ~OpDetPhotonTable(){}
       static OpDetPhotonTable * Instance(bool LitePhotons = false);
    
-      void AddPhoton(int opchannel, sim::OnePhoton&& photon);
+      void AddPhoton( size_t opchannel, sim::OnePhoton&& photon);
       void AddPhoton( std::map<int, std::map<int, int>>* StepPhoton);
 
-      std::map<int, sim::SimPhotons* >   GetPhotons();
-      sim::SimPhotons *                  GetPhotonsForOpChannel(int opcannel);
-
+      std::vector<sim::SimPhotons >& GetPhotons();
+      sim::SimPhotons&               GetPhotonsForOpChannel(size_t opcannel);
+      
       std::map<int, std::map<int, int> >   GetLitePhotons();
       std::map<int, int>& GetLitePhotonsForOpChannel(int opcannel); 
-      void ClearTable();
+      void ClearTable(size_t nch=0);
       
     protected:
       OpDetPhotonTable();
 
     private:
-      std::map<int, sim::SimPhotons* > fDetectedPhotons;
+
       std::map<int, std::map<int,int> > fLitePhotons;
+
+      /**
+      // std::map<int, sim::SimPhotons* > fDetectedPhotons;
+      - Use a vector of SimPhotons instead of map
+      - Vector index = channel number
+      - Vector size is initialized @ ClearTable() call
+       */
+      std::vector<sim::SimPhotons> fDetectedPhotons;
     };
 
 }
