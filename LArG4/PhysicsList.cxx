@@ -82,7 +82,9 @@ namespace larg4 {
 	pmanager->SetProcessOrderingToLast(OpDetParallelWorldScoringProcess, idxPostStep);
       }
       
-      else if(!particle->IsShortLived()){
+      // Only apply voxel processing in the LAr TPC if the particles are
+      // charged and they have a significant life-time.
+      else if(particle->GetPDGCharge() != 0  &&  !particle->IsShortLived()){
 	G4ProcessManager* pmanager = particle->GetProcessManager();
 	if(!DisableWireplanes){
 	  pmanager->AddProcess(LArVoxelParallelWorldScoringProcess);
