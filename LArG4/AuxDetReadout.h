@@ -73,7 +73,7 @@ namespace larg4 {
     art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
     uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
     sim::AuxDetSimChannel             fAuxDetSimChannel; ///< Contains the sim::AuxDetSimChannel for this AuxDet
-    std::set<sim::AuxDetIDE>          fAuxDetIDEs;  
+    std::vector<sim::AuxDetIDE>       fAuxDetIDEs;       ///< list of IDEs in one channel
 };
 }
 

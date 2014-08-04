@@ -19,6 +19,8 @@
 #include "Geant4/Randomize.hh"
 
 #include <iostream>
+#include <utility> // std::move()
+#include <algorithm> // std::find()
 #include <ctime>
 
 namespace larg4 {
@@ -42,8 +44,7 @@ namespace larg4 {
   // Called at the end of each event.
   void AuxDetReadout::EndOfEvent(G4HCofThisEvent*)
   {
-    sim::AuxDetSimChannel temp(fAuxDet, fAuxDetIDEs);
-    fAuxDetSimChannel = temp;
+    fAuxDetSimChannel = sim::AuxDetSimChannel(fAuxDet, std::move(fAuxDetIDEs));
   }
   //---------------------------------------------------------------------------------------
   void AuxDetReadout::clear()
@@ -124,26 +125,22 @@ namespace larg4 {
     auxDetIDE.exitMomentumY	= inputExitMomentumY;
     auxDetIDE.exitMomentumZ	= inputExitMomentumZ;
 
-    std::set<sim::AuxDetIDE>::iterator setItr = fAuxDetIDEs.find(auxDetIDE);
+    std::vector<sim::AuxDetIDE>::iterator IDEitr
+      = std::find(fAuxDetIDEs.begin(), fAuxDetIDEs.end(), auxDetIDE);
 
-    if(setItr != fAuxDetIDEs.end()){ //If trackID is already in the map, update it
+    if(IDEitr != fAuxDetIDEs.end()){ //If trackID is already in the map, update it
 
-      (*setItr).energyDeposited += inputEnergyDeposited;
-      (*setItr).exitX		 = inputExitX;
-      (*setItr).exitY		 = inputExitY;
-      (*setItr).exitZ		 = inputExitZ;
-      (*setItr).exitT		 = inputExitT;
-      (*setItr).exitMomentumX	 = inputExitMomentumX;
-      (*setItr).exitMomentumY	 = inputExitMomentumY;
-      (*setItr).exitMomentumZ	 = inputExitMomentumZ;
+      IDEitr->energyDeposited += inputEnergyDeposited;
+      IDEitr->exitX            = inputExitX;
+      IDEitr->exitY            = inputExitY;
+      IDEitr->exitZ            = inputExitZ;
+      IDEitr->exitT            = inputExitT;
+      IDEitr->exitMomentumX    = inputExitMomentumX;
+      IDEitr->exitMomentumY    = inputExitMomentumY;
+      IDEitr->exitMomentumZ    = inputExitMomentumZ;
     }
     else{  //if trackID is not in the set yet, add it
-
-      auto insertResult = fAuxDetIDEs.insert(auxDetIDE);
-      if(!insertResult.second)
-        throw cet::exception("BadAuxDetIDEInsert") << "Track ID: "
-						   << inputTrackID
-						   << " already in fAuxDetIDEs set\n";
+      fAuxDetIDEs.push_back(std::move(auxDetIDE));
     }//else
   }//AddParticleStep
   

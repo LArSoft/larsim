@@ -7,42 +7,48 @@
 ////////////////////////////////////////////////////////////////////////
 
 
+// our header
 #include "Simulation/AuxDetSimChannel.h"
-#include "SimpleTypesAndConstants/PhysicalConstants.h"
 
-#include "messagefacility/MessageLogger/MessageLogger.h"
+// C/C++ standard library
+#include <limits> // std::numeric_limits<>
 
-#include <iostream>
+// LArSoft headers
+#include "SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
 
 namespace sim{
 
   // Default constructor
   //-------------------------------------------------
   AuxDetIDE::AuxDetIDE()
-  : trackID        (util::kBogusI)
-  , energyDeposited(util::kBogusF)
-  , entryX         (util::kBogusF)
-  , entryY         (util::kBogusF)
-  , entryZ         (util::kBogusF)
-  , entryT         (util::kBogusF)
-  , exitX          (util::kBogusF)
-  , exitY          (util::kBogusF)
-  , exitZ          (util::kBogusF)
-  , exitT          (util::kBogusF)
-  , exitMomentumX  (util::kBogusF)
-  , exitMomentumY  (util::kBogusF)
-  , exitMomentumZ  (util::kBogusF)
-  {}
+    : trackID        (util::kBogusI)
+    , energyDeposited(util::kBogusF)
+    , entryX         (util::kBogusF)
+    , entryY         (util::kBogusF)
+    , entryZ         (util::kBogusF)
+    , entryT         (util::kBogusF)
+    , exitX          (util::kBogusF)
+    , exitY          (util::kBogusF)
+    , exitZ          (util::kBogusF)
+    , exitT          (util::kBogusF)
+    , exitMomentumX  (util::kBogusF)
+    , exitMomentumY  (util::kBogusF)
+    , exitMomentumZ  (util::kBogusF)
+    {}
 
-	AuxDetSimChannel::AuxDetSimChannel()
-  : fAuxDetID(UINT_MAX)
+  AuxDetSimChannel::AuxDetSimChannel()
+    : fAuxDetID(std::numeric_limits<uint32_t>::max())
   {
   }
   
-  AuxDetSimChannel::AuxDetSimChannel(uint32_t inputAuxDetID, std::set<sim::AuxDetIDE> inputAuxDetIDEs)
-  {
-    fAuxDetID = inputAuxDetID;
-    fAuxDetIDEs = inputAuxDetIDEs;
-  }
+  AuxDetSimChannel::AuxDetSimChannel
+    (uint32_t inputAuxDetID, const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs):
+    fAuxDetID(inputAuxDetID), fAuxDetIDEs(inputAuxDetIDEs)
+  {}
+
+  AuxDetSimChannel::AuxDetSimChannel
+    (uint32_t inputAuxDetID, std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs):
+    fAuxDetID(inputAuxDetID), fAuxDetIDEs(inputAuxDetIDEs)
+  {}
 
 }//namespace sim
