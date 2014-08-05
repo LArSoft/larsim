@@ -10,65 +10,89 @@
 #ifndef SIM_AUXDETSIMCHANNEL_H
 #define SIM_AUXDETSIMCHANNEL_H
 
+// C/C++ standard libraries
+#include <stdint.h> // C header (need to be compatible with Reflex)
 #include <vector>
-#include <set>
-#include <stdint.h>
 
+// LArSoft libraries
 #include "SimpleTypesAndConstants/geo_types.h"
 
-namespace sim {
 
-  class AuxDetIDE{
+namespace sim {
+  
+  /**
+   * @brief MC truth information to make RawDigits and do back tracking
+   *
+   * This structure describes the true position of momentum of a MC particle
+   * entering and exiting a scintillator cell (channel) of an auxiliary
+   * scintillator detector.
+   */
+  class AuxDetIDE {
     
   public:
     AuxDetIDE();
     
-    int   trackID;                       ///< Geant4 supplied track ID
-    mutable float energyDeposited;       ///< total energy deposited for this track ID and time
-    float entryX;                        ///< Entry position X of particle
-    float entryY;                        ///< Entry position Y of particle
-    float entryZ;                        ///< Entry position Z of particle
-    float entryT;                        ///< Entry time of particle
-    mutable float exitX;                 ///< Exit position X of particle
-    mutable float exitY;                 ///< Exit position Y of particle
-    mutable float exitZ;                 ///< Exit position Z of particle
-    mutable float exitT;                 ///< Exit time of particle
-    mutable float exitMomentumX;         ///< Exit X-Momentum of particle
-    mutable float exitMomentumY;         ///< Exit Y-Momentum of particle
-    mutable float exitMomentumZ;         ///< Exit Z-Momentum of particle
+    int   trackID;               ///< Geant4 supplied track ID
+    float energyDeposited;       ///< total energy deposited for this track ID and time
+    float entryX;                ///< Entry position X of particle
+    float entryY;                ///< Entry position Y of particle
+    float entryZ;                ///< Entry position Z of particle
+    float entryT;                ///< Entry time of particle
+    float exitX;                 ///< Exit position X of particle
+    float exitY;                 ///< Exit position Y of particle
+    float exitZ;                 ///< Exit position Z of particle
+    float exitT;                 ///< Exit time of particle
+    float exitMomentumX;         ///< Exit X-Momentum of particle
+    float exitMomentumY;         ///< Exit Y-Momentum of particle
+    float exitMomentumZ;         ///< Exit Z-Momentum of particle
 
 #ifndef __GCCXML__
     bool operator<  (const AuxDetIDE& other) const;
     bool operator== (const AuxDetIDE& other) const;
 
 #endif
-};
+}; // class AuxDetIDE
 
-  class AuxDetSimChannel{
+  /**
+   * @brief Collection of particles crossing one auxiliary detector cell
+   *
+   * This structure collects information (as sim::AuxDetIDE) from all the MC
+   * particles crossing a single auxiliary detector cell (channel).
+   */
+  class AuxDetSimChannel {
     
   public:
+    /// Default constructor (invalid, empty data)
     AuxDetSimChannel();
-    AuxDetSimChannel(uint32_t inputAuxDetID, std::set<sim::AuxDetIDE> inputAuxDetIDEs);
+    
+    /// Constructor: copies from the specified IDE vector
+    AuxDetSimChannel(uint32_t inputAuxDetID, const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs);
+    
+#ifndef __GCCXML__
+    /// Constructor: moves data from the specified IDE vector
+    AuxDetSimChannel(uint32_t inputAuxDetID, std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs);
+#endif
     
   private:
-    uint32_t                 fAuxDetID;   ///< geo->AuxDet(auxDetID), integer used to retrieve AuxDetGeo object
-    std::set<sim::AuxDetIDE> fAuxDetIDEs; ///< one fAuxDetIDE for each G4 track id
+    uint32_t                    fAuxDetID;   ///< geo->AuxDet(auxDetID), integer used to retrieve AuxDetGeo object
+    std::vector<sim::AuxDetIDE> fAuxDetIDEs; ///< one sim::AuxDetIDE for each G4 track id
 
 #ifndef __GCCXML__
   public:
-    
-    //getters
+    ///@name Getters
+    ///@{
     uint32_t AuxDetID() const;
 
-    std::set<sim::AuxDetIDE> const& AuxDetIDEs() const;
-
+    std::vector<sim::AuxDetIDE> const& AuxDetIDEs() const;
+    ///@}
+    
     //setters
 //    void SetAuxDetIDEs(std::set<sim::AuxDetIDE> inputAuxDetIDEs) {fAuxDetIDEs = inputAuxDetIDEs;};
 
 #endif
 		
 		
-  };
+  }; // class AuxDetSimChannel
 
 } // namespace sim
 
@@ -77,7 +101,7 @@ namespace sim {
 inline bool sim::AuxDetIDE::operator<  (const AuxDetIDE& other) const { return trackID < other.trackID;  }
 inline bool sim::AuxDetIDE::operator== (const AuxDetIDE& other) const { return other.trackID == trackID; }
 inline uint32_t  sim::AuxDetSimChannel::AuxDetID()              const { return fAuxDetID;                }
-inline std::set<sim::AuxDetIDE> const& sim::AuxDetSimChannel::AuxDetIDEs() const { return fAuxDetIDEs; }
+inline std::vector<sim::AuxDetIDE> const& sim::AuxDetSimChannel::AuxDetIDEs() const { return fAuxDetIDEs; }
 #endif
 
 #endif // SIM_AUXDETSIMCHANNEL_H
