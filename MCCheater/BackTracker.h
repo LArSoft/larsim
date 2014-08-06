@@ -71,7 +71,7 @@ namespace cheat{
     const simb::MCParticle*              TrackIDToParticle(int const& id)       const;
     const simb::MCParticle*              TrackIDToMotherParticle(int const& id) const;
 
-    const std::vector<sim::IDE>          TrackIDToSimIDE(int const& id)         const;
+    std::vector<sim::IDE>                TrackIDToSimIDE(int const& id)         const;
 
     // Get art::Ptr<> to simb::MCTruth and related information
     const art::Ptr<simb::MCTruth>&       TrackIDToMCTruth(int const& id)                        const;
@@ -81,7 +81,7 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    const std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
+    std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,
@@ -89,7 +89,7 @@ namespace cheat{
     
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
-    const std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
+    std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
     
     // method to return sim::IDE objects associated with a given hit
     void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
@@ -158,7 +158,6 @@ namespace cheat{
     sim::LArVoxelList                      fVoxelList;             ///< List to map the position of energy depostions
                                                                    ///< in voxels to the particles depositing the 
                                                                    ///< energy
-    std::set<int>                          fTrackIDs;              ///< G4 track ids for all particles in the event
     std::vector< art::Ptr<simb::MCTruth> > fMCTruthList;           ///< all the MCTruths for the event
     std::vector<const sim::SimChannel*>    fSimChannels;           ///< all the SimChannels for the event
     std::map<int, int>                     fTrackIDToMCTruthIndex; ///< map of track ids to MCTruthList entry

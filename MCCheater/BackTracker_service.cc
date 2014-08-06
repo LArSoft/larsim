@@ -70,7 +70,6 @@ namespace cheat{
     }
 
     // Clear out anything remaining from previous calls to Rebuild
-    fTrackIDs    .clear();
     fParticleList.clear();
     fMCTruthList .clear();
     fSimChannels .clear();
@@ -108,12 +107,6 @@ namespace cheat{
       }// end loop over particles to get MCTruthList  
     }// end if fo.isValid()
 
-
-    // fill the set of track ids from the ParticleNavigator
-    for(size_t t = 0; t < fParticleList.size(); ++t){
-      fTrackIDs.insert(fParticleList.TrackId(t));
-    }
-
     // grab the sim::SimChannels for this event
     evt.getView(fG4ModuleLabel, fSimChannels);
 
@@ -123,7 +116,7 @@ namespace cheat{
     fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
 
     LOG_DEBUG("BackTracker") << "BackTracker has " << fSimChannels.size()
-			     << " sim::SimChannels and " << fTrackIDs.size()
+			     << " sim::SimChannels and " << GetSetOfTrackIDs().size()
 			     << " tracks.  The particles are:\n"
 			     << fParticleList
 			     << "\n the MCTruth information is\n";
@@ -172,7 +165,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const std::vector<sim::IDE> BackTracker::TrackIDToSimIDE(int const& id) const
+  std::vector<sim::IDE> BackTracker::TrackIDToSimIDE(int const& id) const
   {
     std::vector<sim::IDE> ides;
 
@@ -185,7 +178,7 @@ namespace cheat{
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
 	
 	// loop over the vector of IDE objects.
-	const std::vector<sim::IDE> idevec = (*mapitr).second;
+	const std::vector<sim::IDE>& idevec = (*mapitr).second;
 	for(size_t iv = 0; iv < idevec.size(); ++iv){ 
 	  if( abs(idevec[iv].trackID) == id) ides.push_back(idevec[iv]);
 	}
@@ -206,16 +199,18 @@ namespace cheat{
   std::vector<const simb::MCParticle*> BackTracker::MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) const
   {
     std::vector<const simb::MCParticle*> ret;
-
-    for(auto itr = fTrackIDs.begin(); itr != fTrackIDs.end(); itr++){
-      if( this->TrackIDToMCTruth(*itr) == mct ) ret.push_back(fParticleList.find(*itr)->second);
+    
+    // sim::ParticleList::value_type is a pair (track ID, particle pointer)
+    for (const sim::ParticleList::value_type& TrackIDpair: fParticleList) {
+      if( TrackIDToMCTruth(TrackIDpair.first) == mct )
+        ret.push_back(TrackIDpair.second);
     }
 
     return ret;
   }
 
   //----------------------------------------------------------------------
-  const std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
+  std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
   {
     std::vector<TrackIDE> trackIDEs;
 
@@ -271,9 +266,8 @@ namespace cheat{
   // plist is assumed to have adopted the appropriate EveIdCalculator prior to 
   // having been passed to this method. It is likely that the EmEveIdCalculator is
   // the one you always want to use
-  const std::vector<TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit)
+  std::vector<TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit)
   {
-    std::vector<TrackIDE> eveides;
     std::vector<TrackIDE> trackides = this->HitToTrackID(hit);
 
     // make a map of evd ID values and fraction of energy represented by
@@ -287,12 +281,14 @@ namespace cheat{
     }
     
     // now fill the eveides vector from the map
+    std::vector<TrackIDE> eveides;
+    eveides.reserve(eveToE.size());
     for(auto itr = eveToE.begin(); itr != eveToE.end(); itr++){
       TrackIDE temp;
       temp.trackID    = (*itr).first;
       temp.energyFrac = (*itr).second/totalE;
       temp.energy     = (*itr).second;
-      eveides.push_back(temp);
+      eveides.push_back(std::move(temp));
     }
 
     return eveides;
@@ -317,15 +313,10 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::set<int> BackTracker::GetSetOfTrackIDs()
   {
+    // fParticleList::value_type is a pair (track, particle pointer)
     std::set<int> trackIDs;
-
-    sim::ParticleList::const_iterator plitr = fParticleList.begin();
-    while(plitr != fParticleList.end() ){
-      int trackID = (*plitr).first;
-      // look to see if this eveID is already in the set
-      if( trackIDs.find(trackID) == trackIDs.end() ) trackIDs.insert(trackID);
-      plitr++;
-    }
+    for (const sim::ParticleList::value_type& pl: fParticleList)
+      trackIDs.insert(pl.first);
 
     return trackIDs;
   }
