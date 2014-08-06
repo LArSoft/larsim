@@ -9,8 +9,6 @@ art_make( BASENAME_ONLY
 			RawData
 			RecoBase
 			RecoObjects  
-			RecoAlg
-			SignalShapingServiceMicroBooNE_service
                         ${SIMULATIONBASE}
                         ${LARRECO_LIB}
                         ${LARDATA_LIB}
