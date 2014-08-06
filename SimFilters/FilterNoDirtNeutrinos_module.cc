@@ -23,10 +23,12 @@
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Persistency/Common/PtrVector.h"
 #include "cetlib/exception.h"
+#include "art/Framework/Core/FindManyP.h"
+#include "art/Framework/Core/FindOneP.h"
 
 // LArSoft Includes
-#include "MCCheater/BackTracker.h"
 #include "Simulation/ParticleList.h"
+#include "SimulationBase/MCTruth.h"
 #include "Simulation/sim.h"
 #include "Geometry/Geometry.h"
 
@@ -67,7 +69,7 @@ namespace simfilter {
     */
     private:
 
-    std::string fG4ModuleLabel;
+    std::string fLArG4ModuleLabel;
     std::string fGenModuleLabel;
 
   };
@@ -79,7 +81,7 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   // Constructor
   FilterNoDirtNeutrinos::FilterNoDirtNeutrinos(fhicl::ParameterSet const& pset) :
-    fG4ModuleLabel    (pset.get< std::string > ("GeantModuleLabel"   , "NoLabel")       )
+    fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
     , fGenModuleLabel    (pset.get< std::string > ("GenModuleLabel"  , "NoLabel")       )
   {
     this->reconfigure(pset);
@@ -96,7 +98,6 @@ namespace simfilter {
   {
     //    art::ServiceHandle<art::TFileService> tfs;
     art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<cheat::BackTracker> bt;
   
   }
 
@@ -112,126 +113,83 @@ namespace simfilter {
   {
     bool interactionDesired(false);
     //get the list of particles from this event
-    art::ServiceHandle<cheat::BackTracker> bt;
     art::ServiceHandle<geo::Geometry> geom;
 
     // * MC truth information
     art::Handle< std::vector<simb::MCTruth> > mctruthListHandle;
     std::vector<art::Ptr<simb::MCTruth> > mclist;
+    art::Handle<std::vector<simb::MCParticle> > mcpHandle;
+
+
 
     if (evt.getByLabel(fGenModuleLabel,mctruthListHandle))
       art::fill_ptr_vector(mclist, mctruthListHandle);
-    int motherID(1E6);
-    std::vector<simb::MCParticle*> nuMothers;
-    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
-
-    for (size_t imc=0; imc<mclist.size() && !interactionDesired ;imc++) 
-      {
-	bool isMC = !evt.isRealData();
-	if (isMC) 
-	  { //is MC
-	    // GENIE
-	    if (!mclist.empty())
-	      { //at least one mc record
-
-		art::Ptr<simb::MCTruth> mctruth;
-		mctruth = mclist.at(imc);
-
-		int nGeniePrimaries(0);
-		if (mctruth->NeutrinoSet()) 
-		  {
-		    nGeniePrimaries = mctruth->NParticles();
-		    motherID = mctruth->GetNeutrino().Nu().TrackId();
-		    std::cout << "FilterNoDirtNeutrinos: There are " << nGeniePrimaries << " genie primaries in list element " << imc << ". Mother ID/pointer is " << motherID << "/" << (long int)(&(mctruth->GetNeutrino().Nu())) << std::endl ;
-		    nuMothers.push_back(const_cast < simb::MCParticle* > ( &(mctruth->GetNeutrino().Nu())) );
-		  }
-
-	      }
-
-	  } // end clause that this is true MC
-      } // end loop on mclist45
-
-    if (motherID) return interactionDesired;
-
-    std::cout << "FilterNoDirtNeutrinos: we have at least one motherID. It is " << motherID << std::endl ;
-
-    // get the particles from the back tracker
-    std::vector<const simb::MCParticle*> pvec;
-    for(size_t i = 0; i < bt->ParticleList().size(); ++i)
-      {
-	pvec.push_back(bt->ParticleList().Particle(i));
-      }
+    evt.getByLabel(fLArG4ModuleLabel,mcpHandle);
     
-    // Get fiducial volume boundary.
-    double xmin = 0.;
-    double xmax = 2.*geom->DetHalfWidth();
-    double ymin = -geom->DetHalfHeight();
-    double ymax = geom->DetHalfHeight();
-    double zmin = 0.;
-    double zmax = geom->DetLength();
+    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
+    
+  std::set<art::Ptr<simb::MCTruth> > mctSetGENIE;
+  for(size_t i=0; i<mctruthListHandle->size(); ++i) 
+    {
+      art::Ptr<simb::MCTruth> mct_ptr(mctruthListHandle,i);
+      if( mctSetGENIE.find(mct_ptr) == mctSetGENIE.end() ) mctSetGENIE.insert(mct_ptr);
+    }
 
-    std::cout << "FilterNoDirtNeutrinos: pvec.size() is " << pvec.size()<< std::endl ;			    
-    for(unsigned int i = 0; i < pvec.size() && !interactionDesired ; ++i)
-      {
+  // Get the MCTruths from associations to our particles
+  art::FindOneP<simb::MCTruth> assMCT(mcpHandle, evt, "largeant");
 
-	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;		
-	const simb::MCParticle* part = pvec.at(i);
-	int pdg = part->PdgCode();
-	int trackID = part->TrackId();
+  // Get fiducial volume boundary.
+  double xmin = 0.;
+  double xmax = 2.*geom->DetHalfWidth();
+  double ymin = -geom->DetHalfHeight();
+  double ymax = geom->DetHalfHeight();
+  double zmin = 0.;
+  double zmax = geom->DetLength();
 
-	//	const simb::MCParticle* eveID = bt->TrackIDToMotherParticle(trackID);  // crufty, broken code.
-	simb::MCParticle* yvesID  = const_cast < simb::MCParticle* > (part);
-	if (!yvesID) { std::cout << "FilterNoDirtNeutrinos_module. yvesID=0 ! " << std::endl; continue;}
+  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
+  // Now let's loop over G4 MCParticle list and track back MCTruth    
+  bool inTPC (false);
+  for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i) 
+    {
+      const art::Ptr<simb::MCParticle> mcp_ptr(mcpHandle,i);
+      const art::Ptr<simb::MCTruth> &mct = assMCT.at(i);
+      if( mctSetGENIE.find(mct) == mctSetGENIE.end() ) 
+	{
+	  // This is non-genie
+	  continue;
+	}
+      else
+	{
+	// This is genie
 
-	int ngen(0);
-	const int ngenMax(20); 
-	bool nuMother(false);
-	while (!nuMother && ngen<ngenMax)
-	  {
-	    std::cout << "FilterNoDirtNeutrinos: ngen is " << ngen << std::endl ;		
-	    if (yvesID->TrackId() == motherID) // now look for it to be a _neutrino_ mother, as saved above.
-	      {
-		for ( auto nmit : nuMothers)
-		  {
-		    if (nmit == yvesID) 
-		      {
-			nuMother=true;
-			break;
-		      }
-		  }
-		break;
-	      }
-	    yvesID = const_cast < simb::MCParticle* >  (bt->TrackIDToParticle(yvesID->Mother()));
-	    ngen++;
-	  }
-	if (nuMother)  std::cout << "FilterNoDirtNeutrinos: We have a nuMother " << std::endl ;		
-		
-	//		const art::Ptr<simb::MCTruth> mc = bt->TrackIDToMCTruth(eveID->TrackId()); 
-	simb::MCParticle* mc = const_cast < simb::MCParticle* > (bt->TrackIDToParticle(part->TrackId())); 
-	//		if (ngen<ngenMax) mc = yvesID;
-	//		if (mc->MCTruth()->Origin() == simb::kBeamNeutrino )
-	// {
-	// Now walk through trajectory and see if it enters the TPC
-	int n = part->NumberTrajectoryPoints();
-	for(int j = 0; j < n && !interactionDesired; ++j) 
-	  {
-	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;		
-	    TVector3 pos = part->Position(i).Vect();
-	    if(pos.X() >= xmin &&
-	       pos.X() <= xmax &&
-	       pos.Y() >= ymin &&
-	       pos.Y() <= ymax &&
-	       pos.Z() >= zmin &&
-	       pos.Z() <= zmax) 
-	      {
-		mf::LogInfo("FilterNoDirtNeutrinos") << " Found a Genie-produced particle/trackID " << pdg << "/" << trackID << " with eve pdg/eveTrackID/ngen " << yvesID->PdgCode() << "/" << yvesID->TrackId() << "/" << ngen << " in TPC. ";
-		interactionDesired = true;
-	      }
-	  } // end loop on MC trajectory
-	//		  } // end Origin is from beam neutrino, not cosmic.
-      } // end loop over all particles
+	  const simb::MCParticle* part(&mcpHandle->at(i));
+	  int pdg = part->PdgCode();
+	  int trackID = part->TrackId();
 
-    return interactionDesired;
+	  //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
+	  // Now walk through trajectory and see if it enters the TPC
+	  int n = part->NumberTrajectoryPoints();
+	  for(int j = 0; j < n && !inTPC; ++j) 
+	    {
+	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;		
+	      
+	      TVector3 pos = part->Position(j).Vect();
+	      if(pos.X() >= xmin &&
+		 pos.X() <= xmax &&
+		 pos.Y() >= ymin &&
+		 pos.Y() <= ymax &&
+		 pos.Z() >= zmin &&
+		 pos.Z() <= zmax) 
+		{
+		  interactionDesired = true;
+		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		  inTPC=true;
+		}
+	    } // trajectory loop
+	} // end Genie particle
+    } // loop on MCPHandle
+
+  return interactionDesired;
     
   } // end FilterNoDirtNeutrinos()function
 
