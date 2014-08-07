@@ -126,7 +126,7 @@ namespace simfilter {
       art::fill_ptr_vector(mclist, mctruthListHandle);
     evt.getByLabel(fLArG4ModuleLabel,mcpHandle);
     
-    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
+    //    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
     
   std::set<art::Ptr<simb::MCTruth> > mctSetGENIE;
   for(size_t i=0; i<mctruthListHandle->size(); ++i) 
@@ -146,7 +146,7 @@ namespace simfilter {
   double zmin = 0.;
   double zmax = geom->DetLength();
 
-  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
+  //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
   // Now let's loop over G4 MCParticle list and track back MCTruth    
   bool inTPC (false);
   for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i) 
@@ -182,7 +182,8 @@ namespace simfilter {
 		 pos.Z() <= zmax) 
 		{
 		  interactionDesired = true;
-		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
 		  inTPC=true;
 		}
 	    } // trajectory loop
