@@ -35,12 +35,6 @@ namespace recob{
 ///code to link reconstructed objects back to the MC truth information
 namespace cheat{
 
-  typedef struct{
-    int trackID;      ///< Geant4 supplied trackID
-    float energyFrac; ///< fraction of hit energy from the particle with this trackID
-    float energy;     ///< energy from the particle with this trackID
-  } TrackIDE;
-
   class BackTracker
   {
 

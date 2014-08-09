@@ -20,6 +20,18 @@
 
 #include "SimpleTypesAndConstants/geo_types.h"
 
+namespace cheat{
+
+  struct TrackIDE{
+    int trackID;      ///< Geant4 supplied trackID
+    float energyFrac; ///< fraction of hit energy from the particle with this trackID
+    float energy;     ///< energy from the particle with this trackID
+    TrackIDE() {}
+    TrackIDE(int id, float ef, float e) : trackID(id), energyFrac(ef), energy (e) {}
+  };
+
+}
+
 namespace sim {
 
 
@@ -76,6 +88,10 @@ namespace sim {
     // specified TDC.
     double Charge(unsigned int tdc) const;
     double Energy(unsigned int tdc) const;
+
+    // A vector of TrackIDEs for a range of TDCs
+    std::vector<cheat::TrackIDE> TrackIDEs(unsigned int startTDC,
+					   unsigned int endTDC) const;
     
     bool operator< (const SimChannel& other)     const;
 
