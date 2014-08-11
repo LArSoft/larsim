@@ -549,7 +549,7 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
   // map the g4 track id to energy deposited in a hit
   std::map<int, double> g4IDToHitEnergy;
   for(size_t h = 0; h < allhits.size(); ++h){
-    const std::vector<TrackIDE> hitTrackIDs = fBT->HitToTrackID(allhits[h]);
+    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackID(allhits[h]);
     for(size_t e = 0; e < hitTrackIDs.size(); ++e){
       g4IDToHitEnergy[hitTrackIDs[e].trackID] += hitTrackIDs[e].energy;
     }

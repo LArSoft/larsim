@@ -210,9 +210,9 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::vector<TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
+  std::vector<sim::TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
   {
-    std::vector<TrackIDE> trackIDEs;
+    std::vector<sim::TrackIDE> trackIDEs;
 
     double start = hit->StartTime();
     double end   = hit->EndTime();
@@ -232,7 +232,7 @@ namespace cheat{
     // temporary vector of TrackIDs and Ptrs to hits so only one
     // loop through the (possibly large) allhits collection is needed
     std::vector<std::pair<int, art::Ptr<recob::Hit>>> hitList;
-    std::vector<cheat::TrackIDE> tids;
+    std::vector<sim::TrackIDE> tids;
     for(auto itr = allhits.begin(); itr != allhits.end(); ++itr) {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
@@ -266,9 +266,9 @@ namespace cheat{
   // plist is assumed to have adopted the appropriate EveIdCalculator prior to 
   // having been passed to this method. It is likely that the EmEveIdCalculator is
   // the one you always want to use
-  std::vector<TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit)
+  std::vector<sim::TrackIDE> BackTracker::HitToEveID(art::Ptr<recob::Hit> const& hit)
   {
-    std::vector<TrackIDE> trackides = this->HitToTrackID(hit);
+    std::vector<sim::TrackIDE> trackides = this->HitToTrackID(hit);
 
     // make a map of evd ID values and fraction of energy represented by
     // that eve id in this hit
@@ -281,10 +281,10 @@ namespace cheat{
     }
     
     // now fill the eveides vector from the map
-    std::vector<TrackIDE> eveides;
+    std::vector<sim::TrackIDE> eveides;
     eveides.reserve(eveToE.size());
     for(auto itr = eveToE.begin(); itr != eveToE.end(); itr++){
-      TrackIDE temp;
+      sim::TrackIDE temp;
       temp.trackID    = (*itr).first;
       temp.energyFrac = (*itr).second/totalE;
       temp.energy     = (*itr).second;
@@ -330,7 +330,7 @@ namespace cheat{
     while(itr != hits.end() ){
       
       // get the eve ids corresponding to this hit
-      const std::vector<TrackIDE> ides = HitToEveID(*itr);
+      const std::vector<sim::TrackIDE> ides = HitToEveID(*itr);
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < ides.size(); ++i) eveIDs.insert(ides[i].trackID);
@@ -349,7 +349,7 @@ namespace cheat{
     std::vector< art::Ptr<recob::Hit> >::const_iterator itr = hits.begin();
     while(itr != hits.end() ){
       
-      std::vector<TrackIDE> trackIDEs;
+      std::vector<sim::TrackIDE> trackIDEs;
      
       // get the track ids corresponding to this hit
       double start = (*itr)->StartTime();
@@ -382,7 +382,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
@@ -415,7 +415,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
        
       total+=hit->Charge(); // sum up the charge in the cluster
 
@@ -454,7 +454,7 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
 
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't worry about hits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -478,7 +478,7 @@ namespace cheat{
       // in the case of 3D objects we take all hits
       if(hit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	// don't worry about hits where the energy fraction for the chosen
@@ -517,7 +517,7 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
 
       art::Ptr<recob::Hit> hit = hits[h];
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       // don't worry about hits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -541,7 +541,7 @@ namespace cheat{
       // in the case of 3D objects we take all hits
       if(hit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
+      std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	// don't worry about hits where the energy fraction for the chosen
@@ -582,7 +582,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void BackTracker::ChannelToTrackID(std::vector<TrackIDE>&   trackIDEs,
+  void BackTracker::ChannelToTrackID(std::vector<sim::TrackIDE>&   trackIDEs,
 				     uint32_t                 channel,
 				     const double hit_start_time,
 				     const double hit_end_time)
@@ -618,7 +618,7 @@ namespace cheat{
 	
 	if(simides[e].trackID == sim::NoParticleId) continue;
 	
-	TrackIDE info;
+	sim::TrackIDE info;
 	info.trackID    = simides[e].trackID;
 	info.energyFrac = simides[e].energy/totalE;
 	info.energy     = simides[e].energy;

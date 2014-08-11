@@ -205,11 +205,11 @@ namespace sim{
 
   //-----------------------------------------------------------------------
   // the start and end tdc values are assumed to be inclusive
-  std::vector<cheat::TrackIDE>  SimChannel::TrackIDEs(unsigned int startTDC,
+  std::vector<sim::TrackIDE>  SimChannel::TrackIDEs(unsigned int startTDC,
 						      unsigned int endTDC) const
   {
 
-    std::vector<cheat::TrackIDE> trackIDEs;
+    std::vector<sim::TrackIDE> trackIDEs;
 
     if(startTDC > endTDC ){
       mf::LogWarning("SimChannel::TrackIDEs") << "requested tdc range is bogus: "

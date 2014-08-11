@@ -20,7 +20,8 @@
 
 #include "SimpleTypesAndConstants/geo_types.h"
 
-namespace cheat{
+namespace sim {
+
 
   struct TrackIDE{
     int trackID;      ///< Geant4 supplied trackID
@@ -29,11 +30,6 @@ namespace cheat{
     TrackIDE() {}
     TrackIDE(int id, float ef, float e) : trackID(id), energyFrac(ef), energy (e) {}
   };
-
-}
-
-namespace sim {
-
 
   class IDE{
   public:
@@ -90,8 +86,8 @@ namespace sim {
     double Energy(unsigned int tdc) const;
 
     // A vector of TrackIDEs for a range of TDCs
-    std::vector<cheat::TrackIDE> TrackIDEs(unsigned int startTDC,
-					   unsigned int endTDC) const;
+    std::vector<sim::TrackIDE> TrackIDEs(unsigned int startTDC,
+					 unsigned int endTDC) const;
     
     bool operator< (const SimChannel& other)     const;
 

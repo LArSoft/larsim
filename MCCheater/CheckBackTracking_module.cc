@@ -98,8 +98,8 @@ namespace cheat{
       // print the truth information for this hit
       mf::LogInfo("CheckBackTracking") << *((*itr).get()) << "\n channel is: " << (*itr)->Channel();
 
-      std::vector<cheat::TrackIDE> trackides = bt->HitToTrackID(*itr);
-      std::vector<cheat::TrackIDE> eveides   = bt->HitToEveID(*itr);
+      std::vector<sim::TrackIDE> trackides = bt->HitToTrackID(*itr);
+      std::vector<sim::TrackIDE> eveides   = bt->HitToEveID(*itr);
       std::vector<double>          xyz       = bt->HitToXYZ(*itr);
 
       mf::LogInfo("CheckBackTracking") << "hit weighted mean position is (" 
