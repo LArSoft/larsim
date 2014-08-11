@@ -102,6 +102,7 @@ namespace sim {
     }
   }
 
+
   //----------------------------------------------------------------------------
   const ParticleList::key_type& ParticleList::TrackId( const size_type index ) const
   {
@@ -109,7 +110,6 @@ namespace sim {
     std::advance(i,index);
     return (*i).first;
   }
-
   //----------------------------------------------------------------------------
   ParticleList::mapped_type ParticleList::Particle( const size_type index ) const
   {
@@ -172,6 +172,27 @@ namespace sim {
     return (*entry).second;
   }
 
+
+  //----------------------------------------------------------------------------
+  std::vector<const simb::MCParticle*> ParticleList::GetPrimaries() const
+  {
+    std::vector<const simb::MCParticle*> primaries;
+    primaries.reserve(m_primaries.size());
+    // for each particle, check if its track ID is in the primaries list
+    // iPartPair is std::pair<const int, simb::MCParticle*>
+    for (auto& iPartPair: m_particleList) {
+      if (m_primaries.count(iPartPair.first))
+        primaries.push_back(iPartPair.second);
+    } // for
+    if (primaries.size() != m_primaries.size()) {
+      throw cet::exception("ParticleList")
+        << "sim::ParticleList::GetPrimaries() collected " << primaries.size()
+        << " primaries, not " << m_primaries.size() << " as expected\n";
+    }
+    return primaries;
+  } // ParticleList::GetPrimaries()
+  
+  
   //----------------------------------------------------------------------------
 //   void ParticleList::Add( const ParticleList& other )
 //   {
