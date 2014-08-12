@@ -406,10 +406,17 @@ namespace larg4 {
 
       // X drift distance - the drift direction can be either in
       // the positive or negative direction, so use std::abs
+
+      /// \todo think about effects of drift between planes 
       double XDrift = std::abs(stepMidPoint.x()/cm - tpcg.PlaneLocation(0)[0]);
-
+      //std::cout<<tpcg.DriftDirection()<<std::endl;
+      if (tpcg.DriftDirection() == geo::kNegX)
+	XDrift = stepMidPoint.x()/cm - tpcg.PlaneLocation(0)[0];
+      else if (tpcg.DriftDirection() == geo::kPosX)
+	XDrift = tpcg.PlaneLocation(0)[0] - stepMidPoint.x()/cm;
+      
       if(XDrift < 0.) return;
-
+      
       // Drift time (nano-sec)
       double TDrift             = XDrift * RecipDriftVel[0];
       if (tpcg.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
