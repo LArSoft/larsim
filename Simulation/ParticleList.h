@@ -30,6 +30,16 @@
 ///            int trackID = particle->TrackId();  // or...
 ///            int trackID = (*i).first;
 ///        }
+///   or, more compact:
+///      sim::ParticleList* particleList = // ...;
+///      for ( const auto& i: *particleList)
+///        {
+///            const simb::MCParticle* particle = i.second;
+///            int trackID = particle->TrackId();  // or...
+///            int trackID = i.first;
+///        }
+///   If looping over all the particles, do prefer the second and third forms,
+///   since the first one is unacceptably inefficient for large events.
 ///
 /// - Methods to access the list of primary particles in the event:
 ///      sim::ParticleList particleList = // ...;
@@ -46,6 +56,19 @@
 ///   (Aside: note that particleList[i] does NOT give you the "i-th"
 ///   particle in the list; it gives you the particle whose trackID
 ///   is "i".)
+///   Also this form becomes unacceptably inefficient when looping over all the
+///   particles in a crowded event: prefer to do a bit more of typing as:
+///      sim::ParticleList* particleList = // ...;
+///      for ( const auto& i: *particleList)
+///        {
+///            int trackID = i.first;
+///            if (!particleList->IsPrimary(trackID)) continue;
+///            const simb::MCParticle* primary = i.second;
+///            // ...
+///        }
+///   
+///   
+///   
 
 ///  - A method EveId(int) to determine the "eve ID" (or ultimate
 ///    mother) for a given particle. For more information, including how
@@ -149,6 +172,9 @@ namespace sim {
 
     bool IsPrimary( int trackID ) const;
     int NumberOfPrimaries() const;
+    
+    std::vector<const simb::MCParticle*> GetPrimaries() const;
+    
     const simb::MCParticle* Primary( const int ) const;
     simb::MCParticle* Primary( const int );
 

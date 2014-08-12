@@ -9,6 +9,7 @@
 
 
 #include "Simulation/SimChannel.h"
+#include "Simulation/sim.h"
 #include "SimpleTypesAndConstants/PhysicalConstants.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -200,6 +201,39 @@ namespace sim{
     }
 
     return ides;
+  }
+
+  //-----------------------------------------------------------------------
+  // the start and end tdc values are assumed to be inclusive
+  std::vector<sim::TrackIDE>  SimChannel::TrackIDEs(unsigned int startTDC,
+						      unsigned int endTDC) const
+  {
+
+    std::vector<sim::TrackIDE> trackIDEs;
+
+    if(startTDC > endTDC ){
+      mf::LogWarning("SimChannel::TrackIDEs") << "requested tdc range is bogus: "
+					      << startTDC << " " << endTDC
+					      << " return empty vector";
+      return trackIDEs;
+    }
+
+    double totalE = 0.;
+    const std::vector<sim::IDE> ides = TrackIDsAndEnergies(startTDC,endTDC);    
+    for (auto const& ide : ides)
+      totalE += ide.energy;
+
+    // protect against a divide by zero below
+    if(totalE < 1.e-5) totalE = 1.;
+    
+    // loop over the entries in the map and fill the input vectors    
+    for (auto const& ide : ides){      
+      if(ide.trackID == sim::NoParticleId) continue;
+      trackIDEs.emplace_back(ide.trackID,ide.energy/totalE,ide.energy); 
+    }
+
+
+    return trackIDEs;
   }
 
 }

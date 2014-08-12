@@ -15,7 +15,7 @@
 #ifndef SIM_H
 #define SIM_H
 
-#include <climits>
+#include <limits>
 #include "TRandom3.h"
 
 ///Monte Carlo Simulation

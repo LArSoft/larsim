@@ -35,12 +35,6 @@ namespace recob{
 ///code to link reconstructed objects back to the MC truth information
 namespace cheat{
 
-  typedef struct{
-    int trackID;      ///< Geant4 supplied trackID
-    float energyFrac; ///< fraction of hit energy from the particle with this trackID
-    float energy;     ///< energy from the particle with this trackID
-  } TrackIDE;
-
   class BackTracker
   {
 
@@ -81,7 +75,7 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    std::vector<TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
+    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,
@@ -89,7 +83,7 @@ namespace cheat{
     
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
-    std::vector<TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
+    std::vector<sim::TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
     
     // method to return sim::IDE objects associated with a given hit
     void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
@@ -147,7 +141,7 @@ namespace cheat{
 
   private:
 
-    void ChannelToTrackID(std::vector<TrackIDE>& trackIDEs,
+    void ChannelToTrackID(std::vector<sim::TrackIDE>& trackIDEs,
 			  uint32_t               channel,
 			  const double hit_start_time,
 			  const double hit_end_time);

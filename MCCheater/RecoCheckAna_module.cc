@@ -9,6 +9,8 @@
 // from art v0_07_04.
 ////////////////////////////////////////////////////////////////////////
 
+#include <utility> // std::move()
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TTree.h"
@@ -407,13 +409,17 @@ void cheat::RecoCheckAna::CheckRecoVertices(art::Event                          
   // loop over all primary particles and put their ids into the first set of the 
   // vector.  add another set for each primary particle that also has daughters
   // and put those daughters into the new set
-  for(int p = 0; p < plist.NumberOfPrimaries(); ++p){
-    ids[0].insert(plist.Primary(p)->TrackId());
-    if(plist.Primary(p)->NumberDaughters() > 0){
+  // PartPair is a (track ID, particle pointer) pair
+  for (const auto& PartPair: plist) {
+    auto trackID = PartPair.first;
+    if (!plist.IsPrimary(trackID)) continue;
+    const simb::MCParticle& part = *(PartPair.second);
+    ids[0].insert(trackID);
+    if(part.NumberDaughters() > 0){
       std::set<int> dv;
-      for(int d = 0; d < plist.Primary(p)->NumberDaughters(); ++d)
-	dv.insert(plist.Primary(p)->Daughter(d));
-      ids.push_back(dv);
+      for(int d = 0; d < part.NumberDaughters(); ++d)
+        dv.insert(part.Daughter(d));
+      ids.push_back(std::move(dv));
     }//end if this primary particle has daughters
   }// end loop over primaries
 
@@ -460,11 +466,16 @@ void cheat::RecoCheckAna::CheckRecoEvents(art::Event                            
   // loop over all primaries in the plist and grab them and their daughters to put into 
   // the set of track ids to pass on to the back tracker
   std::set<int> ids;
-  for(int p = 0; p < plist.NumberOfPrimaries(); ++p){
-    ids.insert(plist.Primary(p)->TrackId());
-    for(int d = 0; d < plist.Primary(p)->NumberDaughters(); ++d)
-      ids.insert(plist.Primary(p)->Daughter(d));
-  }
+  for (const auto& PartPair: plist) {
+    auto trackID = PartPair.first;
+    if (!plist.IsPrimary(trackID)) continue;
+    const simb::MCParticle& part = *(PartPair.second);
+    ids.insert(trackID);
+    for(int d = 0; d < part.NumberDaughters(); ++d)
+      ids.insert(part.Daughter(d));
+  }// end loop over primaries
+
+
 
   art::FindManyP<recob::Hit> fmh(evtcol, evt, label);
 
@@ -549,7 +560,7 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
   // map the g4 track id to energy deposited in a hit
   std::map<int, double> g4IDToHitEnergy;
   for(size_t h = 0; h < allhits.size(); ++h){
-    const std::vector<TrackIDE> hitTrackIDs = fBT->HitToTrackID(allhits[h]);
+    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackID(allhits[h]);
     for(size_t e = 0; e < hitTrackIDs.size(); ++e){
       g4IDToHitEnergy[hitTrackIDs[e].trackID] += hitTrackIDs[e].energy;
     }

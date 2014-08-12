@@ -316,8 +316,6 @@ namespace evgen{
     else{
       t = fT0[i] + fSigmaT[i]*(2.0*flat.fire()-1.0);
     }
-    // make sure time never goes negative.
-    if(t < 0.) t = 0.;
 
     TLorentzVector pos(x[0], x[1], x[2], t);
     

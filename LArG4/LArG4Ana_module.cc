@@ -257,10 +257,12 @@ namespace larg4 {
     fEventEnergy->Fill(totalEnergy);
 
     // get the particles from the back tracker
+    const sim::ParticleList& Particles = bt->ParticleList();
     std::vector<const simb::MCParticle*> pvec;
-    for(size_t i = 0; i < bt->ParticleList().size(); ++i){
-      pvec.push_back(bt->ParticleList().Particle(i));
-      fPDGCodes->Fill(pvec.back()->PdgCode());
+    pvec.reserve(Particles.size());
+    for (const auto& PartPair: Particles) {
+      pvec.push_back(PartPair.second);
+      fPDGCodes->Fill(PartPair.second->PdgCode());
     }
 
     // now look for pi0's that decay to 2 gammas
