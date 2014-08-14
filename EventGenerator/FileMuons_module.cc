@@ -67,43 +67,42 @@ namespace evgen {
 
     void ReadEvents(simb::MCTruth &mct);        
 
-    int                 fEventNumberOffset;  // Where in file to start.
-    int                 fSeed;           // random number seed    
-    std::vector<int>    fPDG;           
-    std::vector<double> fXYZ_Off;           
-    std::string fFileName;
-    std::string fMuonsFileType;
-    std::string fTreeName;
+    int                      fEventNumberOffset;  // Where in file to start.
+    std::vector<int>         fPDG;           
+    std::vector<double>      fXYZ_Off;           
+    std::string              fFileName;
+    std::string              fMuonsFileType;
+    std::string              fTreeName;
     std::vector<std::string> fBranchNames;
 
-    ifstream *fMuonFile;
-    TFile *fMuonFileR;
-    TTree *TNtuple;
-    unsigned int countFile;
+    ifstream                *fMuonFile;
+    TFile                   *fMuonFileR;
+    TTree                   *TNtuple;
+    unsigned int             countFile;
 
-    Float_t xtmp, ytmp, ztmp;
-    Float_t pxtmp, pytmp, pztmp;
-    Float_t charge;
-    Float_t         E;
-    Float_t         costheta;
-    Float_t         phi;
-    Float_t         xdet;
-    Float_t         ydet;
-    Float_t         zdet;
-
-    TBranch        *b_x;   //!
-    TBranch        *b_y;   //!
-    TBranch        *b_z;   //!
-    TBranch        *b_E;   //!
-    TBranch        *b_costheta;   //!
-    TBranch        *b_phi;   //!
-    TBranch        *b_xdet;   //!
-    TBranch        *b_ydet;   //!
-    TBranch        *b_zdet;   //!
-    TBranch        *b_px;   //!
-    TBranch        *b_py;   //!
-    TBranch        *b_pz;   //!
-    TBranch        *b_charge;   //!
+    Float_t                  xtmp, ytmp, ztmp;
+    Float_t                  pxtmp, pytmp, pztmp;
+    Float_t                  charge;        
+    Float_t     	     E;		   
+    Float_t     	     costheta;	   
+    Float_t     	     phi;	   
+    Float_t     	     xdet;	   
+    Float_t     	     ydet;	   
+    Float_t     	     zdet;	   
+			                    
+    TBranch     	    *b_x;   //!	   
+    TBranch     	    *b_y;   //!	   
+    TBranch     	    *b_z;   //!	   
+    TBranch     	    *b_E;   //!	   
+    TBranch     	    *b_costheta;   //!
+    TBranch     	    *b_phi;   //!   
+    TBranch     	    *b_xdet;   //!  
+    TBranch     	    *b_ydet;   //!  
+    TBranch     	    *b_zdet;   //!  
+    TBranch     	    *b_px;   //!	   
+    TBranch     	    *b_py;   //!	   
+    TBranch     	    *b_pz;   //!	   
+    TBranch     	    *b_charge;   //!
 
 
   };
@@ -116,9 +115,8 @@ namespace evgen{
   //____________________________________________________________________________
   FileMuons::FileMuons(fhicl::ParameterSet const& pset)
      : fEventNumberOffset(pset.get<      int                 >("EventNumberOffset"))
-     , fSeed(314159)					                          
      , fPDG              (pset.get< std::vector<int>	     >("PDG")              )	       
-     , fXYZ_Off          (pset.get< std::vector<double>	     >("InitialXYZOffsets")              )	       
+     , fXYZ_Off          (pset.get< std::vector<double>	     >("InitialXYZOffsets"))	       
      , fFileName         (pset.get< std::string     	     >("FileName")         )      
      , fMuonsFileType    (pset.get< std::string              >("MuonsFileType")    )
      , fTreeName         (pset.get< std::string   	     >("TreeName")         )      
@@ -211,10 +209,7 @@ namespace evgen{
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-
-    geo::DetId_t detid = geo->DetId();
-
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(detid));
+    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
 
     run.put(std::move(runcol));
 
