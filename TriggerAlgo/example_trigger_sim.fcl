@@ -6,7 +6,7 @@
 # which is prepared as an example of how to run the trigger simulation.
 #
 
-#include "services.fcl"
+#include "services_microboone.fcl"
 #include "triggeralgo_service.fcl"
 
 process_name: TriggerSimulation
