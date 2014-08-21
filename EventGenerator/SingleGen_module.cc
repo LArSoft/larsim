@@ -44,6 +44,7 @@
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
+#include "TMath.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -320,23 +321,34 @@ namespace evgen{
     TLorentzVector pos(x[0], x[1], x[2], t);
     
     // Choose angles
-    double thxz, thyz;
+    double thxz = 0;
+    double thyz = 0;
+    
+    double thyzrads = 0; 
+    double thyzradsplussigma = 0;
+    double thyzradsminussigma = 0;
+
     if (fAngleDist == kGAUS) {
       thxz = gauss.fire(fTheta0XZ[i], fSigmaThetaXZ[i]);
       thyz = gauss.fire(fTheta0YZ[i], fSigmaThetaYZ[i]);
     }
     else {
-
+      
       // Choose angles flat in phase space, which is flat in theta_xz 
       // and flat in sin(theta_yz).
-
+   
       thxz = fTheta0XZ[i] + fSigmaThetaXZ[i]*(2.0*flat.fire()-1.0);
-      double sinthyzmin = std::sin((M_PI / 180.) * (fTheta0YZ[i] - fSigmaThetaYZ[i]));
-      double sinthyzmax = std::sin((M_PI / 180.) * (fTheta0YZ[i] + fSigmaThetaYZ[i]));
-      double sinthyz = sinthyzmin + flat.fire() * (sinthyzmax - sinthyzmin);
-      thyz = (180. / M_PI) * std::asin(sinthyz);
+     
+      thyzrads = std::asin(std::sin((M_PI/180.)*(fTheta0YZ[i]))); //Taking asin of sin gives value between -Pi/2 and Pi/2 regardless of user input
+      thyzradsplussigma = TMath::Min((thyzrads + ((M_PI/180.)*fabs(fSigmaThetaYZ[i]))), M_PI/2.);
+      thyzradsminussigma = TMath::Max((thyzrads - ((M_PI/180.)*fabs(fSigmaThetaYZ[i]))), -M_PI/2.);
+         
+      //uncomment line to print angular variation info
+      //    std::cout << "Central angle: " << (180./M_PI)*thyzrads << " Max angle: " << (180./M_PI)*thyzradsplussigma << " Min angle: " << (180./M_PI)*thyzradsminussigma << std::endl; 
+            thyz = (180./M_PI)*(thyzradsminussigma + (2.0*flat.fire()-1.0) * (thyzradsplussigma - thyzradsminussigma));
+     
     }
-
+    
     double thxzrad=thxz*M_PI/180.0;	
     double thyzrad=thyz*M_PI/180.0;
 
@@ -352,6 +364,10 @@ namespace evgen{
     simb::MCParticle part(trackid, fPDG[i], primary);
     part.AddTrajectoryPoint(pos, pvec);
 
+    std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
+    std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
+    std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl; 
+     
     mct.Add(part);
   }
 
