@@ -344,9 +344,12 @@ namespace evgen{
       thyzradsminussigma = TMath::Max((thyzrads - ((M_PI/180.)*fabs(fSigmaThetaYZ[i]))), -M_PI/2.);
          
       //uncomment line to print angular variation info
-      //    std::cout << "Central angle: " << (180./M_PI)*thyzrads << " Max angle: " << (180./M_PI)*thyzradsplussigma << " Min angle: " << (180./M_PI)*thyzradsminussigma << std::endl; 
-            thyz = (180./M_PI)*(thyzradsminussigma + (2.0*flat.fire()-1.0) * (thyzradsplussigma - thyzradsminussigma));
-     
+      //std::cout << "Central angle: " << (180./M_PI)*thyzrads << " Max angle: " << (180./M_PI)*thyzradsplussigma << " Min angle: " << (180./M_PI)*thyzradsminussigma << std::endl; 
+
+      double sinthyzmin = std::sin(thyzradsminussigma);
+      double sinthyzmax = std::sin(thyzradsplussigma);
+      double sinthyz = sinthyzmin + flat.fire() * (sinthyzmax - sinthyzmin);
+      thyz = (180. / M_PI) * std::asin(sinthyz);
     }
     
     double thxzrad=thxz*M_PI/180.0;	
