@@ -39,7 +39,6 @@ extern "C" {
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
 #include "RecoBase/Wire.h"
-#include "Filters/ChannelFilter.h"
 #include "Utilities/LArFFT.h"
 #include "Geometry/PlaneGeo.h"
 #include "Utilities/DetectorProperties.h"
