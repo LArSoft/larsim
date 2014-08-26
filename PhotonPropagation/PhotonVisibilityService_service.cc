@@ -114,10 +114,7 @@ namespace phot{
     
     // Library details
     fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob"     );
-    if(geom->DetId() == 3)
-    {fParameterization     = p.get< bool        >("LBNE10ktParameterization"    );}
-    else
-    {fParameterization = false;}
+    fParameterization     = p.get< bool        >("LBNE10ktParameterization", false);
     fLibraryFile          = p.get< std::string >("LibraryFile"         );
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
 
