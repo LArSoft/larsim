@@ -241,10 +241,7 @@ namespace evgen{
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-
-    geo::DetId_t detid = geo->DetId();
-
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(detid));
+    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
 
     run.put(std::move(runcol));
 

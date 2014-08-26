@@ -169,6 +169,11 @@ namespace detsim{
     for(unsigned int i = 0; i < fNoise.size(); ++i) fNoise[i].clear();
     fNoise.clear();
 
+    LOG_WARNING("SimWire") << "SimWire is an example module that works for the "
+			   << "MicroBooNE detector.  Each experiment should implement "
+			   << "its own version of this module to simulate electronics "
+			   << "response.";
+
   }
 
   //-------------------------------------------------
@@ -245,7 +250,6 @@ namespace detsim{
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;
     unsigned int signalSize = fNTicks;
-    if(geo->DetId() == geo::kArgoNeuT) signalSize /= 2;
     // vectors for working
     std::vector<short>    adcvec(signalSize, 0);	
 
@@ -512,71 +516,38 @@ namespace detsim{
     fElectResponse.resize(fNTicks, 0.);
     std::vector<double> time(fNTicks,0.);
 
-    if( geo->DetId() == geo::kArgoNeuT ){
-   
-
-      TFile inFile(fResponseFile.c_str(),"READ");        
-      if(inFile.IsZombie()){      
-	mf::LogError("SimWireMicroBooNE") << "Cannot open response file" << fResponseFile.c_str();      
-	// 	assert(0);    
-      }    
-
-      TH1D * shape = (TH1D*)inFile.Get("shape");    
-      int ctr = 0;    
-      double integral = 0.;    
-      double holder = 0;   
-
-      while(ctr < fNTicks){      
-	holder = shape->GetBinContent(ctr+1);      
-	fElectResponse[ctr] = holder;      
-	time[ctr] = ctr*fSampleRate;      
-	if(holder> 0.){	
-	  integral += holder;	
-	}      
-	
-	++ctr;    
-      }//end loop over input         
-
-      for(unsigned int i = 0; i < fElectResponse.size(); ++i)      
-	fElectResponse[i] /= integral;
-
-    }//end if argoneut
-    else if( geo->DetId() == geo::kMicroBooNE ) {
+    double norm = fShapeTimeConst[1]*TMath::Pi();
+    norm /= sin(fShapeTimeConst[1]*TMath::Pi()/fShapeTimeConst[0])/fSampleRate;
     
-      double norm = fShapeTimeConst[1]*TMath::Pi();
-      norm /= sin(fShapeTimeConst[1]*TMath::Pi()/fShapeTimeConst[0])/fSampleRate;
-
-      double peak = 0.;
+    double peak = 0.;
+    
+    for(int i = 0; i < fNTicks; ++i){
+      time[i] = (1.*i - 0.33333*fNTicks)*fSampleRate;
       
-      for(int i = 0; i < fNTicks; ++i){
-	time[i] = (1.*i - 0.33333*fNTicks)*fSampleRate;
-
-	// The 120000 is an arbitrary scaling to get displays for microboone
-	fElectResponse[i] = 120000.0*exp(-time[i]/fShapeTimeConst[0])/(1. + exp(-time[i]/fShapeTimeConst[1]))/norm;  
-
-	if(fElectResponse[i] > peak){
-	  peak = fElectResponse[i];
-	}
-      }///end loop over time buckets
-
-      ///remove all values of fElectResponse and time where fElectResponse < 0.01*peak 
-      peak *= 0.01;
-      std::vector<double>::iterator eitr = fElectResponse.begin();
-      std::vector<double>::iterator titr = time.begin();
-      while(eitr != fElectResponse.end()){
-	if(*eitr < peak){
-	  fElectResponse.erase(eitr);
-	  time.erase(titr);
-       
-	}
-	else{
-	  ++eitr;
-	  ++titr;
-	}
-      }//end loop to remove low response values
-
-    }///end if microboone
-
+      // The 120000 is an arbitrary scaling to get displays for microboone
+      fElectResponse[i] = 120000.0*exp(-time[i]/fShapeTimeConst[0])/(1. + exp(-time[i]/fShapeTimeConst[1]))/norm;  
+      
+      if(fElectResponse[i] > peak){
+	peak = fElectResponse[i];
+      }
+    }///end loop over time buckets
+    
+    ///remove all values of fElectResponse and time where fElectResponse < 0.01*peak 
+    peak *= 0.01;
+    std::vector<double>::iterator eitr = fElectResponse.begin();
+    std::vector<double>::iterator titr = time.begin();
+    while(eitr != fElectResponse.end()){
+      if(*eitr < peak){
+	fElectResponse.erase(eitr);
+	time.erase(titr);
+	
+      }
+      else{
+	++eitr;
+	++titr;
+      }
+    }//end loop to remove low response values
+    
     fNElectResp = fElectResponse.size();
 
     // write the response out to a file
