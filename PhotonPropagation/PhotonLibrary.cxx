@@ -11,7 +11,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
-
+#include "TKey.h"
 
 namespace phot{
   
@@ -105,6 +105,14 @@ namespace phot{
       {
 	f  =  TFile::Open(LibraryFile.c_str());
 	tt =  (TTree*)f->Get("PhotonLibraryData");
+        if (!tt) { // Library not in the top directory
+            TKey *key = f->FindKeyAny("PhotonLibraryData");
+            if (key) 
+                tt = (TTree*)key->ReadObj();
+            else {
+                mf::LogError("PhotonLibrary") << "PhotonLibraryData not found in file" <<LibraryFile;
+            }
+        }
       }
     catch(...)
       {
@@ -136,7 +144,7 @@ namespace phot{
 	tt->GetEntry(i);
 	if((Voxel<0)||(Voxel>=int(NVoxels))||(OpChannel<0)||(OpChannel>=int(NOpChannels)))
 	  {
-	    //	    mf::LogError("PhotonLibrary")<<"Error building photon library, entry out of range: " << Voxel<< " " << OpChannel;
+           //      mf::LogError("PhotonLibrary")<<"Error building photon library, entry out of range: " << Voxel<< " " << OpChannel;
 	  }
 	else
 	  {
