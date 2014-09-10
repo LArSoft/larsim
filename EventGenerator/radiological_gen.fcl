@@ -1,0 +1,23 @@
+BEGIN_PROLOG
+
+# parameters for a radiological generation generator.  Currently, it generates radiologicals within rectangular prisms
+# with sides parallel to the x, y, and z axes, and within a specified time window.  The parameters Nuclide through
+# T1 are arrays, so that many volumes can be specified to be radioactive with different nuclides.
+
+standard_radiogen:
+{
+ module_type:           "RadioGen"
+ Nuclide:               [ "39Ar" ]  # list of nuclides to simulate
+ BqPercc:               [ 0.00141 ]      # activity -- Becquerels per cc. 0.0041 assumes 1.01 Bq/kg and a density of 1.396 g/cc
+ X0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
+ Y0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
+ Z0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
+ T0:                    [ -3200000. ]  # starting time in ns
+ X1:                    [ 100. ]     # in cm in world coordinates, top corner of box
+ Y1:                    [ 100. ]     # in cm in world coordinates, top corner of box
+ Z1:                    [ 100. ]     # in cm in world coordinates, top corner of box
+ T1:                    [ 3200000. ]   # ending time in ns
+}
+
+
+END_PROLOG
