@@ -18,7 +18,7 @@
 #include <memory>
 #include <iterator>
 #include <vector>
-
+#include <sys/stat.h>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -32,6 +32,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "cetlib/search_path.h"
 
 // nutools includes
 #include "SimulationBase/MCTruth.h"
@@ -47,6 +48,11 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 #include "TGenPhaseSpace.h"
+#include "TMath.h"
+#include "TFile.h"
+#include "TH1.h"
+#include "TH1D.h"
+#include "TGraph.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
@@ -74,7 +80,18 @@ namespace evgen {
     void SampleOne(unsigned int   i, 
 		   simb::MCTruth &mct);        
 
-    double betaphasespace(double mass, double q);
+    void readfile(std::string nuclide, std::string filename);
+    void samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p);  
+
+    // recoded so as to use the LArSoft-managed random number generator
+    double samplefromth1d(TH1D *hist);
+
+    // itype = pdg code:  1000020040: alpha.  itype=11: beta. -11: positron,  itype=22: gamma.  -1: error
+    // t is the kinetic energy in GeV  (= E-m)
+    // m = mass in GeV
+    // p = momentum in GeV
+
+    //double betaphasespace(double mass, double q); // older parameterization.
 
     unsigned int        fSeed;           ///< random number seed    
     std::vector<std::string> fNuclide;   ///< List of nuclides to simulate.  Example:  "39Ar".
@@ -89,10 +106,20 @@ namespace evgen {
     std::vector<double> fZ1;             ///< Top corner z position (cm) in world coordinates
     int trackidcounter;                  ///< Serial number for the MC track ID
 
-    const double gevperamu = 0.931494061;
-    const double m_e = 0.000511;  // mass of electron in GeV
+    // leftovers from the phase space generator
+    // const double gevperamu = 0.931494061;
+    // TGenPhaseSpace rg;  // put this here so we don't constantly construct and destruct it
 
-    TGenPhaseSpace rg;  // put this here so we don't constantly construct and destruct it
+    const double m_e = 0.000510998928;  // mass of electron in GeV
+    const double m_alpha = 3.727379240; // mass of an alpha particle in GeV
+
+    std::vector<std::string> spectrumname;
+    std::vector<TH1D*> alphaspectrum;
+    std::vector<double> alphaintegral;
+    std::vector<TH1D*> betaspectrum;
+    std::vector<double> betaintegral;
+    std::vector<TH1D*> gammaspectrum;
+    std::vector<double> gammaintegral;
 
   };
 }
@@ -150,6 +177,13 @@ namespace evgen{
     if (  fX1.size() != nsize ) throw cet::exception("RadioGen") << "Different size X1 vector and Nuclide vector\n";
     if (  fY1.size() != nsize ) throw cet::exception("RadioGen") << "Different size Y1 vector and Nuclide vector\n";
     if (  fZ1.size() != nsize ) throw cet::exception("RadioGen") << "Different size Z1 vector and Nuclide vector\n";
+
+    readfile("39Ar","Argon_39.root");
+    readfile("60Co","Cobalt_60.root");
+    readfile("85Kr","Krypton_85.root");
+    readfile("40K","Potassium_40.root");
+    readfile("232Th","Thorium_232.root");
+    readfile("238U","Uranium_238.root");
 
     return;
   }
@@ -209,22 +243,13 @@ namespace evgen{
 	// generate just one particle at a time.  Need a little recoding if a radioactive
 	// decay generates multiple daughters that need simulation
 
-	int pdgid=0;  // electron=11, photon=22
+	int pdgid=0;  // electron=11, photon=22, alpha = 1000020040
+        double t = 0; // kinetic energy of particle GeV
+	double m = 0; // mass of daughter particle GeV
 	double p = 0; // generated momentum (GeV)
-	double m = 0; // mass of daughter particle
 
-	if (fNuclide[i] == "39Ar")
-	  {
-	    double mass = 38.964313 * 0.931494061 - 18*m_e; // 39Ar nucleus mass in GeV.
-	    double q = 0.000565;
-	    p = betaphasespace(mass,q); // first attempt -- use phase space
-	    pdgid = 11;  // generate beta spectrum
-	    m = m_e;
-	  }
-	else
-	  {
-	    throw cet::exception("RadioGen") << "Unimplemented nuclide: " << fNuclide[i] << "\n";
-	  }
+        samplespectrum(fNuclide[i],pdgid,t,m,p);
+
 
 	// uniformly distributed in position and time
 
@@ -245,8 +270,7 @@ namespace evgen{
 			    p*sintheta*std::sin(phi),
 			    p*costheta,
 			    std::sqrt(p*p+m*m));
-	//pvec.Print();
- 
+
 	// set track id to a negative serial number as these are all primary particles and have id <= 0
 	int trackid = trackidcounter;
 	trackidcounter--;
@@ -257,28 +281,250 @@ namespace evgen{
       }
   }
 
-  // phase space generator for beta decay
+  // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
 
-  double RadioGen::betaphasespace(double mass, double q)
+  void RadioGen::readfile(std::string nuclide, std::string filename)
+  {
+    int ifound = 0;
+    for (size_t i=0; i<fNuclide.size(); i++)
+      {
+	if (fNuclide[i] == nuclide)
+	  {
+	    ifound = 1;
+	    break;
+	  }
+      }
+    if (ifound == 0) return;
+
+    Bool_t addStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE); // cloned histograms go in memory, and aren't deleted when files are closed.
+    // be sure to restore this state when we're out of the routine.
+
+
+    spectrumname.push_back(nuclide);
+
+    cet::search_path sp("FW_SEARCH_PATH");
+    std::string fn2 = "Radionuclides/";
+    fn2 += filename;
+    std::string fullname;
+    sp.find_file(fn2, fullname);
+    struct stat sb;
+    if (fullname.empty() || stat(fullname.c_str(), &sb)!=0)
+      throw cet::exception("RadioGen") << "Input spectrum file "
+                                        << fn2
+                                        << " not found in FW_SEARCH_PATH!\n";
+
+    TFile f(fullname.c_str(),"READ");
+    TGraph *alphagraph = (TGraph*) f.Get("Alphas");
+    TGraph *betagraph = (TGraph*) f.Get("Betas");
+    TGraph *gammagraph = (TGraph*) f.Get("Gammas");
+
+    if (alphagraph)
+      {
+	int np = alphagraph->GetN();
+	double *y = alphagraph->GetY();
+	std::string name;
+	name = "RadioGen_";
+	name += nuclide;
+	name += "_Alpha";
+	TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np-1);
+	for (int i=0; i<np; i++)
+	  {
+	    alphahist->SetBinContent(i+1,y[i]);
+	    alphahist->SetBinError(i+1,0);
+	  }
+	alphaspectrum.push_back(alphahist);
+	alphaintegral.push_back(alphahist->Integral());
+      }
+    else
+      {
+	alphaspectrum.push_back(0);
+	alphaintegral.push_back(0);
+      }
+
+
+    if (betagraph)
+      {
+	int np = betagraph->GetN();
+
+	double *y = betagraph->GetY();
+	std::string name;
+	name = "RadioGen_";
+	name += nuclide;
+	name += "_Beta";
+	TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np-1);
+
+	for (int i=0; i<np; i++)
+	  {
+	    betahist->SetBinContent(i+1,y[i]);
+	    betahist->SetBinError(i+1,0);
+	  }
+	betaspectrum.push_back(betahist);
+	betaintegral.push_back(betahist->Integral());
+      }
+    else
+      {
+	betaspectrum.push_back(0);
+	betaintegral.push_back(0);
+      }
+
+    if (gammagraph)
+      {
+	int np = gammagraph->GetN();
+	double *y = gammagraph->GetY();
+	std::string name;
+	name = "RadioGen_";
+	name += nuclide;
+	name += "_Gamma";
+	TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np-1);
+	for (int i=0; i<np; i++)
+	  {
+	    gammahist->SetBinContent(i+1,y[i]);
+	    gammahist->SetBinError(i+1,0);
+	  }
+	gammaspectrum.push_back(gammahist);
+	gammaintegral.push_back(gammahist->Integral());
+      }
+    else
+      {
+	gammaspectrum.push_back(0);
+	gammaintegral.push_back(0);
+      }
+
+    f.Close();
+    TH1::AddDirectory(addStatus);
+
+    double total = alphaintegral.back() + betaintegral.back() + gammaintegral.back();
+    if (total>0)
+      {
+	alphaintegral.back() /= total;
+	betaintegral.back() /= total;
+	gammaintegral.back() /= total;
+      }
+  }
+
+
+  void RadioGen::samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p)
+  {
+
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat  flat(engine);
+
+    int inuc = -1;
+    for (size_t i=0; i<spectrumname.size(); i++)
+      {
+	if (nuclide == spectrumname[i])
+	  {
+	    inuc = i;
+	    break;
+	  }
+      }
+    if (inuc == -1)
+      {
+	t=0;  // throw an exception in the future
+	itype = 0;
+	throw cet::exception("RadioGen") << "Ununderstood nuclide:  " << nuclide << "\n";
+      }
+
+    double rtype = flat.fire();  
+
+    itype = -1;
+    m = 0;
+    p = 0;
+    for (int itry=0;itry<10;itry++) // maybe a tiny normalization issue with a sum of 0.99999999999 or something, so try a few times.
+      {
+	if (rtype <= alphaintegral[inuc] && alphaspectrum[inuc] != 0)
+	  {
+	    itype = 1000020040; // alpha
+	    m = m_alpha;
+	    t = samplefromth1d(alphaspectrum[inuc])/1000000.0;
+	  }
+	else if (rtype <= alphaintegral[inuc]+betaintegral[inuc] && betaspectrum[inuc] != 0)
+	  {
+	    itype = 11; // beta
+	    m = m_e;
+	    t = samplefromth1d(betaspectrum[inuc])/1000000.0;
+	  }
+	else if ( gammaspectrum[inuc] != 0)
+	  {
+	    itype = 22; // gamma
+	    m = 0;
+	    t = samplefromth1d(gammaspectrum[inuc])/1000000.0;
+	  }
+	if (itype >= 0) break;
+      }
+    if (itype == -1)
+      {
+	throw cet::exception("RadioGen") << "Normalization problem with nuclide:  " << nuclide << "\n";
+      }
+    double e = t + m;
+    p = e*e - m*m;
+    if (p>=0) 
+      { p = TMath::Sqrt(p); }
+    else 
+      { p=0; }
+  }
+
+  // this is just a copy of TH1::GetRandom that uses the art-managed CLHEP random number generator instead of gRandom
+  // and a better handling of negative bin contents
+
+  double RadioGen::samplefromth1d(TH1D *hist)
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat     flat(engine);
-    double p = 0;
-    double mi = mass+q+m_e;
-    TLorentzVector p0(0,0,0,mi);      // pre-decay four-vector
-    double masses[3] = {0,m_e,mass};  // neutrino, electron, nucleus
-    rg.SetDecay(p0,3,masses);
-    double wmax = rg.GetWtMax();
-    for (int igen=0;igen<1000;igen++)   // cap the retries at 1000
-      {
-        double weight = rg.Generate();  // want to unweight these if possible
-        TLorentzVector *e4v = rg.GetDecay(1);  // get electron four-vector
-        p = e4v->P();
-	if (weight >= wmax * flat.fire()) break;
-      }
-    return p;
+    CLHEP::RandFlat  flat(engine);
+
+   int nbinsx = hist->GetNbinsX();
+   std::vector<double> partialsum;
+   partialsum.resize(nbinsx+1);
+   partialsum[0] = 0;
+
+   for (int i=1;i<=nbinsx;i++)
+     { 
+       double hc = hist->GetBinContent(i); 
+       if ( hc < 0) throw cet::exception("RadioGen") << "Negative bin:  " << i << " " << hist->GetName() << "\n";
+       partialsum[i] = partialsum[i-1] + hc;
+     }
+   double integral = partialsum[nbinsx];
+   if (integral == 0) return 0;
+   // normalize to unit sum
+   for (int i=1;i<=nbinsx;i++) partialsum[i] /= integral;
+
+   double r1 = flat.fire();
+   int ibin = TMath::BinarySearch(nbinsx,&(partialsum[0]),r1);
+   Double_t x = hist->GetBinLowEdge(ibin+1);
+   if (r1 > partialsum[ibin]) x +=
+      hist->GetBinWidth(ibin+1)*(r1-partialsum[ibin])/(partialsum[ibin+1] - partialsum[ibin]);
+   return x;
   }
+
+
+  // phase space generator for beta decay -- keep it as a comment in case we ever want to revive it
+
+  // double RadioGen::betaphasespace(double mass, double q)
+  //{
+  //  art::ServiceHandle<art::RandomNumberGenerator> rng;
+  //  CLHEP::HepRandomEngine &engine = rng->getEngine();
+  //  CLHEP::RandFlat     flat(engine);
+  //  double p = 0;
+  //  double mi = mass+q+m_e;
+  //  TLorentzVector p0(0,0,0,mi);      // pre-decay four-vector
+  //  double masses[3] = {0,m_e,mass};  // neutrino, electron, nucleus
+  //  rg.SetDecay(p0,3,masses);
+  //  double wmax = rg.GetWtMax();
+  //  for (int igen=0;igen<1000;igen++)   // cap the retries at 1000
+  //    {
+  //      double weight = rg.Generate();  // want to unweight these if possible
+  //      TLorentzVector *e4v = rg.GetDecay(1);  // get electron four-vector
+  //      p = e4v->P();
+  //	if (weight >= wmax * flat.fire()) break;
+  //   }
+  //return p;
+  //}
+
+
+
 
 }//end namespace evgen
 
