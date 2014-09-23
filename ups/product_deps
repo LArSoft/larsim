@@ -11,6 +11,7 @@ larevt		v02_06_02
 gcc		v4_8_2
 genie_xsec      R-2_8_0 
 genie_phyopt    R-2_8_0 
+larsoft_data    v0_03_00
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
