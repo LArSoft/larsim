@@ -275,9 +275,20 @@ namespace evgen{
 	int trackid = trackidcounter;
 	trackidcounter--;
 	std::string primary("primary");
-	simb::MCParticle part(trackid, pdgid, primary);
-	part.AddTrajectoryPoint(pos, pvec);
-	mct.Add(part);
+	// alpha particles need a little help since they're not in the TDatabasePDG table
+	// so don't rely so heavily on default arguments to the MCParticle constructor
+	if (pdgid == 1000020040)
+	  {
+	    simb::MCParticle part(trackid, pdgid, primary,-1,m,1);
+	    part.AddTrajectoryPoint(pos, pvec);
+	    mct.Add(part);
+	  }
+	else
+	  {
+	    simb::MCParticle part(trackid, pdgid, primary);
+	    part.AddTrajectoryPoint(pos, pvec);
+	    mct.Add(part);
+	  }
       }
   }
 
