@@ -9,7 +9,8 @@
 
 
 <lcgdict>
- <class name="sim::OnePhoton"                ClassVersion="11"                   >
+ <class name="sim::OnePhoton"                ClassVersion="12"                   >
+  <version ClassVersion="12" checksum="124883757"/>
   <version ClassVersion="11" checksum="1948463887"/>
  </class>
  <class name="sim::SimPhotonsLite"           ClassVersion="10"                   >
