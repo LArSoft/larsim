@@ -8,7 +8,7 @@ standard_radiogen:
 {
  module_type:           "RadioGen"
  Nuclide:               [ "39Ar" ]  # list of nuclides to simulate, supported so far: 39Ar, 60Co, 85Kr, 40K, 232Th, 238U
- BqPercc:               [ 0.00141 ]      # activity -- Becquerels per cc. 0.0041 assumes 1.01 Bq/kg and a density of 1.396 g/cc
+ BqPercc:               [ 0.00141 ]      # activity -- Becquerels per cc. 0.00141 assumes 1.01 Bq/kg (typical for 39Ar) and a density of 1.396 g/cc for LAr
  X0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
  Y0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
  Z0:                    [ -100. ]      # in cm in world coordinates, bottom corner of box
