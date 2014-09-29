@@ -18,11 +18,11 @@ end_product_list
 
   
 # e6  - with gcc 4.9.1 and -std=c++1y
-qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	notes
-e6:debug	e6:debug	default		dkcharmtau	-nq-
-e6:opt		e6:opt		default		dkcharmtau	-nq-
-e6:prof		e6:prof		default		dkcharmtau	-nq-
-e6:debug:noifdh	e6:debug	default		dkcharmtau	-nq-
+qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	larsoft_data	notes
+e6:debug	e6:debug	default		dkcharmtau	-nq-	-nq-
+e6:opt		e6:opt		default		dkcharmtau	-nq-	-nq-
+e6:prof		e6:prof		default		dkcharmtau	-nq-	-nq-
+e6:debug:noifdh	e6:debug	default		dkcharmtau	-nq-	-nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
