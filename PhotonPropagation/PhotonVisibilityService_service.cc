@@ -248,7 +248,7 @@ namespace phot{
       LoadLibrary();
 
     fTheLibrary->SetCount(VoxID,OpChannel, N);
-    mf::LogInfo("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------

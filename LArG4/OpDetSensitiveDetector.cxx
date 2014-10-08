@@ -59,10 +59,17 @@ namespace larg4{
     
 
     ThePhoton.Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();
-    
-    // Lookup which OpDet we are in
 
-    int OpDetChannel = fTheOpDetLookup->GetChannel(aStep->GetPreStepPoint()->GetPhysicalVolume());
+    // Lookup which OpDet we are in
+    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+
+    int OpDetChannel = fTheOpDetLookup->GetChannel(preStepPoint->GetPhysicalVolume());
+
+    // Store relative position on the photon detector
+    G4ThreeVector worldPosition  = preStepPoint->GetPosition();
+    G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
+    ThePhoton.FinalLocalPosition = TVector3(localPosition.x()/cm, localPosition.y()/cm, localPosition.z()/cm);
+    
 
     // Add this photon to the detected photons table
     fThePhotonTable->AddPhoton(OpDetChannel, std::move(ThePhoton));

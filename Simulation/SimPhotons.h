@@ -48,6 +48,7 @@ namespace sim
 
     bool           SetInSD;
     TVector3       InitialPosition;
+    TVector3       FinalLocalPosition; // in cm
     float          Time;
     float          Energy;
   };
