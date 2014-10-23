@@ -3,6 +3,7 @@ BEGIN_PROLOG
 standard_photonlibraryanalyzer:
 {
   module_type: "PhotonLibraryAnalyzer"
+  alt_x_axis:  "Y"
 }
 
 microboone_photonlibraryanalyzer: @local::standard_photonlibraryanalyzer
