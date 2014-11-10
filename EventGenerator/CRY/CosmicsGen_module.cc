@@ -55,6 +55,8 @@ namespace evgen {
   private:
 
     evgb::CRYHelper* fCRYHelp; ///< CRY generator object
+    
+    std::vector<double> fbuffbox;
 
     TH1F* fDminHisto;          ///< Closest approach for particles 
 
@@ -106,6 +108,9 @@ namespace evgen{
     // Create a random number engine
     int seed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
     createEngine(seed);
+    
+    //the buffer box bounds specified here will extend on the cryostat boundaries
+    fbuffbox = pset.get< std::vector<double> >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
 
     this->reconfigure(pset);
     
@@ -278,12 +283,20 @@ namespace evgen{
 	
 	  double bounds[6] = {0.};
 	  geom->CryostatBoundaries(bounds, c);
+	  
+	  //add a buffer box around the cryostat bounds to increase the acceptance
+	  //(geometrically) at the CRY level to make up for particles we will loose 
+	  //due to multiple scattering effects that pitch in during GEANT4 tracking
+	  //By default, the buffer box has zero size
+	  for (unsigned int cb=0; cb<6; cb++)
+	     bounds[cb] = bounds[cb]+fbuffbox[cb];
+	  
 	  if(x2[0] >= bounds[0] && x2[0] <= bounds[1] &&
 	     x2[1] >= bounds[2] && x2[1] <= bounds[3] &&
 	     x2[2] >= bounds[4] && x2[2] <= bounds[5]){
 	    truth.Add(particle);
 	    fDminHisto->Fill(d);
-
+	    
 	    if      (std::abs(particle.PdgCode())==13) ++numMuons;
 	    else if (std::abs(particle.PdgCode())==22) ++numPhotons;
 	    else if (std::abs(particle.PdgCode())==11) ++numElectrons;
