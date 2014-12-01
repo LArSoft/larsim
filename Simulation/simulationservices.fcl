@@ -53,7 +53,9 @@ standard_largeantparameters:
 jp250L_largeantparameters:     @local::standard_largeantparameters
 bo_largeantparameters:         @local::standard_largeantparameters
 argoneut_largeantparameters:   @local::standard_largeantparameters
-microboone_largeantparameters: @local::standard_largeantparameters
+# The following line is already in simulationservices_microboone.fcl
+# and so it should not also be included here, for clarity's sake.
+#microboone_largeantparameters: @local::standard_largeantparameters
 lbne35t_largeantparameters:    @local::standard_largeantparameters
 lbnefd_largeantparameters:   @local::standard_largeantparameters
 
@@ -73,7 +75,9 @@ standard_larvoxelcalculator:
 bo_larvoxelcalculator:         @local::standard_larvoxelcalculator
 jp250L_larvoxelcalculator:     @local::standard_larvoxelcalculator
 argoneut_larvoxelcalculator:   @local::standard_larvoxelcalculator
-microboone_larvoxelcalculator: @local::standard_larvoxelcalculator
+# The following line is already in simulationservices_microboone.fcl
+# and so it should not also be included here, for clarity's sake.
+#microboone_larvoxelcalculator: @local::standard_larvoxelcalculator
 lbne35t_larvoxelcalculator:    @local::standard_larvoxelcalculator
 lbnefd_larvoxelcalculator:     @local::standard_larvoxelcalculator
 
