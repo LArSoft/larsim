@@ -109,6 +109,7 @@ physics.analyzers.pmtresponse.MakeDetectedPhotonsTree: false
 physics.analyzers.pmtresponse.MakeOpDetsTree: false
 physics.analyzers.pmtresponse.MakeOpDetEventsTree: false
 
+#services.user.Geometry.GDML: "TempGeometry/gdml/microboone.gdml"
 
 # To disable wireplane absorption, uncomment this line
 #services.user.LArG4Parameters.OpticalParamModels: ["TransparentPlaneAction"]
@@ -127,6 +128,6 @@ services.user.PhotonVisibilityService.NZ: 400
 #services.user.PhotonVisibilityService.ZMin: 500
 #services.user.PhotonVisibilityService.ZMax: 600
 
-
-
-
+#physics.producers.generator.FirstVoxel: 0
+#physics.producers.generator.LastVoxel: 239
+#physics.producers.generator.N: 30000
