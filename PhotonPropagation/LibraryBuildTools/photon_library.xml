@@ -10,7 +10,7 @@
   <group>uboone</group>
 	
   <!-- Project size -->
-  <numevents>1</numevents>
+  <numevents>240</numevents>
   
   <!-- Batch OS -->
   <os>SL6</os>
