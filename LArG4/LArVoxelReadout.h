@@ -44,6 +44,7 @@
 #define LArG4_LArVoxelReadout_h
 
 #include <stdint.h>
+#include <vector>
 
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4PVPlacement.hh"
