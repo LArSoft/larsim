@@ -65,20 +65,19 @@ namespace sim {
     /// Default constructor (invalid, empty data)
     AuxDetSimChannel();
     
-    /// Constructor: copies from the specified IDE vector
-    AuxDetSimChannel(uint32_t inputAuxDetID, const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs);
-    
-#ifndef __GCCXML__
-    /// Constructor: moves data from the specified IDE vector
-    AuxDetSimChannel(uint32_t inputAuxDetID, std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs);
-#endif
-    
   private:
     uint32_t                    fAuxDetID;   ///< geo->AuxDet(auxDetID), integer used to retrieve AuxDetGeo object
     std::vector<sim::AuxDetIDE> fAuxDetIDEs; ///< one sim::AuxDetIDE for each G4 track id
 
 #ifndef __GCCXML__
   public:
+
+    /// Constructor: copies from the specified IDE vector
+    AuxDetSimChannel(uint32_t inputAuxDetID, const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs);
+    
+    /// Constructor: moves data from the specified IDE vector
+    AuxDetSimChannel(uint32_t inputAuxDetID, std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs);
+
     ///@name Getters
     ///@{
     uint32_t AuxDetID() const;
@@ -86,9 +85,6 @@ namespace sim {
     std::vector<sim::AuxDetIDE> const& AuxDetIDEs() const;
     ///@}
     
-    //setters
-//    void SetAuxDetIDEs(std::set<sim::AuxDetIDE> inputAuxDetIDEs) {fAuxDetIDEs = inputAuxDetIDEs;};
-
 #endif
 		
 		
