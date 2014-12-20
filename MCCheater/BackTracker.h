@@ -9,7 +9,6 @@
 #define CHEAT_BACKTRACKER_H
 
 #include <vector>
-#include <stdint.h>
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Run.h"
@@ -17,6 +16,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
+#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/ParticleList.h"
 #include "Simulation/SimChannel.h"
@@ -142,11 +142,11 @@ namespace cheat{
   private:
 
     void ChannelToTrackID(std::vector<sim::TrackIDE>& trackIDEs,
-			  uint32_t               channel,
+			  raw::ChannelID_t channel,
 			  const double hit_start_time,
 			  const double hit_end_time);
 
-    const sim::SimChannel* FindSimChannel(uint32_t channel) const;
+    const sim::SimChannel* FindSimChannel(raw::ChannelID_t channel) const;
 
     sim::ParticleList                      fParticleList;          ///< ParticleList to map track ID to sim::Particle
     sim::LArVoxelList                      fVoxelList;             ///< List to map the position of energy depostions
