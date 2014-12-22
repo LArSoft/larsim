@@ -23,6 +23,7 @@ art_make( BASENAME_ONLY
 			${FHICLCPP}
 			${CETLIB}
 			${CLHEP}
+			${ROOTSYS}/lib/libEGPythia6.so # FIXME!!!
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
         )
