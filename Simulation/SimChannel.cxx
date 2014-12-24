@@ -30,11 +30,11 @@ namespace sim{
   // Default constructor
   //-------------------------------------------------
   SimChannel::SimChannel() 
-    : fChannel(0)
+    : fChannel(raw::InvalidChannelID)
   {}
 
   //-------------------------------------------------
-  SimChannel::SimChannel(uint32_t channel)
+  SimChannel::SimChannel(raw::ChannelID_t channel)
     : fChannel(channel)
   {}
 
