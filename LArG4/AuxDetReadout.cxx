@@ -25,11 +25,9 @@
 
 namespace larg4 {
   
-  // Constructor.  Note that we force the name of this sensitive
-  // detector to be the value expected by ?.
-  AuxDetReadout::AuxDetReadout(std::string const& name)
+  AuxDetReadout::AuxDetReadout(std::string const& name, unsigned int adNum)
   : G4VSensitiveDetector(name)
-  , fAuxDet(atoi( name.substr(15,name.size()).c_str() ))
+  , fAuxDet(adNum)
   {
   }
   
