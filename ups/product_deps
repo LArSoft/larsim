@@ -13,7 +13,7 @@ genie_xsec      R-2_8_0
 genie_phyopt    R-2_8_0 
 larsoft_data    v0_03_01
 
-cetbuildtools	v4_03_03	-	only_for_build
+cetbuildtools	v4_04_02	-	only_for_build
 end_product_list
 
   
