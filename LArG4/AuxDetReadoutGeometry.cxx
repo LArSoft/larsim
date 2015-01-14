@@ -84,14 +84,14 @@ namespace larg4 {
       fGeo->PositionToAuxDet(worldPos, adNum);
       //  N.B. This name is expected by code in LArG4:
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum); 
-      AuxDetReadout* AuxDetReadout = new larg4::AuxDetReadout(SDName, adNum);
+      AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum);
 
       LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << std::endl;
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
-      (G4SDManager::GetSDMpointer())->AddNewDetector(AuxDetReadout);
-      LogicalVolumeAtDepth->SetSensitiveDetector(AuxDetReadout);      
+      (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
+      LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
       return;
     }
 
