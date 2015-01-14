@@ -455,13 +455,12 @@ namespace larg4 {
 
     adCol->reserve(geom->NAuxDets());
     for(unsigned int a = 0; a < geom->NAuxDets(); ++a){
-      
+
+      // N.B. this name convention is used when creating the 
+      //      AuxDetReadout SD in AuxDetReadoutGeometry       
       std::stringstream name;
       name << "AuxDetSD_AuxDet" << a;
-
       G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
-      // If this didn't work, then a sensitive detector with
-      // the name "AuxDetSD" does not exist.
       if ( !sd ){
         throw cet::exception("LArG4") << "Sensitive detector '"
                                     << name
