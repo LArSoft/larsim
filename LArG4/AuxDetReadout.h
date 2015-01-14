@@ -27,7 +27,7 @@ namespace larg4 {
   {
   public:
     // Constructor.
-    AuxDetReadout(std::string const& name);
+    AuxDetReadout(std::string const& name, unsigned int adNum);
     
     // Destructor
     virtual ~AuxDetReadout();
