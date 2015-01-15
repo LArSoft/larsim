@@ -1,0 +1,99 @@
+#
+# File:     dump_good_digits.fcl
+# Purpose:  Dump on screen raw digit content, for good channels only
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     January 14th, 2015
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+# - geometry (used by filters in DumpRawDigits module)
+# 
+# Changes:
+# 20150114 (petrillo@fnal.gov) [v1.0]
+#   first version, from larevt/CalData/dump_good_wires.fcl
+#
+
+#include "geometry.fcl"
+
+process_name: DumpRawDigits
+
+services: {
+  user: {
+    Geometry:               @local::standard_geo             # defined in geometry.fcl
+    ExptGeoHelperInterface: @local::standard_geometry_helper # defined in geometry.fcl
+  } # user
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpDigits" messages and put them in DumpRawDigits.log
+      LogWires: {
+        append: false
+        categories: {
+          DumpDigits: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpRawDigits.log"
+        threshold: "INFO"
+        type: "file"
+      } # LogWires
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpDigits: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+  maxEvents:  -1            # number of events to read
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpdigits: {
+      module_label: dumpdigits
+      module_type:  DumpRawDigits
+      
+      # output category ("DumpDigits" by default), useful for filtering (see above)
+      OutputCategory: "DumpDigits"
+      # set DigitsPerLine to 0 to suppress the output of the wire content
+      DigitsPerLine: 20
+      
+      # specify the label of the raw::RawDigit producer
+      # in the comment, default is reported
+    #  DetSimModuleLabel:  "daq"
+      
+       # set IgnoreFilters to true to dump all channels, regardless their goodness
+      IgnoreFilters: false
+      
+      # set the pedestal to be subtracted to all the digits
+      Pedestal: 2048
+      
+   } # dumpdigits
+  } # analyzers
+  
+  ana:  [ dumpdigits ]
+  
+  trigger_paths: []
+  end_paths:     [  ana ]
+} # physics

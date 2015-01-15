@@ -113,6 +113,17 @@ simple_plugin(WienerFilterAna "module"
               BASENAME_ONLY
 )
 
+simple_plugin(DumpRawDigits "module"
+                Filters
+                RawData
+                ${ART_FRAMEWORK_CORE}
+                ${ART_FRAMEWORK_PRINCIPAL}
+                ${MF_MESSAGELOGGER}
+                ${FHICLCPP}
+                ${CETLIB}
+              BASENAME_ONLY
+)
+
 install_headers()
 install_fhicl()
 install_source()
