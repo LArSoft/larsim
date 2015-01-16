@@ -58,8 +58,6 @@ namespace evgen {
     
     std::vector<double> fbuffbox;
 
-    TH1F* fDminHisto;          ///< Closest approach for particles 
-
     TH2F* fPhotonAngles;       ///< Photon rate vs angle
     TH2F* fPhotonAnglesLo;     ///< Photon rate vs angle, low momenta
     TH2F* fPhotonAnglesMi;     ///< Photon rate vs angle, middle momenta
@@ -148,8 +146,6 @@ namespace evgen{
   {
     art::ServiceHandle<art::TFileService> tfs;
 
-    fDminHisto = tfs->make<TH1F>("fDminHisto",";d (cm);", 100,0.0,500.E2);
-
     fPhotonAngles     = tfs->make<TH2F>("fPhotonAngles",      ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
     fPhotonAnglesLo   = tfs->make<TH2F>("fPhotonAnglesLo",    ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
     fPhotonAnglesMi   = tfs->make<TH2F>("fPhotonAnglesMi",    ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
@@ -234,17 +230,10 @@ namespace evgen{
 	const TLorentzVector& p4 = particle.Momentum();
 	double x0[3] = {v4.X(),  v4.Y(),  v4.Z() };
 	double dx[3] = {p4.Px(), p4.Py(), p4.Pz()};
-	double x1[3] = {geom->DetHalfWidth(), 0.0, 0.5*geom->DetLength()};
 
 	if      (std::abs(particle.PdgCode())==13) ++allMuons;
 	else if (std::abs(particle.PdgCode())==22) ++allPhotons;
 	else if (std::abs(particle.PdgCode())==11) ++allElectrons;
-	
-	// x2 is the point on the line determined by the particle's
-	// initial position and momentum that would come closest to 
-	// x1, the center of the detector.
-	double x2[3];
-	double d = geo::ClosestApproach(x1, x0, dx, x2);
 	
 	TH1F* hCosQ     = 0;
 	TH2F* hAngles   = 0;
@@ -291,17 +280,47 @@ namespace evgen{
 	  for (unsigned int cb=0; cb<6; cb++)
 	     bounds[cb] = bounds[cb]+fbuffbox[cb];
 	  
-	  if(x2[0] >= bounds[0] && x2[0] <= bounds[1] &&
-	     x2[1] >= bounds[2] && x2[1] <= bounds[3] &&
-	     x2[2] >= bounds[4] && x2[2] <= bounds[5]){
+	  //calculate the intersection point with each cryostat surface
+	  bool intersects_cryo = false;
+	  for (int bnd=0; bnd!=6; ++bnd) {
+	    if (bnd<2) {
+	      double p2[3] = {bounds[bnd],  x0[1] + (dx[1]/dx[0])*(bounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(bounds[bnd] - x0[0])};
+	      if ( p2[1] >= bounds[2] && p2[1] <= bounds[3] && 
+	           p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
+	        intersects_cryo = true;
+		break;
+	      }
+	    }
+	    else if (bnd>=2 && bnd<4) {
+	      double p2[3] = {x0[0] + (dx[0]/dx[1])*(bounds[bnd] - x0[1]), bounds[bnd], x0[2] + (dx[2]/dx[1])*(bounds[bnd] - x0[1])};
+	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+	           p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
+	        intersects_cryo = true;
+		break;
+	      }
+	    }
+	    else if (bnd>=4) {
+	      double p2[3] = {x0[0] + (dx[0]/dx[2])*(bounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(bounds[bnd] - x0[2]), bounds[bnd]};
+	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+	           p2[1] >= bounds[2] && p2[1] <= bounds[3] ) {
+	        intersects_cryo = true;
+		break;
+	      }
+	    }
+	  }
+	  
+
+	  if (intersects_cryo) {
 	    truth.Add(particle);
-	    fDminHisto->Fill(d);
 	    
 	    if      (std::abs(particle.PdgCode())==13) ++numMuons;
 	    else if (std::abs(particle.PdgCode())==22) ++numPhotons;
 	    else if (std::abs(particle.PdgCode())==11) ++numElectrons;
 
-	    try{
+            //The following code no longer works now that we require intersection with the cryostat boundary
+	    //For example, the particle could intersect this cryostat but miss its TPC, but intersect a TPC 
+	    //in another cryostat
+	    /*try{
 	      unsigned int tpc   = 0;
 	      unsigned int cstat = 0;
 	      geom->PositionToTPC(x2, tpc, cstat);
@@ -311,7 +330,7 @@ namespace evgen{
 	    }
 	    catch(cet::exception &e){
 	      LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
-	    }
+	    }*///
 
 	    if (hCosQ!=0) {
 	      double cosq = -p4.Py()/p4.P();
@@ -324,6 +343,7 @@ namespace evgen{
 	      else                  hAnglesHi->Fill(phi,cosq);
 	      hEnergy->Fill(p4.E());
 	    }//end if there is a cos(theta) histogram
+	    break; //leave loop over cryostats to avoid adding particle multiple times  
 	  }// end if particle goes into a cryostat
 	}// end loop over cryostats in the detector
 	
@@ -339,9 +359,9 @@ namespace evgen{
       fElectronsInCStat->Fill(numElectrons);
       fMuonsInCStat    ->Fill(numMuons);
 
-      fPhotonsInTPC  ->Fill(tpcPhotons);
+      /*fPhotonsInTPC  ->Fill(tpcPhotons);
       fElectronsInTPC->Fill(tpcElectrons);
-      fMuonsInTPC    ->Fill(tpcMuons);
+      fMuonsInTPC    ->Fill(tpcMuons);*/
     }
 
     truthcol->push_back(truth);
