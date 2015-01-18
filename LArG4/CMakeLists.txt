@@ -11,6 +11,7 @@ art_make( BASENAME_ONLY
                         PhotonPropagation
                         PhotonVisibilityService_service
                         Simulation
+                        LArVoxelSCE_service
                         Utilities
 			TimeService_service
                         LArProperties_service

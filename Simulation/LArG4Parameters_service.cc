@@ -56,6 +56,8 @@ namespace sim {
     fOpticalParamOrientations= pset.get< std::vector<int>         >("OpticalParamOrientations");
     fOpticalParamParameters  = pset.get< std::vector<std::vector<std::vector<double> > > >("OpticalParamParameters");
     fLitePhotons             = pset.get< bool                     >("UseLitePhotons"       );
+    fEnableSCE               = pset.get< bool                     >("EnableSCE"            );
+
     return;
   }
 

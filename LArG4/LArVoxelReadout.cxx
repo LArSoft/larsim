@@ -103,6 +103,7 @@ namespace larg4 {
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
     fTransverseDiffusion   = fLgpHandle->TransverseDiffusion();
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
+    fEnableSCE             = fLgpHandle->EnableSCE();
 
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << fLarpHandle->Temperature()
@@ -417,9 +418,18 @@ namespace larg4 {
 	XDrift = tpcg.PlaneLocation(0)[0] - stepMidPoint.x()/cm;
       
       if(XDrift < 0.) return;
-      
+
+      // Get SCE {x,y,z} offsets for particular location in TPC      
+      std::vector<double> posOffsets;
+      if(fEnableSCE == true)
+        posOffsets = fSCEHandle->GetPosOffsets(stepMidPoint.x()/cm,stepMidPoint.y()/cm,stepMidPoint.z()/cm);
+      else
+        posOffsets.resize(3,0.0);
+
       // Drift time (nano-sec)
-      double TDrift             = XDrift * RecipDriftVel[0];
+      double TDrift;
+      XDrift += posOffsets.at(0);
+      TDrift = XDrift * RecipDriftVel[0];
       if (tpcg.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
         TDrift = ((XDrift - tpcg.PlanePitch(0,1)) * RecipDriftVel[0] 
                   + tpcg.PlanePitch(0,1) * RecipDriftVel[1]);
@@ -464,8 +474,8 @@ namespace larg4 {
       G4RandGauss::shootArray( nClus, &XDiff[0], 0., LDiffSig);
 
       // Smear the Y,Z position by the transverse diffusion
-      G4RandGauss::shootArray( nClus, &YDiff[0], stepMidPoint.y()/cm,TDiffSig);
-      G4RandGauss::shootArray( nClus, &ZDiff[0], stepMidPoint.z()/cm,TDiffSig);
+      G4RandGauss::shootArray( nClus, &YDiff[0], (stepMidPoint.y()/cm)+posOffsets.at(1),TDiffSig);
+      G4RandGauss::shootArray( nClus, &ZDiff[0], (stepMidPoint.z()/cm)+posOffsets.at(2),TDiffSig);
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
