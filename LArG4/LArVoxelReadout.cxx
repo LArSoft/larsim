@@ -116,7 +116,6 @@ namespace larg4 {
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
-
     // put in Argon 39 radioactive decays.  
     /// \todo -- make optical flashes to go along with these decays
     
@@ -575,7 +574,7 @@ namespace larg4 {
       mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"
                                         << e;
     }
-    
+
     return;
   }
 

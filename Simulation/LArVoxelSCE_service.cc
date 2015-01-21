@@ -274,7 +274,7 @@ namespace sim {
   double LArVoxelSCE::TransformX(double xVal) const
   {
     double xValNew;
-    xValNew = 2.50 - (2.50/2.56)*xVal;
+    xValNew = 2.50 - (2.50/2.56)*(xVal/100.0);
 
     return xValNew;
   }
@@ -284,7 +284,7 @@ namespace sim {
   double LArVoxelSCE::TransformY(double yVal) const
   {
     double yValNew;
-    yValNew = (2.50/2.33)*(yVal+1.165);
+    yValNew = (2.50/2.33)*((yVal/100.0)+1.165);
 
     return yValNew;
   }
@@ -294,7 +294,7 @@ namespace sim {
   double LArVoxelSCE::TransformZ(double zVal) const
   {
     double zValNew;
-    zValNew = (10.0/10.37)*zVal;
+    zValNew = (10.0/10.37)*(zVal/100.0);
 
     return zValNew;
   }
