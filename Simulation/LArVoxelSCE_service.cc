@@ -211,13 +211,13 @@ namespace sim {
       }
     }
 
-    TF1 *f1 = new TF1("f1",polString1);
-    TF1 *f2 = new TF1("f2",polString1);
-    TF1 *f3 = new TF1("f3",polString1);
-    TF1 *f4 = new TF1("f4",polString1);
-    TF1 *f5 = new TF1("f5",polString1);
-    TF1 *f6 = new TF1("f6",polString1);
-    TF1 *fFinal = new TF1("fFinal",polString2);
+    TF1 f1("f1",polString1);
+    TF1 f2("f2",polString1);
+    TF1 f3("f3",polString1);
+    TF1 f4("f4",polString1);
+    TF1 f5("f5",polString1);
+    TF1 f6("f6",polString1);
+    TF1 fFinal("fFinal",polString2);
     
     for(int j = 0; j < numIter; j++)
     {
@@ -231,14 +231,14 @@ namespace sim {
         parA[5][j] = g6[j]->Eval(zValNew);
     }
   
-    f1->SetParameters(parA[0]);
-    f2->SetParameters(parA[1]);
-    f3->SetParameters(parA[2]);
-    f4->SetParameters(parA[3]);
+    f1.SetParameters(parA[0]);
+    f2.SetParameters(parA[1]);
+    f3.SetParameters(parA[2]);
+    f4.SetParameters(parA[3]);
     if((axis == "X") || (axis == "Y"))
-      f5->SetParameters(parA[4]);
+      f5.SetParameters(parA[4]);
     if(axis == "Y")
-      f6->SetParameters(parA[5]);
+      f6.SetParameters(parA[5]);
   
     double aValNew;
     double bValNew;
@@ -254,18 +254,25 @@ namespace sim {
       bValNew = xValNew;
     }
       
-    parB[0] = f1->Eval(aValNew-1.25);
-    parB[1] = f2->Eval(aValNew-1.25);
-    parB[2] = f3->Eval(aValNew-1.25);
-    parB[3] = f4->Eval(aValNew-1.25);
+    parB[0] = f1.Eval(aValNew-1.25);
+    parB[1] = f2.Eval(aValNew-1.25);
+    parB[2] = f3.Eval(aValNew-1.25);
+    parB[3] = f4.Eval(aValNew-1.25);
     if((axis == "X") || (axis == "Y"))
-      parB[4] = f5->Eval(aValNew-1.25);
+      parB[4] = f5.Eval(aValNew-1.25);
     if(axis == "Y")
-      parB[5] = f6->Eval(aValNew-1.25);
+      parB[5] = f6.Eval(aValNew-1.25);
     
-    fFinal->SetParameters(parB);
-    double offsetValNew = 100.0*fFinal->Eval(bValNew-1.25);
+    fFinal.SetParameters(parB);
+    double offsetValNew = 100.0*fFinal.Eval(bValNew-1.25);
 
+    delete[] g1;
+    delete[] g2;
+    delete[] g3;
+    delete[] g4;
+    delete[] g5;
+    delete[] g6;
+   
     return offsetValNew;
   }
 
