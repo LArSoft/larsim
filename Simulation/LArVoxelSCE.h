@@ -73,6 +73,27 @@ namespace sim {
     TGraph **g3_z = new TGraph*[7];
     TGraph **g4_z = new TGraph*[7];
 
+    TF1 *f1_x = new TF1("f1_x","pol6");
+    TF1 *f2_x = new TF1("f2_x","pol6");
+    TF1 *f3_x = new TF1("f3_x","pol6");
+    TF1 *f4_x = new TF1("f4_x","pol6");
+    TF1 *f5_x = new TF1("f5_x","pol6");
+    TF1 *fFinal_x = new TF1("fFinal_x","pol4");
+
+    TF1 *f1_y = new TF1("f1_y","pol5");
+    TF1 *f2_y = new TF1("f2_y","pol5");
+    TF1 *f3_y = new TF1("f3_y","pol5");
+    TF1 *f4_y = new TF1("f4_y","pol5");
+    TF1 *f5_y = new TF1("f5_y","pol5");
+    TF1 *f6_y = new TF1("f6_y","pol5");
+    TF1 *fFinal_y = new TF1("fFinal_y","pol5");
+
+    TF1 *f1_z = new TF1("f1_z","pol4");
+    TF1 *f2_z = new TF1("f2_z","pol4");
+    TF1 *f3_z = new TF1("f3_z","pol4");
+    TF1 *f4_z = new TF1("f4_z","pol4");
+    TF1 *fFinal_z = new TF1("fFinal_z","pol3");
+
     art::ServiceHandle<sim::LArG4Parameters> fLgpHandle;  ///< Handle to the LArG4 parameters service
   };
 

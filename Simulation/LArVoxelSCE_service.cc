@@ -146,103 +146,70 @@ namespace sim {
   {      
     double parA[6][7];
     double parB[6];
-  
+    
     for(int j = 0; j < 6; j++)
     {
       for(int i = 0; i < 7; i++)
         parA[j][i] = 0.0;
-  
+    
       parB[j] = 0.0;
     }
-
-    TGraph **g1 = new TGraph*[7];
-    TGraph **g2 = new TGraph*[7];
-    TGraph **g3 = new TGraph*[7];
-    TGraph **g4 = new TGraph*[7];
-    TGraph **g5 = new TGraph*[7];
-    TGraph **g6 = new TGraph*[7];
-  
-    int numIter = 0;
-    char* polString1 = (char*)"";
-    char* polString2 = (char*)"";
+    
     if(axis == "X")
     {
-      numIter = 7;
-      polString1 = (char*)"pol6";
-      polString2 = (char*)"pol4";
-
-      for(int i = 0; i < numIter; i++)
+      for(int j = 0; j < 7; j++)
       {
-        g1[i] = g1_x[i];
-        g2[i] = g2_x[i];
-        g3[i] = g3_x[i];
-        g4[i] = g4_x[i];
-        g5[i] = g5_x[i];
+        parA[0][j] = g1_x[j]->Eval(zValNew);
+        parA[1][j] = g2_x[j]->Eval(zValNew);
+        parA[2][j] = g3_x[j]->Eval(zValNew);
+        parA[3][j] = g4_x[j]->Eval(zValNew);
+        parA[4][j] = g5_x[j]->Eval(zValNew);
       }
+    
+      f1_x->SetParameters(parA[0]);
+      f2_x->SetParameters(parA[1]);
+      f3_x->SetParameters(parA[2]);
+      f4_x->SetParameters(parA[3]);
+      f5_x->SetParameters(parA[4]);
     }
     else if(axis == "Y")
     {
-      numIter = 6;
-      polString1 = (char*)"pol5";
-      polString2 = (char*)"pol5";
-
-      for(int i = 0; i < numIter; i++)
+      for(int j = 0; j < 6; j++)
       {
-        g1[i] = g1_y[i];
-        g2[i] = g2_y[i];
-        g3[i] = g3_y[i];
-        g4[i] = g4_y[i];
-        g5[i] = g5_y[i];
-        g6[i] = g6_y[i];
+        parA[0][j] = g1_y[j]->Eval(zValNew);
+        parA[1][j] = g2_y[j]->Eval(zValNew);
+        parA[2][j] = g3_y[j]->Eval(zValNew);
+        parA[3][j] = g4_y[j]->Eval(zValNew);
+        parA[4][j] = g5_y[j]->Eval(zValNew);
+        parA[5][j] = g6_y[j]->Eval(zValNew);
       }
+    
+      f1_y->SetParameters(parA[0]);
+      f2_y->SetParameters(parA[1]);
+      f3_y->SetParameters(parA[2]);
+      f4_y->SetParameters(parA[3]);
+      f5_y->SetParameters(parA[4]);
+      f6_y->SetParameters(parA[5]);
     }
     else if(axis == "Z")
     {
-      numIter = 5;
-      polString1 = (char*)"pol4";
-      polString2 = (char*)"pol3";
-
-      for(int i = 0; i < numIter; i++)
+      for(int j = 0; j < 5; j++)
       {
-        g1[i] = g1_z[i];
-        g2[i] = g2_z[i];
-        g3[i] = g3_z[i];
-        g4[i] = g4_z[i];
+        parA[0][j] = g1_z[j]->Eval(zValNew);
+        parA[1][j] = g2_z[j]->Eval(zValNew);
+        parA[2][j] = g3_z[j]->Eval(zValNew);
+        parA[3][j] = g4_z[j]->Eval(zValNew);
       }
-    }
-
-    TF1 f1("f1",polString1);
-    TF1 f2("f2",polString1);
-    TF1 f3("f3",polString1);
-    TF1 f4("f4",polString1);
-    TF1 f5("f5",polString1);
-    TF1 f6("f6",polString1);
-    TF1 fFinal("fFinal",polString2);
     
-    for(int j = 0; j < numIter; j++)
-    {
-      parA[0][j] = g1[j]->Eval(zValNew);
-      parA[1][j] = g2[j]->Eval(zValNew);
-      parA[2][j] = g3[j]->Eval(zValNew);
-      parA[3][j] = g4[j]->Eval(zValNew);
-      if((axis == "X") || (axis == "Y"))
-        parA[4][j] = g5[j]->Eval(zValNew);
-      if(axis == "Y")
-        parA[5][j] = g6[j]->Eval(zValNew);
+      f1_z->SetParameters(parA[0]);
+      f2_z->SetParameters(parA[1]);
+      f3_z->SetParameters(parA[2]);
+      f4_z->SetParameters(parA[3]);
     }
-  
-    f1.SetParameters(parA[0]);
-    f2.SetParameters(parA[1]);
-    f3.SetParameters(parA[2]);
-    f4.SetParameters(parA[3]);
-    if((axis == "X") || (axis == "Y"))
-      f5.SetParameters(parA[4]);
-    if(axis == "Y")
-      f6.SetParameters(parA[5]);
-  
+    
     double aValNew;
     double bValNew;
-  
+    
     if(axis == "Y")
     {
       aValNew = xValNew;
@@ -253,26 +220,42 @@ namespace sim {
       aValNew = yValNew;
       bValNew = xValNew;
     }
-      
-    parB[0] = f1.Eval(aValNew-1.25);
-    parB[1] = f2.Eval(aValNew-1.25);
-    parB[2] = f3.Eval(aValNew-1.25);
-    parB[3] = f4.Eval(aValNew-1.25);
-    if((axis == "X") || (axis == "Y"))
-      parB[4] = f5.Eval(aValNew-1.25);
-    if(axis == "Y")
-      parB[5] = f6.Eval(aValNew-1.25);
     
-    fFinal.SetParameters(parB);
-    double offsetValNew = 100.0*fFinal.Eval(bValNew-1.25);
-
-    delete[] g1;
-    delete[] g2;
-    delete[] g3;
-    delete[] g4;
-    delete[] g5;
-    delete[] g6;
-   
+    double offsetValNew = 0.0;
+    if(axis == "X")
+    {
+      parB[0] = f1_x->Eval(aValNew-1.25);
+      parB[1] = f2_x->Eval(aValNew-1.25);
+      parB[2] = f3_x->Eval(aValNew-1.25);
+      parB[3] = f4_x->Eval(aValNew-1.25);
+      parB[4] = f5_x->Eval(aValNew-1.25);
+    
+      fFinal_x->SetParameters(parB);
+      offsetValNew = 100.0*fFinal_x->Eval(bValNew-1.25);
+    }
+    else if(axis == "Y")
+    {
+      parB[0] = f1_y->Eval(aValNew-1.25);
+      parB[1] = f2_y->Eval(aValNew-1.25);
+      parB[2] = f3_y->Eval(aValNew-1.25);
+      parB[3] = f4_y->Eval(aValNew-1.25);
+      parB[4] = f5_y->Eval(aValNew-1.25);
+      parB[5] = f6_y->Eval(aValNew-1.25);
+    
+      fFinal_y->SetParameters(parB);
+      offsetValNew = 100.0*fFinal_y->Eval(bValNew-1.25);
+    }
+    else if(axis == "Z")
+    {
+      parB[0] = f1_z->Eval(aValNew-1.25);
+      parB[1] = f2_z->Eval(aValNew-1.25);
+      parB[2] = f3_z->Eval(aValNew-1.25);
+      parB[3] = f4_z->Eval(aValNew-1.25);
+    
+      fFinal_z->SetParameters(parB);
+      offsetValNew = 100.0*fFinal_z->Eval(bValNew-1.25);
+    }
+    
     return offsetValNew;
   }
 

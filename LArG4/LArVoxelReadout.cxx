@@ -420,10 +420,13 @@ namespace larg4 {
 
       // Get SCE {x,y,z} offsets for particular location in TPC      
       std::vector<double> posOffsets;
-      if(fEnableSCE == true)
+      if (fEnableSCE == true)
         posOffsets = fSCEHandle->GetPosOffsets(stepMidPoint.x()/cm,stepMidPoint.y()/cm,stepMidPoint.z()/cm);
       else
         posOffsets.resize(3,0.0);
+
+      if (tpcg.DriftDirection() == geo::kNegX)
+        posOffsets.at(0) *= -1.0;
 
       // Drift time (nano-sec)
       double TDrift;
