@@ -10,10 +10,10 @@ use warnings;
 use File::Basename qw(fileparse);
 use Cwd qw(abs_path);
 
-my ($xml, $fcl, $workdir, $merge) = @ARGV;
+my ($xml, $fcl, $workdir, $check, $merge) = @ARGV;
 
 if(!(defined($xml) || defined($fcl) || defined($workdir))) {
-    print "Usage: perl SubmitCommand.pl <project.py xml file> <fcl file> <work dir> [<merge?>]\n";
+    print "Usage: perl SubmitCommand.pl <project.py xml file> <fcl file> <work dir> [<checkana?>] [<merge?>]\n";
     exit(1);
 }
 
@@ -39,8 +39,7 @@ for(my $i=$StartJob; $i<$StartJob+$NJobs; $i++) {
     my ($fcl_filename, $fcl_directories, $fcl_suffix) = fileparse($fcl,".fcl");
     my ($xml_filename, $xml_directories, $xml_suffix) = fileparse($xml,".xml");
 
-    if(!(-e "${workdir}/buildopticallibrary/fcl/${fcl_filename}_${i}${fcl_suffix}") &&
-       !(-e ">${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix}")) {
+    if(!(-e "${workdir}/buildopticallibrary/fcl/${fcl_filename}_${i}${fcl_suffix}")) { 
 
 	open IN, "${fcl}" or die $!;
 	open OUT, ">${workdir}/buildopticallibrary/fcl/${fcl_filename}_${i}${fcl_suffix}" or die $!;
@@ -61,6 +60,9 @@ for(my $i=$StartJob; $i<$StartJob+$NJobs; $i++) {
 	}
 	close IN or die $!;
 	close OUT or die $!;
+    }
+
+    if(!(-e ">${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix}")) {
 
 	open IN, "${xml}" or die $!;
 	open OUT, ">${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix}" or die $!;
@@ -79,16 +81,19 @@ for(my $i=$StartJob; $i<$StartJob+$NJobs; $i++) {
 
 	close IN or die $!;
 	close OUT or die $!;
-
-	system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --submit|;
-
     }
-    
-    if(!defined($merge)) {
-	system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --checkana|;
+
+    if(!defined($check)) {
+	if(!defined($merge)) {
+	    system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --submit|;
+	    sleep 1;
+	} else {
+	    system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --merge|;
+	}
     } else {
-	system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --merge|;
-    }
+	system qq|project.py --xml ${workdir}/buildopticallibrary/xml/${xml_filename}_${i}${xml_suffix} --checkana|;
+    } 
+
 }
 
 
