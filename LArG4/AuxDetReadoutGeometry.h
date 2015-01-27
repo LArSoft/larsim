@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file AuxDetReadoutGeometry.h
 /// \brief Define the "parallel" geometry that's seen by the AuxDet.
-/// \author miceli@fnal.gov
+/// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 ///
 /// This class defines the parallel geometry that will be divided into
@@ -47,11 +47,9 @@ namespace larg4 {
 
   private:
 
-    G4VPhysicalVolume* FindNestedVolume(G4VPhysicalVolume* mother,
-					                              G4Transform3D&     motherTransform,
-					                              G4Transform3D&     daughterTransform,
-					                              std::string&       daughterName,
-					                              unsigned int       expectedNum);
+    void FindAndMakeAuxDet(  std::vector<const G4VPhysicalVolume*>& path,
+			     unsigned int depth,
+			     G4Transform3D DepthToWorld  );    
 
     art::ServiceHandle<geo::Geometry>   fGeo; ///< Handle to the geometry    
 

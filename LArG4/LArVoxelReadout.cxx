@@ -7,10 +7,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C/C++ standard library
-#include <cstdio>
-#include <iostream>
-#include <ctime>
-#include <vector>
+#include <cstdio> // std::sscanf()
+#include <cmath> // std::ceil()
+#include <string>
+#include <map>
+#include <utility> // std::move()
 
 // GEANT
 #include "Geant4/G4HCofThisEvent.hh"
@@ -424,26 +425,35 @@ namespace larg4 {
                   + tpcg.PlanePitch(0,1) * RecipDriftVel[1]);
       }
           
-      double lifetimecorrection = TMath::Exp(TDrift / LifetimeCorr_const);
-      double nElectrons         = larg4::IonizationAndScintillation::Instance()->NumberIonizationElectrons();
-             nElectrons        *= lifetimecorrection;
-      double energy             = larg4::IonizationAndScintillation::Instance()->EnergyDeposit();
+      const double lifetimecorrection = TMath::Exp(TDrift / LifetimeCorr_const);
+      const int    nIonizedElectrons  = larg4::IonizationAndScintillation::Instance()->NumberIonizationElectrons();
+      const double energy             = larg4::IonizationAndScintillation::Instance()->EnergyDeposit();
+      
+      // if we have no electrons (too small energy or too large recombination)
+      // we are done already here
+      if (nIonizedElectrons <= 0) {
+        LOG_DEBUG("LArVoxelReadout")
+          << "No electrons drifted to readout, " << energy << " MeV lost.";
+        return;
+      }
+      // includes the effect of lifetime
+      const double nElectrons   = nIonizedElectrons * lifetimecorrection;
 
       // Longitudinal & transverse diffusion sigma (cm)
       double SqrtT    = std::sqrt(TDrift);
       double LDiffSig = SqrtT * LDiff_const;
       double TDiffSig = SqrtT * TDiff_const;
-      int nClus       = 1 + (int)(nElectrons / fElectronClusterSize);
+      const int nClus = (int) std::ceil(nElectrons / fElectronClusterSize);
 
       // Compute arrays of values as quickly as possible.
       std::vector< double > XDiff(nClus);
       std::vector< double > YDiff(nClus);
       std::vector< double > ZDiff(nClus);
       std::vector< double > nElDiff(nClus, fElectronClusterSize);
-      std::vector< double > nEnDiff(nClus, fElectronClusterSize);
+      std::vector< double > nEnDiff(nClus);
 
-      // Drift the last cluster with smaller size
-      nElDiff[nClus-1] = nElectrons - (nClus-1)*fElectronClusterSize;
+      // fix the number of electrons in the last cluster, that has smaller size
+      nElDiff.back() = nElectrons - (nClus-1)*fElectronClusterSize;
 
       for(size_t xx = 0; xx < nElDiff.size(); ++xx){
         if(nElectrons > 0) nEnDiff[xx] = energy/nElectrons*nElDiff[xx];

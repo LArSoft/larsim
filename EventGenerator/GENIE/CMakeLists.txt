@@ -23,6 +23,7 @@ art_make( BASENAME_ONLY
 			${FHICLCPP}
 			${CETLIB}
 			${CLHEP}
+			${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
         )

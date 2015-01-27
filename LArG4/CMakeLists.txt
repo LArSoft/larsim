@@ -36,7 +36,7 @@ art_make( BASENAME_ONLY
 			${ROOT_TREEPLAYER} 
 			${ROOT_FFTW}
 			${ROOT_REFLEX}
-			${ROOTSYS}/lib/libEGPythia6.so
+			${ROOT_EGPYTHIA6}
 			${ROOT_GUI}
 			${ROOT_BASIC_LIB_LIST}
 	                ${CLHEP}

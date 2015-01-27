@@ -7,6 +7,7 @@
 ///
 ////////////////////////////////////////////////////////////////////////
 
+#include <limits> // std::numeric_limits
 
 #include "Simulation/SimChannel.h"
 #include "Simulation/sim.h"
@@ -45,29 +46,41 @@ namespace sim{
 					  double *xyz,
 					  double energy)
   {
-    // look at the map to see if the current TDC already 
+    // look at the map to see if the current TDC already
     // exists, if not, add it, if so, just add a new track id to the 
     // vector
-
-    if( fTDCIDEs.count(tdc) > 0 ){      
+    
+    // no electrons? no energy? no good!
+    if ((numberElectrons < std::numeric_limits<double>::epsilon())
+      || (energy <= std::numeric_limits<double>::epsilon()))
+    {
+      // will throw
+      LOG_ERROR("SimChannel")
+        << "AddIonizationElectrons() trying to add to TDC #" << tdc
+        << " " << numberElectrons << " electrons with " << energy
+        << " MeV of energy from track ID=" << trackID;
+      return;
+    } // if no energy or no electrons
+    
+    if( fTDCIDEs.count(tdc) > 0 ){
       // loop over the IDE vector for this tdc and add the electrons 
       // to the entry with the same track id
       std::vector<sim::IDE>::iterator itr = fTDCIDEs[tdc].begin();
       while( itr != fTDCIDEs[tdc].end() ){
-	
-	if( (*itr).trackID == trackID ){
-	  // make a weighted average for the location information
-	  double weight       = (*itr).numElectrons + numberElectrons;
-	  (*itr).x            = ((*itr).x*(*itr).numElectrons + xyz[0]*numberElectrons)/weight;
-	  (*itr).y            = ((*itr).y*(*itr).numElectrons + xyz[1]*numberElectrons)/weight;
-	  (*itr).z            = ((*itr).z*(*itr).numElectrons + xyz[2]*numberElectrons)/weight;	  
-	  (*itr).numElectrons = weight;
-	  (*itr).energy       = (*itr).energy + energy;
-	  // found the track id we wanted, so return;
-	  return;
-	}
-	
-	itr++;
+        
+        if( (*itr).trackID == trackID ){
+          // make a weighted average for the location information
+          double weight       = (*itr).numElectrons + numberElectrons;
+          (*itr).x            = ((*itr).x*(*itr).numElectrons + xyz[0]*numberElectrons)/weight;
+          (*itr).y            = ((*itr).y*(*itr).numElectrons + xyz[1]*numberElectrons)/weight;
+          (*itr).z            = ((*itr).z*(*itr).numElectrons + xyz[2]*numberElectrons)/weight;
+          (*itr).numElectrons = weight;
+          (*itr).energy       = (*itr).energy + energy;
+          // found the track id we wanted, so return;
+          return;
+        }
+        
+        itr++;
       }
 
       // if we never found the track id, then this is the first instance of
