@@ -1,7 +1,3 @@
-# define ROOTLIB
-set( ROOTLIB -L$ENV{ROOTSYS}/lib -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lEG -lThread -pthread -lm -ldl )
-
-link_libraries( ${LIB_NAME} ${ROOTLIB} )
 
 add_subdirectory(job)
 
