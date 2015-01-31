@@ -1,0 +1,45 @@
+
+BEGIN_PROLOG
+
+mcrecopart:
+{
+    SavePathPDGList : [13,-13,211,-211,321,-321,2212]
+}
+
+mcrecoedep:
+{
+    DebugMode : false
+    SaveMCHit : false
+}
+
+mcshowerrecopart:
+{
+    DebugMode : false
+}
+
+mcshowerrecoalg:
+{
+    MCShowerRecoPart: @local::mcshowerrecopart
+    
+    DebugMode: false
+    MinShowerEnergy: 10
+    MinNumDaughters: 0
+}
+
+mctrackrecoalg:
+{
+    DebugMode: false
+}
+
+standard_mcreco:
+{
+    module_type: "MCReco"
+    MCRecoPart: @local::mcrecopart
+    MCRecoEdep: @local::mcrecoedep
+    MCShowerRecoAlg: @local::mcshowerrecoalg
+    MCTrackRecoAlg:  @local::mctrackrecoalg
+    
+    G4ModName: "largeant"
+}
+
+END_PROLOG
