@@ -78,18 +78,4 @@ microboone_larvoxelcalculator: @local::standard_larvoxelcalculator
 lbne35t_larvoxelcalculator:    @local::standard_larvoxelcalculator
 lbnefd_larvoxelcalculator:     @local::standard_larvoxelcalculator
 
-standard_larvoxelsce:
-{
-  RepresentationType:     "Parametric"
-  InputFilename:          "SCEoffsets.root"
-}
-
-bo_larvoxelsce:         @local::standard_larvoxelsce
-jp250L_larvoxelsce:     @local::standard_larvoxelsce
-argoneut_larvoxelsce:   @local::standard_larvoxelsce
-microboone_larvoxelsce: @local::standard_larvoxelsce
-lbne35t_larvoxelsce:    @local::standard_larvoxelsce
-lbnefd_larvoxelsce:     @local::standard_larvoxelsce
-
-
 END_PROLOG
