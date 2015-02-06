@@ -56,8 +56,8 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/TimeService.h"
 #include "Simulation/LArG4Parameters.h"
+#include "SpaceCharge/SpaceCharge.h"
 #include "LArG4/IonizationAndScintillation.h"
-
 
 
 // Forward declarations
@@ -216,6 +216,7 @@ namespace larg4 {
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service
     art::ServiceHandle<sim::LArG4Parameters>  fLgpHandle;  ///< Handle to the LArG4 parameters service
     art::ServiceHandle<util::LArProperties>   fLarpHandle; ///< Handle to the LArProperties parameters service
+    art::ServiceHandle<spacecharge::SpaceCharge>  fSCEHandle;  ///< Handle to the SpaceCharge service
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
