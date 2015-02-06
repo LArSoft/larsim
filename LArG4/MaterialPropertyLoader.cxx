@@ -193,7 +193,7 @@ namespace larg4 {
 
     // scalar properties
 
-    SetMaterialConstProperty("LAr", "SCINTILLATIONYIELD",  LarProp->ScintYield(),           1/MeV );
+    SetMaterialConstProperty("LAr", "SCINTILLATIONYIELD",  LarProp->ScintYield(true),       1/MeV ); // true = scaled down by prescale in larproperties
     SetMaterialConstProperty("LAr", "RESOLUTIONSCALE",     LarProp->ScintResolutionScale(), 1);
     SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   ns);
@@ -209,17 +209,18 @@ namespace larg4 {
 
     if(LarProp->ScintByParticleType())
       {
-	SetMaterialConstProperty("LAr", "PROTONSCINTILLATIONYIELD",  LarProp->ProtonScintYield(),        1./MeV );
+        // true = scaled down by prescale in larproperties
+	SetMaterialConstProperty("LAr", "PROTONSCINTILLATIONYIELD",  LarProp->ProtonScintYield(true),    1./MeV );
 	SetMaterialConstProperty("LAr", "PROTONYIELDRATIO",          LarProp->ProtonScintYieldRatio(),   1.);
-	SetMaterialConstProperty("LAr", "MUONSCINTILLATIONYIELD",    LarProp->MuonScintYield(),          1./MeV );
+	SetMaterialConstProperty("LAr", "MUONSCINTILLATIONYIELD",    LarProp->MuonScintYield(true),      1./MeV );
 	SetMaterialConstProperty("LAr", "MUONYIELDRATIO",            LarProp->MuonScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "KAONSCINTILLATIONYIELD",    LarProp->KaonScintYield(),          1./MeV );
+	SetMaterialConstProperty("LAr", "KAONSCINTILLATIONYIELD",    LarProp->KaonScintYield(true),      1./MeV );
 	SetMaterialConstProperty("LAr", "KAONYIELDRATIO",            LarProp->KaonScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "PIONSCINTILLATIONYIELD",    LarProp->PionScintYield(),          1./MeV );
+	SetMaterialConstProperty("LAr", "PIONSCINTILLATIONYIELD",    LarProp->PionScintYield(true),      1./MeV );
 	SetMaterialConstProperty("LAr", "PIONYIELDRATIO",            LarProp->PionScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "ELECTRONSCINTILLATIONYIELD",LarProp->ElectronScintYield(),      1./MeV );
+	SetMaterialConstProperty("LAr", "ELECTRONSCINTILLATIONYIELD",LarProp->ElectronScintYield(true),  1./MeV );
 	SetMaterialConstProperty("LAr", "ELECTRONYIELDRATIO",        LarProp->ElectronScintYieldRatio(), 1.);
-      	SetMaterialConstProperty("LAr", "ALPHASCINTILLATIONYIELD",   LarProp->AlphaScintYield(),         1./MeV );
+      	SetMaterialConstProperty("LAr", "ALPHASCINTILLATIONYIELD",   LarProp->AlphaScintYield(true),     1./MeV );
 	SetMaterialConstProperty("LAr", "ALPHAYIELDRATIO",           LarProp->AlphaScintYieldRatio(),    1.);
       }
   }
