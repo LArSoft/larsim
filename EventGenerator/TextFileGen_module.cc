@@ -90,7 +90,7 @@ private:
 
   std::ifstream* fInputFile;
   std::string    fInputFileName; ///< Name of text file containing events to simulate
-
+  double fMoveY; ///< Project particles to a new y plane.
 };
 
 //------------------------------------------------------------------------------
@@ -187,6 +187,20 @@ void evgen::TextFileGen::produce(art::Event & e)
 	      >> firstMother >> secondMother >> firstDaughter >> secondDaughter
 	      >> xMomentum   >> yMomentum    >> zMomentum     >> energy >> mass
 	      >> xPosition   >> yPosition    >> zPosition     >> time;
+
+    //Project the particle to a new y plane
+    if (fMoveY>-1e8){
+      double totmom = sqrt(pow(xMomentum,2)+pow(yMomentum,2)+pow(zMomentum,2));
+      double kx = xMomentum/totmom;
+      double ky = yMomentum/totmom;
+      double kz = zMomentum/totmom;
+      if (ky){
+	double l = (fMoveY-yPosition)/ky;
+	xPosition += kx*l;
+	yPosition += ky*l;
+	zPosition += kz*l;
+      }
+    }
     
     TLorentzVector pos(xPosition, yPosition, zPosition, time);
     TLorentzVector mom(xMomentum, yMomentum, zMomentum, energy);
@@ -208,7 +222,10 @@ void evgen::TextFileGen::produce(art::Event & e)
 void evgen::TextFileGen::reconfigure(fhicl::ParameterSet const & p)
 {
   fInputFileName = p.get<std::string>("InputFileName");
-  
+  fMoveY         = p.get<double>("MoveY", -1e9);
+  if (fMoveY>-1e8){
+    mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
+  }
   return;
 }
 
