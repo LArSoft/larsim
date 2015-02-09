@@ -25,10 +25,10 @@
 #include "Simulation/LArVoxelList.h"
 #include "SimpleTypesAndConstants/geo_types.h"
 
+#include "RecoBase/Hit.h"
 #include "Utilities/TimeService.h"
 
 namespace recob{
-  class Hit;
   class SpacePoint;
 }
 
@@ -85,9 +85,14 @@ namespace cheat{
     // electrons to the identified hit
     std::vector<sim::TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
     
+    //@{
     // method to return sim::IDE objects associated with a given hit
+    void                 HitToSimIDEs(recob::Hit const& hit,
+                                      std::vector<sim::IDE>&      ides) const;
     void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				      std::vector<sim::IDE>&      ides);
+                                      std::vector<sim::IDE>&      ides) const
+                                      { HitToSimIDEs(*hit, ides); }
+    //@}
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
     std::vector<double>  SimIDEsToXYZ(std::vector<sim::IDE> const& ides);

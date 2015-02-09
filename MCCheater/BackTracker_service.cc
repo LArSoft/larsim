@@ -635,17 +635,17 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void BackTracker::HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				 std::vector<sim::IDE>&      ides)
+  void BackTracker::HitToSimIDEs(recob::Hit const& hit,
+                                 std::vector<sim::IDE>&      ides) const
   {
     // Get services.
     art::ServiceHandle<util::TimeService> ts;
-    int start_tdc = ts->TPCTick2TDC( hit->PeakTimeMinusRMS() );
-    int end_tdc   = ts->TPCTick2TDC( hit->PeakTimePlusRMS()   );
+    int start_tdc = ts->TPCTick2TDC( hit.PeakTimeMinusRMS() );
+    int end_tdc   = ts->TPCTick2TDC( hit.PeakTimePlusRMS()   );
     if(start_tdc<0) start_tdc = 0;
     if(end_tdc<0) end_tdc = 0;
 
-    ides = this->FindSimChannel(hit->Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
+    ides = FindSimChannel(hit.Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
   }
 
   //----------------------------------------------------------------------
