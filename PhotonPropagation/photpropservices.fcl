@@ -13,7 +13,8 @@ standard_photonvisibilityservice:
 	
   LibraryBuildJob: false
  		
-  LibraryFile: "PhotonPropagation/LibraryData/lib8984855.root"	 
+  #LibraryFile: "PhotonPropagation/LibraryData/lib8984855.root"	 
+  LibraryFile: "PhotonPropagation/LibraryData/uboone_photon_library_v4.root"
 
  #These are not used when usecryoboundary=true	
   XMin: -120
