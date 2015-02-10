@@ -112,6 +112,7 @@ add_subdirectory(PhotonPropagation)
 add_subdirectory(Simulation)
 add_subdirectory(TriggerAlgo)
 add_subdirectory(SimFilters)
+add_subdirectory(MCSTReco)
 
 # ups - table and config files
 add_subdirectory(ups)
