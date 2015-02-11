@@ -33,7 +33,7 @@
 #include "Utilities/TimeService.h"
 #include "LArG4/LArVoxelReadout.h"
 #include "LArG4/ParticleListAction.h"
-
+#include "SpaceCharge/SpaceCharge.h"
 
 namespace larg4 {
   
@@ -419,8 +419,11 @@ namespace larg4 {
 
       // Get SCE {x,y,z} offsets for particular location in TPC      
       std::vector<double> posOffsets;
-      if (fSCEHandle->EnableSimulationSCE() == true)
-        posOffsets = fSCEHandle->GetPosOffsets(stepMidPoint.x()/cm,stepMidPoint.y()/cm,stepMidPoint.z()/cm);
+      if (fLgpHandle->EnableSCE() == true)
+      {
+        art::ServiceHandle<spacecharge::SpaceCharge> SCEHandle;
+        posOffsets = SCEHandle->GetPosOffsets(stepMidPoint.x()/cm,stepMidPoint.y()/cm,stepMidPoint.z()/cm);
+      }
       else
         posOffsets.resize(3,0.0);
 
