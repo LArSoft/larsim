@@ -61,6 +61,7 @@ extern "C" {
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/LArFFT.h"
 #include "Utilities/LArProperties.h"
+#include "Utilities/FetchRandomSeed.h"
 
 namespace art {
   class Event;
@@ -149,10 +150,9 @@ namespace detsim{
     std::string compression(pset.get< std::string >("CompressionType"));
     if(compression.compare("Huffman") == 0) fCompression = raw::kHuffman;    
 
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    unsigned int seed = pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed());
-
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
     createEngine(seed);
   }
 
