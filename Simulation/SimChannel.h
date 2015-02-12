@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "SimpleTypesAndConstants/geo_types.h"
+#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 namespace sim {
 
@@ -53,14 +54,14 @@ namespace sim {
     
   private:
     
-    uint32_t                                            fChannel; ///< electronics channel associated with these sim::Electrons
+    raw::ChannelID_t                                    fChannel; ///< electronics channel associated with these sim::Electrons
     std::map< unsigned short, std::vector< sim::IDE > > fTDCIDEs; ///< vector of IDE structs for each TDC with signal
 
 
 #ifndef __GCCXML__
   public:
 
-    explicit SimChannel(uint32_t channel);
+    explicit SimChannel(raw::ChannelID_t channel);
 
     // method to add ionization electrons and energy to this channel
     void AddIonizationElectrons(int trackID,
@@ -71,7 +72,7 @@ namespace sim {
 
     
     
-    uint32_t Channel() const;
+    raw::ChannelID_t Channel() const;
 
     // method to return a collection of IDE structs for all geant4
     // track ids represented between startTDC and endTDC
@@ -116,7 +117,7 @@ namespace sim {
 
 inline bool sim::SimChannel::operator< (const sim::SimChannel& other)                       const { return fChannel < other.Channel(); }
 inline const std::map<unsigned short, std::vector<sim::IDE> >& sim::SimChannel::TDCIDEMap() const { return fTDCIDEs; }
-inline uint32_t sim::SimChannel::Channel()                                                  const { return fChannel; }
+inline raw::ChannelID_t sim::SimChannel::Channel()                                          const { return fChannel; }
 
 
 // -----------------------------------------------------------------------------

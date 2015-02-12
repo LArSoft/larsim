@@ -59,7 +59,6 @@
 #include "LArG4/IonizationAndScintillation.h"
 
 
-
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
