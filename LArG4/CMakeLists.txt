@@ -10,7 +10,7 @@ art_make( BASENAME_ONLY
           LIB_LIBRARIES 
                         PhotonPropagation
                         PhotonVisibilityService_service
-                        Simulation
+                        SpaceCharge_service
                         Utilities
 			TimeService_service
                         LArProperties_service
@@ -42,6 +42,7 @@ art_make( BASENAME_ONLY
 	                ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES LArG4
+                        SpaceCharge_service
                         Simulation
 	                Geometry
 	                Geometry_service

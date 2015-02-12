@@ -9,7 +9,6 @@
 #define CHEAT_BACKTRACKER_H
 
 #include <vector>
-#include <stdint.h>
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Run.h"
@@ -17,6 +16,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
+#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/ParticleList.h"
 #include "Simulation/SimChannel.h"
@@ -25,10 +25,10 @@
 #include "Simulation/LArVoxelList.h"
 #include "SimpleTypesAndConstants/geo_types.h"
 
+#include "RecoBase/Hit.h"
 #include "Utilities/TimeService.h"
 
 namespace recob{
-  class Hit;
   class SpacePoint;
 }
 
@@ -85,9 +85,14 @@ namespace cheat{
     // electrons to the identified hit
     std::vector<sim::TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
     
+    //@{
     // method to return sim::IDE objects associated with a given hit
+    void                 HitToSimIDEs(recob::Hit const& hit,
+                                      std::vector<sim::IDE>&      ides) const;
     void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				      std::vector<sim::IDE>&      ides);
+                                      std::vector<sim::IDE>&      ides) const
+                                      { HitToSimIDEs(*hit, ides); }
+    //@}
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
     std::vector<double>  SimIDEsToXYZ(std::vector<sim::IDE> const& ides);
@@ -142,11 +147,11 @@ namespace cheat{
   private:
 
     void ChannelToTrackID(std::vector<sim::TrackIDE>& trackIDEs,
-			  uint32_t               channel,
+			  raw::ChannelID_t channel,
 			  const double hit_start_time,
 			  const double hit_end_time);
 
-    const sim::SimChannel* FindSimChannel(uint32_t channel) const;
+    const sim::SimChannel* FindSimChannel(raw::ChannelID_t channel) const;
 
     sim::ParticleList                      fParticleList;          ///< ParticleList to map track ID to sim::Particle
     sim::LArVoxelList                      fVoxelList;             ///< List to map the position of energy depostions
