@@ -32,6 +32,9 @@ namespace sim {
   public:
     AuxDetIDE();
     
+    //constructor for IDEs applying G4 offset...
+    AuxDetIDE(AuxDetIDE const&, int);
+
     int   trackID;               ///< Geant4 supplied track ID
     float energyDeposited;       ///< total energy deposited for this track ID and time
     float entryX;                ///< Entry position X of particle
@@ -64,7 +67,12 @@ namespace sim {
   public:
     /// Default constructor (invalid, empty data)
     AuxDetSimChannel();
+    AuxDetSimChannel(uint32_t inputAuxDetID)
+      : fAuxDetID(inputAuxDetID)
+    {}
     
+    std::pair<int,int> MergeAuxDetSimChannel(const AuxDetSimChannel&, int);
+
   private:
     uint32_t                    fAuxDetID;   ///< geo->AuxDet(auxDetID), integer used to retrieve AuxDetGeo object
     std::vector<sim::AuxDetIDE> fAuxDetIDEs; ///< one sim::AuxDetIDE for each G4 track id
@@ -82,6 +90,9 @@ namespace sim {
     ///@{
     uint32_t AuxDetID() const;
 
+    bool operator<  (const AuxDetSimChannel& other)     const;
+    bool operator== (const AuxDetSimChannel& other)     const;
+
     std::vector<sim::AuxDetIDE> const& AuxDetIDEs() const;
     ///@}
     
@@ -97,6 +108,8 @@ namespace sim {
 inline bool sim::AuxDetIDE::operator<  (const AuxDetIDE& other) const { return trackID < other.trackID;  }
 inline bool sim::AuxDetIDE::operator== (const AuxDetIDE& other) const { return other.trackID == trackID; }
 inline uint32_t  sim::AuxDetSimChannel::AuxDetID()              const { return fAuxDetID;                }
+inline bool sim::AuxDetSimChannel::operator<  (const sim::AuxDetSimChannel& other) const { return fAuxDetID < other.AuxDetID(); }
+inline bool sim::AuxDetSimChannel::operator== (const sim::AuxDetSimChannel& other) const { return fAuxDetID == other.AuxDetID(); }
 inline std::vector<sim::AuxDetIDE> const& sim::AuxDetSimChannel::AuxDetIDEs() const { return fAuxDetIDEs; }
 #endif
 

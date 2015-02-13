@@ -57,8 +57,17 @@ namespace sim
   {
     public:
       SimPhotonsLite();
+      SimPhotonsLite(int chan)
+	: OpChannel(chan)
+      {}
+      
       int   OpChannel;
       std::map<int, int> DetectedPhotons;
+
+      SimPhotonsLite& operator+=(const SimPhotonsLite &rhs);
+      const SimPhotonsLite operator+(const SimPhotonsLite &rhs) const;
+
+      bool operator==(const SimPhotonsLite &other) const;
   };
 
   /// \todo: Remove this class when LBNE makes the next round of production
@@ -78,6 +87,9 @@ namespace sim
     {
     public:
       SimPhotons();
+      SimPhotons(int chan)
+	: fOpChannel(chan)
+      {}
 
       int  fOpChannel;  /// volume number for the OpDet
 
@@ -98,6 +110,8 @@ namespace sim
       SimPhotons& operator+=(const SimPhotons &rhs);
       const SimPhotons operator+(const SimPhotons &rhs) const;
 
+      bool operator== (const SimPhotons &other) const;
+      
       int       OpChannel() const;
       void      SetChannel(int ch);
 
@@ -157,6 +171,9 @@ inline int         sim::SimPhotons::OpChannel()       const                     
 inline void        sim::SimPhotons::SetChannel(int ch)                          { fOpChannel = ch;        }
 inline std::string sim::SimPhotonsCollection::GetSDName()                       { return fTheSDName;      }
 inline void        sim::SimPhotonsCollection::SetSDName(std::string TheSDName)  { fTheSDName = TheSDName; }
+
+inline bool sim::SimPhotons::operator==(const sim::SimPhotons& other) const          { return fOpChannel == other.OpChannel(); }
+inline bool sim::SimPhotonsLite::operator==(const sim::SimPhotonsLite& other) const  { return OpChannel == other.OpChannel; }
 
 #endif
 

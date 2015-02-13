@@ -85,4 +85,20 @@ namespace sim
     return SimPhotons(*this)+=rhs;
   }
 
+  //----------------------------------------------------------------------------
+  SimPhotonsLite & SimPhotonsLite::operator+=(const SimPhotonsLite &rhs)
+  {
+
+    for(auto const& phot : rhs.DetectedPhotons)
+      this->DetectedPhotons[phot.first] += phot.second;
+	
+    return *this;
+  }
+
+  //----------------------------------------------------------------------------
+  const SimPhotonsLite SimPhotonsLite::operator+(const SimPhotonsLite &rhs) const
+  {
+    return SimPhotonsLite(*this)+=rhs;
+  }
+
 }

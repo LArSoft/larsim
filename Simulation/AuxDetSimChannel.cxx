@@ -12,6 +12,7 @@
 
 // C/C++ standard library
 #include <limits> // std::numeric_limits<>
+#include <stdexcept>
 
 // LArSoft headers
 #include "SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
@@ -36,6 +37,24 @@ namespace sim{
     , exitMomentumZ  (util::kBogusF)
     {}
 
+  // Copy with offset constructor
+  //-------------------------------------------------
+  AuxDetIDE::AuxDetIDE(AuxDetIDE const& ide, int offset)
+    : trackID        (ide.trackID+offset)
+    , energyDeposited(ide.energyDeposited)
+    , entryX         (ide.entryX)
+    , entryY         (ide.entryY)
+    , entryZ         (ide.entryZ)
+    , entryT         (ide.entryT)
+    , exitX          (ide.exitX)
+    , exitY          (ide.exitY)
+    , exitZ          (ide.exitZ)
+    , exitT          (ide.exitT)
+    , exitMomentumX  (ide.exitMomentumX)
+    , exitMomentumY  (ide.exitMomentumY)
+    , exitMomentumZ  (ide.exitMomentumZ)
+    {}
+
   AuxDetSimChannel::AuxDetSimChannel()
     : fAuxDetID(std::numeric_limits<uint32_t>::max())
   {
@@ -51,4 +70,24 @@ namespace sim{
     fAuxDetID(inputAuxDetID), fAuxDetIDEs(inputAuxDetIDEs)
   {}
 
+  std::pair<int,int> AuxDetSimChannel::MergeAuxDetSimChannel(const AuxDetSimChannel& chan, int offset)
+  {
+    if(this->fAuxDetID != chan.AuxDetID() )
+      throw std::runtime_error("ERROR AuxDetSimChannel Merge: Trying to merge different channels!");
+
+    std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
+				     std::numeric_limits<int>::min());
+
+    for(auto const& ide : AuxDetIDEs()){
+      this->fAuxDetIDEs.emplace_back(ide,offset);
+
+      if( ide.trackID+offset < range_trackID.first  )
+	range_trackID.first = ide.trackID+offset;
+      if( ide.trackID+offset > range_trackID.second )
+	range_trackID.second = ide.trackID+offset;
+    }
+
+    return range_trackID;
+  }
+  
 }//namespace sim

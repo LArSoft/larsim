@@ -5,6 +5,13 @@ include_directories ( $ENV{GEANT4_FQ_DIR}/include )
 include_directories ( $ENV{XERCES_C_INC} )
 include_directories ( $ENV{CRYHOME}/src )
 
+art_make_library( LIBRARY_NAME MergeSimSources
+		  	     SOURCE MergeSimSources.cxx
+			     LIBRARIES
+			                Simulation
+ 					${FHICLCPP}
+)
+
 art_make( BASENAME_ONLY
           LIBRARY_NAME  LArG4
           LIB_LIBRARIES 

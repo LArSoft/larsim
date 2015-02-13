@@ -37,6 +37,9 @@ namespace sim {
     
     IDE();
 
+    //constructor for IDEs applying G4 offset...
+    IDE(IDE const&, int);
+    
     int    trackID;      ///< Geant4 supplied track ID
     double numElectrons; ///< total number of electrons for this track ID and time
     double energy;       ///< total energy deposited for this track ID and time
@@ -90,8 +93,11 @@ namespace sim {
     std::vector<sim::TrackIDE> TrackIDEs(unsigned int startTDC,
 					 unsigned int endTDC) const;
     
-    bool operator< (const SimChannel& other)     const;
+    bool operator<  (const SimChannel& other)     const;
+    bool operator== (const SimChannel& other)     const;
 
+    std::pair<int,int> MergeSimChannel(const SimChannel&, int);
+    
     //@{
     /**
 	  * @brief Dumps the full content of the SimChannel into a stream
@@ -115,7 +121,8 @@ namespace sim {
 
 #ifndef __GCCXML__
 
-inline bool sim::SimChannel::operator< (const sim::SimChannel& other)                       const { return fChannel < other.Channel(); }
+inline bool sim::SimChannel::operator<  (const sim::SimChannel& other)                       const { return fChannel < other.Channel(); }
+inline bool sim::SimChannel::operator== (const sim::SimChannel& other)                       const { return fChannel == other.Channel(); }
 inline const std::map<unsigned short, std::vector<sim::IDE> >& sim::SimChannel::TDCIDEMap() const { return fTDCIDEs; }
 inline raw::ChannelID_t sim::SimChannel::Channel()                                          const { return fChannel; }
 
