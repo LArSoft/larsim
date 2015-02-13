@@ -46,6 +46,7 @@
 #include "EventGeneratorBase/evgenbase.h"
 #include "Geometry/Geometry.h"
 #include "SummaryData/RunData.h"
+#include "Utilities/FetchRandomSeed.h"
 
 #include "art/Framework/Core/EDProducer.h"
 
@@ -80,7 +81,6 @@ namespace evgen {
 	std::string         fNdkFile;
 	std::ifstream      *fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
-        unsigned int        fSeed;           ///< random number seed    	
 	
 	std::string fNDKModuleLabel;
 	
@@ -129,10 +129,10 @@ namespace evgen{
     produces< sumdata::RunData, art::InRun >();
 
     fEventFile = new ifstream(fNdkFile.c_str());
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    fSeed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
-    createEngine( fSeed );
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
+    createEngine( seed );
 
    }
 

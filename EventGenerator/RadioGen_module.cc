@@ -42,6 +42,7 @@
 // lar includes
 #include "Geometry/Geometry.h"
 #include "SummaryData/RunData.h"
+#include "Utilities/FetchRandomSeed.h"
 
 // root includes
 
@@ -93,7 +94,6 @@ namespace evgen {
 
     //double betaphasespace(double mass, double q); // older parameterization.
 
-    unsigned int        fSeed;           ///< random number seed    
     std::vector<std::string> fNuclide;   ///< List of nuclides to simulate.  Example:  "39Ar".
     std::vector<double> fBq;             ///< Radioactivity in Becquerels (decay per sec) per cubic cm.
     std::vector<double> fT0;             ///< Beginning of time window to simulate in ns
@@ -132,11 +132,11 @@ namespace evgen{
 
     this->reconfigure(pset);
 
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    fSeed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
 
-    createEngine( fSeed );
+    createEngine( seed );
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
@@ -151,7 +151,7 @@ namespace evgen{
   //____________________________________________________________________________
   void RadioGen::reconfigure(fhicl::ParameterSet const& p)
   {
-    // do not put fSeed in reconfigure because we don't want to reset 
+    // do not put seed in reconfigure because we don't want to reset 
     // the seed midstream -- same as SingleGen
 
     fNuclide       = p.get< std::vector<std::string>>("Nuclide");

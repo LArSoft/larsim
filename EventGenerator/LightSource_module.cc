@@ -73,6 +73,7 @@
 
 // lar includes
 #include "Geometry/Geometry.h"
+#include "Utilities/FetchRandomSeed.h"
 #include "Simulation/PhotonVoxels.h"
 #include "PhotonPropagation/PhotonVisibilityService.h"
 #include "SummaryData/RunData.h"
@@ -182,8 +183,10 @@ namespace evgen{
     fPosDist      =     (pset.get<int >("PosDist")     );
     fPDist        =     (pset.get<int >("PDist")       );
     fTDist        =     (pset.get<int >("TDist")       );
-    unsigned int seed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
-
+    
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
     
     createEngine(seed);
 

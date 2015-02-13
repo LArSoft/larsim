@@ -41,6 +41,7 @@
 // lar includes
 #include "Geometry/Geometry.h"
 #include "SummaryData/RunData.h"
+#include "Utilities/FetchRandomSeed.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
@@ -76,7 +77,6 @@ namespace evgen {
     static const int kUNIF = 0;    
     static const int kGAUS = 1;    
 
-    unsigned int        fSeed;           ///< random number seed    
     int                 fMode;           ///< Particle Selection Mode 
                                          ///< 0--generate a list of all particles, 
                                          ///< 1--generate a single particle selected randomly from the list
@@ -115,11 +115,11 @@ namespace evgen{
 
     this->reconfigure(pset);
 
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    fSeed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
 
-    createEngine( fSeed );
+    createEngine( seed );
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
@@ -134,7 +134,7 @@ namespace evgen{
   //____________________________________________________________________________
   void SingleGen::reconfigure(fhicl::ParameterSet const& p)
   {
-    // do not put fSeed in reconfigure because we don't want to reset 
+    // do not put seed in reconfigure because we don't want to reset 
     // the seed midstream
 
     fPadOutVectors = p.get< bool                >("PadOutVectors");

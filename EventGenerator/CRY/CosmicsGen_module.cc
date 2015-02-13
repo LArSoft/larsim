@@ -37,6 +37,7 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "SummaryData/RunData.h"
+#include "Utilities/FetchRandomSeed.h"
 
 namespace evgen {
 
@@ -104,7 +105,9 @@ namespace evgen{
     : fCRYHelp(0)
   {
     // Create a random number engine
-    int seed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
     createEngine(seed);
     
     //the buffer box bounds specified here will extend on the cryostat boundaries
