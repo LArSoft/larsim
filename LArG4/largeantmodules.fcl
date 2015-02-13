@@ -10,11 +10,16 @@ standard_largeant:
  VisualizeEvents:        false
  SmartStacking:          0	# non-0 turns it on. The 0x4 bit 
 	                        # will shut off primary showering.
- DisableWireplanes:      false
- UseModBoxRecomb:        false   # use Modified Box recombination model
+# The following variables are not used anywhere in LArG4_module.cc.
+# They has been moved to the LArG4Parameters_service and so should
+# not be included here.
+# DisableWireplanes:      false
+# UseModBoxRecomb:        false   # use Modified Box recombination model
 }
 argoneut_largeant:   @local::standard_largeant
-microboone_largeant: @local::standard_largeant
+# The following line is already in largeantmodules_microboone.fcl
+# and so it should not also be included here, for clarity's sake.
+#microboone_largeant: @local::standard_largeant
 
 standard_largeantana:
 {
@@ -24,7 +29,9 @@ standard_largeantana:
  Ndaughters:        20
 }
 argoneut_largeantana:   @local::standard_largeantana
-microboone_largeantana: @local::standard_largeantana
+# The following line is already in largeantmodules_microboone.fcl
+# and so it should not also be included here, for clarity's sake.
+#microboone_largeantana: @local::standard_largeantana
 
 
 

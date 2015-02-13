@@ -1,6 +1,6 @@
 <!-- Project details-->	
 <!DOCTYPE project [
-<!ENTITY release "v03_04_02">
+<!ENTITY release "v03_07_00">
 <!ENTITY name "gen_photon_ball_0">
 ]>
 		
@@ -10,7 +10,7 @@
   <group>uboone</group>
 	
   <!-- Project size -->
-  <numevents>1</numevents>
+  <numevents>240</numevents>
   
   <!-- Batch OS -->
   <os>SL6</os>
@@ -19,7 +19,7 @@
   <larsoft>
     <tag>&release;</tag>
     <qual>e6:prof</qual>
-    <local>/uboone/app/users/toups/updatedpmtgeometry/localProducts_larsoft_v03_04_02_e6_prof</local>
+    <local>/uboone/app/users/toups/updatedpmtgeometry/localProducts_larsoft_v03_07_00_e6_prof</local>
   </larsoft>
   
   <stage name = "library_build">

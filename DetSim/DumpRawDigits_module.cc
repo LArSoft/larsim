@@ -179,11 +179,8 @@ namespace detsim {
     std::vector<float> DigitBuffer(fDigitsPerLine), LastBuffer;
     for (const raw::RawDigit& digits: *Digits) {
       // uncompress the digits
-      std::vector<short> ADCs(digits.Samples());
-      raw::Uncompress(digits.fADC, ADCs, digits.Compression());
-      // FIXME future:
-    //  raw::RawDigit::ADCvector_t ADCs(digits.Samples());
-    //  raw::Uncompress(digits.ADCs(), ADCs, digits.Compression());
+      raw::RawDigit::ADCvector_t ADCs(digits.Samples());
+      raw::Uncompress(digits.ADCs(), ADCs, digits.Compression());
       
       // print a header for the raw digits
       { // limit the scope of out:

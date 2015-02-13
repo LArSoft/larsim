@@ -17,7 +17,6 @@
 // LArSoft includes
 #include "MCCheater/BackTracker.h"
 #include "Geometry/Geometry.h"
-#include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
 #include "RecoBase/Hit.h"
 #include "RecoBase/SpacePoint.h"
@@ -214,8 +213,8 @@ namespace cheat{
   {
     std::vector<sim::TrackIDE> trackIDEs;
 
-    double start = hit->StartTime();
-    double end   = hit->EndTime();
+    const double start = hit->PeakTimeMinusRMS();
+    const double end   = hit->PeakTimePlusRMS();
 	
     this->ChannelToTrackID(trackIDEs, hit->Channel(), start, end);
 
@@ -236,7 +235,7 @@ namespace cheat{
     for(auto itr = allhits.begin(); itr != allhits.end(); ++itr) {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
-      this->ChannelToTrackID(tids, hit->Channel(), hit->StartTime(), hit->EndTime());
+      this->ChannelToTrackID(tids, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
       for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
           if(itid->trackID == *itkid) {
@@ -352,8 +351,8 @@ namespace cheat{
       std::vector<sim::TrackIDE> trackIDEs;
      
       // get the track ids corresponding to this hit
-      double start = (*itr)->StartTime();
-      double end   = (*itr)->EndTime();
+      const double start = (*itr)->PeakTimeMinusRMS();
+      const double end   = (*itr)->PeakTimePlusRMS();
 
       this->ChannelToTrackID(trackIDEs, (*itr)->Channel(), start, end);
       
@@ -417,13 +416,13 @@ namespace cheat{
       art::Ptr<recob::Hit> hit = hits[h];
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
        
-      total+=hit->Charge(); // sum up the charge in the cluster
+      total+=hit->Integral(); // sum up the charge in the cluster
 
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
-	  desired += hit->Charge();
+	  desired += hit->Integral();
 	  break;
 	}
       }
@@ -526,7 +525,7 @@ namespace cheat{
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
 	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
 	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  desired += hit->Charge();
+	  desired += hit->Integral();
 	  break;
 	}
       }
@@ -550,7 +549,7 @@ namespace cheat{
 	// desired track IDs associated with it
 	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
 	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  total += hit->Charge();
+	  total += hit->Integral();
 	  break;
 	}
       }
@@ -566,7 +565,7 @@ namespace cheat{
 
 
   //----------------------------------------------------------------------
-  const sim::SimChannel* BackTracker::FindSimChannel(uint32_t channel) const
+  const sim::SimChannel* BackTracker::FindSimChannel(raw::ChannelID_t channel) const
   {
     const sim::SimChannel* chan = 0;
 
@@ -583,7 +582,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   void BackTracker::ChannelToTrackID(std::vector<sim::TrackIDE>&   trackIDEs,
-				     uint32_t                 channel,
+				     raw::ChannelID_t channel,
 				     const double hit_start_time,
 				     const double hit_end_time)
   {
@@ -636,17 +635,17 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void BackTracker::HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-				 std::vector<sim::IDE>&      ides)
+  void BackTracker::HitToSimIDEs(recob::Hit const& hit,
+                                 std::vector<sim::IDE>&      ides) const
   {
     // Get services.
     art::ServiceHandle<util::TimeService> ts;
-    int start_tdc = ts->TPCTick2TDC( hit->StartTime() );
-    int end_tdc   = ts->TPCTick2TDC( hit->EndTime()   );
+    int start_tdc = ts->TPCTick2TDC( hit.PeakTimeMinusRMS() );
+    int end_tdc   = ts->TPCTick2TDC( hit.PeakTimePlusRMS()   );
     if(start_tdc<0) start_tdc = 0;
     if(end_tdc<0) end_tdc = 0;
 
-    ides = this->FindSimChannel(hit->Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
+    ides = FindSimChannel(hit.Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
   }
 
   //----------------------------------------------------------------------
@@ -754,7 +753,7 @@ namespace cheat{
 
       if(hit.WireID().Cryostat == cstat && hit.WireID().TPC == tpc){
 	++numhits[cstat][tpc][hit.WireID().Plane];
-	hitWeight[cstat][tpc][hit.WireID().Plane] = hit.Charge();
+	hitWeight[cstat][tpc][hit.WireID().Plane] = hit.Integral();
 	hitPos[cstat][tpc][hit.WireID().Plane] = hitOrigin;
       }
 	
