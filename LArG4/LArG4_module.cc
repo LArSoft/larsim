@@ -66,6 +66,7 @@
 #include "LArG4/AuxDetReadout.h"
 #include "Simulation/LArG4Parameters.h"
 #include "Utilities/AssociationUtil.h"
+#include "Utilities/FetchRandomSeed.h"
 #include "SimulationBase/MCTruth.h"
 #include "Simulation/ParticleList.h"
 #include "Simulation/SimPhotons.h"
@@ -157,9 +158,9 @@ namespace larg4 {
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
-    // get the random number seed, use a random default if not specified
-    // in the configuration file.
-    unsigned int seed = pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed());
+    // obtain the random seed from a service,
+    // unless overridden in configuration with key "Seed" (that is default)
+    const unsigned int seed = lar::util::FetchRandomSeed("G4Engine", &pset);
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP
     createEngine(seed, "G4Engine");

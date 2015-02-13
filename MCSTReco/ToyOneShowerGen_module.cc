@@ -30,6 +30,7 @@
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/sim.h"
+#include "Utilities/FetchRandomSeed.h"
 
 class ToyOneShowerGen;
 
@@ -134,7 +135,10 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // Random engine initialization
   //
-  createEngine(sim::GetRandomNumberSeed());
+  // obtain the random seed from a service,
+  // unless overridden in configuration with key "Seed" (that is default)
+  const unsigned int seed = lar::util::FetchRandomSeed(&p);
+  createEngine(seed);
   art::ServiceHandle<art::RandomNumberGenerator> rng;
   CLHEP::HepRandomEngine &engine = rng->getEngine();
   fFlatRandom = new CLHEP::RandFlat(engine);
