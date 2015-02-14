@@ -160,7 +160,7 @@ namespace larg4 {
 
     // obtain the random seed from a service,
     // unless overridden in configuration with key "Seed" (that is default)
-    const unsigned int seed = lar::util::FetchRandomSeed("G4Engine", &pset);
+    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP
     createEngine(seed, "G4Engine");
