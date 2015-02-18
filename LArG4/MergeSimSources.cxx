@@ -11,14 +11,23 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 
 #include "MergeSimSources.h"
 
 sim::MergeSimSourcesUtility::MergeSimSourcesUtility(const std::vector<int>& offsets)
 {
   fG4TrackIDOffsets = offsets;
-  fG4TrackIDRanges.resize(offsets.size());
-  fMCParticleListMap.resize(offsets.size());
+  Reset();
+}
+
+void sim::MergeSimSourcesUtility::Reset()
+{
+  fG4TrackIDRanges.resize(fG4TrackIDOffsets.size(),
+			  std::make_pair(std::numeric_limits<int>::max(),
+					 std::numeric_limits<int>::min()));
+  fMCParticleListMap.resize(fG4TrackIDOffsets.size(),
+			    std::vector<size_t>());
 }
 
 void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle>& merged_vector,
@@ -28,9 +37,9 @@ void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle
 
   if(source_index >= fG4TrackIDOffsets.size())
     std::runtime_error("ERROR in MergeSimSourcesUtility: Source index out of range!");
-  
+
   fMCParticleListMap[source_index].resize(input_vector.size());
-  merged_vector.reserve( merged_vector.size() + input_vector.size() );
+  merged_vector.reserve(merged_vector.size() + input_vector.size());
 
   std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
 				   std::numeric_limits<int>::min());
@@ -157,7 +166,11 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
     if( (newrange.first >= fG4TrackIDRanges[i].first && newrange.first <= fG4TrackIDRanges[i].second) ||
 	(newrange.second >= fG4TrackIDRanges[i].first && newrange.second <= fG4TrackIDRanges[i].second) )
       {
-	throw std::runtime_error("ERROR in MergeSimSourcesUtility: Source trackIDs overlap!");
+	std::stringstream ss;
+	ss << "ERROR in MergeSimSourcesUtility: Source trackIDs overlap!"
+	   << "\n\t" << i << "\t" << fG4TrackIDRanges[i].first << " " << fG4TrackIDRanges[i].second
+	   << "\n\t" << "n\t" << newrange.first << " " << newrange.second;
+	throw std::runtime_error(ss.str());
       }
   }
 

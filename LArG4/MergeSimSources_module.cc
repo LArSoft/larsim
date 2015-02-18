@@ -90,14 +90,16 @@ void sim::MergeSimSources::produce(art::Event & e)
   std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
 
   art::ProductID mcparticle_pid = this->getProductID< std::vector<simb::MCParticle> >(e,std::string());
+
+  fMergeUtility.Reset();
   
   for(size_t i_source=0; i_source<fInputSourcesLabels.size(); i_source++){
 
     std::string const& input_label = fInputSourcesLabels[i_source];
 
     art::Handle< std::vector<simb::MCParticle> > input_partCol;
-    std::vector<simb::MCParticle> const& input_partColVector(*input_partCol);
     e.getByLabel(input_label,input_partCol);
+    std::vector<simb::MCParticle> const& input_partColVector(*input_partCol);
     fMergeUtility.MergeMCParticles(*partCol,input_partColVector,i_source);
 
     const std::vector< std::vector<size_t> >& assocVectorPrimitive(fMergeUtility.GetMCParticleListMap());

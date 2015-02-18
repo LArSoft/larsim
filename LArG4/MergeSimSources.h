@@ -25,6 +25,8 @@ namespace sim{
   public:
 
     MergeSimSourcesUtility(std::vector<int> const&);
+
+    void Reset();
     
     void MergeMCParticles( std::vector<simb::MCParticle>&,
 			   const std::vector<simb::MCParticle>&,
