@@ -14,12 +14,50 @@
 
 #include "MergeSimSources.h"
 
+sim::MergeSimSourcesUtility::MergeSimSourcesUtility(const std::vector<int>& offsets)
+{
+  fG4TrackIDOffsets = offsets;
+  fG4TrackIDRanges.resize(offsets.size());
+  fMCParticleListMap.resize(offsets.size());
+}
+
+void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle>& merged_vector,
+						    const std::vector<simb::MCParticle>& input_vector,
+						    size_t source_index)
+{
+
+  if(source_index >= fG4TrackIDOffsets.size())
+    std::runtime_error("ERROR in MergeSimSourcesUtility: Source index out of range!");
+  
+  fMCParticleListMap[source_index].resize(input_vector.size());
+  merged_vector.reserve( merged_vector.size() + input_vector.size() );
+
+  std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
+				   std::numeric_limits<int>::min());
+
+  for(size_t i_p=0; i_p<input_vector.size(); i_p++){
+    merged_vector.emplace_back(input_vector[i_p],fG4TrackIDOffsets[source_index]);
+
+    fMCParticleListMap[source_index][i_p] = merged_vector.size();
+
+    if(merged_vector.back().TrackId() < range_trackID.first) 
+      range_trackID.first = merged_vector.back().TrackId();
+    if(merged_vector.back().TrackId() > range_trackID.second) 
+      range_trackID.second = merged_vector.back().TrackId();
+
+  }
+
+  UpdateG4TrackIDRange(range_trackID,source_index);
+}
+
 void sim::MergeSimSourcesUtility::MergeSimChannels(std::vector<sim::SimChannel>& merged_vector,
 						   const std::vector<sim::SimChannel>& input_vector,
 						   size_t source_index)
 {
   if(source_index >= fG4TrackIDOffsets.size())
     std::runtime_error("ERROR in MergeSimSourcesUtility: Source index out of range!");
+
+  merged_vector.reserve( merged_vector.size() + input_vector.size() );
 
   std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
 				   std::numeric_limits<int>::min());
@@ -47,6 +85,8 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
   if(source_index >= fG4TrackIDOffsets.size())
     std::runtime_error("ERROR in MergeSimSourcesUtility: Source index out of range!");
 
+  merged_vector.reserve( merged_vector.size() + input_vector.size() );
+
   std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
 				   std::numeric_limits<int>::min());
   
@@ -69,6 +109,9 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
 void sim::MergeSimSourcesUtility::MergeSimPhotons( std::vector<sim::SimPhotons>& merged_vector,
 						   const std::vector<sim::SimPhotons>& input_vector)
 {
+
+  merged_vector.reserve( merged_vector.size() + input_vector.size() );
+
   for(auto const& simphotons : input_vector){
     std::vector<sim::SimPhotons>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simphotons);
 
@@ -84,6 +127,9 @@ void sim::MergeSimSourcesUtility::MergeSimPhotons( std::vector<sim::SimPhotons>&
 void sim::MergeSimSourcesUtility::MergeSimPhotonsLite( std::vector<sim::SimPhotonsLite>& merged_vector,
 						       const std::vector<sim::SimPhotonsLite>& input_vector)
 {
+
+  merged_vector.reserve( merged_vector.size() + input_vector.size() );
+
   for(auto const& simphotons : input_vector){
     std::vector<sim::SimPhotonsLite>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simphotons);
     

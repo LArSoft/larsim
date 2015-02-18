@@ -12,6 +12,8 @@
  *
 */
 
+#include "SimulationBase/MCParticle.h"
+
 #include "Simulation/SimChannel.h"
 #include "Simulation/SimPhotons.h"
 #include "Simulation/AuxDetSimChannel.h"
@@ -21,7 +23,13 @@ namespace sim{
   class MergeSimSourcesUtility{
 
   public:
+
+    MergeSimSourcesUtility(std::vector<int> const&);
     
+    void MergeMCParticles( std::vector<simb::MCParticle>&,
+			   const std::vector<simb::MCParticle>&,
+			   size_t);
+
     void MergeSimChannels( std::vector<sim::SimChannel>&,
 			   const std::vector<sim::SimChannel>&,
 			   size_t);
@@ -36,10 +44,14 @@ namespace sim{
     void MergeSimPhotonsLite( std::vector<sim::SimPhotonsLite>&,
 			      const std::vector<sim::SimPhotonsLite>&);
 
+    const std::vector< std::vector<size_t> >& GetMCParticleListMap() { return fMCParticleListMap; }
+    
   private:
 
     std::vector<int>                   fG4TrackIDOffsets;
     std::vector< std::pair<int,int> >  fG4TrackIDRanges;
+
+    std::vector< std::vector<size_t> > fMCParticleListMap;
 
     void UpdateG4TrackIDRange(std::pair<int,int>,size_t);
     
