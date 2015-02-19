@@ -20,6 +20,7 @@
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Persistency/Common/Assns.h"
 #include "art/Framework/Core/FindOneP.h"
+#include "Utilities/AssociationUtil.h"
 
 #include <memory>
 
@@ -89,8 +90,6 @@ void sim::MergeSimSources::produce(art::Event & e)
   std::unique_ptr< art::Assns<simb::MCTruth, simb::MCParticle> > tpassn(new art::Assns<simb::MCTruth, simb::MCParticle>);
   std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
 
-  art::ProductID mcparticle_pid = this->getProductID< std::vector<simb::MCParticle> >(e,std::string());
-
   fMergeUtility.Reset();
   
   for(size_t i_source=0; i_source<fInputSourcesLabels.size(); i_source++){
@@ -104,14 +103,11 @@ void sim::MergeSimSources::produce(art::Event & e)
 
     const std::vector< std::vector<size_t> >& assocVectorPrimitive(fMergeUtility.GetMCParticleListMap());
     art::FindOneP<simb::MCTruth> mctAssn(input_partCol,e,input_label);
-
-    for(size_t i_p=0; i_p<mctAssn.size(); i_p++){
-      art::Ptr<simb::MCTruth> const& mct_ptr(mctAssn.at(i_p));
-      art::Ptr<simb::MCParticle> new_mcp_ptr(mcparticle_pid,
-					     assocVectorPrimitive[i_source][i_p],
-					     e.productGetter(mcparticle_pid));
-      tpassn->addSingle(mct_ptr,new_mcp_ptr);
-    }
+    for(size_t i_p=0; i_p<mctAssn.size(); i_p++)
+      util::CreateAssn(*this,e,
+		       *(partCol.get()),mctAssn.at(i_p),*(tpassn.get()),
+		       assocVectorPrimitive[i_source][i_p]);
+    
         
     art::Handle< std::vector<sim::SimChannel> > input_scCol;
     e.getByLabel(input_label,input_scCol);

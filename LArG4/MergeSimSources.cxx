@@ -47,7 +47,7 @@ void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle
   for(size_t i_p=0; i_p<input_vector.size(); i_p++){
     merged_vector.emplace_back(input_vector[i_p],fG4TrackIDOffsets[source_index]);
 
-    fMCParticleListMap[source_index][i_p] = merged_vector.size();
+    fMCParticleListMap[source_index][i_p] = merged_vector.size() - 1;
 
     if(merged_vector.back().TrackId() < range_trackID.first) 
       range_trackID.first = merged_vector.back().TrackId();
