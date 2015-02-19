@@ -48,7 +48,7 @@ namespace sim
     /// Default destructor
     virtual ~MCShowerRecoAlg(){};
 
-    void Reconstruct(const MCRecoPart& part_v,const MCRecoEdep& edep_v);
+    void Reconstruct(MCRecoPart& part_v,MCRecoEdep& edep_v);
 
     const std::vector<sim::MCShower>& MCShower() const { return fMCShower; }
 
