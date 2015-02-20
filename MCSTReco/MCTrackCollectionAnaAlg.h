@@ -45,12 +45,10 @@ namespace sim{
     float        fDParticleStartZ;
     float        fDParticleStartX;
     float        fDParticleStartE;
-    float        fDParticleStartP;
     float        fDParticleEndY;
     float        fDParticleEndZ;
     float        fDParticleEndX;
     float        fDParticleEndE;
-    float        fDParticleEndP;
     int          fDParticleMotherPdgCode;
     unsigned int fDParticleMotherTrackId;
     int          fDParticleAncestorPdgCode;

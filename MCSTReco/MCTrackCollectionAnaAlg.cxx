@@ -9,7 +9,7 @@
 
 #include "MCBase/MCTrack.h"
 #include "TTree.h"
-#include <algorithm>
+#include <numeric>
 
 #include "MCTrackCollectionAnaAlg.h"
 
@@ -36,27 +36,25 @@ void sim::MCTrackCollectionAnaAlg::SetOutputTree(TTree* tree)
   fTree->Branch("mct_dpstarty",&fDParticleStartY,"mct_dpstarty/F");
   fTree->Branch("mct_dpstartz",&fDParticleStartZ,"mct_dpstartz/F");
   fTree->Branch("mct_dpstarte",&fDParticleStartE,"mct_dpstarte/F");
-  fTree->Branch("mct_dpstartp",&fDParticleStartP,"mct_dpstartp/F");
   fTree->Branch("mct_dpendx",&fDParticleEndX,"mct_dpendx/F");
   fTree->Branch("mct_dpendy",&fDParticleEndY,"mct_dpendy/F");
   fTree->Branch("mct_dpendz",&fDParticleEndZ,"mct_dpendz/F");
   fTree->Branch("mct_dpende",&fDParticleEndE,"mct_dpende/F");
-  fTree->Branch("mct_dpendp",&fDParticleEndP,"mct_dpendp/F");
 
-  fTree->Branch("mct_coly",&fCollectionY,"mct_coly/F"):
-  fTree->Branch("mct_colz",&fCollectionZ,"mct_colz/F"):
-  fTree->Branch("mct_colx",&fCollectionX,"mct_colx/F"):
-  fTree->Branch("mct_colrmsy",&fCollectionRMSY,"mct_colrmsy/F"):
-  fTree->Branch("mct_colrmsz",&fCollectionRMSZ,"mct_colrmsz/F"):
-  fTree->Branch("mct_colrmsx",&fCollectionRMSX,"mct_colrmsx/F"):
-  fTree->Branch("mct_colE",&fCollectionEnergy,"mct_colE/F"):
+  fTree->Branch("mct_coly",&fCollectionY,"mct_coly/F");
+  fTree->Branch("mct_colz",&fCollectionZ,"mct_colz/F");
+  fTree->Branch("mct_colx",&fCollectionX,"mct_colx/F");
+  fTree->Branch("mct_colrmsy",&fCollectionRMSY,"mct_colrmsy/F");
+  fTree->Branch("mct_colrmsz",&fCollectionRMSZ,"mct_colrmsz/F");
+  fTree->Branch("mct_colrmsx",&fCollectionRMSX,"mct_colrmsx/F");
+  fTree->Branch("mct_colE",&fCollectionEnergy,"mct_colE/F");
 
-  fTree->Branch("mct_miny",&fMinY,"mct_miny/F"):
-  fTree->Branch("mct_maxy",&fMaxY,"mct_maxy/F"):
-  fTree->Branch("mct_minz",&fMinZ,"mct_minz/F"):
-  fTree->Branch("mct_maxz",&fMaxZ,"mct_maxz/F"):
-  fTree->Branch("mct_minx",&fMinX,"mct_minx/F"):
-  fTree->Branch("mct_maxx",&fMaxX,"mct_maxx/F"):
+  fTree->Branch("mct_miny",&fMinY,"mct_miny/F");
+  fTree->Branch("mct_maxy",&fMaxY,"mct_maxy/F");
+  fTree->Branch("mct_minz",&fMinZ,"mct_minz/F");
+  fTree->Branch("mct_maxz",&fMaxZ,"mct_maxz/F");
+  fTree->Branch("mct_minx",&fMinX,"mct_minx/F");
+  fTree->Branch("mct_maxx",&fMaxX,"mct_maxx/F");
 
 }
 
@@ -98,8 +96,8 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
       double stepL = (vec2-vec1).Mag();
 
       double thisy = 0.5*(vec1.Y() + vec2.Y());
-      double thisy = 0.5*(vec1.Z() + vec2.Z());
-      double thisy = 0.5*(vec1.X() + vec2.X());
+      double thisz = 0.5*(vec1.Z() + vec2.Z());
+      double thisx = 0.5*(vec1.X() + vec2.X());
 
       y_vals.push_back(thisy*stepL);
       z_vals.push_back(thisz*stepL);
@@ -117,15 +115,15 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
     }//end loop over steps
   }//end loop over tracks
 
-  double totalL = std::accumulate(mct_length.begin(),mct_length.end());
+  double totalL = std::accumulate(mct_length.begin(),mct_length.end(),0.0);
 
   fDParticle = std::distance(mct_length.begin(),std::max(mct_length.begin(),mct_length.end()));
   fDParticleFraction = mct_length.at(fDParticle) / totalL;
   FillDominantParticleInfo(mctVec.at(fDParticle));
 
-  fCollectionY = std::accumulate(y_vals.begin(),y_vals.end())/totalL;
-  fCollectionZ = std::accumulate(z_vals.begin(),z_vals.end())/totalL;
-  fCollectionX = std::accumulate(x_vals.begin(),x_vals.end())/totalL;
+  fCollectionY = std::accumulate(y_vals.begin(),y_vals.end(),0.0)/totalL;
+  fCollectionZ = std::accumulate(z_vals.begin(),z_vals.end(),0.0)/totalL;
+  fCollectionX = std::accumulate(x_vals.begin(),x_vals.end(),0.0)/totalL;
   
   double sumy2=0;
   for(auto const& y : y_vals)
@@ -141,8 +139,25 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
   for(auto const& x : x_vals)
     sumx2 += (x-fCollectionX)*(x-fCollectionX);
   fCollectionRMSX = std::sqrt(sumx2/totalL);
+
+  fTree->Fill();
 }
 
 void sim::MCTrackCollectionAnaAlg::FillDominantParticleInfo(const sim::MCTrack& mctrack)
 {
+  fDParticleOrigin = mctrack.Origin();
+  fDParticlePdgCode = mctrack.PdgCode();
+  fDParticleTrackId = mctrack.TrackID();
+  fDParticleStartY = mctrack.Start().Y();
+  fDParticleStartZ = mctrack.Start().Z();
+  fDParticleStartX = mctrack.Start().X();
+  fDParticleStartE = mctrack.Start().E();
+  fDParticleEndY = mctrack.End().Y();
+  fDParticleEndZ = mctrack.End().Z();
+  fDParticleEndX = mctrack.End().X();
+  fDParticleEndE = mctrack.End().E();
+  fDParticleMotherPdgCode = mctrack.MotherPdgCode();
+  fDParticleMotherTrackId = mctrack.MotherTrackID();
+  fDParticleAncestorPdgCode = mctrack.AncestorPdgCode();
+  fDParticleAncestorTrackId = mctrack.AncestorTrackID();
 }
