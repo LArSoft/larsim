@@ -22,7 +22,7 @@ namespace sim{
 
     MCTrackCollectionAnaAlg(){};
 
-    void SetOutputTree(TTree*);
+    void SetOutputTree(TTree*, bool fill=true);
 
     void FillTree(unsigned int, unsigned int,
 		  const std::vector<sim::MCTrack>&);
@@ -30,6 +30,7 @@ namespace sim{
   private:
 
     TTree* fTree;
+    bool   fFillTree;
 
     unsigned int fRun;
     unsigned int fEvent;

@@ -13,9 +13,10 @@
 
 #include "MCTrackCollectionAnaAlg.h"
 
-void sim::MCTrackCollectionAnaAlg::SetOutputTree(TTree* tree)
+void sim::MCTrackCollectionAnaAlg::SetOutputTree(TTree* tree, bool fill)
 {
   fTree = tree;
+  fFillTree = fill;
 
   fTree->Branch("mct_run",&fRun,"mct_run/i");
   fTree->Branch("mct_event",&fEvent,"mct_event/i");
@@ -65,7 +66,7 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
   fEvent = event;
 
   fNMCTracks = mctVec.size();
-  double totalE = 0;
+  fCollectionEnergy = 0;
 
   fMinY = 99999;
   fMinZ = 99999;
@@ -74,20 +75,27 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
   fMaxZ = -99999;
   fMaxX = -99999;
 
+  if(mctVec.size()==0){
+    fTree->Fill();
+    return;
+  }
+    
+
   std::vector<double> y_vals;
   std::vector<double> z_vals;
   std::vector<double> x_vals;
+  std::vector<double> stepL_vals;
 
   std::vector<double> mct_length(mctVec.size(),0);
   int d_index = -1;
   for(size_t i_p=0; i_p<mctVec.size(); i_p++){
 
 
-    totalE += mctVec[i_p].Start().E();
+    fCollectionEnergy += mctVec[i_p].Start().E();
 
-    y_vals.reserve( y_vals.size() + mctVec[i_p].size()-1 );
-    z_vals.reserve( z_vals.size() + mctVec[i_p].size()-1 );
-    x_vals.reserve( x_vals.size() + mctVec[i_p].size()-1 );
+    //y_vals.reserve( y_vals.size() + mctVec[i_p].size()-1 );
+    //z_vals.reserve( z_vals.size() + mctVec[i_p].size()-1 );
+    //x_vals.reserve( x_vals.size() + mctVec[i_p].size()-1 );
 
     for(size_t i_s=1; i_s < mctVec[i_p].size(); i_s++){
 
@@ -99,63 +107,69 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
       double thisz = 0.5*(vec1.Z() + vec2.Z());
       double thisx = 0.5*(vec1.X() + vec2.X());
 
-      y_vals.push_back(thisy*stepL);
-      z_vals.push_back(thisz*stepL);
-      x_vals.push_back(thisx*stepL);
-
+      y_vals.push_back(thisy);
+      z_vals.push_back(thisz);
+      x_vals.push_back(thisx);
+      stepL_vals.push_back(stepL);
+      
       mct_length[i_p] += stepL;
 
-      if(thisy > fMaxY) thisy = fMaxY;
-      if(thisy < fMinY) thisy = fMinY;
-      if(thisz > fMaxZ) thisz = fMaxZ;
-      if(thisz < fMinZ) thisz = fMinZ;
-      if(thisx > fMaxX) thisx = fMaxX;
-      if(thisx < fMinX) thisx = fMinX;
+      if(thisy > fMaxY) fMaxY = thisy;
+      if(thisy < fMinY) fMinY = thisy;
+      if(thisz > fMaxZ) fMaxZ = thisz;
+      if(thisz < fMinZ) fMinZ = thisz;
+      if(thisx > fMaxX) fMaxX = thisx;
+      if(thisx < fMinX) fMinX = thisx;
 
     }//end loop over steps
   }//end loop over tracks
 
   double totalL = std::accumulate(mct_length.begin(),mct_length.end(),0.0);
 
-  fDParticle = std::distance(mct_length.begin(),std::max(mct_length.begin(),mct_length.end()));
+  fDParticle = std::distance(mct_length.begin(),std::max_element(mct_length.begin(),mct_length.end()));
   fDParticleFraction = mct_length.at(fDParticle) / totalL;
   FillDominantParticleInfo(mctVec.at(fDParticle));
 
-  fCollectionY = std::accumulate(y_vals.begin(),y_vals.end(),0.0)/totalL;
-  fCollectionZ = std::accumulate(z_vals.begin(),z_vals.end(),0.0)/totalL;
-  fCollectionX = std::accumulate(x_vals.begin(),x_vals.end(),0.0)/totalL;
+  double sumy=0,sumz=0,sumx=0;
+  for(size_t i_step=0; i_step<stepL_vals.size(); i_step++){
+    sumy += stepL_vals[i_step]*y_vals[i_step];
+    sumz += stepL_vals[i_step]*z_vals[i_step];
+    sumx += stepL_vals[i_step]*x_vals[i_step];
+  }
   
-  double sumy2=0;
-  for(auto const& y : y_vals)
-    sumy2 += (y-fCollectionY)*(y-fCollectionY);
+  fCollectionY = sumy/totalL;
+  fCollectionZ = sumz/totalL;
+  fCollectionX = sumx/totalL;
+  
+  double sumy2=0,sumz2=0,sumx2=0;
+  for(size_t i_step=0; i_step<stepL_vals.size(); i_step++){
+    sumy2 += stepL_vals[i_step]*(y_vals[i_step]-fCollectionY)*(y_vals[i_step]-fCollectionY);
+    sumz2 += stepL_vals[i_step]*(z_vals[i_step]-fCollectionZ)*(z_vals[i_step]-fCollectionZ);
+    sumx2 += stepL_vals[i_step]*(x_vals[i_step]-fCollectionX)*(x_vals[i_step]-fCollectionX);
+  }
+
   fCollectionRMSY = std::sqrt(sumy2/totalL);
-
-  double sumz2=0;
-  for(auto const& z : z_vals)
-    sumz2 += (z-fCollectionZ)*(z-fCollectionZ);
   fCollectionRMSZ = std::sqrt(sumz2/totalL);
-
-  double sumx2=0;
-  for(auto const& x : x_vals)
-    sumx2 += (x-fCollectionX)*(x-fCollectionX);
   fCollectionRMSX = std::sqrt(sumx2/totalL);
 
-  fTree->Fill();
+  if(fFillTree) fTree->Fill();
 }
 
 void sim::MCTrackCollectionAnaAlg::FillDominantParticleInfo(const sim::MCTrack& mctrack)
 {
+  size_t nsteps = mctrack.size();
+
   fDParticleOrigin = mctrack.Origin();
   fDParticlePdgCode = mctrack.PdgCode();
   fDParticleTrackId = mctrack.TrackID();
-  fDParticleStartY = mctrack.Start().Y();
-  fDParticleStartZ = mctrack.Start().Z();
-  fDParticleStartX = mctrack.Start().X();
-  fDParticleStartE = mctrack.Start().E();
-  fDParticleEndY = mctrack.End().Y();
-  fDParticleEndZ = mctrack.End().Z();
-  fDParticleEndX = mctrack.End().X();
-  fDParticleEndE = mctrack.End().E();
+  fDParticleStartY = mctrack[0].Y();
+  fDParticleStartZ = mctrack[0].Z();
+  fDParticleStartX = mctrack[0].X();
+  fDParticleStartE = mctrack[0].E();
+  fDParticleEndY = mctrack[nsteps-1].Y();
+  fDParticleEndZ = mctrack[nsteps-1].Z();
+  fDParticleEndX = mctrack[nsteps-1].X();
+  fDParticleEndE = mctrack[nsteps-1].E();
   fDParticleMotherPdgCode = mctrack.MotherPdgCode();
   fDParticleMotherTrackId = mctrack.MotherTrackID();
   fDParticleAncestorPdgCode = mctrack.AncestorPdgCode();
