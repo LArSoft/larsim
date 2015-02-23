@@ -28,6 +28,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // larsoft includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
@@ -37,7 +40,6 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "SummaryData/RunData.h"
-#include "Utilities/FetchRandomSeed.h"
 
 namespace evgen {
 
@@ -104,11 +106,10 @@ namespace evgen{
   CosmicsGen::CosmicsGen(fhicl::ParameterSet const& pset)
     : fCRYHelp(0)
   {
-    // Create a random number engine
-    // obtain the random seed from a service,
-    // unless overridden in configuration with key "Seed" (that is default)
-    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
-    createEngine(seed);
+    // create a default random engine; obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, pset, "Seed");
     
     //the buffer box bounds specified here will extend on the cryostat boundaries
     fbuffbox = pset.get< std::vector<double> >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});

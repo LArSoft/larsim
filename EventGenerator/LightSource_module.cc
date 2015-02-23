@@ -66,6 +66,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib/exception.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // nutools includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
@@ -73,7 +76,6 @@
 
 // lar includes
 #include "Geometry/Geometry.h"
-#include "Utilities/FetchRandomSeed.h"
 #include "Simulation/PhotonVoxels.h"
 #include "PhotonPropagation/PhotonVisibilityService.h"
 #include "SummaryData/RunData.h"
@@ -184,11 +186,10 @@ namespace evgen{
     fPDist        =     (pset.get<int >("PDist")       );
     fTDist        =     (pset.get<int >("TDist")       );
     
-    // obtain the random seed from a service,
-    // unless overridden in configuration with key "Seed" (that is default)
-    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
-    
-    createEngine(seed);
+    // create a default random engine; obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, pset, "Seed");
 
     // load optional parameters in function
     produces< sumdata::RunData, art::InRun >();

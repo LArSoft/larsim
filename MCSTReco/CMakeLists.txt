@@ -39,6 +39,7 @@ art_make( BASENAME_ONLY
 			   MCBase
 			   LArProperties_service
 			   DetectorProperties_service
+			   ${SEEDSERVICE_SERVICE} # artextensions
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}

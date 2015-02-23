@@ -8,7 +8,7 @@ art_make( BASENAME_ONLY
                         SummaryData
                         Geometry
                         Geometry_service
-                        Utilities
+                        ${SEEDSERVICE_SERVICE} # artextensions
                         ${EVENTGENERATORBASEGENIE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}

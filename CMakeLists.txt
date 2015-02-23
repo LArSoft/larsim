@@ -115,6 +115,9 @@ add_subdirectory(TriggerAlgo)
 add_subdirectory(SimFilters)
 add_subdirectory(MCSTReco)
 
+# tests
+add_subdirectory(test)
+
 # ups - table and config files
 add_subdirectory(ups)
 

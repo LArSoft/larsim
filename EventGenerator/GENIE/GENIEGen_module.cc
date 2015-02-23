@@ -40,6 +40,9 @@
 #include "art/Persistency/Common/Assns.h"
 #include "art/Framework/Core/EDProducer.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCFlux.h"
@@ -50,7 +53,6 @@
 #include "SummaryData/POTSummary.h"
 #include "EventGeneratorBase/GENIE/GENIEHelper.h"
 #include "Utilities/AssociationUtil.h"
-#include "Utilities/FetchRandomSeed.h"
 
 ///Event Generation using GENIE, cosmics or single particles
 namespace evgen {
@@ -183,11 +185,12 @@ namespace evgen{
     signed int temp_seed; // the seed read by GENIEHelper is a signed integer...
     fhicl::ParameterSet GENIEconfig(pset);
     if (!GENIEconfig.get_if_present("RandomSeed", temp_seed)) { // TODO use has_key() when it becomes available
-      // no RandomSeed specified; check for the LArSpoft-style "Seed" instead:
+      // no RandomSeed specified; check for the LArSoft-style "Seed" instead:
       // obtain the random seed from a service,
-      // unless overridden in configuration with key "RandomSeed"
-      // (that is the parameter name for GENIE random number generator seed)
-      const unsigned int seed = lar::util::FetchRandomSeed(&GENIEconfig);
+      // unless overridden in configuration with key "Seed"
+      unsigned int seed;
+      if (!GENIEconfig.get_if_present("Seed", seed))
+        seed = art::ServiceHandle<artext::SeedService>()->getSeed();
       
       // The seed is not passed to RandomNumberGenerator,
       // since GENIE uses a TRandom generator that is owned by the GENIEHelper.

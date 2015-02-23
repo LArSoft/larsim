@@ -1,12 +1,18 @@
 
 art_make( BASENAME_ONLY
+          LIB_LIBRARIES
+                        ${ART_PERSISTENCY_PROVENANCE}
+                        ${ART_FRAMEWORK_CORE}
+                        ${MF_MESSAGELOGGER}
+                        ${MF_UTILITIES}
+                        ${CETLIB}
           MODULE_LIBRARIES PhotonPropagation
                            PhotonVisibilityService_service
                            Simulation
                            SummaryData
                            Geometry
                            Geometry_service
-                           Utilities
+                           ${SEEDSERVICE_SERVICE} # artextensions
                            ${SIMULATIONBASE}
                            ${ART_FRAMEWORK_CORE}
                            ${ART_FRAMEWORK_PRINCIPAL}
@@ -25,6 +31,14 @@ art_make( BASENAME_ONLY
                            ${ROOT_BASIC_LIB_LIST}
                            ${ROOT_EG}
         )
+
+simple_plugin( GeneratedEventTimestamp "plugin"
+                                       ${ART_FRAMEWORK_CORE}
+                                       ${ART_PERSISTENCY_PROVENANCE}
+                                       ${MF_MESSAGELOGGER}
+                                       ${MF_UTILITIES}
+               BASENAME_ONLY
+             )
 
 install_headers()
 install_fhicl()

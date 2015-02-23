@@ -29,7 +29,6 @@ extern "C" {
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "Utilities/DetectorProperties.h"
-#include "Utilities/FetchRandomSeed.h"
 
 // ROOT includes
 #include <TMath.h>
@@ -48,7 +47,6 @@ extern "C" {
 #include <bitset>
 
 // Framework includes
-// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
@@ -60,6 +58,9 @@ extern "C" {
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/search_path.h"
 #include "cetlib/exception.h"
+
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -151,11 +152,10 @@ namespace detsim{
     std::string compression(pset.get< std::string >("CompressionType"));
     if(compression.compare("Huffman") == 0) fCompression = raw::kHuffman;    
 
-    // obtain the random seed from a service,
-    // unless overridden in configuration with key "Seed" (that is default)
-    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
-
-    createEngine(seed);
+    // create a default random engine; obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, pset, "Seed");
   }
 
   //-------------------------------------------------

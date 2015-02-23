@@ -50,6 +50,9 @@
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // LArSoft Includes
 #include "LArG4/LArVoxelReadoutGeometry.h"
 #include "LArG4/PhysicsList.h"
@@ -66,7 +69,6 @@
 #include "LArG4/AuxDetReadout.h"
 #include "Simulation/LArG4Parameters.h"
 #include "Utilities/AssociationUtil.h"
-#include "Utilities/FetchRandomSeed.h"
 #include "SimulationBase/MCTruth.h"
 #include "Simulation/ParticleList.h"
 #include "Simulation/SimPhotons.h"
@@ -158,12 +160,12 @@ namespace larg4 {
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
-    // obtain the random seed from a service,
-    // unless overridden in configuration with key "Seed" (that is default)
-    const unsigned int seed = lar::util::FetchRandomSeed(&pset);
     // setup the random number service for Geant4, the "G4Engine" label is a
-    // special tag setting up a global engine for use by Geant4/CLHEP
-    createEngine(seed, "G4Engine");
+    // special tag setting up a global engine for use by Geant4/CLHEP;
+    // obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "G4Engine", pset, "Seed");
 
     art::ServiceHandle<sim::LArG4Parameters> lgp;
     fUseLitePhotons = lgp->UseLitePhotons();

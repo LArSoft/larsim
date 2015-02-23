@@ -48,6 +48,7 @@ simple_plugin(SimWire "module"
                       LArProperties_service
                       DetectorProperties_service
                       Utilities
+                      ${SEEDSERVICE_SERVICE} # artextensions
                       ${ART_FRAMEWORK_CORE}
                       ${ART_FRAMEWORK_PRINCIPAL}
                       ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -75,6 +76,7 @@ simple_plugin(SimWireT962 "module"
                           LArProperties_service
                           DetectorProperties_service
                           Utilities
+                          ${SEEDSERVICE_SERVICE} # artextensions
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
