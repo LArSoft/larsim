@@ -60,3 +60,15 @@ cet_test(GeneratedEventTimestamp_test2_2 HANDBUILT
     GeneratedEventTimestamp_test2.fcl
 )
 
+#
+# single particle production test
+#
+cet_test(gensingle HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all --config gensingle_test.fcl -n 2
+  DATAFILES gensingle_test.fcl
+)
+
+
+add_subdirectory(CRY)
+# add_subdirectory(GENIE)
