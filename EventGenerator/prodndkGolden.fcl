@@ -27,6 +27,7 @@ services.user.Geometry.ROOT: "lbne4apa36deg.gdml"
 source:
 {
   module_type: EmptyEvent
+  timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
   maxEvents:  4000
 }
 

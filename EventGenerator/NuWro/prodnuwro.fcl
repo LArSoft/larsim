@@ -21,6 +21,7 @@ services.user.LArFFT.FFTOption: ""
 source:
 {
   module_type: EmptyEvent
+  timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
   maxEvents:  3
 }
 

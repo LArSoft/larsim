@@ -22,6 +22,7 @@ services:
 source:
 {
   module_type: EmptyEvent
+  timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
   maxEvents:  10000        # Number of events to create
 }
 
