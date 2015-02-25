@@ -42,20 +42,12 @@ cet_test(GeneratedEventTimestamp_test1_2 HANDBUILT
 )
 
 #
-# Tests 2_1 and 2_2 are the same.
-# They are expected to yield to the same results, since the event timestamps
-# will be the same on every run.
+# Test 2 should fail since no time stamp is set.
 #
-cet_test(GeneratedEventTimestamp_test2_1 HANDBUILT
+cet_test(GeneratedEventTimestamp_test2 HANDBUILT
   TEST_EXEC lar
   TEST_ARGS --rethrow-all --config GeneratedEventTimestamp_test2.fcl -n 10
-  DATAFILES
-    GeneratedEventTimestamp_test2.fcl
-)
-
-cet_test(GeneratedEventTimestamp_test2_2 HANDBUILT
-  TEST_EXEC lar
-  TEST_ARGS --rethrow-all --config GeneratedEventTimestamp_test2.fcl -n 10
+  TEST_PROPERTIES WILL_FAIL true
   DATAFILES
     GeneratedEventTimestamp_test2.fcl
 )
