@@ -95,7 +95,7 @@ namespace sim {
 	<< Form("Found %zu MCShowers....",_shower_index.size()) << std::endl;
 
     _shower_daughters.resize(_shower_index.size(),std::vector<unsigned int>());
-    for(const auto &mom : _shower_index) {
+    for(auto const &mom : _shower_index) {
 
       _shower_daughters.at(mom.second).reserve(daughter_map.at(mom.second).size());
       for(auto const &part_index : daughter_map.at(mom.second))

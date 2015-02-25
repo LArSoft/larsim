@@ -52,7 +52,7 @@ namespace sim {
     art::ServiceHandle<util::DetectorProperties> detp;
 
     // Key map to identify a unique particle energy deposition point
-    std::map<unsigned int, std::map<double, std::map<double, std::map<double, int> > > > hit_index_m;
+    std::map<unsigned int, std::map<UniquePosition, int> > hit_index_m;
 
     if(_debug_mode) std::cout<<"Processing "<<schArray.size()<<" channels..."<<std::endl;
     // Loop over channels
@@ -76,14 +76,10 @@ namespace sim {
 	  if(track_id < 0) track_id = track_id * (-1);
 	  unsigned int real_track_id = track_id;
 
-	  //short x_mm = (short)(ide.x+0.5);
-	  //short y_mm = (short)(ide.y+0.5);
-	  //short z_mm = (short)(ide.z+0.5);
-	  double x_mm = ide.x;
-	  double y_mm = ide.y;
-	  double z_mm = ide.z;
+	  UniquePosition pos(ide.x, ide.y, ide.z);
 
 	  int hit_index = -1;
+	  
 	  auto hit_index_track_iter = hit_index_m.find(real_track_id);
 	  //std::cout<<"Inspecting: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index_track_iter == hit_index_m.end()) {
@@ -91,83 +87,40 @@ namespace sim {
 	    //_track_index.insert(std::pair<unsigned int,size_t>(real_track_id,_mc_edeps.size()));
 	    //_mc_edeps.push_back(std::vector<sim::MCEdep>());
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-	    std::map<double,int> tmp_z_index;
-	    std::map<double,std::map<double,int> > tmp_y_z_index;
-	    std::map<double,std::map<double,std::map<double,int> > > tmp_x_y_z_index;
-            tmp_z_index[z_mm] = new_hit_index;
-            tmp_y_z_index[y_mm] = tmp_z_index;
-            tmp_x_y_z_index[x_mm] = tmp_y_z_index;
-            hit_index_m[real_track_id]=tmp_x_y_z_index;
-
-	  }else{
-
-	    auto hit_index_x_iter = (*hit_index_track_iter).second.find(x_mm);
-
-	    if(hit_index_x_iter == (*hit_index_track_iter).second.end()) {
-	      // Track exists but this "x" doesn't exist. Create.
-	      std::map<double,int> tmp_z_index;
-	      std::map<double,std::map<double,int> > tmp_y_z_index;
-	      std::map<double,std::map<double,std::map<double,int> > > tmp_x_y_z_index;
-	      //int new_hit_index = _mc_edeps.at((*(_track_index.find(real_track_id))).second).size();
+            hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
+	  }
+	  else{
+	    
+	    auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
+	    
+	    if(hit_index_pos_iter == (*hit_index_track_iter).second.end()) {
 	      int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-	      tmp_z_index[z_mm] = new_hit_index;
-	      tmp_y_z_index[y_mm] = tmp_z_index;
-	      (*hit_index_track_iter).second.insert(std::pair<double,std::map<double,std::map<double,int> > >(x_mm,tmp_y_z_index));
-
-	    }else{
-
-	      auto hit_index_y_iter = (*hit_index_x_iter).second.find(y_mm);
-
-	      if(hit_index_y_iter == (*hit_index_x_iter).second.end()) {
-		// "x" exists but this "y" doesn't exist. Create.
-		std::map<double,int> tmp_z_index;
-		//int new_hit_index = _mc_edeps.at((*(_track_index.find(real_track_id))).second).size();
-		int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-		tmp_z_index[z_mm] = new_hit_index;
-		(*hit_index_x_iter).second.insert(std::pair<double,std::map<double,int> >(y_mm,tmp_z_index));
-
-	      }else{
-
-		auto hit_index_z_iter = (*hit_index_y_iter).second.find(z_mm);
-
-		if(hit_index_z_iter == (*hit_index_y_iter).second.end()) {
-		  // "y" exists but this "z" does not exist. Create.
-		  //int new_hit_index = _mc_edeps.at((*(_track_index.find(real_track_id))).second).size();		    
-		  int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-		  (*hit_index_y_iter).second.insert(std::pair<double,int>(z_mm,new_hit_index));
-		  //std::cout<<" ... inserted "<<new_hit_index<< " ... check: "<<this->__GetEdepArray__(real_track_id).size()<<std::endl;
-
-		}
-
-		else
-
-		  hit_index = (*hit_index_z_iter).second;
-
-	      }
+	      (*hit_index_track_iter).second.insert(std::make_pair(pos,new_hit_index));
+	      
 	    }
+	    else
+	      hit_index = (*hit_index_pos_iter).second;
 	  }
 	  //std::cout<<"Finished checking: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index < 0) {
-
+	    
 	    // This particle energy deposition is never recorded so far. Create a new Edep
 	    MCEdep edep;
 	    // Fill Edep
-	    edep.x = x_mm;
-	    edep.y = y_mm;
-	    edep.z = z_mm;
+	    edep.pos = pos;
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
 
-	    geo::View_t view = geom->View(ch);
-	    if(view == geo::kU){
-	      edep.energy = ide.energy;
-	      edep.qU = charge;
+	    for(auto const& pid : geom->PlaneIDs()){
+	      edep.charge[pid] = 0;
+	      edep.energy[pid] = 0;
 	    }
-	    else if(view == geo::kV) edep.qV = charge;
-	    else if(view == geo::kW || view == geo::kZ) edep.qW = charge;
-	    else
-	      
-	      throw cet::exception(__FUNCTION__) << "Unknown view type: " << view;
+
+	    auto pid = geom->ChannelToWire(ch)[0].planeID();
+	    //edep.energy      = ide.energy;
+	    edep.energy[pid] = ide.energy;
+	    edep.charge[pid] = charge;
+	    edep.pid         = pid;
 
 	    // If configured to save MC hits, do so
 	    if(_save_mchit) {
@@ -177,7 +130,7 @@ namespace sim {
 	      mchit.timeEnd = hit_time;
 	      mchit.qSum = charge;
 	      mchit.qMax = charge;
-	      edep.mchits.insert(std::pair<unsigned short,sim::MCEdepHit>(ch,mchit));
+	      edep.mchits.insert(std::make_pair(ch,mchit));
 	    }
 	    //std::cout<<"Inserting: "<<this->__GetEdepArray__(real_track_id).size()<<std::flush;
 	    this->__GetEdepArray__(real_track_id).push_back(edep);
@@ -189,16 +142,10 @@ namespace sim {
 	    double charge = ide.numElectrons;
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
 
-	    geo::View_t view = geom->View(ch);
-	    if(view == geo::kU) {
-	      edep.energy += ide.energy;
-	      edep.qU += charge;
-	    }
-	    else if(view == geo::kV) edep.qV += charge;
-	    else if(view == geo::kW || view == geo::kZ) edep.qW += charge;
-	    else
-	      
-	      throw cet::exception(__FUNCTION__) << "Unknown view type: " << view;
+	    auto pid = geom->ChannelToWire(ch)[0].planeID();
+	    edep.charge[pid] += charge;
+	    //if(pid == edep.pid) edep.energy += ide.energy;
+	    edep.energy[pid] += ide.energy;
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {

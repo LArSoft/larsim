@@ -18,8 +18,8 @@ namespace sim {
     fDebugMode = pset.get<bool>("DebugMode");
   }
 
-  void MCTrackRecoAlg::Reconstruct(const MCRecoPart& part_v,
-				   const MCRecoEdep& edep_v)
+  void MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
+				   MCRecoEdep& edep_v)
   {
 
     fMCTrack.clear();

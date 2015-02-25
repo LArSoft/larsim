@@ -88,7 +88,7 @@ namespace sim
     void AddParticles(const std::vector<simb::MCParticle>& mcp_v,
 		      const std::vector<simb::Origin_t>&   orig_v);
 
-    unsigned int AncestorTrackID(const unsigned int part_index) const;
+    unsigned int AncestorTrackID(const unsigned int part_index);
 
     unsigned int MotherTrackID(const unsigned int part_index) const;
 
