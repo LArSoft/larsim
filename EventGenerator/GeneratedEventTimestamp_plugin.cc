@@ -30,8 +30,7 @@ namespace evgen {
       public:
     
     /// Constructor: nothing specific
-    GeneratedEventTimestamp(fhicl::ParameterSet const& pset):
-      art::EmptyEventTimestampPlugin(pset) {}
+    GeneratedEventTimestamp(fhicl::ParameterSet const& pset);
     
     
     /// Returns the time stamp for the specified event
@@ -125,6 +124,16 @@ namespace evgen {
 
 
 //------------------------------------------------------------------------------
+evgen::GeneratedEventTimestamp::GeneratedEventTimestamp
+  (fhicl::ParameterSet const& pset)
+  : art::EmptyEventTimestampPlugin(pset)
+{
+  mf::LogInfo("GeneratedEventTimestamp")
+    << "Timestamp plugin: timestamp from local clock time in nanoseconds.";
+} // evgen::GeneratedEventTimestamp::GeneratedEventTimestamp()
+
+
+//------------------------------------------------------------------------------
 art::Timestamp evgen::GeneratedEventTimestamp::eventTimestamp
   (art::EventID const&)
 {
@@ -140,7 +149,8 @@ art::Timestamp evgen::GeneratedEventTimestamp::eventTimestamp
   // convert into a timestamp
   art::Timestamp ts(now_ns);
   
-  LOG_DEBUG("GeneratedEventTimestamp") << "Generated time stamp: " << ts;
+  LOG_DEBUG("GeneratedEventTimestamp") << "Generated time stamp: "
+    << ts.value();
   
   return ts;
 } // evgen::GeneratedEventTimestamp::eventTimestamp()
