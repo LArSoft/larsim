@@ -289,6 +289,7 @@ namespace larg4 {
     std::vector< art::Handle< std::vector<simb::MCTruth> > > mclists;
     evt.getManyByType(mclists);
 
+
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
 
@@ -309,7 +310,6 @@ namespace larg4 {
           // copy the particle so that it isnt const
           simb::MCParticle p(*(*pitr).second);
           partCol->push_back(p);
-
           util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
         }
 
