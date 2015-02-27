@@ -55,12 +55,15 @@ cet_test(GeneratedEventTimestamp_test2 HANDBUILT
 #
 # single particle production test
 #
+# kludge for now to only run with mrb
+set( mrb_build_dir $ENV{MRB_BUILDDIR} )
+if( mrb_build_dir )
 cet_test(gensingle HANDBUILT
   TEST_EXEC lar
   TEST_ARGS --rethrow-all --config gensingle_test.fcl -n 2
   DATAFILES gensingle_test.fcl
 )
-
+endif( mrb_build_dir )
 
 add_subdirectory(CRY)
 # add_subdirectory(GENIE)
