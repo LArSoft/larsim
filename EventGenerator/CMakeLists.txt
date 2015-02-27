@@ -37,6 +37,7 @@ simple_plugin( GeneratedEventTimestamp "plugin"
                                        ${ART_PERSISTENCY_PROVENANCE}
                                        ${MF_MESSAGELOGGER}
                                        ${MF_UTILITIES}
+                                       ${CETLIB}
                BASENAME_ONLY
              )
 
