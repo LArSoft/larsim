@@ -59,14 +59,14 @@ namespace sim {
   }
 
   //--------------------------------------------------------------------------------------------
-  unsigned int MCRecoPart::AncestorTrackID(const unsigned int part_index) const
+  unsigned int MCRecoPart::AncestorTrackID(const unsigned int part_index)
   //--------------------------------------------------------------------------------------------
   {
-    unsigned int result = kINVALID_UINT;
+    if(part_index >= this->size()) return kINVALID_UINT;
 
-    if(part_index >= this->size()) return result;
+    if((*this)[part_index]._ancestor != kINVALID_UINT) return (*this)[part_index]._ancestor;
 
-    result = MotherTrackID(part_index);
+    unsigned int result = MotherTrackID(part_index);
 
     if(result == this->at(part_index)._track_id) return result;
 
@@ -103,6 +103,7 @@ namespace sim {
 
     }
 
+    (*this)[part_index]._ancestor = result;
     return result;
   }
 

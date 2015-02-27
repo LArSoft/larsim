@@ -40,6 +40,9 @@
 #include "art/Persistency/Common/Assns.h"
 #include "art/Framework/Core/EDProducer.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCFlux.h"
@@ -53,7 +56,37 @@
 
 ///Event Generation using GENIE, cosmics or single particles
 namespace evgen {
-  /// A module to check the results from the Monte Carlo generator
+  /**
+   * @brief A module to check the results from the Monte Carlo generator
+   *
+   * Note on random number generator
+   * --------------------------------
+   * 
+   * GENIE uses a TRandom generator for its purposes.
+   * Since art's RandomNumberGenerator service only provides
+   * `CLHEP::HepRandomEngine`, the standard LArSoft/art mechanism for handling
+   * the random stream can't be used.
+   * GENIEHelper, interface to GENIE provided by nutools, creates a TRandom
+   * that GENIE can use. It initializes it with a random seed read from
+   * *RandomSeed* configuration parameter. This and all the other parameters
+   * are inherited from the art module (that is, `GENIEGen`) configuration.
+   * LArSoft meddles with this mechanism to provide support for the standard
+   * "Seed" parameter and SeedService service.
+   * 
+   * Configuration parameters
+   * -------------------------
+   * 
+   * - *RandomSeed* (integer, optional): if specified, this value is used as
+   *   seed for GENIE random number generator engine
+   * - *Seed* (unsigned integer, optional): if specified, this value is used as
+   *   seed for GENIE random number generator engine; if *RandomSeed* is also
+   *   specified, this value is ignored (but in the future this could turn into
+   *   a configuration error)
+   * 
+   * As custom, if the random seed is not provided by the configuration, one is
+   * fetched from `SeedService` (if available), with the behaviour in
+	* lar::util::FetchRandomSeed().
+   */
   class GENIEGen : public art::EDProducer {
   public:
     explicit GENIEGen(fhicl::ParameterSet const &pset);
@@ -149,7 +182,23 @@ namespace evgen{
 
     art::ServiceHandle<geo::Geometry> geo;
 
-    fGENIEHelp = new evgb::GENIEHelper(pset, 
+    signed int temp_seed; // the seed read by GENIEHelper is a signed integer...
+    fhicl::ParameterSet GENIEconfig(pset);
+    if (!GENIEconfig.get_if_present("RandomSeed", temp_seed)) { // TODO use has_key() when it becomes available
+      // no RandomSeed specified; check for the LArSoft-style "Seed" instead:
+      // obtain the random seed from a service,
+      // unless overridden in configuration with key "Seed"
+      unsigned int seed;
+      if (!GENIEconfig.get_if_present("Seed", seed))
+        seed = art::ServiceHandle<artext::SeedService>()->getSeed();
+      
+      // The seed is not passed to RandomNumberGenerator,
+      // since GENIE uses a TRandom generator that is owned by the GENIEHelper.
+      // Instead, we explicitly configure the random seed for GENIEHelper:
+      GENIEconfig.put("RandomSeed", seed);
+    } // if no RandomSeed present
+    
+    fGENIEHelp = new evgb::GENIEHelper(GENIEconfig, 
 				       geo->ROOTGeoManager(),
 				       geo->ROOTFile(),
 				       geo->TotalMass(pset.get< std::string>("TopVolume").c_str()));

@@ -49,6 +49,7 @@ find_ups_product( larevt v1_00_00 )
 find_ups_product( nutools v1_00_00 )
 find_ups_product( art v1_09_00 )
 find_ups_product( cetbuildtools v3_10_00 )
+find_ups_product( artextensions v1_00_01 )
 find_ups_geant4( geant4 v4_9_6 )
 find_ups_product( postgresql v9_1_5 )
 
@@ -113,6 +114,9 @@ add_subdirectory(Simulation)
 add_subdirectory(TriggerAlgo)
 add_subdirectory(SimFilters)
 add_subdirectory(MCSTReco)
+
+# tests
+add_subdirectory(test)
 
 # ups - table and config files
 add_subdirectory(ups)

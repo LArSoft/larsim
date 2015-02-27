@@ -25,6 +25,9 @@
 #include "TLorentzVector.h"
 #include "TF1.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 #include "Geometry/Geometry.h"
 #include "SummaryData/RunData.h"
 #include "SimulationBase/MCTruth.h"
@@ -58,8 +61,6 @@ private:
 ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   : fShapeMomentum(nullptr), fShapeTheta(nullptr), fFlatRandom(nullptr)
 {
-  gRandom->SetSeed(0);
-  TRandom3 r(0);
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
 
@@ -134,7 +135,9 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // Random engine initialization
   //
-  createEngine(sim::GetRandomNumberSeed());
+  // create a default random engine; obtain the random seed from SeedService,
+  // unless overridden in configuration with key "Seed"
+  art::ServiceHandle<artext::SeedService>()->createEngine(*this, p, "Seed");
   art::ServiceHandle<art::RandomNumberGenerator> rng;
   CLHEP::HepRandomEngine &engine = rng->getEngine();
   fFlatRandom = new CLHEP::RandFlat(engine);

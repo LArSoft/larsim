@@ -22,6 +22,7 @@
 #include "Utilities/LArProperties.h"
 #include "Geometry/Geometry.h"
 // STL
+#include <map>
 #include <set>
 #include <vector>
 #include <sstream>
@@ -57,11 +58,30 @@ namespace sim
     }
   };
 
-  class MCEdep {
+  class UniquePosition{
+  public:
+    double _x, _y, _z;
 
   public:
-    //static const short kINVALID_SHORT;
-    
+    UniquePosition(double x=0, double y=0, double z=0)
+    { _x = x; _y = y; _z = z; }
+
+    ~UniquePosition(){};
+
+    inline bool operator<( const UniquePosition& rhs) const
+    {
+      if(_x < rhs._x) return true;
+      if(rhs._x < _x) return false;
+      if(_y < rhs._y) return true;
+      if(rhs._y < _y) return false;
+      if(_z < rhs._z) return true;
+      if(rhs._z < _z) return false;
+      return false;
+    }
+
+  };
+
+  class MCEdep {
   public:
     MCEdep(){ Clear(); }
     ~MCEdep(){}
@@ -70,22 +90,20 @@ namespace sim
     short y;
     short z;
     */
-    float x;
-    float y;
-    float z;
-    float energy;
-    double qU;
-    double qV;
-    double qW;
+    sim::UniquePosition pos;
+    std::map<geo::PlaneID,float> energy;
+    std::map<geo::PlaneID,float> charge;
+    geo::PlaneID pid;
+
     std::map<unsigned short,sim::MCEdepHit> mchits;
     void Clear() {
       //x=y=z=kINVALID_SHORT;
-      x=y=z=0;
-      energy=0;
-      qU=qV=qW=0;
+      pos._x = pos._y = pos._z = 0;
+      //energy = -1;
+      energy.clear();
+      charge.clear();
       mchits.clear();
     }
-
   };
 
   class MCRecoEdep {
