@@ -38,6 +38,9 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
@@ -80,7 +83,6 @@ namespace evgen {
 	std::string         fNdkFile;
 	std::ifstream      *fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
-        unsigned int        fSeed;           ///< random number seed    	
 	
 	std::string fNDKModuleLabel;
 	
@@ -129,12 +131,12 @@ namespace evgen{
     produces< sumdata::RunData, art::InRun >();
 
     fEventFile = new ifstream(fNdkFile.c_str());
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    fSeed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
-    createEngine( fSeed );
+    // create a default random engine; obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, pset, "Seed");
 
-   }
+  }
 
   //____________________________________________________________________________
   NDKGen::~NDKGen()
