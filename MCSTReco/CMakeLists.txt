@@ -62,6 +62,6 @@ art_make( BASENAME_ONLY
 			   ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
 			)
 
-# install_headers()
+install_headers()
 install_fhicl()
 install_source()
