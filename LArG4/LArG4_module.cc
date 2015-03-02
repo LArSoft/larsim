@@ -50,6 +50,9 @@
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // LArSoft Includes
 #include "LArG4/LArVoxelReadoutGeometry.h"
 #include "LArG4/PhysicsList.h"
@@ -157,12 +160,12 @@ namespace larg4 {
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
-    // get the random number seed, use a random default if not specified
-    // in the configuration file.
-    unsigned int seed = pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed());
     // setup the random number service for Geant4, the "G4Engine" label is a
-    // special tag setting up a global engine for use by Geant4/CLHEP
-    createEngine(seed, "G4Engine");
+    // special tag setting up a global engine for use by Geant4/CLHEP;
+    // obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "G4Engine", pset, "Seed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object

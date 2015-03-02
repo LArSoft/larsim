@@ -1,0 +1,55 @@
+#
+# File:    GeneratedEventTimestamp_test1.fcl
+# Brief:   Test for GeneratedEventTimestamp and SeedService per-event policy
+# Date:    February 23rd, 2015
+# Author:  Gianluca Petrillo (petrillo@fnal.gov)
+# Version: 1.0
+# 
+# Description:
+#   The test exercises SeedService's per-event seed policy on a newly generated
+#   event (using EmptyEvent source module).
+# 
+# Changes:
+# 20150223 (petrillo@fnal.gov) [v1.0]
+#   original version
+#
+
+
+services: {
+  RandomNumberGenerator: {}
+  Timing:                {}
+  SimpleMemoryCheck:     {}
+  
+  user: {
+    SeedService: {
+      policy:    "perEvent"
+      algorithm: "EventTimestamp_v1"
+    } # SeedService
+  } # user
+  
+} # services
+
+
+source: {
+  source_type: EmptyEvent
+  
+  timestampPlugin: {
+    plugin_type: "GeneratedEventTimestamp"
+  }
+} # source
+
+
+physics: {
+  
+  analyzers: {
+    timestampTest: {
+      module_type:  "TestGeneratedEventTimestamp"
+      module_label: "timestampTest"
+    } # timestampTest
+  } # analyzers
+  
+  analysis: [ timestampTest ]
+  
+  end_paths: [ analysis ]
+  
+} # physics

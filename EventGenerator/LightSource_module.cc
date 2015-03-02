@@ -66,6 +66,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib/exception.h"
 
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
+
 // nutools includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
@@ -182,10 +185,11 @@ namespace evgen{
     fPosDist      =     (pset.get<int >("PosDist")     );
     fPDist        =     (pset.get<int >("PDist")       );
     fTDist        =     (pset.get<int >("TDist")       );
-    unsigned int seed = pset.get< unsigned int >("Seed", evgb::GetRandomNumberSeed());
-
     
-    createEngine(seed);
+    // create a default random engine; obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, pset, "Seed");
 
     // load optional parameters in function
     produces< sumdata::RunData, art::InRun >();
