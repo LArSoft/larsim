@@ -242,6 +242,10 @@ namespace larg4 {
   {
     if(fparticle && aTrack){
       fparticle->SetWeight(aTrack->GetWeight());
+      G4String process = aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+      fparticle->SetEndProcess(process);
+
+
     }
 
     return;
