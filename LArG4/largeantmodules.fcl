@@ -21,6 +21,13 @@ argoneut_largeant:   @local::standard_largeant
 # and so it should not also be included here, for clarity's sake.
 #microboone_largeant: @local::standard_largeant
 
+standard_mergesimsources:
+{
+    module_type:        "MergeSimSources"
+    InputSourcesLabels: [ ]
+    TrackIDOffsets:     [ ]
+}
+
 standard_largeantana:
 {
  module_type:      "LArG4Ana"

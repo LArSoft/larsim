@@ -140,7 +140,7 @@ namespace larg4 {
     bool                       fUseLitePhotons;
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
                                                     ///< dictate how tracks are put on stack.        
-
+    std::vector<std::string>   fInputLabels;
   };
 
 } // namespace LArG4
@@ -167,6 +167,11 @@ namespace larg4 {
     art::ServiceHandle<artext::SeedService>()
       ->createEngine(*this, "G4Engine", pset, "Seed");
 
+    //get a list of generators to use, otherwise, we'll end up looking for anything that's
+    //made an MCTruth object
+    bool useInputLabels = pset.get_if_present< std::vector<std::string> >("InputLabels",fInputLabels);
+    if(!useInputLabels) fInputLabels.resize(0);
+    
     art::ServiceHandle<sim::LArG4Parameters> lgp;
     fUseLitePhotons = lgp->UseLitePhotons();
 
@@ -290,7 +295,14 @@ namespace larg4 {
     //look to see if there is any MCTruth information for this
     //event
     std::vector< art::Handle< std::vector<simb::MCTruth> > > mclists;
-    evt.getManyByType(mclists);
+    if(fInputLabels.size()==0)
+      evt.getManyByType(mclists);
+    else{
+      mclists.resize(fInputLabels.size());
+      for(size_t i=0; i<fInputLabels.size(); i++)
+	evt.getByLabel(fInputLabels[i],mclists[i]);
+    }
+
 
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
@@ -312,7 +324,6 @@ namespace larg4 {
           // copy the particle so that it isnt const
           simb::MCParticle p(*(*pitr).second);
           partCol->push_back(p);
-
           util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
         }
 
