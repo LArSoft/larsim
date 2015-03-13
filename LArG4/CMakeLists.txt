@@ -53,7 +53,7 @@ art_make( BASENAME_ONLY
                         Simulation
                         Geometry
                         Geometry_service
-                        ${SEEDSERVICE_SERVICE} # artextensions
+                        SeedService_service # artextensions
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}

@@ -3,7 +3,7 @@
 # or test SeedService's per-event policy with GenerateEventTimestamp plug-in.
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
-  ${SEEDSERVICE_SERVICE} # artextensions
+  SeedService_service # artextensions
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
