@@ -6,7 +6,7 @@ art_make( BASENAME_ONLY
                         SummaryData
                         Geometry
                         Geometry_service
-                        ${SEEDSERVICE_SERVICE} # artextensions
+                        SeedService_service # artextensions
                         ${EVENTGENERATORBASECRY}
                         ${CRY}
                         ${SIMULATIONBASE}
