@@ -31,8 +31,6 @@ set(CMAKE_MODULE_PATH $ENV{ART_DIR}/Modules
 include(CetCMakeEnv)
 cet_cmake_env()
 
-set_install_root()
-
 # -Wno-unused-variable needed because of CLHEP
 cet_set_compiler_flags(DIAGS CAUTIOUS
   WERROR
@@ -43,12 +41,10 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
-find_ups_product( larcore v1_00_00 )
-find_ups_product( lardata v1_00_00 )
 find_ups_product( larevt v1_00_00 )
 find_ups_product( nutools v1_00_00 )
 find_ups_product( art v1_09_00 )
-find_ups_product( cetbuildtools v3_10_00 )
+find_ups_product( cetbuildtools v4_09_00 )
 find_ups_product( artextensions v1_00_01 )
 find_ups_geant4( geant4 v4_9_6 )
 find_ups_product( postgresql v9_1_5 )
