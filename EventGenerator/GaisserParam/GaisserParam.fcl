@@ -1,0 +1,52 @@
+BEGIN_PROLOG
+
+#no experiment specific configurations because Gaisserparam is detector agnostic
+
+standard_singlep:
+{
+ module_type:           "GaisserParam"
+ ParticleSelectionMode: 0           # 0 = use full list, 1 =  randomly select a single listed particle
+ PadOutVectors:		false	    # false: require all vectors to be same length
+                                    # true:  pad out if a vector is size one	
+ PDG:                    [ 13 ]     # list of pdg codes for particles to make
+
+ Charge:                 0          # 0 for particle/anti-particle
+                                    # 1 for only particle	
+                                    # 2 for only anti-particle	
+ #InputDir:              "/lbne/app/users/php13tkw/Joels_Generator/New_MuFlux/" # Directory where ROOT pdf file is	 
+ InputDir:              "/lbne/app/users/php13tkw/LArDev.v04_03_00/workspace/Incorporation/" # Directory where ROOT pdf file is	  
+
+ Emin:                   0.0   	    # Minimum Kinetic Energy GeV
+ Emid:                   100.0      # Middle Kinetic Energy GeV	 
+ Emax:                   100100.0   # Maximum Kinetic Energy GeV
+ EBinsLow:               1000       # Number of low energy bins
+ EBinsHigh:              10000      # Number of high energy bins		
+ 
+ Thetamin:               0          # Minimum angle, must be more than 0. 
+ Thetamax:               1.5708     # Maximum angle, must be less than pi/2	
+ ThetaBins:              100        # Number of angle bins
+
+ XHalfRange:             300.0      # Max distance from center of cryostat(s) for input particles cm
+ YInput:                 300.0      # Fixed Y position cm
+ ZHalfRange:             200.0      # Max distance from center of cryostat(s) for input particles cm
+ 
+ T0:                     0.0        # starting time
+ SigmaT:                 0.0        # variation in the starting time
+ TDist:                  0          # 0 - uniform, 1 - gaussian 
+
+ SetParam:              false       # Which version of Gaissers Param to use
+ SetRead:               true        # Whether to read a file
+ SetWrite:              true        # Whether to write to a file
+ SetReWrite:            true       # Whether to reset the pdfs. 
+ Epsilon:               1e-11       # Minimum integration sum....
+
+}
+
+random_singlep: @local::standard_singlep
+
+argoneut_singlep: @local::standard_singlep
+
+microboone_singlep: @local::standard_singlep
+
+
+END_PROLOG
