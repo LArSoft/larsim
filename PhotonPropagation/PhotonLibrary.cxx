@@ -89,14 +89,11 @@ namespace phot{
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, size_t NOpChannels)
+  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels)
   {
     fLookupTable.clear();
     
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: " << LibraryFile.c_str()<<std::endl;
-
-    fNVoxels     = NVoxels;
-    fNOpChannels = NOpChannels;
 
     TFile *f = nullptr;
     TTree *tt = nullptr;
@@ -122,35 +119,47 @@ namespace phot{
     Int_t     Voxel;
     Int_t     OpChannel;
     Float_t   Visibility;
-    
-    fLookupTable.resize(NVoxels);    
 
-    mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << NOpChannels<<" channels";
-
-
-    for(size_t ivox=0; ivox!=NVoxels; ivox++)
-      {
-	fLookupTable[ivox].resize(NOpChannels,0);
-      }
-    
     tt->SetBranchAddress("Voxel",      &Voxel);
     tt->SetBranchAddress("OpChannel",  &OpChannel);
     tt->SetBranchAddress("Visibility", &Visibility);
+
+
+
     
+    fNVoxels     = NVoxels;
+
+    
+    fLookupTable.resize(NVoxels);    
+
+
     size_t NEntries = tt->GetEntries();
 
-    for(size_t i=0; i!=NEntries; ++i)
-      {
-	tt->GetEntry(i);
-	if((Voxel<0)||(Voxel>=int(NVoxels))||(OpChannel<0)||(OpChannel>=int(NOpChannels)))
-	  {
-           //      mf::LogError("PhotonLibrary")<<"Error building photon library, entry out of range: " << Voxel<< " " << OpChannel;
-	  }
-	else
-	  {
-	    fLookupTable[Voxel].at(OpChannel) = Visibility;
-	  }
-      }
+    for(size_t i=0; i!=NEntries; ++i) {
+      tt->GetEntry(i);
+
+      // Set # of optical channels to 1 more than largest one seen
+      if (OpChannel >= fNOpChannels)
+        fNOpChannels = OpChannel+1;
+
+      // Expand this voxel's vector if needed
+      if (fLookupTable[Voxel].size() < fNOpChannels)
+        fLookupTable[Voxel].resize(fNOpChannels, 0);
+
+      // Set the visibility at this optical channel
+      fLookupTable[Voxel].at(OpChannel) = Visibility;
+    }
+
+    // Go through the table and fill in any missing 0's
+    for(size_t ivox=0; ivox!=NVoxels; ivox++)
+    {
+      if (fLookupTable[ivox].size() < fNOpChannels)
+	fLookupTable[ivox].resize(fNOpChannels,0);
+    }
+    
+    
+    mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << NOpChannels<<" channels";
+
 
     try
       {

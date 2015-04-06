@@ -24,7 +24,7 @@ namespace phot{
 
     
     void StoreLibraryToFile(std::string LibraryFile);
-    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, size_t NChannels);
+    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels);
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels);
     
 

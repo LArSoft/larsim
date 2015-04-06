@@ -64,10 +64,6 @@ namespace phot{
     if(fTheLibrary == 0) {
       fTheLibrary = new PhotonLibrary();
 
-      art::ServiceHandle<geo::Geometry> geom;
-
-      size_t NVoxels = GetVoxelDef().GetNVoxels();
-      size_t NOpChannels = geom->NOpChannels();
 
       if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
 	std::string LibraryFileWithPath;
@@ -80,10 +76,15 @@ namespace phot{
 	  mf::LogInfo("PhotonVisibilityService") << "PhotonVisibilityService Loading photon library from file "
 						 << LibraryFileWithPath
 						 << std::endl;
-	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, NOpChannels);
+	  size_t NVoxels = GetVoxelDef().GetNVoxels();
+	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels);
 	}
       }
       else {
+        art::ServiceHandle<opdet::OpDetResponseInterface> odresponse;
+
+        size_t NOpChannels = odresponse->NOpChannels();
+        size_t NVoxels = GetVoxelDef().GetNVoxels();
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
 	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpChannels);
