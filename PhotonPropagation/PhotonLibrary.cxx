@@ -128,6 +128,7 @@ namespace phot{
 
     
     fNVoxels     = NVoxels;
+    fNOpChannels = 1;      // Minimum default, overwritten by library reading
 
     
     fLookupTable.resize(NVoxels);    
@@ -139,7 +140,7 @@ namespace phot{
       tt->GetEntry(i);
 
       // Set # of optical channels to 1 more than largest one seen
-      if (OpChannel >= fNOpChannels)
+      if (OpChannel >= (int)fNOpChannels)
         fNOpChannels = OpChannel+1;
 
       // Expand this voxel's vector if needed
@@ -158,7 +159,7 @@ namespace phot{
     }
     
     
-    mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << NOpChannels<<" channels";
+    mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
 
 
     try

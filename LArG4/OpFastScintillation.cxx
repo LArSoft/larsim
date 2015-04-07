@@ -563,8 +563,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
         for(int i = 0; i < 6; i++)
         {
-          geo->OpChannelToCryoOpDet(200*i,o,c);
-          geo->Cryostat(c).OpDet(o).GetCenter(OpDetCenter);
+          geo->OpDetGeoFromOpDet(200*i).GetCenter(OpDetCenter);
           if(std::abs(xyz[0] - OpDetCenter[0])< 231) 
           {
             CageId = i;
@@ -574,10 +573,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
         if(CageId == -1) break;
               
-        for(int OpChan= 200*CageId; OpChan < 200*CageId + 200; OpChan++)
+        for(int OpDet= 200*CageId; OpDet < 200*CageId + 200; OpDet++)
         {
-          geo->OpChannelToCryoOpDet(OpChan,o,c);
-          geo->Cryostat(c).OpDet(o).GetCenter(OpDetCenter);
+          geo->OpDetGeoFromOpDet(OpDet).GetCenter(OpDetCenter);
 
           if(Num > 0) 
           {
@@ -614,7 +612,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             G4int DetThisPMT = G4int(G4Poisson(normalizedvisibility*Num));
             if(DetThisPMT>0)
             {
-              DetectedNum[OpChan] = DetThisPMT;
+              DetectedNum[OpDet] = DetThisPMT;
             }
           }
        }
@@ -650,12 +648,12 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	  }
 	else
     {
-	  for(size_t OpChan=0; OpChan!=Visibilities->size(); OpChan++)
+	  for(size_t OpDet=0; OpDet!=Visibilities->size(); OpDet++)
       {
-		G4int DetThisPMT = G4int(G4Poisson(Visibilities->at(OpChan) * Num));
+		G4int DetThisPMT = G4int(G4Poisson(Visibilities->at(OpDet) * Num));
 		if(DetThisPMT>0) 
         {
-		    DetectedNum[OpChan]=DetThisPMT;
+		    DetectedNum[OpDet]=DetThisPMT;
 		    //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
 		    //   //   it->second<<" " << Num << " " << DetThisPMT;  
         }

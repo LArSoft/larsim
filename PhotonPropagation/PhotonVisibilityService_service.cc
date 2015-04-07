@@ -30,6 +30,7 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/OpDetGeo.h"
+#include "OpticalDetector/OpDetResponseInterface.h"
 
 namespace phot{
 
@@ -182,16 +183,10 @@ namespace phot{
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double PhotonVisibilityService::DistanceToOpDet( double* xyz, unsigned int OpChannel )
+  double PhotonVisibilityService::DistanceToOpDet( double* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
- 
-    // Find the right OpDet
-    unsigned int c=0, o=0;
-    geom->OpChannelToCryoOpDet(OpChannel, o, c);
-
-    // Get its coordinates
-    return geom->Cryostat(c).OpDet(o).DistanceToPoint(xyz);
+    return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
       
   }
 
@@ -200,17 +195,10 @@ namespace phot{
 
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double PhotonVisibilityService::SolidAngleFactor( double* xyz, unsigned int OpChannel )
+  double PhotonVisibilityService::SolidAngleFactor( double* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
-   
-    // Find the right OpDet
-    unsigned int c=0, o=0;
-    geom->OpChannelToCryoOpDet(OpChannel, o, c);
-    
-    double CosTheta = geom->Cryostat(c).OpDet(o).CosThetaFromNormal(xyz);
-
-    return CosTheta;
+    return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
   }
 
   //------------------------------------------------------
