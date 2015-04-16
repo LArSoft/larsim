@@ -8,7 +8,6 @@
 #include "opticaldetectormodules.fcl"
 #include "photpropmodules.fcl"
 
-# "OpticalDetector/opticaldetectormodules.fcl"
 
 process_name: SinglesGen
 
@@ -21,7 +20,6 @@ services:
   user:         @local::microboone_simulation_services
 }
 services.user.PhotonVisibilityService: @local::standard_photonvisibilityservice_new
-services.user.OpDigiProperties:        @local::microboone_opdigiproperties
 
 #Start each new event with an empty event.
 source:
