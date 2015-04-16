@@ -30,7 +30,6 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/OpDetGeo.h"
-#include "OpticalDetector/OpDetResponseInterface.h"
 
 namespace phot{
 
@@ -82,13 +81,13 @@ namespace phot{
 	}
       }
       else {
-        art::ServiceHandle<opdet::OpDetResponseInterface> odresponse;
+        art::ServiceHandle<geo::Geometry> geom;
 
-        size_t NOpChannels = odresponse->NOpChannels();
+        size_t NOpDets = geom->NOpDets();
         size_t NVoxels = GetVoxelDef().GetNVoxels();
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
-	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpChannels);
+	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpDets);
       }
     }
   }
