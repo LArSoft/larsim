@@ -3,14 +3,14 @@
 //
 /// \author  bjpjones@mit.edu
 ////////////////////////////////////////////////////////////////////////
-// Provide a map between G4VPhysicalVolumes of OpDets and OpDet Channel's.
+// Provide a map between G4VPhysicalVolumes of OpDets and OpDet Numbers's.
 //
 // There are two places where optical detectors must be known about
 // in larsoft: In the Geant4 volume store, where they are associated
 // to G4SensitiveDetectors, and in the Geometry service, where their
 // positions and cryostat associations are known for reconstruction.
 //
-// These geometries are built independently, and the OpDetChannels in each
+// These geometries are built independently, and the OpDet's in each
 // volume is not provided by the geometry specification.
 //
 // The main function of this class is to provide a link between the
@@ -26,7 +26,7 @@
 //
 // It is then renamed accordingly and the link between the two objects
 // is stored in a map<string, int> which relates the new G4 name
-// to a detector Channel in the geometry.
+// to a detector number in the geometry.
 //
 //
 // Ben Jones, MIT, 06/04/2010
@@ -48,8 +48,8 @@ namespace larg4 {
       static OpDetLookup * Instance();
    
       void AddPhysicalVolume(G4VPhysicalVolume *);
-      int GetChannel(G4VPhysicalVolume *);
-      int GetChannel(std::string);
+      int GetOpDet(G4VPhysicalVolume *);
+      int GetOpDet(std::string);
       int GetN();
       int FindClosestOpDet(G4VPhysicalVolume* vol,  double& Distance);
       
@@ -57,8 +57,8 @@ namespace larg4 {
       OpDetLookup();
 
     private:
-      std::map<std::string, int> fTheChannelMap;
-      int fTheTopChannel;
+      std::map<std::string, int> fTheOpDetMap;
+      int fTheTopOpDet;
       
     };
 

@@ -90,7 +90,7 @@ namespace phot {
     art::ServiceHandle<PhotonVisibilityService> pvs;
     art::ServiceHandle<geo::Geometry> geom;
 
-    int NOpDet = geom->NOpDet();
+    int NOpDet = pvs->NOpChannels();
 
     sim::PhotonVoxelDef TheVoxelDef = pvs->GetVoxelDef();
     TVector3 Steps = TheVoxelDef.GetSteps();
