@@ -2,7 +2,7 @@ BEGIN_PROLOG
 
 #no experiment specific configurations because Gaisserparam is detector agnostic
 
-standard_singlep:
+standard_Gaisser:
 {
  module_type:           "GaisserParam"
  ParticleSelectionMode: 0           # 0 = use full list, 1 =  randomly select a single listed particle
@@ -13,8 +13,7 @@ standard_singlep:
  Charge:                 0          # 0 for particle/anti-particle
                                     # 1 for only particle	
                                     # 2 for only anti-particle	
- #InputDir:              "/lbne/app/users/php13tkw/Joels_Generator/New_MuFlux/" # Directory where ROOT pdf file is	 
- InputDir:              "/lbne/app/users/php13tkw/LArDev.v04_03_00/workspace/Incorporation/" # Directory where ROOT pdf file is	  
+ InputDir:              "/lbne/app/users/php13tkw/LarDevelop/workspace/Incorporation/" # Directory where ROOT pdf file is	  
 
  Emin:                   0.0   	    # Minimum Kinetic Energy GeV
  Emid:                   100.0      # Middle Kinetic Energy GeV	 
@@ -37,16 +36,29 @@ standard_singlep:
  SetParam:              false       # Which version of Gaissers Param to use
  SetRead:               true        # Whether to read a file
  SetWrite:              true        # Whether to write to a file
- SetReWrite:            true       # Whether to reset the pdfs. 
+ SetReWrite:            true        # Whether to reset the pdfs. 
  Epsilon:               1e-11       # Minimum integration sum....
-
 }
 
-random_singlep: @local::standard_singlep
+LowEnergy_Gaisser: @local::standard_Gaisser
+LowEnergy_Gaisser.Emin:      0
+LowEnergy_Gaisser.Emid:      100
+LowEnergy_Gaisser.Emax:      4000
+LowEnergy_Gaisser.EBinsLow:  1000
+LowEnergy_Gaisser.EBinsHigh: 1000
 
-argoneut_singlep: @local::standard_singlep
+MidEnergy_Gaisser: @local::standard_Gaisser
+MidEnergy_Gaisser.Emin:      4000
+MidEnergy_Gaisser.Emid:      10000
+MidEnergy_Gaisser.Emax:      100000
+MidEnergy_Gaisser.EBinsLow:  1000
+MidEnergy_Gaisser.EBinsHigh: 10000
 
-microboone_singlep: @local::standard_singlep
-
+HighEnergy_Gaisser: @local::standard_Gaisser
+HighEnergy_Gaisser.Emin:      100000
+HighEnergy_Gaisser.Emid:      500000
+HighEnergy_Gaisser.Emax:      10000000
+HighEnergy_Gaisser.EBinsLow:  10000
+HighEnergy_Gaisser.EBinsHigh: 100000
 
 END_PROLOG

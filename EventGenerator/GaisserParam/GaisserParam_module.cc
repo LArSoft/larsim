@@ -4,10 +4,10 @@
 ///
 /// Module designed to produce muons for a MC event using a Gaissers
 /// parametisation. 
-/// For a description of how to use the module see DocDB 
+/// For a description of how to use the module see LBNE DocDB 10741 
 ///
-/// \version $Id: GaisserParam.cxx,v 1.4 2010/03/29 09:54:01 brebel Exp $
-/// \author  brebel@fnal.gov
+/// \version $Id: GaisserParam.cxx,v 1.4 2015/04/20 09:54:01 brebel Exp $
+/// \author  k.warburton@sheffield.ac.uk
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_GAISSERPARAM
 #define EVGEN_GAISSERPARAM
@@ -683,6 +683,8 @@ namespace evgen{
     double ct  = cos(theta);    
     double di;
     if(fSetParam){
+      //    double gamma=2.77;   // LVD spectrum: spectral index
+      //    double A=1.84*0.14;  // normalisation
       double gamma = 2.7;
       double A = 0.14;
       double rc = 1.e-4;   // fraction of prompt muons  
@@ -694,7 +696,7 @@ namespace evgen{
       di=A*pow(e1,-gamma)*(1./(1.+1.1*e1*c1/115.) + 0.054/(1.+1.1*e1*c1/850.) + rc)*pdec;
     }
     else{
-      double gamma=2.7; // LVD spectrum: spectral index
+      double gamma=2.7; // spectral index
       double A=0.14;    // normalisation
       double C = 3.64;
       double gamma2 = 1.29;

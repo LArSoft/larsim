@@ -32,7 +32,7 @@ physics:
 
  producers:
  {
-   generator: @local::random_singlep	  
+   generator: @local::HighEnergy_Gaisser	  
    largeant:  @local::lbne35t_largeant	  
    daq:       @local::lbne35t_simwire       
    rns:       { module_type: "RandomNumberSaver" }
