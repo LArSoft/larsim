@@ -63,7 +63,7 @@ namespace larg4{
     // Lookup which OpDet we are in
     G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
 
-    int OpDetChannel = fTheOpDetLookup->GetChannel(preStepPoint->GetPhysicalVolume());
+    int OpDet = fTheOpDetLookup->GetOpDet(preStepPoint->GetPhysicalVolume());
 
     // Store relative position on the photon detector
     G4ThreeVector worldPosition  = preStepPoint->GetPosition();
@@ -72,7 +72,7 @@ namespace larg4{
     
 
     // Add this photon to the detected photons table
-    fThePhotonTable->AddPhoton(OpDetChannel, std::move(ThePhoton));
+    fThePhotonTable->AddPhoton(OpDet, std::move(ThePhoton));
     
     // Kill this photon track
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);

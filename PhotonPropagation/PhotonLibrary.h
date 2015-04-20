@@ -1,6 +1,8 @@
 ////# PhotonLibrary.h header file
 ////#
 ////# Ben Jones, MIT, 2012
+#ifndef PHOTONLIBRARY_H
+#define PHOTONLIBRARY_H
 
 #include "TTree.h"
 #include "Simulation/PhotonVoxels.h"
@@ -24,11 +26,12 @@ namespace phot{
 
     
     void StoreLibraryToFile(std::string LibraryFile);
-    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, size_t NChannels);
+    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels);
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels);
     
 
-
+    int NOpChannels() const { return fNOpChannels; }
+    int NVoxels() const { return fNVoxels; }
     
   private:
     // fLookupTable[Voxel]->at(OpChannel) = Count
@@ -43,3 +46,5 @@ namespace phot{
   };
 
 }
+
+#endif

@@ -14,11 +14,11 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "PhotonPropagation/PhotonLibrary.h"
 #include "Simulation/PhotonVoxels.h"
 
 ///General LArSoft Utilities
 namespace phot{
-  class PhotonLibrary;
   
   class PhotonVisibilityService {
   public:
@@ -29,8 +29,8 @@ namespace phot{
     
     double GetQuenchingFactor(double dQdx);
     
-    double DistanceToOpDet(                 double* xyz, unsigned int OpChannel );
-    double SolidAngleFactor(                double* xyz, unsigned int OpChannel );
+    double DistanceToOpDet(                 double* xyz, unsigned int OpDet );
+    double SolidAngleFactor(                double* xyz, unsigned int OpDet );
     float GetVisibility(                    double* xyz, unsigned int OpChannel );         
 
     const std::vector<float>* GetAllVisibilities( double* xyz ) const;
@@ -51,7 +51,8 @@ namespace phot{
     bool UseParameterization() const {return fParameterization;}
 
     sim::PhotonVoxelDef GetVoxelDef() const {return fVoxelDef; }
-
+    int NOpChannels() const { return fTheLibrary->NOpChannels(); }
+    
   private:
     
     int    fCurrentVoxel;
