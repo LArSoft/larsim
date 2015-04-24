@@ -55,24 +55,43 @@ namespace sim{
     , exitMomentumZ  (ide.exitMomentumZ)
     {}
 
+  //----------------------------------------------------------------------------
   AuxDetSimChannel::AuxDetSimChannel()
     : fAuxDetID(std::numeric_limits<uint32_t>::max())
+    , fAuxDetSensitiveID(std::numeric_limits<uint32_t>::max())
   {
   }
+
+  //----------------------------------------------------------------------------
+  AuxDetSimChannel::AuxDetSimChannel(uint32_t inputAuxDetID,
+				     uint32_t inputAuxDetSensitiveID)
+      : fAuxDetID(inputAuxDetID)
+      , fAuxDetSensitiveID(inputAuxDetSensitiveID)
+    {}
   
-  AuxDetSimChannel::AuxDetSimChannel
-    (uint32_t inputAuxDetID, const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs):
-    fAuxDetID(inputAuxDetID), fAuxDetIDEs(inputAuxDetIDEs)
+  //----------------------------------------------------------------------------
+  AuxDetSimChannel::AuxDetSimChannel(uint32_t inputAuxDetID, 
+				     const std::vector<sim::AuxDetIDE>& inputAuxDetIDEs,
+				     uint32_t inputAuxDetSensitiveID)
+      : fAuxDetID(inputAuxDetID)
+      , fAuxDetSensitiveID(inputAuxDetSensitiveID)
+      , fAuxDetIDEs(inputAuxDetIDEs)
   {}
 
-  AuxDetSimChannel::AuxDetSimChannel
-    (uint32_t inputAuxDetID, std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs):
-    fAuxDetID(inputAuxDetID), fAuxDetIDEs(inputAuxDetIDEs)
+  //----------------------------------------------------------------------------
+  AuxDetSimChannel::AuxDetSimChannel(uint32_t inputAuxDetID, 
+				     std::vector<sim::AuxDetIDE>&& inputAuxDetIDEs,
+				     uint32_t inputAuxDetSensitiveID)
+    : fAuxDetID(inputAuxDetID)
+    , fAuxDetSensitiveID(inputAuxDetSensitiveID)
+    , fAuxDetIDEs(inputAuxDetIDEs)
   {}
 
-  std::pair<int,int> AuxDetSimChannel::MergeAuxDetSimChannel(const AuxDetSimChannel& chan, int offset)
+  //----------------------------------------------------------------------------
+  std::pair<int,int> AuxDetSimChannel::MergeAuxDetSimChannel(const AuxDetSimChannel& chan, 
+							     int offset)
   {
-    if(this->fAuxDetID != chan.AuxDetID() )
+    if(this->fAuxDetID != chan.AuxDetID() && this->fAuxDetSensitiveID != chan.AuxDetSensitiveID())
       throw std::runtime_error("ERROR AuxDetSimChannel Merge: Trying to merge different channels!");
 
     std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
@@ -89,5 +108,20 @@ namespace sim{
 
     return range_trackID;
   }
+
+  //----------------------------------------------------------------------------
+  bool AuxDetSimChannel::operator<  (const sim::AuxDetSimChannel& other) const 
+  { 
+    if(fAuxDetID < other.AuxDetID() ) return true;
+
+    return fAuxDetSensitiveID < other.AuxDetSensitiveID(); 
+  }
+
+  //----------------------------------------------------------------------------
+  bool AuxDetSimChannel::operator== (const sim::AuxDetSimChannel& other) const 
+  { 
+    return (fAuxDetID == other.AuxDetID() && fAuxDetSensitiveID == other.AuxDetSensitiveID()); 
+  }
+
   
 }//namespace sim

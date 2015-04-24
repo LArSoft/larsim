@@ -103,7 +103,7 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
     std::vector<sim::AuxDetSimChannel>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simchannel);
 
     if(it==merged_vector.end()){
-      merged_vector.emplace_back(simchannel.AuxDetID());
+      merged_vector.emplace_back(simchannel.AuxDetID(), simchannel.AuxDetSensitiveID());
       it = merged_vector.end() - 1;
     }
     
