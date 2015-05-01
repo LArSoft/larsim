@@ -261,6 +261,14 @@ namespace phot{
     return fTheLibrary->GetCount(VoxID, Channel);
   }
 
+  //------------------------------------------------------
+  int PhotonVisibilityService::NOpChannels()
+  {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+    
+    return fTheLibrary->NOpChannels();
+  }
 
 } // namespace
 

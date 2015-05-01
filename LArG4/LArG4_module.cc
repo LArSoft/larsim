@@ -287,7 +287,7 @@ namespace larg4 {
     art::ServiceHandle<geo::Geometry> geom;
 
     // Clear the detected photon table
-    OpDetPhotonTable::Instance()->ClearTable(geom->NOpChannels());
+    OpDetPhotonTable::Instance()->ClearTable(geom->NOpDets());
 
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
