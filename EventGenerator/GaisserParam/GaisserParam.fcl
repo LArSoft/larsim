@@ -13,8 +13,9 @@ standard_Gaisser:
  Charge:                 0          # 0 for particle/anti-particle
                                     # 1 for only particle	
                                     # 2 for only anti-particle	
- InputDir:              "/lbne/app/users/php13tkw/LarDevelop/workspace/Incorporation/" # Directory where ROOT pdf file is	  
-
+ InputDir:              "/lbne/app/users/php13tkw/LarDevelop/workspace/Incorporation/" # Directory where ROOT pdf file is
+ 										       # If not using one of the standard configurations
+										       # you will want to change this to your directory  
  Emin:                   0.0   	    # Minimum Kinetic Energy GeV
  Emid:                   100.0      # Middle Kinetic Energy GeV	 
  Emax:                   100100.0   # Maximum Kinetic Energy GeV
