@@ -25,6 +25,7 @@
 #include <exception>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -527,6 +528,7 @@ namespace evgen{
     std::ostringstream pdfFile;
     pdfFile << fInputDir<<fEmin<<"-"<<fEmid<<"-"<<fEmax<<"-"<< fEBinsLow<<"-"<<fEBinsHigh<<"-"<<fThetamin<<"-"<<fThetamax<<"-"<<fThetaBins<<".root"; 
     std::string fileName = pdfFile.str();
+    std::replace(fileName.begin(),fileName.end(),'+','0');
     std::cout << "Input Dir " << fInputDir << ", Input file " << fileName << std::endl;
 
     if(fSetRead){
