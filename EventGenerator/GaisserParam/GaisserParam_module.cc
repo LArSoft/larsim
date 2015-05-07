@@ -5,6 +5,7 @@
 /// Module designed to produce muons for a MC event using a Gaissers
 /// parametisation. 
 /// For a description of how to use the module see LBNE DocDB 10741 
+/// It is highly reccommended that you read it before use.....
 ///
 /// \version $Id: GaisserParam.cxx,v 1.4 2015/04/20 09:54:01 brebel Exp $
 /// \author  k.warburton@sheffield.ac.uk
@@ -526,10 +527,18 @@ namespace evgen{
 
     //---- work out if we're reading a file, writing to file, or neither
     std::ostringstream pdfFile;
-    pdfFile << fInputDir<<fEmin<<"-"<<fEmid<<"-"<<fEmax<<"-"<< fEBinsLow<<"-"<<fEBinsHigh<<"-"<<fThetamin<<"-"<<fThetamax<<"-"<<fThetaBins<<".root"; 
-    std::string fileName = pdfFile.str();
-    std::replace(fileName.begin(),fileName.end(),'+','0');
-    std::cout << "Input Dir " << fInputDir << ", Input file " << fileName << std::endl;
+    pdfFile << "GaisserPDF_"<<fEmin<<"-"<<fEmid<<"-"<<fEmax<<"-"<< fEBinsLow<<"-"<<fEBinsHigh<<"-"<<fThetamin<<"-"<<fThetamax<<"-"<<fThetaBins<<".root"; 
+    std::string tmpfileName = pdfFile.str();
+    std::replace(tmpfileName.begin(),tmpfileName.end(),'+','0');
+    if      (tmpfileName == "GaisserPDF_0-100-100100-1000-10000-0-1.5708-100.root")          tmpfileName = "GaisserPDF_DefaultBins.root";
+    else if (tmpfileName == "GaisserPDF_0-100-4000-1000-1000-0-1.5708-100.root")             tmpfileName = "GaisserPDF_LowEnergy.root";
+    else if (tmpfileName == "GaisserPDF_4000-10000-100000-1000-10000-0-1.5708-100.root")     tmpfileName = "GaisserPDF_MidEnergy.root";
+    else if (tmpfileName == "GaisserPDF_100000-500000-1e007-10000-100000-0-1.5708-100.root") tmpfileName = "GaisserPDF_HighEnergy.root";
+    
+    std::ostringstream pdfFilePath;
+    pdfFilePath << fInputDir << tmpfileName;
+    std::string fileName = pdfFilePath.str();
+    std::cout << "File path; " << fileName << std::endl;
 
     if(fSetRead){
       struct stat buffer;
