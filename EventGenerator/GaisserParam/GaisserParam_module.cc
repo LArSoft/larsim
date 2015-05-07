@@ -538,7 +538,15 @@ namespace evgen{
     std::ostringstream pdfFilePath;
     pdfFilePath << fInputDir << tmpfileName;
     std::string fileName = pdfFilePath.str();
-    std::cout << "File path; " << fileName << std::endl;
+   
+  // fTemplateFile           = pset.get< std::string >("TemplateFile");
+  // //fCalorimetryModuleLabel = pset.get< std::string >("CalorimetryModuleLabel");
+
+   cet::search_path sp("FW_SEARCH_PATH");
+   std::string fROOTfile; //return /lbne/data/0-100-1.57.root
+   if( sp.find_file(tmpfileName, fROOTfile) ) fileName = fROOTfile;
+
+   std::cout << "File path; " << fileName << std::endl;
 
     if(fSetRead){
       struct stat buffer;

@@ -14,8 +14,9 @@ standard_Gaisser:
                                     # 1 for only particle	
                                     # 2 for only anti-particle	
  InputDir:              "/lbne/data/users/warburton/Joels_Generator/" # Directory where ROOT pdf file is
- 										       # If not using one of the standard configurations
-										       # you will want to change this to your directory  
+  				       							     # If not using one of the standard configurations
+				       							     # you will !!NEED!! to change this to your own 
+											     # directory!!!  
  Emin:                   0.0   	    # Minimum Kinetic Energy GeV
  Emid:                   100.0      # Middle Kinetic Energy GeV	 
  Emax:                   100100.0   # Maximum Kinetic Energy GeV
