@@ -22,7 +22,8 @@
  <class name="sim::SimChannel"               ClassVersion="14"              	 >
   <version ClassVersion="14" checksum="2917495953"/>
  </class>
- <class name="sim::AuxDetSimChannel"         ClassVersion="11"                   >
+ <class name="sim::AuxDetSimChannel"         ClassVersion="12"                   >
+  <version ClassVersion="12" checksum="3670394285"/>
   <version ClassVersion="11" checksum="4004990893"/>
   <version ClassVersion="10" checksum="999879376"/>
  </class>

@@ -25,9 +25,12 @@
 
 namespace larg4 {
   
-  AuxDetReadout::AuxDetReadout(std::string const& name, unsigned int adNum)
+  AuxDetReadout::AuxDetReadout(std::string const& name, 
+			       unsigned int       adNum,
+			       unsigned int       svNum)
   : G4VSensitiveDetector(name)
   , fAuxDet(adNum)
+  , fAuxDetSensitive(svNum)
   {
   }
   
@@ -42,7 +45,7 @@ namespace larg4 {
   // Called at the end of each event.
   void AuxDetReadout::EndOfEvent(G4HCofThisEvent*)
   {
-    fAuxDetSimChannel = sim::AuxDetSimChannel(fAuxDet, std::move(fAuxDetIDEs));
+    fAuxDetSimChannel = sim::AuxDetSimChannel(fAuxDet, std::move(fAuxDetIDEs), fAuxDetSensitive);
   }
   //---------------------------------------------------------------------------------------
   void AuxDetReadout::clear()

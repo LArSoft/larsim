@@ -470,25 +470,31 @@ namespace larg4 {
     adCol->reserve(geom->NAuxDets());
     for(unsigned int a = 0; a < geom->NAuxDets(); ++a){
 
-      // N.B. this name convention is used when creating the 
-      //      AuxDetReadout SD in AuxDetReadoutGeometry       
-      std::stringstream name;
-      name << "AuxDetSD_AuxDet" << a;
-      G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
-      if ( !sd ){
-        throw cet::exception("LArG4") << "Sensitive detector '"
-                                    << name
-                                    << "' does not exist\n";
+      // there should always be at least one senstive volume because 
+      // we make one for the full aux det if none are specified in the 
+      // gdml file - see AuxDetGeo.cxx
+      for(size_t sv = 0; sv < geom->AuxDet(a).NSensitiveVolume(); ++sv){
+
+	// N.B. this name convention is used when creating the 
+	//      AuxDetReadout SD in AuxDetReadoutGeometry       
+	std::stringstream name;
+	name << "AuxDetSD_AuxDet" << a << "_" << sv;
+	G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
+	if ( !sd ){
+	  throw cet::exception("LArG4") << "Sensitive detector '"
+					<< name
+					<< "' does not exist\n";
+	}
+
+	// Convert the G4VSensitiveDetector* to a AuxDetReadout*.
+	larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
+
+	LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
+
+	const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
+	adCol->push_back(adsc);
+	auxDetReadout->clear();
       }
-
-      // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
-      larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
-
-      LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
-
-      const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
-      adCol->push_back(adsc);
-      auxDetReadout->clear();
 	
     } // Loop over AuxDets
 	
