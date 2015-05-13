@@ -4,6 +4,7 @@ standard_photonlibraryanalyzer:
 {
   module_type: "PhotonLibraryAnalyzer"
   alt_x_axis:  "Y"
+  opdet:       -1 # -1 = all op dets
 }
 
 microboone_photonlibraryanalyzer: @local::standard_photonlibraryanalyzer

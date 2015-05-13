@@ -51,7 +51,7 @@ namespace phot {
 
   private:
       std::string fAltXAxis;
-      
+      int         fOpDet;
   };
   
 }
@@ -76,6 +76,7 @@ namespace phot {
   void PhotonLibraryAnalyzer::reconfigure(fhicl::ParameterSet const& pset)
   {
       fAltXAxis = pset.get<std::string>("alt_x_axis");
+      fOpDet    = pset.get<int>("opdet");
   }
 
   //----------------------------------------------------------------------------
@@ -191,9 +192,14 @@ namespace phot {
       const std::vector<float>* Visibilities = pvs->GetLibraryEntries(i);
       
       float TotalVis=0;
-      for(size_t ichan=0; ichan!=Visibilities->size(); ++ichan)
-      {
-	TotalVis+=Visibilities->at(ichan);	
+      if (fOpDet < 0) {
+        for(size_t ichan=0; ichan!=Visibilities->size(); ++ichan)
+        {
+          TotalVis+=Visibilities->at(ichan);	
+        }
+      }
+      else {
+        TotalVis = Visibilities->at(fOpDet);
       }
       
       VisByN->Fill(Visibilities->size());
