@@ -47,11 +47,16 @@ namespace larg4 {
 
   private:
 
-    void FindAndMakeAuxDet(  std::vector<const G4VPhysicalVolume*>& path,
-			     unsigned int depth,
-			     G4Transform3D DepthToWorld  );    
+    void FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
+			   unsigned int depth,
+			   G4Transform3D DepthToWorld);    
 
-    art::ServiceHandle<geo::Geometry>   fGeo; ///< Handle to the geometry    
+    void FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
+				    unsigned int depth,
+				    G4Transform3D DepthToWorld);    
+
+    art::ServiceHandle<geo::Geometry> fGeo;             ///< Handle to the geometry    
+    uint32_t                          fNumSensitiveVol; ///< number of sensitive volumes
 
   };
 

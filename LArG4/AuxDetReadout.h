@@ -13,6 +13,7 @@
 #include "Simulation/AuxDetSimChannel.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/AuxDetGeo.h"
+#include "Geometry/AuxDetSensitiveGeo.h"
 
 #include <vector>
 
@@ -27,7 +28,9 @@ namespace larg4 {
   {
   public:
     // Constructor.
-    AuxDetReadout(std::string const& name, unsigned int adNum);
+    AuxDetReadout(std::string const& name, 
+		  unsigned int       adNum,
+		  unsigned int       svNum);
     
     // Destructor
     virtual ~AuxDetReadout();
@@ -72,6 +75,7 @@ namespace larg4 {
   private:
     art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
     uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
+    uint32_t                          fAuxDetSensitive;  ///< which sensitive volume of the AuxDet this AuxDetReadout corresponds to
     sim::AuxDetSimChannel             fAuxDetSimChannel; ///< Contains the sim::AuxDetSimChannel for this AuxDet
     std::vector<sim::AuxDetIDE>       fAuxDetIDEs;       ///< list of IDEs in one channel
 };
