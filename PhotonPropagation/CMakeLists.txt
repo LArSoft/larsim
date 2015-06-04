@@ -17,6 +17,7 @@ art_make( BASENAME_ONLY
 			${MF_UTILITIES}
 			${FHICLCPP}
 			${CETLIB}
+			${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
           SERVICE_LIBRARIES PhotonPropagation
