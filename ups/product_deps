@@ -14,7 +14,7 @@ genie_phyopt    v2_8_6
 larsoft_data    v0_04_00
 artextensions   v1_01_05
 
-cetbuildtools	v4_10_02	-	only_for_build
+cetbuildtools	v4_11_01	-	only_for_build
 end_product_list
 
   
