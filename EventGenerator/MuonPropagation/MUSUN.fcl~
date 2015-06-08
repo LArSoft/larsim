@@ -1,0 +1,50 @@
+BEGIN_PROLOG
+
+ # No experiment specific configurations because MUSUN is detector agnostic
+
+standard_MUSUN:
+{
+ module_type:           "MUSUN"
+
+ PDG:                    -13        # PdG codes of particles to make
+ ChargeRatio:            1.38       # Ratio of particle/anti-particle
+                                    # For one particle type set equal to 0.
+                                    
+ # Directory where ROOT pdf file is. If not using one of the standard configurations 
+ # you will !!NEED!! to change this to your own directory!!!  
+ InputDir:                "/lbne/data/users/warburton/MUSUN/"
+ InputFile1:              "muint-davis-mr-new.dat" 
+ InputFile2:              "musp-davis-mr-new.dat"  
+ InputFile3:              "depth-davis-mr-new.dat" 
+
+ CavernAngle:            14         # Angle of the detector from the North to the East.
+
+ Emin:                   1.   	    # Minimum Kinetic Energy GeV
+ Emax:                   1000000.   # Maximum Kinetic Energy GeV
+ 
+ Thetamin:               0.         # Minimum angle, must be more than 0. 
+ Thetamax:               90.        # Maximum angle, must be less than pi/2	
+
+ Phimin:                 0.         # Minimum angle, must be more than 0. 
+ Phimax:                 360.       # Maximum angle, must be less than pi
+	
+ # You have to change all these dimensions if you change the size of the
+ # parallelepiped. The dimensions are given in cm. The example shown here
+ # is for the lab+rock having the size of 30 x 22 x 24 m^3 in x, z and y,
+ # respectively. The parallelepiped on the surface of which the muons are
+ # sampled is extended by 5 m in all directions into rock, except top where
+ # the extension is 7m. The centre of the coordinate system is the centre
+ # of the water tank (approximately).
+ Xmin:                   -1100.    # Minumum X position cm
+ Xmax:                   1100.     # Maximum X position cm
+ Ymin:                   -800.     # Minumum Y position cm
+ Ymax:                   1600.     # Maximum Y position cm
+ Zmin:                   -1400.    # Minumum Z position cm
+ Zmax:                   1600.     # Maximum Z position cm
+ 
+ T0:                     0.         # starting time
+ SigmaT:                 0.         # variation in the starting time
+ TDist:                  0          # 0 - uniform, 1 - gaussian 
+}
+
+END_PROLOG

@@ -1,0 +1,66 @@
+BEGIN_PROLOG
+
+#no experiment specific configurations because Gaisserparam is detector agnostic
+
+standard_Gaisser:
+{
+ module_type:           "GaisserParam"
+ ParticleSelectionMode: 0           # 0 = use full list, 1 =  randomly select a single listed particle
+ PadOutVectors:		false	    # false: require all vectors to be same length
+                                    # true:  pad out if a vector is size one	
+ PDG:                    [ 13 ]     # list of pdg codes for particles to make
+
+ Charge:                 0          # 0 for particle/anti-particle
+                                    # 1 for only particle	
+                                    # 2 for only anti-particle	
+ InputDir:              "/lbne/data/users/warburton/Joels_Generator/" # Directory where ROOT pdf file is
+  				       							     # If not using one of the standard configurations
+				       							     # you will !!NEED!! to change this to your own 
+											     # directory!!!  
+ Emin:                   0.0   	    # Minimum Kinetic Energy GeV
+ Emid:                   100.0      # Middle Kinetic Energy GeV	 
+ Emax:                   100100.0   # Maximum Kinetic Energy GeV
+ EBinsLow:               1000       # Number of low energy bins
+ EBinsHigh:              10000      # Number of high energy bins		
+ 
+ Thetamin:               0          # Minimum angle, must be more than 0. 
+ Thetamax:               1.5708     # Maximum angle, must be less than pi/2	
+ ThetaBins:              100        # Number of angle bins
+
+ XHalfRange:             300.0      # Max distance from center of cryostat(s) for input particles cm
+ YInput:                 300.0      # Fixed Y position cm
+ ZHalfRange:             200.0      # Max distance from center of cryostat(s) for input particles cm
+ 
+ T0:                     0.0        # starting time
+ SigmaT:                 0.0        # variation in the starting time
+ TDist:                  0          # 0 - uniform, 1 - gaussian 
+
+ SetParam:              false       # Which version of Gaissers Param to use
+ SetRead:               true        # Whether to read a file
+ SetWrite:              true        # Whether to write to a file
+ SetReWrite:            true        # Whether to reset the pdfs. 
+ Epsilon:               1e-11       # Minimum integration sum....
+}
+
+LowEnergy_Gaisser: @local::standard_Gaisser
+LowEnergy_Gaisser.Emin:      0
+LowEnergy_Gaisser.Emid:      100
+LowEnergy_Gaisser.Emax:      4000
+LowEnergy_Gaisser.EBinsLow:  1000
+LowEnergy_Gaisser.EBinsHigh: 1000
+
+MidEnergy_Gaisser: @local::standard_Gaisser
+MidEnergy_Gaisser.Emin:      4000
+MidEnergy_Gaisser.Emid:      10000
+MidEnergy_Gaisser.Emax:      100000
+MidEnergy_Gaisser.EBinsLow:  1000
+MidEnergy_Gaisser.EBinsHigh: 10000
+
+HighEnergy_Gaisser: @local::standard_Gaisser
+HighEnergy_Gaisser.Emin:      100000
+HighEnergy_Gaisser.Emid:      500000
+HighEnergy_Gaisser.Emax:      10000000
+HighEnergy_Gaisser.EBinsLow:  10000
+HighEnergy_Gaisser.EBinsHigh: 100000
+
+END_PROLOG
