@@ -138,10 +138,12 @@ namespace sim {
 										   sim::kINVALID_DOUBLE,
 										   sim::kINVALID_DOUBLE));
     std::vector<TLorentzVector> mcs_daughter_mom_v      ( fMCShower.size(), TLorentzVector() );
+
     std::vector<double>         plane_charge_v          ( fMCShower.size(), 0                );
 
     //For dEdx Calculation
     std::vector<double>         mcs_daughter_dedx_v     ( fMCShower.size(), 0                );
+    std::vector<double>         mcs_daughter_dedxRAD_v  ( fMCShower.size(), 0                );
     std::vector<TVector3>       mcs_daughter_dir_v      ( fMCShower.size(), TVector3()       );
  
     for(size_t mcs_index=0; mcs_index<fMCShower.size(); ++mcs_index) {
@@ -149,6 +151,7 @@ namespace sim {
       auto& mcs_daughter_vtx       = mcs_daughter_vtx_v[mcs_index];
       auto& mcs_daughter_mom       = mcs_daughter_mom_v[mcs_index];
       auto& mcs_daughter_dedx      = mcs_daughter_dedx_v[mcs_index];
+      auto& mcs_daughter_dedxRAD   = mcs_daughter_dedxRAD_v[mcs_index];
       auto& mcs_daughter_dir       = mcs_daughter_dir_v[mcs_index];
       auto& plane_charge           = plane_charge_v[mcs_index];
 
@@ -272,6 +275,8 @@ namespace sim {
 	    mcs_daughter_mom[2] += mom.at(2);
 	  }
 	  //Determine the direction of the shower right at the start point 
+	  double E = 0;
+	  double N = 0;
 	  if(sqrt( pow( edep.pos._x - mcs_daughter_vtx[0],2) + 
 		   pow( edep.pos._y - mcs_daughter_vtx[1],2) + 
 		   pow( edep.pos._z - mcs_daughter_vtx[2],2)) < 2.4 && magnitude>1.e-10){
@@ -279,7 +284,13 @@ namespace sim {
 	    mcs_daughter_dir[0] += mom.at(0);
 	    mcs_daughter_dir[1] += mom.at(1);
 	    mcs_daughter_dir[2] += mom.at(2);
+	    E += energy;
+	    N += 1;
 	  }
+
+	  if(E > 0) E /= N;
+	  mcs_daughter_dedxRAD += E;
+	  
 	  mcs_daughter_mom[3] += energy;
 
 	  // Charge
@@ -289,6 +300,7 @@ namespace sim {
 	  
 	}///Looping through the MCShower daughter's energy depositions
       }///Looping through MCShower daughters
+      mcs_daughter_dedxRAD /= 2.4;
 
       for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
 	
@@ -355,9 +367,11 @@ namespace sim {
     // Store plane charge & daughter momentum
     for(size_t mcs_index=0; mcs_index<fMCShower.size(); ++mcs_index) {
       
-      auto& daughter_vtx  = mcs_daughter_vtx_v[mcs_index]; 
-      auto& daughter_mom  = mcs_daughter_mom_v[mcs_index];
-      auto& daughter_dedx = mcs_daughter_dedx_v[mcs_index];
+      auto& daughter_vtx     = mcs_daughter_vtx_v[mcs_index]; 
+      auto& daughter_mom     = mcs_daughter_mom_v[mcs_index];
+      auto& daughter_dedx    = mcs_daughter_dedx_v[mcs_index];
+      auto& daughter_dedxRAD = mcs_daughter_dedxRAD_v[mcs_index];
+      auto& daughter_dir     = mcs_daughter_dir_v[mcs_index];
 
       double magnitude = sqrt(pow(daughter_mom[0],2)+pow(daughter_mom[1],2)+pow(daughter_mom[2],2));
       
@@ -372,6 +386,9 @@ namespace sim {
       std::vector<double> plane_charge(geo->PlaneIDs().size(),plane_charge_v[mcs_index]);
       fMCShower.at(mcs_index).Charge(plane_charge);
       fMCShower.at(mcs_index).dEdx(daughter_dedx);
+      fMCShower.at(mcs_index).dEdxRAD(daughter_dedxRAD);
+      fMCShower.at(mcs_index).StartDir(daughter_dir);
+
     }
     
     if(fDebugMode) {
