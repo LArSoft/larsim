@@ -419,10 +419,9 @@ namespace evgen{
       values.append(list[i]);
       values.append(": [ ");      
       
-      std::stringstream buf;
-      buf.width(10);
-
       for(size_t e = 0; e < fPDG.size(); ++e){
+        std::stringstream buf;
+        buf.width(10);
 	if(i == 0 ) buf << fPDG[e]          << ", ";
 	buf.precision(5);
 	if(i == 1 ) buf << fP0[e]           << ", ";
@@ -439,7 +438,7 @@ namespace evgen{
 	if(i == 12) buf << fSigmaThetaYZ[e] << ", ";
 	if(i == 13) buf << fT0[e]           << ", ";
 	if(i == 14) buf << fSigmaT[e]       << ", ";
-	values.append(buf.str());
+        values.append(buf.str());
       }
 
       values.erase(values.find_last_of(","));
