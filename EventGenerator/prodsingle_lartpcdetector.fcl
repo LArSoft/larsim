@@ -17,7 +17,7 @@
 #include "seedservice.fcl"
 #include "magfield.fcl"
 #include "geometry.fcl"
-#include "larproperties.fcl"
+#include "larproperties_lartpcdetector.fcl"
 #include "detectorproperties_lartpcdetector.fcl"
 #include "timeservice_lartpcdetector.fcl"
 #include "databaseutil.fcl"
@@ -42,7 +42,7 @@ services:
   # LArSoft services
   Geometry:               @local::standard_geo # from geometry.fcl
   ExptGeoHelperInterface: @local::standard_geometry_helper # from geometry.fcl
-  LArProperties:          @local::standard_properties # from larproperties.fcl
+  LArProperties:          @local::lartpcdetector_properties # from larproperties_argoneut.fcl
   DetectorProperties:     @local::lartpcdetector_detproperties # from detectorproperties_lartpcdetector.fcl
   TimeService:            @local::lartpcdetector_timeservice # from timeservice_lartpcdetector.fcl
   DatabaseUtil:           @local::standard_database # from databaseutil.fcl
