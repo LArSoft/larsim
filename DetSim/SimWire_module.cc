@@ -181,9 +181,14 @@ namespace detsim{
   //-------------------------------------------------
   void SimWire::reconfigure(fhicl::ParameterSet const& p) 
   {
-    fResponseSet      = false;
-    cet::search_path sp("FW_SEARCH_PATH");
-    sp.find_file(p.get<std::string>("ResponseFile"), fResponseFile);
+    std::string fResponseFile = p.get<std::string>("ResponseFile", "");
+    
+    fResponseSet      = !fResponseFile.empty();
+    if (fResponseSet) {
+      cet::search_path sp("FW_SEARCH_PATH");
+      sp.find_file(p.get<std::string>("ResponseFile"), fResponseFile);
+    }
+    else fResponseFile.clear();
     fDriftEModuleLabel= p.get< std::string         >("DriftEModuleLabel");
     fNoiseFact        = p.get< double              >("NoiseFact");
     fNoiseWidth       = p.get< double              >("NoiseWidth");
