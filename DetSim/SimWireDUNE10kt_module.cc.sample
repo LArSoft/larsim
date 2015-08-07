@@ -1,6 +1,6 @@
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
-// SimWireLBNE10kt class designed to simulate signal on a wire in the TPC
+// SimWireDUNE10kt class designed to simulate signal on a wire in the TPC
 //
 // katori@fnal.gov
 //
@@ -8,7 +8,7 @@
 // - Revised to use sim::RawDigit instead of rawdata::RawDigit, and to
 // - save the electron clusters associated with each digit.
 //
-////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 #include <vector>
 #include <string>
@@ -35,7 +35,7 @@ extern "C" {
 #include "Utilities/LArFFT.h"
 #include "RawData/raw.h"
 #include "Utilities/LArProperties.h"
-#include "Utilities/SignalShapingServiceLBNE35t.h"
+#include "Utilities/SignalShapingServiceDUNE10kt.h"
 #include "Geometry/Geometry.h"
 
 #include "Simulation/sim.h"
@@ -57,12 +57,12 @@ extern "C" {
 namespace detsim {
 
   // Base class for creation of raw signals on wires. 
-  class SimWireLBNE35t : public art::EDProducer {
+  class SimWireDUNE10kt : public art::EDProducer {
     
   public:
         
-    explicit SimWireLBNE35t(fhicl::ParameterSet const& pset); 
-    virtual ~SimWireLBNE35t();
+    explicit SimWireDUNE10kt(fhicl::ParameterSet const& pset); 
+    virtual ~SimWireDUNE10kt();
     
     // read/write access to event
     void produce (art::Event& evt);
@@ -105,12 +105,12 @@ namespace detsim {
     
     TH1D*                fNoiseDist;          ///< distribution of noise counts
 
-  }; // class SimWireLBNE35t
+  }; // class SimWireDUNE10kt
 
-  DEFINE_ART_MODULE(SimWireLBNE35t)
+  DEFINE_ART_MODULE(SimWireDUNE10kt)
 
   //-------------------------------------------------
-  SimWireLBNE35t::SimWireLBNE35t(fhicl::ParameterSet const& pset)
+  SimWireDUNE10kt::SimWireDUNE10kt(fhicl::ParameterSet const& pset)
   {
 
     this->reconfigure(pset);
@@ -124,7 +124,7 @@ namespace detsim {
     fCompression = raw::kNone;
     TString compression(pset.get< std::string >("CompressionType"));
     if(compression.Contains("Huffman",TString::kIgnoreCase)) fCompression = raw::kHuffman;    
-    if(compression.Contains("ZeroSuppression",TString::kIgnoreCase)) fCompression = raw::kZeroSuppression;
+    if(compression.Contains("ZeroSuppression",TString::kIgnoreCase)) fCompression = raw::kZeroSuppression;      
 
     // get the random number seed, use a random default if not specified    
     // in the configuration file.  
@@ -134,7 +134,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  SimWireLBNE35t::~SimWireLBNE35t()
+  SimWireDUNE10kt::~SimWireDUNE10kt()
   {
 
     fChargeWork.clear();
@@ -151,7 +151,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void SimWireLBNE35t::reconfigure(fhicl::ParameterSet const& p) 
+  void SimWireDUNE10kt::reconfigure(fhicl::ParameterSet const& p) 
   {
     fDriftEModuleLabel= p.get< std::string         >("DriftEModuleLabel");
 
@@ -178,7 +178,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void SimWireLBNE35t::beginJob() 
+  void SimWireDUNE10kt::beginJob() 
   { 
 
     // get access to the TFile service
@@ -190,11 +190,11 @@ namespace detsim {
     fNTicks = fFFT->FFTSize();
 
     if ( fNTicks%2 != 0 ) 
-      LOG_DEBUG("SimWireLBNE35t") << "Warning: FFTSize not a power of 2. "
+      LOG_DEBUG("SimWireDUNE10kt") << "Warning: FFTSize not a power of 2. "
 				   << "May cause issues in (de)convolution.\n";
 
     if ( (int)fNSamplesReadout > fNTicks ) 
-      mf::LogError("SimWireLBNE35t") << "Cannot have number of readout samples "
+      mf::LogError("SimWireDUNE10kt") << "Cannot have number of readout samples "
 				      << "greater than FFTSize!";
 
     fChargeWork.resize(fNTicks, 0.);
@@ -212,7 +212,6 @@ namespace detsim {
       // fNoise vector to fNoiseArrayPoints long.
       
       for(unsigned int p = 0; p < fNoiseArrayPoints; ++p){
-	
 	fNoiseFact = fNoiseFactZ;
 	fNoiseWidth = fNoiseWidthZ;
 	fLowCutoff = fLowCutoffZ;
@@ -237,7 +236,7 @@ namespace detsim {
     
 	GenNoise(fNoiseV[p]);
 	for(int i = 0; i < fNTicks; ++i)
-	  fNoiseDist->Fill(fNoiseV[p][i]);
+	  fNoiseDist->Fill(fNoiseV[p][i]);	
 	
       }// end loop over wires
     } 
@@ -246,12 +245,12 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void SimWireLBNE35t::endJob() 
+  void SimWireDUNE10kt::endJob() 
   {
   }
 
   //-------------------------------------------------
-  void SimWireLBNE35t::produce(art::Event& evt)
+  void SimWireDUNE10kt::produce(art::Event& evt)
   {
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;
@@ -265,7 +264,7 @@ namespace detsim {
     evt.getView(fDriftEModuleLabel,chanHandle);
 
     //Get fIndShape and fColShape from SignalShapingService, on the fly
-    art::ServiceHandle<util::SignalShapingServiceLBNE35t> sss;
+    art::ServiceHandle<util::SignalShapingServiceDUNE10kt> sss;
 
     // make a vector of const sim::SimChannel* that has same number
     // of entries as the number of channels in the detector
@@ -318,11 +317,14 @@ namespace detsim {
       // get the sim::SimChannel for this channel
       const sim::SimChannel* sc = channels[chan];
 
+      const geo::View_t view = geo->View(chan);
+
       if( sc ){      
 
 	// loop over the tdcs and grab the number of electrons for each
 	for(size_t t = 0; t < fChargeWork.size(); ++t) 
 	  fChargeWork[t] = sc->Charge(t);      
+
 
         // Convolve charge with appropriate response function 
 	if(prepost) {
@@ -340,6 +342,7 @@ namespace detsim {
 	fChargeWork.resize(fNTicks,0);
 	sss->Convolute(chan,fChargeWork);
 
+
       }
 
       // noise was already generated for each wire in the event
@@ -347,7 +350,6 @@ namespace detsim {
       // pick a new "noise channel" for every channel  - this makes sure    
       // the noise has the right coherent characteristics to be on one channel
 
-      const geo::View_t view = geo->View(chan);
     
       int noisechan = nearbyint(flat.fire()*(1.*(fNoiseArrayPoints-1)+0.1));
       int noisechanpre = nearbyint(flat.fire()*(1.*(fNoiseArrayPoints-1)+0.1));
@@ -373,11 +375,13 @@ namespace detsim {
 
       if (signalSize>0)	{
 	fChargeWork_a = fChargeWork.data();
-	fChargeWorkPreSpill_a = fChargeWorkPreSpill.data();
-	fChargeWorkPostSpill_a = fChargeWorkPostSpill.data();
 	adcvec_a = adcvec.data();
-	adcvecPreSpill_a = adcvecPreSpill.data();
-	adcvecPostSpill_a = adcvecPostSpill.data();
+	if (prepost) {
+	  fChargeWorkPreSpill_a = fChargeWorkPreSpill.data();
+	  fChargeWorkPostSpill_a = fChargeWorkPostSpill.data();
+	  adcvecPreSpill_a = adcvecPreSpill.data();
+	  adcvecPostSpill_a = adcvecPostSpill.data();
+	}
 	if (fNoiseOn) {
           noise_a_U=(fNoiseU[noisechan]).data();
 	  noise_a_V=(fNoiseV[noisechan]).data();
@@ -399,7 +403,7 @@ namespace detsim {
       float tnoisepost=0;
 
       if (view != geo::kU && view != geo::kV && view != geo::kZ) {
-	mf::LogError("SimWireLBNE35t") << "ERROR: CHANNEL NUMBER " << chan << " OUTSIDE OF PLANE";
+	mf::LogError("SimWireDUNE10kt") << "ERROR: CHANNEL NUMBER " << chan << " OUTSIDE OF PLANE";
       }
 
       if(fNoiseOn) {	      
@@ -445,6 +449,7 @@ namespace detsim {
       // if raw::kNone is selected nothing happens to adcvec
       // This shrinks adcvec, if fCompression is not kNone.
 
+      //std::cout << "Channel view: " << view << std::endl;
 
       adcvec.resize(fNSamplesReadout);
       raw::Compress(adcvec, fCompression, fZeroThreshold, fNearestNeighbor); 
@@ -478,7 +483,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void SimWireLBNE35t::GenNoise(std::vector<float>& noise)
+  void SimWireDUNE10kt::GenNoise(std::vector<float>& noise)
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
@@ -511,7 +516,8 @@ namespace detsim {
       noiseFrequency[i] += tc;
     }
   
-   
+    // std::cout << "filled noise freq" << std::endl;
+
     // inverse FFT MCSignal
     art::ServiceHandle<util::LArFFT> fFFT;
     fFFT->DoInvFFT(noiseFrequency, noise);

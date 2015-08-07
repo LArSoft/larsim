@@ -1,0 +1,11 @@
+#include "photpropmodules.fcl"
+
+BEGIN_PROLOG
+
+
+dunefd_photonlibraryanalyzer: @local::standard_photonlibraryanalyzer
+
+dune35t_photonlibraryanalyzer: @local::standard_photonlibraryanalyzer
+
+
+END_PROLOG

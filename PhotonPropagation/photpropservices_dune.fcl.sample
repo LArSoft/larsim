@@ -2,7 +2,7 @@
 
 BEGIN_PROLOG
 
-lbne35t_photonvisibilityservice:
+dune35t_photonvisibilityservice:
 {
 
   NX: 100
@@ -25,6 +25,6 @@ lbne35t_photonvisibilityservice:
   ZMax: 1200
 }
 
-lbnefd_photonvisibilityservice: @local::standard_photonvisibilityservice
+dunefd_photonvisibilityservice: @local::standard_photonvisibilityservice
 
 END_PROLOG

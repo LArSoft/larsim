@@ -1,0 +1,15 @@
+#include "largeantmodules.fcl"
+
+BEGIN_PROLOG
+
+dunefd_largeant:                   @local::standard_largeant
+dunefd_largeantana:                @local::standard_largeantana
+dunefd_largeantana.SmartStacking:  1
+
+# For now, treat other dune geometries like FD
+
+dune35t_largeant:                    @local::dunefd_largeant
+dune35t_largeantana:                 @local::dunefd_largeantana
+
+
+END_PROLOG

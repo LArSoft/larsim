@@ -2,9 +2,9 @@
 
 BEGIN_PROLOG
 
-lbnefd_simwire:  
+dunefd_simwire:  
 { 
- module_type:        "SimWireLBNE10kt"
+ module_type:        "SimWireDUNE10kt"
  DriftEModuleLabel:  "largeant"
  NoiseFactU:          0.0132       #Noise Scale for U plane
  NoiseWidthU:         62.4         #Exponential Noise width (kHz) for U plane
@@ -22,16 +22,16 @@ lbnefd_simwire:
  NoiseOn:            "0"        #1 for noise on, 0 for noise off
 }
 
-lbnefd_simwireana:            @local::standard_simwireana
-lbnefd_wienerfilterana:       @local::standard_wienerfilterana
+dunefd_simwireana:            @local::standard_simwireana
+dunefd_wienerfilterana:       @local::standard_wienerfilterana
 
 
-# For now treat the other lbne geometries like FD
+# For now treat the other dune geometries like FD
 
-lbne35t_simwire:		@local::lbnefd_simwire
-lbne35t_simwireana:             @local::lbnefd_simwireana
-lbne35t_wienerfilterana:        @local::lbnefd_wienerfilterana
-lbne35t_simwire.module_type:    "SimWireLBNE35t"
+dune35t_simwire:		@local::dunefd_simwire
+dune35t_simwireana:             @local::dunefd_simwireana
+dune35t_wienerfilterana:        @local::dunefd_wienerfilterana
+dune35t_simwire.module_type:    "SimWireDUNE35t"
 
 
 END_PROLOG

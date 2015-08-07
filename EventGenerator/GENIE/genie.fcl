@@ -45,7 +45,7 @@ standard_genie_atmo_flux.GeomScan:   "flux: 10000 1.1"
 
 standard_genie_uniform_flux:            @local::standard_genie
 standard_genie_uniform_flux.TopVolume:  "volTPCActive"
-standard_genie_uniform_flux.FluxFiles:  ["lbne_scan_flux.root"]
+standard_genie_uniform_flux.FluxFiles:  ["dune_scan_flux.root"]
 standard_genie_uniform_flux.GenFlavors: [12,14] 
 standard_genie_uniform_flux.GeomScan:   "flux: 10000 1.1"
 

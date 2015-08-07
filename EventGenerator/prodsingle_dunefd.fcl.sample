@@ -1,17 +1,17 @@
-#include "services_lbne.fcl"
-#include "singles_lbne.fcl"
-#include "largeantmodules_lbne.fcl"
-#include "detsimmodules_lbne.fcl"
+#include "services_dune.fcl"
+#include "singles_dune.fcl"
+#include "largeantmodules_dune.fcl"
+#include "detsimmodules_dune.fcl"
 
 process_name: SinglesGen
 
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "single_lbnefd_hist.root" }
+  TFileService: { fileName: "single_dunefd_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::lbnefd_simulation_services
+  user:         @local::dunefd_simulation_services
 }
 
 
@@ -33,9 +33,9 @@ physics:
 
  producers:
  {
-   generator: @local::lbnefd_singlep	  
-   largeant:  @local::lbnefd_largeant	  
-   daq:       @local::lbnefd_simwire       
+   generator: @local::dunefd_singlep	  
+   largeant:  @local::dunefd_largeant	  
+   daq:       @local::dunefd_simwire       
    rns:       { module_type: "RandomNumberSaver" }
  }
 
@@ -63,7 +63,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "single_lbnefd_gen.root" #default file name, can override from command line with -o or --output
+   fileName:    "single_dunefd_gen.root" #default file name, can override from command line with -o or --output
  }
 }
 

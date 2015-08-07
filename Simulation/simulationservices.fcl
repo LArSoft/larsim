@@ -41,7 +41,7 @@ standard_largeantparameters:
  #                                 [plane angle, pitch/mm, wire diameter/mm]
  #
  # This format is chosen to allow for future extensions to the model
- #  for, eg, LBNE wireplane development.
+ #  for, eg, DUNE wireplane development.
  #
  OpticalParamParameters:   [ [ [30,  3, 0.15], 
  	 		       [-30, 3, 0.15],
@@ -57,8 +57,8 @@ argoneut_largeantparameters:   @local::standard_largeantparameters
 # The following line is already in simulationservices_microboone.fcl
 # and so it should not also be included here, for clarity's sake.
 #microboone_largeantparameters: @local::standard_largeantparameters
-lbne35t_largeantparameters:    @local::standard_largeantparameters
-lbnefd_largeantparameters:   @local::standard_largeantparameters
+dune35t_largeantparameters:    @local::standard_largeantparameters
+dunefd_largeantparameters:   @local::standard_largeantparameters
 
 standard_larvoxelcalculator:
 {
@@ -79,7 +79,7 @@ argoneut_larvoxelcalculator:   @local::standard_larvoxelcalculator
 # The following line is already in simulationservices_microboone.fcl
 # and so it should not also be included here, for clarity's sake.
 #microboone_larvoxelcalculator: @local::standard_larvoxelcalculator
-lbne35t_larvoxelcalculator:    @local::standard_larvoxelcalculator
-lbnefd_larvoxelcalculator:     @local::standard_larvoxelcalculator
+dune35t_larvoxelcalculator:    @local::standard_larvoxelcalculator
+dunefd_larvoxelcalculator:     @local::standard_larvoxelcalculator
 
 END_PROLOG

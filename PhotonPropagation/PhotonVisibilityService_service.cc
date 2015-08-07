@@ -115,7 +115,7 @@ namespace phot{
     
     // Library details
     fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob"     );
-    fParameterization     = p.get< bool        >("LBNE10ktParameterization", false);
+    fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
     fLibraryFile          = p.get< std::string >("LibraryFile"         );
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
 

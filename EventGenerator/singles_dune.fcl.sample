@@ -1,0 +1,36 @@
+#include "singles.fcl"
+
+BEGIN_PROLOG
+
+
+################
+###### FD ######
+################
+
+dunefd_singlep: @local::standard_singlep
+dunefd_singlep.Theta0YZ:               [ 0.0 ]     # beam is along the z axis
+dunefd_singlep.Theta0XZ:               [ 0.0 ]     # beam is along the z axis
+dunefd_singlep.P0:                     [ 6. ]
+
+# Start it in the first TPC, first cryostat
+dunefd_singlep.X0:                     [ -1474. ]
+dunefd_singlep.Y0:                     [ -351. ]
+dunefd_singlep.Z0:                     [ 0. ]   
+
+
+
+#################
+###### 35t ######
+#################
+
+dune35t_singlep: @local::standard_singlep
+dune35t_singlep.Theta0YZ:                [ 0.0 ] # beam is along the z axis
+dune35t_singlep.Theta0XZ:                [ 0.0 ] # beam is along the z axis
+dune35t_singlep.X0:                      [ 100.0 ]     # move it into a region of x covering a drift volume
+dune35t_singlep.Y0:                      [ 50.0 ]      # move it above the APA vertical gap
+dune35t_singlep.Z0:                      [ 0.0 ]       # move it up a touch just in case
+
+
+
+
+END_PROLOG
