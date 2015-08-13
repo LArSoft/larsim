@@ -1,9 +1,9 @@
-#include "services_lbne.fcl"
-#include "singles_lbne.fcl"
-###include "simulationservices_lbne.fcl"
+#include "services_dune.fcl"
+#include "singles_dune.fcl"
+###include "simulationservices_dune.fcl"
 #include "filemuons.fcl"
-#include "largeantmodules_lbne.fcl"
-#include "detsimmodules_lbne.fcl"
+#include "largeantmodules_dune.fcl"
+#include "detsimmodules_dune.fcl"
 #include "mccheatermodules.fcl"
 
 process_name: SinglesJdJMuons
@@ -15,7 +15,7 @@ services:
   scheduler:    { wantTracer: true wantSummary: true }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::lbnefd_simulation_services
+  user:         @local::dunefd_simulation_services
 }
 
 #Start each new event with an empty event.
@@ -36,8 +36,8 @@ physics:
  producers:
  {
   generator: @local::standard_singlemu
-  largeant:  @local::lbnefd_largeant
-  daq:       @local::lbnefd_simwire
+  largeant:  @local::dunefd_largeant
+  daq:       @local::dunefd_simwire
   backtrack: @local::standard_backtrackerloader
  }
 
@@ -45,7 +45,7 @@ physics:
 
  analyzers:
 {
-  largana:   @local::lbnefd_largeantana
+  largana:   @local::dunefd_largeantana
 }
 
  #define the producer and filter modules for this path, order matters, 
@@ -79,4 +79,4 @@ outputs:
  }
 }
 
-physics.producers.generator.FileName: "/lbne/app/users/fpa06mr1/lardev_S2013.10.21_prof_lbnefd/out/DUSEL-4850ft-costheta.root"
+physics.producers.generator.FileName: "/dune/app/users/fpa06mr1/lardev_S2013.10.21_prof_dunefd/out/DUSEL-4850ft-costheta.root"

@@ -1,7 +1,7 @@
-#include "services_lbne.fcl"
+#include "services_dune.fcl"
 #include "GaisserParam.fcl"
-#include "largeantmodules_lbne.fcl"
-#include "detsimmodules_lbne.fcl"
+#include "largeantmodules_dune.fcl"
+#include "detsimmodules_dune.fcl"
 
 process_name: GaisserParam
 
@@ -11,7 +11,7 @@ services:
   TFileService: { fileName: "ProdGaisser_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::lbne35t_simulation_services
+  user:         @local::dune35t_simulation_services
 }
 
 
@@ -33,8 +33,8 @@ physics:
  producers:
  {
    generator: @local::standard_Gaisser	  
-   largeant:  @local::lbne35t_largeant	  
-   daq:       @local::lbne35t_simwire       
+   largeant:  @local::dune35t_largeant	  
+   daq:       @local::dune35t_simwire       
    rns:       { module_type: "RandomNumberSaver" }
  }
 
