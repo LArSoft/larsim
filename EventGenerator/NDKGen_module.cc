@@ -313,7 +313,7 @@ namespace evgen{
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandGaussQ gauss(engine);
 
-    // appropriate to 4APA lbne geom
+    // appropriate to 4APA dune geom
     double X0 =  0.0 + gauss.fire(0,1.0*geo->DetHalfWidth());
     double Y0 = 0.0  + gauss.fire(0,1.*geo->DetHalfHeight());
     double Z0 = geo->DetLength() + 0.5*gauss.fire(0,geo->DetLength());

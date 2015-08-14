@@ -21,16 +21,16 @@ argoneut_cry:   @local::standard_cry
 #microboone_cry.SampleTime: 4.8e-3               #the maximum time it would take an electron to drift through the volume is 1.62 ms
 #                                                #the DAQ reads 1.6 ms before and 3.2 ms after the beam trigger
 
-#please include cry_lbne.fcl (in lbnecode/lbne/EventGenerator/CRY/)
-#lbne35t_cry:              @local::standard_cry
-#lbne35t_cry.SampleTime:   1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
-#lbne35t_cry.Latitude:     "latitude 44.35 "
-#lbne35t_cry.SubBoxLength: "subboxLength 75 "
+#please include cry_dune.fcl (in dunetpc/dune/EventGenerator/CRY/)
+#dune35t_cry:              @local::standard_cry
+#dune35t_cry.SampleTime:   1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
+#dune35t_cry.Latitude:     "latitude 44.35 "
+#dune35t_cry.SubBoxLength: "subboxLength 75 "
 #
-#lbnefd_cry:               @local::standard_cry
-#lbnefd_cry.SampleTime:    1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
-#lbne1fdcry.Latitude:      "latitude 44.35 "
-#lbnefd_cry.SubBoxLength:  "subboxLength 75 "
+#dunefd_cry:               @local::standard_cry
+#dunefd_cry.SampleTime:    1.47e-3               #the maximum time it would take an electron to drift through the volume is 2.4 ms
+#dune1fdcry.Latitude:      "latitude 44.35 "
+#dunefd_cry.SubBoxLength:  "subboxLength 75 "
 
 
 END_PROLOG

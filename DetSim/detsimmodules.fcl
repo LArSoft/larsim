@@ -1,5 +1,22 @@
 BEGIN_PROLOG
 
+standard_simwire:
+{
+  module_type:        "SimWire"
+  DriftEModuleLabel:  "largeant"
+  NoiseFact:           0.0132      # Noise Scale
+  NoiseWidth:         62.4         # Exponential Noise width (kHz)
+  LowCutoff:           7.5         # Low frequency filter cutoff (kHz)
+  FieldBins:          75
+  Col3DCorrection:    2.5
+  Ind3DCorrection:    1.5
+  ColFieldRespAmp:    0.0354
+  IndFieldRespAmp:    0.018
+  ShapeTimeConst:     [ 3000., 900. ]
+  CompressionType:    "none"
+}
+
+
 standard_simwireana:
 { 
  module_type:       "SimWireAna"

@@ -47,8 +47,8 @@ template class art::Wrapper< std::vector<sim::SimPhotonsLite>  >;
 template class art::Wrapper< std::vector<sim::BeamGateInfo>    >;
 template class art::Wrapper< std::vector<sim::AuxDetSimChannel> >;
 
-/// \todo: Remove this line after LBNE makes new files that do not contain
-///        LBNE10ktPhotons.  That data product is now called SimPhotonsLite
+/// \todo: Remove this line after DUNE makes new files that do not contain
+///        DUNE10ktPhotons.  That data product is now called SimPhotonsLite
 ///        11 September 2013 brebel
-template class art::Wrapper< std::vector<sim::LBNE10ktPhotons> >;
+template class art::Wrapper< std::vector<sim::DUNE10ktPhotons> >;
 
