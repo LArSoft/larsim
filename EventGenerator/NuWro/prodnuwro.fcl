@@ -67,4 +67,4 @@ outputs:
 }
 
 physics.producers.generator.module_type: "NuWroGen"
-physics.producers.generator.NuWroFile: "/lbne/app/users/echurch/larsoft/nuwro/output.root"
+physics.producers.generator.NuWroFile: "/dune/app/users/echurch/larsoft/nuwro/output.root"

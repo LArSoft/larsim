@@ -1,0 +1,113 @@
+#
+# File:    prodsingle_lartpcdetector.fcl
+# Purpose: creates a simulated sample of single muons, with "LArTPC detector".
+# Author:  Gianluca Petrillo (petrillo@fnal.gov)
+# Date:    July 29th, 2015
+# Version: 1.0
+#
+# Description:
+# Creates a simulated sample of single muons, performing generation, detector
+# and readout simulation with the LArTPC "standard" detector.
+# 
+# Changes:
+# 20150729 (petrillo@fnal.gov) [v1.0]
+#   first version, based on prodsingle.fcl
+#
+#include "messageservice.fcl"
+#include "seedservice.fcl"
+#include "magfield.fcl"
+#include "geometry.fcl"
+#include "larproperties_lartpcdetector.fcl"
+#include "detectorproperties_lartpcdetector.fcl"
+#include "timeservice_lartpcdetector.fcl"
+#include "databaseutil.fcl"
+#include "simulationservices.fcl"
+#include "larfft.fcl"
+#include "singles.fcl"
+#include "largeantmodules.fcl"
+#include "detsimmodules.fcl"
+
+process_name: SinglesGen
+
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "single_hist.root" }
+  TimeTracker:           {}
+  MemoryTracker:         {}
+  RandomNumberGenerator: {} # ART native random number generator
+  SeedService:           @local::per_event_seedservice # defined in ${ARTEXTENSIONS_DIR}/fcl/seedservice.fcl
+  
+  # LArSoft services
+  Geometry:               @local::standard_geo # from geometry.fcl
+  ExptGeoHelperInterface: @local::standard_geometry_helper # from geometry.fcl
+  LArProperties:          @local::lartpcdetector_properties # from larproperties_argoneut.fcl
+  DetectorProperties:     @local::lartpcdetector_detproperties # from detectorproperties_lartpcdetector.fcl
+  TimeService:            @local::lartpcdetector_timeservice # from timeservice_lartpcdetector.fcl
+  DatabaseUtil:           @local::standard_database # from databaseutil.fcl
+  LArG4Parameters:        @local::standard_largeantparameters # from simulationservices.fcl
+  LArVoxelCalculator:     @local::standard_larvoxelcalculator # from simulationservices.fcl
+  MagneticField:          @local::no_mag # from magfield.fcl
+  LArFFT:                 @local::standard_larfft # from larfft.fcl
+  
+} # services
+
+
+# Start each new event with an empty event.
+# Event time stamp is taken from the internal clock of the running node.
+source:
+{
+  module_type: EmptyEvent
+  timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
+  maxEvents:   10          # Number of events to create
+  firstRun:    1           # Run number to use for this file
+  firstEvent:  1           # number of first event in the file
+} # source
+
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+  
+  producers:
+  {
+    rns:       { module_type: "RandomNumberSaver" }
+    generator: @local::standard_singlep  # from singles.fcl
+    largeant:  @local::standard_largeant # from largeantmodules.fcl
+    daq:       @local::standard_simwire  # from detsimmodules.fcl
+  } # producers
+  
+  # Define the producer and filter modules for this path; order matters.
+  # Filters reject all following items (none here).
+  # See lines starting physics.producers above.
+  simulate:      [ rns, generator, largeant, daq ]
+  
+  # define the output stream, there could be more than one if using filters
+  stream1:       [ out1 ]
+
+  # trigger_paths is a keyword and contains the paths that modify the art::Event,
+  # i.e. filters and producers
+  trigger_paths: [ simulate ]
+
+  # end_paths is a keyword and contains the paths that do not modify the art::Event,
+  # i.e. analyzers and output streams. These might all run simultaneously.
+  end_paths:     [ stream1 ]
+} # physics
+
+
+# Block to define where the output goes.
+# If you defined a filter in the physics block and put it in the trigger_paths
+# then you need to put a SelectEvents: { SelectEvents: [ XXX ] } entry
+# in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName:    "prodsingle_%tc_%p.root"
+    compressionLevel: 1
+  }
+} # outputs

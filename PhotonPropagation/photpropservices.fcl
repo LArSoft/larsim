@@ -58,7 +58,7 @@ standard_photonvisibilityservice_par:
   NY: 1
   NZ: 1
   UseCryoBoundary: false
-  LBNE10ktParameterization: true
+  DUNE10ktParameterization: true
   DoNotLoadLibrary: true
 
   LibraryBuildJob: false
