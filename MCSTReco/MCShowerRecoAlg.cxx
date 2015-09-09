@@ -3,6 +3,7 @@
 //
 //  MCShowerRecoAlg source
 //
+//
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef MCSHOWERRECOALG_CXX
@@ -139,7 +140,8 @@ namespace sim {
 										   sim::kINVALID_DOUBLE));
     std::vector<TLorentzVector> mcs_daughter_mom_v      ( fMCShower.size(), TLorentzVector() );
 
-    std::vector<double>         plane_charge_v          ( fMCShower.size(), 0                );
+    std::vector< std::vector<double> >         plane_charge_v          ( fMCShower.size(), std::vector<double>(3,0) );
+    std::vector< std::vector<double> >         plane_dqdx_v            ( fMCShower.size(), std::vector<double>(3,0) );
 
     //For dEdx Calculation
     std::vector<double>         mcs_daughter_dedx_v     ( fMCShower.size(), 0                );
@@ -154,6 +156,7 @@ namespace sim {
       auto& mcs_daughter_dedxRAD   = mcs_daughter_dedxRAD_v[mcs_index];
       auto& mcs_daughter_dir       = mcs_daughter_dir_v[mcs_index];
       auto& plane_charge           = plane_charge_v[mcs_index];
+      auto& plane_dqdx             = plane_dqdx_v[mcs_index];
 
       for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
 	
@@ -295,12 +298,16 @@ namespace sim {
 
 	  // Charge
 	  auto q_iter = edep.charge.find(edep.pid);
-	  if(q_iter == edep.charge.end()) continue;
-	  plane_charge += (double)((*q_iter).second);	  
-	  
+	  if(q_iter != edep.charge.end())
+	    plane_charge[edep.pid.Plane] += (double)((*q_iter).second);	  
+
 	}///Looping through the MCShower daughter's energy depositions
+
       }///Looping through MCShower daughters
       mcs_daughter_dedxRAD /= 2.4;
+      std::cout << " Plane Charge, plane 0 : " << plane_charge.at(0) << std::endl; 
+      std::cout << " Plane Charge, plane 1 : " << plane_charge.at(1) << " % loss " << (plane_charge.at(0) - plane_charge.at(1))/plane_charge.at(0)  << std::endl; 
+      std::cout << " Plane Charge, plane 2 : " << plane_charge.at(2) << " % loss " << (plane_charge.at(1) - plane_charge.at(2))/plane_charge.at(1)  << std::endl; 
 
       for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
 	
@@ -355,10 +362,26 @@ namespace sim {
 	    else{ E = 0;}
 
 	    mcs_daughter_dedx += E;
+
+	    // Charge
+	    auto q_iter = edep.charge.find(edep.pid);
+	    if(q_iter != edep.charge.end())
+	      plane_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  
+	    
+
+	    // auto q_iter = edep.charge.find(edep.pid);
+	    // if(q_iter == edep.charge.end()) continue;
+	    // plane_dqdx += edep.charge.second;	  
+
 	  }
 	}
       }
       mcs_daughter_dedx /= 2.4;      
+      plane_dqdx.at(0) /= 2.4;
+      plane_dqdx.at(1) /= 2.4;
+      plane_dqdx.at(2) /= 2.4;
+
+
     }///Looping through MCShowers
   
     if(fDebugMode)
@@ -372,6 +395,8 @@ namespace sim {
       auto& daughter_dedx    = mcs_daughter_dedx_v[mcs_index];
       auto& daughter_dedxRAD = mcs_daughter_dedxRAD_v[mcs_index];
       auto& daughter_dir     = mcs_daughter_dir_v[mcs_index];
+      auto& plane_charge     = plane_charge_v[mcs_index];
+      auto& plane_dqdx       = plane_dqdx_v[mcs_index];
 
       double magnitude = sqrt(pow(daughter_mom[0],2)+pow(daughter_mom[1],2)+pow(daughter_mom[2],2));
       
@@ -383,8 +408,10 @@ namespace sim {
 	for(size_t i=0; i<4; ++i) daughter_mom[i]=0;
       
       fMCShower.at(mcs_index).DetProfile( MCStep( daughter_vtx, daughter_mom ) );
-      std::vector<double> plane_charge(geo->PlaneIDs().size(),plane_charge_v[mcs_index]);
+      //std::vector<double> plane_charge(geo->PlaneIDs().size(),plane_charge_v[mcs_index]);
+      //std::vector<double> plane_dqdx(geo->PlaneIDs().size(),plane_dqdx_v[mcs_index]);
       fMCShower.at(mcs_index).Charge(plane_charge);
+      fMCShower.at(mcs_index).dQdx(plane_dqdx);
       fMCShower.at(mcs_index).dEdx(daughter_dedx);
       fMCShower.at(mcs_index).dEdxRAD(daughter_dedxRAD);
       fMCShower.at(mcs_index).StartDir(daughter_dir);
