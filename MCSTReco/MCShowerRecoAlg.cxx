@@ -408,8 +408,6 @@ namespace sim {
 	for(size_t i=0; i<4; ++i) daughter_mom[i]=0;
       
       fMCShower.at(mcs_index).DetProfile( MCStep( daughter_vtx, daughter_mom ) );
-      //std::vector<double> plane_charge(geo->PlaneIDs().size(),plane_charge_v[mcs_index]);
-      //std::vector<double> plane_dqdx(geo->PlaneIDs().size(),plane_dqdx_v[mcs_index]);
       fMCShower.at(mcs_index).Charge(plane_charge);
       fMCShower.at(mcs_index).dQdx(plane_dqdx);
       fMCShower.at(mcs_index).dEdx(daughter_dedx);
