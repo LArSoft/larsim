@@ -190,7 +190,7 @@ namespace sim {
 	auto track_id   = track_id_index.first;
 	auto edep_index = track_id_index.second;
 
-	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
+	//	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
 
       }
       std::cout<<std::endl;
