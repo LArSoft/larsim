@@ -4,78 +4,140 @@
 ///
 /// Module designed to propagate muons underground
 ///  
-/// For a description of how to use the module see LBNE DocDB  
+/// For a description of how to use the module see DUNE DocDB  
 /// It is highly reccommended that you read it before use.....
 ///
 /// Original MUSUN code was written by Vitaly A. Kudryavtsev (University of Sheffield).
-/// Conversion from Fortran to C was done by Kareem Kazkaz (LLNL).
-/// Interfaced with LArSoft by Karl Warburton (University of Sheffield) with neccessary changes.
+/// Conversion from Fortran to C was done by Kareem Kazkaz (LLNL) with help from David Woodward (Sheffield)
+/// Default slant depths and surface profile work done Martin Richardson (Sheffield)
+/// Notable contributions to surface map profiling also made by Chao Zhang (USD) and Jeff de Jong (Oxford)
+/// Interfaced with LArSoft by Karl Warburton (University of Sheffield) with necessary changes.
 /// ------------START OF NECCESSARY CHANGES---------------
 /// Changing variables to fcl parameters
 /// Restructuring to fit LArSoft design 
 /// Co-ordinate transformation... y -> x, x -> z, z -> y ????SHOULD BE x -> -z AS PER VITALY???? 
+/// Restore cavern angle convention to Vitaly's definition.
 /// ------------END OF NECCESSARY CHANGES-----------------
 /// \author  k.warburton@sheffield.ac.uk
 ///
 /// Further Notes - Taken from Kareem Kazkaz; 
-/*
-This C++ code is a port of the musun-surf.f and test-musun-surf.f code written
-by Vitaly Kudryavtsev of the University of Sheffield. It generates muons with
-energy, position, and direction specific to the Davis cavern at the Sanford
-Underground Research Facility in Lead, South Dakota.
-
-This C++ code was ported by Kareem Kazkaz, kareem@llnl.gov, (925) 422-7208
-
-Here are the notes from Vitaly:
-
-c	The code samples single atmospheric muons at the SURF
-c       underground laboratory (Davis' cavern)
-c       (taking into account the slant depth distribution)
-c	in the energy range E1-E2, zenith angle range theta1-theta2 (0-90 degrees)
-c	and azimuthal angle range phi1-phi2 (0-360 degrees).
-c       At present only the following ranges of parameters are supported:
-c       E1 = 1 GeV, E2 = 10^6 GeV, theta1 = 0, theta2 = 90 deg, phi1 = 0, phi2 = 360 deg.
-c
-c	Program uses muon energy spectra at various depths and zenith
-c	angles obtained with MUSIC code for muon propagation and Gaisser's
-c	formula for muon spectrum at sea level
-c	(T.K.Gaisser, Cosmic Rays and Particle Physics, Cambridge
-c	University Press, 1990) modified for large zenith angles and
-c	prompt muon flux with normalisation and spectral index
-c       that fit LVD data: gamma = 2.77, A = 0.14.
-c       Density of rock is assumed to be 2.70 g/cm^3 but can be changed
-c       during initialisation (previous step, ask the author).
-c
-c       Muon flux through a sphere (Chao's coordinates) = 6.33x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - old
-c       Muon flux through a sphere (Martin's coordinates) = 6.16x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - new
-c       Muon flux through the cuboid (30x22x24 m^3) = 0.0588 s^(-1) (gamma=2.77)
-c
-c	Note: the muon spectrum at sea level does not take into account
-c	the change of the primary spectrum slope at and above the knee
-c	region (3*10^15-10^16 eV).
-c
-c	Program uses the tables of muon energy spectra at various
-c       zenith and azimuthal angles at SURF
-c       calculated with the muon propagation code MUSIC and the
-c       angular distribution of muon intensities at SURF (4850 ft level).
-c
-c       Coordinate system for the muon intensities
-c       is determined by the mountain profile provided
-c       by Chao Zhang (USD, South Dakota): x-axis is pointing to the East.
-c       Muons are sampled on a surface of a rectangular parallelepiped,  
-c       the planes of which are parallel to the walls of the cavern.
-c       The long side of the cavern is pointing at 6.6 deg from the North
-c       to the East (or 90 - 6.6 deg from the East to the North).
-c       Muon coordinates and direction cosines are then given in the
-c       coordinate system related to the cavern with x-axis
-c       pointing along the long side of the cavern at 6.6 deg from the
-c       North to the East.
-c       The angle phi is measured from the positive x-axis towards
-c       positive y-axis (0-360 deg).
-c       Z-axis is pointing upwards. 
-
-
-*/
+///
+/// This C++ code is a port of the musun-surf.f and test-musun-surf.f code written
+/// by Vitaly Kudryavtsev of the University of Sheffield. It generates muons with
+/// energy, position, and direction specific to the Davis cavern at the Sanford
+/// Underground Research Facility in Lead, South Dakota.
+///
+/// This C++ code was ported by Kareem Kazkaz, kareem@llnl.gov, (925) 422-7208
+///
+/// Here are the notes from Vitaly:
+///
+///c	The code samples single atmospheric muons at the SURF
+///c       underground laboratory (Davis' cavern)
+///c       (taking into account the slant depth distribution)
+///c	in the energy range E1-E2, zenith angle range theta1-theta2 (0-90 degrees)
+///c	and azimuthal angle range phi1-phi2 (0-360 degrees).
+///c       At present only the following ranges of parameters are supported:
+///c       E1 = 1 GeV, E2 = 10^6 GeV, theta1 = 0, theta2 = 90 deg, phi1 = 0, phi2 = 360 deg.
+///c
+///c	Program uses muon energy spectra at various depths and zenith
+///c	angles obtained with MUSIC code for muon propagation and Gaisser's
+///c	formula for muon spectrum at sea level
+///c	(T.K.Gaisser, Cosmic Rays and Particle Physics, Cambridge
+///c	University Press, 1990) modified for large zenith angles and
+///c	prompt muon flux with normalisation and spectral index
+///c       that fit LVD data: gamma = 2.77, A = 0.14.
+///c       Density of rock is assumed to be 2.70 g/cm^3 but can be changed
+///c       during initialisation (previous step, ask the author).
+///c
+///c       Muon flux through a sphere (Chao's coordinates) = 6.33x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - old
+///c       Muon flux through a sphere (Martin's coordinates) = 6.16x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - new
+///c       Muon flux through the cuboid (30x22x24 m^3) = 0.0588 s^(-1) (gamma=2.77)
+///c
+///c	Note: the muon spectrum at sea level does not take into account
+///c	the change of the primary spectrum slope at and above the knee
+///c	region (3*10^15-10^16 eV).
+///c
+///c	Program uses the tables of muon energy spectra at various
+///c       zenith and azimuthal angles at SURF
+///c       calculated with the muon propagation code MUSIC and the
+///c       angular distribution of muon intensities at SURF (4850 ft level).
+///c
+///c       Coordinate system for the muon intensities
+///c       is determined by the mountain profile provided
+///c       by Chao Zhang (USD, South Dakota): x-axis is pointing to the East.
+///c       Muons are sampled on a surface of a rectangular parallelepiped,  
+///c       the planes of which are parallel to the walls of the cavern.
+///c       The long side of the cavern is pointing at 6.6 deg from the North
+///c       to the East (or 90 - 6.6 deg from the East to the North).
+///c       Muon coordinates and direction cosines are then given in the
+///c       coordinate system related to the cavern with x-axis
+///c       pointing along the long side of the cavern at 6.6 deg from the
+///c       North to the East.
+///c       The angle phi is measured from the positive x-axis towards
+///c       positive y-axis (0-360 deg).
+///c       Z-axis is pointing upwards. 
+///
+/// Further notes taken from Vitaly's original code, as written for LBNE 
+/// (note the differing definition for theta, which is used here,
+/// theta is measured from East to South, not North to East.
+///c
+///c	The code samples single atmospheric muons at the LBNE
+///c       underground site (taking into account the slant depth
+///c       distribution calculated by Martin Richardson, Sheffield)
+///c	in the energy range E1-E2, zenith angle range theta1-theta2 (0-90 degrees)
+///c	and azimuthal angle range phi1-phi2 (0-360 degrees).
+///c       At present only the following ranges of parameters are supported:
+///c       E1 = 1 GeV, E2 = 10^6 GeV, theta1 = 0, theta2 = 90 deg, phi1 = 0, phi2 = 360 deg.
+///c
+///c       The LBNE far detector site has coordinates:
+///c       Latitude    = 44° 20' 45.21" N
+///c       Longitude = 103° 45' 16.13" W
+///c       Elevation = 355.8 ft (108.4 m)
+///c       from e-mail from Virgil Bocean on 30 May 2013
+///c       confirmed by Tracy Lundin on 16 December 2013
+///c
+///c       For slant depth distribution and muon intensities the azimuthal
+///c       angle phi is calculated from East to North.
+///c       The long side of the cavern is assumed to be pointing to the
+///c       beam (Fermilab) at an angle of 7 deg to the South from the
+///c       East.
+///c       Muon direction cosines are given in the coordinate system
+///c       related to the cavern with positive x-axis pointing to the beam
+///c       so direction cosine wrt x-axis is -1 if a muon is coming in the
+///c       same direction (wrt to x-axis) as the neutrino beam.
+///c
+///c
+///c	Program uses muon energy spectra at various depths and zenith
+///c	angles obtained with MUSIC code for muon propagation and Gaisser's
+///c	formula for muon spectrum at sea level
+///c	(T.K.Gaisser, Cosmic Rays and Particle Physics, Cambridge
+///c	University Press, 1990) modified for large zenith angles and
+///c	prompt muon flux with parameters from the best fit to the LVD data. 
+///c
+///c       Muon flux through a sphere = 6.65x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - old
+///c       Muon flux through a sphere = 6.65x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - new
+///c       Muon flux through the cuboid (100x40x50 m^3) = 0.3074 s^(-1) (gamma=2.77)
+///c
+///c	Note: the muon spectrum at sea level does not take into account
+///c	the change of the primary spectrum slope at and above the knee
+///c	region (3*10^15-10^16 eV).
+///c
+///c	Program uses the tables of muon energy spectra at various
+///c       zenith and azimuthal angles at DUSEL
+///c       calculated with the muon propagation code MUSIC and the
+///c       angular distribution of muon intensities at 4850 ft level
+///c       (location of the LBNE far detector).
+///c
+///c       Coordinate system is determined by the mountain profile provided
+///c       by Jeff de Jong (Cambridge) and Chao Zhang (USD, South Dakota).
+///c       This is done to allow the simulation of muons on a surface of
+///c       a rectangular parallelepiped, the planes of which are parallel
+///c       to the walls of the laboratory halls.
+///c       The angle phi in the slant depth distribution file is measured
+///c       from the positive x-axis towards positive y-axis.
+///c       Z-axis is pointing upwards. 
+///c       Note that I use here the azimuthal angle range from 0 to 360 deg.
+///c
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_MUSUN
 #define EVGEN_MUSUN
@@ -136,7 +198,6 @@ c       Z-axis is pointing upwards.
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-
 namespace simb { class MCTruth; }
 
 namespace evgen {
@@ -160,9 +221,9 @@ namespace evgen {
     void SampleOne(unsigned int   i, simb::MCTruth &mct);   
  
     void initialization( double theta1, double theta2, double phi1, double phi2,
-			 int igflag, double s_hor, double s_ver1, double s_ver2, double *FI );
+			 int figflag, double s_hor, double s_ver1, double s_ver2, double &FI );
 
-    void sampling( double *E, double *theta, double *phi, double *dep );
+    void sampling( double &E, double &theta, double &phi, double &dep );
 
 
     static const int kGAUS = 1;    
@@ -176,6 +237,10 @@ namespace evgen {
     std::string         fInputFile3;     ///< Input File 3
 
     double              fCavernAngle;    ///< Angle of the detector from the North to the East.
+    double              fRockDensity;    ///< Default rock density is 2.70 g cm-3. If this is
+                                         ///< changed then the three input files need to be 
+                                         ///< remade. If there is a desire for this contact
+                                         ///< Vitaly Kudryavtsev at V.Kudryavtsev@shef.ac.uk
 
     double              fEmin;           ///< Minimum Kinetic Energy (GeV)
     double              fEmax;           ///< Maximum Kinetic Energy (GeV)
@@ -185,6 +250,7 @@ namespace evgen {
     double              fPhimin;         ///< Minimum phi
     double              fPhimax;         ///< Maximum phi
 
+    int                 figflag;          ///< If want sampled from sphere or parallelepiped
     double              fXmin;           ///< Minimum X position
     double              fYmin;           ///< Minimum Y position
     double              fZmin;           ///< Minimum Z position
@@ -212,12 +278,12 @@ namespace evgen {
     TH1D* hTheta;
     TH1D* hPhi;
 
+    int PdgCode;
     double Energy, phi, theta, dep, Time;
     double Momentum, px0, py0, pz0;
     double x0, y0, z0, cx, cy, cz;
 
     //Define some variables....
-    double igflag   = 1.;
     double FI      = 0.;
     double s_hor   = 0.;
     double s_ver1  = 0.;
@@ -277,6 +343,7 @@ namespace evgen{
     fInputFile3    = p.get< std::string         >("InputFile3");
 
     fCavernAngle   = p.get< double              >("CavernAngle");
+    fRockDensity   = p.get< double              >("RockDensity");
 
     fEmin          = p.get< double              >("Emin");
     fEmax          = p.get< double              >("Emax");
@@ -287,6 +354,7 @@ namespace evgen{
     fPhimin        = p.get< double              >("Phimin");
     fPhimax        = p.get< double              >("Phimax");
 
+    figflag        = p.get<int                  >("igflag");
     fXmin          = p.get<double               >("Xmin");
     fYmin          = p.get<double               >("Ymin");
     fZmin          = p.get<double               >("Zmin");
@@ -315,7 +383,7 @@ namespace evgen{
     hMomentumHigh = tfs->make<TH1D>("hMomentumHigh","Momentum (GeV)",500, fEmin, fEmax     ); 
     hMomentum     = tfs->make<TH1D>("hMomentum"    ,"Momentum (GeV)",500, fEmin, fEmin+100 );
     hEnergy       = tfs->make<TH1D>("hEnergy"      ,"Energy (GeV)"  ,500, fEmin, fEmax     );
-    hDepth        = tfs->make<TH1D>("hDepth"       ,"Depth (m)"     ,500, 0    , 7000      );
+    hDepth        = tfs->make<TH1D>("hDepth"       ,"Depth (m)"     ,800, 0    , 14000      );
 
     hDirCosineX = tfs->make<TH1D>("hDirCosineX","Normalised Direction cosine",500, -1, 1 ); 
     hDirCosineY = tfs->make<TH1D>("hDirCosineY","Normalised Direction cosine",500, -1, 1 ); 
@@ -325,14 +393,18 @@ namespace evgen{
     hPhi        = tfs->make<TH1D>("hPhi"       ,"Angle (degrees)",500, 0, 365 );
 
     fTree = tfs->make<TTree>("Generator","analysis tree");
-    fTree->Branch("particleID",&fPDG, "particleID/I");
+    fTree->Branch("particleID",&PdgCode, "particleID/I");
     fTree->Branch("energy" ,&Energy , "energy/D");
+    fTree->Branch("time"   ,&Time   , "Time/D"  );
     fTree->Branch("posX"   ,&x0     , "posX/D"  );
     fTree->Branch("posY"   ,&y0     , "posY/D"  );
     fTree->Branch("posZ"   ,&z0     , "posZ/D"  );
     fTree->Branch("cosX"   ,&cx     , "cosX/D"  );
     fTree->Branch("cosY"   ,&cy     , "cosY/D"  );
     fTree->Branch("cosZ"   ,&cz     , "cosZ/D"  );
+    fTree->Branch("theta"  ,&theta  , "theta/D" );
+    fTree->Branch("phi"    ,&phi    , "phi/D"   );
+    fTree->Branch("depth"  ,&dep    , "dep/D"   );
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -385,10 +457,10 @@ namespace evgen{
     
     //std::cout << s_hor << " " << s_ver1 << " " << s_ver2 << std::endl;
 
-    initialization(fThetamin,fThetamax,fPhimin,fPhimax,igflag,s_hor,s_ver1,s_ver2,&FI );
+    initialization(fThetamin,fThetamax,fPhimin,fPhimax,figflag,s_hor,s_ver1,s_ver2,FI );
     
     std::cout << "Material - SURF rock" << std::endl;
-    std::cout << "Density = 2.70 g/cm^3" << std::endl;
+    std::cout << "Density = " << fRockDensity << " g/cm^3" << std::endl;
     std::cout << "Parameters for muon spectrum are from LVD best fit" << std::endl;
     std::cout << "Muon energy range = " << fEmin << " - " << fEmax << " GeV" << std::endl;
     std::cout << "Zenith angle range = " << fThetamin << " - " << fThetamax << " degrees" << std::endl;
@@ -450,18 +522,19 @@ namespace evgen{
     dep    = 0;
     Time   = 0;
     
-    sampling( &Energy, &theta, &phi, &dep );
+    sampling( Energy, theta, phi, dep );
 
     theta = theta* M_PI/180;
 
     //  changing the angle phi so z-axis is positioned along the long side
     //  of the cavern pointing at 14 deg from the North to the East.
-    phi += (90. - fCavernAngle);
+    //  phi += (90. - 14.0);
+    //  Want our co-ord rotation going from East to South.
+    phi += fCavernAngle;
     if( phi >= 360. )
       phi -= 360.;
     if( phi < 0 )
       phi += 360.;
-    fPhimax = phi;
     phi *= M_PI / 180.;
     
     // set track id to -i as these are all primary particles and have id <= 0
@@ -470,12 +543,16 @@ namespace evgen{
     
     // Work out whether particle/antiparticle, and mass...
     double m = 0.0;
+    PdgCode = fPDG;
     double ChargeCheck = 1./ ( 1 + fChargeRatio );
-    if ( flat.fire() < ChargeCheck ) fPDG=-fPDG;
-    
+    double pdgfire = flat.fire();
+    if ( pdgfire < ChargeCheck ) PdgCode=-PdgCode;
+
     static TDatabasePDG  pdgt;
-    TParticlePDG* pdgp = pdgt.GetParticle(fPDG);
+    TParticlePDG* pdgp = pdgt.GetParticle(PdgCode);
     if (pdgp) m = pdgp->Mass();
+
+    //std::cout << pdgfire << " " << ChargeCheck << " " << PdgCode << " " << m << std::endl;
     
     // Work out T0...
     if(fTDist==kGAUS){
@@ -489,7 +566,7 @@ namespace evgen{
     //  is always pointing down
     cx       = -sin(theta)*sin(phi);
     cy       = -cos(theta);
-    cz       = -sin(theta)*cos(phi);
+    cz       = +sin(theta)*cos(phi);
     Momentum = std::sqrt(Energy*Energy-m*m); // Get momentum
     px0      = Momentum * cx;
     py0      = Momentum * cy;
@@ -501,21 +578,21 @@ namespace evgen{
     double sv1 = s_ver1 * sin(theta) * fabs(cos(phi));
     double sv2 = s_ver2 * sin(theta) * fabs(sin(phi));
     double ss = sh1 + sv1 + sv2;
-    double xfl1 = (double)rand()/RAND_MAX;
+    double xfl1 = flat.fire();
     if( xfl1 <= sh1/ss ) {
-      x0 = (fXmax - fXmin)*rand()/RAND_MAX + fXmin;
+      x0 = (fXmax - fXmin)*flat.fire() + fXmin;
       y0 = fYmax;
-      z0 = (fZmax - fZmin)*rand()/RAND_MAX + fZmin;
+      z0 = (fZmax - fZmin)*flat.fire() + fZmin;
     } else if( xfl1 <= (sh1+sv1)/ss ) {
-      x0 = (fXmax - fXmin)*rand()/RAND_MAX + fXmin;
-      y0 = (fYmax - fYmin)*rand()/RAND_MAX + fYmin;
+      x0 = (fXmax - fXmin)*flat.fire() + fXmin;
+      y0 = (fYmax - fYmin)*flat.fire() + fYmin;
       if( cz >= 0 ) z0 = fZmax;
       else z0 = fZmin;
     } else {
       if( cx >= 0 ) x0 = fXmin;
       else x0 = fXmax;
-      y0 = (fYmax - fYmin)*rand()/RAND_MAX + fYmin;
-      z0 = (fZmax - fZmin)*rand()/RAND_MAX + fZmin;
+      y0 = (fYmax - fYmin)*flat.fire() + fYmin;
+      z0 = (fZmax - fZmin)*flat.fire() + fZmin;
     }
     // Make Lorentz vector for x and t....
     TLorentzVector pos(x0, y0, z0, Time); 
@@ -546,7 +623,7 @@ namespace evgen{
     sd += dep;
     
     // Fill Histograms.....
-    hPDGCode      ->Fill (fPDG);
+    hPDGCode      ->Fill (PdgCode);
     hPositionX    ->Fill (x0);
     hPositionY    ->Fill (y0);
     hPositionZ    ->Fill (z0);
@@ -561,12 +638,13 @@ namespace evgen{
     hTheta        ->Fill (theta);
     hPhi          ->Fill (phi);
     
+    /*
     // Write event by event outsputs.....
     std::cout << "Theta: " << theta << " Phi: " << phi << " Energy: " << Energy << " Momentum: " << Momentum << std::endl; 
     std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;   
     std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
     std::cout << "Normalised..." << cx << " " << cy << " " << cz << std::endl;
-    
+    */
     fTree->Fill();
 
   }
@@ -575,7 +653,7 @@ namespace evgen{
   //  initialization
   ////////////////////////////////////////////////////////////////////////////////
   void MUSUN::initialization( double theta1, double theta2, double phi1, double phi2,
-		       int igflag, double s_hor, double s_ver1, double s_ver2, double *FI )
+		       int figflag, double s_hor, double s_ver1, double s_ver2, double &FI )
   {
     //
     //  Read in the data files
@@ -583,6 +661,11 @@ namespace evgen{
     int lineNumber = 0, index = 0;
     char inputLine[10000];
     std::string fROOTfile; 
+
+    for (int a=0;a<121;++a) for (int b=0;b<62;++b) for (int c=0;c<50;++c) spmu[a][b][c]=0;
+    for (int a=0;a<23401;++a)                      fnmu[a]    = 0;
+    for (int a=0;a<360;++a) for (int b=0;b<91;++b) depth[a][b]= 0;
+    for (int a=0;a<360;++a) for (int b=0;b<91;++b) fmu[a][b]  = 0;
 
     std::ostringstream File1LocStream;
     File1LocStream  << fInputDir << fInputFile1;
@@ -710,12 +793,19 @@ namespace evgen{
         while( phi < phi2-dp/2. ) {
             phi += dp/2.;
             //  the long side of the cavern is pointing at 14 deg to the north:
-            double phi0 = M_PI / 180. * (phi + 90. - 14.);
-            double asv1 = asv01 * fabs(cos(phi0));
+            //  double phi0 = M_PI / 180. * (phi + 90. - 14);
+	    
+	    //  Want our co-ord system going from East to South.
+	    //  double phi0 = M_PI / 180. * (phi + fCavernAngle);
+            
+	    //  From Vitalys MUSUN
+	    double phi0 = M_PI / 180 * phi;
+	    
+	    double asv1 = asv01 * fabs(cos(phi0));
             double asv2 = asv02 * fabs(sin(phi0));
             double asv0 = ash + asv1 + asv2;
             double fl = 1.;
-            if( igflag == 1 )
+            if( figflag == 1 )
                 fl = asv0;
             int ip1 = (phi + 0.999);
             int ip2 = ip1 + 1;
@@ -727,14 +817,15 @@ namespace evgen{
                 int iic = ii/2;
                 int iip = ii%2;
                 if( fmu[ip1+iip-1][ic1+iic-1] < 0 ) {
-		  //std::cout << "Changing sp1 from " << sp1 << " to " <<  sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 << "\n" << sp1 << " + 10 ^ (" << fmu[ip1+iip-1][ic1+iic-1] << " / 4 " << std::endl;
-		  sp1 = sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4;
+		  //std::cout << "Changing sp1 from " << sp1 << " to " <<  sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 << "\n" << sp1 << " + 10 ^ (" << fmu[ip1+iip-1][ic1+iic-1] << ") / 4 " << std::endl;
+		  if ( pow(10.,fmu[ip1+iip-1][ic1+iic-1]) != 1 ) // Very small -ve numbers (-e-10) aren't zero but give same result. 
+		                                                 // Don't want these as give spurious fluxes.
+		    sp1 = sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4;
 		}
             }
 	    //std::cout << "\n" << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << std::endl;
 	    //std::cout << sin(theta0) << std::endl;
-            sc = sc + sp1 * fl * dp * M_PI / 180.
-                    * sin(theta0) * dc * M_PI / 180.;
+            sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
 	    ++iteration;
 	    //std::cout << iteration<< " time of new sc value! " << sc << "....theta " << theta << ", phi " << phi << std::endl;
             ipc = ipc + 1;
@@ -742,10 +833,10 @@ namespace evgen{
             phi = phi + dp / 2.;
         }
         
-        theta = theta + dc / 2.;
+        theta = theta + dc / 2.; // Kareem added, do I need?
     }
     //std::cout << *FI << " = " << sc << std::endl;
-    *FI = sc;
+    FI = sc;
     for( int ipc1 = 0; ipc1 < ipc; ipc1++ )
       fnmu[ipc1] = fnmu[ipc1] / fnmu[ipc-1];
   }
@@ -754,9 +845,16 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   //  sampling
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::sampling( double *E, double *theta, double *phi, double *dep )
+  void MUSUN::sampling( double &E, double &theta, double &phi, double &dep )
   {
-    double xfl = (double)rand()/RAND_MAX;
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandGaussQ gauss(engine);
+
+    ///*
+    double xfl = flat.fire();
     int loIndex = 0, hiIndex = 32400;
     int i = (loIndex+hiIndex)/2;
     bool foundIndex = false;
@@ -778,52 +876,63 @@ namespace evgen{
       if( xfl > fnmu[i-1] && xfl <= fnmu[i] )
 	foundIndex = true;
     }
-    
+    //*/
+    /*
+    double xfl = flat.fire();
+    int i = 1;
+    while ( xfl > fnmu[i] ) ++i;
+    //*/
     int ic = (i-2)/360;
     int ip = i-2-ic*360;
+        
+    xfl = flat.fire();
+    theta = the1 + ((double)ic+xfl);
+    xfl = flat.fire();
+    phi = ph1 + ((double)ip+xfl);
+    dep = depth[ip][ic] * fRockDensity;
     
-    xfl = (double)rand()/RAND_MAX;
-    *theta = the1 + 1.*((double)ic+xfl);
-    xfl = (double)rand()/RAND_MAX;
-    *phi = ph1 + 1.*((double)ip+xfl);
-    *dep = depth[ip][ic] * 2.70;
-    
-    int ic1 = cos(M_PI/180.**theta) * 50. + 1.;
+    int ic1 = cos(M_PI/180.*theta) * 50. + 1.;
     if( ic1 < 1 )
       ic1 = 1;
     if( ic1 > 51 )
       ic1 = 51;
-    int ip1 = *dep / 200. - 15;
+    int ip1 = dep / 200. - 15;
     if( ip1 < 1 )
       ip1 = 1;
     if( ip1 > 62 )
       ip1 = 62;
-    
-    xfl = (double)rand()/RAND_MAX;
+
+    xfl = flat.fire();
+    ///*    
     loIndex = 0, hiIndex = 120;
-    i = (loIndex+hiIndex)/2;
+    int j = (loIndex+hiIndex)/2;
     foundIndex = false;
     if( xfl < spmu[loIndex][ip1][ic1] ) {
-      i = loIndex;
+      j = loIndex;
       foundIndex = true;
     } else if ( xfl > spmu[hiIndex][ip1][ic1] ) {
-      i = hiIndex;
+      j = hiIndex;
       foundIndex = true;
-    } else if ( xfl > spmu[i-1][ip1][ic1] && xfl <= spmu[i][ip1][ic1] )
+    } else if ( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
       foundIndex = true;
     while( !foundIndex ) {
-      if( xfl < spmu[i][ip1][ic1] )
-	hiIndex = i;
+      if( xfl < spmu[j][ip1][ic1] )
+	hiIndex = j;
       else
-	loIndex = i;
-      i = (loIndex + hiIndex)/2;
+	loIndex = j;
+      j = (loIndex + hiIndex)/2;
       
-      if( xfl > spmu[i-1][ip1][ic1] && xfl <= spmu[i][ip1][ic1] )
+      if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
 	foundIndex = true;
     }
-    double En1 = 0.05 * (i-1);
-    double En2 = 0.05 * (i);
-    *E = pow(10.,En1 + (En2 - En1)*rand()/RAND_MAX);
+    //*/
+    //int j = 1;
+    //while ( xfl > spmu[j][ip1][ic1] ) ++j;    
+    
+
+    double En1 = 0.05 * (j-1);
+    double En2 = 0.05 * (j);
+    E = pow(10.,En1 + (En2 - En1)*flat.fire());
     
     return;
   }
