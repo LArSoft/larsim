@@ -11,7 +11,7 @@
 #include "Simulation/SimListUtils.h"
 #include "Simulation/SimChannel.h"
 #include "Simulation/LArG4Parameters.h"
-#include "Utilities/DetectorProperties.h"
+#include "Utilities/DetectorPropertiesService.h"
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"
@@ -36,7 +36,7 @@ namespace sim{
   sim::LArVoxelList SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
 
     // get the sim::SimChannels
     std::vector<const sim::SimChannel*> sccol;

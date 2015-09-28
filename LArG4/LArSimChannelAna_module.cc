@@ -45,8 +45,7 @@ extern "C" {
 #include "Geometry/Geometry.h"
 #include "Geometry/TPCGeo.h"
 #include "Simulation/SimChannel.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "Utilities/DetectorPropertiesService.h"
 
 namespace geo { class Geometry; }
 
@@ -146,7 +145,8 @@ namespace larg {
     // geometry data.
     art::ServiceHandle<geo::Geometry> geom; 
     // detector specific properties
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    
     // assumes all TPCs are the same
     double width  = 2 * geom->TPC(0).HalfWidth(); 
     double halfHeight = geom->TPC(0).HalfHeight(); 

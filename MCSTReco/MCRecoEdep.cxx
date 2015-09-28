@@ -49,7 +49,7 @@ namespace sim {
     _track_index.clear();
 
     art::ServiceHandle<geo::Geometry> geom;
-    art::ServiceHandle<util::DetectorProperties> detp;
+    const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
 
     // Key map to identify a unique particle energy deposition point
     std::map<unsigned int, std::map<UniquePosition, int> > hit_index_m;

@@ -19,9 +19,8 @@ art_make( BASENAME_ONLY
                         PhotonVisibilityService_service
                         SpaceCharge_service
                         Utilities
-                        TimeService_service
-                        LArProperties_service
-                        DetectorProperties_service
+                        LArPropertiesService_service
+                        DetectorPropertiesService_service
                         Geometry
                         Geometry_service
                         ${SIMULATIONBASE}

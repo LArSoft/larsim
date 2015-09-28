@@ -1,7 +1,7 @@
 
 simple_plugin(BackTracker "service"
 			Utilities
-			TimeService_service			
+			DetectorClocksService_service
 			Simulation
                         RecoBase
 	                Geometry

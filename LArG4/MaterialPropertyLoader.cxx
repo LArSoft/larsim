@@ -11,7 +11,8 @@
 
 
 #include "LArG4/MaterialPropertyLoader.h"
-#include "Utilities/LArProperties.h"
+#include "Utilities/LArPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialPropertiesTable.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -180,7 +181,8 @@ namespace larg4 {
 
   void MaterialPropertyLoader::GetPropertiesFromServices()
   {
-    art::ServiceHandle<util::LArProperties>   LarProp;
+    const dataprov::LArProperties* LarProp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
+    const dataprov::DetectorProperties* DetProp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
     
     // wavelength dependent quantities
 
@@ -198,7 +200,7 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "YIELDRATIO",          LarProp->ScintYieldRatio(),      1);
-    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       LarProp->Efield(),               kilovolt/cm);
+    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               kilovolt/cm);
 
     SetBirksConstant("LAr",LarProp->ScintBirksConstant(), cm/MeV);
     

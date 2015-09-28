@@ -20,7 +20,6 @@
 
 #include "Geometry/Geometry.h"
 #include "Utilities/AssociationUtil.h"
-#include "Utilities/DetectorProperties.h"
 #include "PhotonPropagation/PhotonVisibilityService.h"
 #include "Simulation/PhotonVoxels.h"
 

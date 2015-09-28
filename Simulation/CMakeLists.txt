@@ -6,7 +6,7 @@ art_make( NO_PLUGINS
           LIBRARY_NAME  Simulation
           LIB_LIBRARIES LArVoxelCalculator_service
 	                LArG4Parameters_service
-			DetectorProperties_service
+			DetectorPropertiesService_service
 	                Utilities
 	                ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}

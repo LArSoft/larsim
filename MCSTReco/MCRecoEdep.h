@@ -18,8 +18,8 @@
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/SimChannel.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/LArProperties.h"
+#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/LArPropertiesService.h"
 #include "Geometry/Geometry.h"
 // STL
 #include <map>

@@ -29,8 +29,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LArSoft code
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/TimeService.h"
 #include "LArG4/LArVoxelReadout.h"
 #include "LArG4/ParticleListAction.h"
 #include "SpaceCharge/SpaceCharge.h"
@@ -47,7 +45,7 @@ namespace larg4 {
     // Initialize values for the electron-cluster calculation.
     ClearSimChannels();
 
-    art::ServiceHandle<util::TimeService> ts;
+    const dataprov::DetectorClocks* ts = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
     fClock = ts->TPCClock();
 
     // the standard name contains cryostat and TPC;
@@ -93,19 +91,21 @@ namespace larg4 {
   // Called at the start of each event.
   void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    fElectronLifetime      = fLarpHandle->ElectronLifetime();
-    fArgon39DecayRate      = fLarpHandle->Argon39DecayRate();
+    const dataprov::LArProperties* larp = fLarpHandle->getLArProperties();
+    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    fElectronLifetime      = detprop->ElectronLifetime();
+    fArgon39DecayRate      = larp->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
-      fDriftVelocity[i]    = fLarpHandle->DriftVelocity(fLarpHandle->Efield(i),
-                                                        fLarpHandle->Temperature())/1000.;
-
+      fDriftVelocity[i]    = detprop->DriftVelocity(detprop->Efield(i),
+						    larp->Temperature())/1000.;
+    
     fElectronClusterSize   = fLgpHandle->ElectronClusterSize();
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
     fTransverseDiffusion   = fLgpHandle->TransverseDiffusion();
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
 
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
-                                  << "\n Temperature: "     << fLarpHandle->Temperature()
+                                  << "\n Temperature: "     << larp->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2]
                                   << "\n Argon 39 Decay Rate: " << fArgon39DecayRate;
@@ -130,7 +130,7 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
-      art::ServiceHandle<util::DetectorProperties> detprop;
+      const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
       double timewindow = samplerate*readwindow;
@@ -374,7 +374,7 @@ namespace larg4 {
                                                  Radio_t radiological /* = notradiological */,
                                                  unsigned int tickmax /* = 4096 */)
   {
-    art::ServiceHandle<util::TimeService> time_service;
+    const dataprov::DetectorClocks* ts = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
     
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to
@@ -510,7 +510,7 @@ namespace larg4 {
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks
             // Add potential decay/capture/etc delay effect, simTime.
-            unsigned int tdc = fClock.Ticks(time_service->G4ToElecTime(TDiff + simTime));
+            unsigned int tdc = fClock.Ticks(ts->G4ToElecTime(TDiff + simTime));
 
             // on the first time we decide a tdc for a radiological, throw a random time for it.
             // save it for other clusters, planes, and second (or subsequent) calls to this function
