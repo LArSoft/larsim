@@ -268,18 +268,10 @@ namespace evgen{
     std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
 
     // Check fcl parameters were set correctly
-    if ( fThetamax > M_PI/2 + 0.01 ) {
-      std::cout << "\n\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this cause an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fThetamin < 0 ) {
-      std::cout << "\n\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this cause an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fThetamax < fThetamin ) {
-      std::cout << "\n\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n" << std::endl;
-      return;
-    }
+    if ( fThetamax > M_PI/2 + 0.01 ) throw cet::exception("GaisserParam")<< "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this cause an error so leaving program now...\n\n"; 
+    if ( fThetamin < 0         )     throw cet::exception("GaisserParam")<< "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this cause an error so leaving program now...\n\n" << std::endl; 
+    if ( fThetamax < fThetamin )     throw cet::exception("GaisserParam")<< "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n" << std::endl;
+    
     run.put(std::move(runcol));
     MakePDF ();
     
