@@ -14,7 +14,9 @@ services:
   SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
   FileCatalogMetadata:  @local::art_file_catalog_mc  
-  user:         @local::dunefd_services
+  #user:         @local::dunefd_services
+  @table::dunefd_services
+  Geometry:     @local::dune10kt_workspace_geo
 }
 
 
