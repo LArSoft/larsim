@@ -3,16 +3,19 @@
 # Brief:   single particle generation test with standard geometry
 # Author:  Gianluca Petrillo (petrillo@fnal.gov)
 # Date:    February 24th, 2015
-# Version: 1.0
+# Version: 1.1
 # 
 # Single particle generation test, with a "neutral" geometry.
 #
 # Changes:
 # 20150224 (petrillo@fnal.gov) [v1.0]
 #   original version from prodsingle.fcl, with ArgoNeuT geometry
+# 20151002 (petrillo@fnal.gov) [v1.1]
+#   using ChannelStatus service
 #
 
-#include "services_argoneut.fcl"
+#include "services_lartpcdetector.fcl"
+#include "channelstatus.fcl"
 #include "singles.fcl"
 
 process_name: SinglesGen
@@ -20,10 +23,11 @@ process_name: SinglesGen
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "single_hist.root" }
-  Timing:       {}
+  TFileService:          { fileName: "single_hist.root" }
+  TimeTracker:           {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::argoneut_simulation_services
+                         @table::lartpcdetector_simulation_services
+  IChannelStatusService: @local::standard_channelstatus
 }
 
 
@@ -51,7 +55,7 @@ physics:
   
   #define the producer and filter modules for this path, order matters, 
   #filters reject all following items.  see lines starting physics.producers below
-  simulate: [ generator, rns ]
+  simulate: [ rns, generator ]
   
   #define the output stream, there could be more than one if using filters 
   stream1:  [ out1 ]
