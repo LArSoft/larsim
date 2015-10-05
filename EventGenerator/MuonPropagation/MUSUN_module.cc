@@ -417,34 +417,14 @@ namespace evgen{
     std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
     
     // Check fcl parameters were set correctly
-    if ( fThetamax > 90.5 ) {
-      std::cout << "\n\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fThetamin < 0 ) {
-      std::cout << "\n\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fThetamax < fThetamin ) {
-      std::cout << "\n\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n" << std::endl;
-      return;
-    }
-    if ( fPhimax > 360.5 ) {
-      std::cout << "\n\nPhimax has to be less than " << 2*M_PI << ", but was entered as " << fPhimax << ", this cause an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fPhimin < 0 ) {
-      std::cout << "\n\nPhimin has to be more than 0, but was entered as " << fPhimin << ", this causes an error so leaving program now...\n\n" << std::endl; 
-      return;
-    }
-    if ( fPhimax < fPhimin ) {
-      std::cout << "\n\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n" << std::endl;
-      return;
-    }
-    if ( fEmax < fEmin ) {
-     std::cout << "\n\nMinimum energy is bigger than maximum energy....causes an error so leaving program now....\n\n" << std::endl;
-      return;
-    }
+    if ( fThetamax > 90.5 ) throw cet::exception("MUSUNGen") << "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n";  
+    if ( fThetamin < 0    ) throw cet::exception("MUSUNGen") << "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n";      
+    if ( fThetamax < fThetamin ) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n"; 
+    if ( fPhimax > 360.5  ) throw cet::exception("MUSUNGen") << "\nPhimax has to be less than " << 2*M_PI << ", but was entered as " << fPhimax << ", this cause an error so leaving program now...\n\n"; 
+    if ( fPhimin < 0      ) throw cet::exception("MUSUNGen") << "\nPhimin has to be more than 0, but was entered as " << fPhimin << ", this causes an error so leaving program now...\n\n"; 
+    if ( fPhimax < fPhimin) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
+    if ( fEmax   < fEmin  ) throw cet::exception("MUSUNGen") << "\nMinimum energy is bigger than maximum energy....causes an error so leaving program now....\n\n";
+     
     
     run.put(std::move(runcol));
 
@@ -673,7 +653,8 @@ namespace evgen{
     cet::search_path sp1("FW_SEARCH_PATH");
     if( sp1.find_file(fInputFile1, fROOTfile) ) File1Loc = fROOTfile;
     ifstream file1( File1Loc.c_str(), std::ios::in );
-
+    if (!file1.good() ) throw cet::exception("MUSUNGen") << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
+    
     while( file1.good() ) {
       //std::cout << "Looking at file 1...." << std::endl;
       file1.getline( inputLine, 9999 );
@@ -699,7 +680,8 @@ namespace evgen{
     cet::search_path sp2("FW_SEARCH_PATH");
     if( sp2.find_file(fInputFile2, fROOTfile) ) File2Loc = fROOTfile;
     ifstream file2( File2Loc.c_str(), std::ios::binary|std::ios::in );
-
+    if (!file2.good() ) throw cet::exception("MUSUNGen") << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
+  
     int i1 = 0, i2 = 0, i3 = 0;
     float readVal;
     while( file2.good() ) {
@@ -732,6 +714,7 @@ namespace evgen{
     cet::search_path sp3("FW_SEARCH_PATH");
     if( sp3.find_file(fInputFile3, fROOTfile) ) File3Loc = fROOTfile;
     ifstream file3( File3Loc.c_str(), std::ios::in );
+    if (!file3.good() ) throw cet::exception("MUSUNGen") << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
 
     lineNumber = index = 0;
     while( file3.good() ) {
