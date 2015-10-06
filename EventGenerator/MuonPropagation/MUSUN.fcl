@@ -33,19 +33,40 @@ standard_MUSUN:
  Phimax:                 360.       # Maximum angle, must be less than or equal to 360
 	
  # You have to change all these dimensions if you change the size of the
- # parallelepiped. The dimensions are given in cm. The example shown here
- # is for the lab+rock having the size of 30 x 22 x 24 m^3 in x, z and y,
- # respectively. The parallelepiped on the surface of which the muons are
- # sampled is extended by 5 m in all directions into rock, except top where
- # the extension is 7m. The centre of the coordinate system is the centre
- # of the water tank (approximately).
+ # parallelepiped. The dimensions are given in cm.
+ # Ideally want the surface on which the muons are sampled to be extended by 5 m
+ # in all directions into rock, except top (y) where extension is 7m.
+ # Using /dune/app/users/talion/PrintDetBounds.C and specifiying which GDML file is
+ # desired, the co-ordinates of detector centre in the world volume and the extent
+ # of rock from detector are written out.
+ # Macro is also in dunetpc/dune/Geometry/gdml/PrintDetBounds.C
+ # Below co-ordinates are for dune10kt_v1_nowires.gdml, output is given too...
+ # Units: cm
+ # Coordinates:  	x makes a RHS 	y is vertical 	z is beam direction
+ # World Dimensions: 	x = 7954.03	y = 7817.7	z = 12721.9
+ # Det Dimensions: 	x = 1954.03	y = 1817.7	z = 6721.89
+ # Det Center: 		x = 0		y = 120.75	z = 2778
+ #
+ # Detector Enclosure Boundaries (everything outside is rock):
+ #	x: -977.014	to	977.014
+ #	y: -788.099	to	1029.6
+ #	z: -582.946	to	6138.94
+ #
+ # Amount of rock on each side:
+ #	-x: 3000
+ #	+x: 3000
+ #	-y: 3120.75
+ #	+y: 2879.25
+ #	-z: 5778
+ #	+z: 222.001 ###### Not enough for 5 m!!!!
+
  igflag:                 1         # If want muons sampled from parallelepiped, not a sphere.
- Xmin:                   -2000.    # Minumum X position cm
- Xmax:                   2000.     # Maximum X position cm
- Ymin:                   -1500.    # Minumum Y position cm
- Ymax:                   3500.     # Maximum Y position cm
- Zmin:                   -5000.    # Minumum Z position cm
- Zmax:                   5000.     # Maximum Z position cm
+ Xmin:                   -1477.    # Minumum X position cm
+ Xmax:                   1477.     # Maximum X position cm
+ Ymin:                   -1288.    # Minumum Y position cm
+ Ymax:                   1730.     # Maximum Y position cm
+ Zmin:                   -1083.    # Minumum Z position cm
+ Zmax:                   6360.     # Maximum Z position cm
  
  T0:                     0.         # starting time
  SigmaT:                 0.         # variation in the starting time
