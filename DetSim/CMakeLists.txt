@@ -120,6 +120,7 @@ simple_plugin(DumpRawDigits "module"
                             RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
+			    ${ART_FRAMEWORK_SERVICES_REGISTRY}
                             ${MF_MESSAGELOGGER}
                             ${FHICLCPP}
                             ${CETLIB}
