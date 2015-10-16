@@ -1,31 +1,31 @@
 # The parent line must be the first non-comment line in the file 
 # This line defines the product name and version
-parent	larsim	v04_12_01
-defaultqual	e7
+parent	larsim	v04_13_00
+defaultqual	e9
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt		v04_12_01
-gcc		v4_9_2
+larevt		v04_13_00
+gcc		v4_9_3
 genie_xsec      v2_8_6a 
 genie_phyopt    v2_8_6 
 larsoft_data    v0_05_00
-artextensions   v1_01_08
+artextensions   v1_02_00
 
-cetbuildtools	v4_14_01	-	only_for_build
+cetbuildtools	v4_14_02	-	only_for_build
 end_product_list
 
   
-# e7  - with gcc 4.9.1 and -std=c++1y
+# e9  - with gcc 4.9.3 and -std=c++14
 qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	larsoft_data	artextensions	notes
-e7:debug	e7:debug	default		dkcharmtau	-nq-	-nq-		e7:nu:s15:debug
-e7:opt		e7:opt		default		dkcharmtau	-nq-	-nq-		e7:nu:s15:opt
-e7:prof		e7:prof		default		dkcharmtau	-nq-	-nq-		e7:nu:s15:prof
-e7:noifdh:debug	e7:noifdh:debug	default		dkcharmtau	-nq-	-nq-		e7:nu:s15:debug
-e7:noifdh:opt	e7:noifdh:opt	default		dkcharmtau	-nq-	-nq-		e7:nu:s15:opt
-e7:noifdh:prof	e7:noifdh:prof	default		dkcharmtau	-nq-	-nq-		e7:nu:s15:prof
+e9:debug	e9:debug	default		dkcharmtau	-nq-	-nq-		e9:nu:s18:debug
+e9:opt		e9:opt		default		dkcharmtau	-nq-	-nq-		e9:nu:s18:opt
+e9:prof		e9:prof		default		dkcharmtau	-nq-	-nq-		e9:nu:s18:prof
+e9:noifdh:debug	e9:noifdh:debug	default		dkcharmtau	-nq-	-nq-		e9:nu:s18:debug
+e9:noifdh:opt	e9:noifdh:opt	default		dkcharmtau	-nq-	-nq-		e9:nu:s18:opt
+e9:noifdh:prof	e9:noifdh:prof	default		dkcharmtau	-nq-	-nq-		e9:nu:s18:prof
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
