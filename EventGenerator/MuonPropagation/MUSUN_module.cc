@@ -831,7 +831,7 @@ namespace evgen{
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
-    ///*
+    /*
     double xfl = flat.fire();
     int loIndex = 0, hiIndex = 32400;
     int i = (loIndex+hiIndex)/2;
@@ -855,9 +855,9 @@ namespace evgen{
 	foundIndex = true;
     }
     //*/
-    /*
+    ///*
     double xfl = flat.fire();
-    int i = 1;
+    int i = 0;
     while ( xfl > fnmu[i] ) ++i;
     //*/
     int ic = (i-2)/360;
@@ -867,21 +867,22 @@ namespace evgen{
     theta = the1 + ((double)ic+xfl);
     xfl = flat.fire();
     phi = ph1 + ((double)ip+xfl);
+    if ( phi > 360 ) phi = phi -360;
     dep = depth[ip][ic] * fRockDensity;
     
-    int ic1 = cos(M_PI/180.*theta) * 50. + 1.;
-    if( ic1 < 1 )
-      ic1 = 1;
-    if( ic1 > 51 )
-      ic1 = 51;
-    int ip1 = dep / 200. - 15;
-    if( ip1 < 1 )
-      ip1 = 1;
-    if( ip1 > 62 )
-      ip1 = 62;
+    int ic1 = cos(M_PI/180.*theta) * 50.;
+    if( ic1 < 0 )
+      ic1 = 0;
+    if( ic1 > 50 )
+      ic1 = 50;
+    int ip1 = dep / 200. - 16;
+    if( ip1 < 0 )
+      ip1 = 0;
+    if( ip1 > 61 )
+      ip1 = 61;
 
     xfl = flat.fire();
-    ///*    
+    /*
     loIndex = 0, hiIndex = 120;
     int j = (loIndex+hiIndex)/2;
     foundIndex = false;
@@ -904,9 +905,10 @@ namespace evgen{
 	foundIndex = true;
     }
     //*/
-    //int j = 1;
-    //while ( xfl > spmu[j][ip1][ic1] ) ++j;    
-    
+    ///*
+    int j = 0;
+    while ( xfl > spmu[j][ip1][ic1] ) ++j;
+    //*/
 
     double En1 = 0.05 * (j-1);
     double En2 = 0.05 * (j);

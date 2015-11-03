@@ -67,6 +67,14 @@ standard_MUSUN:
  Ymax:                   1730.     # Maximum Y position cm
  Zmin:                   -1083.    # Minumum Z position cm
  Zmax:                   6360.     # Maximum Z position cm
+
+#   Vitaly's Fortran code for LBNE uses these positions. 
+# Xmin:                   -1500.    # Minumum X position cm
+# Xmax:                   1500.     # Maximum X position cm
+# Ymin:                   -1400.    # Minumum Y position cm
+# Ymax:                   1600.     # Maximum Y position cm
+# Zmin:                   -3500.    # Minumum Z position cm
+# Zmax:                   3500.     # Maximum Z position cm
  
  T0:                     0.         # starting time
  SigmaT:                 0.         # variation in the starting time
