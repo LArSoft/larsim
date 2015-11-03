@@ -12,8 +12,8 @@
 #include "Geant4/G4EmSaturation.hh"
 
 #include "LArG4/ISCalculationSeparate.h"
-#include "Utilities/LArPropertiesService.h"
-#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/ILArPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
 #include "Simulation/LArG4Parameters.h"
 #include "Simulation/LArVoxelCalculator.h"
 
@@ -36,8 +36,8 @@ namespace larg4{
   void ISCalculationSeparate::Initialize()
   {
     art::ServiceHandle<sim::LArG4Parameters> lgpHandle;
-    const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+    const dataprov::IDetectorProperties* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
 
     double density       = larp->Density(larp->Temperature());
     fEfield              = detprop->Efield();

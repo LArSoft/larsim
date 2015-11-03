@@ -27,9 +27,9 @@ extern "C" {
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "Utilities/LArFFT.h"
-#include "Utilities/LArPropertiesService.h"
-#include "Utilities/DetectorPropertiesService.h"
-#include "Utilities/DetectorClocksService.h"
+#include "Utilities/ILArPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/IDetectorClocksService.h"
 
 // ROOT includes
 #include <TMath.h>
@@ -196,7 +196,7 @@ namespace detsim{
     fShapeTimeConst   = p.get< std::vector<double> >("ShapeTimeConst");
 
 
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::IDetectorProperties* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     fSampleRate       = detprop->SamplingRate();
     fTriggerOffset    = detprop->TriggerOffset();
 
@@ -255,7 +255,7 @@ namespace detsim{
   void SimWireT962::produce(art::Event& evt)
   {
     //std::cout << "in SimWireT962::produce " << std::endl;
-    const dataprov::DetectorClocks* ts = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
+    const dataprov::IDetectorClocks* ts = lar::providerFrom<util::IDetectorClocksService>();
 
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;
@@ -479,8 +479,8 @@ namespace detsim{
     art::ServiceHandle<art::TFileService> tfs;
     fIndFieldResp = tfs->make<TH1D>("InductionFieldResponse",";t (ns);Induction Response",fNTicks,0,fNTicks);
     fColFieldResp = tfs->make<TH1D>("CollectionFieldResponse",";t (ns);Collection Response",fNTicks,0,fNTicks);
-    const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+    const dataprov::IDetectorProperties* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     double driftvelocity=detprop->DriftVelocity(detprop->Efield(),larp->Temperature())/1000.;  
     int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*fSampleRate)); ///number of bins //KP
   

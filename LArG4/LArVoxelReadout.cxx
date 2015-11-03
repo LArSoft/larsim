@@ -45,7 +45,7 @@ namespace larg4 {
     // Initialize values for the electron-cluster calculation.
     ClearSimChannels();
 
-    const dataprov::DetectorClocks* ts = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
+    const dataprov::IDetectorClocks* ts = lar::providerFrom<util::IDetectorClocksService>();
     fClock = ts->TPCClock();
 
     // the standard name contains cryostat and TPC;
@@ -91,8 +91,8 @@ namespace larg4 {
   // Called at the start of each event.
   void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    const dataprov::LArProperties* larp = fLarpHandle->getLArProperties();
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    auto const * larp = lar::providerFrom<util::ILArPropertiesService>();
+    auto const * detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     fElectronLifetime      = detprop->ElectronLifetime();
     fArgon39DecayRate      = larp->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
@@ -130,7 +130,7 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
-      const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+      auto const * detprop = lar::providerFrom<util::IDetectorPropertiesService>();
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
       double timewindow = samplerate*readwindow;
@@ -374,7 +374,7 @@ namespace larg4 {
                                                  Radio_t radiological /* = notradiological */,
                                                  unsigned int tickmax /* = 4096 */)
   {
-    const dataprov::DetectorClocks* ts = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
+    auto const * ts = lar::providerFrom<util::IDetectorClocksService>();
     
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to

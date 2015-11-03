@@ -55,9 +55,9 @@
 #include "Geometry/TPCGeo.h"
 #include "Simulation/LArG4Parameters.h"
 #include "LArG4/IonizationAndScintillation.h"
-#include "Utilities/LArPropertiesService.h"
-#include "Utilities/DetectorPropertiesService.h"
-#include "Utilities/DetectorClocksService.h"
+#include "Utilities/ILArPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/IDetectorClocksService.h"
 
 // Forward declarations
 class G4HCofThisEvent;
@@ -214,7 +214,6 @@ namespace larg4 {
     std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service
     art::ServiceHandle<sim::LArG4Parameters>  fLgpHandle;  ///< Handle to the LArG4 parameters service
-    art::ServiceHandle<util::LArPropertiesService>   fLarpHandle; ///< Handle to the LArProperties parameters service
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC

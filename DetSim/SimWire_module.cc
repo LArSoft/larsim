@@ -61,9 +61,9 @@ extern "C" {
 #include "Simulation/SimChannel.h"
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
-#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
 #include "Utilities/LArFFT.h"
-#include "Utilities/LArPropertiesService.h"
+#include "Utilities/ILArPropertiesService.h"
 
 namespace art {
   class Event;
@@ -200,7 +200,7 @@ namespace detsim{
     fIndFieldRespAmp  = p.get< double              >("IndFieldRespAmp");
     fShapeTimeConst   = p.get< std::vector<double> >("ShapeTimeConst");
 
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::IDetectorProperties* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     fSampleRate       = detprop->SamplingRate();
     fTriggerOffset    = detprop->TriggerOffset();
     fNSamplesReadout  = detprop->NumberTimeSamples();
@@ -478,8 +478,8 @@ namespace detsim{
     art::ServiceHandle<art::TFileService> tfs;
     fIndFieldResp = tfs->make<TH1D>("InductionFieldResponse",";t (ns);Induction Response",fNTicks,0,fNTicks);
     fColFieldResp = tfs->make<TH1D>("CollectionFieldResponse",";t (ns);Collection Response",fNTicks,0,fNTicks);
-    const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+    const dataprov::IDetectorProperties* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     double driftvelocity=detprop->DriftVelocity(detprop->Efield(),larp->Temperature())/1000.;  
     int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*fSampleRate)); ///number of bins //KP
   

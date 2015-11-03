@@ -112,7 +112,7 @@
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/OpDetGeo.h"
 
-#include "Utilities/LArPropertiesService.h"
+#include "Utilities/ILArPropertiesService.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -147,7 +147,7 @@ namespace larg4{
 	YieldFactor=1.0;
         ExcitationRatio = 1.0;
 	
-	const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
+	const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
 	
         scintillationByParticleType = larp->ScintByParticleType();
 
