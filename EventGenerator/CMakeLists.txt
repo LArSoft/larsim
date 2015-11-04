@@ -48,6 +48,7 @@ install_source()
 add_subdirectory(CRY)
 add_subdirectory(GENIE)
 add_subdirectory(MuonPropagation) 
+add_subdirectory(CORSIKA)
 
 # See ubooneoffline repository for a functioning NuWro implementation. 
 # Leave it commented out here, as below.
