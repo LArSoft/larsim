@@ -1,0 +1,14 @@
+BEGIN_PROLOG
+
+
+#for now all experiments have the same configuration - should change eventually
+
+standard_corsika:
+{
+ module_type:         "CorsikaGen"
+ SampleTime:           6.4e-3              #integration time in seconds
+ TimeOffset:           0.0              #time in seconds before a spill to begin the interactions
+ EnergyThreshold:      50e-3              #in GeV, particles only tracked with E > threshold
+}
+
+END_PROLOG
