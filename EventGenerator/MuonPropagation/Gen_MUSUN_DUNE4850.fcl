@@ -1,9 +1,11 @@
 #include "services_dune.fcl"
 #include "MUSUN.fcl"
 #include "largeantmodules_dune.fcl"
+#include "photpropservices_dune.fcl"
 #include "detsimmodules_dune.fcl"
+#include "opticaldetectormodules_dune.fcl"
 
-process_name: MUSUN
+process_name: MUSUNGen
 
 services:
 {
@@ -14,9 +16,8 @@ services:
   SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
   FileCatalogMetadata:  @local::art_file_catalog_mc  
-  #user:         @local::dunefd_services
-  @table::dunefd_services
-  Geometry:     @local::dune10kt_workspace_geo
+  @table::dunefd_simulation_services
+  Geometry:     @local::dune10kt_geo
 }
 
 
@@ -38,13 +39,17 @@ physics:
 
  producers:
  {
-   generator: @local::standard_MUSUN	    
    rns:       { module_type: "RandomNumberSaver" }
+   generator: @local::standard_MUSUN
+   largeant:  @local::dunefd_largeant
+   daq:       @local::dunefd_simwire
+#   simcounter:     @local::dunefd_simcounter
+   opdigi:         @local::dunefd_opdigi
  }
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator ] 
+ simulate: [ rns, generator, largeant, daq, opdigi ]
  
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]

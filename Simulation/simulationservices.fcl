@@ -20,7 +20,7 @@ standard_largeantparameters:
  CosmogenicXSMNBiasOn:     0 # 0 is off. 1 works. 2 still in development.
  CosmogenicXSMNBiasFactor: 1 # Not more than 5-ish cuz of numerical instabilities.
  DisableWireplanes:        false #if set true, charge drift simulation does not run - used for optical sim jobs OR just when you don't wanna drift the e's.
- UseModBoxRecomb:          false   # use Modified Box recombination instead of Birks
+ UseModBoxRecomb:          true   # use Modified Box recombination instead of Birks
  EnableSCE:                false   # enables simulation of space charge effect (for ionization electron drift)
 
  # The following parameters specify details of wireplanes or similar

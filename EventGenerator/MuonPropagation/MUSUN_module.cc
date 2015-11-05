@@ -739,13 +739,7 @@ namespace evgen{
     //
     //  Set up variables
     //
-    std::cout << "Setting up variables..." << std::endl;
-    /*
-    double em1[121];
-    em1[0] = log10(0.105658);
-    for( int i=1; i<121; i++ )
-        em1[i] = 0.05*i;
-    */
+    
     the1 = theta1;
     the2 = theta2;
     double c1 = cos(M_PI/180.*theta1);
@@ -779,11 +773,8 @@ namespace evgen{
             //  double phi0 = M_PI / 180. * (phi + 90. - 14);
 	    
 	    //  Want our co-ord system going from East to South.
-	    //  double phi0 = M_PI / 180. * (phi + fCavernAngle);
+	    double phi0 = M_PI / 180. * (phi + fCavernAngle);
             
-	    //  From Vitalys MUSUN
-	    double phi0 = M_PI / 180 * phi;
-	    
 	    double asv1 = asv01 * fabs(cos(phi0));
             double asv2 = asv02 * fabs(sin(phi0));
             double asv0 = ash + asv1 + asv2;
@@ -799,24 +790,28 @@ namespace evgen{
             for( int ii=0; ii<4; ii++ ) {
                 int iic = ii/2;
                 int iip = ii%2;
-                if( fmu[ip1+iip-1][ic1+iic-1] < 0 ) {
-		  //std::cout << "Changing sp1 from " << sp1 << " to " <<  sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 << "\n" << sp1 << " + 10 ^ (" << fmu[ip1+iip-1][ic1+iic-1] << ") / 4 " << std::endl;
-		  if ( pow(10.,fmu[ip1+iip-1][ic1+iic-1]) != 1 ) // Very small -ve numbers (-e-10) aren't zero but give same result. 
-		                                                 // Don't want these as give spurious fluxes.
-		    sp1 = sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4;
+		if(ip1==360 && (ii==1 || ii==3) ) iip = -359;
+		if( fmu[ip1+iip-1][ic1+iic-1] < 0 ) {
+		  if ( pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 > 1e-6 ) {
+		    std::cout << "Looking at fmu [ " << ip1 << " + " << iip << " - 1 (" << ip1+iip-1 << ") ] [ " << ic1 << " + " << iic << " - 1 ("<< ic1+iic-1 << ") ] ."
+			      << "\nChanging sp1 from " << sp1 << " to " <<  sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 << "..........." << sp1 << " + 10 ^ (" << fmu[ip1+iip-1][ic1+iic-1] << ") / 4 "
+			      << std::endl;
+		  }
+		  sp1 = sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4;
 		}
             }
-	    //std::cout << "\n" << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << std::endl;
-	    //std::cout << sin(theta0) << std::endl;
-            sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
+	    /*
+	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = " 
+	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n" 
+	      << std::endl;//*/
+	    sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
 	    ++iteration;
-	    //std::cout << iteration<< " time of new sc value! " << sc << "....theta " << theta << ", phi " << phi << std::endl;
-            ipc = ipc + 1;
+	    ipc = ipc + 1;
             fnmu[ipc-1] = sc;
             phi = phi + dp / 2.;
         }
         
-        theta = theta + dc / 2.; // Kareem added, do I need?
+        theta = theta + dc / 2.;
     }
     //std::cout << *FI << " = " << sc << std::endl;
     FI = sc;
@@ -836,7 +831,7 @@ namespace evgen{
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
-    ///*
+    /*
     double xfl = flat.fire();
     int loIndex = 0, hiIndex = 32400;
     int i = (loIndex+hiIndex)/2;
@@ -860,9 +855,9 @@ namespace evgen{
 	foundIndex = true;
     }
     //*/
-    /*
+    ///*
     double xfl = flat.fire();
-    int i = 1;
+    int i = 0;
     while ( xfl > fnmu[i] ) ++i;
     //*/
     int ic = (i-2)/360;
@@ -872,21 +867,22 @@ namespace evgen{
     theta = the1 + ((double)ic+xfl);
     xfl = flat.fire();
     phi = ph1 + ((double)ip+xfl);
+    if ( phi > 360 ) phi = phi -360;
     dep = depth[ip][ic] * fRockDensity;
     
-    int ic1 = cos(M_PI/180.*theta) * 50. + 1.;
-    if( ic1 < 1 )
-      ic1 = 1;
-    if( ic1 > 51 )
-      ic1 = 51;
-    int ip1 = dep / 200. - 15;
-    if( ip1 < 1 )
-      ip1 = 1;
-    if( ip1 > 62 )
-      ip1 = 62;
+    int ic1 = cos(M_PI/180.*theta) * 50.;
+    if( ic1 < 0 )
+      ic1 = 0;
+    if( ic1 > 50 )
+      ic1 = 50;
+    int ip1 = dep / 200. - 16;
+    if( ip1 < 0 )
+      ip1 = 0;
+    if( ip1 > 61 )
+      ip1 = 61;
 
     xfl = flat.fire();
-    ///*    
+    /*
     loIndex = 0, hiIndex = 120;
     int j = (loIndex+hiIndex)/2;
     foundIndex = false;
@@ -909,9 +905,10 @@ namespace evgen{
 	foundIndex = true;
     }
     //*/
-    //int j = 1;
-    //while ( xfl > spmu[j][ip1][ic1] ) ++j;    
-    
+    ///*
+    int j = 0;
+    while ( xfl > spmu[j][ip1][ic1] ) ++j;
+    //*/
 
     double En1 = 0.05 * (j-1);
     double En2 = 0.05 * (j);
