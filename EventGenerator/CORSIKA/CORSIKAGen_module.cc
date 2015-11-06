@@ -216,7 +216,7 @@ namespace evgen{
       double bounds[6] = {0.};
       geom->CryostatBoundaries(bounds, c); 
       for (unsigned int bnd = 0; bnd<6; bnd++){
-        mf::LogInfo("CORSIKAGen")<<"Cryo Boundary: "<<bnd<<"="<<bounds[bnd]<<"\n";
+        mf::LogInfo("CORSIKAGen")<<"Cryo Boundary: "<<bnd<<"="<<bounds[bnd]<<" ( + Buffer="<<fBuffBox[bnd]<<")\n";
         if(fabs(bounds[bnd])>fabs(fShowerBounds[bnd])){
           fShowerBounds[bnd]=bounds[bnd];
         }
@@ -353,6 +353,7 @@ namespace evgen{
               TLorentzVector pos(x,fShowerBounds[3],z,t);// time needs to be in ns to match GENIE, etc
               TLorentzVector mom(px,py,pz,etot);
               p.AddTrajectoryPoint(pos,mom);
+              //mf::LogInfo("CORSIKAGen")<<"Adding particle: "<<x<<"\t"<<fShowerBounds[3]<<"\t"<<z<<"\t"<<px<<"\t"<<py<<"\t"<<pz<<"\t"<<"\n";
               mctruth.Add(p);
               ntotalCtr++;
               lastShower=shower;
@@ -415,7 +416,7 @@ namespace evgen{
     simb::MCTruth truth;
     truth.SetOrigin(simb::kCosmicRay);
     
-    while(nCrossCryostat < 1){
+    while(nCrossCryostat < 1){ //TODO should this really be here?
       simb::MCTruth pretruth;
       GetSample(pretruth);
       mf::LogInfo("CORSIKAGen")<<"GetSample number of particles returned: "<<pretruth.NParticles()<<"\n";
