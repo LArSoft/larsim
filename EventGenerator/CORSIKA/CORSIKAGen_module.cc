@@ -85,6 +85,7 @@ namespace evgen {
     std::vector<double> fBuffBox; //buffer box extensions to cryostat in each direction (6 of them: x_lo,x_hi,y_lo,y_hi,z_lo,z_hi)
     double fShowerAreaExtension; //cm, extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z)
     sqlite3* db[5]; //pointer to sqlite3 database object, max of 5
+    double fRandomXZShift; //each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space
   };
 }
 
@@ -97,7 +98,8 @@ namespace evgen{
       fSampleTime(p.get< double >("SampleTime")),
       fToffset(p.get< double >("TimeOffset",0.)),
       fBuffBox(p.get< std::vector< double > >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0})),
-      fShowerAreaExtension(p.get< double >("ShowerAreaExtension",0.))
+      fShowerAreaExtension(p.get< double >("ShowerAreaExtension",0.)),
+      fRandomXZShift(p.get< double >("RandomXZShift",0.))
   {
     
     if(fShowerInputFiles.size() != fShowerFluxConstants.size())
@@ -230,7 +232,7 @@ namespace evgen{
     
     mf::LogInfo("CORSIKAGen")<<"Showers to be distributed betweeen: x="<<fShowerBounds[0]<<","<<fShowerBounds[1]
                              <<" & z="<<fShowerBounds[4]<<","<<fShowerBounds[5]<<"\n";
-       
+    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed with random XZ shift: "<<fRandomXZShift<<" cm"<<"\n";   
     double showersArea=(fShowerBounds[1]/100-fShowerBounds[0]/100)*(fShowerBounds[5]/100-fShowerBounds[4]/100);
     mf::LogInfo("CORSIKAGen")<<"Showers to be distributed over area: "<<showersArea<<" m^2"<<"\n";
     mf::LogInfo("CORSIKAGen")<<"Showers to be distributed over time: "<<fSampleTime<<" s"<<"\n";
@@ -292,7 +294,7 @@ namespace evgen{
     //and 100000 is the number of showers to be selected at random and needs to be less than the number of showers in the showers table 
     
     //TDatabasePDG is for looking up particle masses
-    static TDatabasePDG*  pdgt = TDatabasePDG::Instance();
+    static TDatabasePDG* pdgt = TDatabasePDG::Instance();
     
     //db variables
     sqlite3_stmt *statement;
@@ -310,7 +312,7 @@ namespace evgen{
     int nShowerCntr=0; //keep track of how many showers are left to be added to mctruth
     int nShowerQry=0; //number of showers to query from db
     int shower,pdg;
-    double px,py,pz,x,z,toff,etot,showerTime=0.,t;
+    double px,py,pz,x,z,toff,etot,showerTime=0.,showerXOffset=0.,showerZOffset=0.,t;
     for(int i=0; i<fShowerInputs; i++){
       nShowerCntr=fNShowersPerEvent[i];
       while(nShowerCntr>0){
@@ -331,7 +333,13 @@ namespace evgen{
             res = sqlite3_step(statement);
             if ( res == SQLITE_ROW ){
               shower=sqlite3_column_int(statement,0);
-              if(shower!=lastShower) showerTime=engine.flat()*fSampleTime - (fSampleTime/2); //each new shower gets its own random time
+              if(shower!=lastShower){
+                //each new shower gets its own random time
+                showerTime=engine.flat()*fSampleTime - (fSampleTime/2);
+                //and a random offset in both z and x controlled by the fRandomXZShift parameter
+                showerXOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
+                showerZOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
+              } 
               pdg=sqlite3_column_int(statement,1);
               //get mass for this particle
               double m = 0.; // in GeV
@@ -345,8 +353,9 @@ namespace evgen{
               etot=sqlite3_column_double(statement,8);
               
               //get/calculate position components
-              x=wrapvar(sqlite3_column_double(statement,5),fShowerBounds[0],fShowerBounds[1]);
-              z=wrapvar(sqlite3_column_double(statement,6),fShowerBounds[4],fShowerBounds[5]);
+              //std::cout<<"Offsets:"<<shower<<"\t"<<fRandomXZShift<<"\t"<<showerXOffset<<"\t"<<showerZOffset<<std::endl;
+              x=wrapvar(sqlite3_column_double(statement,5),fShowerBounds[0],fShowerBounds[1]+showerXOffset);
+              z=wrapvar(sqlite3_column_double(statement,6),fShowerBounds[4],fShowerBounds[5]+showerZOffset);
               toff=sqlite3_column_double(statement,7); //time offset
               t=toff+showerTime;
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
