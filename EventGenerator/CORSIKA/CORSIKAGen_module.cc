@@ -151,10 +151,13 @@ namespace evgen{
     double dz = 99.E99;
     if      (dxyz[0] > 0.0) { dx = (xhi-xyz[0])/dxyz[0]; }
     else if (dxyz[0] < 0.0) { dx = (xlo-xyz[0])/dxyz[0]; }
-    if      (dxyz[1] > 0.0) { dy = (yhi-xyz[1])/dxyz[1]; }
-    else if (dxyz[1] < 0.0) { dy = (ylo-xyz[1])/dxyz[1]; }
+    //if      (dxyz[1] > 0.0) { dy = (yhi-xyz[1])/dxyz[1]; }
+    //else if (dxyz[1] < 0.0) { dy = (ylo-xyz[1])/dxyz[1]; }
     if      (dxyz[2] > 0.0) { dz = (zhi-xyz[2])/dxyz[2]; }
     else if (dxyz[2] < 0.0) { dz = (zlo-xyz[2])/dxyz[2]; }
+    
+    //always project to yhi
+    dy = (yhi-xyz[1])/dxyz[1];
     
     // Choose the shortest distance
     double d = 0.0;
@@ -484,7 +487,8 @@ namespace evgen{
             //update particle object's position
             particle.SetGvtx(xyzo[0],xyzo[1],xyzo[2],v4.T());            
             truth.Add(particle);
-            
+            std::cout<<"Position:"<<x0[0]<<","<<x0[1]<<","<<x0[2]<<";   "<<dx[0]<<","<<dx[1]<<","<<dx[2]<<";   "<<xyzo[0]<<","<<xyzo[1]<<","<<xyzo[2]<<std::endl;
+            std::cout<<"Bounds:"<<x1<<","<<x2<<","<<y1<<","<<y2<<","<<z1<<","<<z2<<std::endl;
             break; //leave loop over cryostats to avoid adding particle multiple times  
           }// end if particle goes into a cryostat
         }// end loop over cryostats in the detector
