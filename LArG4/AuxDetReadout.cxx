@@ -6,7 +6,7 @@
 
 #include "LArG4/AuxDetReadout.h"
 #include "LArG4/ParticleListAction.h"
-//#include "Utilities/IDetectorPropertiesService.h"
+//#include "Utilities/DetectorPropertiesService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

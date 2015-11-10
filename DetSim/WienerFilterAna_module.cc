@@ -41,7 +41,7 @@ extern "C" {
 #include "RecoBase/Wire.h"
 #include "Utilities/LArFFT.h"
 #include "Geometry/PlaneGeo.h"
-#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
 
 // ROOT includes
 #include <TMath.h>
@@ -116,7 +116,7 @@ namespace detsim{
     art::ServiceHandle<util::LArFFT> fFFT;
     int fNTicks = fFFT->FFTSize();
     fNBins=fNTicks/2+1;
-    const dataprov::IDetectorProperties* detp = lar::providerFrom<util::IDetectorPropertiesService>();
+    const dataprov::DetectorProperties* detp = lar::providerFrom<util::DetectorPropertiesService>();
     double samprate=detp->SamplingRate();
     double sampfreq=1./samprate *1e6; // in kHz   
     art::ServiceHandle<geo::Geometry> geo;

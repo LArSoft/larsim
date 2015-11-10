@@ -45,8 +45,8 @@ simple_plugin(SimWire "module"
                       Geometry
                       Geometry_service
                       LArFFT_service
-                      LArPropertiesService_service
-                      DetectorPropertiesService_service
+                      LArPropertiesServiceStandard_service
+                      DetectorPropertiesServiceStandard_service
                       Utilities
                       SeedService_service # artextensions
                       ${ART_FRAMEWORK_CORE}
@@ -73,9 +73,9 @@ simple_plugin(SimWireT962 "module"
                           Geometry
                           Geometry_service
                           LArFFT_service
-                          LArPropertiesService_service
-                          DetectorPropertiesService_service
-			  DetectorClocksService_service
+                          LArPropertiesServiceStandard_service
+                          DetectorPropertiesServiceStandard_service
+			  DetectorClocksServiceStandard_service
                           Utilities
                           SeedService_service # artextensions
                           ${ART_FRAMEWORK_CORE}
@@ -100,7 +100,7 @@ simple_plugin(WienerFilterAna "module"
                               RawData
                               Geometry
                               Geometry_service
-			      DetectorPropertiesService_service
+			      DetectorPropertiesServiceStandard_service
                               ${ART_FRAMEWORK_CORE}
                               ${ART_FRAMEWORK_PRINCIPAL}
                               ${ART_FRAMEWORK_SERVICES_REGISTRY}
