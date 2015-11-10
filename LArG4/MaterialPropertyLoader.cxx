@@ -11,8 +11,8 @@
 
 
 #include "LArG4/MaterialPropertyLoader.h"
-#include "Utilities/ILArPropertiesService.h"
-#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/LArPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialPropertiesTable.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -181,8 +181,8 @@ namespace larg4 {
 
   void MaterialPropertyLoader::GetPropertiesFromServices()
   {
-    const dataprov::ILArProperties* LarProp = lar::providerFrom<util::ILArPropertiesService>();
-    const dataprov::IDetectorProperties* DetProp = lar::providerFrom<util::IDetectorPropertiesService>();
+    const dataprov::LArProperties* LarProp = lar::providerFrom<util::LArPropertiesService>();
+    const dataprov::DetectorProperties* DetProp = lar::providerFrom<util::DetectorPropertiesService>();
     
     // wavelength dependent quantities
 

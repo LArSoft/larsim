@@ -17,8 +17,8 @@
 // LArSoft
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
-//#include "Utilities/IDetectorPropertiesService.h"
-//#include "Utilities/ILArPropertiesService.h"
+//#include "Utilities/DetectorPropertiesService.h"
+//#include "Utilities/LArPropertiesService.h"
 #include "Geometry/Geometry.h"
 #include "MCBase/MCLimits.h"
 
