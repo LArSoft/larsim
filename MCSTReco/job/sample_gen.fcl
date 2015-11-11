@@ -70,7 +70,7 @@ outputs:
 }
 
 # set quantum efficiency supressed scint yield to 0.03 * 24000
-#services.user.LArProperties.ScintYield: 24000
+#services.user.DetectorPropertiesService.ScintYield: 24000
 
 # enable optical physics in LArG4
 #services.user.LArG4Parameters.EnabledPhysics: [ "Em",
@@ -87,7 +87,7 @@ outputs:
 #services.user.LArG4Parameters.UseCustomPhysics: true
 
 # disable cerenkov light
-services.user.LArProperties.EnableCerenkovLight: false
+services.user.DetectorPropertiesService.EnableCerenkovLight: false
 services.user.LArG4Parameters.KeepEMShowerDaughters: true
 services.user.LArG4Parameters.StoreTrajectories: true
 

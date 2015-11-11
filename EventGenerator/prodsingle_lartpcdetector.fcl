@@ -42,8 +42,8 @@ services:
   # LArSoft services
   Geometry:               @local::standard_geo # from geometry.fcl
   ExptGeoHelperInterface: @local::standard_geometry_helper # from geometry.fcl
-  LArProperties:          @local::lartpcdetector_properties # from larproperties_argoneut.fcl
-  DetectorProperties:     @local::lartpcdetector_detproperties # from detectorproperties_lartpcdetector.fcl
+  LArPropertiesService:          @local::lartpcdetector_properties # from larproperties_argoneut.fcl
+  DetectorPropertiesService:     @local::lartpcdetector_detproperties # from detectorproperties_lartpcdetector.fcl
   DetectorClocksService:            @local::lartpcdetector_detectorclocks # from detectorclocks_lartpcdetector.fcl
   DatabaseUtil:           @local::standard_database # from databaseutil.fcl
   LArG4Parameters:        @local::standard_largeantparameters # from simulationservices.fcl
