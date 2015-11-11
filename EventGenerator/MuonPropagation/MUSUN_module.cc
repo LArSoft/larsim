@@ -270,6 +270,7 @@ namespace evgen {
     TH1D* hTime;
     TH1D* hMomentumHigh; 
     TH1D* hMomentum; 
+    TH1D* hEnergyHigh;
     TH1D* hEnergy;
     TH1D* hDepth;
     TH1D* hDirCosineX; 
@@ -381,9 +382,10 @@ namespace evgen{
     hPositionZ    = tfs->make<TH1D>("hPositionZ"   ,"Position (cm)" ,500, ( fZmin - 10 ), ( fZmax + 10 ) );
     hTime         = tfs->make<TH1D>("hTime"        ,"Time (s)"      ,500, 0    , 1e6       );
     hMomentumHigh = tfs->make<TH1D>("hMomentumHigh","Momentum (GeV)",500, fEmin, fEmax     ); 
-    hMomentum     = tfs->make<TH1D>("hMomentum"    ,"Momentum (GeV)",500, fEmin, fEmin+100 );
-    hEnergy       = tfs->make<TH1D>("hEnergy"      ,"Energy (GeV)"  ,500, fEmin, fEmax     );
-    hDepth        = tfs->make<TH1D>("hDepth"       ,"Depth (m)"     ,800, 0    , 14000      );
+    hMomentum     = tfs->make<TH1D>("hMomentum"    ,"Momentum (GeV)",500, fEmin, fEmin+1e3 );
+    hEnergyHigh   = tfs->make<TH1D>("hEnergyHigh"  ,"Energy (GeV)"  ,500, fEmin, fEmax     );
+    hEnergy       = tfs->make<TH1D>("hEnergy"      ,"Energy (GeV)"  ,500, fEmin, fEmin+1e3 );
+    hDepth        = tfs->make<TH1D>("hDepth"       ,"Depth (m)"     ,800, 0    , 14000     );
 
     hDirCosineX = tfs->make<TH1D>("hDirCosineX","Normalised Direction cosine",500, -1, 1 ); 
     hDirCosineY = tfs->make<TH1D>("hDirCosineY","Normalised Direction cosine",500, -1, 1 ); 
@@ -610,6 +612,7 @@ namespace evgen{
     hTime         ->Fill (Time);
     hMomentumHigh ->Fill (Momentum); 
     hMomentum     ->Fill (Momentum); 
+    hEnergyHigh   ->Fill (Energy);
     hEnergy       ->Fill (Energy);
     hDepth        ->Fill (dep);
     hDirCosineX   ->Fill (cx); 
