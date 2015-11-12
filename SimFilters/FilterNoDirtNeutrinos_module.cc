@@ -31,7 +31,6 @@
 #include "SimulationBase/MCTruth.h"
 #include "Simulation/sim.h"
 #include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
 
 // C++ Includes
 #include <iostream>
@@ -150,10 +149,13 @@ namespace simfilter {
   double zmin = 0.;
   double zmax = geom->DetLength();
 
-  // Get cryostat volume boundary.
-  double rmax_cryo = geom->CryostatHalfWidth();
-  double zmin_cryo = -(geom->CryostatLength() - geom->DetLength())/2.;
-  double zmax_cryo = zmin_cryo + geom->CryostatLength();
+  // Get cryostat (box) volume boundary.
+  double xmin_cryo = geom->DetHalfWidth() - geom->CryostatHalfWidth();
+  double xmax_cryo = geom->DetHalfWidth() + geom->CryostatHalfWidth();
+  double ymin_cryo = -geom->CryostatHalfHeight();
+  double ymax_cryo = geom->CryostatHalfHeight();
+  double zmin_cryo = geom->DetLength()/2. - geom->DetLength()/2.;
+  double zmax_cryo = geom->DetLength()/2. + geom->DetLength()/2.;
 
   //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
   // Now let's loop over G4 MCParticle list and track back MCTruth    
@@ -186,10 +188,12 @@ namespace simfilter {
 	      TVector3 pos = part->Position(j).Vect();
         if(fKeepCryostatNeutrinos)
         {
-          double rpos = std::sqrt(std::pow(pos.X() - geom->DetHalfWidth(),2) + std::pow(pos.Y(),2));
-          if(rpos <= rmax_cryo &&
-          pos.Z() >= zmin_cryo &&
-          pos.Z() <= zmax_cryo)
+	      if(pos.X() >= xmin_cryo &&
+  		    pos.X() <= xmax_cryo &&
+  		    pos.Y() >= ymin_cryo &&
+  		    pos.Y() <= ymax_cryo &&
+  		    pos.Z() >= zmin_cryo &&
+  		    pos.Z() <= zmax_cryo) 
           {
 		        interactionDesired = true;
 		        //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
