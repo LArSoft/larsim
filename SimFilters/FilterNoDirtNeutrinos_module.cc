@@ -31,11 +31,13 @@
 #include "SimulationBase/MCTruth.h"
 #include "Simulation/sim.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/CryostatGeo.h"
 
 // C++ Includes
 #include <iostream>
 #include <cstring>
 #include <sys/stat.h>
+#include <cmath>
 
 namespace simb{
   class MCTruth;
@@ -71,6 +73,7 @@ namespace simfilter {
 
     std::string fLArG4ModuleLabel;
     std::string fGenModuleLabel;
+    bool        fKeepCryostatNeutrinos;
 
   };
 
@@ -83,6 +86,7 @@ namespace simfilter {
   FilterNoDirtNeutrinos::FilterNoDirtNeutrinos(fhicl::ParameterSet const& pset) :
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
     , fGenModuleLabel    (pset.get< std::string > ("GenModuleLabel"  , "NoLabel")       )
+    , fKeepCryostatNeutrinos    (pset.get< bool > ("KeepCryostatNeutrinos", false)      )
   {
     this->reconfigure(pset);
   }
@@ -146,10 +150,16 @@ namespace simfilter {
   double zmin = 0.;
   double zmax = geom->DetLength();
 
+  // Get cryostat volume boundary.
+  double rmax_cryo = geom->CryostatHalfWidth();
+  double zmin_cryo = -(geom->CryostatLength() - geom->DetLength())/2.;
+  double zmax_cryo = zmin_cryo + geom->CryostatLength();
+
   //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
   // Now let's loop over G4 MCParticle list and track back MCTruth    
   bool inTPC (false);
-  for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i) 
+  bool inCryo (false);
+  for(size_t i=0; i < mcpHandle->size() && !inTPC && !inCryo; ++i) 
     {
       const art::Ptr<simb::MCParticle> mcp_ptr(mcpHandle,i);
       const art::Ptr<simb::MCTruth> &mct = assMCT.at(i);
@@ -174,18 +184,34 @@ namespace simfilter {
 	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;		
 	      
 	      TVector3 pos = part->Position(j).Vect();
+        if(fKeepCryostatNeutrinos)
+        {
+          double rpos = std::sqrt(std::pow(pos.X() - geom->DetHalfWidth(),2) + std::pow(pos.Y(),2));
+          if(rpos <= rmax_cryo &&
+          pos.Z() >= zmin_cryo &&
+          pos.Z() <= zmax_cryo)
+          {
+		        interactionDesired = true;
+		        //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		        std::cout << "FilterNoDirtNeutrinos: Genie daughter found in Cryostat. G4Particle " << std::endl ;		
+		        inCryo=true;
+          }
+        }
+        else
+        {
 	      if(pos.X() >= xmin &&
-		 pos.X() <= xmax &&
-		 pos.Y() >= ymin &&
-		 pos.Y() <= ymax &&
-		 pos.Z() >= zmin &&
-		 pos.Z() <= zmax) 
-		{
-		  interactionDesired = true;
-		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
-		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
-		  inTPC=true;
-		}
+		    pos.X() <= xmax &&
+		    pos.Y() >= ymin &&
+		    pos.Y() <= ymax &&
+		    pos.Z() >= zmin &&
+		    pos.Z() <= zmax) 
+		    {
+		      interactionDesired = true;
+		      //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		      std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
+		      inTPC=true;
+		    }
+      }
 	    } // trajectory loop
 	} // end Genie particle
     } // loop on MCPHandle
