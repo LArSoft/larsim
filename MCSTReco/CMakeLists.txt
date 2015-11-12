@@ -10,8 +10,6 @@ art_make( BASENAME_ONLY
 			   SummaryData
 			   Utilities
 			   MCBase
-			   LArPropertiesServiceStandard_service
-			   DetectorPropertiesServiceStandard_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}
@@ -37,8 +35,6 @@ art_make( BASENAME_ONLY
 			   SummaryData
 			   Utilities
 			   MCBase
-			   LArPropertiesServiceStandard_service
-			   DetectorPropertiesServiceStandard_service
 			   SeedService_service # artextensions
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
