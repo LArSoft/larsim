@@ -1,0 +1,29 @@
+BEGIN_PROLOG
+
+standard_CORSIKAGen_protons:
+{
+ module_type:         "CORSIKAGen"
+ SampleTime:           6.4e-3              #integration time in seconds
+ TimeOffset:           0.0              #time in seconds before a spill to begin the interactions
+ ProjectToHeight:      1800  #height to which particles are projected [cm]
+ ShowerInputFiles:     [ "p_showers.db" ] #list of sqlite dbs with corsika showers
+ ShowerFluxConstants:  [ 1.8e4 ] #list of flux constants per shower file
+ BufferBox:            [ -250.0,250.0,-250.0,250.0,-250.0,250.0 ] #list of buffer box extensions to cryo volume in each dimension/dir (-x,+x,-y,+y,-z,+z)
+ ShowerAreaExtension:  1000 #amount to extend the shower area beyond the cryo dimensions
+ RandomXZShift:        1000 #amount to randomly shift shower start point in x & z [cm]
+}
+
+standard_CORSIKAGen_CMC:
+{
+ module_type:         "CORSIKAGen"
+ SampleTime:           6.4e-3              #integration time in seconds
+ TimeOffset:           0.0              #time in seconds before a spill to begin the interactions
+ ProjectToHeight:      1800  #height to which particles are projected [cm]
+ ShowerInputFiles:     [ "p_showers.db", "He_showers.db", "N_showers.db", "Mg_showers.db", "Fe_showers.db"]
+ ShowerFluxConstants:  [ 1.72e4, 9.2e3, 6.2e3, 9.2e3, 6.2e3] #list of flux constants per shower file
+ BufferBox:            [ -250.0,250.0,-250.0,250.0,-250.0,250.0 ] #list of buffer box extensions to cryo volume in each dimension/dir (-x,+x,-y,+y,-z,+z)
+ ShowerAreaExtension:  1000 #amount to extend the shower area beyond the cryo dimensions
+ RandomXZShift:        1000 #amount to randomly shift shower start point in x & z [cm]
+}
+
+END_PROLOG
