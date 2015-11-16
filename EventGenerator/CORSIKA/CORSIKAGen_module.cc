@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  CORSIKAGen_module.cc
-/// \brief Generator for cosmic-rays based on pre-generated CORSIKA showers
+/// \brief Generator for cosmic-ray secondaries based on pre-generated CORSIKA shower databases.
 ///
 /// \version $Id: CORSIKAGen_module.cxx
 /// \author  Matthew.Bass@physics.ox.ac.uk
@@ -10,8 +10,6 @@
 
 // ROOT includes
 #include "TRandom3.h"
-#include "TH1.h"
-#include "TH2.h"
 #include "TDatabasePDG.h"
 #include "TString.h"
 
@@ -104,7 +102,7 @@ namespace evgen{
   {
     
     if(fShowerInputFiles.size() != fShowerFluxConstants.size() || fShowerInputFiles.size()==0 || fShowerFluxConstants.size()==0)
-      throw cet::exception("CORSIKAGen") << "ShowerInputFiles and ShowerFluxConstants have different or invalid sizes!";
+      throw cet::exception("CORSIKAGen") << "ShowerInputFiles and ShowerFluxConstants have different or invalid sizes!"<<"\n";
     fShowerInputs=fShowerInputFiles.size();
     
     if(fSampleTime==0.) throw cet::exception("CORSIKAGen") << "SampleTime not set!";
@@ -177,7 +175,7 @@ namespace evgen{
       //prepare and execute statement to attach db file
       int res=sqlite3_open(fShowerInputFiles[i].c_str(),&fdb[i]);
       if (res!= SQLITE_OK)
-        throw cet::exception("CORSIKAGen") << "Error opening db: (" <<fShowerInputFiles[i]<<") ("<<res<<"): " << sqlite3_errmsg(fdb[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0);
+        throw cet::exception("CORSIKAGen") << "Error opening db: (" <<fShowerInputFiles[i]<<") ("<<res<<"): " << sqlite3_errmsg(fdb[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0)<<"\n";
       else
         mf::LogInfo("CORSIKAGen")<<"Attached db "<< fShowerInputFiles[i]<<"\n";
     }
@@ -251,10 +249,10 @@ namespace evgen{
             EfToOneMinusGamma = pow(upperLimitOfEnergyRange, oneMinusGamma);
             mf::LogInfo("CORSIKAGen")<<"For showers input "<< i<<" found e_hi="<<upperLimitOfEnergyRange<<", e_lo="<<lowerLimitOfEnergyRange<<", slope="<<energySlope<<", k="<<fShowerFluxConstants[i]<<"\n";
           }else{
-            throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);
+            throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
           }         
         }else{
-          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);
+          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
         }
       
       //this is computed, how?
@@ -375,11 +373,11 @@ namespace evgen{
             }else if ( res == SQLITE_DONE ){
               break;
             }else{
-              throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);;
+              throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
             }
           }
         }else{
-          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kthisStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);;
+          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kthisStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
         }
         nShowerCntr=nShowerCntr-nShowerQry;
       }
