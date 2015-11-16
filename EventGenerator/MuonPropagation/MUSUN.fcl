@@ -43,7 +43,7 @@ standard_MUSUN:
  # Below co-ordinates are for dune10kt_v1_nowires.gdml, output is given too...
  # Units: cm
  # Coordinates:  	x makes a RHS 	y is vertical 	z is beam direction
- # World Dimensions: 	x = 7954.03	y = 7817.7	z = 12721.9
+ # World Dimensions: 	x = 9554.03	y = 9417.7	z = 14321.9
  # Det Dimensions: 	x = 1954.03	y = 1817.7	z = 6721.89
  # Det Center: 		x = 0		y = 120.75	z = 2778
  #
@@ -53,12 +53,12 @@ standard_MUSUN:
  #	z: -582.946	to	6138.94
  #
  # Amount of rock on each side:
- #	-x: 3000
- #	+x: 3000
- #	-y: 3120.75
- #	+y: 2879.25
- #	-z: 5778
- #	+z: 222.001 ###### Not enough for 5 m!!!!
+ #	-x: 3800
+ #	+x: 3800
+ #	-y: 3920.75
+ #	+y: 3679.25
+ #	-z: 6578
+ #	+z: 1022 
 
  igflag:                 1         # If want muons sampled from parallelepiped, not a sphere.
  Xmin:                   -1477.    # Minumum X position cm
@@ -66,7 +66,7 @@ standard_MUSUN:
  Ymin:                   -1288.    # Minumum Y position cm
  Ymax:                   1730.     # Maximum Y position cm
  Zmin:                   -1083.    # Minumum Z position cm
- Zmax:                   6360.     # Maximum Z position cm
+ Zmax:                   6639.     # Maximum Z position cm
 
 #   Vitaly's Fortran code for LBNE uses these positions. 
 # Xmin:                   -1500.    # Minumum X position cm
