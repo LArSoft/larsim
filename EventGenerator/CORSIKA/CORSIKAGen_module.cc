@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  CORSIKAGen_plugin.cc
+/// \file  CORSIKAGen_module.cc
 /// \brief Generator for cosmic-rays based on pre-generated CORSIKA showers
 ///
-/// \version $Id: CORSIKAGen.cxx
+/// \version $Id: CORSIKAGen_module.cxx
 /// \author  Matthew.Bass@physics.ox.ac.uk
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_CORSIKAGen_H
@@ -13,6 +13,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
+#include "TString.h"
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -71,41 +72,45 @@ namespace evgen {
                                         double & 	zhi,
                                         double 	xyzout[]	 );
     
-    int fShowerInputs; //number of shower inputs to process from    
-    std::vector<int> fNShowersPerEvent; //number of showers to put in each event of duration fSampleTime, one per showerinput
-    std::vector<int> fMaxShowers; //max number of showers to query, one per showerinput
-    double fShowerBounds[6]; //stores boundaries of area over which showers are to be distributed
+    int fShowerInputs=0; ///< Number of shower inputs to process from    
+    std::vector<int> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
+    std::vector<int> fMaxShowers; //< Max number of showers to query, one per showerinput
+    double fShowerBounds[6]={0.,0.,0.,0.,0.,0.}; ///< Boundaries of area over which showers are to be distributed
     
     //fcl parameters
-    double fProjectToHeight; //height at which particles will be projected to
-    std::vector< std::string > fShowerInputFiles; //set of CORSIKA shower data files to use
-    std::vector< double > fShowerFluxConstants; //set of flux constants to be associated with each shower data file
-    double fSampleTime; //duration of sample
-    double fToffset; //time offset of sample, defaults to zero (no offset)
-    std::vector<double> fBuffBox; //buffer box extensions to cryostat in each direction (6 of them: x_lo,x_hi,y_lo,y_hi,z_lo,z_hi)
-    double fShowerAreaExtension; //cm, extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z)
-    sqlite3* db[5]; //pointer to sqlite3 database object, max of 5
-    double fRandomXZShift; //each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space
+    double fProjectToHeight=0.; ///< Height to which particles will be projected [cm]
+    std::vector< std::string > fShowerInputFiles; ///< Set of CORSIKA shower data files to use
+    std::vector< double > fShowerFluxConstants; ///< Set of flux constants to be associated with each shower data file
+    double fSampleTime=0.; ///< Duration of sample [s]
+    double fToffset=0.; ///< Time offset of sample, defaults to zero (no offset) [s]
+    std::vector<double> fBuffBox; ///< Buffer box extensions to cryostat in each direction (6 of them: x_lo,x_hi,y_lo,y_hi,z_lo,z_hi) [cm]
+    double fShowerAreaExtension=0.; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [cm]
+    sqlite3* fdb[5]; ///< Pointers to sqlite3 database object, max of 5
+    double fRandomXZShift=0.; ///< Each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space [cm]
   };
 }
 
 namespace evgen{
 
   CORSIKAGen::CORSIKAGen(fhicl::ParameterSet const& p)
-    : fProjectToHeight(p.get< double >("ProjectToHeight")),
+    : fProjectToHeight(p.get< double >("ProjectToHeight",0.)),
       fShowerInputFiles(p.get< std::vector< std::string > >("ShowerInputFiles")),
       fShowerFluxConstants(p.get< std::vector< double > >("ShowerFluxConstants")),
-      fSampleTime(p.get< double >("SampleTime")),
+      fSampleTime(p.get< double >("SampleTime",0.)),
       fToffset(p.get< double >("TimeOffset",0.)),
       fBuffBox(p.get< std::vector< double > >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0})),
       fShowerAreaExtension(p.get< double >("ShowerAreaExtension",0.)),
       fRandomXZShift(p.get< double >("RandomXZShift",0.))
   {
     
-    if(fShowerInputFiles.size() != fShowerFluxConstants.size())
-      throw cet::exception("CORSIKAGen") << "ShowerInputFiles and ShowerFluxConstants have different sizes!";
+    if(fShowerInputFiles.size() != fShowerFluxConstants.size() || fShowerInputFiles.size()==0 || fShowerFluxConstants.size()==0)
+      throw cet::exception("CORSIKAGen") << "ShowerInputFiles and ShowerFluxConstants have different or invalid sizes!";
     fShowerInputs=fShowerInputFiles.size();
     
+    if(fSampleTime==0.) throw cet::exception("CORSIKAGen") << "SampleTime not set!";
+    
+    if(fProjectToHeight==0.) mf::LogInfo("CORSIKAGen")<<"Using 0. for fProjectToHeight!"
+    ;
     // create a default random engine; obtain the random seed from SeedService,
     // unless overridden in configuration with key "Seed"
     art::ServiceHandle<artext::SeedService>()->createEngine(*this, p, "Seed");
@@ -122,12 +127,12 @@ namespace evgen{
   
   CORSIKAGen::~CORSIKAGen(){
     for(int i=0; i<fShowerInputs; i++){
-      sqlite3_close(db[i]);
+      sqlite3_close(fdb[i]);
     }
   }
   
   void CORSIKAGen::ProjectToBoxEdge(	const double 	xyz[],
-                                        const double 	dxyz[],
+                                        const double 	indxyz[],
                                         double & 	xlo,
                                         double & 	xhi,
                                         double & 	ylo,
@@ -135,29 +140,22 @@ namespace evgen{
                                         double & 	zlo,
                                         double & 	zhi,
                                         double 	xyzout[]	 ){
-    // make the world box slightly smaller so that the projection to 
-    // the edge avoids possible rounding errors later on with Geant4
-    double fBoxDelta=1.e-5;
-    xlo += fBoxDelta;
-    xhi -= fBoxDelta;
-    ylo += fBoxDelta;
-    yhi = fProjectToHeight;
-    zlo += fBoxDelta;
-    zhi -= fBoxDelta;
+                                        
     
+    //we want to project backwards, so take mirror of momentum
+    const double dxyz[3]={-indxyz[0],-indxyz[1],-indxyz[2]};
+      
     // Compute the distances to the x/y/z walls
     double dx = 99.E99;
     double dy = 99.E99;
     double dz = 99.E99;
     if      (dxyz[0] > 0.0) { dx = (xhi-xyz[0])/dxyz[0]; }
     else if (dxyz[0] < 0.0) { dx = (xlo-xyz[0])/dxyz[0]; }
-    //if      (dxyz[1] > 0.0) { dy = (yhi-xyz[1])/dxyz[1]; }
-    //else if (dxyz[1] < 0.0) { dy = (ylo-xyz[1])/dxyz[1]; }
+    if      (dxyz[1] > 0.0) { dy = (yhi-xyz[1])/dxyz[1]; }
+    else if (dxyz[1] < 0.0) { dy = (ylo-xyz[1])/dxyz[1]; }
     if      (dxyz[2] > 0.0) { dz = (zhi-xyz[2])/dxyz[2]; }
     else if (dxyz[2] < 0.0) { dz = (zlo-xyz[2])/dxyz[2]; }
     
-    //always project to yhi
-    dy = (yhi-xyz[1])/dxyz[1];
     
     // Choose the shortest distance
     double d = 0.0;
@@ -169,35 +167,19 @@ namespace evgen{
     for (int i = 0; i < 3; ++i) {
       xyzout[i] = xyz[i] + dxyz[i]*d;
     }
+    
   }
   
   void CORSIKAGen::openDBs(){
     sqlite3_stmt *statement;
-    //const char kStatement[] = "ATTACH '%s' as sdb%d";
-    //char kthisStatement[255];
-    //char* errmsg;
     
     for(int i=0; i<fShowerInputs; i++){
       //prepare and execute statement to attach db file
-      //sprintf(kthisStatement,kStatement,fShowerInputFiles[i].c_str(),i);
-      int res=sqlite3_open(fShowerInputFiles[i].c_str(),&db[i]);
-      //int res=sqlite3_exec(db[i], kthisStatement, NULL,NULL, &errmsg );
-      
+      int res=sqlite3_open(fShowerInputFiles[i].c_str(),&fdb[i]);
       if (res!= SQLITE_OK)
-        throw cet::exception("CORSIKAGen") << "Error opending db: (" <<fShowerInputFiles[i]<<") ("<<res<<"): " << sqlite3_errmsg(db[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0);
+        throw cet::exception("CORSIKAGen") << "Error opening db: (" <<fShowerInputFiles[i]<<") ("<<res<<"): " << sqlite3_errmsg(fdb[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0);
       else
         mf::LogInfo("CORSIKAGen")<<"Attached db "<< fShowerInputFiles[i]<<"\n";
-      /*if (  res== SQLITE_OK ){
-        int res=sqlite3_step(statement);
-        if(res!=SQLITE_DONE){
-          throw cet::exception("CORSIKAGen") << "Error attaching database with statement: (" <<kthisStatement<<") ("<<res<<")";
-        }
-        sqlite3_finalize(statement);
-
-      }else{
-        throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kthisStatement<<") ("<<res<<")";
-      }*/
-      
     }
   }
 
@@ -233,6 +215,7 @@ namespace evgen{
     fShowerBounds[4] = fShowerBounds[4] - fShowerAreaExtension;
     fShowerBounds[5] = fShowerBounds[5] + fShowerAreaExtension;
     
+    mf::LogInfo("CORSIKAGen")<<"Area extended by : "<<fShowerAreaExtension<<"\n";
     mf::LogInfo("CORSIKAGen")<<"Showers to be distributed betweeen: x="<<fShowerBounds[0]<<","<<fShowerBounds[1]
                              <<" & z="<<fShowerBounds[4]<<","<<fShowerBounds[5]<<"\n";
     mf::LogInfo("CORSIKAGen")<<"Showers to be distributed with random XZ shift: "<<fRandomXZShift<<" cm"<<"\n";   
@@ -244,8 +227,7 @@ namespace evgen{
     
     //db variables
     sqlite3_stmt *statement;
-    const char kStatement[] = "select erange_high,erange_low,eslope,nshow from input";
-    //char kthisStatement[255]; //buffer to hold sprintf'ed sql statements
+    const std::string kStatement("select erange_high,erange_low,eslope,nshow from input");
     double upperLimitOfEnergyRange=0.,lowerLimitOfEnergyRange=0.,energySlope=0.,oneMinusGamma=0.,EiToOneMinusGamma=0.,EfToOneMinusGamma=0.;
     
     //get rng engine
@@ -256,8 +238,7 @@ namespace evgen{
     for(int i=0; i<fShowerInputs; i++){
         //build and do query to get run info from databases
         double thisrnd=engine.flat();//need a new random number for each query
-        //sprintf(kthisStatement,kStatement,i);
-        if ( sqlite3_prepare(db[i], kStatement, -1, &statement, 0 ) == SQLITE_OK ){
+        if ( sqlite3_prepare(fdb[i], kStatement.c_str(), -1, &statement, 0 ) == SQLITE_OK ){
           int res=0;
           res = sqlite3_step(statement);
           if ( res == SQLITE_ROW ){
@@ -270,10 +251,10 @@ namespace evgen{
             EfToOneMinusGamma = pow(upperLimitOfEnergyRange, oneMinusGamma);
             mf::LogInfo("CORSIKAGen")<<"For showers input "<< i<<" found e_hi="<<upperLimitOfEnergyRange<<", e_lo="<<lowerLimitOfEnergyRange<<", slope="<<energySlope<<", k="<<fShowerFluxConstants[i]<<"\n";
           }else{
-            throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<")";
+            throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);
           }         
         }else{
-          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kStatement<<")";
+          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);
         }
       
       //this is computed, how?
@@ -301,14 +282,30 @@ namespace evgen{
     
     //db variables
     sqlite3_stmt *statement;
-    const char kStatement[] = "select shower,pdg,px,py,pz,x,z,t,e from particles where shower in (select id from showers ORDER BY substr(id*%f,length(id)+2) limit %d) ORDER BY substr(shower*%f,length(shower)+2)";    //sql template
-    char kthisStatement[255]; //buffer to hold sprintf'ed sql statements
+    const TString kStatement("select shower,pdg,px,py,pz,x,z,t,e from particles where shower in (select id from showers ORDER BY substr(id*%f,length(id)+2) limit %d) ORDER BY substr(shower*%f,length(shower)+2)");
 
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat flat(engine);
-        
+
+    // get geometry and figure where to project particles to, based on CRYHelper
+    art::ServiceHandle<geo::Geometry> geom;
+    double x1, x2;
+    double y1, y2;
+    double z1, z2;
+    geom->WorldBox(&x1, &x2, &y1, &y2, &z1, &z2);  
+
+    // make the world box slightly smaller so that the projection to 
+    // the edge avoids possible rounding errors later on with Geant4
+    double fBoxDelta=1.e-5;
+    x1 += fBoxDelta;
+    x2 -= fBoxDelta;
+    y1 += fBoxDelta;
+    y2 = fProjectToHeight;
+    z1 += fBoxDelta;
+    z2 -= fBoxDelta;
+               
     //populate mctruth
     int ntotalCtr=0; //count number of particles added to mctruth
     int lastShower=0; //keep track of last shower id so that t can be randomized on every new shower
@@ -327,9 +324,9 @@ namespace evgen{
         }
         //build and do query to get nshowers
         double thisrnd=engine.flat(); //need a new random number for each query
-        sprintf(kthisStatement,kStatement,thisrnd,nShowerQry,thisrnd);
+        TString kthisStatement=TString::Format(kStatement.Data(),thisrnd,nShowerQry,thisrnd);
         mf::LogInfo("CORSIKAGen")<<"Executing: "<<kthisStatement<<"\n";
-        if ( sqlite3_prepare(db[i], kthisStatement, -1, &statement, 0 ) == SQLITE_OK ){
+        if ( sqlite3_prepare(fdb[i], kthisStatement.Data(), -1, &statement, 0 ) == SQLITE_OK ){
           int res=0;
           //loop over database rows, pushing particles into mctruth object
           while(1){
@@ -337,8 +334,8 @@ namespace evgen{
             if ( res == SQLITE_ROW ){
               shower=sqlite3_column_int(statement,0);
               if(shower!=lastShower){
-                //each new shower gets its own random time
-                showerTime=engine.flat()*fSampleTime - (fSampleTime/2);
+                //each new shower gets its own random time and position offsets
+                showerTime=1e9*(engine.flat()*fSampleTime - (fSampleTime/2)); //converting from s to ns
                 //and a random offset in both z and x controlled by the fRandomXZShift parameter
                 showerXOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
                 showerZOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
@@ -349,34 +346,40 @@ namespace evgen{
               TParticlePDG* pdgp = pdgt->GetParticle(pdg);
               if (pdgp) m = pdgp->Mass();
               
+              //Note: position/momentum in db have north=-x and west=+z, rotate so that +z is north and +x is west
               //get momentum components
-              px=sqlite3_column_double(statement,2);
+              px=sqlite3_column_double(statement,4);//uboone x=Particlez
               py=sqlite3_column_double(statement,3);
-              pz=sqlite3_column_double(statement,4);
+              pz=-sqlite3_column_double(statement,2);//uboone z=-Particlex
               etot=sqlite3_column_double(statement,8);
               
               //get/calculate position components
-              //std::cout<<"Offsets:"<<shower<<"\t"<<fRandomXZShift<<"\t"<<showerXOffset<<"\t"<<showerZOffset<<std::endl;
-              x=wrapvar(sqlite3_column_double(statement,5),fShowerBounds[0],fShowerBounds[1]+showerXOffset);
-              z=wrapvar(sqlite3_column_double(statement,6),fShowerBounds[4],fShowerBounds[5]+showerZOffset);
+              x=wrapvar(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1]);
+              z=wrapvar(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5]);
               toff=sqlite3_column_double(statement,7); //time offset
               t=toff+showerTime;
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
-              TLorentzVector pos(x,fShowerBounds[3],z,t);// time needs to be in ns to match GENIE, etc
+              
+              //project back to wordvol/fProjectToHeight
+              double xyzo[3];
+              double x0[3]={x,fShowerBounds[3],z};
+              double dx[3]={px,py,pz};
+              this->ProjectToBoxEdge(x0, dx, x1, x2, y1, y2, z1, z2, xyzo);
+                            
+              TLorentzVector pos(xyzo[0],xyzo[1],xyzo[2],t);// time needs to be in ns to match GENIE, etc
               TLorentzVector mom(px,py,pz,etot);
               p.AddTrajectoryPoint(pos,mom);
-              //mf::LogInfo("CORSIKAGen")<<"Adding particle: "<<x<<"\t"<<fShowerBounds[3]<<"\t"<<z<<"\t"<<px<<"\t"<<py<<"\t"<<pz<<"\t"<<"\n";
               mctruth.Add(p);
               ntotalCtr++;
               lastShower=shower;
             }else if ( res == SQLITE_DONE ){
               break;
             }else{
-              throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<")";
+              throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);;
             }
           }
         }else{
-          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kthisStatement<<")";
+          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kthisStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i]);;
         }
         nShowerCntr=nShowerCntr-nShowerQry;
       }
@@ -409,95 +412,71 @@ namespace evgen{
   void CORSIKAGen::produce(art::Event& evt){
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
 
-    // get geometry and figure where to project particles to, based on CRYHelper
     art::ServiceHandle<geo::Geometry> geom;
-    double x1, x2;
-    double y1, y2;
-    double z1, z2;
-    geom->WorldBox(&x1, &x2, &y1, &y2, &z1, &z2);
-    double fBoxDelta=1.e-5;
-    x1 += fBoxDelta;
-    x2 -= fBoxDelta;
-    y1 += fBoxDelta;
-    y2 = fProjectToHeight;
-    z1 += fBoxDelta;
-    z2 -= fBoxDelta;    
     
-    int nCrossCryostat = 0;
-
     simb::MCTruth truth;
     truth.SetOrigin(simb::kCosmicRay);
     
-    while(nCrossCryostat < 1){ //TODO should this really be here?
-      simb::MCTruth pretruth;
-      GetSample(pretruth);
-      mf::LogInfo("CORSIKAGen")<<"GetSample number of particles returned: "<<pretruth.NParticles()<<"\n";
-      // loop over particles in the truth object
-      for(int i = 0; i < pretruth.NParticles(); ++i){
-        simb::MCParticle particle = pretruth.GetParticle(i);
-        const TLorentzVector& v4 = particle.Position();
-        const TLorentzVector& p4 = particle.Momentum();
-        double x0[3] = {v4.X(),  v4.Y(),  v4.Z() };
-        double dx[3] = {p4.Px(), p4.Py(), p4.Pz()};
+    simb::MCTruth pretruth;
+    GetSample(pretruth);
+    mf::LogInfo("CORSIKAGen")<<"GetSample number of particles returned: "<<pretruth.NParticles()<<"\n";
+    // loop over particles in the truth object
+    for(int i = 0; i < pretruth.NParticles(); ++i){
+      simb::MCParticle particle = pretruth.GetParticle(i);
+      const TLorentzVector& v4 = particle.Position();
+      const TLorentzVector& p4 = particle.Momentum();
+      double x0[3] = {v4.X(),  v4.Y(),  v4.Z() };
+      double dx[3] = {p4.Px(), p4.Py(), p4.Pz()};
 
-        // now check if the particle goes through any cryostat in the detector
-        // if so, add it to the truth object.
-        for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
-          double bounds[6] = {0.};
-          geom->CryostatBoundaries(bounds, c);
-      
-          //add a buffer box around the cryostat bounds to increase the acceptance and account for scattering
-          //By default, the buffer box has zero size
-          for (unsigned int cb=0; cb<6; cb++)
-             bounds[cb] = bounds[cb]+fBuffBox[cb];
-      
-          //calculate the intersection point with each cryostat surface
-          bool intersects_cryo = false;
-          for (int bnd=0; bnd!=6; ++bnd) {
-            if (bnd<2) {
-              double p2[3] = {bounds[bnd],  x0[1] + (dx[1]/dx[0])*(bounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(bounds[bnd] - x0[0])};
-              if ( p2[1] >= bounds[2] && p2[1] <= bounds[3] && 
-                   p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
-                intersects_cryo = true;
-                break;
-              }
-            }
-            else if (bnd>=2 && bnd<4) {
-              double p2[3] = {x0[0] + (dx[0]/dx[1])*(bounds[bnd] - x0[1]), bounds[bnd], x0[2] + (dx[2]/dx[1])*(bounds[bnd] - x0[1])};
-              if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
-                   p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
-                intersects_cryo = true;
-          break;
-              }
-            }
-            else if (bnd>=4) {
-              double p2[3] = {x0[0] + (dx[0]/dx[2])*(bounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(bounds[bnd] - x0[2]), bounds[bnd]};
-              if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
-                   p2[1] >= bounds[2] && p2[1] <= bounds[3] ) {
-                intersects_cryo = true;
-          break;
-              }
+      // now check if the particle goes through any cryostat in the detector
+      // if so, add it to the truth object.
+      for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
+        double bounds[6] = {0.};
+        geom->CryostatBoundaries(bounds, c);
+    
+        //add a buffer box around the cryostat bounds to increase the acceptance and account for scattering
+        //By default, the buffer box has zero size
+        for (unsigned int cb=0; cb<6; cb++)
+           bounds[cb] = bounds[cb]+fBuffBox[cb];
+        
+        //calculate the intersection point with each cryostat surface
+        bool intersects_cryo = false;
+        for (int bnd=0; bnd!=6; ++bnd) {
+          if (bnd<2) {
+            double p2[3] = {bounds[bnd],  x0[1] + (dx[1]/dx[0])*(bounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(bounds[bnd] - x0[0])};
+            if ( p2[1] >= bounds[2] && p2[1] <= bounds[3] && 
+                 p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
+              intersects_cryo = true;
+              break;
             }
           }
-	  
-          if (intersects_cryo) {
-            //project back to wordvol/fProjectToHeight
-            double xyzo[3];
-            this->ProjectToBoxEdge(x0, dx, x1, x2, y1, y2, z1, z2, xyzo);
-            //update particle object's position
-            particle.SetGvtx(xyzo[0],xyzo[1],xyzo[2],v4.T());            
-            truth.Add(particle);
-            std::cout<<"Position:"<<x0[0]<<","<<x0[1]<<","<<x0[2]<<";   "<<dx[0]<<","<<dx[1]<<","<<dx[2]<<";   "<<xyzo[0]<<","<<xyzo[1]<<","<<xyzo[2]<<std::endl;
-            std::cout<<"Bounds:"<<x1<<","<<x2<<","<<y1<<","<<y2<<","<<z1<<","<<z2<<std::endl;
-            break; //leave loop over cryostats to avoid adding particle multiple times  
-          }// end if particle goes into a cryostat
-        }// end loop over cryostats in the detector
-	
-      }// loop on particles
-      
-      nCrossCryostat = truth.NParticles();
-      mf::LogInfo("CORSIKAGen")<<"Number of particles from getsample crossing cryostat + bounding box: "<<nCrossCryostat<<"\n";
-    }
+          else if (bnd>=2 && bnd<4) {
+            double p2[3] = {x0[0] + (dx[0]/dx[1])*(bounds[bnd] - x0[1]), bounds[bnd], x0[2] + (dx[2]/dx[1])*(bounds[bnd] - x0[1])};
+            if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+                 p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
+              intersects_cryo = true;
+        break;
+            }
+          }
+          else if (bnd>=4) {
+            double p2[3] = {x0[0] + (dx[0]/dx[2])*(bounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(bounds[bnd] - x0[2]), bounds[bnd]};
+            if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+                 p2[1] >= bounds[2] && p2[1] <= bounds[3] ) {
+              intersects_cryo = true;
+        break;
+            }
+          }
+        }
+
+        if (intersects_cryo){
+          truth.Add(particle);
+          break; //leave loop over cryostats to avoid adding particle multiple times  
+        }// end if particle goes into a cryostat
+      }// end loop over cryostats in the detector
+
+    }// loop on particles
+    
+    mf::LogInfo("CORSIKAGen")<<"Number of particles from getsample crossing cryostat + bounding box: "<<truth.NParticles()<<"\n";
 
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
