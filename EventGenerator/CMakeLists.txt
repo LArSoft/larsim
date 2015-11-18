@@ -9,6 +9,7 @@ art_make( BASENAME_ONLY
                         ${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
                         ${FHICLCPP}
+                        ${CLHEP}
           MODULE_LIBRARIES PhotonPropagation
                            PhotonVisibilityService_service
                            Simulation

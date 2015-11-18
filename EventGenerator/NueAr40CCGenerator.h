@@ -20,7 +20,7 @@
 // nutools includes
 #include "SimulationBase/MCTruth.h"
 
-class TRandom3;
+#include "CLHEP/Random/RandomEngine.h"
 
 namespace evgen {
 
@@ -31,26 +31,25 @@ namespace evgen {
       // Constructor
       NueAr40CCGenerator(fhicl::ParameterSet const& parameterSet);
   
-      // Destructor
-      ~NueAr40CCGenerator();
-  
       // Simulate interactions, produce plots
-      simb::MCTruth Generate();
+      simb::MCTruth Generate(CLHEP::HepRandomEngine& engine);
   
     private:
   
       // Generate a direction vector isotropically
-      std::vector< double > GetIsotropicDirection() const;
+      std::vector< double > GetIsotropicDirection
+                                    (CLHEP::HepRandomEngine& engine) const;
   
       // Generate a position distributed uniformly inside the active volume
-      std::vector< double > GetUniformPosition() const;
+      std::vector< double > GetUniformPosition
+                                    (CLHEP::HepRandomEngine& engine) const;
   
       // Generate a neutrino time distributed uniformly
       // from fNeutrinoTimeBegin to fNeutrinoTimeEnd 
-      double GetNeutrinoTime() const;
+      double GetNeutrinoTime(CLHEP::HepRandomEngine& engine) const;
   
       // Use fEnergyProbabilityMap to sample one energy value
-      double GetNeutrinoEnergy() const;
+      double GetNeutrinoEnergy(CLHEP::HepRandomEngine& engine) const;
   
       // Read a ROOT file with a TGraph  and fill fEnergyProbabilityMap
       // Assume that the first point in TGraph is { 0, 0 }
@@ -62,15 +61,14 @@ namespace evgen {
       void InitializeVectors();
       
       // Simulate particles
-      void CreateKinematicsVector(simb::MCTruth& truth) const;
+      void CreateKinematicsVector(simb::MCTruth& truth, 
+                                  CLHEP::HepRandomEngine& engine) const;
    
-      bool ProcessOneNeutrino(simb::MCTruth& truth, 
-                              double neutrinoEnergy, double neutrinoTime) const; 
-      std::vector< double > CalculateCrossSections(double neutrinoEnergy, 
-                                                       int& highestLevel) const; 
-  
-      // ROOT's random number generator
-      TRandom3 *fRandomNumberGenerator;
+      bool ProcessOneNeutrino
+                 (simb::MCTruth& truth, double neutrinoEnergy, 
+                  double neutrinoTime, CLHEP::HepRandomEngine& engine) const; 
+      std::vector< double > CalculateCrossSections
+                            (double neutrinoEnergy, int& highestLevel) const; 
   
       // Assume that the first entry is { 0, 0 }
       std::map< double, double > fEnergyProbabilityMap;

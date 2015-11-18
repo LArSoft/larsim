@@ -17,7 +17,11 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/ParameterSet.h"
+
+// art extensions
+#include "artextensions/SeedService/SeedService.hh"
 
 // nutools includes
 #include "SimulationBase/MCTruth.h"
@@ -26,10 +30,12 @@
 #include "SummaryData/RunData.h"
 #include "Geometry/Geometry.h"
 
-#include "NueAr40CCGenerator.h"
+#include "CLHEP/Random/RandomEngine.h"
 
 // C++ includes
 #include <map>
+
+#include "NueAr40CCGenerator.h"
 
 namespace evgen {
   
@@ -64,6 +70,11 @@ namespace evgen {
     produces< std::vector< simb::MCTruth > >();
     produces< sumdata::RunData, art::InRun >();
 
+    // Create a default random engine: obtain the random seed
+    // freom SeedService, unless overriden in configuration with key "Seed"
+    art::ServiceHandle< artext::SeedService >()
+      ->createEngine(*this, pset, "Seed");
+
   }
 
   //____________________________________________________________________________
@@ -87,7 +98,12 @@ namespace evgen {
 
     std::unique_ptr< std::vector< simb::MCTruth > > 
                                 truthCol(new std::vector< simb::MCTruth >);
-    truthCol->emplace_back(fGenerator.Generate());
+
+    // Get an engine from the random number generator
+    art::ServiceHandle< art::RandomNumberGenerator > randomNumberGenerator;
+    CLHEP::HepRandomEngine &engine = randomNumberGenerator->getEngine();
+
+    truthCol->emplace_back(fGenerator.Generate(engine));
 
     event.put(std::move(truthCol));
 

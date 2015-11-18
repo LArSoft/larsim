@@ -14,11 +14,13 @@
 #include "SimulationBase/MCParticle.h"
 
 // ROOT includes
-#include "TRandom3.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TLorentzVector.h"
+
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoisson.h"
 
 // C++ includes
 #include <fstream>
@@ -30,8 +32,7 @@ namespace evgen {
   // Constructor
   NueAr40CCGenerator::NueAr40CCGenerator(fhicl::ParameterSet 
                                                            const& parameterSet)
-              : fRandomNumberGenerator (new TRandom3(0)    )
-              , fNumberOfLevels        ( 73                )
+              : fNumberOfLevels        ( 73                )
               , fNumberOfStartLevels   ( 21                )
               , fBranchingRatios       (fNumberOfLevels    )
               , fDecayTo               (fNumberOfLevels    )
@@ -57,24 +58,16 @@ namespace evgen {
   }
   
   //----------------------------------------------------------------------------
-  // Destructor
-  NueAr40CCGenerator::~NueAr40CCGenerator()
-  {
-  
-    delete fRandomNumberGenerator;
-  
-  }
-  
-  //----------------------------------------------------------------------------
   // Main routine
-  simb::MCTruth NueAr40CCGenerator::Generate() 
+  simb::MCTruth NueAr40CCGenerator::Generate(CLHEP::HepRandomEngine& engine) 
   {
+
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSuperNovaNeutrino);
   
     // Loop until at least one neutrino is simulated
     while (!truth.NParticles())
-      CreateKinematicsVector(truth);
+      CreateKinematicsVector(truth, engine);
   
     return truth;
   
@@ -82,13 +75,16 @@ namespace evgen {
   
   //----------------------------------------------------------------------------
   // Return normalized direction cosines of isotropic vector
-  std::vector< double > NueAr40CCGenerator::GetIsotropicDirection() const
+  std::vector< double > NueAr40CCGenerator::GetIsotropicDirection
+                                         (CLHEP::HepRandomEngine& engine) const
   {
+
+    CLHEP::RandFlat randFlat(engine);
   
     std::vector< double > isotropicDirection;
   
-    double phi      = 2*TMath::Pi()*fRandomNumberGenerator->Uniform();      
-    double cosTheta = 2*fRandomNumberGenerator->Uniform() - 1;
+    double phi      = 2*TMath::Pi()*randFlat.fire();      
+    double cosTheta = 2*randFlat.fire() - 1;
     double theta    = TMath::ACos(cosTheta);
   
     // x, y, z
@@ -102,17 +98,20 @@ namespace evgen {
   
   //----------------------------------------------------------------------------
   // Return a random vector with 3D coordinates inside the active LAr volume
-  std::vector< double > NueAr40CCGenerator::GetUniformPosition() const
+  std::vector< double > NueAr40CCGenerator::GetUniformPosition
+                                        (CLHEP::HepRandomEngine& engine) const
   {
+  
+    CLHEP::RandFlat randFlat(engine);
   
     std::vector< double > position;
   
-    position.push_back(fRandomNumberGenerator->
-      Uniform(fActiveVolume.at(0).at(0), fActiveVolume.at(1).at(0)));
-    position.push_back(fRandomNumberGenerator->
-      Uniform(fActiveVolume.at(0).at(1), fActiveVolume.at(1).at(1)));
-    position.push_back(fRandomNumberGenerator->
-      Uniform(fActiveVolume.at(0).at(2), fActiveVolume.at(1).at(2)));
+    position.push_back(randFlat.
+      fire(fActiveVolume.at(0).at(0), fActiveVolume.at(1).at(0)));
+    position.push_back(randFlat.
+      fire(fActiveVolume.at(0).at(1), fActiveVolume.at(1).at(1)));
+    position.push_back(randFlat.
+      fire(fActiveVolume.at(0).at(2), fActiveVolume.at(1).at(2)));
   
     return position;
   
@@ -120,22 +119,27 @@ namespace evgen {
   
   //----------------------------------------------------------------------------
   // Sample uniform distribution to get a neutrino interaction time
-  double NueAr40CCGenerator::GetNeutrinoTime() const
+  double NueAr40CCGenerator::GetNeutrinoTime
+                                         (CLHEP::HepRandomEngine& engine) const
   {
   
-    return fRandomNumberGenerator->Uniform(fNeutrinoTimeBegin, 
-                                                            fNeutrinoTimeEnd);
+    CLHEP::RandFlat randFlat(engine);
+  
+    return randFlat.fire(fNeutrinoTimeBegin, fNeutrinoTimeEnd);
     
   }
   
   //----------------------------------------------------------------------------
   // Sample energy spectrum from fEnergyProbabilityMap
-  double NueAr40CCGenerator::GetNeutrinoEnergy() const
+  double NueAr40CCGenerator::GetNeutrinoEnergy
+                                         (CLHEP::HepRandomEngine& engine) const
   {
+  
+    CLHEP::RandFlat randFlat(engine);
   
     double neutrinoEnergy = 0.0;
   
-    double randomNumber   = fRandomNumberGenerator->Uniform();
+    double randomNumber   = randFlat.fire();
   
     // We need this to get a previous entry in the map
     std::pair< double, double > previousPair;
@@ -790,32 +794,37 @@ namespace evgen {
   }
   
   //----------------------------------------------------------------------------
-  // Simulate particles and fill fKinematicsVector
-  void NueAr40CCGenerator::CreateKinematicsVector(simb::MCTruth& truth) const
+  // Simulate particles and fill truth
+  void NueAr40CCGenerator::CreateKinematicsVector(simb::MCTruth& truth,
+                                        CLHEP::HepRandomEngine& engine) const
   {
   
-    int numberOfNeutrinos = fRandomNumberGenerator
-                                          ->Poisson(fMeanNumberOfNeutrinos);
+    CLHEP::RandPoisson randPoisson(engine);
+    int numberOfNeutrinos = randPoisson.fire(fMeanNumberOfNeutrinos);
     for (int neutrinoNumber = 0; neutrinoNumber < numberOfNeutrinos;
                                                    ++neutrinoNumber)
     {
       bool success = false;
       while (!success)
       {
-        double neutrinoEnergy = GetNeutrinoEnergy();
-        double neutrinoTime   = GetNeutrinoTime  ();
-        success = ProcessOneNeutrino(truth, neutrinoEnergy, neutrinoTime);
+        double neutrinoEnergy = GetNeutrinoEnergy(engine);
+        double neutrinoTime   = GetNeutrinoTime  (engine);
+        success = ProcessOneNeutrino(truth, neutrinoEnergy, 
+                                      neutrinoTime, engine);
       }
     }
   
   }
   
   //----------------------------------------------------------------------------
-  // Simulate particles and fill fKinematicsVector
+  // Simulate particles and fill truth
   // Return true if one neutrino is processed, false otherwise
   bool NueAr40CCGenerator::ProcessOneNeutrino(simb::MCTruth& truth,
-                        double neutrinoEnergy, double neutrinoTime) const
+                        double neutrinoEnergy, double neutrinoTime,
+                                    CLHEP::HepRandomEngine& engine) const
   {
+
+    CLHEP::RandFlat randFlat(engine);
    
     int highestLevel = 0;
     std::vector< double > levelCrossSections = 
@@ -838,7 +847,7 @@ namespace evgen {
                        crossSection != levelCrossSections.end(); ++crossSection)
       startLevelProbabilities.push_back((*crossSection)/totalCrossSection);
   
-    double randomNumber     = fRandomNumberGenerator->Uniform();
+    double randomNumber     = randFlat.fire();
     double tprob            =  0;
     int    chosenStartLevel = -1;
     // Picking a starting level
@@ -852,9 +861,9 @@ namespace evgen {
       tprob += startLevelProbabilities.at(level);
     }
   
-    std::vector< double > vertex = GetUniformPosition();
+    std::vector< double > vertex = GetUniformPosition(engine);
   
-    std::vector< double > electronDirection = GetIsotropicDirection();
+    std::vector< double > electronDirection = GetIsotropicDirection(engine);
   
     // In MeV
     double electronEnergy    = neutrinoEnergy - 
@@ -946,7 +955,7 @@ namespace evgen {
     while (level != groundLevel) 
     {
       
-      double rl = fRandomNumberGenerator->Uniform();
+      double rl = randFlat.fire();
       
       int decayNum = 0;
   
@@ -969,15 +978,14 @@ namespace evgen {
                                                  fEnergyLevels.at(level);
           double gammaEnergyGeV = gammaEnergy/1000;
   
-          std::vector< double > gammaDirection = GetIsotropicDirection();
+          std::vector< double > gammaDirection = GetIsotropicDirection(engine);
           double gammaPx = gammaDirection.at(0)*gammaEnergyGeV;
           double gammaPy = gammaDirection.at(1)*gammaEnergyGeV;
           double gammaPz = gammaDirection.at(2)*gammaEnergyGeV;
   
           double gammaM  = 0.0;
   
-          double gammaTime = 
-            (-TMath::Log(fRandomNumberGenerator->Uniform())/
+          double gammaTime = (-TMath::Log(randFlat.fire())/
                               (1/(levelDelay.at(lastLevel)))) + ttime;
   
           // Adding the gamma to truth
