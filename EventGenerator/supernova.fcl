@@ -5,14 +5,14 @@ standard_supernova_alg:
   # Sample this energy spectrum (found in $FW_SEARCH_PATH)
   EnergySpectrumFileName: "nue_spectrum.root"
   # Average number of neutrinos per event
-  MeanNumberOfNeutrinos:      100
+  MeanNumberOfNeutrinos:       10
   # Simulate neutrinos randomly within this time interval
-  NeutrinoTimeBegin:      -100000.0 # In ns
-  NeutrinoTimeEnd:         100000.0 # In ns
+  NeutrinoTimeBegin:     -2246000.0 # In ns
+  NeutrinoTimeEnd:        2246000.0 # In ns
   # Simulate neutrinos in a box
   # Define the box using two coordinates
-  ActiveVolume0:           [ -100.0, -100.0, -100.0 ] # In cm
-  ActiveVolume1:           [  100.0,  100.0,  100.0 ] # In cm
+  ActiveVolume0:           [ -363.376, -607.829,  -0.876 ] # In cm
+  ActiveVolume1:           [  363.376,  607.829, 463.904 ] # In cm
 }
 
 standard_supernova:
@@ -20,5 +20,7 @@ standard_supernova:
   module_type:   "SNNueAr40CCGen"
   GeneratorAlg: @local::standard_supernova_alg
 }
+
+dunefd_workspace_supernova: @local::standard_supernova
 
 END_PROLOG
