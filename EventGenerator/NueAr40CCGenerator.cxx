@@ -177,7 +177,8 @@ namespace evgen {
   {
 
     cet::search_path searchPath("FW_SEARCH_PATH");
-    std::string directoryName = "SNU/" + fEnergySpectrumFileName;
+    std::string directoryName = "SupernovaNeutrinos/" + 
+                                                      fEnergySpectrumFileName;
     
     std::string fullName;
     searchPath.find_file(directoryName, fullName);
