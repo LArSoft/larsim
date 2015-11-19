@@ -36,7 +36,6 @@
 #include <iostream>
 #include <cstring>
 #include <sys/stat.h>
-#include <cmath>
 
 namespace simb{
   class MCTruth;
@@ -141,27 +140,38 @@ namespace simfilter {
   // Get the MCTruths from associations to our particles
   art::FindOneP<simb::MCTruth> assMCT(mcpHandle, evt, "largeant");
 
-  // Get fiducial volume boundary.
-  double xmin = 0.;
-  double xmax = 2.*geom->DetHalfWidth();
-  double ymin = -geom->DetHalfHeight();
-  double ymax = geom->DetHalfHeight();
-  double zmin = 0.;
-  double zmax = geom->DetLength();
+  double xmin;
+  double xmax;
+  double ymin;
+  double ymax;
+  double zmin;
+  double zmax;
 
-  // Get cryostat (box) volume boundary.
-  double xmin_cryo = geom->DetHalfWidth() - geom->CryostatHalfWidth();
-  double xmax_cryo = geom->DetHalfWidth() + geom->CryostatHalfWidth();
-  double ymin_cryo = -geom->CryostatHalfHeight();
-  double ymax_cryo = geom->CryostatHalfHeight();
-  double zmin_cryo = geom->DetLength()/2. - geom->DetLength()/2.;
-  double zmax_cryo = geom->DetLength()/2. + geom->DetLength()/2.;
+  if(fKeepCryostatNeutrinos)
+  {
+    // Get cryostat (box) volume boundary.
+    xmin = geom->DetHalfWidth() - geom->CryostatHalfWidth();
+    xmax = geom->DetHalfWidth() + geom->CryostatHalfWidth();
+    ymin = -geom->CryostatHalfHeight();
+    ymax = geom->CryostatHalfHeight();
+    zmin = geom->DetLength()/2. - geom->DetLength()/2.;
+    zmax = geom->DetLength()/2. + geom->DetLength()/2.;
+  }
+  else
+  {
+    // Get fiducial volume boundary.
+    xmin = 0.;
+    xmax = 2.*geom->DetHalfWidth();
+    ymin = -geom->DetHalfHeight();
+    ymax = geom->DetHalfHeight();
+    zmin = 0.;
+    zmax = geom->DetLength();
+  }
 
   //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
   // Now let's loop over G4 MCParticle list and track back MCTruth    
   bool inTPC (false);
-  bool inCryo (false);
-  for(size_t i=0; i < mcpHandle->size() && !inTPC && !inCryo; ++i) 
+  for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i) 
     {
       const art::Ptr<simb::MCParticle> mcp_ptr(mcpHandle,i);
       const art::Ptr<simb::MCTruth> &mct = assMCT.at(i);
@@ -186,36 +196,18 @@ namespace simfilter {
 	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;		
 	      
 	      TVector3 pos = part->Position(j).Vect();
-        if(fKeepCryostatNeutrinos)
-        {
-	      if(pos.X() >= xmin_cryo &&
-  		    pos.X() <= xmax_cryo &&
-  		    pos.Y() >= ymin_cryo &&
-  		    pos.Y() <= ymax_cryo &&
-  		    pos.Z() >= zmin_cryo &&
-  		    pos.Z() <= zmax_cryo) 
-          {
-		        interactionDesired = true;
-		        //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
-		        std::cout << "FilterNoDirtNeutrinos: Genie daughter found in Cryostat. G4Particle " << std::endl ;		
-		        inCryo=true;
-          }
-        }
-        else
-        {
 	      if(pos.X() >= xmin &&
-		    pos.X() <= xmax &&
-		    pos.Y() >= ymin &&
-		    pos.Y() <= ymax &&
-		    pos.Z() >= zmin &&
-		    pos.Z() <= zmax) 
-		    {
-		      interactionDesired = true;
-		      //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
-		      std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
-		      inTPC=true;
-		    }
-      }
+		 pos.X() <= xmax &&
+		 pos.Y() >= ymin &&
+		 pos.Y() <= ymax &&
+		 pos.Z() >= zmin &&
+		 pos.Z() <= zmax) 
+		{
+		  interactionDesired = true;
+		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
+		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
+		  inTPC=true;
+		}
 	    } // trajectory loop
 	} // end Genie particle
     } // loop on MCPHandle
