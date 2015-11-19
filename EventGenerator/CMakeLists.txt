@@ -1,11 +1,15 @@
 
 art_make( BASENAME_ONLY
           LIB_LIBRARIES
+                        ${SIMULATIONBASE}
                         ${ART_PERSISTENCY_PROVENANCE}
                         ${ART_FRAMEWORK_CORE}
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${CETLIB}
+                        ${ROOT_BASIC_LIB_LIST}
+                        ${FHICLCPP}
+                        ${CLHEP}
           MODULE_LIBRARIES PhotonPropagation
                            PhotonVisibilityService_service
                            Simulation
@@ -13,6 +17,7 @@ art_make( BASENAME_ONLY
                            Geometry
                            Geometry_service
                            SeedService_service # artextensions
+                           EventGenerator
                            ${SIMULATIONBASE}
                            ${ART_FRAMEWORK_CORE}
                            ${ART_FRAMEWORK_PRINCIPAL}
