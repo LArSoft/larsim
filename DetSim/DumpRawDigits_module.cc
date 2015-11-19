@@ -27,8 +27,8 @@
 #include "SimpleTypesAndConstants/geo_types.h" // geo::View_t
 #include "RawData/raw.h" // raw::Uncompress()
 #include "RawData/RawDigit.h"
-#include "CalibrationDBI/Interface/IChannelStatusService.h"
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "CalibrationDBI/Interface/ChannelStatusService.h"
+#include "CalibrationDBI/Interface/ChannelStatusProvider.h"
 
 namespace {
   
@@ -162,9 +162,9 @@ namespace detsim {
       = evt.getValidHandle<std::vector<raw::RawDigit>>(fDetSimModuleLabel);
     
     // channel filter: create one only if requested
-    lariov::IChannelStatusProvider const* channelStatus = bIgnoreFilters
+    lariov::ChannelStatusProvider const* channelStatus = bIgnoreFilters
       ? nullptr
-      : art::ServiceHandle<lariov::IChannelStatusService>()->GetProviderPtr();
+      : art::ServiceHandle<lariov::ChannelStatusService>()->GetProviderPtr();
     
     mf::LogInfo(fOutputCategory)
       << "The event contains " << Digits->size() << " raw digits";

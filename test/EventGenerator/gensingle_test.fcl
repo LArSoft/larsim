@@ -27,7 +27,7 @@ services:
   TimeTracker:           {}
   RandomNumberGenerator: {} #ART native random number generator
                          @table::lartpcdetector_simulation_services
-  IChannelStatusService: @local::standard_channelstatus
+  ChannelStatusService: @local::standard_channelstatus
 }
 
 

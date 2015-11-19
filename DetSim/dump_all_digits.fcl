@@ -22,7 +22,7 @@ process_name: DumpRawDigits
 services: {
 #  Geometry:               @local::standard_geo             # defined in geometry.fcl
 #  ExptGeoHelperInterface: @local::standard_geometry_helper # defined in geometry.fcl
-#  IChannelStatusService:  @local::standard_channelstatus   # defined in channelstatus.fcl
+#  ChannelStatusService:  @local::standard_channelstatus   # defined in channelstatus.fcl
   
   message: {
   #   debugModules: [ "*" ]
