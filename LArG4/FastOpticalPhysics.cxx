@@ -49,7 +49,7 @@
 #include "LArG4/IonizationAndScintillation.h"
 #include "LArG4/OpFastScintillation.hh"
 
-#include "Utilities/LArPropertiesService.h"
+#include "DetectorInfoServices/LArPropertiesService.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -180,7 +180,7 @@ namespace larg4 {
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
     fTheCerenkovProcess->SetTrackSecondariesFirst(false);
     
-    const dataprov::LArProperties* larp = lar::providerFrom<util::LArPropertiesService>();
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     bool CerenkovEnabled = larp->CerenkovLightEnabled();
     
     mf::LogInfo("FastOpticalPhysics") << "Cerenkov enabled : " << CerenkovEnabled;

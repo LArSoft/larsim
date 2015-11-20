@@ -45,7 +45,7 @@ namespace larg4 {
     // Initialize values for the electron-cluster calculation.
     ClearSimChannels();
 
-    const dataprov::DetectorClocks* ts = lar::providerFrom<util::DetectorClocksService>();
+    const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
     fClock = ts->TPCClock();
 
     // the standard name contains cryostat and TPC;
@@ -91,8 +91,8 @@ namespace larg4 {
   // Called at the start of each event.
   void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    auto const * larp = lar::providerFrom<util::LArPropertiesService>();
-    auto const * detprop = lar::providerFrom<util::DetectorPropertiesService>();
+    auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fElectronLifetime      = detprop->ElectronLifetime();
     fArgon39DecayRate      = larp->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
@@ -130,7 +130,7 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
-      auto const * detprop = lar::providerFrom<util::DetectorPropertiesService>();
+      auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
       double timewindow = samplerate*readwindow;
@@ -374,7 +374,7 @@ namespace larg4 {
                                                  Radio_t radiological /* = notradiological */,
                                                  unsigned int tickmax /* = 4096 */)
   {
-    auto const * ts = lar::providerFrom<util::DetectorClocksService>();
+    auto const * ts = lar::providerFrom<detinfo::DetectorClocksService>();
     
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to

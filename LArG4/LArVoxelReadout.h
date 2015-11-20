@@ -55,9 +55,9 @@
 #include "Geometry/TPCGeo.h"
 #include "Simulation/LArG4Parameters.h"
 #include "LArG4/IonizationAndScintillation.h"
-#include "Utilities/LArPropertiesService.h"
-#include "Utilities/DetectorPropertiesService.h"
-#include "Utilities/DetectorClocksService.h"
+#include "DetectorInfoServices/LArPropertiesService.h"
+#include "DetectorInfoServices/DetectorPropertiesService.h"
+#include "DetectorInfoServices/DetectorClocksService.h"
 
 // Forward declarations
 class G4HCofThisEvent;

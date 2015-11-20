@@ -45,7 +45,7 @@
 #include "LArG4/CustomPhysicsFactory.hh"
 #include "LArG4/OpBoundaryProcessSimple.hh"
 
-#include "Utilities/LArPropertiesService.h"
+#include "DetectorInfoServices/LArPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ProcessManager.hh"
@@ -185,7 +185,7 @@ namespace larg4 {
     fTheScintillationProcess->AddSaturation(emSaturation);
     
     
-    const dataprov::LArProperties* larp = lar::providerFrom<util::LArPropertiesService>();
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
     
