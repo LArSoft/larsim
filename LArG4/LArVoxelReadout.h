@@ -218,7 +218,7 @@ namespace larg4 {
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
 
-    ::util::ElecClock                         fClock;      ///< TPC electronics clock
+    ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
   };
 
 }
