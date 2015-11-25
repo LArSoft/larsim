@@ -99,7 +99,7 @@
 #include "Geant4/globals.hh"
 
 // ROOT Includes
-
+#include "TGeoManager.h"
 
 // Forward declarations
 class G4RunManager;
@@ -141,6 +141,10 @@ namespace larg4 {
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
+    std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
+    std::vector<float>   fVolumesOffsetsX; ///<X Offset to map world to local coordinates for corresonding volume
+    std::vector<float>   fVolumesOffsetsY; ///<Y Offset to map world to local coordinates for corresonding volume
+    std::vector<float>   fVolumesOffsetsZ; ///<Z Offset to map world to local coordinates for corresonding volume
   };
 
 } // namespace LArG4
@@ -157,6 +161,10 @@ namespace larg4 {
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList")                   )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
+    , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes"))
+    , fVolumesOffsetsX        (pset.get< std::vector< float > >("VolumesOffsetsX"))
+    , fVolumesOffsetsY        (pset.get< std::vector< float > >("VolumesOffsetsY"))
+    , fVolumesOffsetsZ        (pset.get< std::vector< float > >("VolumesOffsetsZ"))
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
@@ -319,12 +327,33 @@ namespace larg4 {
 
         const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
         
-        partCol->reserve(partCol->size() + particleList.size()); // not very useful here...
+        //taking this out for now
+        //partCol->reserve(partCol->size() + particleList.size()); // not very useful here...
         for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){
+         bool saveParticle=false;
+         if(fKeepParticlesInVolumes.size()==0){
+          saveParticle=true;
+         }else{
+          //loop over each particle's traj points and see if they are in each kept volume
+          for(unsigned int trj = 0; trj < (*pitr).second->NumberTrajectoryPoints() && !saveParticle; trj++) {
+            for(unsigned int vol = 0;vol<fKeepParticlesInVolumes.size();vol++){
+              double localpos[3]={(*pitr).second->Vx(trj)+fVolumesOffsetsX[vol],
+                                  (*pitr).second->Vy(trj)+fVolumesOffsetsY[vol],
+                                  (*pitr).second->Vz(trj)+fVolumesOffsetsZ[vol]};
+              if (geom->ROOTGeoManager()->GetVolume(fKeepParticlesInVolumes[vol].c_str())->Contains(localpos)){
+                saveParticle=true;
+                break;
+              }
+            }
+          }
+         }
+         
+         if(saveParticle){
           // copy the particle so that it isnt const
           simb::MCParticle p(*(*pitr).second);
           partCol->push_back(p);
           util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
+         }
         }
 
         // Has the user request a detailed dump of the output objects?
