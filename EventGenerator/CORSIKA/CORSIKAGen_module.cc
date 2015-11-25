@@ -310,7 +310,7 @@ namespace evgen{
     int nShowerCntr=0; //keep track of how many showers are left to be added to mctruth
     int nShowerQry=0; //number of showers to query from db
     int shower,pdg;
-    double px,py,pz,x,z,toff,etot,showerTime=0.,showerXOffset=0.,showerZOffset=0.,t;
+    double px,py,pz,x,z,tParticleTime,etot,showerTime=0.,showerXOffset=0.,showerZOffset=0.,t;
     for(int i=0; i<fShowerInputs; i++){
       nShowerCntr=fNShowersPerEvent[i];
       while(nShowerCntr>0){
@@ -333,7 +333,7 @@ namespace evgen{
               shower=sqlite3_column_int(statement,0);
               if(shower!=lastShower){
                 //each new shower gets its own random time and position offsets
-                showerTime=1e9*(engine.flat()*fSampleTime - (fSampleTime/2)); //converting from s to ns
+                showerTime=1e9*(engine.flat()*fSampleTime); //converting from s to ns
                 //and a random offset in both z and x controlled by the fRandomXZShift parameter
                 showerXOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
                 showerZOffset=engine.flat()*fRandomXZShift - (fRandomXZShift/2);
@@ -354,8 +354,10 @@ namespace evgen{
               //get/calculate position components
               x=wrapvar(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1]);
               z=wrapvar(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5]);
-              toff=sqlite3_column_double(statement,7); //time offset
-              t=toff+showerTime;
+              tParticleTime=sqlite3_column_double(statement,7); //time offset, includes propagation time from top of atmosphere
+              t=tParticleTime+showerTime+(1e9*fToffset); //actual particle time is particle surface arrival time
+                                                   //+ shower start time
+                                                   //+ global offset (fcl parameter, in s)
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
               
               //project back to wordvol/fProjectToHeight
