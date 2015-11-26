@@ -58,6 +58,7 @@ namespace evgen {
   private:
     void openDBs();
     void populateNShowers();
+    void populateTOffset();
     void GetSample(simb::MCTruth&);
     double wrapvar( double var, double low, double high);
     void ProjectToBoxEdge(	const double 	xyz[],
@@ -74,6 +75,7 @@ namespace evgen {
     std::vector<int> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
     std::vector<int> fMaxShowers; //< Max number of showers to query, one per showerinput
     double fShowerBounds[6]={0.,0.,0.,0.,0.,0.}; ///< Boundaries of area over which showers are to be distributed
+    double fToffset_corsika=0.; ///< Timing offset to account for propagation time through atmosphere, populated from db
     
     //fcl parameters
     double fProjectToHeight=0.; ///< Height to which particles will be projected [cm]
@@ -117,6 +119,7 @@ namespace evgen{
     
     this->openDBs();
     this->populateNShowers();
+    this->populateTOffset();
     
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();    
@@ -184,6 +187,33 @@ namespace evgen{
   double CORSIKAGen::wrapvar( double var, double low, double high){
     //wrap variable so that it's always between low and high
     return (var - (high - low) * floor(var/(high-low))) + low;
+  }
+  
+  void CORSIKAGen::populateTOffset(){
+    //populate TOffset_corsika by finding minimum ParticleTime from db file
+    
+    sqlite3_stmt *statement;
+    const std::string kStatement("select min(t) from particles");
+    double t=0.;
+    
+    for(int i=0; i<fShowerInputs; i++){
+        //build and do query to get run min(t) from each db
+        if ( sqlite3_prepare(fdb[i], kStatement.c_str(), -1, &statement, 0 ) == SQLITE_OK ){
+          int res=0;
+          res = sqlite3_step(statement);
+          if ( res == SQLITE_ROW ){
+            t=sqlite3_column_double(statement,0);
+            mf::LogInfo("CORSIKAGen")<<"For showers input "<< i<<" found particles.min(t)="<<t<<"\n";
+            if (i==0 || t<fToffset_corsika) fToffset_corsika=t;
+          }else{
+            throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
+          }         
+        }else{
+          throw cet::exception("CORSIKAGen") << "Error preparing statement: (" <<kStatement<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
+        }
+    }
+    
+    mf::LogInfo("CORSIKAGen")<<"Found corsika timeoffset [ns]: "<< fToffset_corsika<<"\n";
   }
   
   void CORSIKAGen::populateNShowers(){
@@ -355,9 +385,10 @@ namespace evgen{
               x=wrapvar(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1]);
               z=wrapvar(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5]);
               tParticleTime=sqlite3_column_double(statement,7); //time offset, includes propagation time from top of atmosphere
-              t=tParticleTime+showerTime+(1e9*fToffset); //actual particle time is particle surface arrival time
+              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika; //actual particle time is particle surface arrival time
                                                    //+ shower start time
                                                    //+ global offset (fcl parameter, in s)
+                                                   //- propagation time through atmosphere
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
               
               //project back to wordvol/fProjectToHeight

@@ -3,8 +3,8 @@ BEGIN_PROLOG
 standard_CORSIKAGen_protons:
 {
  module_type:         "CORSIKAGen"
- SampleTime:           5.0e-3               #integration time in seconds
- TimeOffset:           -2.176e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.376e-3 (CORSIKA prop. time) - 0.2e-3 (g4 rise time)
+ SampleTime:           7.05e-3               #integration time in seconds
+ TimeOffset:           -3.856e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.2e-3 (g4 rise time)
  ProjectToHeight:      1800                 #height to which particles are projected [cm]
  ShowerInputFiles:     [ "p_showers.db" ]   #list of sqlite dbs with corsika showers
  ShowerFluxConstants:  [ 1.8e4 ]            #list of flux constants per shower file
@@ -16,8 +16,8 @@ standard_CORSIKAGen_protons:
 standard_CORSIKAGen_CMC:
 {
  module_type:         "CORSIKAGen"
- SampleTime:           5.0e-3               #integration time in seconds
- TimeOffset:           -2.176e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.376e-3 (CORSIKA prop. time) - 0.2e-3 (g4 rise time)
+ SampleTime:           7.05e-3               #integration time in seconds
+ TimeOffset:           -3.856e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.2e-3 (g4 rise time)
  ProjectToHeight:      1800                 #height to which particles are projected [cm]
  ShowerInputFiles:     [ "p_showers.db", "He_showers.db", "N_showers.db", "Mg_showers.db", "Fe_showers.db"] #list of sqlite dbs with corsika showers
  ShowerFluxConstants:  [ 1.72e4, 9.2e3, 6.2e3, 9.2e3, 6.2e3] #list of flux constants per shower file
