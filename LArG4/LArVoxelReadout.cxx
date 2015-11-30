@@ -97,7 +97,7 @@ namespace larg4 {
     fArgon39DecayRate      = larp->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
       fDriftVelocity[i]    = detprop->DriftVelocity(detprop->Efield(i),
-						    larp->Temperature())/1000.;
+						    detprop->Temperature())/1000.;
     
     fElectronClusterSize   = fLgpHandle->ElectronClusterSize();
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
@@ -105,7 +105,7 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
 
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
-                                  << "\n Temperature: "     << larp->Temperature()
+                                  << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2]
                                   << "\n Argon 39 Decay Rate: " << fArgon39DecayRate;

@@ -27,7 +27,6 @@ extern "C" {
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "Utilities/LArFFT.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
 #include "DetectorInfoServices/DetectorPropertiesService.h"
 #include "DetectorInfoServices/DetectorClocksService.h"
 
@@ -479,9 +478,8 @@ namespace detsim{
     art::ServiceHandle<art::TFileService> tfs;
     fIndFieldResp = tfs->make<TH1D>("InductionFieldResponse",";t (ns);Induction Response",fNTicks,0,fNTicks);
     fColFieldResp = tfs->make<TH1D>("CollectionFieldResponse",";t (ns);Collection Response",fNTicks,0,fNTicks);
-    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    double driftvelocity=detprop->DriftVelocity(detprop->Efield(),larp->Temperature())/1000.;  
+    double driftvelocity=detprop->DriftVelocity(detprop->Efield(),detprop->Temperature())/1000.;  
     int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*fSampleRate)); ///number of bins //KP
   
     double integral = 0.;

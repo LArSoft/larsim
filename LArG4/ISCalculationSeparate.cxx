@@ -39,7 +39,7 @@ namespace larg4{
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
-    double density       = larp->Density(larp->Temperature());
+    double density       = detprop->Density(detprop->Temperature());
     fEfield              = detprop->Efield();
     fScintByParticleType = larp->ScintByParticleType();
     fGeVToElectrons      = lgpHandle->GeVToElectrons();
