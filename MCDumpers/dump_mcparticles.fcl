@@ -1,0 +1,82 @@
+#
+# File:     dump_mcparticles.fcl
+# Purpose:  Dump on screen MC particle content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     December 3rd, 2015
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpMCParticles
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpMCParticles" messages and put them in DumpMCParticles.log
+      DumpMCParticles: {
+        append: false
+        categories: {
+          DumpMCParticles: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCParticles.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCParticles
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpMCParticles: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpmcparticles: {
+      module_label: dumpmcparticles
+      module_type:  DumpMCParticles
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCParticles"
+      
+      # specify the label of the simb::MCParticle data product (or producer)
+      InputParticles: "largeant"
+      
+      # print this many trajectory points per output line (default: 3; 0 skips all)
+      PointsPerLine: 2
+      
+    } # dumpmcparticles
+  } # analyzers
+  
+  dumpers: [ dumpmcparticles ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics
