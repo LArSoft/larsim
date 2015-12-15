@@ -8,6 +8,8 @@
 #define MCTRACKRECOALG_CXX
 
 #include "MCTrackRecoAlg.h"
+#include <iostream>
+#include <fstream>
 
 namespace sim {
 
@@ -30,6 +32,9 @@ namespace sim {
       if( part_v._pdg_list.find(mini_part._pdgcode) == part_v._pdg_list.end() ) continue;
 
       ::sim::MCTrack mini_track;
+      
+      std::vector<double> dEdx; 
+      std::vector<std::vector<double> > dQdx; 
 
       mini_track.Origin  ( mini_part._origin   );
       mini_track.PdgCode ( mini_part._pdgcode  );
@@ -72,9 +77,123 @@ namespace sim {
 
       // Fill trajectory points
 
-      for(auto const& vtx_mom : mini_part._det_path)
-	
+
+
+      for(auto const& vtx_mom : mini_part._det_path){	
 	mini_track.push_back(MCStep(vtx_mom.first,vtx_mom.second));
+      }
+
+      auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
+      auto const& edeps = edep_v.GetEdepArrayAt(edep_index);      
+
+
+      int n = 0;
+
+      for(auto const& step_trk : mini_track){
+
+        if( int(&step_trk - &mini_track[0])+1 == int(mini_track.size()) ){  //annoying way to check if this is last step
+	  std::cout << "\t\t\t::: TRACK END!" << std::endl;
+	  break;}
+	
+	
+	auto const& nxt_step_trk = mini_track.at(int(&step_trk - &mini_track[0])+1);      	
+
+	//Defining dEdx	
+	
+	//Find the distance step-to-step
+	double dist = sqrt(pow(step_trk.X() - nxt_step_trk.X(),2) + 
+			   pow(step_trk.Y() - nxt_step_trk.Y(),2) +
+			   pow(step_trk.Z() - nxt_step_trk.Z(),2));
+
+
+	//Make a plane at the step pointed at the next step
+	
+	//Need to define a plane through the first MCStep with a normal along the momentum vector of the step
+	//The plane will be defined in the typical way:
+	// a*x + b*y + c*z + d = 0
+	// where, a = dir_x, b = dir_y, c = dir_z, d = - (a*x_0+b*y_0+c*z_0)
+	// then the *signed* distance of any point (x_1, y_1, z_1) from this plane is: 
+	// D = (a*x_1 + b*y_1 + c*z_1 + d )/sqrt( pow(a,2) + pow(b,2) + pow(c,2))  	        
+
+	double a = 0, b = 0, c = 0, d = 0;
+	a = nxt_step_trk.X() - step_trk.X();
+	b = nxt_step_trk.Y() - step_trk.Y();
+	c = nxt_step_trk.Z() - step_trk.Z();
+	d = -1*(a*step_trk.X() + b*step_trk.Y() + c*step_trk.Z());	
+	
+	//Make a line connecting the two points 
+	// Test point == x_0
+	// First Step == x_1
+	// Next step == x_2
+	// A = x_1 - x_0
+	// B = x_2 - x_1
+
+	// B definition 
+	TVector3 B(nxt_step_trk.Position().X() - step_trk.Position().X(), 
+		   nxt_step_trk.Position().Y() - step_trk.Position().Y(),
+		   nxt_step_trk.Position().Z() - step_trk.Position().Z());
+	
+
+
+	double step_dedx = 0; 
+	std::vector<double> step_dqdx(3);
+	step_dqdx.clear();
+
+      
+	for(auto const& edep : edeps){
+	  // x_0 definition
+	  TVector3 x_0(edep.pos._x, edep.pos._y, edep.pos._z);
+	  // A definition 
+	  TVector3 A(step_trk.Position().X() - x_0.X(), 
+		     step_trk.Position().Y() - x_0.Y(), 
+		     step_trk.Position().Z() - x_0.Z());
+	  
+	  // Distance from the line connecting x_1 and x_2
+	  // 
+	  //                 [A dot B]^2     [A dot B]^2
+	  // d^2 = A^2 - 2* ____________ + ______________
+	  //                    B^2             B^2
+	  double LineDist = 0;
+	 
+	  if(B.Mag2() != 0){
+	    LineDist = sqrt(A.Mag2() - 2*pow(A*B,2)/B.Mag2() + pow(A*B,2)/B.Mag2());
+	  }
+	  else{LineDist = 0;}
+	  
+	  //Planar Distance
+	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist &&
+	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >= 0 && 
+	      LineDist < 0.1){
+	    
+	    int npid = 0;
+	    double engy = 0;
+	    
+	    for(auto const& pid_energy : edep.energy){
+	      engy += pid_energy.second;
+	      npid++;
+	    }
+	    engy /= npid;
+	    step_dedx += engy;
+	  }
+	  
+	  // Charge
+	  auto q_iter = edep.charge.find(edep.pid);
+	  if(q_iter != edep.charge.end())
+	    step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  
+	  
+	}
+
+	step_dedx /= dist;
+	step_dqdx[0] /= dist;
+	step_dqdx[1] /= dist;
+	step_dqdx[2] /= dist;	
+
+	dEdx.push_back(step_dedx);
+	dQdx.push_back(step_dqdx);
+
+      }
+      mini_track.dEdx(dEdx);
+      mini_track.dQdx(dQdx);
       /*
 
       auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
