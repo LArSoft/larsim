@@ -6,10 +6,10 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/ParticleListAction.h"
+#include "larsim/LArG4/ParticleListAction.h"
 #include "G4Base/PrimaryParticleInformation.h"
-#include "Simulation/sim.h"
-#include "Simulation/ParticleList.h"
+#include "larsim/Simulation/sim.h"
+#include "larsim/Simulation/ParticleList.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

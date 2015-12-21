@@ -27,10 +27,10 @@
 #include "art/Framework/Core/FindOneP.h"
 
 // LArSoft Includes
-#include "Simulation/ParticleList.h"
+#include "larsim/Simulation/ParticleList.h"
 #include "SimulationBase/MCTruth.h"
-#include "Simulation/sim.h"
-#include "Geometry/Geometry.h"
+#include "larsim/Simulation/sim.h"
+#include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
 #include <iostream>

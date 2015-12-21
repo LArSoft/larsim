@@ -8,10 +8,10 @@
 /// to make the various simulation lists, ie ParticleList, LArVoxelList, etc
 ////////////////////////////////////////////////////////////////////////
 
-#include "Simulation/SimListUtils.h"
-#include "Simulation/SimChannel.h"
-#include "Simulation/LArG4Parameters.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
+#include "larsim/Simulation/SimListUtils.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"

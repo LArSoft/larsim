@@ -14,7 +14,7 @@
 
 // Framework includes
 
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 namespace sim {
 

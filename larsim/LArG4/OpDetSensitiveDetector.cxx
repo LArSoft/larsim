@@ -12,10 +12,10 @@
 
 
 
-#include "LArG4/OpDetSensitiveDetector.h"
-#include "LArG4/OpDetPhotonTable.h"
-#include "LArG4/OpDetLookup.h"
-#include "Simulation/SimPhotons.h"
+#include "larsim/LArG4/OpDetSensitiveDetector.h"
+#include "larsim/LArG4/OpDetPhotonTable.h"
+#include "larsim/LArG4/OpDetLookup.h"
+#include "larsim/Simulation/SimPhotons.h"
 #include "Geant4/G4SDManager.hh"
 
 namespace larg4{

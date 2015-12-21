@@ -4,8 +4,8 @@
 /// \author miceli@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/AuxDetReadout.h"
-#include "LArG4/ParticleListAction.h"
+#include "larsim/LArG4/AuxDetReadout.h"
+#include "larsim/LArG4/ParticleListAction.h"
 //#include "DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"

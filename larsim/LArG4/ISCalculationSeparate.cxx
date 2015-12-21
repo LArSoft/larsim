@@ -11,11 +11,11 @@
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmSaturation.hh"
 
-#include "LArG4/ISCalculationSeparate.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "Simulation/LArG4Parameters.h"
-#include "Simulation/LArVoxelCalculator.h"
+#include "larsim/LArG4/ISCalculationSeparate.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "larsim/Simulation/LArVoxelCalculator.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"

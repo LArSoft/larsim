@@ -11,12 +11,12 @@
 //
 
 
-#include "LArG4/OpDetPhotonTable.h"
+#include "larsim/LArG4/OpDetPhotonTable.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/OpDetGeo.h"
-#include "Simulation/SimPhotons.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/OpDetGeo.h"
+#include "larsim/Simulation/SimPhotons.h"
 
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;

@@ -34,14 +34,14 @@ extern "C" {
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Simulation/sim.h"
-#include "RawData/raw.h"
-#include "RawData/RawDigit.h"
-#include "RecoBase/Wire.h"
-#include "Utilities/LArFFT.h"
-#include "Geometry/PlaneGeo.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larsim/Simulation/sim.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/Utilities/LArFFT.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // ROOT includes
 #include <TMath.h>

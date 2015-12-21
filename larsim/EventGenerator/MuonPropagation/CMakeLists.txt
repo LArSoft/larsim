@@ -1,14 +1,14 @@
 
 include_directories ( $ENV{MuonPropagationHOME}/src )
 
-art_make( BASENAME_ONLY
+art_make( 
           MODULE_LIBRARIES 
 	  		PhotonPropagation
-                        PhotonVisibilityService_service
+                        larsim_PhotonPropagation_PhotonVisibilityService_service
                         Simulation
                         SummaryData
                         Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${GaisserParam}
 			${MUSUN}

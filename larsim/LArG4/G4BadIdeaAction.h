@@ -23,7 +23,7 @@
 #include "Geant4/globals.hh"
 #include <map>
 
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
 // Forward declarations.
 class G4Step;

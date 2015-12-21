@@ -20,12 +20,12 @@
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Persistency/Common/Assns.h"
 #include "art/Framework/Core/FindOneP.h"
-#include "Utilities/AssociationUtil.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 #include <memory>
 
 #include "SimulationBase/MCTruth.h"
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 #include "MergeSimSources.h"
 
 namespace sim {

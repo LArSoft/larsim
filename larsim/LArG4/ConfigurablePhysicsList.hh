@@ -50,7 +50,7 @@ namespace larg4 {
 
 }
 
-#include "LArG4/ConfigurablePhysicsList.icc"
+#include "larsim/LArG4/ConfigurablePhysicsList.icc"
 
 namespace larg4 {
   typedef TConfigurablePhysicsList<G4VModularPhysicsList> ConfigurablePhysicsList;

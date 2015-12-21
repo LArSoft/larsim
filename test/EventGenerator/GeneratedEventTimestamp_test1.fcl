@@ -31,7 +31,7 @@ services: {
 
 
 source: {
-  source_type: EmptyEvent
+  module_type: EmptyEvent
   
   timestampPlugin: {
     plugin_type: "GeneratedEventTimestamp"

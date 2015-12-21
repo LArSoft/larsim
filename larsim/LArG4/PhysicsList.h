@@ -46,7 +46,7 @@
 #include "Geant4/G4String.hh"
 #include "Geant4/globals.hh"
 #include "Geant4/QGSP_BIC.hh"
-#include "LArG4/ConfigurablePhysicsList.hh"
+#include "larsim/LArG4/ConfigurablePhysicsList.hh"
 
 namespace larg4 {
 

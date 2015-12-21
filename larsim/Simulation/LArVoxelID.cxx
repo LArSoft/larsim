@@ -13,8 +13,8 @@
 /// keeping track of the time slice.  What's a four-dimensional volume
 /// element?  A "tesseract element or "tessel"?)
 
-#include "Simulation/LArVoxelID.h"
-#include "Simulation/LArVoxelCalculator.h"
+#include "larsim/Simulation/LArVoxelID.h"
+#include "larsim/Simulation/LArVoxelCalculator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include <TLorentzVector.h>
 

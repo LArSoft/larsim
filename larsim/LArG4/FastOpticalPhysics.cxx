@@ -43,13 +43,13 @@
 #ifndef LARG4_FASTOPTICALPHYSICS_CXX
 #define LARG4_FASTOPTICALPHYSICS_CXX 1
 
-#include "LArG4/FastOpticalPhysics.h"
-#include "LArG4/CustomPhysicsFactory.hh"
-#include "LArG4/OpBoundaryProcessSimple.hh"
-#include "LArG4/IonizationAndScintillation.h"
-#include "LArG4/OpFastScintillation.hh"
+#include "larsim/LArG4/FastOpticalPhysics.h"
+#include "larsim/LArG4/CustomPhysicsFactory.hh"
+#include "larsim/LArG4/OpBoundaryProcessSimple.hh"
+#include "larsim/LArG4/IonizationAndScintillation.h"
+#include "larsim/LArG4/OpFastScintillation.hh"
 
-#include "DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

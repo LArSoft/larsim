@@ -14,8 +14,8 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "PhotonPropagation/PhotonLibrary.h"
-#include "Simulation/PhotonVoxels.h"
+#include "larsim/PhotonPropagation/PhotonLibrary.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 ///General LArSoft Utilities
 namespace phot{

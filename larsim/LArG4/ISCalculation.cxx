@@ -5,7 +5,7 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/ISCalculation.h"
+#include "larsim/LArG4/ISCalculation.h"
 
 namespace larg4 {
 

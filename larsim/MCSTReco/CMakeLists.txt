@@ -1,10 +1,10 @@
 
 add_subdirectory(job)
 
-art_make( BASENAME_ONLY
+art_make( 
 	  LIBRARY_NAME     MCSTReco
           LIB_LIBRARIES    Geometry
-			   Geometry_service
+			   larcore_Geometry_Geometry_service
 			   Simulation
 			   SimulationBase
 			   SummaryData
@@ -29,7 +29,7 @@ art_make( BASENAME_ONLY
 			   ${ROOT_BASIC_LIB_LIST}
           MODULE_LIBRARIES MCSTReco
 			   Geometry
-			   Geometry_service
+			   larcore_Geometry_Geometry_service
 			   Simulation
 			   SimulationBase
 			   SummaryData

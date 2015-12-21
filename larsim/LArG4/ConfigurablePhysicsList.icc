@@ -32,10 +32,10 @@
 
 #include "Geant4/G4DataQuestionaire.hh"
 
-#include "LArG4/CustomPhysicsTable.hh"
-#include "LArG4/MuNuclearSplittingProcess.h"
-#include "LArG4/MuNuclearSplittingProcessXSecBias.h"
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/CustomPhysicsTable.hh"
+#include "larsim/LArG4/MuNuclearSplittingProcess.h"
+#include "larsim/LArG4/MuNuclearSplittingProcessXSecBias.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

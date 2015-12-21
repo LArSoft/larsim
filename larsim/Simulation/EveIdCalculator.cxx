@@ -6,9 +6,9 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "Simulation/EveIdCalculator.h"
-#include "Simulation/ParticleList.h"
-#include "Simulation/ParticleHistory.h"
+#include "larsim/Simulation/EveIdCalculator.h"
+#include "larsim/Simulation/ParticleList.h"
+#include "larsim/Simulation/ParticleHistory.h"
 #include "SimulationBase/MCParticle.h"
 
 namespace sim {

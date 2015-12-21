@@ -36,10 +36,10 @@
 #include "SimulationBase/MCParticle.h"
 #include "EventGeneratorBase/evgenbase.h"
 #include "EventGeneratorBase/CRY/CRYHelper.h"
-#include "Geometry/geo.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "SummaryData/RunData.h"
+#include "larcore/Geometry/geo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/SummaryData/RunData.h"
 
 namespace evgen {
 

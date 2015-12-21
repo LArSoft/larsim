@@ -10,8 +10,8 @@
 /// units, the standard for LArSoft is that distances are in cm, and
 /// energies are in GeV.
 
-#include "Simulation/ParticleList.h"
-#include "Simulation/EveIdCalculator.h"
+#include "larsim/Simulation/ParticleList.h"
+#include "larsim/Simulation/EveIdCalculator.h"
 
 #include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

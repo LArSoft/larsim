@@ -18,7 +18,7 @@
 //
 
 
-#include "LArG4/MuNuclearSplittingProcessXSecBias.h"
+#include "larsim/LArG4/MuNuclearSplittingProcessXSecBias.h"
 
 #include "Geant4/G4WrapperProcess.hh"
 #include "Geant4/G4VParticleChange.hh"

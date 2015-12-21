@@ -1,9 +1,9 @@
 
-art_make( BASENAME_ONLY
+art_make( 
           MODULE_LIBRARIES Geometry
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Simulation
-			BackTracker_service
+			larsim_MCCheater_BackTracker_service
 	                Utilities
 			Filters
 			RawData

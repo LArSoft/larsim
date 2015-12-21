@@ -11,9 +11,9 @@
 #include <utility>
 #include <stdexcept>
 
-#include "Simulation/SimChannel.h"
-#include "Simulation/sim.h"
-#include "SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larsim/Simulation/sim.h"
+#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

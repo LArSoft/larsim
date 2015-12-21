@@ -9,14 +9,14 @@
 #include "art/Framework/Principal/Event.h"
 
 // Base include
-#include "TriggerAlgo/TriggerAlgoBase.h"
+#include "larsim/TriggerAlgo/TriggerAlgoBase.h"
 
 // LArSoft include
-#include "OpticalDetectorData/OpticalTypes.h"
-#include "OpticalDetectorData/PMTTrigger.h"
-#include "OpticalDetectorData/FIFOChannel.h"
-#include "Simulation/BeamGateInfo.h"
-#include "RawData/RawDigit.h"
+#include "lardata/OpticalDetectorData/OpticalTypes.h"
+#include "lardata/OpticalDetectorData/PMTTrigger.h"
+#include "lardata/OpticalDetectorData/FIFOChannel.h"
+#include "larsim/Simulation/BeamGateInfo.h"
+#include "lardata/RawData/RawDigit.h"
 
 namespace trigger
 {

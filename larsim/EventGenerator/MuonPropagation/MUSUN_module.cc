@@ -182,8 +182,8 @@
 #include "EventGeneratorBase/evgenbase.h"
 
 // lar includes
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
 
 #include "TTree.h"
 #include "TVector3.h"

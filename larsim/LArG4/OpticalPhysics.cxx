@@ -41,11 +41,11 @@
 #ifndef LARG4_OPTICALPHYSICS_CXX
 #define LARG4_OPTICALPHYSICS_CXX 1
 
-#include "LArG4/OpticalPhysics.hh"
-#include "LArG4/CustomPhysicsFactory.hh"
-#include "LArG4/OpBoundaryProcessSimple.hh"
+#include "larsim/LArG4/OpticalPhysics.hh"
+#include "larsim/LArG4/CustomPhysicsFactory.hh"
+#include "larsim/LArG4/OpBoundaryProcessSimple.hh"
 
-#include "DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ProcessManager.hh"

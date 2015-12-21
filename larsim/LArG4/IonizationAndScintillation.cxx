@@ -5,10 +5,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 // lar includes
-#include "LArG4/IonizationAndScintillation.h"
-#include "LArG4/ISCalculationNEST.h"
-#include "LArG4/ISCalculationSeparate.h"
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
+#include "larsim/LArG4/ISCalculationNEST.h"
+#include "larsim/LArG4/ISCalculationSeparate.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 // ROOT includes
 

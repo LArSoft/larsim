@@ -11,11 +11,11 @@
 //
 
 
-#include "LArG4/OpDetLookup.h"
+#include "larsim/LArG4/OpDetLookup.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/OpDetGeo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/OpDetGeo.h"
 
 
 namespace larg4 {

@@ -17,10 +17,10 @@
 // LArSoft
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
-#include "Simulation/SimChannel.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
-#include "Geometry/Geometry.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "larcore/Geometry/Geometry.h"
 // STL
 #include <map>
 #include <set>

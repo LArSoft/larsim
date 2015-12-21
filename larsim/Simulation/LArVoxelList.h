@@ -59,8 +59,8 @@
 #ifndef LARVOXELLIST_H
 #define LARVOXELLIST_H
 
-#include "Simulation/LArVoxelID.h"
-#include "Simulation/LArVoxelData.h"
+#include "larsim/Simulation/LArVoxelID.h"
+#include "larsim/Simulation/LArVoxelData.h"
 
 #include <map>
 

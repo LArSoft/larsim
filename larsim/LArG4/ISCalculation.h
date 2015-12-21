@@ -11,7 +11,7 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4UserLimits.hh"
 
-#include "LArG4/OpFastScintillation.hh"
+#include "larsim/LArG4/OpFastScintillation.hh"
 
 namespace larg4{
 

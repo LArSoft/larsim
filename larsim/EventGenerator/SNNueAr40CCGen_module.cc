@@ -27,8 +27,8 @@
 #include "SimulationBase/MCTruth.h"
 
 // LArSoft includes
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 

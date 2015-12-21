@@ -23,7 +23,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-#include "SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h"
 
 namespace sim {
 

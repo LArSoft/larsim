@@ -6,7 +6,7 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/G4BadIdeaAction.h"
+#include "larsim/LArG4/G4BadIdeaAction.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

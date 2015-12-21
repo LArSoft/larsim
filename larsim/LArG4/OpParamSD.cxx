@@ -12,13 +12,13 @@
 
 // LArSoft includes
 
-#include "LArG4/OpParamSD.h"
+#include "larsim/LArG4/OpParamSD.h"
 
 #include "cetlib/exception.h"
 
-#include "LArG4/OpDetPhotonTable.h"
-#include "LArG4/OpDetLookup.h"
-#include "Simulation/SimPhotons.h"
+#include "larsim/LArG4/OpDetPhotonTable.h"
+#include "larsim/LArG4/OpDetLookup.h"
+#include "larsim/Simulation/SimPhotons.h"
 
 // Geant4 includes
 

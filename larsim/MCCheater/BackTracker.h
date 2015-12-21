@@ -16,16 +16,16 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "SimulationBase/MCParticle.h"
-#include "Simulation/ParticleList.h"
-#include "Simulation/SimChannel.h"
-#include "Simulation/EveIdCalculator.h"
+#include "larsim/Simulation/ParticleList.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larsim/Simulation/EveIdCalculator.h"
 #include "SimulationBase/MCTruth.h"
-#include "Simulation/LArVoxelList.h"
-#include "SimpleTypesAndConstants/geo_types.h"
+#include "larsim/Simulation/LArVoxelList.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
 
-#include "RecoBase/Hit.h"
+#include "lardata/RecoBase/Hit.h"
 //#include "DetectorInfoServices/TimeService.h"
 
 namespace recob{

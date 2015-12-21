@@ -1,5 +1,5 @@
 
-#include "Simulation/PhotonVoxels.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 #include "iostream"
 

@@ -14,8 +14,8 @@
 ///
 /// 25-Feb-2009 WGS: Revised for FMWK/LArSoft
 
-#include "LArG4/VisualizationAction.h"
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/VisualizationAction.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 #include "Geant4/G4Run.hh"
 #include "Geant4/G4RunManager.hh"

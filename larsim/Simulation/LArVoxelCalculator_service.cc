@@ -16,7 +16,7 @@
 
 // Framework includes
 
-#include "Simulation/LArVoxelCalculator.h"
+#include "larsim/Simulation/LArVoxelCalculator.h"
 
 #include <cmath>
 

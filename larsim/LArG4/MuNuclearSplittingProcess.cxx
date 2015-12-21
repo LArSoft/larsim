@@ -12,7 +12,7 @@
 //
 
 
-#include "LArG4/MuNuclearSplittingProcess.h"
+#include "larsim/LArG4/MuNuclearSplittingProcess.h"
 
 #include <stdexcept> // std::runtime_error
 

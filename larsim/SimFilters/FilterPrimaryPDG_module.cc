@@ -25,10 +25,10 @@
 #include "cetlib/exception.h"
 
 // LArSoft Includes
-#include "MCCheater/BackTracker.h"
-#include "Simulation/ParticleList.h"
-#include "Simulation/sim.h"
-#include "Geometry/Geometry.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/Simulation/ParticleList.h"
+#include "larsim/Simulation/sim.h"
+#include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
 #include <iostream>

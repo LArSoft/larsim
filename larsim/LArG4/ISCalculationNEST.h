@@ -9,8 +9,8 @@
 #ifndef LARG4_ISCALCULATIONNEST_H
 #define LARG4_ISCALCULATIONNEST_H
 
-#include "LArG4/ISCalculation.h"
-#include "LArG4/NestAlg.h"
+#include "larsim/LArG4/ISCalculation.h"
+#include "larsim/LArG4/NestAlg.h"
 
 namespace larg4 {
 

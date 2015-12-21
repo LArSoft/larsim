@@ -10,10 +10,10 @@
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/globals.hh"
 
-#include "Simulation/AuxDetSimChannel.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/AuxDetGeo.h"
-#include "Geometry/AuxDetSensitiveGeo.h"
+#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/AuxDetSensitiveGeo.h"
 
 #include <vector>
 

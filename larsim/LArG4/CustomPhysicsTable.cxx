@@ -7,8 +7,8 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "LArG4/CustomPhysicsTable.hh"
-#include "LArG4/CustomPhysicsFactory.hh"
+#include "larsim/LArG4/CustomPhysicsTable.hh"
+#include "larsim/LArG4/CustomPhysicsFactory.hh"
 
 #include "Geant4/G4VPhysicsConstructor.hh"
 

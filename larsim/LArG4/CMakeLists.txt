@@ -12,15 +12,15 @@ art_make_library( LIBRARY_NAME MergeSimSources
  					${FHICLCPP}
 )
 
-art_make( BASENAME_ONLY
+art_make( 
           LIBRARY_NAME  LArG4
           LIB_LIBRARIES 
                         PhotonPropagation
-                        PhotonVisibilityService_service
-                        SpaceCharge_service
+                        larsim_PhotonPropagation_PhotonVisibilityService_service
+                        larevt_SpaceCharge_SpaceCharge_service
                         Utilities
                         Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${G4BASE}
                         ${ART_FRAMEWORK_CORE}
@@ -46,10 +46,10 @@ art_make( BASENAME_ONLY
                         ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES LArG4
-                        SpaceCharge_service
+                        larevt_SpaceCharge_SpaceCharge_service
                         Simulation
                         Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}

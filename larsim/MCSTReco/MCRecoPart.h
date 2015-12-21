@@ -19,8 +19,8 @@
 #include "SimulationBase/MCParticle.h"
 //#include "DetectorInfoServices/DetectorPropertiesService.h"
 //#include "DetectorInfoServices/LArPropertiesService.h"
-#include "Geometry/Geometry.h"
-#include "MCBase/MCLimits.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/MCBase/MCLimits.h"
 
 // STL
 #include <set>

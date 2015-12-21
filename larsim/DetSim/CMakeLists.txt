@@ -4,7 +4,7 @@ art_make( NO_PLUGINS
           LIB_LIBRARIES Filters
                         RawData
                         Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -36,15 +36,15 @@ simple_plugin(SimWireAna "module"
                          ${FHICLCPP}
                          ${CETLIB}
                          ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(SimWire "module"
                       Simulation
                       RawData
                       Geometry
-                      Geometry_service
-                      LArFFT_service
+                      larcore_Geometry_Geometry_service
+                      lardata_Utilities_LArFFT_service
                       Utilities
                       SeedService_service # artextensions
                       ${ART_FRAMEWORK_CORE}
@@ -62,15 +62,15 @@ simple_plugin(SimWire "module"
                       ${CETLIB}
                       ${CLHEP}
                       ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(SimWireT962 "module"
                           Simulation
                           RawData
                           Geometry
-                          Geometry_service
-                          LArFFT_service
+                          larcore_Geometry_Geometry_service
+                          lardata_Utilities_LArFFT_service
                           Utilities
                           SeedService_service # artextensions
                           ${ART_FRAMEWORK_CORE}
@@ -88,13 +88,13 @@ simple_plugin(SimWireT962 "module"
                           ${CETLIB}
                           ${CLHEP}
                           ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(WienerFilterAna "module"
                               RawData
                               Geometry
-                              Geometry_service
+                              larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
                               ${ART_FRAMEWORK_PRINCIPAL}
                               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -108,7 +108,7 @@ simple_plugin(WienerFilterAna "module"
                               ${FHICLCPP}
                               ${CETLIB}
                               ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(DumpRawDigits "module"
@@ -120,7 +120,7 @@ simple_plugin(DumpRawDigits "module"
                             ${MF_MESSAGELOGGER}
                             ${FHICLCPP}
                             ${CETLIB}
-              BASENAME_ONLY
+              
 )
 
 install_headers()

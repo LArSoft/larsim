@@ -55,7 +55,7 @@ namespace larg4 {
   
 }
 
-#include "LArG4/CustomPhysicsFactory.hh"
+#include "larsim/LArG4/CustomPhysicsFactory.hh"
   
 #endif
 

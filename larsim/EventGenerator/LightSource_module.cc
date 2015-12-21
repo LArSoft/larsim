@@ -75,11 +75,11 @@
 #include "EventGeneratorBase/evgenbase.h"
 
 // lar includes
-#include "Geometry/Geometry.h"
-#include "Simulation/PhotonVoxels.h"
-#include "PhotonPropagation/PhotonVisibilityService.h"
-#include "SummaryData/RunData.h"
-#include "Simulation/PhotonVoxels.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larsim/Simulation/PhotonVoxels.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larcore/SummaryData/RunData.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"

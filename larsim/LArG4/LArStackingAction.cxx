@@ -24,8 +24,8 @@
 // ********************************************************************
 //
 
-#include "LArG4/LArStackingAction.h"
-#include "Geometry/Geometry.h"
+#include "larsim/LArG4/LArStackingAction.h"
+#include "larcore/Geometry/Geometry.h"
 
 #include "Geant4/G4SDManager.hh"
 #include "Geant4/G4RunManager.hh"

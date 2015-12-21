@@ -15,16 +15,16 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "MCCheater/BackTracker.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/SpacePoint.h"
-#include "Simulation/EmEveIdCalculator.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "larsim/Simulation/EmEveIdCalculator.h"
 #include "SimulationBase/MCParticle.h"
-#include "Simulation/sim.h"
-#include "Simulation/SimListUtils.h"
-#include "DetectorInfoServices/DetectorClocksService.h"
+#include "larsim/Simulation/sim.h"
+#include "larsim/Simulation/SimListUtils.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 namespace cheat{
 

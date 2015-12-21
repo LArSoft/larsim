@@ -19,12 +19,12 @@
 #include "SimulationBase/MCParticle.h"
 //#include "DetectorInfoServices/DetectorPropertiesService.h"
 //#include "DetectorInfoServices/LArPropertiesService.h"
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
 #include "MCRecoPart.h"
 #include "MCShowerRecoPart.h"
 #include "MCRecoEdep.h"
-#include "MCBase/MCShower.h"
+#include "lardata/MCBase/MCShower.h"
 
 // STL
 #include <set>

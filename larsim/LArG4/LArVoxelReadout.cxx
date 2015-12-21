@@ -29,9 +29,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LArSoft code
-#include "LArG4/LArVoxelReadout.h"
-#include "LArG4/ParticleListAction.h"
-#include "SpaceCharge/SpaceCharge.h"
+#include "larsim/LArG4/LArVoxelReadout.h"
+#include "larsim/LArG4/ParticleListAction.h"
+#include "larevt/SpaceCharge/SpaceCharge.h"
 
 namespace larg4 {
   

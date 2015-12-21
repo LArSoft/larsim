@@ -14,9 +14,9 @@
 // ROOT includes
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "MCCheater/BackTracker.h"
-#include "RecoBase/Hit.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "lardata/RecoBase/Hit.h"
 
 
 // Framework includes

@@ -3,7 +3,7 @@
 
 
 
-#include "LArG4/OpParamAction.h"
+#include "larsim/LArG4/OpParamAction.h"
 
 #include "cetlib/exception.h"
 

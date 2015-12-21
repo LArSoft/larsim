@@ -32,7 +32,7 @@
 #include "Geant4/G4EmLivermorePhysics.hh"
 #include "Geant4/G4ChargeExchangePhysics.hh"
 
-#include "LArG4/CustomPhysicsFactory.hh"
+#include "larsim/LArG4/CustomPhysicsFactory.hh"
 
 
 namespace larg4 {

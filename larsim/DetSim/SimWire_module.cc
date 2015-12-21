@@ -53,16 +53,16 @@ extern "C" {
 #include "CLHEP/Random/RandGaussQ.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Simulation/sim.h"
-#include "Simulation/SimChannel.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "Utilities/LArFFT.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "larsim/Simulation/sim.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/Utilities/LArFFT.h"
 
 namespace art {
   class Event;

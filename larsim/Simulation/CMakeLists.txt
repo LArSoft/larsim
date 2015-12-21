@@ -4,8 +4,8 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 art_make( NO_PLUGINS
           LIBRARY_NAME  Simulation
-          LIB_LIBRARIES LArVoxelCalculator_service
-	                LArG4Parameters_service
+          LIB_LIBRARIES larsim_Simulation_LArVoxelCalculator_service
+	                larsim_Simulation_LArG4Parameters_service
 	                Utilities
 	                ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
@@ -21,11 +21,11 @@ art_make( NO_PLUGINS
         )
 
 simple_plugin(LArVoxelCalculator "service"
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(LArG4Parameters "service"
-              BASENAME_ONLY
+              
 )
 
 install_headers()

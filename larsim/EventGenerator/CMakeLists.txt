@@ -1,5 +1,5 @@
 
-art_make( BASENAME_ONLY
+art_make( LIBRARY_NAME EventGenerator
           LIB_LIBRARIES
                         ${SIMULATIONBASE}
                         ${ART_PERSISTENCY_PROVENANCE}
@@ -10,12 +10,14 @@ art_make( BASENAME_ONLY
                         ${ROOT_BASIC_LIB_LIST}
                         ${FHICLCPP}
                         ${CLHEP}
+			${Boost_FILESYSTEM_LIBRARY}
+			${Boost_SYSTEM_LIBRARY}
           MODULE_LIBRARIES PhotonPropagation
-                           PhotonVisibilityService_service
+                           larsim_PhotonPropagation_PhotonVisibilityService_service
                            Simulation
                            SummaryData
                            Geometry
-                           Geometry_service
+                           larcore_Geometry_Geometry_service
                            SeedService_service # artextensions
                            EventGenerator
                            ${SIMULATIONBASE}
@@ -43,7 +45,8 @@ simple_plugin( GeneratedEventTimestamp "plugin"
                                        ${MF_MESSAGELOGGER}
                                        ${MF_UTILITIES}
                                        ${CETLIB}
-               BASENAME_ONLY
+				       ${Boost_FILESYSTEM_LIBRARY}
+				       ${Boost_SYSTEM_LIBRARY}
              )
 
 install_headers()

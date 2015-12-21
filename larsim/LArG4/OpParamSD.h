@@ -29,8 +29,8 @@
 // LArSoft includes
 
 #include "Geant4/G4VSensitiveDetector.hh"
-#include "Simulation/sim.h"
-#include "LArG4/OpParamAction.h"
+#include "larsim/Simulation/sim.h"
+#include "larsim/LArG4/OpParamAction.h"
 
 
 // Geant4 includes

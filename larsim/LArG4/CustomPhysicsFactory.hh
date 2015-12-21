@@ -45,7 +45,7 @@ namespace larg4 {
     bool verbose;
   };
 }  
-#include "LArG4/CustomPhysicsTable.hh"
+#include "larsim/LArG4/CustomPhysicsTable.hh"
  
 namespace larg4 {
  

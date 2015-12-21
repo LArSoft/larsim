@@ -50,14 +50,14 @@
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/globals.hh"
 
-#include "Simulation/SimChannel.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/TPCGeo.h"
-#include "Simulation/LArG4Parameters.h"
-#include "LArG4/IonizationAndScintillation.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "DetectorInfoServices/DetectorClocksService.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 // Forward declarations
 class G4HCofThisEvent;

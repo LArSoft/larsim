@@ -10,7 +10,7 @@
 
 #include <cstring>
 
-#include "LArG4/ISCalculation.h"
+#include "larsim/LArG4/ISCalculation.h"
 
 #include "Geant4/G4Step.hh"
 

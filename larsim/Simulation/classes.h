@@ -23,10 +23,10 @@
 #include "SimulationBase/MCTruth.h"
 
 // Simulation includes
-#include "Simulation/SimChannel.h"
-#include "Simulation/SimPhotons.h"
-#include "Simulation/BeamGateInfo.h"
-#include "Simulation/AuxDetSimChannel.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larsim/Simulation/SimPhotons.h"
+#include "larsim/Simulation/BeamGateInfo.h"
+#include "larsim/Simulation/AuxDetSimChannel.h"
 
 namespace {
 
