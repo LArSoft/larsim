@@ -71,6 +71,7 @@ namespace simfilter {
 
     std::string fLArG4ModuleLabel;
     std::string fGenModuleLabel;
+    bool        fKeepCryostatNeutrinos;
 
   };
 
@@ -83,6 +84,7 @@ namespace simfilter {
   FilterNoDirtNeutrinos::FilterNoDirtNeutrinos(fhicl::ParameterSet const& pset) :
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
     , fGenModuleLabel    (pset.get< std::string > ("GenModuleLabel"  , "NoLabel")       )
+    , fKeepCryostatNeutrinos    (pset.get< bool > ("KeepCryostatNeutrinos", false)      )
   {
     this->reconfigure(pset);
   }
@@ -138,13 +140,33 @@ namespace simfilter {
   // Get the MCTruths from associations to our particles
   art::FindOneP<simb::MCTruth> assMCT(mcpHandle, evt, "largeant");
 
-  // Get fiducial volume boundary.
-  double xmin = 0.;
-  double xmax = 2.*geom->DetHalfWidth();
-  double ymin = -geom->DetHalfHeight();
-  double ymax = geom->DetHalfHeight();
-  double zmin = 0.;
-  double zmax = geom->DetLength();
+  double xmin;
+  double xmax;
+  double ymin;
+  double ymax;
+  double zmin;
+  double zmax;
+
+  if(fKeepCryostatNeutrinos)
+  {
+    // Get cryostat (box) volume boundary.
+    xmin = geom->DetHalfWidth() - geom->CryostatHalfWidth();
+    xmax = geom->DetHalfWidth() + geom->CryostatHalfWidth();
+    ymin = -geom->CryostatHalfHeight();
+    ymax = geom->CryostatHalfHeight();
+    zmin = geom->DetLength()/2. - geom->DetLength()/2.;
+    zmax = geom->DetLength()/2. + geom->DetLength()/2.;
+  }
+  else
+  {
+    // Get fiducial volume boundary.
+    xmin = 0.;
+    xmax = 2.*geom->DetHalfWidth();
+    ymin = -geom->DetHalfHeight();
+    ymax = geom->DetHalfHeight();
+    zmin = 0.;
+    zmax = geom->DetLength();
+  }
 
   //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
   // Now let's loop over G4 MCParticle list and track back MCTruth    
