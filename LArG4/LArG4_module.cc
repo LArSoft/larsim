@@ -126,7 +126,7 @@ namespace larg4 {
     void produce (art::Event& evt); 
     void beginJob();
     void beginRun(art::Run& run);
-    void FillInterestingVolumes(TGeoManager* pGM, std::set<std::string> const& vol_names);
+    void FillInterestingVolumes(std::set<std::string> const& vol_names);
     bool KeepParticle(simb::MCParticle const& part) const;
 
   private:
@@ -144,7 +144,7 @@ namespace larg4 {
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
-    std::vector<std::pair<TGeoVolume *, TGeoMatrix *>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
+    std::vector<std::pair<TGeoVolume const*, TGeoCombiTrans*>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
   };
 
 } // namespace LArG4
@@ -161,7 +161,7 @@ namespace larg4 {
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList")                   )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
-    , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes"))
+    , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
@@ -277,61 +277,43 @@ namespace larg4 {
   }
 
   void LArG4::beginRun(art::Run& run){
-    art::ServiceHandle<geo::Geometry> geom;
     //Fill interesting volumes object
     std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(), fKeepParticlesInVolumes.end());
-    FillInterestingVolumes(geom->ROOTGeoManager(), volnameset);
+    FillInterestingVolumes(volnameset);
   }
   
-  void LArG4::FillInterestingVolumes(TGeoManager* pGM, std::set<std::string> const& vol_names) {
+  void LArG4::FillInterestingVolumes(std::set<std::string> const& vol_names) {
     auto const& geom = *art::ServiceHandle<geo::Geometry>();
   
     std::vector<std::vector<TGeoNode const*>> node_paths
       = geom.FindAllVolumePaths(vol_names);
+    //for each interesting volume, follow the node path and collect
+    //total rotations and translations
     for (size_t iVolume = 0; iVolume < node_paths.size(); ++iVolume) {
       std::vector<TGeoNode const*> path = node_paths[iVolume];
       
-      TGeoMatrix* pTransf;
-      // do we have all translations?
-      // this counts how many transformation matrices in the path are NOT translations
-      // note: we might need a more complex check if information
-      // from TGeoMatrix::IsTranslation() is not reliable
-      // (it's a bit and somebody has to set it right...)
-      bool isTranslation = true;
+      TGeoTranslation* pTransl = new TGeoTranslation(0.,0.,0.);
+      TGeoRotation* pRot = new TGeoRotation();
       for (TGeoNode const* node: path) {
-        node->GetMatrix()->Print();
-        if(!node->GetMatrix()->IsTranslation() && !node->GetMatrix()->IsIdentity()){
-          isTranslation=false;
-          break;
-        }
+	TGeoTranslation thistranslate(*node->GetMatrix());
+	TGeoRotation thisrotate(*node->GetMatrix());
+	pTransl->Add(&thistranslate);
+	*pRot=*pRot * thisrotate;
       }
+      
+      //for some reason, pRot and pTransl don't have tr and rot bits set correctly
+      //make new translations and rotations so bits are set correctly
+      TGeoTranslation* pTransl2 = new TGeoTranslation(pTransl->GetTranslation()[0],
+							pTransl->GetTranslation()[1],
+						      pTransl->GetTranslation()[2]);
+      double phi=0.,theta=0.,psi=0.;
+      pRot->GetAngles(phi,theta,psi);
+      TGeoRotation* pRot2 = new TGeoRotation();
+      pRot2->SetAngles(phi,theta,psi);
+      
+      TGeoCombiTrans* pTransf = new TGeoCombiTrans(*pTransl2,*pRot2);
 
-      if (!isTranslation) { // not all translations
-        pTransf = (TGeoMatrix*)path.back()->GetMatrix()->Clone();
-        pTransf->Print();
-        path.pop_back();
-        while (!path.empty()) { // multiply all the matrices together
-          *pTransf = (*pTransf) * (*(path.back()->GetMatrix()));
-          path.pop_back();
-          pTransf->Print();
-        } // while translation
-        LOG_DEBUG("LArG4") << "Transformation for volume '" << node_paths[iVolume].back()->GetVolume()->GetName()
-          << "' is a general transformation";
-      }else{ // all translations
-        TGeoTranslation* pTransl = new TGeoTranslation(0.,0.,0.);
-        for (TGeoNode const* node: path) {
-          // make sure it's not only a translation, but also a TGeoTranslation
-          // this is not needed if ROOT always stores translation matrices in TGeoTranslation
-          // in which case a static_cast<> is enough.
-          TGeoTranslation translate(*node->GetMatrix());
-          pTransl->Add(&translate);
-        }        // for all nodes in path
-        pTransf = pTransl;
-        LOG_DEBUG("LArG4") << "Transformation for volume '" << path.back()->GetVolume()->GetName()
-          << "' is optimized as translation";
-      }
-
-      fGeoVolumePairs.push_back(std::make_pair((TGeoVolume*)node_paths[iVolume].back()->GetVolume()->Clone(), pTransf));
+      fGeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
     }
 
   } // FillInterestingVolumes()
@@ -404,14 +386,12 @@ namespace larg4 {
 
         const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
         
-        for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){        
-         if(KeepParticle(*((*pitr).second))){
-          // copy the particle so that it isnt const
-          simb::MCParticle p(*(*pitr).second);
+        for(auto const& partPair: particleList) {
+	  simb::MCParticle const& p = *(partPair.second);
+	  if (!KeepParticle(p)) continue;
           partCol->push_back(p);
-          util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
-         }
-        }
+          util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
+        }//for
 
         // Has the user request a detailed dump of the output objects?
         if (fdumpParticleList){
