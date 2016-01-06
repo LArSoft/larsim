@@ -145,6 +145,7 @@ namespace larg4 {
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
     std::vector<std::pair<TGeoVolume const*, TGeoCombiTrans*>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
+
   };
 
 } // namespace LArG4
@@ -162,6 +163,7 @@ namespace larg4 {
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
+
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
@@ -314,6 +316,7 @@ namespace larg4 {
       TGeoCombiTrans* pTransf = new TGeoCombiTrans(*pTransl2,*pRot2);
 
       fGeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
+
     }
 
   } // FillInterestingVolumes()
@@ -392,6 +395,7 @@ namespace larg4 {
           partCol->push_back(p);
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
         }//for
+
 
         // Has the user request a detailed dump of the output objects?
         if (fdumpParticleList){
