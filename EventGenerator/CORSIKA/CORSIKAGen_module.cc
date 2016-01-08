@@ -12,6 +12,7 @@
 #include "TRandom3.h"
 #include "TDatabasePDG.h"
 #include "TString.h"
+#include "TSystem.h" //need BaseName and DirName
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -40,6 +41,7 @@
 
 #include <sqlite3.h> 
 #include "CLHEP/Random/RandFlat.h"
+#include "ifdh.h"  //to handle flux files
 
 namespace evgen {
 
@@ -76,6 +78,7 @@ namespace evgen {
     std::vector<int> fMaxShowers; //< Max number of showers to query, one per showerinput
     double fShowerBounds[6]={0.,0.,0.,0.,0.,0.}; ///< Boundaries of area over which showers are to be distributed
     double fToffset_corsika=0.; ///< Timing offset to account for propagation time through atmosphere, populated from db
+    ifdh_ns::ifdh* fIFDH=0; ///< (optional) flux file handling
     
     //fcl parameters
     double fProjectToHeight=0.; ///< Height to which particles will be projected [cm]
@@ -87,6 +90,7 @@ namespace evgen {
     double fShowerAreaExtension=0.; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [cm]
     sqlite3* fdb[5]; ///< Pointers to sqlite3 database object, max of 5
     double fRandomXZShift=0.; ///< Each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space [cm]
+
   };
 }
 
@@ -130,6 +134,8 @@ namespace evgen{
     for(int i=0; i<fShowerInputs; i++){
       sqlite3_close(fdb[i]);
     }
+    //cleanup temp files
+    fIFDH->cleanup();
   }
   
   void CORSIKAGen::ProjectToBoxEdge(	const double 	xyz[],
@@ -172,15 +178,64 @@ namespace evgen{
   }
   
   void CORSIKAGen::openDBs(){
+    //choose files based on fShowerInputFiles, copy them with ifdh, open them
     sqlite3_stmt *statement;
+    //get rng engine
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat flat(engine);
     
+    //setup ifdh object
+    if ( ! fIFDH ) fIFDH = new ifdh_ns::ifdh;
+    const char* ifdh_debug_env = std::getenv("IFDH_DEBUG_LEVEL");
+    if ( ifdh_debug_env ) {
+      mf::LogInfo("CORSIKAGen") << "IFDH_DEBUG_LEVEL: " << ifdh_debug_env<<"\n";
+      fIFDH->set_debug(ifdh_debug_env);
+    }
+    
+    //get ifdh path for each file in fShowerInputFiles, put into selectedflist
+    //if 1 file returned, use that file
+    //if >1 file returned, randomly select one file
+    //if 0 returned, make exeption for missing files
+    std::vector<std::pair<std::string,long>> selectedflist;
     for(int i=0; i<fShowerInputs; i++){
+      std::vector<std::pair<std::string,long>> flist;
+      std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
+      std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
+      flist = fIFDH->findMatchingFiles(path,pattern);
+      unsigned int selIndex=-1;
+      if(flist.size()==1){ //0th element is the search path:pattern
+        selIndex=0;
+      }else if(flist.size()>1){
+        selIndex= (unsigned int) (engine.flat()*(flist.size()-1)+0.5); //rnd with rounding, dont allow picking the 0th element
+      }else{
+        throw cet::exception("CORSIKAGen") << "No files returned for path:pattern: "<<path<<":"<<pattern<<std::endl;
+      }
+      selectedflist.push_back(flist[selIndex]);
+      mf::LogInfo("CorsikaGen") << "For path:pattern: "<<path<<":"<<pattern
+        <<"\nFound "<< flist.size() << " candidate files"
+	<<"\nChoosing file number "<< selIndex << "\n"
+        <<"\nSelected "<<selectedflist.back().first<<"\n";
+    }
+    
+    //do the fetching, store local filepaths in locallist
+    std::vector<std::string> locallist;
+    for(unsigned int i=0; i<selectedflist.size(); i++){
+      mf::LogInfo("CorsikaGen") << "Fetching: "<<selectedflist[i].first<<" "<<selectedflist[i].second<<"\n";
+      std::string fetchedfile(fIFDH->fetchInput(selectedflist[i].first));
+      mf::LogInfo("CorsikaGen") << "Fetched; local path: "<<fetchedfile<<"\n";
+      locallist.push_back(fetchedfile);
+      mf::LogInfo("CorsikaGen") << "Done; local path: "<<fetchedfile<<"\n";
+    }
+    
+    //open the files in fShowerInputFilesLocalPaths with sqlite3
+    for(unsigned int i=0; i<locallist.size(); i++){
       //prepare and execute statement to attach db file
-      int res=sqlite3_open(fShowerInputFiles[i].c_str(),&fdb[i]);
+      int res=sqlite3_open(locallist[i].c_str(),&fdb[i]);
       if (res!= SQLITE_OK)
-        throw cet::exception("CORSIKAGen") << "Error opening db: (" <<fShowerInputFiles[i]<<") ("<<res<<"): " << sqlite3_errmsg(fdb[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0)<<"\n";
+        throw cet::exception("CORSIKAGen") << "Error opening db: (" <<locallist[i].c_str()<<") ("<<res<<"): " << sqlite3_errmsg(fdb[i]) << "; memory used:<<"<<sqlite3_memory_used()<<"/"<<sqlite3_memory_highwater(0)<<"\n";
       else
-        mf::LogInfo("CORSIKAGen")<<"Attached db "<< fShowerInputFiles[i]<<"\n";
+        mf::LogInfo("CORSIKAGen")<<"Attached db "<< locallist[i]<<"\n";
     }
   }
 

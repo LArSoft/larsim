@@ -1,5 +1,7 @@
 
 cet_find_library( SQLITE3 NAMES sqlite3 PATHS ENV NO_DEFAULT_PATH )
+cet_find_library( IFDH NAMES ifdh PATHS ENV IFDHC_LIB NO_DEFAULT_PATH )
+include_directories( $ENV{IFDHC_FQ_DIR}/inc )
 art_make( BASENAME_ONLY
           MODULE_LIBRARIES 
                         SummaryData
@@ -25,6 +27,7 @@ art_make( BASENAME_ONLY
                         ${ROOT_BASIC_LIB_LIST}
                         ${SQLITE3}
                         ${ROOT_EG}
+                        ${IFDH}
         )
 
 install_headers()
