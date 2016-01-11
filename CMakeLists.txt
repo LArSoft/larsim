@@ -113,6 +113,7 @@ add_subdirectory(Simulation)
 add_subdirectory(TriggerAlgo)
 add_subdirectory(SimFilters)
 add_subdirectory(MCSTReco)
+add_subdirectory(MCDumpers)
 
 # tests
 add_subdirectory(test)
