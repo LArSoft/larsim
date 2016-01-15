@@ -5,21 +5,21 @@ include_directories ( $ENV{GEANT4_FQ_DIR}/include )
 include_directories ( $ENV{XERCES_C_INC} )
 include_directories ( $ENV{CRYHOME}/src )
 
-art_make_library( LIBRARY_NAME MergeSimSources
+art_make_library( LIBRARY_NAME larsim_LArG4_MergeSimSources
 		  	     SOURCE MergeSimSources.cxx
 			     LIBRARIES
-			                Simulation
+			                larsim_Simulation
  					${FHICLCPP}
 )
 
 art_make( 
-          LIBRARY_NAME  LArG4
+          
           LIB_LIBRARIES 
-                        PhotonPropagation
+                        larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larevt_SpaceCharge_SpaceCharge_service
-                        Utilities
-                        Geometry
+                        lardata_Utilities
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${G4BASE}
@@ -45,10 +45,10 @@ art_make(
                         ${ROOT_BASIC_LIB_LIST}
                         ${CLHEP}
                         ${G4_LIB_LIST}
-           MODULE_LIBRARIES LArG4
+           MODULE_LIBRARIES larsim_LArG4
                         larevt_SpaceCharge_SpaceCharge_service
-                        Simulation
-                        Geometry
+                        larsim_Simulation
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${SIMULATIONBASE}

@@ -1,5 +1,5 @@
 
-art_make( LIBRARY_NAME EventGenerator
+art_make( 
           LIB_LIBRARIES
                         ${SIMULATIONBASE}
                         ${ART_PERSISTENCY_PROVENANCE}
@@ -12,14 +12,14 @@ art_make( LIBRARY_NAME EventGenerator
                         ${CLHEP}
 			${Boost_FILESYSTEM_LIBRARY}
 			${Boost_SYSTEM_LIBRARY}
-          MODULE_LIBRARIES PhotonPropagation
+          MODULE_LIBRARIES larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
-                           Simulation
-                           SummaryData
-                           Geometry
+                           larsim_Simulation
+                           larcore_SummaryData
+                           larcore_Geometry
                            larcore_Geometry_Geometry_service
                            SeedService_service # artextensions
-                           EventGenerator
+                           larsim_EventGenerator
                            ${SIMULATIONBASE}
                            ${ART_FRAMEWORK_CORE}
                            ${ART_FRAMEWORK_PRINCIPAL}

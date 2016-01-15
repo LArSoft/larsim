@@ -1,9 +1,9 @@
 	
 art_make( NO_PLUGINS
-          LIBRARY_NAME  DetSim
-          LIB_LIBRARIES Filters
-                        RawData
-                        Geometry
+          
+          LIB_LIBRARIES larevt_Filters
+                        lardata_RawData
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
@@ -22,7 +22,7 @@ art_make( NO_PLUGINS
 
 
 simple_plugin(SimWireAna "module"
-                         RawData
+                         lardata_RawData
                          ${ART_FRAMEWORK_CORE}
                          ${ART_FRAMEWORK_PRINCIPAL}
                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -40,12 +40,12 @@ simple_plugin(SimWireAna "module"
 )
 
 simple_plugin(SimWire "module"
-                      Simulation
-                      RawData
-                      Geometry
+                      larsim_Simulation
+                      lardata_RawData
+                      larcore_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
-                      Utilities
+                      lardata_Utilities
                       SeedService_service # artextensions
                       ${ART_FRAMEWORK_CORE}
                       ${ART_FRAMEWORK_PRINCIPAL}
@@ -66,12 +66,12 @@ simple_plugin(SimWire "module"
 )
 
 simple_plugin(SimWireT962 "module"
-                          Simulation
-                          RawData
-                          Geometry
+                          larsim_Simulation
+                          lardata_RawData
+                          larcore_Geometry
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
-                          Utilities
+                          lardata_Utilities
                           SeedService_service # artextensions
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
@@ -92,8 +92,8 @@ simple_plugin(SimWireT962 "module"
 )
 
 simple_plugin(WienerFilterAna "module"
-                              RawData
-                              Geometry
+                              lardata_RawData
+                              larcore_Geometry
                               larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
                               ${ART_FRAMEWORK_PRINCIPAL}
@@ -112,8 +112,8 @@ simple_plugin(WienerFilterAna "module"
 )
 
 simple_plugin(DumpRawDigits "module"
-                            Filters
-                            RawData
+                            larevt_Filters
+                            lardata_RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
 			    ${ART_FRAMEWORK_SERVICES_REGISTRY}

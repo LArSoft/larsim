@@ -1,9 +1,9 @@
 
 art_make( 
-          LIBRARY_NAME  PhotonPropagation
-          LIB_LIBRARIES Filters
-	                RawData
-	                Geometry
+          
+          LIB_LIBRARIES larevt_Filters
+	                lardata_RawData
+	                larcore_Geometry
 	                larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -20,11 +20,11 @@ art_make(
 			${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
-          SERVICE_LIBRARIES PhotonPropagation
-                        Simulation
-                        Filters
-	                RawData
-	                Geometry
+          SERVICE_LIBRARIES larsim_PhotonPropagation
+                        larsim_Simulation
+                        larevt_Filters
+	                lardata_RawData
+	                larcore_Geometry
 	                larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -39,11 +39,11 @@ art_make(
 			${FHICLCPP}
 			${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-          MODULE_LIBRARIES PhotonPropagation
+          MODULE_LIBRARIES larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
-                        Simulation
+                        larsim_Simulation
                   			${ROOT_BASIC_LIB_LIST}
-                        Geometry
+                        larcore_Geometry
       	                larcore_Geometry_Geometry_service
                         
                         ${ART_FRAMEWORK_CORE}

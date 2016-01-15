@@ -3,8 +3,8 @@ include_directories ( $ENV{CRYHOME}/src )
 
 art_make( 
           MODULE_LIBRARIES 
-                        SummaryData
-                        Geometry
+                        larcore_SummaryData
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${EVENTGENERATORBASECRY}

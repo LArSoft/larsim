@@ -2,11 +2,11 @@
 cet_find_library( SQLITE3 NAMES sqlite3 PATHS ENV NO_DEFAULT_PATH )
 art_make( 
           MODULE_LIBRARIES 
-                        SummaryData
-                        Geometry
+                        larcore_SummaryData
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
-                        Simulation
+                        larsim_Simulation
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
