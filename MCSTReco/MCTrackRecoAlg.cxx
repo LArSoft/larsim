@@ -95,7 +95,7 @@ namespace sim {
       int n = 0;
       
       for(auto const& step_trk : mini_track){
-
+	
         if( int(&step_trk - &mini_track[0])+1 == int(mini_track.size()) ){  //annoying way to check if this is last step
 	  continue;}
 	
@@ -159,11 +159,14 @@ namespace sim {
 	  double LineDist = 0;
 	 
 	  if(B.Mag2() != 0){
-	    LineDist = sqrt(A.Mag2() - 2*pow(A*B,2)/B.Mag2() + pow(A*B,2)/B.Mag2());
+	    LineDist = sqrt(A.Mag2() - 2*pow(A*B,2)/B.Mag2() + pow(A*B,2)/B.Mag2());	   
 	  }
 	  else{LineDist = 0;}
 	  
 	  //Planar Distance and Radial Line Distance Cuts 
+	  // Add in a voxel before and after to account for MCSteps
+	  // the line distance allows for 1mm GEANT multiple columb scattering correction, 
+	  // small compared to average MCStep-to-MCStep distance
 	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist + 0.03 &&
 	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >=    0 - 0.03 && 
 	      LineDist < 0.1){
@@ -197,28 +200,25 @@ namespace sim {
 	}
 	
 	// Normalize to the distance between the MCSteps 
-	if(dist != 0){
+
+	//Disregard any energy deposition when 2 MCSteps are separated less than the voxel size
+	if(dist > 0.03){
 	  step_dedx /= dist;
-	  if(step_dedx > 100 ){ std::cout << "::\t::\t::\t:: HUGE dEdx " << step_dedx << " with dist " << dist << std::endl; }
 	  step_dqdx[0] /= dist;
 	  step_dqdx[1] /= dist;
 	  step_dqdx[2] /= dist;	
 
 	}
 	else{
-	
 	  step_dedx = 0;
 	  step_dqdx[0] = 0;
 	  step_dqdx[1] = 0;
 	  step_dqdx[2] = 0;	
-
 	}
 	
 	
 	// Build the vector(s) to add to data product
 	dEdx.push_back(step_dedx);
-
-
 
 	dQdx[0].push_back(step_dqdx[0]);
 	dQdx[1].push_back(step_dqdx[1]);
@@ -231,6 +231,9 @@ namespace sim {
       //Add calorimetry to the data product
       mini_track.dEdx(dEdx);
       mini_track.dQdx(dQdx);
+      
+      std::cout << " dedx : " << dEdx.size() << " track : " << mini_track.size() << std::endl;
+      
 
       fMCTrack.push_back(mini_track);
       
