@@ -35,6 +35,7 @@ namespace sim {
       
       std::vector<double> dEdx; 
       std::vector<std::vector<double> > dQdx; 
+      dQdx.resize(3);
 
       mini_track.Origin  ( mini_part._origin   );
       mini_track.PdgCode ( mini_part._pdgcode  );
@@ -82,17 +83,21 @@ namespace sim {
       for(auto const& vtx_mom : mini_part._det_path){	
 	mini_track.push_back(MCStep(vtx_mom.first,vtx_mom.second));
       }
+      
+      if(mini_track.size() == 0) continue;
+
+      std::cout << "size : " << mini_track.size() << " trk id " << mini_part._track_id << std::endl; 
 
       auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
       auto const& edeps = edep_v.GetEdepArrayAt(edep_index);      
 
 
       int n = 0;
-
+      
       for(auto const& step_trk : mini_track){
 
         if( int(&step_trk - &mini_track[0])+1 == int(mini_track.size()) ){  //annoying way to check if this is last step
-	  break;}
+	  continue;}
 	
 	
 	auto const& nxt_step_trk = mini_track.at(int(&step_trk - &mini_track[0])+1);      	
@@ -103,7 +108,6 @@ namespace sim {
 	double dist = sqrt(pow(step_trk.X() - nxt_step_trk.X(),2) + 
 			   pow(step_trk.Y() - nxt_step_trk.Y(),2) +
 			   pow(step_trk.Z() - nxt_step_trk.Z(),2));
-
 
 	//Make a plane at the step pointed at the next step
 	
@@ -139,8 +143,8 @@ namespace sim {
 
 	//Initialize the step-by-step dEdx and dQdx containers
 	double step_dedx = 0; 
-	std::vector<double> step_dqdx(3);
-	step_dqdx.clear();
+	std::vector<double> step_dqdx;
+	step_dqdx.resize(3);
 
 	//Iterate through all the energy deposition points
 	for(auto const& edep : edeps){
@@ -160,8 +164,8 @@ namespace sim {
 	  else{LineDist = 0;}
 	  
 	  //Planar Distance and Radial Line Distance Cuts 
-	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist &&
-	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >= 0 && 
+	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist + 0.03 &&
+	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >=    0 - 0.03 && 
 	      LineDist < 0.1){
 
 	    //dEdx Calculation 
@@ -172,33 +176,66 @@ namespace sim {
 	      engy += pid_energy.second;
 	      npid++;
 	    }
-	    engy /= npid;
+
+	    if(npid != 0){
+	      engy /= npid;}
+	    else{engy = 0;}
+	    
 	    step_dedx += engy;
+
+	  
+	    
+	    // dQdx Calculation
+	    auto q_iter = edep.charge.find(edep.pid);
+	    if(q_iter != edep.charge.end()){
+	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  
+	
+	    }
+	    
 	  }
 	  
-	  // dQdx Calculation
-	  auto q_iter = edep.charge.find(edep.pid);
-	  if(q_iter != edep.charge.end())
-	    step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  
-	  
 	}
-
+	
 	// Normalize to the distance between the MCSteps 
-	step_dedx /= dist;
-	step_dqdx[0] /= dist;
-	step_dqdx[1] /= dist;
-	step_dqdx[2] /= dist;	
+	if(dist != 0){
+	  step_dedx /= dist;
+	  if(step_dedx > 100 ){ std::cout << "::\t::\t::\t:: HUGE dEdx " << step_dedx << " with dist " << dist << std::endl; }
+	  step_dqdx[0] /= dist;
+	  step_dqdx[1] /= dist;
+	  step_dqdx[2] /= dist;	
 
+	}
+	else{
+	
+	  step_dedx = 0;
+	  step_dqdx[0] = 0;
+	  step_dqdx[1] = 0;
+	  step_dqdx[2] = 0;	
+
+	}
+	
+	
 	// Build the vector(s) to add to data product
 	dEdx.push_back(step_dedx);
-	dQdx.push_back(step_dqdx);
+
+
+
+	dQdx[0].push_back(step_dqdx[0]);
+	dQdx[1].push_back(step_dqdx[1]);
+	dQdx[2].push_back(step_dqdx[2]);
+	
+	
 
       }
+
       //Add calorimetry to the data product
       mini_track.dEdx(dEdx);
       mini_track.dQdx(dQdx);
 
       fMCTrack.push_back(mini_track);
+      
+      
+      
     }
     
     if(fDebugMode) {
