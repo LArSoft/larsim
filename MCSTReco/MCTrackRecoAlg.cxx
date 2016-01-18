@@ -78,19 +78,15 @@ namespace sim {
 
       // Fill trajectory points
 
-
-
       for(auto const& vtx_mom : mini_part._det_path){	
 	mini_track.push_back(MCStep(vtx_mom.first,vtx_mom.second));
       }
       
       if(mini_track.size() == 0) continue;
-
-      std::cout << "size : " << mini_track.size() << " trk id " << mini_part._track_id << std::endl; 
-
+      
       auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
+      if(edep_index < 0 ) continue;
       auto const& edeps = edep_v.GetEdepArrayAt(edep_index);      
-
 
       int n = 0;
       
@@ -231,8 +227,6 @@ namespace sim {
       //Add calorimetry to the data product
       mini_track.dEdx(dEdx);
       mini_track.dQdx(dQdx);
-      
-      std::cout << " dedx : " << dEdx.size() << " track : " << mini_track.size() << std::endl;
       
 
       fMCTrack.push_back(mini_track);
