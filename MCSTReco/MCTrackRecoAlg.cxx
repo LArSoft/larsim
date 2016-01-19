@@ -84,7 +84,13 @@ namespace sim {
 	mini_track.push_back(MCStep(vtx_mom.first,vtx_mom.second));
       }
       
-      if(mini_track.size() == 0) continue;
+      // No calorimetry for zero length tracks...
+      // JZ : I think we should remove zero length MCTracks because I do not see their utility
+      // JZ : Someone could make this a fcl parameter, I did not
+      if(mini_track.size() == 0){
+	fMCTrack.push_back(mini_track);
+	continue;
+      }
       
       auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
       if(edep_index < 0 ) continue;
@@ -183,21 +189,18 @@ namespace sim {
 	    else{engy = 0;}
 	    
 	    step_dedx += engy;
-
-	  
 	    
 	    // dQdx Calculation
 	    auto q_iter = edep.charge.find(edep.pid);
 	    if(q_iter != edep.charge.end()){
-	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  
-	
+	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  	
 	    }
 	    
 	  }
 	  
 	}
 	
-	// Normalize to the distance between the MCSteps 
+	// Normalize to the 3D distance between the MCSteps 
 
 	//Disregard any energy deposition when 2 MCSteps are separated less than the voxel size
 	if(dist > 0.03){
@@ -205,7 +208,6 @@ namespace sim {
 	  step_dqdx[0] /= dist;
 	  step_dqdx[1] /= dist;
 	  step_dqdx[2] /= dist;	
-
 	}
 	else{
 	  step_dedx = 0;
@@ -214,10 +216,8 @@ namespace sim {
 	  step_dqdx[2] = 0;	
 	}
 	
-	
 	// Build the vector(s) to add to data product
 	dEdx.push_back(step_dedx);
-
 	dQdx[0].push_back(step_dqdx[0]);
 	dQdx[1].push_back(step_dqdx[1]);
 	dQdx[2].push_back(step_dqdx[2]);
@@ -233,7 +233,7 @@ namespace sim {
 
       fMCTrack.push_back(mini_track);
       
-      
+    
       
     }
     
