@@ -6,6 +6,8 @@
 ///
 /// \version $Id: RadioGen_module.cc,v 1.0 2014/09/05 15:02:00 trj Exp $
 /// \author  trj@fnal.gov
+//           Rn222 generation feature added by gleb.sinev@duke.edu 
+//           (based on a generator by jason.stock@mines.sdsmt.edu)
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_RADIOLOGICAL
 #define EVGEN_RADIOLOGICAL
@@ -249,7 +251,18 @@ namespace evgen{
 	double m = 0; // mass of daughter particle GeV
 	double p = 0; // generated momentum (GeV)
 
-        samplespectrum(fNuclide[i],pdgid,t,m,p);
+        // Treat 222Rn separately 
+        if (fNuclide[i] == "222Rn")
+        {
+          pdgid = 1000020040;
+          t     = 0.00548952;
+          m     = m_alpha;
+          double energy = t + m;
+          double p2     = energy*energy - m*m;
+          if (p2 > 0) p = TMath::Sqrt(p2);
+          else        p = 0;
+        }
+        else samplespectrum(fNuclide[i],pdgid,t,m,p);
 
 
 	// uniformly distributed in position and time
