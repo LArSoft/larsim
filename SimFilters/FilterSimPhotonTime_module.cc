@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "Simulation/SimPhotons.h"
 
@@ -56,6 +57,8 @@ private:
   float                             const fMinPhotonEnergy;
   bool                              const fDebug; 
 
+  std::vector<float>                fSumEnergyArray;
+  
   void CheckTimeWindows();
 };
 
@@ -66,7 +69,8 @@ simfilter::FilterSimPhotonTime::FilterSimPhotonTime(fhicl::ParameterSet const & 
   fTimeWindows(p.get< std::vector< std::vector<float> > >("TimeWindows")),
   fMinTotalEnergy(p.get<float>("MinTotalEnergy",0.0)),
   fMinPhotonEnergy(p.get<float>("MinPhotonEnergy",-1)),
-  fDebug(p.get<bool>("Debug",false))
+  fDebug(p.get<bool>("Debug",false)),
+  fSumEnergyArray(fTimeWindows.size())
 {
   CheckTimeWindows();
 }
@@ -107,7 +111,7 @@ bool simfilter::FilterSimPhotonTime::filter(art::Event & e)
   e.getByLabel(fSimPhotonsCollectionLabel,simPhotonsHandle);
   std::vector<sim::SimPhotons> const& simPhotonsCollection(*simPhotonsHandle);
 
-  float sum_energy=0.0;
+  std::fill(fSumEnergyArray.begin(),fSumEnergyArray.end(),0.0);
   for(auto const& simphotons : simPhotonsCollection){
     if(fDebug)
       std::cout << "\tFilterSimPhotonTime: Processing simphotons channel "
@@ -115,27 +119,36 @@ bool simfilter::FilterSimPhotonTime::filter(art::Event & e)
 		<< std::endl;
 
     for(auto const& photon : simphotons)
-      for(auto const& tw : fTimeWindows)
+      for(size_t i_tw=0; i_tw<fTimeWindows.size(); ++i_tw){
+	auto const& tw(fTimeWindows[i_tw]);
 	if(photon.Time>=tw[0] && photon.Time<=tw[1] && photon.Energy>fMinPhotonEnergy){
-
+	  
 	  if(fDebug)
 	    std::cout << "\t\tPhoton with time " << photon.Time << " detected. "
 		      << "Energy is  " << photon.Energy << "."
 		      << std::endl;
 	  
-	  sum_energy += photon.Energy;
+	  fSumEnergyArray[i_tw] += photon.Energy;
 
 	  if(fDebug)
-	    std::cout << "\t\tTotal energy is now " << sum_energy << std::endl;
+	    std::cout << "\t\tTotal energy in this window (" << i_tw << ") is now " << fSumEnergyArray[i_tw] << std::endl;
 
-	  if(sum_energy > fMinTotalEnergy) return true;
+	  if(fSumEnergyArray[i_tw] > fMinTotalEnergy) return true;
 	}
+      }
   }
 
-  if(fDebug)
-    std::cout << "\tFilterSimPhotonTime: Final Total energy is " << sum_energy << std::endl;
+  if(fDebug){
+    std::cout << "\tFilterSimPhotonTime: Final total energies are below min of " << fMinTotalEnergy << ":" << std::endl;
+    for(size_t i_tw=0; i_tw<fTimeWindows.size(); ++i_tw){
+      std::cout << "\t\tTimeWindow "
+		<< "[" << fTimeWindows[i_tw][0] << "," << fTimeWindows[i_tw][1] << "]: "
+		<< fSumEnergyArray[i_tw]
+		<< std::endl;
+    }
+  }
   
-  if(sum_energy > fMinTotalEnergy) return true;
+  //if(sum_energy > fMinTotalEnergy) return true;
 
   return false;
 }
