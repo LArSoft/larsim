@@ -886,40 +886,6 @@ namespace evgen {
       tprob += startLevelProbabilities.at(level);
     }
   
-    std::vector< double > vertex = GetUniformPosition(engine);
-  
-    std::vector< double > electronDirection = GetIsotropicDirection(engine);
-  
-    // In MeV
-    double electronEnergy    = neutrinoEnergy - 
-                               (fStartEnergyLevels.at(chosenStartLevel) + 1.5);
-    double electronEnergyGeV = electronEnergy/1000.0;
-  
-    double electronM  = 0.000511;
-    double electronP  = std::sqrt(std::pow(electronEnergyGeV,2)
-                                         - std::pow(electronM,2));
-    double electronPx = electronDirection.at(0)*electronP;
-    double electronPy = electronDirection.at(1)*electronP;
-    double electronPz = electronDirection.at(2)*electronP;
-  
-    // For the moment, electron is in same direction as neutrino
-  
-    // Adding the electron to truth
-    
-    // Primary particles have negative IDs
-    int trackID = -1*(truth.NParticles() + 1); 
-    std::string primary("primary");
-    int electronPDG = 11;
-    simb::MCParticle electron(trackID, electronPDG, primary);
-  
-    TLorentzVector electronPosition(vertex.at(0), vertex.at(1), 
-                                    vertex.at(2), neutrinoTime);
-    TLorentzVector electronMomentum(electronPx, electronPy, 
-                                    electronPz, electronEnergyGeV);
-    electron.AddTrajectoryPoint(electronPosition, electronMomentum);
-  
-    truth.Add(electron);
-  
     int lastLevel = -1;
     int level     = -1;
   
@@ -971,6 +937,40 @@ namespace evgen {
     // If the chosen start level energy is closest to the highest level energy 
     // that it's higher than than the lowest level energy that it's lower than, 
     // it starts at the level of the highest level energy that it's higher than
+  
+    std::vector< double > vertex = GetUniformPosition(engine);
+  
+    std::vector< double > electronDirection = GetIsotropicDirection(engine);
+  
+    // In MeV
+    double electronEnergy    = neutrinoEnergy - 
+                               (fEnergyLevels.at(lastLevel) + 1.5);
+    double electronEnergyGeV = electronEnergy/1000.0;
+  
+    double electronM  = 0.000511;
+    double electronP  = std::sqrt(std::pow(electronEnergyGeV,2)
+                                         - std::pow(electronM,2));
+    double electronPx = electronDirection.at(0)*electronP;
+    double electronPy = electronDirection.at(1)*electronP;
+    double electronPz = electronDirection.at(2)*electronP;
+  
+    // For the moment, electron is in same direction as neutrino
+  
+    // Adding the electron to truth
+    
+    // Primary particles have negative IDs
+    int trackID = -1*(truth.NParticles() + 1); 
+    std::string primary("primary");
+    int electronPDG = 11;
+    simb::MCParticle electron(trackID, electronPDG, primary);
+  
+    TLorentzVector electronPosition(vertex.at(0), vertex.at(1), 
+                                    vertex.at(2), neutrinoTime);
+    TLorentzVector electronMomentum(electronPx, electronPy, 
+                                    electronPz, electronEnergyGeV);
+    electron.AddTrajectoryPoint(electronPosition, electronMomentum);
+  
+    truth.Add(electron);
   
     double ttime       = neutrinoTime;
     int    noMoreDecay = 0;
