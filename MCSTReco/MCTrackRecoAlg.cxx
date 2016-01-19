@@ -2,6 +2,8 @@
 //
 //  MCTrackRecoAlg source
 //
+//  dEdx and dQdx Estimates Added by Joseph Zennamo (jaz8600@fnal.gov)
+//
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef MCTRACKRECOALG_CXX
