@@ -44,11 +44,15 @@ namespace evgen {
       std::vector< double > GetUniformPosition
                                     (CLHEP::HepRandomEngine& engine) const;
   
+      // Decide how many neutrinos to generate
+      int GetNumberOfNeutrinos(CLHEP::HepRandomEngine& engine) const;
+
       // Generate a neutrino time distributed uniformly
       // from fNeutrinoTimeBegin to fNeutrinoTimeEnd 
       double GetNeutrinoTime(CLHEP::HepRandomEngine& engine) const;
   
       // Use fEnergyProbabilityMap to sample one energy value
+      // or return a constant value
       double GetNeutrinoEnergy(CLHEP::HepRandomEngine& engine) const;
   
       // Read a ROOT file with a TGraph  and fill fEnergyProbabilityMap
@@ -83,11 +87,20 @@ namespace evgen {
       std::vector< double > fB;
       std::vector< double > fEnergyLevels;
   
+      // Generate monoenergetic neutrinos if this variable is set to true
+      bool fMonoenergeticNeutrinos;
+      // Energy of monoenergetic neutrinos
+      double fNeutrinoEnergy;
+
+      // Otherwise sample the spectrum
       std::string fEnergySpectrumFileName;
   
       // Number of neutrinos is distributed according 
-      // to Poisson distribution with this mean
-      int fMeanNumberOfNeutrinos;
+      // to Poisson distribution if this is true
+      bool fUsePoissonDistribution;
+      
+      // Average or exact number of neutrinos generated
+      int fNumberOfNeutrinos;
      
       // Generate neutrinos uniformly in a time interval
       double fNeutrinoTimeBegin;

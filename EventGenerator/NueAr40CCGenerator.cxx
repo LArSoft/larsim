@@ -36,14 +36,20 @@ namespace evgen {
               , fNumberOfStartLevels   ( 21                )
               , fBranchingRatios       (fNumberOfLevels    )
               , fDecayTo               (fNumberOfLevels    )
+              , fMonoenergeticNeutrinos
+                         (parameterSet.get< bool   >("MonoenergeticNeutrinos"))
+              , fNeutrinoEnergy
+                         (parameterSet.get< double >("NeutrinoEnergy"        ))
               , fEnergySpectrumFileName
                     (parameterSet.get< std::string >("EnergySpectrumFileName"))
-              , fMeanNumberOfNeutrinos 
-                          (parameterSet.get< int    >("MeanNumberOfNeutrinos"))
+              , fUsePoissonDistribution
+                         (parameterSet.get< bool   >("UsePoissonDistribution"))
+              , fNumberOfNeutrinos 
+                         (parameterSet.get< int    >("NumberOfNeutrinos"     ))
               , fNeutrinoTimeBegin
-                          (parameterSet.get< double >("NeutrinoTimeBegin"    ))
+                         (parameterSet.get< double >("NeutrinoTimeBegin"     ))
               , fNeutrinoTimeEnd
-                          (parameterSet.get< double >("NeutrinoTimeEnd"      ))
+                         (parameterSet.get< double >("NeutrinoTimeEnd"       ))
   {
   
     fActiveVolume.push_back
@@ -51,7 +57,7 @@ namespace evgen {
     fActiveVolume.push_back
       (parameterSet.get< std::vector< double > >("ActiveVolume1"));
   
-    ReadNeutrinoSpectrum();
+    if (!fMonoenergeticNeutrinos) ReadNeutrinoSpectrum();
   
     InitializeVectors();
   
@@ -118,6 +124,22 @@ namespace evgen {
   }
   
   //----------------------------------------------------------------------------
+  // Get number of neutrinos to generate
+  int NueAr40CCGenerator::GetNumberOfNeutrinos
+                                         (CLHEP::HepRandomEngine& engine) const
+  {
+
+    if (fUsePoissonDistribution)
+    {
+      CLHEP::RandPoisson randPoisson(engine);
+      return randPoisson.fire(fNumberOfNeutrinos);
+    }
+
+    return fNumberOfNeutrinos;
+
+  }
+
+  //----------------------------------------------------------------------------
   // Sample uniform distribution to get a neutrino interaction time
   double NueAr40CCGenerator::GetNeutrinoTime
                                          (CLHEP::HepRandomEngine& engine) const
@@ -131,9 +153,12 @@ namespace evgen {
   
   //----------------------------------------------------------------------------
   // Sample energy spectrum from fEnergyProbabilityMap
+  // or return a constant value
   double NueAr40CCGenerator::GetNeutrinoEnergy
                                          (CLHEP::HepRandomEngine& engine) const
   {
+
+    if (fMonoenergeticNeutrinos) return fNeutrinoEnergy;
   
     CLHEP::RandFlat randFlat(engine);
   
@@ -800,8 +825,7 @@ namespace evgen {
                                         CLHEP::HepRandomEngine& engine) const
   {
   
-    CLHEP::RandPoisson randPoisson(engine);
-    int numberOfNeutrinos = randPoisson.fire(fMeanNumberOfNeutrinos);
+    int numberOfNeutrinos = GetNumberOfNeutrinos(engine); 
     for (int neutrinoNumber = 0; neutrinoNumber < numberOfNeutrinos;
                                                    ++neutrinoNumber)
     {
