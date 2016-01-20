@@ -61,6 +61,7 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TAxis.h"
+#include "TTree.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -141,6 +142,7 @@ namespace evgen {
     double              fEpsilon;        ///< Minimum integration sum....
        
     //Define TFS histograms.....
+    /*
     TH1D* fPositionX;
     TH1D* fPositionY;
     TH1D* fPositionZ;
@@ -153,7 +155,7 @@ namespace evgen {
     TH1D* fDirCosineZ;
     TH1D* fTheta;
     TH1D* fPhi;
-
+    */
     //Define some variables....
     double fCryoBoundaries[6];
     double xNeg    = 0;
@@ -162,6 +164,11 @@ namespace evgen {
     double zPos    = 0;
     double fCenterX= 0;
     double fCenterZ= 0;
+
+    // TTree
+    TTree* fTree;
+    double Time, Momentum, KinEnergy, Gamma, Energy, Theta, Phi, pnorm;
+    double XPosition, YPosition, ZPosition, DirCosineX, DirCosineY, DirCosineZ;
   };
 }
 
@@ -243,6 +250,7 @@ namespace evgen{
     
     // Make the Histograms....
     art::ServiceHandle<art::TFileService> tfs;
+    /*
     fPositionX    = tfs->make<TH1D>("fPositionX"   ,"Position (cm)" ,500,fCenterX-(fXHalfRange+10) ,fCenterX+(fXHalfRange+10));
     fPositionY    = tfs->make<TH1D>("fPositionY"   ,"Position (cm)" ,500,-(fYInput+10),(fYInput+10));
     fPositionZ    = tfs->make<TH1D>("fPositionZ"   ,"Position (cm)" ,500,fCenterZ-(fZHalfRange+10) ,fCenterZ+(fZHalfRange+10));
@@ -257,7 +265,20 @@ namespace evgen{
 
     fTheta      = tfs->make<TH1D>("fTheta"     ,"Angle (radians)",500,-365,365);
     fPhi        = tfs->make<TH1D>("fPhi"       ,"Angle (radians)",500,-365,365);
-
+    */
+    fTree = tfs->make<TTree>("Generator","analysis tree");
+    fTree->Branch("XPosition" ,&XPosition ,"XPosition/D" );
+    fTree->Branch("YPosition" ,&YPosition ,"YPosition/D" );
+    fTree->Branch("ZPosition" ,&ZPosition ,"ZPosition/D" );
+    fTree->Branch("Time"      ,&Time      ,"Time/D"      );
+    fTree->Branch("Momentum"  ,&Momentum  ,"Momentum/D"  );
+    fTree->Branch("KinEnergy" ,&KinEnergy ,"KinEnergy/D" );
+    fTree->Branch("Energy"    ,&Energy    ,"Energy/D"    );
+    fTree->Branch("DirCosineX",&DirCosineX,"DirCosineX/D");
+    fTree->Branch("DirCosineY",&DirCosineY,"DirCosineY/D");
+    fTree->Branch("DirCosineZ",&DirCosineZ,"DirCosineZ/D");
+    fTree->Branch("Theta"     ,&Theta     ,"Theta/D"     );
+    fTree->Branch("Phi"       ,&Phi       ,"Phi/D"       );
   }
 
   //____________________________________________________________________________
@@ -309,17 +330,8 @@ namespace evgen{
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
-    double Time          = 0.0; 
-    double Momentum      = 0.0;
-    double KineticEnergy = 0.0;
-    double Gamma         = 0.0;
-    double Energy        = 0.0;
-    double DirCosineX    = 0.0;
-    double DirCosineY    = 0.0;
-    double DirCosineZ    = 0.0;
-    double Theta         = 0.0;
-    double Phi           = 0.0;
-    double pnorm  = 0.0;
+    Time = Momentum = KinEnergy = Gamma = Energy = Theta = Phi = pnorm = 0.0;
+    XPosition = YPosition = ZPosition = DirCosineX = DirCosineY = DirCosineZ = 0.0;    
     
     TVector3 x;
     TVector3 pmom;
@@ -368,8 +380,8 @@ namespace evgen{
       Phi   = M_PI*( 1.0-2.0*flat.fire() ); // Randomly generated angle between -pi and pi
 
       //---- Set KE, E, p
-      KineticEnergy = theta_energy.second; // Energy returned by GetThetaAndEnergy
-      Gamma         = 1 + (KineticEnergy/m);
+      KinEnergy = theta_energy.second; // Energy returned by GetThetaAndEnergy
+      Gamma         = 1 + (KinEnergy/m);
       Energy        = Gamma * m;
       Momentum      = std::sqrt(Energy*Energy-m*m); // Get momentum
 
@@ -391,7 +403,10 @@ namespace evgen{
 
     simb::MCParticle part(trackid, fPDG[i], primary);
     part.AddTrajectoryPoint(pos, pvec);
-
+    /*
+    fTree->Branch();
+    fTree->Branch();
+    fTree->Branch();
     fPositionX    ->Fill (x[0]);
     fPositionY    ->Fill (x[1]);
     fPositionZ    ->Fill (x[2]);
@@ -404,12 +419,17 @@ namespace evgen{
     fDirCosineZ   ->Fill (DirCosineZ);
     fTheta        ->Fill (Theta*180/M_PI);
     fPhi          ->Fill (Phi  *180/M_PI);
-  
-    std::cout << "Theta: " << Theta << " Phi: " << Phi << " KineticEnergy: " << KineticEnergy << " Energy: " << Energy << " Momentum: " << Momentum << std::endl; 
+    */
+    XPosition = x[0];
+    YPosition = x[1];
+    ZPosition = x[2];
+
+    std::cout << "Theta: " << Theta << " Phi: " << Phi << " KineticEnergy: " << KinEnergy << " Energy: " << Energy << " Momentum: " << Momentum << std::endl; 
     std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;   
     std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
     std::cout << "Normalised..." << DirCosineX << " " << DirCosineY << " " << DirCosineZ << std::endl;
-            
+      
+    fTree->Fill();
     mct.Add(part);
   }
 
