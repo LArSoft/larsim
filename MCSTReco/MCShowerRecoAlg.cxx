@@ -305,10 +305,7 @@ namespace sim {
 
       }///Looping through MCShower daughters
       mcs_daughter_dedxRAD /= 2.4;
-      std::cout << " Plane Charge, plane 0 : " << plane_charge.at(0) << std::endl; 
-      std::cout << " Plane Charge, plane 1 : " << plane_charge.at(1) << " % loss " << (plane_charge.at(0) - plane_charge.at(1))/plane_charge.at(0)  << std::endl; 
-      std::cout << " Plane Charge, plane 2 : " << plane_charge.at(2) << " % loss " << (plane_charge.at(1) - plane_charge.at(2))/plane_charge.at(1)  << std::endl; 
-
+      
       for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
 	
 	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
