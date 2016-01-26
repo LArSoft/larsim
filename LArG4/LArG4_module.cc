@@ -99,7 +99,7 @@
 #include "Geant4/globals.hh"
 
 // ROOT Includes
-
+#include "TGeoManager.h"
 
 // Forward declarations
 class G4RunManager;
@@ -125,9 +125,11 @@ namespace larg4 {
     /// produce the detector response.
     void produce (art::Event& evt); 
     void beginJob();
+    void beginRun(art::Run& run);
+    void FillInterestingVolumes(std::set<std::string> const& vol_names);
+    bool KeepParticle(simb::MCParticle const& part) const;
 
   private:
-
     g4b::G4Helper*             fG4Help;             ///< G4 interface object                                           
     larg4::LArVoxelListAction* flarVoxelListAction; ///< Geant4 user action to accumulate LAr voxel information.
     larg4::ParticleListAction* fparticleListAction; ///< Geant4 user action to particle information.                   
@@ -141,6 +143,9 @@ namespace larg4 {
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
+    std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
+    std::vector<std::pair<TGeoVolume const*, TGeoCombiTrans*>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
+
   };
 
 } // namespace LArG4
@@ -157,6 +162,8 @@ namespace larg4 {
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList")                   )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
+    , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
+
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
 
@@ -266,10 +273,74 @@ namespace larg4 {
       G4UserStackingAction* stacking_action = new LArStackingAction(fSmartStacking);
       fG4Help->GetRunManager()->SetUserAction(stacking_action);
     }
+    
+
   
   }
 
-  //----------------------------------------------------------------------
+  void LArG4::beginRun(art::Run& run){
+    //Fill interesting volumes object
+    std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(), fKeepParticlesInVolumes.end());
+    FillInterestingVolumes(volnameset);
+  }
+  
+  void LArG4::FillInterestingVolumes(std::set<std::string> const& vol_names) {
+    auto const& geom = *art::ServiceHandle<geo::Geometry>();
+  
+    std::vector<std::vector<TGeoNode const*>> node_paths
+      = geom.FindAllVolumePaths(vol_names);
+    //for each interesting volume, follow the node path and collect
+    //total rotations and translations
+    for (size_t iVolume = 0; iVolume < node_paths.size(); ++iVolume) {
+      std::vector<TGeoNode const*> path = node_paths[iVolume];
+      
+      TGeoTranslation* pTransl = new TGeoTranslation(0.,0.,0.);
+      TGeoRotation* pRot = new TGeoRotation();
+      for (TGeoNode const* node: path) {
+	TGeoTranslation thistranslate(*node->GetMatrix());
+	TGeoRotation thisrotate(*node->GetMatrix());
+	pTransl->Add(&thistranslate);
+	*pRot=*pRot * thisrotate;
+      }
+      
+      //for some reason, pRot and pTransl don't have tr and rot bits set correctly
+      //make new translations and rotations so bits are set correctly
+      TGeoTranslation* pTransl2 = new TGeoTranslation(pTransl->GetTranslation()[0],
+							pTransl->GetTranslation()[1],
+						      pTransl->GetTranslation()[2]);
+      double phi=0.,theta=0.,psi=0.;
+      pRot->GetAngles(phi,theta,psi);
+      TGeoRotation* pRot2 = new TGeoRotation();
+      pRot2->SetAngles(phi,theta,psi);
+      
+      TGeoCombiTrans* pTransf = new TGeoCombiTrans(*pTransl2,*pRot2);
+
+      fGeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
+
+    }
+
+  } // FillInterestingVolumes()
+    
+  bool LArG4::KeepParticle(simb::MCParticle const& part) const {
+    // if no volume in the list, keep everything
+    if (fKeepParticlesInVolumes.empty()) return true;
+    // check every point in the trajectory
+    const int nPoints = (int) part.NumberTrajectoryPoints();
+    for (int iPoint = 0; iPoint < nPoints; ++iPoint) {
+      TLorentzVector const& pos = part.Position(iPoint);
+      double const master[3] = { pos.X(), pos.Y(), pos.Z() };
+      double local[3];
+      for(unsigned int j=0;j<fGeoVolumePairs.size();j++){
+        // transform the point to relative to the volume
+        fGeoVolumePairs[j].second->MasterToLocal(master, local);
+        // containment check
+        if (fGeoVolumePairs[j].first->Contains(local)) return true;
+      } // for volumes
+
+    } // for trajectory points
+    return false;
+  } // LArG4::KeepParticle()
+  
   void LArG4::produce(art::Event& evt)
   {
     LOG_DEBUG("LArG4") << "produce()";
@@ -302,8 +373,7 @@ namespace larg4 {
       for(size_t i=0; i<fInputLabels.size(); i++)
 	evt.getByLabel(fInputLabels[i],mclists[i]);
     }
-
-
+    
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
 
@@ -319,13 +389,13 @@ namespace larg4 {
 
         const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
         
-        partCol->reserve(partCol->size() + particleList.size()); // not very useful here...
-        for(auto pitr = particleList.begin(); pitr != particleList.end(); ++pitr){
-          // copy the particle so that it isnt const
-          simb::MCParticle p(*(*pitr).second);
+        for(auto const& partPair: particleList) {
+	  simb::MCParticle const& p = *(partPair.second);
+	  if (!KeepParticle(p)) continue;
           partCol->push_back(p);
-          util::CreateAssn(*this, evt, *(partCol.get()), mct, *(tpassn.get()));
-        }
+          util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
+        }//for
+
 
         // Has the user request a detailed dump of the output objects?
         if (fdumpParticleList){

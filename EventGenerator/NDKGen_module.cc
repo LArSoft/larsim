@@ -131,6 +131,8 @@ namespace evgen{
     produces< sumdata::RunData, art::InRun >();
 
     fEventFile = new ifstream(fNdkFile.c_str());
+    if(!fEventFile->good())
+      exit(0);
     // create a default random engine; obtain the random seed from SeedService,
     // unless overridden in configuration with key "Seed"
     art::ServiceHandle<artext::SeedService>()
@@ -261,8 +263,6 @@ namespace evgen{
     */
 
     std::string name, k, dollar;
-
-
      
 
     // event dump format on file output by the two commands ....
@@ -338,6 +338,8 @@ namespace evgen{
       std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
     
     while(getline(*fEventFile,k)){
+      if (!k.compare(0,25,"GENIE Interaction Summary")) // testing for new event.
+        break;
       if (k.compare(0,1,"|") || k.compare(1,2,"  ")) continue; // uninteresting line if it doesn't start with "|" and if second and third characters aren't spaces.
       if (k.find("Fin-Init") != std::string::npos) continue; // Meh.
       if (k.find("Ar") != std::string::npos) continue; // Meh.
@@ -392,10 +394,8 @@ namespace evgen{
       }// loop over particles in an event
       truth.SetOrigin(simb::kUnknown);
       
-      if (!k.compare(1,1,"FLAGS")) // end of event
-	{
-	  break;  
-	}
+      //if (!k.compare(1,1,"FLAGS")) // end of event
+      //  break;  
       
     } // end while loop
     
