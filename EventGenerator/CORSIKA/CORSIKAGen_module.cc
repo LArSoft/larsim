@@ -62,16 +62,17 @@ namespace evgen {
     void populateNShowers();
     void populateTOffset();
     void GetSample(simb::MCTruth&);
-    double wrapvar( double var, double low, double high);
-    void ProjectToBoxEdge(	const double 	xyz[],
+    double wrapvar( const double var, const double low, const double high);
+    double wrapvarBoxNo( const double var, const double low, const double high, int& boxno);
+    void ProjectToBoxEdge(const double 	xyz[],
                                         const double 	dxyz[],
-                                        double & 	xlo,
-                                        double & 	xhi,
-                                        double & 	ylo,
-                                        double & 	yhi,
-                                        double & 	zlo,
-                                        double & 	zhi,
-                                        double 	xyzout[]	 );
+                                        const double xlo,
+                                        const double xhi,
+                                        const double ylo,
+                                        const double yhi,
+                                        const double zlo,
+                                        const double zhi,
+                                        double xyzout[]);
     
     int fShowerInputs=0; ///< Number of shower inputs to process from    
     std::vector<int> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
@@ -140,13 +141,13 @@ namespace evgen{
   
   void CORSIKAGen::ProjectToBoxEdge(	const double 	xyz[],
                                         const double 	indxyz[],
-                                        double & 	xlo,
-                                        double & 	xhi,
-                                        double & 	ylo,
-                                        double & 	yhi,
-                                        double & 	zlo,
-                                        double & 	zhi,
-                                        double 	xyzout[]	 ){
+                                        const double 	xlo,
+                                        const double 	xhi,
+                                        const double 	ylo,
+                                        const double 	yhi,
+                                        const double 	zlo,
+                                        const double 	zhi,
+                                        double xyzout[]	 ){
                                         
     
     //we want to project backwards, so take mirror of momentum
@@ -239,8 +240,14 @@ namespace evgen{
     }
   }
 
-  double CORSIKAGen::wrapvar( double var, double low, double high){
+  double CORSIKAGen::wrapvar( const double var, const double low, const double high){
     //wrap variable so that it's always between low and high
+    return (var - (high - low) * floor(var/(high-low))) + low;
+  }
+
+  double CORSIKAGen::wrapvarBoxNo( const double var, const double low, const double high, int& boxno){
+    //wrap variable so that it's always between low and high
+    boxno=int(floor(var/(high-low)));
     return (var - (high - low) * floor(var/(high-low))) + low;
   }
   
@@ -437,13 +444,19 @@ namespace evgen{
               etot=sqlite3_column_double(statement,8);
               
               //get/calculate position components
-              x=wrapvar(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1]);
-              z=wrapvar(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5]);
+              int boxnoX=0,boxnoZ=0;
+              x=wrapvarBoxNo(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1],boxnoX);
+              z=wrapvarBoxNo(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5],boxnoZ);
               tParticleTime=sqlite3_column_double(statement,7); //time offset, includes propagation time from top of atmosphere
-              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika; //actual particle time is particle surface arrival time
-                                                   //+ shower start time
-                                                   //+ global offset (fcl parameter, in s)
-                                                   //- propagation time through atmosphere
+              //actual particle time is particle surface arrival time
+              //+ shower start time
+              //+ global offset (fcl parameter, in s)
+              //- propagation time through atmosphere
+              //+ boxNo{X,Z} time offset to make grid boxes have different shower times
+              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTime*boxnoX + showerTime*boxnoZ;
+              //wrap surface arrival so that it's in the desired time window
+              t=wrapvar(t,(1e9*fToffset),1e9*(fToffset+fSampleTime));
+              
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
               
               //project back to wordvol/fProjectToHeight
