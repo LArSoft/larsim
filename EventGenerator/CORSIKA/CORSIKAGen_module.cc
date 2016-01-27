@@ -200,23 +200,31 @@ namespace evgen{
     //if 0 returned, make exeption for missing files
     std::vector<std::pair<std::string,long>> selectedflist;
     for(int i=0; i<fShowerInputs; i++){
-      std::vector<std::pair<std::string,long>> flist;
-      std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
-      std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
-      flist = fIFDH->findMatchingFiles(path,pattern);
-      unsigned int selIndex=-1;
-      if(flist.size()==1){ //0th element is the search path:pattern
-        selIndex=0;
-      }else if(flist.size()>1){
-        selIndex= (unsigned int) (engine.flat()*(flist.size()-1)+0.5); //rnd with rounding, dont allow picking the 0th element
-      }else{
-        throw cet::exception("CORSIKAGen") << "No files returned for path:pattern: "<<path<<":"<<pattern<<std::endl;
-      }
-      selectedflist.push_back(flist[selIndex]);
-      mf::LogInfo("CorsikaGen") << "For path:pattern: "<<path<<":"<<pattern
+      if(fShowerInputFiles[i].find("*")==std::string::npos){ 
+        //if there are no wildcards, don't call findMatchingFiles
+        selectedflist.push_back(std::make_pair(fShowerInputFiles[i],0));
+        mf::LogInfo("CorsikaGen") << "Selected"<<selectedflist.back().first<<"\n";
+	  }else{
+        //use findMatchingFiles
+        std::vector<std::pair<std::string,long>> flist;
+		std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
+		std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
+		flist = fIFDH->findMatchingFiles(path,pattern);
+		unsigned int selIndex=-1;
+		if(flist.size()==1){ //0th element is the search path:pattern
+			selIndex=0;
+		}else if(flist.size()>1){
+			selIndex= (unsigned int) (engine.flat()*(flist.size()-1)+0.5); //rnd with rounding, dont allow picking the 0th element
+		}else{
+			throw cet::exception("CORSIKAGen") << "No files returned for path:pattern: "<<path<<":"<<pattern<<std::endl;
+		}
+		selectedflist.push_back(flist[selIndex]);
+		mf::LogInfo("CorsikaGen") << "For "<<fShowerInputFiles[i]<<":"<<pattern
         <<"\nFound "<< flist.size() << " candidate files"
 	<<"\nChoosing file number "<< selIndex << "\n"
         <<"\nSelected "<<selectedflist.back().first<<"\n";
+     }
+
     }
     
     //do the fetching, store local filepaths in locallist
