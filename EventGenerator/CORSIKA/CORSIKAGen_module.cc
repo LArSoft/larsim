@@ -62,16 +62,17 @@ namespace evgen {
     void populateNShowers();
     void populateTOffset();
     void GetSample(simb::MCTruth&);
-    double wrapvar( double var, double low, double high);
-    void ProjectToBoxEdge(	const double 	xyz[],
+    double wrapvar( const double var, const double low, const double high);
+    double wrapvarBoxNo( const double var, const double low, const double high, int& boxno);
+    void ProjectToBoxEdge(const double 	xyz[],
                                         const double 	dxyz[],
-                                        double & 	xlo,
-                                        double & 	xhi,
-                                        double & 	ylo,
-                                        double & 	yhi,
-                                        double & 	zlo,
-                                        double & 	zhi,
-                                        double 	xyzout[]	 );
+                                        const double xlo,
+                                        const double xhi,
+                                        const double ylo,
+                                        const double yhi,
+                                        const double zlo,
+                                        const double zhi,
+                                        double xyzout[]);
     
     int fShowerInputs=0; ///< Number of shower inputs to process from    
     std::vector<int> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
@@ -140,13 +141,13 @@ namespace evgen{
   
   void CORSIKAGen::ProjectToBoxEdge(	const double 	xyz[],
                                         const double 	indxyz[],
-                                        double & 	xlo,
-                                        double & 	xhi,
-                                        double & 	ylo,
-                                        double & 	yhi,
-                                        double & 	zlo,
-                                        double & 	zhi,
-                                        double 	xyzout[]	 ){
+                                        const double 	xlo,
+                                        const double 	xhi,
+                                        const double 	ylo,
+                                        const double 	yhi,
+                                        const double 	zlo,
+                                        const double 	zhi,
+                                        double xyzout[]	 ){
                                         
     
     //we want to project backwards, so take mirror of momentum
@@ -199,23 +200,31 @@ namespace evgen{
     //if 0 returned, make exeption for missing files
     std::vector<std::pair<std::string,long>> selectedflist;
     for(int i=0; i<fShowerInputs; i++){
-      std::vector<std::pair<std::string,long>> flist;
-      std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
-      std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
-      flist = fIFDH->findMatchingFiles(path,pattern);
-      unsigned int selIndex=-1;
-      if(flist.size()==1){ //0th element is the search path:pattern
-        selIndex=0;
-      }else if(flist.size()>1){
-        selIndex= (unsigned int) (engine.flat()*(flist.size()-1)+0.5); //rnd with rounding, dont allow picking the 0th element
-      }else{
-        throw cet::exception("CORSIKAGen") << "No files returned for path:pattern: "<<path<<":"<<pattern<<std::endl;
-      }
-      selectedflist.push_back(flist[selIndex]);
-      mf::LogInfo("CorsikaGen") << "For path:pattern: "<<path<<":"<<pattern
+      if(fShowerInputFiles[i].find("*")==std::string::npos){ 
+        //if there are no wildcards, don't call findMatchingFiles
+        selectedflist.push_back(std::make_pair(fShowerInputFiles[i],0));
+        mf::LogInfo("CorsikaGen") << "Selected"<<selectedflist.back().first<<"\n";
+	  }else{
+        //use findMatchingFiles
+        std::vector<std::pair<std::string,long>> flist;
+		std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
+		std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
+		flist = fIFDH->findMatchingFiles(path,pattern);
+		unsigned int selIndex=-1;
+		if(flist.size()==1){ //0th element is the search path:pattern
+			selIndex=0;
+		}else if(flist.size()>1){
+			selIndex= (unsigned int) (engine.flat()*(flist.size()-1)+0.5); //rnd with rounding, dont allow picking the 0th element
+		}else{
+			throw cet::exception("CORSIKAGen") << "No files returned for path:pattern: "<<path<<":"<<pattern<<std::endl;
+		}
+		selectedflist.push_back(flist[selIndex]);
+		mf::LogInfo("CorsikaGen") << "For "<<fShowerInputFiles[i]<<":"<<pattern
         <<"\nFound "<< flist.size() << " candidate files"
 	<<"\nChoosing file number "<< selIndex << "\n"
         <<"\nSelected "<<selectedflist.back().first<<"\n";
+     }
+
     }
     
     //do the fetching, store local filepaths in locallist
@@ -239,8 +248,14 @@ namespace evgen{
     }
   }
 
-  double CORSIKAGen::wrapvar( double var, double low, double high){
+  double CORSIKAGen::wrapvar( const double var, const double low, const double high){
     //wrap variable so that it's always between low and high
+    return (var - (high - low) * floor(var/(high-low))) + low;
+  }
+
+  double CORSIKAGen::wrapvarBoxNo( const double var, const double low, const double high, int& boxno){
+    //wrap variable so that it's always between low and high
+    boxno=int(floor(var/(high-low)));
     return (var - (high - low) * floor(var/(high-low))) + low;
   }
   
@@ -437,13 +452,19 @@ namespace evgen{
               etot=sqlite3_column_double(statement,8);
               
               //get/calculate position components
-              x=wrapvar(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1]);
-              z=wrapvar(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5]);
+              int boxnoX=0,boxnoZ=0;
+              x=wrapvarBoxNo(sqlite3_column_double(statement,6)+showerXOffset,fShowerBounds[0],fShowerBounds[1],boxnoX);
+              z=wrapvarBoxNo(-sqlite3_column_double(statement,5)+showerZOffset,fShowerBounds[4],fShowerBounds[5],boxnoZ);
               tParticleTime=sqlite3_column_double(statement,7); //time offset, includes propagation time from top of atmosphere
-              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika; //actual particle time is particle surface arrival time
-                                                   //+ shower start time
-                                                   //+ global offset (fcl parameter, in s)
-                                                   //- propagation time through atmosphere
+              //actual particle time is particle surface arrival time
+              //+ shower start time
+              //+ global offset (fcl parameter, in s)
+              //- propagation time through atmosphere
+              //+ boxNo{X,Z} time offset to make grid boxes have different shower times
+              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTime*boxnoX + showerTime*boxnoZ;
+              //wrap surface arrival so that it's in the desired time window
+              t=wrapvar(t,(1e9*fToffset),1e9*(fToffset+fSampleTime));
+              
               simb::MCParticle p(ntotalCtr,pdg,"primary",-200,m,1);
               
               //project back to wordvol/fProjectToHeight
