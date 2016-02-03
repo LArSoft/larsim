@@ -1,0 +1,29 @@
+BEGIN_PROLOG
+
+standard_CORSIKAGen_protons:
+{
+ module_type:         "CORSIKAGen"
+ SampleTime:           7.05e-3               #integration time in seconds
+ TimeOffset:           -3.856e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.2e-3 (g4 rise time)
+ ProjectToHeight:      1800                 #height to which particles are projected [cm]
+ ShowerInputFiles:     [ "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/p_showers_*.db" ]   #list of sqlite dbs with corsika showers
+ ShowerFluxConstants:  [ 1.8e4 ]            #list of flux constants per shower file
+ BufferBox:            [ -250.0,250.0,-250.0,250.0,-250.0,250.0 ] #list of buffer box extensions to cryo volume in each dimension/dir (-x,+x,-y,+y,-z,+z)
+ ShowerAreaExtension:  1000                 #amount to extend the shower area beyond the cryo dimensions
+ RandomXZShift:        1000                 #amount to randomly shift shower start point in x & z [cm]
+}
+
+standard_CORSIKAGen_CMC:
+{
+ module_type:         "CORSIKAGen"
+ SampleTime:           7.05e-3               #integration time in seconds
+ TimeOffset:           -3.856e-3             #time in seconds before a spill to begin the interactions, -1.6e-3 (TPC Trig. offset) - 0.2e-3 (g4 rise time)
+ ProjectToHeight:      1800                 #height to which particles are projected [cm]
+ ShowerInputFiles:     [ "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/p_showers_*.db", "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/He_showers_*.db", "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/N_showers_*.db", "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/Mg_showers_*.db", "/pnfs/uboone/persistent/users/mibass/corsika/sqShowers/Fe_showers_*.db"] #list of sqlite dbs with corsika showers
+ ShowerFluxConstants:  [ 1.72e4, 9.2e3, 6.2e3, 9.2e3, 6.2e3] #list of flux constants per shower file
+ BufferBox:            [ -250.0,250.0,-250.0,250.0,-250.0,250.0 ] #list of buffer box extensions to cryo volume in each dimension/dir (-x,+x,-y,+y,-z,+z)
+ ShowerAreaExtension:  1000                 #amount to extend the shower area beyond the cryo dimensions
+ RandomXZShift:        1000                 #amount to randomly shift shower start point in x & z [cm]
+}
+
+END_PROLOG

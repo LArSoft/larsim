@@ -263,6 +263,7 @@ namespace evgen {
     int                 fTDist;          ///< How to distribute t  (gaus, or uniform)
        
     //Define TFS histograms.....
+    /*
     TH1D* hPDGCode;
     TH1D* hPositionX;
     TH1D* hPositionY;
@@ -278,7 +279,7 @@ namespace evgen {
     TH1D* hDirCosineZ;
     TH1D* hTheta;
     TH1D* hPhi;
-
+    */
     int PdgCode;
     double Energy, phi, theta, dep, Time;
     double Momentum, px0, py0, pz0;
@@ -376,6 +377,7 @@ namespace evgen{
   {
     // Make the Histograms....
     art::ServiceHandle<art::TFileService> tfs;
+    /*
     hPDGCode      = tfs->make<TH1D>("hPDGCode"     ,"PDG Code"      ,30 , -15           , 15             );
     hPositionX    = tfs->make<TH1D>("hPositionX"   ,"Position (cm)" ,500, ( fXmin - 10 ), ( fXmax + 10 ) );
     hPositionY    = tfs->make<TH1D>("hPositionY"   ,"Position (cm)" ,500, ( fYmin - 10 ), ( fYmax + 10 ) );
@@ -393,7 +395,7 @@ namespace evgen{
 
     hTheta      = tfs->make<TH1D>("hTheta"     ,"Angle (degrees)",500, 0, 90  );
     hPhi        = tfs->make<TH1D>("hPhi"       ,"Angle (degrees)",500, 0, 365 );
-
+    */
     fTree = tfs->make<TTree>("Generator","analysis tree");
     fTree->Branch("particleID",&PdgCode, "particleID/I");
     fTree->Branch("energy" ,&Energy , "energy/D");
@@ -590,7 +592,7 @@ namespace evgen{
     //          pointing upwards.
     //      cx, cy, cz - direction cosines.
   
-    simb::MCParticle part(trackid, fPDG, primary);
+    simb::MCParticle part(trackid, PdgCode, primary);
     part.AddTrajectoryPoint(pos, pvec);
 
     mct.Add(part);
@@ -605,6 +607,7 @@ namespace evgen{
     sd += dep;
     
     // Fill Histograms.....
+    /*
     hPDGCode      ->Fill (PdgCode);
     hPositionX    ->Fill (x0);
     hPositionY    ->Fill (y0);
@@ -620,7 +623,7 @@ namespace evgen{
     hDirCosineZ   ->Fill (cz);
     hTheta        ->Fill (theta);
     hPhi          ->Fill (phi);
-    
+    */
     /*
     // Write event by event outsputs.....
     std::cout << "Theta: " << theta << " Phi: " << phi << " Energy: " << Energy << " Momentum: " << Momentum << std::endl; 
