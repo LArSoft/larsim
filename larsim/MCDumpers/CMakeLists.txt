@@ -1,6 +1,6 @@
 art_make(
   MODULE_LIBRARIES
-  #  Utilities
+  #  lardata_Utilities
     ${SIMULATIONBASE}
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}

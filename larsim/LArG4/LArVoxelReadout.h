@@ -50,13 +50,13 @@
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/globals.hh"
 
-#include "Simulation/SimChannel.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/TPCGeo.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/TimeService.h"
-#include "Simulation/LArG4Parameters.h"
-#include "LArG4/IonizationAndScintillation.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "lardata/Utilities/LArProperties.h"
+#include "lardata/Utilities/TimeService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
 
 
 // Forward declarations

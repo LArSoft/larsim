@@ -3,10 +3,10 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
-#include "PhotonPropagation/PhotonLibrary.h"
-#include "Simulation/PhotonVoxels.h"
+#include "larsim/PhotonPropagation/PhotonLibrary.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TFile.h"

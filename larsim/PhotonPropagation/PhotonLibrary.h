@@ -5,7 +5,7 @@
 #define PHOTONLIBRARY_H
 
 #include "TTree.h"
-#include "Simulation/PhotonVoxels.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 
 namespace phot{

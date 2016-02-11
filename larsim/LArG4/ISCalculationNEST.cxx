@@ -10,7 +10,7 @@
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmSaturation.hh"
 
-#include "LArG4/ISCalculationNEST.h"
+#include "larsim/LArG4/ISCalculationNEST.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

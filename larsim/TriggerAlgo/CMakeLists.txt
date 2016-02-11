@@ -13,10 +13,10 @@ simple_plugin( TriggerAlgoBase service
                         ${FHICLCPP}
                         ${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY )
+               )
 
 simple_plugin( TriggerAlgoMicroBoone service
-                        TriggerAlgoBase_service
+                        larsim_TriggerAlgo_TriggerAlgoBase_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -30,7 +30,7 @@ simple_plugin( TriggerAlgoMicroBoone service
                         ${FHICLCPP}
                         ${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY )
+               )
 
 install_headers()
 install_fhicl()

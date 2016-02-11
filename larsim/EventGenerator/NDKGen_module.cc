@@ -47,8 +47,8 @@
 #include "SimulationBase/MCParticle.h"
 #include "SimulationBase/MCNeutrino.h"
 #include "EventGeneratorBase/evgenbase.h"
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
 
 #include "art/Framework/Core/EDProducer.h"
 

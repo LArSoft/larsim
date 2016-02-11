@@ -7,8 +7,8 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "LArG4/IonizationAndScintillationAction.h"
-#include "LArG4/IonizationAndScintillation.h"
+#include "larsim/LArG4/IonizationAndScintillationAction.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

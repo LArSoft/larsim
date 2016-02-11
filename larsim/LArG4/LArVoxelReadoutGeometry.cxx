@@ -21,9 +21,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "LArG4/LArVoxelReadoutGeometry.h"
-#include "LArG4/LArVoxelReadout.h"
-#include "Simulation/LArVoxelCalculator.h"
+#include "larsim/LArG4/LArVoxelReadoutGeometry.h"
+#include "larsim/LArG4/LArVoxelReadout.h"
+#include "larsim/Simulation/LArVoxelCalculator.h"
 
 // G4 includes
 #include "Geant4/G4PVPlacement.hh"

@@ -59,8 +59,8 @@
 #include "Geant4/G4OpProcessSubType.hh"
 #include "Geant4/G4GeometryTolerance.hh"
 
-#include "LArG4/OpBoundaryProcessSimple.hh"
-#include "Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/OpBoundaryProcessSimple.hh"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 //#define G4DEBUG_OPTICAL
 

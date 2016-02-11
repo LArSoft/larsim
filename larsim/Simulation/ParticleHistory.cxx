@@ -6,8 +6,8 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "Simulation/ParticleList.h"
-#include "Simulation/ParticleHistory.h"
+#include "larsim/Simulation/ParticleList.h"
+#include "larsim/Simulation/ParticleHistory.h"
 
 #include <cmath>
 

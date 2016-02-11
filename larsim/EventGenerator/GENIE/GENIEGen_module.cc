@@ -47,12 +47,12 @@
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCFlux.h"
 #include "SimulationBase/GTruth.h"
-#include "Simulation/BeamGateInfo.h"
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
-#include "SummaryData/POTSummary.h"
+#include "larsim/Simulation/BeamGateInfo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
+#include "larcore/SummaryData/POTSummary.h"
 #include "EventGeneratorBase/GENIE/GENIEHelper.h"
-#include "Utilities/AssociationUtil.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 ///Event Generation using GENIE, cosmics or single particles
 namespace evgen {

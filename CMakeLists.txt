@@ -104,16 +104,7 @@ include(ArtMake)
 include(BuildPlugins)
 
 # source
-add_subdirectory(DetSim)
-add_subdirectory(EventGenerator)
-add_subdirectory(LArG4)
-add_subdirectory(MCCheater)
-add_subdirectory(PhotonPropagation)
-add_subdirectory(Simulation)
-add_subdirectory(TriggerAlgo)
-add_subdirectory(SimFilters)
-add_subdirectory(MCSTReco)
-add_subdirectory(MCDumpers)
+add_subdirectory(larsim)
 
 # tests
 add_subdirectory(test)

@@ -52,8 +52,8 @@
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
 
 // #include "NWtree.h"
 

@@ -28,11 +28,11 @@
 // art extensions
 #include "artextensions/SeedService/SeedService.hh"
 
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
-#include "Simulation/sim.h"
+#include "larsim/Simulation/sim.h"
 
 class ToyOneShowerGen;
 

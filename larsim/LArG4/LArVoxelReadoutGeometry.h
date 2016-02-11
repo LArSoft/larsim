@@ -27,7 +27,7 @@
 #ifndef LArG4_LArVoxelReadoutGeometry_h
 #define LArG4_LArVoxelReadoutGeometry_h
 
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 #include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"

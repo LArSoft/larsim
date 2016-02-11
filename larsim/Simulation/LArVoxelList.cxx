@@ -5,7 +5,7 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "Simulation/LArVoxelList.h"
+#include "larsim/Simulation/LArVoxelList.h"
 
 #include <iterator>
 #include <vector>

@@ -2,13 +2,13 @@
 cet_find_library( SQLITE3 NAMES sqlite3 PATHS ENV NO_DEFAULT_PATH )
 cet_find_library( IFDH NAMES ifdh PATHS ENV IFDHC_LIB NO_DEFAULT_PATH )
 include_directories( $ENV{IFDHC_FQ_DIR}/inc )
-art_make( BASENAME_ONLY
+art_make( 
           MODULE_LIBRARIES 
-                        SummaryData
-                        Geometry
-                        Geometry_service
+                        larcore_SummaryData
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
-                        Simulation
+                        larsim_Simulation
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}

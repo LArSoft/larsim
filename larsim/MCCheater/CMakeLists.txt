@@ -1,11 +1,11 @@
 
 simple_plugin(BackTracker "service"
-			Utilities
-			TimeService_service			
-			Simulation
-                        RecoBase
-	                Geometry
-	                Geometry_service
+			lardata_Utilities
+			lardata_Utilities_TimeService_service			
+			larsim_Simulation
+                        lardata_RecoBase
+	                larcore_Geometry
+	                larcore_Geometry_Geometry_service
 			${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -19,19 +19,19 @@ simple_plugin(BackTracker "service"
 			${FHICLCPP}
 			${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(BackTrackerLoader "module"
-              BackTracker_service
+              larsim_MCCheater_BackTracker_service
         			${ART_FRAMEWORK_SERVICES_REGISTRY}              
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(CheckBackTracking "module"
-                        BackTracker_service
-                        RecoBase
-                        Simulation
+                        larsim_MCCheater_BackTracker_service
+                        lardata_RecoBase
+                        larsim_Simulation
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -41,13 +41,13 @@ simple_plugin(CheckBackTracking "module"
 			${MF_UTILITIES}
 			${FHICLCPP}
 			${CETLIB}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(RecoCheckAna "module"
-                        BackTracker_service
-                        RecoBase
-      Simulation
+                        larsim_MCCheater_BackTracker_service
+                        lardata_RecoBase
+      larsim_Simulation
 			${SIMULATIONBASE}
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}
@@ -63,7 +63,7 @@ simple_plugin(RecoCheckAna "module"
 			${FHICLCPP}
 			${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
-             BASENAME_ONLY
+             
 )
 
 install_headers()

@@ -29,11 +29,11 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LArSoft code
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/TimeService.h"
-#include "LArG4/LArVoxelReadout.h"
-#include "LArG4/ParticleListAction.h"
-#include "SpaceCharge/SpaceCharge.h"
+#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/Utilities/TimeService.h"
+#include "larsim/LArG4/LArVoxelReadout.h"
+#include "larsim/LArG4/ParticleListAction.h"
+#include "larevt/SpaceCharge/SpaceCharge.h"
 
 namespace larg4 {
   

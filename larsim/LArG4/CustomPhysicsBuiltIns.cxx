@@ -4,7 +4,7 @@
 /// \version $Id: PrimaryParticleInformation.cxx,v 1.3 2009/10/05 23:21:51 t962cvs Exp $
 /// \author  bjpjones@mit.edu
 ////////////////////////////////////////////////////////////////////////
-#include "LArG4/CustomPhysicsBuiltIns.hh"
+#include "larsim/LArG4/CustomPhysicsBuiltIns.hh"
 
 namespace larg4 {
   

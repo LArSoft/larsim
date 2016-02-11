@@ -8,14 +8,14 @@
 
 
 // our header
-#include "Simulation/AuxDetSimChannel.h"
+#include "larsim/Simulation/AuxDetSimChannel.h"
 
 // C/C++ standard library
 #include <limits> // std::numeric_limits<>
 #include <stdexcept>
 
 // LArSoft headers
-#include "SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
+#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
 
 namespace sim{
 

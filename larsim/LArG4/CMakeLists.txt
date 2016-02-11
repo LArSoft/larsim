@@ -3,27 +3,20 @@ include_directories ( $ENV{GENIE_INC}/GENIE )
 include_directories ( $ENV{LIBXML2_FQ_DIR}/include/libxml2 )
 include_directories ( $ENV{GEANT4_FQ_DIR}/include )
 include_directories ( $ENV{XERCES_C_INC} )
-include_directories ( $ENV{CRYHOME}/src )
 
-art_make_library( LIBRARY_NAME MergeSimSources
-		  	     SOURCE MergeSimSources.cxx
-			     LIBRARIES
-			                Simulation
- 					${FHICLCPP}
-)
-
-art_make( BASENAME_ONLY
-          LIBRARY_NAME  LArG4
+art_make( 
+          
           LIB_LIBRARIES 
-                        PhotonPropagation
-                        PhotonVisibilityService_service
-                        SpaceCharge_service
-                        Utilities
-                        TimeService_service
-                        LArProperties_service
-                        DetectorProperties_service
-                        Geometry
-                        Geometry_service
+                        larsim_PhotonPropagation
+                        larsim_PhotonPropagation_PhotonVisibilityService_service
+                        larevt_SpaceCharge_SpaceCharge_service
+                        lardata_Utilities
+                        lardata_Utilities_TimeService_service
+                        lardata_Utilities_LArProperties_service
+                        lardata_Utilities_DetectorProperties_service
+			larsim_Simulation
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${G4BASE}
                         ${ART_FRAMEWORK_CORE}
@@ -49,11 +42,11 @@ art_make( BASENAME_ONLY
                         ${ROOT_GEOM}
                         ${CLHEP}
                         ${G4_LIB_LIST}
-           MODULE_LIBRARIES LArG4
-                        SpaceCharge_service
-                        Simulation
-                        Geometry
-                        Geometry_service
+           MODULE_LIBRARIES larsim_LArG4
+                        larevt_SpaceCharge_SpaceCharge_service
+                        larsim_Simulation
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}

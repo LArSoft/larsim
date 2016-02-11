@@ -14,7 +14,7 @@
 
 #include "Geant4/G4EmSaturation.hh"
 
-#include "LArG4/ISCalculation.h"
+#include "larsim/LArG4/ISCalculation.h"
 
 namespace larg4 {
 

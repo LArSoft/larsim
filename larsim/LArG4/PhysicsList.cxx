@@ -12,7 +12,7 @@
 // LArG4::ModularPhysicsList, a class that inherits from
 // G4VModularPhysicsList.
 
-#include "LArG4/PhysicsList.h"
+#include "larsim/LArG4/PhysicsList.h"
 
 #include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4VModularPhysicsList.hh"

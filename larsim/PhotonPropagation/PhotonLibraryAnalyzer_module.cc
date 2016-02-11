@@ -18,11 +18,11 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h" 
 
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
-#include "Utilities/DetectorProperties.h"
-#include "PhotonPropagation/PhotonVisibilityService.h"
-#include "Simulation/PhotonVoxels.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/Utilities/DetectorProperties.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 #include "TH1D.h"
 #include "TH2D.h"

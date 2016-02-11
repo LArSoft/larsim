@@ -42,11 +42,11 @@ extern "C" {
 #include "TH1.h"
 #include "TVector3.h"
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/TPCGeo.h"
-#include "Simulation/SimChannel.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/Utilities/LArProperties.h"
+#include "lardata/Utilities/DetectorProperties.h"
 
 namespace geo { class Geometry; }
 

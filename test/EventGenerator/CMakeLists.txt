@@ -15,7 +15,6 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   ${CETLIB}
   ${CLHEP}
   NO_INSTALL
-  BASENAME_ONLY
 )
 
 

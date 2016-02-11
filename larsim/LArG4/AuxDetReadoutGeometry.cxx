@@ -11,8 +11,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "LArG4/AuxDetReadoutGeometry.h"
-#include "LArG4/AuxDetReadout.h"
+#include "larsim/LArG4/AuxDetReadoutGeometry.h"
+#include "larsim/LArG4/AuxDetReadout.h"
 
 // G4 includes
 #include "Geant4/G4PVPlacement.hh"

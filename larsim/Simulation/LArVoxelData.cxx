@@ -6,7 +6,7 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "Simulation/LArVoxelData.h"
+#include "larsim/Simulation/LArVoxelData.h"
 
 namespace sim {
 

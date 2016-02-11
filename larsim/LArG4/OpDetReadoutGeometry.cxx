@@ -7,11 +7,11 @@
 
 #include "cetlib/exception.h"
 
-#include "Simulation/LArG4Parameters.h"
-#include "LArG4/OpDetReadoutGeometry.h"
-#include "LArG4/OpDetLookup.h"
-#include "LArG4/OpDetSensitiveDetector.h"
-#include "LArG4/OpParamSD.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "larsim/LArG4/OpDetReadoutGeometry.h"
+#include "larsim/LArG4/OpDetLookup.h"
+#include "larsim/LArG4/OpDetSensitiveDetector.h"
+#include "larsim/LArG4/OpParamSD.h"
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/G4VSolid.hh"
 #include "Geant4/G4SDManager.hh"

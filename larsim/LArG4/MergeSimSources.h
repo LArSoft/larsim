@@ -14,9 +14,9 @@
 
 #include "SimulationBase/MCParticle.h"
 
-#include "Simulation/SimChannel.h"
-#include "Simulation/SimPhotons.h"
-#include "Simulation/AuxDetSimChannel.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "larsim/Simulation/SimPhotons.h"
+#include "larsim/Simulation/AuxDetSimChannel.h"
 
 namespace sim{
 

@@ -24,12 +24,12 @@
 // Framework includes
 
 // LArSoft includes
-#include "PhotonPropagation/PhotonVisibilityService.h"
-#include "PhotonPropagation/PhotonLibrary.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/OpDetGeo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/OpDetGeo.h"
 
 namespace phot{
 

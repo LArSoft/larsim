@@ -37,7 +37,7 @@
 //  New impelemenataion as an utility class  M.Asai, 26 July 2004
 // ----------------------------------------------------------------------
 
-#include "LArG4/G4ThermalElectron.hh"
+#include "larsim/LArG4/G4ThermalElectron.hh"
 #include "Geant4/G4ParticleTable.hh"
 
 // ######################################################################

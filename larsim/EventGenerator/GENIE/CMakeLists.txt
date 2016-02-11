@@ -1,13 +1,13 @@
 
 include_directories ( $ENV{GENIE_INC}/GENIE )
 
-art_make( BASENAME_ONLY
+art_make( 
           MODULE_LIBRARIES 
-                        Simulation
+                        larsim_Simulation
                         SimulationBase
-                        SummaryData
-                        Geometry
-                        Geometry_service
+                        larcore_SummaryData
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         SeedService_service # artextensions
                         ${EVENTGENERATORBASEGENIE}
                         ${ART_FRAMEWORK_CORE}

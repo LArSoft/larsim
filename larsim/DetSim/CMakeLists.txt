@@ -1,10 +1,10 @@
 	
 art_make( NO_PLUGINS
-          LIBRARY_NAME  DetSim
-          LIB_LIBRARIES Filters
-                        RawData
-                        Geometry
-                        Geometry_service
+          
+          LIB_LIBRARIES larevt_Filters
+                        lardata_RawData
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -22,7 +22,7 @@ art_make( NO_PLUGINS
 
 
 simple_plugin(SimWireAna "module"
-                         RawData
+                         lardata_RawData
                          ${ART_FRAMEWORK_CORE}
                          ${ART_FRAMEWORK_PRINCIPAL}
                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -36,18 +36,18 @@ simple_plugin(SimWireAna "module"
                          ${FHICLCPP}
                          ${CETLIB}
                          ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(SimWire "module"
-                      Simulation
-                      RawData
-                      Geometry
-                      Geometry_service
-                      LArFFT_service
-                      LArProperties_service
-                      DetectorProperties_service
-                      Utilities
+                      larsim_Simulation
+                      lardata_RawData
+                      larcore_Geometry
+                      larcore_Geometry_Geometry_service
+                      lardata_Utilities_LArFFT_service
+                      lardata_Utilities_LArProperties_service
+                      lardata_Utilities_DetectorProperties_service
+                      lardata_Utilities
                       SeedService_service # artextensions
                       ${ART_FRAMEWORK_CORE}
                       ${ART_FRAMEWORK_PRINCIPAL}
@@ -64,18 +64,18 @@ simple_plugin(SimWire "module"
                       ${CETLIB}
                       ${CLHEP}
                       ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(SimWireT962 "module"
-                          Simulation
-                          RawData
-                          Geometry
-                          Geometry_service
-                          LArFFT_service
-                          LArProperties_service
-                          DetectorProperties_service
-                          Utilities
+                          larsim_Simulation
+                          lardata_RawData
+                          larcore_Geometry
+                          larcore_Geometry_Geometry_service
+                          lardata_Utilities_LArFFT_service
+                          lardata_Utilities_LArProperties_service
+                          lardata_Utilities_DetectorProperties_service
+                          lardata_Utilities
                           SeedService_service # artextensions
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
@@ -92,13 +92,13 @@ simple_plugin(SimWireT962 "module"
                           ${CETLIB}
                           ${CLHEP}
                           ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(WienerFilterAna "module"
-                              RawData
-                              Geometry
-                              Geometry_service
+                              lardata_RawData
+                              larcore_Geometry
+                              larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
                               ${ART_FRAMEWORK_PRINCIPAL}
                               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -112,19 +112,19 @@ simple_plugin(WienerFilterAna "module"
                               ${FHICLCPP}
                               ${CETLIB}
                               ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
+              
 )
 
 simple_plugin(DumpRawDigits "module"
-                            Filters
-                            RawData
+                            larevt_Filters
+                            lardata_RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
 			    ${ART_FRAMEWORK_SERVICES_REGISTRY}
                             ${MF_MESSAGELOGGER}
                             ${FHICLCPP}
                             ${CETLIB}
-              BASENAME_ONLY
+              
 )
 
 install_headers()

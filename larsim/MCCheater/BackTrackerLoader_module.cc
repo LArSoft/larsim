@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "MCCheater/BackTracker.h"
+#include "larsim/MCCheater/BackTracker.h"
 
 namespace cheat {
   class BackTrackerLoader;

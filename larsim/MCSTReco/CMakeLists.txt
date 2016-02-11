@@ -1,17 +1,17 @@
 
 add_subdirectory(job)
 
-art_make( BASENAME_ONLY
-	  LIBRARY_NAME     MCSTReco
-          LIB_LIBRARIES    Geometry
-			   Geometry_service
-			   Simulation
+art_make( 
+	  
+          LIB_LIBRARIES    larcore_Geometry
+			   larcore_Geometry_Geometry_service
+			   larsim_Simulation
 			   SimulationBase
-			   SummaryData
-			   Utilities
-			   MCBase
-			   LArProperties_service
-			   DetectorProperties_service
+			   larcore_SummaryData
+			   lardata_Utilities
+			   lardata_MCBase
+			   lardata_Utilities_LArProperties_service
+			   lardata_Utilities_DetectorProperties_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}
@@ -29,16 +29,16 @@ art_make( BASENAME_ONLY
 			   ${ROOT_XMLIO}
 			   ${ROOT_GDML}
 			   ${ROOT_BASIC_LIB_LIST}
-          MODULE_LIBRARIES MCSTReco
-			   Geometry
-			   Geometry_service
-			   Simulation
+          MODULE_LIBRARIES larsim_MCSTReco
+			   larcore_Geometry
+			   larcore_Geometry_Geometry_service
+			   larsim_Simulation
 			   SimulationBase
-			   SummaryData
-			   Utilities
-			   MCBase
-			   LArProperties_service
-			   DetectorProperties_service
+			   larcore_SummaryData
+			   lardata_Utilities
+			   lardata_MCBase
+			   lardata_Utilities_LArProperties_service
+			   lardata_Utilities_DetectorProperties_service
 			   SeedService_service # artextensions
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
