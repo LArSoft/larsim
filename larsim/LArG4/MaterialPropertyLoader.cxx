@@ -11,7 +11,8 @@
 
 
 #include "larsim/LArG4/MaterialPropertyLoader.h"
-#include "lardata/Utilities/LArProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialPropertiesTable.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -180,7 +181,8 @@ namespace larg4 {
 
   void MaterialPropertyLoader::GetPropertiesFromServices()
   {
-    art::ServiceHandle<util::LArProperties>   LarProp;
+    const detinfo::LArProperties* LarProp = lar::providerFrom<detinfo::LArPropertiesService>();
+    const detinfo::DetectorProperties* DetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     // wavelength dependent quantities
 
@@ -198,7 +200,7 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "YIELDRATIO",          LarProp->ScintYieldRatio(),      1);
-    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       LarProp->Efield(),               kilovolt/cm);
+    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               kilovolt/cm);
 
     SetBirksConstant("LAr",LarProp->ScintBirksConstant(), cm/MeV);
     

@@ -81,7 +81,7 @@ outputs:
 ##### Parameter changes for simulation services #####
 
 # set quantum efficiency supressed scint yield to 0.03 * 24000
-services.user.LArProperties.ScintYield: 720
+services.user.DetectorPropertiesService.ScintYield: 720
 
 # enable optical physics in LArG4
 services.user.LArG4Parameters.EnabledPhysics: [ "Em",
@@ -98,6 +98,6 @@ services.user.LArG4Parameters.EnabledPhysics: [ "Em",
 services.user.LArG4Parameters.UseCustomPhysics: true
 
 # disable cerenkov light
-services.user.LArProperties.EnableCerenkovLight: true
+services.user.DetectorPropertiesService.EnableCerenkovLight: true
 
 

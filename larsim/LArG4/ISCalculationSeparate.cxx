@@ -12,7 +12,8 @@
 #include "Geant4/G4EmSaturation.hh"
 
 #include "larsim/LArG4/ISCalculationSeparate.h"
-#include "lardata/Utilities/LArProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
@@ -35,11 +36,12 @@ namespace larg4{
   void ISCalculationSeparate::Initialize()
   {
     art::ServiceHandle<sim::LArG4Parameters> lgpHandle;
-    art::ServiceHandle<util::LArProperties>  larpHandle;
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
-    double density       = larpHandle->Density(larpHandle->Temperature());
-    fEfield              = larpHandle->Efield();
-    fScintByParticleType = larpHandle->ScintByParticleType();
+    double density       = detprop->Density(detprop->Temperature());
+    fEfield              = detprop->Efield();
+    fScintByParticleType = larp->ScintByParticleType();
     fGeVToElectrons      = lgpHandle->GeVToElectrons();
     
     // \todo get scintillation yield from LArG4Parameters or LArProperties

@@ -45,7 +45,7 @@
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
 
-#include "lardata/Utilities/LArProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ProcessManager.hh"
@@ -185,7 +185,8 @@ namespace larg4 {
     fTheScintillationProcess->AddSaturation(emSaturation);
     
     
-    art::ServiceHandle<util::LArProperties> larp;
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
     
     mf::LogInfo("OpticalPhysics")<<"Cerenkov light enabled : " << CerenkovLightEnabled;

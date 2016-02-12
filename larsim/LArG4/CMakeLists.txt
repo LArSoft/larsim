@@ -11,9 +11,6 @@ art_make(
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larevt_SpaceCharge_SpaceCharge_service
                         lardata_Utilities
-                        lardata_Utilities_TimeService_service
-                        lardata_Utilities_LArProperties_service
-                        lardata_Utilities_DetectorProperties_service
 			larsim_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service

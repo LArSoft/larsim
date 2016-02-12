@@ -20,7 +20,6 @@
 
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/Utilities/DetectorProperties.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 

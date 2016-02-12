@@ -26,7 +26,6 @@
 #include "larcore/SimpleTypesAndConstants/geo_types.h"
 
 #include "lardata/RecoBase/Hit.h"
-#include "lardata/Utilities/TimeService.h"
 
 namespace recob{
   class SpacePoint;

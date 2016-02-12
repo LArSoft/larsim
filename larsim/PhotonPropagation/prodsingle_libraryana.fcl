@@ -90,28 +90,28 @@ outputs:
 }
 
 #manually setting parameters
-services.user.LArProperties.ScintYield: 24000
+services.user.DetectorPropertiesService.ScintYield: 24000
 #(default in Utilities/larproperties.fcl number of photons per MeV of deposited energy)
 
-services.user.LArProperties.ScintYieldRatio: 0.3
+services.user.DetectorPropertiesService.ScintYieldRatio: 0.3
 #(default in Utilities/larproperties.fcl)
 
-services.user.LArProperties.ScintByParticleType: true
+services.user.DetectorPropertiesService.ScintByParticleType: true
 #(default in Utilities/larproperties.fcl, only used with fast optical simulation)
 
-services.user.LArProperties.EnableCerenkovLight: false
+services.user.DetectorPropertiesService.EnableCerenkovLight: false
 #(default is true in Utilities/larproperties.fcl doesn't work with fast optical simulation
 
-services.user.LArProperties.RayleighEnergies: [ 4.95, 5.69, 6.51, 7.53, 8.50, 9.67, 9.95, 10.57 ]
+services.user.DetectorPropertiesService.RayleighEnergies: [ 4.95, 5.69, 6.51, 7.53, 8.50, 9.67, 9.95, 10.57 ]
 #(default in Utilities/larproperties.fcl, energy in eV)
 
-services.user.LArProperties.RayleighSpectrum: [ 3790, 1850, 930,  410,  192,  90,   38,   10 ]
+services.user.DetectorPropertiesService.RayleighSpectrum: [ 3790, 1850, 930,  410,  192,  90,   38,   10 ]
 #(default in Utilities/larproperties.fcl, length in cm)
 
-services.user.LArProperties.AbsLengthEnergies: [ 4, 5, 6, 7, 8, 9, 10, 11 ]
+services.user.DetectorPropertiesService.AbsLengthEnergies: [ 4, 5, 6, 7, 8, 9, 10, 11 ]
 #(default in Utilities/larproperties.fcl, energy in eV)
 
-services.user.LArProperties.AbsLengthSpectrum: [ 2000., 2000., 2000., 2000., 2000., 2000., 2000., 2000. ]
+services.user.DetectorPropertiesService.AbsLengthSpectrum: [ 2000., 2000., 2000., 2000., 2000., 2000., 2000., 2000. ]
 #(default in Utilities/larproperties.fcl, length in cm)
 
 physics.analyzers.pmtresponse.QuantumEfficiency: 1.00 #0.03
@@ -138,7 +138,7 @@ services.user.LArG4Parameters.EnabledPhysics: [ "Em",
 services.user.LArG4Parameters.UseCustomPhysics: true
 
 # disable cerenkov light
-services.user.LArProperties.EnableCerenkovLight: false
+services.user.DetectorPropertiesService.EnableCerenkovLight: false
 
 
 #17.5 < x < 238.8 cm (110.65 center)

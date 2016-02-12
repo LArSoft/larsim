@@ -17,7 +17,6 @@
 #include "larsim/LArG4/OpDetLookup.h"
 #include "larsim/Simulation/SimPhotons.h"
 #include "Geant4/G4SDManager.hh"
-#include "lardata/Utilities/DetectorProperties.h"
 
 namespace larg4{
 
@@ -32,8 +31,6 @@ namespace larg4{
     fTheOpDetLookup        = OpDetLookup::Instance();
     fThePhotonTable        = OpDetPhotonTable::Instance();
     
-    art::ServiceHandle<util::DetectorProperties> det;
-    //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
   }
 
   

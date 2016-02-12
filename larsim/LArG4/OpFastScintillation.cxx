@@ -112,8 +112,7 @@
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/OpDetGeo.h"
 
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/DetectorProperties.h" 
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -148,7 +147,7 @@ namespace larg4{
 	YieldFactor=1.0;
         ExcitationRatio = 1.0;
 	
-	art::ServiceHandle<util::LArProperties> larp;
+	const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
 	
         scintillationByParticleType = larp->ScintByParticleType();
 
@@ -160,8 +159,6 @@ namespace larg4{
         }
 
         BuildThePhysicsTable();
-        art::ServiceHandle<util::DetectorProperties> det;                 
-        //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
 
         emSaturation = NULL;
 }
@@ -178,9 +175,6 @@ namespace larg4{
     ExcitationRatio             = rhs.GetScintillationExcitationRatio();
     scintillationByParticleType = rhs.GetScintillationByParticleType();
     emSaturation                = rhs.GetSaturation();
-
-    art::ServiceHandle<util::DetectorProperties> det;                 
-    //fGlobalTimeOffset = det->ConvertTicksToTDC(0) * det->SamplingRate();
 
     BuildThePhysicsTable();
   }

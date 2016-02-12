@@ -1,7 +1,6 @@
 
 simple_plugin(BackTracker "service"
 			lardata_Utilities
-			lardata_Utilities_TimeService_service			
 			larsim_Simulation
                         lardata_RecoBase
 	                larcore_Geometry

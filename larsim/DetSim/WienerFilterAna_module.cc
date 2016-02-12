@@ -41,7 +41,7 @@ extern "C" {
 #include "lardata/RecoBase/Wire.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "larcore/Geometry/PlaneGeo.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // ROOT includes
 #include <TMath.h>
@@ -112,11 +112,11 @@ namespace detsim{
   {
     // get access to the TFile service
     art::ServiceHandle<art::TFileService> tfs;
-
+    
     art::ServiceHandle<util::LArFFT> fFFT;
     int fNTicks = fFFT->FFTSize();
-	fNBins=fNTicks/2+1;
-    art::ServiceHandle<util::DetectorProperties> detp;
+    fNBins=fNTicks/2+1;
+    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     double samprate=detp->SamplingRate();
     double sampfreq=1./samprate *1e6; // in kHz   
     art::ServiceHandle<geo::Geometry> geo;

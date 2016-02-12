@@ -24,6 +24,7 @@
 #include "SimulationBase/MCParticle.h"
 #include "larsim/Simulation/sim.h"
 #include "larsim/Simulation/SimListUtils.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 namespace cheat{
 
@@ -595,7 +596,7 @@ namespace cheat{
       
       // loop over the electrons in the channel and grab those that are in time 
       // with the identified hit start and stop times
-      art::ServiceHandle<util::TimeService> ts;
+      const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
       int start_tdc = ts->TPCTick2TDC( hit_start_time );
       int end_tdc   = ts->TPCTick2TDC( hit_end_time   );
       if(start_tdc<0) start_tdc = 0;
@@ -639,7 +640,8 @@ namespace cheat{
                                  std::vector<sim::IDE>&      ides) const
   {
     // Get services.
-    art::ServiceHandle<util::TimeService> ts;
+    const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+    
     int start_tdc = ts->TPCTick2TDC( hit.PeakTimeMinusRMS() );
     int end_tdc   = ts->TPCTick2TDC( hit.PeakTimePlusRMS()   );
     if(start_tdc<0) start_tdc = 0;

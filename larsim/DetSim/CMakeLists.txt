@@ -45,8 +45,6 @@ simple_plugin(SimWire "module"
                       larcore_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
-                      lardata_Utilities_LArProperties_service
-                      lardata_Utilities_DetectorProperties_service
                       lardata_Utilities
                       SeedService_service # artextensions
                       ${ART_FRAMEWORK_CORE}
@@ -73,8 +71,6 @@ simple_plugin(SimWireT962 "module"
                           larcore_Geometry
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
-                          lardata_Utilities_LArProperties_service
-                          lardata_Utilities_DetectorProperties_service
                           lardata_Utilities
                           SeedService_service # artextensions
                           ${ART_FRAMEWORK_CORE}
@@ -120,7 +116,7 @@ simple_plugin(DumpRawDigits "module"
                             lardata_RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
-			    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+                            ${ART_FRAMEWORK_SERVICES_REGISTRY}
                             ${MF_MESSAGELOGGER}
                             ${FHICLCPP}
                             ${CETLIB}

@@ -10,8 +10,6 @@ art_make(
 			   larcore_SummaryData
 			   lardata_Utilities
 			   lardata_MCBase
-			   lardata_Utilities_LArProperties_service
-			   lardata_Utilities_DetectorProperties_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}
@@ -37,8 +35,6 @@ art_make(
 			   larcore_SummaryData
 			   lardata_Utilities
 			   lardata_MCBase
-			   lardata_Utilities_LArProperties_service
-			   lardata_Utilities_DetectorProperties_service
 			   SeedService_service # artextensions
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}

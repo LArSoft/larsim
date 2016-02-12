@@ -6,7 +6,6 @@ art_make( NO_PLUGINS
           
           LIB_LIBRARIES larsim_Simulation_LArVoxelCalculator_service
 	                larsim_Simulation_LArG4Parameters_service
-			lardata_Utilities_DetectorProperties_service
 	                lardata_Utilities
 	                ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
