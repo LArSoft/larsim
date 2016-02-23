@@ -19,18 +19,15 @@ standard_genie:
  RandomTimeOffset: 10000.          #length of spill in ns
  FiducialCut:      "none"          #fiducial cut, see https://cdcvs.fnal.gov/redmine/projects/nusoft/wiki/GENIEHelper
  GenFlavors:       [12,14,-12,-14] #pdg codes of flux generator neutrino flavors
- Environment:      ["GPRODMODE", 
- 	            "YES",
-                    "GEVGL",       #GEVGL sets the type of interactions to make
- 	            "Default"]     #Default is everything, can also do NC, CC, etc, 
-                                   #see $GENIE/config/EventGeneratorListAssembler.xml 
-                                   #for possible configuration options
+ Environment:      ["GPRODMODE", "YES"] # deprecated
  ProductionMode:   "yes"           #turn off the GENIE verbosity
+ EventGeneratorList: "Default"
  DetectorLocation: "MINOS-NearDet" #location name for flux window
  MixerConfig:      "none"          #no flux mixing by default
  #MixerConfig:     "swap 12:16 14:16 -12:-16 -14:-16" # example flavor swapping
  MixerBaseline:    0.              #distance from tgt to flux window needs to be set if using histogram flx
  DebugFlags:       0               #no debug flags on by default
+ XSecTable: "gxspl-FNALsmall.xml"  #default cross section
 }
 
 standard_genie_atmo_flux:            @local::standard_genie  
