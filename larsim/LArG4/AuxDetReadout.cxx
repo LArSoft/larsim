@@ -64,15 +64,15 @@ namespace larg4 {
     G4double energyDeposited =   step->GetTotalEnergyDeposit()/GeV;
 
 	G4ThreeVector startG4(step->GetPreStepPoint()->GetPosition() );
-	double startWorld[3]={startG4.getX()/cm,startG4.getY()/cm,startG4.getZ()/cm};
+	double startWorld[3]={startG4.getX()/CLHEP::cm,startG4.getY()/CLHEP::cm,startG4.getZ()/CLHEP::cm};
 		
 	double startTime = step->GetPreStepPoint()->GetGlobalTime()/ns;
 
     G4ThreeVector stopG4( step->GetPostStepPoint()->GetPosition());
-	double stopWorld[3]={stopG4.getX()/cm,stopG4.getY()/cm,stopG4.getZ()/cm};
+	double stopWorld[3]={stopG4.getX()/CLHEP::cm,stopG4.getY()/CLHEP::cm,stopG4.getZ()/CLHEP::cm};
     
     G4ThreeVector stopG4Momentum( step->GetPostStepPoint()->GetMomentum());
-    double stopWorldMomVector[3]={stopG4Momentum.getX()/cm,stopG4Momentum.getY()/cm,stopG4Momentum.getZ()/cm};
+    double stopWorldMomVector[3]={stopG4Momentum.getX()/CLHEP::cm,stopG4Momentum.getY()/CLHEP::cm,stopG4Momentum.getZ()/CLHEP::cm};
 
 		double stopTime = step->GetPostStepPoint()->GetGlobalTime()/ns;
 		

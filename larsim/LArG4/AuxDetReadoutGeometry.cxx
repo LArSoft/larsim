@@ -85,7 +85,7 @@ namespace larg4 {
       // find world coordinate of the AuxDet origin in cm
       G4Point3D local(0., 0., 0.);
       G4Point3D world = DepthToWorld * local; // G4 works in mm
-      double worldPos[3] = { world.x() / cm, world.y() / cm, world.z() / cm };
+      double worldPos[3] = { world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm };
 
       size_t adNum = 0;
       size_t svNum = 0;
@@ -140,7 +140,7 @@ namespace larg4 {
       // find world coordinate of the AuxDet origin in cm
       G4Point3D local(0., 0., 0.);
       G4Point3D world = DepthToWorld * local; // G4 works in mm
-      double worldPos[3] = { world.x() / cm, world.y() / cm, world.z() / cm };
+      double worldPos[3] = { world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm };
 
       unsigned int adNum;
       fGeo->PositionToAuxDet(worldPos, adNum);

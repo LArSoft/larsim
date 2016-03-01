@@ -293,12 +293,12 @@ namespace larg4 {
         // Get some constants from the LAr voxel information object.
         // Remember, ROOT uses cm.
         art::ServiceHandle<sim::LArVoxelCalculator> lvc;
-        G4double voxelSizeX   = lvc->VoxelSizeX() * cm;
-        G4double voxelSizeY   = lvc->VoxelSizeY() * cm;
-        G4double voxelSizeZ   = lvc->VoxelSizeZ() * cm;
-        G4double voxelOffsetX = lvc->VoxelOffsetX() * cm;
-        G4double voxelOffsetY = lvc->VoxelOffsetY() * cm;
-        G4double voxelOffsetZ = lvc->VoxelOffsetZ() * cm;
+        G4double voxelSizeX   = lvc->VoxelSizeX() * CLHEP::cm;
+        G4double voxelSizeY   = lvc->VoxelSizeY() * CLHEP::cm;
+        G4double voxelSizeZ   = lvc->VoxelSizeZ() * CLHEP::cm;
+        G4double voxelOffsetX = lvc->VoxelOffsetX() * CLHEP::cm;
+        G4double voxelOffsetY = lvc->VoxelOffsetY() * CLHEP::cm;
+        G4double voxelOffsetZ = lvc->VoxelOffsetZ() * CLHEP::cm;
 
         LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelSizeX=" << voxelSizeX
                                              << ", voxelSizeY=" << voxelSizeY
@@ -520,14 +520,14 @@ namespace larg4 {
 
         LOG_DEBUG("LArVoxelReadoutGeometry") << "current " << daughterName 
                                              << " origin is at (" 
-                                             << world.x() / cm << ","
-                                             << world.y() / cm << ","
-                                             << world.z() / cm << ")";
+                                             << world.x() / CLHEP::cm << ","
+                                             << world.y() / CLHEP::cm << ","
+                                             << world.z() / CLHEP::cm << ")";
 
         // we don't bother with the cryostat number when calling Geometry::PositionToTPC
         // because we know we have already started off with the correct cryostat volume
         // G4 uses mm, we want cm
-        double worldPos[3] = { world.x() / cm, world.y() / cm, world.z() / cm };
+        double worldPos[3] = { world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm };
         unsigned int daughterNum = 0;
         unsigned int extra       = 0;
         if(daughterName.compare("volCryostat") == 0)

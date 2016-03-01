@@ -189,8 +189,8 @@ namespace larg4 {
     SetMaterialProperty( "LAr", "FASTCOMPONENT", LarProp->FastScintSpectrum(), 1  );
     SetMaterialProperty( "LAr", "SLOWCOMPONENT", LarProp->SlowScintSpectrum(), 1  );
     SetMaterialProperty( "LAr", "RINDEX",        LarProp->RIndexSpectrum(),    1  );
-    SetMaterialProperty( "LAr", "ABSLENGTH",     LarProp->AbsLengthSpectrum(), cm );
-    SetMaterialProperty( "LAr", "RAYLEIGH",      LarProp->RayleighSpectrum(),  cm );
+    SetMaterialProperty( "LAr", "ABSLENGTH",     LarProp->AbsLengthSpectrum(), CLHEP::cm );
+    SetMaterialProperty( "LAr", "RAYLEIGH",      LarProp->RayleighSpectrum(),  CLHEP::cm );
 
 
     // scalar properties
@@ -200,9 +200,9 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   ns);
     SetMaterialConstProperty("LAr", "YIELDRATIO",          LarProp->ScintYieldRatio(),      1);
-    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               kilovolt/cm);
+    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               kilovolt/CLHEP::cm);
 
-    SetBirksConstant("LAr",LarProp->ScintBirksConstant(), cm/MeV);
+    SetBirksConstant("LAr",LarProp->ScintBirksConstant(), CLHEP::cm/MeV);
     
     SetReflectances("LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
 

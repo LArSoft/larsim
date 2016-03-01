@@ -107,7 +107,7 @@ LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 	
 	const G4ThreeVector tr4Pos = aTrack->GetPosition();
 	// G4 returns positions in mm, have to convert to cm for LArSoft coordinate systems
-	const TVector3 trPos(tr4Pos.x()/cm,tr4Pos.y()/cm,tr4Pos.z()/cm);
+	const TVector3 trPos(tr4Pos.x()/CLHEP::cm,tr4Pos.y()/CLHEP::cm,tr4Pos.z()/CLHEP::cm);
 	//double locNeut = trPos.Mag();
 	classification = fUrgent; 
 	// std::cout << "LArStackingAction: DetHalfWidth, Height, FullLength: " << geom->DetHalfWidth() << ", " << geom->DetHalfHeight() << ", " << geom->DetLength() << std::endl;
@@ -179,7 +179,7 @@ std::string LArStackingAction::InsideTPC(const G4Track * aTrack)
   const G4ThreeVector tr4Pos = aTrack->GetPosition();
 
   // G4 returns positions in mm, have to convert to cm for LArSoft coordinate systems
-  const TVector3 trPos(tr4Pos.x()/cm,tr4Pos.y()/cm,tr4Pos.z()/cm);
+  const TVector3 trPos(tr4Pos.x()/CLHEP::cm,tr4Pos.y()/CLHEP::cm,tr4Pos.z()/CLHEP::cm);
 
   const std::string volName(geom->VolumeName(trPos));
 

@@ -65,7 +65,7 @@ namespace larg4{
     // Store relative position on the photon detector
     G4ThreeVector worldPosition  = preStepPoint->GetPosition();
     G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
-    ThePhoton.FinalLocalPosition = TVector3(localPosition.x()/cm, localPosition.y()/cm, localPosition.z()/cm);
+    ThePhoton.FinalLocalPosition = TVector3(localPosition.x()/CLHEP::cm, localPosition.y()/CLHEP::cm, localPosition.z()/CLHEP::cm);
     
 
     // Add this photon to the detected photons table

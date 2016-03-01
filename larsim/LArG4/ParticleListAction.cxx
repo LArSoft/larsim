@@ -274,9 +274,9 @@ namespace larg4 {
       G4double time = preStepPoint->GetGlobalTime();
       
       // Remember that LArSoft uses cm, ns, GeV.
-      TLorentzVector fourPos( position.x() / cm,
-			      position.y() / cm,
-			      position.z() / cm,
+      TLorentzVector fourPos( position.x() / CLHEP::cm,
+			      position.y() / CLHEP::cm,
+			      position.z() / CLHEP::cm,
 			      time / ns);
       
       const G4ThreeVector momentum = preStepPoint->GetMomentum();
@@ -317,9 +317,9 @@ namespace larg4 {
       G4double time = postStepPoint->GetGlobalTime();
       
       // Remember that LArSoft uses cm, ns, GeV.
-      TLorentzVector fourPos( position.x() / cm,
-			      position.y() / cm,
-			      position.z() / cm,
+      TLorentzVector fourPos( position.x() / CLHEP::cm,
+			      position.y() / CLHEP::cm,
+			      position.z() / CLHEP::cm,
 			      time / ns );
       
       const G4ThreeVector momentum = postStepPoint->GetMomentum();

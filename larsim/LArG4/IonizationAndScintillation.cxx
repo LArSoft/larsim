@@ -70,11 +70,11 @@ namespace larg4 {
 					  500, 0., 5000.);			
     fEnergyPerStep    	= tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps", 
 					  100, 0., 0.5);				
-    fStepSize         	= tfs->make<TH1F>("stepSize", ";Step Size (cm);Steps", 	
+    fStepSize         	= tfs->make<TH1F>("stepSize", ";Step Size (CLHEP::cm);Steps", 	
 					  500, 0., 0.2);                          
-    fElectronsPerLength = tfs->make<TH1F>("electronsPerLength", ";Electrons #times 10^{3}/cm;Steps",
+    fElectronsPerLength = tfs->make<TH1F>("electronsPerLength", ";Electrons #times 10^{3}/CLHEP::cm;Steps",
 					  1000, 0., 1000.);
-    fPhotonsPerLength   = tfs->make<TH1F>("photonsPerLength", ";Photons #times 10^{3}/cm;Steps",
+    fPhotonsPerLength   = tfs->make<TH1F>("photonsPerLength", ";Photons #times 10^{3}/CLHEP::cm;Steps",
 					  1000, 0., 1000.);
     fElectronsPerEDep   = tfs->make<TH1F>("electronsPerEDep", ";Electrons #times 10^{3}/MeV;Steps",
 					  1000, 0., 1000.);
@@ -118,7 +118,7 @@ namespace larg4 {
  
       fISCalc->CalculateIonizationAndScintillation(fStep);
     
-      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/cm
+      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
 					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
 					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
 					      << "\nPhotons: "   << fISCalc->NumberScintillationPhotons();
@@ -127,14 +127,14 @@ namespace larg4 {
       totstep -= fStep->GetPreStepPoint()->GetPosition();
       
       // Fill the histograms
-      fStepSize          ->Fill(totstep.mag()/cm);
+      fStepSize          ->Fill(totstep.mag()/CLHEP::cm);
       fEnergyPerStep     ->Fill(fISCalc->EnergyDeposit());
       fElectronsPerStep  ->Fill(fISCalc->NumberIonizationElectrons());
       fPhotonsPerStep    ->Fill(fISCalc->NumberScintillationPhotons());
       fElectronsVsPhotons->Fill(fISCalc->NumberScintillationPhotons(), 
 				fISCalc->NumberIonizationElectrons());
-      fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/(totstep.mag()/cm));
-      fPhotonsPerLength  ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/(totstep.mag()/cm));
+      fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/(totstep.mag()/CLHEP::cm));
+      fPhotonsPerLength  ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/(totstep.mag()/CLHEP::cm));
       fElectronsPerEDep  ->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/fISCalc->EnergyDeposit());
       fPhotonsPerEDep    ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/fISCalc->EnergyDeposit());
 

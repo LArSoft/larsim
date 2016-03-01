@@ -2,8 +2,8 @@
 #define EMASS 9.109e-31*kg
 #define MillerDriftSpeed true
 
-#define GASGAP 0.25*cm //S2 generation region
-#define BORDER 0*cm //liquid-gas border z-coordinate
+#define GASGAP 0.25*CLHEP::cm //S2 generation region
+#define BORDER 0*CLHEP::cm //liquid-gas border z-coordinate
 
 #define QE_EFF 1 //a base or maximum quantum efficiency
 #define phe_per_e 1 //S2 gain for quick studies
@@ -187,7 +187,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     InsAndOuts = true;
   
   // retrieve scintillation-related material properties
-  G4double Density = aMaterial->GetDensity()/(g/cm3);
+  G4double Density = aMaterial->GetDensity()/(g/CLHEP::cm3);
   G4double nDensity = Density*AVO; //molar mass factor applied below
   G4int Phase = aMaterial->GetState(); //solid, liquid, or gas?
   G4double ElectricField(0.), FieldSign(0.); //for field quenching of S1
@@ -222,7 +222,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	GetConstProperty("ELECTRICFIELD");
   }
   if ( ElectricField >= 0 ) FieldSign = 1; else FieldSign = -1;
-  ElectricField = std::abs((1e3*ElectricField)/(kilovolt/cm));
+  ElectricField = std::abs((1e3*ElectricField)/(kilovolt/CLHEP::cm));
   G4double Temperature = aMaterial->GetTemperature();
   G4double ScintillationYield, ResolutionScale, R0 = 1.0*um,
     DokeBirks[3], ThomasImel = 0.00, delta = 1*mm;
@@ -558,7 +558,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     if(abs(aParticle->GetPDGcode())==2112) dx=0;
   }
   else { //normal case of an e-/+ energy deposition recorded by Geant
-    dx = aStep.GetStepLength()/cm;
+    dx = aStep.GetStepLength()/CLHEP::cm;
     if(dx) LET = (dE/dx)*(1/Density); //lin. energy xfer (prop. to dE/dx)
     if ( LET > 0 && dE > 0 && dx > 0 ) {
       G4double ratio = CalculateElectronLET(dE*1e3,z1)/LET;
@@ -606,7 +606,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   sprintf(time00,"TIME0_%i",counter); sprintf(time01,"TIME1_%i",counter);
   delta = aMaterialPropertiesTable->GetConstProperty( trackL );
   G4double energ = aMaterialPropertiesTable->GetConstProperty( energy );
-  delta += dx*cm; energ += dE*MeV;
+  delta += dx*CLHEP::cm; energ += dE*MeV;
   aMaterialPropertiesTable->AddConstProperty( trackL, delta );
   aMaterialPropertiesTable->AddConstProperty( energy, energ );
   if ( TotalEnergyDeposit > 0 ) {
@@ -880,7 +880,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	     GetParticleName()=="opticalphoton" ) {
 	  if ( abs(z2-z1) && !fAlpha && //electron recoil
 	       abs(aParticle->GetPDGcode()) != 2112 ) {
-	    LET = (energ/MeV)/(delta/cm)*(1/Density); //avg LET over all
+	    LET = (energ/MeV)/(delta/CLHEP::cm)*(1/Density); //avg LET over all
 	    //in future, this will be done interaction by interaction
 	    // Next, find the recombination time, which is LET-dependent
 	    // via ionization density (Kubota et al. Phys. Rev. B 20
@@ -1148,7 +1148,7 @@ G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput,
   }
   if ( Z == 18 ) edrift = 1e5 * (.097384*pow(log10(efieldinput),3.0622)-.018614*sqrt(efieldinput) );
   if ( edrift < 0 ) edrift = 0.;
-  edrift = 0.5*EMASS*pow(edrift*cm/s,2.);
+  edrift = 0.5*EMASS*pow(edrift*CLHEP::cm/s,2.);
   return edrift;
 }
 

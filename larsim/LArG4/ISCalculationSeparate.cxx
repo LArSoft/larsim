@@ -62,7 +62,7 @@ namespace larg4{
 
     // determine the step size using the voxel sizes
     art::ServiceHandle<sim::LArVoxelCalculator> lvc;
-    double maxsize = std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * cm;
+    double maxsize = std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * CLHEP::cm;
 
     fStepSize = 0.1 * maxsize;
 
@@ -100,7 +100,7 @@ namespace larg4{
     G4ThreeVector totstep = step->GetPostStepPoint()->GetPosition();
     totstep -= step->GetPreStepPoint()->GetPosition();
 
-    double dx     = totstep.mag()/cm;
+    double dx     = totstep.mag()/CLHEP::cm;
     double recomb = 0.;
     double dEdx   = fEnergyDeposit/dx;
 
@@ -214,7 +214,7 @@ namespace larg4{
 				       << " energy: "        << fEnergyDeposit/MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDeposition(step)
-				       << " step length: "   << step->GetStepLength()/cm;
+				       << " step length: "   << step->GetStepLength()/CLHEP::cm;
 
 
     return;

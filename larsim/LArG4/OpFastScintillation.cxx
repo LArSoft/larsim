@@ -358,9 +358,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     aMaterial->GetMaterialPropertiesTable();
 
   double xyz[3];
-  xyz[0]=x0[0]/cm;
-  xyz[1]=x0[1]/cm;
-  xyz[2]=x0[2]/cm;
+  xyz[0]=x0[0]/CLHEP::cm;
+  xyz[1]=x0[1]/CLHEP::cm;
+  xyz[2]=x0[2]/CLHEP::cm;
 
   // Get the visibility vector for this point
   const std::vector<float>* Visibilities = nullptr;

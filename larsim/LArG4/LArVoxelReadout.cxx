@@ -169,9 +169,9 @@ namespace larg4 {
             xyz3[1] = G4UniformRand();
             xyz3[2] = G4UniformRand();
             
-            xyz3[0] = (xyz3[0]*width  + xyz2[0])*cm;
-            xyz3[1] = (xyz3[1]*height + xyz2[1])*cm;
-            xyz3[2] = (xyz3[2]*length + xyz2[2])*cm;
+            xyz3[0] = (xyz3[0]*width  + xyz2[0])*CLHEP::cm;
+            xyz3[1] = (xyz3[1]*height + xyz2[1])*CLHEP::cm;
+            xyz3[2] = (xyz3[2]*length + xyz2[2])*CLHEP::cm;
             
             G4ThreeVector midpoint1(xyz3[0],xyz3[1],xyz3[2]);
             G4ThreeVector midpoint2;
@@ -180,7 +180,7 @@ namespace larg4 {
             for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
             
               G4ThreeVector decpath(1.0,0.0,0.0);  
-              decpath.setMag(d2*cm);  // displacement between midpoints is half the total length
+              decpath.setMag(d2*CLHEP::cm);  // displacement between midpoints is half the total length
               double angle = G4UniformRand()*TMath::Pi()*2.0;
               decpath.setPhi(angle);
               double ct=2.0*(G4UniformRand()-0.5);
@@ -189,9 +189,9 @@ namespace larg4 {
               angle = TMath::ACos(ct);
               decpath.setTheta(angle);
               midpoint2 = midpoint1 + decpath;
-              if (  (midpoint2.x() > xyz2[0]*cm && midpoint2.x() < (xyz2[0]+width)*cm) &&
-                    (midpoint2.y() > xyz2[1]*cm && midpoint2.y() < (xyz2[1]+height)*cm) &&
-                    (midpoint2.z() > xyz2[2]*cm && midpoint2.z() < (xyz2[2]+length)*cm) ){
+              if (  (midpoint2.x() > xyz2[0]*CLHEP::cm && midpoint2.x() < (xyz2[0]+width)*CLHEP::cm) &&
+                    (midpoint2.y() > xyz2[1]*CLHEP::cm && midpoint2.y() < (xyz2[1]+height)*CLHEP::cm) &&
+                    (midpoint2.z() > xyz2[2]*CLHEP::cm && midpoint2.z() < (xyz2[2]+length)*CLHEP::cm) ){
                 scc = true;
                 break;
               }
@@ -395,9 +395,9 @@ namespace larg4 {
 
     static double xyz1[3] = {0.};
 
-    double xyz[3] = {stepMidPoint.x() / cm,
-                     stepMidPoint.y() / cm,
-                     stepMidPoint.z() / cm};
+    double xyz[3] = {stepMidPoint.x() / CLHEP::cm,
+                     stepMidPoint.y() / CLHEP::cm,
+                     stepMidPoint.z() / CLHEP::cm};
 
     // Already know which TPC we're in because we have been told
 
@@ -408,12 +408,12 @@ namespace larg4 {
       // the positive or negative direction, so use std::abs
 
       /// \todo think about effects of drift between planes 
-      double XDrift = std::abs(stepMidPoint.x()/cm - tpcg.PlaneLocation(0)[0]);
+      double XDrift = std::abs(stepMidPoint.x()/CLHEP::cm - tpcg.PlaneLocation(0)[0]);
       //std::cout<<tpcg.DriftDirection()<<std::endl;
       if (tpcg.DriftDirection() == geo::kNegX)
-	XDrift = stepMidPoint.x()/cm - tpcg.PlaneLocation(0)[0];
+	XDrift = stepMidPoint.x()/CLHEP::cm - tpcg.PlaneLocation(0)[0];
       else if (tpcg.DriftDirection() == geo::kPosX)
-	XDrift = tpcg.PlaneLocation(0)[0] - stepMidPoint.x()/cm;
+	XDrift = tpcg.PlaneLocation(0)[0] - stepMidPoint.x()/CLHEP::cm;
       
       if(XDrift < 0.) return;
 
@@ -422,7 +422,7 @@ namespace larg4 {
       if (fLgpHandle->EnableSCE() == true)
       {
         art::ServiceHandle<spacecharge::SpaceCharge> SCEHandle;
-        posOffsets = SCEHandle->GetPosOffsets(stepMidPoint.x()/cm,stepMidPoint.y()/cm,stepMidPoint.z()/cm);
+        posOffsets = SCEHandle->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
       }
       else
         posOffsets.resize(3,0.0);
@@ -478,8 +478,8 @@ namespace larg4 {
       G4RandGauss::shootArray( nClus, &XDiff[0], 0., LDiffSig);
 
       // Smear the Y,Z position by the transverse diffusion
-      G4RandGauss::shootArray( nClus, &YDiff[0], (stepMidPoint.y()/cm)+posOffsets.at(1),TDiffSig);
-      G4RandGauss::shootArray( nClus, &ZDiff[0], (stepMidPoint.z()/cm)+posOffsets.at(2),TDiffSig);
+      G4RandGauss::shootArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
+      G4RandGauss::shootArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
