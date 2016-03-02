@@ -45,7 +45,7 @@ namespace larg4 {
   ParticleListAction::ParticleListAction(double energyCut, 
 					 bool   storeTrajectories,
 					 bool   keepEMShowerDaughters)
-    : fenergyCut(energyCut * GeV)
+    : fenergyCut(energyCut * CLHEP::GeV)
     , fparticleList(0)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
@@ -222,7 +222,7 @@ namespace larg4 {
     }// end if not a primary particle
 
     // This is probably the PDG mass, but just in case:
-    double mass = dynamicParticle->GetMass()/GeV;
+    double mass = dynamicParticle->GetMass()/CLHEP::GeV;
 
     // Create the sim::Particle object.
     fparticle = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
@@ -277,14 +277,14 @@ namespace larg4 {
       TLorentzVector fourPos( position.x() / CLHEP::cm,
 			      position.y() / CLHEP::cm,
 			      position.z() / CLHEP::cm,
-			      time / ns);
+			      time / CLHEP::ns);
       
       const G4ThreeVector momentum = preStepPoint->GetMomentum();
       const G4double energy = preStepPoint->GetTotalEnergy();
-      TLorentzVector fourMom( momentum.x() / GeV,
-			      momentum.y() / GeV,
-			      momentum.z() / GeV,
-			      energy / GeV);
+      TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
+			      momentum.y() / CLHEP::GeV,
+			      momentum.z() / CLHEP::GeV,
+			      energy / CLHEP::GeV);
       
       // Add the first point in the trajectory.
       fparticle->AddTrajectoryPoint( fourPos, fourMom );
@@ -320,14 +320,14 @@ namespace larg4 {
       TLorentzVector fourPos( position.x() / CLHEP::cm,
 			      position.y() / CLHEP::cm,
 			      position.z() / CLHEP::cm,
-			      time / ns );
+			      time / CLHEP::ns );
       
       const G4ThreeVector momentum = postStepPoint->GetMomentum();
       const G4double energy = postStepPoint->GetTotalEnergy();
-      TLorentzVector fourMom( momentum.x() / GeV,
-			      momentum.y() / GeV,
-			      momentum.z() / GeV,
-			      energy / GeV );
+      TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
+			      momentum.y() / CLHEP::GeV,
+			      momentum.z() / CLHEP::GeV,
+			      energy / CLHEP::GeV );
       
       // Add another point in the trajectory.
       fparticle->AddTrajectoryPoint( fourPos, fourMom );

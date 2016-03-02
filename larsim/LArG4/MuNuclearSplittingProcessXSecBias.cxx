@@ -150,7 +150,7 @@ namespace larg4 {
     while (iter != secondaries.end()) {
       G4Track* myTrack = *iter;
       G4String pdgstr = myTrack->GetParticleDefinition()->GetParticleName();
-      G4double ke = myTrack->GetKineticEnergy()/GeV;
+      G4double ke = myTrack->GetKineticEnergy()/CLHEP::GeV;
       G4int pdg = myTrack->GetParticleDefinition()->GetPDGEncoding();
       if (abs(pdg)==130 ||abs(pdg)==310 ||abs(pdg)==311 || abs(pdg)==3122 || abs(pdg)==2112)
   {

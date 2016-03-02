@@ -65,10 +65,10 @@ G4ThermalElectron* G4ThermalElectron::Definition()
   //             shortlived      subType    anti_encoding
 
   // use constants in CLHEP
-  //  static const double electron_mass_c2 = 0.51099906 * MeV;
+  //  static const double CLHEP::electron_mass_c2 = 0.51099906 * MeV;
 
     anInstance = new G4ParticleDefinition(
-                 name,  electron_mass_c2,       0.0*MeV,    -1.*eplus, 
+                 name,  CLHEP::electron_mass_c2,       0.0*CLHEP::MeV,    -1.*CLHEP::eplus, 
 		    1,                 0,             0,          
 		    0,                 0,             0,             
 	     "lepton",                 1,             0,          11,
@@ -76,7 +76,7 @@ G4ThermalElectron* G4ThermalElectron::Definition()
              false,                  "e"
               );
     // Bohr Magnetron
-   G4double muB =  -0.5*eplus*hbar_Planck/(electron_mass_c2/c_squared) ;
+   G4double muB =  -0.5*CLHEP::eplus*CLHEP::hbar_Planck/(CLHEP::electron_mass_c2/CLHEP::c_squared) ;
    
    anInstance->SetPDGMagneticMoment( muB * 2.* 1.0011596521859 );
 

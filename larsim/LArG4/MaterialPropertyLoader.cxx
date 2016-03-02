@@ -30,7 +30,7 @@ namespace larg4 {
 	it!=PropertyVector.end();
 	it++)
       {
-	PropVectorWithUnit[it->first*eV]=it->second*Unit;
+	PropVectorWithUnit[it->first*CLHEP::eV]=it->second*Unit;
       }
     fPropertyList[Material][Property]=PropVectorWithUnit;
     mf::LogInfo("MaterialPropertyLoader")<<"Added property " 
@@ -195,14 +195,14 @@ namespace larg4 {
 
     // scalar properties
 
-    SetMaterialConstProperty("LAr", "SCINTILLATIONYIELD",  LarProp->ScintYield(true),       1/MeV ); // true = scaled down by prescale in larproperties
+    SetMaterialConstProperty("LAr", "SCINTILLATIONYIELD",  LarProp->ScintYield(true),       1/CLHEP::MeV ); // true = scaled down by prescale in larproperties
     SetMaterialConstProperty("LAr", "RESOLUTIONSCALE",     LarProp->ScintResolutionScale(), 1);
-    SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   ns);
-    SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   ns);
+    SetMaterialConstProperty("LAr", "FASTTIMECONSTANT",    LarProp->ScintFastTimeConst(),   CLHEP::ns);
+    SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT",    LarProp->ScintSlowTimeConst(),   CLHEP::ns);
     SetMaterialConstProperty("LAr", "YIELDRATIO",          LarProp->ScintYieldRatio(),      1);
-    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               kilovolt/CLHEP::cm);
+    SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               CLHEP::kilovolt/CLHEP::cm);
 
-    SetBirksConstant("LAr",LarProp->ScintBirksConstant(), CLHEP::cm/MeV);
+    SetBirksConstant("LAr",LarProp->ScintBirksConstant(), CLHEP::cm/CLHEP::MeV);
     
     SetReflectances("LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
 
@@ -212,17 +212,17 @@ namespace larg4 {
     if(LarProp->ScintByParticleType())
       {
         // true = scaled down by prescale in larproperties
-	SetMaterialConstProperty("LAr", "PROTONSCINTILLATIONYIELD",  LarProp->ProtonScintYield(true),    1./MeV );
+	SetMaterialConstProperty("LAr", "PROTONSCINTILLATIONYIELD",  LarProp->ProtonScintYield(true),    1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "PROTONYIELDRATIO",          LarProp->ProtonScintYieldRatio(),   1.);
-	SetMaterialConstProperty("LAr", "MUONSCINTILLATIONYIELD",    LarProp->MuonScintYield(true),      1./MeV );
+	SetMaterialConstProperty("LAr", "MUONSCINTILLATIONYIELD",    LarProp->MuonScintYield(true),      1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "MUONYIELDRATIO",            LarProp->MuonScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "KAONSCINTILLATIONYIELD",    LarProp->KaonScintYield(true),      1./MeV );
+	SetMaterialConstProperty("LAr", "KAONSCINTILLATIONYIELD",    LarProp->KaonScintYield(true),      1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "KAONYIELDRATIO",            LarProp->KaonScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "PIONSCINTILLATIONYIELD",    LarProp->PionScintYield(true),      1./MeV );
+	SetMaterialConstProperty("LAr", "PIONSCINTILLATIONYIELD",    LarProp->PionScintYield(true),      1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "PIONYIELDRATIO",            LarProp->PionScintYieldRatio(),     1.);
-	SetMaterialConstProperty("LAr", "ELECTRONSCINTILLATIONYIELD",LarProp->ElectronScintYield(true),  1./MeV );
+	SetMaterialConstProperty("LAr", "ELECTRONSCINTILLATIONYIELD",LarProp->ElectronScintYield(true),  1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "ELECTRONYIELDRATIO",        LarProp->ElectronScintYieldRatio(), 1.);
-      	SetMaterialConstProperty("LAr", "ALPHASCINTILLATIONYIELD",   LarProp->AlphaScintYield(true),     1./MeV );
+      	SetMaterialConstProperty("LAr", "ALPHASCINTILLATIONYIELD",   LarProp->AlphaScintYield(true),     1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "ALPHAYIELDRATIO",           LarProp->AlphaScintYieldRatio(),    1.);
       }
   }

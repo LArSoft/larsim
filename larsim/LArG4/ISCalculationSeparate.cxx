@@ -84,7 +84,7 @@ namespace larg4{
   // fNumIonElectrons returns a value that is not corrected for life time effects
   void ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
   {
-    fEnergyDeposit = step->GetTotalEnergyDeposit()/MeV;
+    fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
 
     // Get the recombination factor for this voxel - Nucl.Instrum.Meth.A523:275-286,2004
     // R = A/(1 + (dE/dx)*k)
@@ -211,7 +211,7 @@ namespace larg4{
     }
 
     LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
-				       << " energy: "        << fEnergyDeposit/MeV
+				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDeposition(step)
 				       << " step length: "   << step->GetStepLength()/CLHEP::cm;

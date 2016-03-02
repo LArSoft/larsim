@@ -67,7 +67,7 @@ namespace larg4 {
       CLHEP::Hep3Vector DetPos(xyz[0],xyz[1],xyz[2]);
       CLHEP::Hep3Vector ThisVolPos = vol->GetTranslation();
 	    
-      ThisVolPos/=cm;
+      ThisVolPos/=CLHEP::cm;
 	    
       //	    std::cout<<"Det: " << xyz[0]<< " " <<xyz[1]<< " " << xyz[2]<<std::endl;
       //    std::cout<<"Vol: " << ThisVolPos.x()<< " " <<ThisVolPos.y() << " " <<ThisVolPos.z()<<std::endl;

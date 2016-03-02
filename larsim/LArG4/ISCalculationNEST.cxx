@@ -41,7 +41,7 @@ namespace larg4{
     // "because without delta rays, the yields are wrong.  The ICARUS model that is 
     // in LArSoft uses a fudge factor to compensate, but NEST is "purer" -- no 
     // fudge factor. "
-    fStepSize = 0.05 * micrometer;
+    fStepSize = 0.05 * CLHEP::micrometer;
 
     return;
   }
@@ -65,13 +65,13 @@ namespace larg4{
     fNest->CalculateIonizationAndScintillation(track, *step);
 
     // compare the energy deposition of this step to what is in the fNest object
-    if(fNest->EnergyDeposition() != step->GetTotalEnergyDeposit()/MeV)
+    if(fNest->EnergyDeposition() != step->GetTotalEnergyDeposit()/CLHEP::MeV)
       mf::LogWarning("ISCalculationNest") << "NEST and G4 step depositions do not agree!\n"
 					  << fNest->EnergyDeposition() << " vs " 
-					  << step->GetTotalEnergyDeposit()/MeV;
+					  << step->GetTotalEnergyDeposit()/CLHEP::MeV;
 
     // Nest uses Geant units, LArSoft assumes energy is in units of MeV here
-    fEnergyDeposit   = fNest->EnergyDeposition()/MeV;
+    fEnergyDeposit   = fNest->EnergyDeposition()/CLHEP::MeV;
     fNumIonElectrons = fNest->NumberIonizationElectrons();
     fNumScintPhotons = fNest->NumberScintillationPhotons();
 

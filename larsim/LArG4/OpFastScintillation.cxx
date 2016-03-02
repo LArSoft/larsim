@@ -463,8 +463,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
-    G4double ScintillationTime = 0.*ns;
-    G4double ScintillationRiseTime = 0.*ns;
+    G4double ScintillationTime = 0.*CLHEP::ns;
+    G4double ScintillationRiseTime = 0.*CLHEP::ns;
     G4PhysicsOrderedFreeVector* ScintillationIntegral = NULL;
     
     if (scnt == 1) {
@@ -714,7 +714,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             TVector3 PhotonPosition(x0[0],x0[1],x0[2]);
 		
             // We don't know anything about the momentum dir, so set it to be Z		
-            float Energy = 9.7*eV;
+            float Energy = 9.7*CLHEP::eV;
             float Time = aSecondaryTime;
 		
             // Make a photon object for the collection

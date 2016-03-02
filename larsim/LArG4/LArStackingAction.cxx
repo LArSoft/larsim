@@ -54,7 +54,7 @@ LArStackingAction::LArStackingAction(G4int dum)
  , freqMuon(2)
  , freqIsoMuon(0)
  , freqIso(10)
- , fangRoI(30.*deg)
+ , fangRoI(30.*CLHEP::deg)
 { 
   //theMessenger = new LArStackingActionMessenger(this);
   fStack = dum;

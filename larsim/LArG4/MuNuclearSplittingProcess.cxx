@@ -57,7 +57,7 @@ G4VParticleChange* MuNuclearSplittingProcess::PostStepDoIt(const G4Track& track,
       {
   G4Track* newSec = new G4Track(*(particleChange->GetSecondary(j)));
   G4String pdgstr = newSec->GetParticleDefinition()->GetParticleName();
-  G4double ke = newSec->GetKineticEnergy()/GeV;
+  G4double ke = newSec->GetKineticEnergy()/CLHEP::GeV;
   G4int pdg = newSec->GetParticleDefinition()->GetPDGEncoding();
   if (abs(pdg)==310 ||abs(pdg)==311 || abs(pdg)==3122 || abs(pdg)==2112)
     {

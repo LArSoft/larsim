@@ -50,7 +50,7 @@ namespace larg4 {
     mf::LogWarning("ConfigurablePhysics") <<"Setting up Configurable Physics List";
 
     // note - not sure exact purpose of these commands, but left in from QGSP_BERT list
-    this->defaultCutValue = 0.7*mm;  
+    this->defaultCutValue = 0.7*CLHEP::mm;  
     this->SetVerboseLevel(ver);
     G4DataQuestionaire it(photon);
 
