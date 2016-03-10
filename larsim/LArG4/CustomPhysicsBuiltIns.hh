@@ -24,10 +24,10 @@
 #include "Geant4/G4DecayPhysics.hh"
 #include "Geant4/G4EmExtraPhysics.hh"
 #include "Geant4/G4IonPhysics.hh"
-#include "Geant4/G4QStoppingPhysics.hh"
+#include "Geant4/G4StoppingPhysics.hh"
 #include "Geant4/G4HadronElasticPhysics.hh"
 #include "Geant4/G4NeutronTrackingCut.hh"
-#include "Geant4/HadronPhysicsQGSP_BERT.hh"
+#include "Geant4/G4HadronPhysicsQGSP_BERT.hh"
 #include "Geant4/G4EmStandardPhysics.hh"
 #include "Geant4/G4EmLivermorePhysics.hh"
 #include "Geant4/G4ChargeExchangePhysics.hh"
@@ -73,25 +73,25 @@ namespace larg4 {
   class HadronElasticPhysicsFactory : public CustomPhysicsFactory<G4HadronElasticPhysics>
   {
   public:
-    G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysics("elastic",0,false);}
+    G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysics(0);}
     HadronElasticPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysics>("HadronElastic") {}
    virtual ~HadronElasticPhysicsFactory() {}
   };
 
-  class HadronPhysicsFactory : public CustomPhysicsFactory<HadronPhysicsQGSP_BERT>
+  class HadronPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>
   {
   public:
     G4bool quasiElastic;
-    G4VPhysicsConstructor * Build() {return new HadronPhysicsQGSP_BERT("hadron",quasiElastic=true);}
-    HadronPhysicsFactory() : CustomPhysicsFactory<HadronPhysicsQGSP_BERT>("Hadron") {}
+    G4VPhysicsConstructor * Build() {return new G4HadronPhysicsQGSP_BERT("hadron",quasiElastic=true);}
+    HadronPhysicsFactory() : CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>("Hadron") {}
    virtual ~HadronPhysicsFactory() {}
   };
 
-  class StoppingPhysicsFactory : public CustomPhysicsFactory<G4QStoppingPhysics>
+  class StoppingPhysicsFactory : public CustomPhysicsFactory<G4StoppingPhysics>
   {
   public:
-    G4VPhysicsConstructor * Build()  {return new G4QStoppingPhysics("stopping");}
-    StoppingPhysicsFactory() : CustomPhysicsFactory<G4QStoppingPhysics>("Stopping") {}
+    G4VPhysicsConstructor * Build()  {return new G4StoppingPhysics("stopping");}
+    StoppingPhysicsFactory() : CustomPhysicsFactory<G4StoppingPhysics>("Stopping") {}
     virtual ~StoppingPhysicsFactory() {};
   };
 

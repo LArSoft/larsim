@@ -24,6 +24,7 @@
 #include "G4Base/G4PhysListFactorySingleton.hh"
 
 PHYSLISTREG3(larg4,PhysicsList,larg4::PhysicsList)
+#define G4MT_physicsVector ((G4VMPLsubInstanceManager.offset[g4vmplInstanceID]).physicsVector)
 
 namespace larg4 {
 
@@ -172,7 +173,7 @@ namespace larg4 {
     // name of that list.  "physicsVector" is defined in
     // G4VModularPhysicsList.hh.
     G4PhysConstVector::iterator itr;
-    for (itr = physicsVector->begin(); itr!= physicsVector->end(); ++itr) {
+    for (itr = G4MT_physicsVector->begin(); itr!= G4MT_physicsVector->end(); ++itr) {
       (*itr)->ConstructProcess();
     }
   }// end ConstructProcess

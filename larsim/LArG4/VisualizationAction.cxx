@@ -95,7 +95,8 @@ namespace larg4 {
 	      }
 
 	    if ( drawThisTrack )
-	      trajectory->DrawTrajectory(50);
+	      trajectory->DrawTrajectory();
+	      //trajectory->DrawTrajectory(50);
 	  }
       }
   }
