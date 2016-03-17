@@ -4,6 +4,7 @@ standard_largeant:
 {
  module_type:            "LArG4"
  GeantCommandFile:       "LArG4.mac"
+ CheckOverlaps:          false
  DumpParticleList:       false
  DumpLArVoxelList:       false
  DebugVoxelAccumulation: 0

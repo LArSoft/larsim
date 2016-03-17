@@ -113,6 +113,29 @@ namespace larg4 {
   class LArVoxelListAction;
   class ParticleListAction;
   
+  /**
+   * @brief
+   *
+   * - <b>G4PhysListName</b> (string, default "larg4::PhysicsList"):
+   *     whether to use the G4 overlap checker, which catches different issues than ROOT
+   * - <b>CheckOverlaps</b> (bool, default false):
+   *     whether to use the G4 overlap checker
+   * - <b>DumpParticleList</b> (bool, default false):
+   *     whether to print all MCParticles tracked
+   * - <b>DumpSimChannels</b> (bool, default false):
+   *     whether to print all depositions on each SimChannel
+   * - <b>SmartStacking</b> (int, default 0):
+   *     whether to use class to dictate how tracks are put on stack (nonzero is on)
+   * - <b>KeepParticlesInVolumes</b> (vector<string>, default empty):
+   *     list of volumes in which to keep MCParticles (empty keeps all)
+   * - <b>GeantCommandFile</b> (string, required):
+   *     G4 macro file to pass to G4Helper for setting G4 command
+   * - <b>Seed</b> (pset key, not defined by default): if defined, override random
+   *     number service, which is obtained from the SeedService by default.
+   * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
+   *     optional list of generator labels which produce MCTruth;
+   *     otherwise look for anything that has made MCTruth
+   */
   class LArG4 : public art::EDProducer{
   public:
  
@@ -137,6 +160,7 @@ namespace larg4 {
     std::string                fG4PhysListName;     ///< predefined physics list to use if not making a custom one
     std::string                fG4MacroPath;        ///< directory path for Geant4 macro file to be 
                                                     ///< executed before main MC processing.
+    bool                       fCheckOverlaps;      ///< Whether to use the G4 overlap checker
     bool                       fdumpParticleList;   ///< Whether each event's sim::ParticleList will be displayed.
     bool                       fdumpSimChannels;    ///< Whether each event's sim::Channel will be displayed.
     bool                       fUseLitePhotons;
@@ -159,7 +183,8 @@ namespace larg4 {
     , flarVoxelListAction    (0)
     , fparticleListAction    (0)
     , fG4PhysListName        (pset.get< std::string >("G4PhysListName","larg4::PhysicsList"))
-    , fdumpParticleList      (pset.get< bool        >("DumpParticleList")                   )
+    , fCheckOverlaps         (pset.get< bool        >("CheckOverlaps",false)                )
+    , fdumpParticleList      (pset.get< bool        >("DumpParticleList",false)             )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
@@ -216,6 +241,7 @@ namespace larg4 {
     art::ServiceHandle<geo::Geometry> geom;
 
     fG4Help = new g4b::G4Helper(fG4MacroPath, fG4PhysListName);
+    if(fCheckOverlaps) fG4Help->SetOverlapCheck(true);
     fG4Help->ConstructDetector(geom->GDMLFile());
 
     // Get the logical volume store and assign material properties
