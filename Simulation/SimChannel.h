@@ -41,11 +41,11 @@ namespace sim {
     IDE(IDE const&, int);
     
     int    trackID;      ///< Geant4 supplied track ID
-    double numElectrons; ///< total number of electrons for this track ID and time
-    double energy;       ///< total energy deposited for this track ID and time
-    double x;            ///< x position of ionization
-    double y;            ///< y position of ionization
-    double z;            ///< z position of ionization
+    float numElectrons; ///< total number of electrons for this track ID and time
+    float energy;       ///< total energy deposited for this track ID and time
+    float x;            ///< x position of ionization
+    float y;            ///< y position of ionization
+    float z;            ///< z position of ionization
   };
   
   class SimChannel
