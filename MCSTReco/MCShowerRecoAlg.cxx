@@ -23,7 +23,7 @@ namespace sim {
     fMinNumDaughters = pset.get<unsigned int>("MinNumDaughters");
   }
 
-  void MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
+  std::vector<sim::MCShower> MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
 				    MCRecoEdep& edep_v)
   {
     
@@ -31,11 +31,12 @@ namespace sim {
 
     fPartAlg.ConstructShower(part_v);
 
-    fMCShower.clear();
+    std::vector<sim::MCShower> mcshower;
+    //mcshower.clear();
 
     // Get shower info from grouped particles
     const std::vector<unsigned int> shower_index_v = fPartAlg.ShowerMothers();
-    fMCShower.reserve(shower_index_v.size());
+    mcshower.reserve(shower_index_v.size());
     std::vector<size_t> mcs_to_spart_v;
     mcs_to_spart_v.reserve(shower_index_v.size());
 
@@ -88,7 +89,7 @@ namespace sim {
 
       if(fDebugMode)
 	
-	std::cout << " Storage index " << fMCShower.size() << " => Shower index " << shower_index
+	std::cout << " Storage index " << mcshower.size() << " => Shower index " << shower_index
 		  << std::endl;
 
       ::sim::MCShower shower_prof;
@@ -125,30 +126,30 @@ namespace sim {
 
       if(!daughter_stored && daughter_track_id.size()>1) daughter_stored=true;
 
-      fMCShower.push_back(shower_prof);
+      mcshower.push_back(shower_prof);
     }
 
     if(fDebugMode)
-      std::cout << " Found " << fMCShower.size() << " MCShowers. Now computing DetProfile position..." << std::endl;
+      std::cout << " Found " << mcshower.size() << " MCShowers. Now computing DetProfile position..." << std::endl;
 
     //
     // Daughter vtx
     //
-    std::vector<TLorentzVector> mcs_daughter_vtx_v(fMCShower.size(),TLorentzVector(sim::kINVALID_DOUBLE,
+    std::vector<TLorentzVector> mcs_daughter_vtx_v(mcshower.size(),TLorentzVector(sim::kINVALID_DOUBLE,
 										   sim::kINVALID_DOUBLE,
 										   sim::kINVALID_DOUBLE,
 										   sim::kINVALID_DOUBLE));
-    std::vector<TLorentzVector> mcs_daughter_mom_v      ( fMCShower.size(), TLorentzVector() );
+    std::vector<TLorentzVector> mcs_daughter_mom_v      ( mcshower.size(), TLorentzVector() );
 
-    std::vector< std::vector<double> >         plane_charge_v          ( fMCShower.size(), std::vector<double>(3,0) );
-    std::vector< std::vector<double> >         plane_dqdx_v            ( fMCShower.size(), std::vector<double>(3,0) );
+    std::vector< std::vector<double> >         plane_charge_v          ( mcshower.size(), std::vector<double>(3,0) );
+    std::vector< std::vector<double> >         plane_dqdx_v            ( mcshower.size(), std::vector<double>(3,0) );
 
     //For dEdx Calculation
-    std::vector<double>         mcs_daughter_dedx_v     ( fMCShower.size(), 0                );
-    std::vector<double>         mcs_daughter_dedxRAD_v  ( fMCShower.size(), 0                );
-    std::vector<TVector3>       mcs_daughter_dir_v      ( fMCShower.size(), TVector3()       );
+    std::vector<double>         mcs_daughter_dedx_v     ( mcshower.size(), 0                );
+    std::vector<double>         mcs_daughter_dedxRAD_v  ( mcshower.size(), 0                );
+    std::vector<TVector3>       mcs_daughter_dir_v      ( mcshower.size(), TVector3()       );
  
-    for(size_t mcs_index=0; mcs_index<fMCShower.size(); ++mcs_index) {
+    for(size_t mcs_index=0; mcs_index<mcshower.size(); ++mcs_index) {
 
       auto& mcs_daughter_vtx       = mcs_daughter_vtx_v[mcs_index];
       auto& mcs_daughter_mom       = mcs_daughter_mom_v[mcs_index];
@@ -158,7 +159,7 @@ namespace sim {
       auto& plane_charge           = plane_charge_v[mcs_index];
       auto& plane_dqdx             = plane_dqdx_v[mcs_index];
 
-      for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
+      for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
 	
 	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
 	
@@ -192,9 +193,9 @@ namespace sim {
 	if(!daughter_stored) {
 	  // If daughter is not stored, and shower id energetic enough, attempt to include angle info
 	  std::vector<double> shower_dir(3,0);
-	  shower_dir[0] = fMCShower[mcs_index].Start().Px();
-	  shower_dir[1] = fMCShower[mcs_index].Start().Py();
-	  shower_dir[2] = fMCShower[mcs_index].Start().Pz();
+	  shower_dir[0] = mcshower[mcs_index].Start().Px();
+	  shower_dir[1] = mcshower[mcs_index].Start().Py();
+	  shower_dir[2] = mcshower[mcs_index].Start().Pz();
 	  double magnitude = 0;
 	  for(size_t i=0; i<3; ++i)
 	    magnitude += pow(shower_dir[i],2);
@@ -209,9 +210,9 @@ namespace sim {
 
 	    for(auto const& edep : daughter_edep) {
 	      std::vector<double> shower_dep_dir(3,0);
-	      shower_dep_dir[0] = edep.pos._x - fMCShower[mcs_index].Start().X();
-	      shower_dep_dir[1] = edep.pos._y - fMCShower[mcs_index].Start().Y();
-	      shower_dep_dir[2] = edep.pos._z - fMCShower[mcs_index].Start().Z();
+	      shower_dep_dir[0] = edep.pos._x - mcshower[mcs_index].Start().X();
+	      shower_dep_dir[1] = edep.pos._y - mcshower[mcs_index].Start().Y();
+	      shower_dep_dir[2] = edep.pos._z - mcshower[mcs_index].Start().Z();
 	      
 	      double dist = sqrt( pow(shower_dep_dir[0],2) + pow(shower_dep_dir[1],2) + pow(shower_dep_dir[2],2) );
 	      for(auto& v : shower_dep_dir) v /= dist;
@@ -226,7 +227,7 @@ namespace sim {
 		mcs_daughter_vtx[0] = edep.pos._x;
 		mcs_daughter_vtx[1] = edep.pos._y;
 		mcs_daughter_vtx[2] = edep.pos._z;
-		mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + fMCShower[mcs_index].Start().T();
+		mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + mcshower[mcs_index].Start().T();
 	      }
 	    }
 	  }
@@ -236,7 +237,7 @@ namespace sim {
       // Now take care of momentum & plane charge
 
       std::vector<double> mom(3,0);
-      for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
+      for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
 	
 	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
 	
@@ -306,7 +307,7 @@ namespace sim {
       }///Looping through MCShower daughters
       mcs_daughter_dedxRAD /= 2.4;
       
-      for(auto const& daughter_trk_id : fMCShower[mcs_index].DaughterTrackID()) {
+      for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
 	
 	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
 	
@@ -382,10 +383,10 @@ namespace sim {
     }///Looping through MCShowers
   
     if(fDebugMode)
-      std::cout << " Found " << fMCShower.size() << " MCShowers. Now storing..." << std::endl;
+      std::cout << " Found " << mcshower.size() << " MCShowers. Now storing..." << std::endl;
     
     // Store plane charge & daughter momentum
-    for(size_t mcs_index=0; mcs_index<fMCShower.size(); ++mcs_index) {
+    for(size_t mcs_index=0; mcs_index<mcshower.size(); ++mcs_index) {
       
       auto& daughter_vtx     = mcs_daughter_vtx_v[mcs_index]; 
       auto& daughter_mom     = mcs_daughter_mom_v[mcs_index];
@@ -404,18 +405,18 @@ namespace sim {
       }else
 	for(size_t i=0; i<4; ++i) daughter_mom[i]=0;
       
-      fMCShower.at(mcs_index).DetProfile( MCStep( daughter_vtx, daughter_mom ) );
-      fMCShower.at(mcs_index).Charge(plane_charge);
-      fMCShower.at(mcs_index).dQdx(plane_dqdx);
-      fMCShower.at(mcs_index).dEdx(daughter_dedx);
-      fMCShower.at(mcs_index).dEdxRAD(daughter_dedxRAD);
-      fMCShower.at(mcs_index).StartDir(daughter_dir);
+      mcshower.at(mcs_index).DetProfile( MCStep( daughter_vtx, daughter_mom ) );
+      mcshower.at(mcs_index).Charge(plane_charge);
+      mcshower.at(mcs_index).dQdx(plane_dqdx);
+      mcshower.at(mcs_index).dEdx(daughter_dedx);
+      mcshower.at(mcs_index).dEdxRAD(daughter_dedxRAD);
+      mcshower.at(mcs_index).StartDir(daughter_dir);
 
     }
     
     if(fDebugMode) {
       
-      for(auto const& prof : fMCShower) {
+      for(auto const& prof : mcshower) {
 	
 	std::cout
 	  
@@ -450,6 +451,7 @@ namespace sim {
 	std::cout<<std::endl<<std::endl;
       }
     }
+    return mcshower;
   }
 }
 

@@ -89,11 +89,11 @@ void MCReco::produce(art::Event & evt)
   const std::vector<sim::SimChannel>&  sch_array(*schHandle);
   fEdep.MakeMCEdep(sch_array);
 
-  fMCSAlg.Reconstruct(fPart,fEdep);
+  std::vector<sim::MCShower> mcshower = fMCSAlg.Reconstruct(fPart,fEdep);
 
   fMCTAlg.Reconstruct(fPart,fEdep);
 
-  for(auto const& mcs : fMCSAlg.MCShower())
+  for(auto const& mcs : mcshower)
 
     outShowerArray->push_back(mcs);
 
