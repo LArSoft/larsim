@@ -22,11 +22,12 @@ namespace sim {
     fDebugMode = pset.get<bool>("DebugMode");
   }
 
-  void MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
+  std::vector<sim::MCTrack> MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
 				   MCRecoEdep& edep_v)
   {
 
-    fMCTrack.clear();
+    std::vector<sim::MCTrack> mctracks;
+
     for(size_t i=0; i<part_v.size(); ++i) {
 
       auto const& mini_part = part_v[i];
@@ -88,7 +89,7 @@ namespace sim {
       // JZ : I think we should remove zero length MCTracks because I do not see their utility
       // JZ : Someone could make this a fcl parameter, I did not
       if(mini_track.size() == 0){
-	fMCTrack.push_back(mini_track);
+	mctracks.push_back(mini_track);
 	continue;
       }
       
@@ -231,7 +232,7 @@ namespace sim {
       mini_track.dQdx(dQdx);
       
 
-      fMCTrack.push_back(mini_track);
+      mctracks.push_back(mini_track);
       
     
       
@@ -239,7 +240,7 @@ namespace sim {
     
     if(fDebugMode) {
 
-      for(auto const& prof : fMCTrack) {
+      for(auto const& prof : mctracks) {
 	
 	std::cout
 	  
@@ -276,6 +277,7 @@ namespace sim {
 
       std::cout<<std::endl<<std::endl;
     }
+    return mctracks;
   }
 }
 

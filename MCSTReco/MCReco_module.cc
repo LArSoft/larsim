@@ -61,8 +61,7 @@ MCReco::~MCReco()
 
 void MCReco::produce(art::Event & evt)
 {
-  std::unique_ptr< std::vector<sim::MCShower> > outShowerArray(new std::vector<sim::MCShower>);
-  std::unique_ptr< std::vector<sim::MCTrack> > outTrackArray(new std::vector<sim::MCTrack>);
+//  std::unique_ptr< std::vector<sim::MCTrack> > outTrackArray(new std::vector<sim::MCTrack>);
 
   // Retrieve mcparticles
   art::Handle<std::vector<simb::MCParticle> > mcpHandle;
@@ -89,21 +88,9 @@ void MCReco::produce(art::Event & evt)
   const std::vector<sim::SimChannel>&  sch_array(*schHandle);
   fEdep.MakeMCEdep(sch_array);
 
-  std::vector<sim::MCShower> mcshower = fMCSAlg.Reconstruct(fPart,fEdep);
-
-  fMCTAlg.Reconstruct(fPart,fEdep);
-
-  for(auto const& mcs : mcshower)
-
-    outShowerArray->push_back(mcs);
-
-  for(auto const& mct : fMCTAlg.MCTrack())
-
-    outTrackArray->push_back(mct);
-    
-  evt.put(std::move(outShowerArray));
-  evt.put(std::move(outTrackArray));
-
+  //Add MCShowers and MCTracks to the event 
+  evt.put(std::make_unique<std::vector<sim::MCShower>>(fMCSAlg.Reconstruct(fPart,fEdep)));
+  evt.put(std::make_unique<std::vector<sim::MCTrack>>(fMCTAlg.Reconstruct(fPart,fEdep)));
 }
 
 DEFINE_ART_MODULE(MCReco)

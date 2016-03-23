@@ -43,23 +43,14 @@ namespace sim
   public:
 
     /// Default constructor with fhicl parameters
-    MCShowerRecoAlg(fhicl::ParameterSet const& pset);
-
-    /// Default destructor
-    //virtual ~MCShowerRecoAlg(){};
+    explicit MCShowerRecoAlg(fhicl::ParameterSet const& pset);
 
     std::vector<sim::MCShower> Reconstruct(MCRecoPart& part_v,MCRecoEdep& edep_v);
-
-    //const std::vector<sim::MCShower>& MCShower() const { return fMCShower; }
 
   protected:
 
     MCShowerRecoPart fPartAlg;
-
     bool             fDebugMode;
-    
-  //  std::vector<sim::MCShower> fMCShower;
-
     double fMinShowerEnergy;
     unsigned int fMinNumDaughters;
 

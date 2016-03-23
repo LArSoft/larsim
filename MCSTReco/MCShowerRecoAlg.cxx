@@ -6,8 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef MCSHOWERRECOALG_CXX
-#define MCSHOWERRECOALG_CXX
 
 #include "MCShowerRecoAlg.h"
 
@@ -23,7 +21,8 @@ namespace sim {
     fMinNumDaughters = pset.get<unsigned int>("MinNumDaughters");
   }
 
-  std::vector<sim::MCShower> MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
+  std::vector<sim::MCShower> 
+               MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
 				    MCRecoEdep& edep_v)
   {
     
@@ -32,8 +31,6 @@ namespace sim {
     fPartAlg.ConstructShower(part_v);
 
     std::vector<sim::MCShower> mcshower;
-    //mcshower.clear();
-
     // Get shower info from grouped particles
     const std::vector<unsigned int> shower_index_v = fPartAlg.ShowerMothers();
     mcshower.reserve(shower_index_v.size());
@@ -456,4 +453,3 @@ namespace sim {
 }
 
 
-#endif

@@ -82,7 +82,6 @@ namespace sim
   class MCEdep {
   public:
     MCEdep(){ Clear(); }
-    ~MCEdep(){}
     /*
     short x;
     short y;

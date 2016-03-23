@@ -43,11 +43,8 @@ namespace sim
   public:
 
     /// Default constructor with fhicl parameters
-    MCShowerRecoPart(fhicl::ParameterSet const& pset);
+    explicit MCShowerRecoPart(fhicl::ParameterSet const& pset);
     //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-
-    /// Default destructor
-    virtual ~MCShowerRecoPart(){};
 
     /// Main function to read-in data and fill variables in this algorithm to reconstruct MC shower
     void ConstructShower(const MCRecoPart& part_v);
