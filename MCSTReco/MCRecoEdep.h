@@ -43,7 +43,6 @@ namespace sim
   public:
 
     MCEdepHit(){ Clear(); }
-    ~MCEdepHit(){}
     
     unsigned short timeStart;
     unsigned short timeEnd;
@@ -66,7 +65,6 @@ namespace sim
     UniquePosition(double x=0, double y=0, double z=0)
     { _x = x; _y = y; _z = z; }
 
-    ~UniquePosition(){};
 
     inline bool operator<( const UniquePosition& rhs) const
     {
@@ -113,9 +111,6 @@ namespace sim
     /// Default constructor with fhicl parameters
     MCRecoEdep(fhicl::ParameterSet const& pset);
     //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-
-    /// Default destructor
-    virtual ~MCRecoEdep(){};
 
     void MakeMCEdep(const std::vector<sim::SimChannel>& schArray);
 

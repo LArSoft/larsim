@@ -60,7 +60,7 @@ namespace sim {
 
       // Get data to loop over
       auto const& sch = schArray[i];
-      const std::map<unsigned short,std::vector<sim::IDE> > sch_map(sch.TDCIDEMap());
+      const std::map<unsigned short,std::vector<sim::IDE>> &sch_map(sch.TDCIDEMap());
       // Channel
       UInt_t ch = sch.Channel();
 
@@ -70,7 +70,7 @@ namespace sim {
 	unsigned short hit_time = (*tdc_iter).first;
 
 	// Loop over IDEs
-	for(auto const ide : (*tdc_iter).second) {
+	for(auto const &ide : (*tdc_iter).second) {
 
 	  int track_id = ide.trackID;
 	  if(track_id < 0) track_id = track_id * (-1);
