@@ -17,6 +17,8 @@
 #ifndef LArG4_ParticleListAction_h
 #define LArG4_ParticleListAction_h
 
+#include "LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+
 #include "SimulationBase/MCParticle.h"
 #include "G4Base/UserAction.h"
 
@@ -49,6 +51,11 @@ namespace larg4 {
     virtual void     	     PostTrackingAction(const G4Track*);
     virtual void     	     SteppingAction    (const G4Step* );
 
+    /// Grabs a particle filter
+    void ParticleFilter(std::unique_ptr<PositionInVolumeFilter>&& filter)
+      { fFilter = std::move(filter); }
+  
+
     // TrackID of the current particle, EveID if the particle is from an EM shower
     static int               GetCurrentTrackID()  { return fCurrentTrackID; }
 			                                                     
@@ -76,6 +83,9 @@ namespace larg4 {
     static int               fTrackIDOffset;         ///< offset added to track ids when running over		  
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
+    
+    std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
+    
   };
 
 } // namespace LArG4

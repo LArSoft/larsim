@@ -67,6 +67,7 @@
 #include "LArG4/OpDetPhotonTable.h"
 #include "LArG4/AuxDetReadoutGeometry.h"
 #include "LArG4/AuxDetReadout.h"
+#include "LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "Simulation/LArG4Parameters.h"
 #include "Utilities/AssociationUtil.h"
 #include "SimulationBase/MCTruth.h"
@@ -126,7 +127,6 @@ namespace larg4 {
     void produce (art::Event& evt); 
     void beginJob();
     void beginRun(art::Run& run);
-    void FillInterestingVolumes(std::set<std::string> const& vol_names);
     bool KeepParticle(simb::MCParticle const& part) const;
 
   private:
@@ -144,8 +144,13 @@ namespace larg4 {
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
-    std::vector<std::pair<TGeoVolume const*, TGeoCombiTrans*>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
-
+    
+    std::unique_ptr<PositionInVolumeFilter> fParticleFilter;
+    
+    /// Configures and returns a particle filter
+    std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
+      (std::set<std::string> const& vol_names) const;
+    
   };
 
 } // namespace LArG4
@@ -279,16 +284,30 @@ namespace larg4 {
   }
 
   void LArG4::beginRun(art::Run& run){
-    //Fill interesting volumes object
+    // prepare the filter object (null if no filtering)
+    
     std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(), fKeepParticlesInVolumes.end());
-    FillInterestingVolumes(volnameset);
+    fparticleListAction->ParticleFilter(CreateParticleVolumeFilter(volnameset));
+    
+    fParticleFilter = CreateParticleVolumeFilter(volnameset);
   }
   
-  void LArG4::FillInterestingVolumes(std::set<std::string> const& vol_names) {
+  std::unique_ptr<PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter
+    (std::set<std::string> const& vol_names) const
+  {
+    
+    // if we don't have favourite volumes, don't even bother creating a filter
+    if (vol_names.empty()) return {};
+    
     auto const& geom = *art::ServiceHandle<geo::Geometry>();
-  
+    
     std::vector<std::vector<TGeoNode const*>> node_paths
       = geom.FindAllVolumePaths(vol_names);
+    
+    // collection of interesting volumes
+    PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
+    GeoVolumePairs.reserve(node_paths.size()); // because we are obsessed
+  
     //for each interesting volume, follow the node path and collect
     //total rotations and translations
     for (size_t iVolume = 0; iVolume < node_paths.size(); ++iVolume) {
@@ -297,10 +316,10 @@ namespace larg4 {
       TGeoTranslation* pTransl = new TGeoTranslation(0.,0.,0.);
       TGeoRotation* pRot = new TGeoRotation();
       for (TGeoNode const* node: path) {
-	TGeoTranslation thistranslate(*node->GetMatrix());
-	TGeoRotation thisrotate(*node->GetMatrix());
-	pTransl->Add(&thistranslate);
-	*pRot=*pRot * thisrotate;
+        TGeoTranslation thistranslate(*node->GetMatrix());
+        TGeoRotation thisrotate(*node->GetMatrix());
+        pTransl->Add(&thistranslate);
+        *pRot=*pRot * thisrotate;
       }
       
       //for some reason, pRot and pTransl don't have tr and rot bits set correctly
@@ -315,29 +334,27 @@ namespace larg4 {
       
       TGeoCombiTrans* pTransf = new TGeoCombiTrans(*pTransl2,*pRot2);
 
-      fGeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
+      GeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
 
     }
-
-  } // FillInterestingVolumes()
     
+    return std::make_unique<PositionInVolumeFilter>(std::move(GeoVolumePairs));
+    
+  } // CreateParticleVolumeFilter()
+    
+
   bool LArG4::KeepParticle(simb::MCParticle const& part) const {
+  //  return true; // keep everything (some filtering might have happened already)
     // if no volume in the list, keep everything
-    if (fKeepParticlesInVolumes.empty()) return true;
+    if (!fParticleFilter) return true;
     // check every point in the trajectory
     const int nPoints = (int) part.NumberTrajectoryPoints();
     for (int iPoint = 0; iPoint < nPoints; ++iPoint) {
       TLorentzVector const& pos = part.Position(iPoint);
-      double const master[3] = { pos.X(), pos.Y(), pos.Z() };
-      double local[3];
-      for(unsigned int j=0;j<fGeoVolumePairs.size();j++){
-        // transform the point to relative to the volume
-        fGeoVolumePairs[j].second->MasterToLocal(master, local);
-        // containment check
-        if (fGeoVolumePairs[j].first->Contains(local)) return true;
-      } // for volumes
-
+      std::array<double, 3> const xyz = { pos.X(), pos.Y(), pos.Z() };
+      if (fParticleFilter->mustKeep(xyz)) return true;
     } // for trajectory points
+    // if we haven't decided for keeping it yet, it's too late! drop it.
     return false;
   } // LArG4::KeepParticle()
   
@@ -374,6 +391,9 @@ namespace larg4 {
 	evt.getByLabel(fInputLabels[i],mclists[i]);
     }
     
+    unsigned int nGeneratedParticles = 0;
+    unsigned int nKeptParticles = 0;
+    
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
 
@@ -390,8 +410,10 @@ namespace larg4 {
         const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
         
         for(auto const& partPair: particleList) {
-	  simb::MCParticle const& p = *(partPair.second);
-	  if (!KeepParticle(p)) continue;
+          simb::MCParticle const& p = *(partPair.second);
+          ++nGeneratedParticles;
+          if (!KeepParticle(p)) continue;
+          ++nKeptParticles;
           partCol->push_back(p);
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
         }//for
@@ -568,6 +590,9 @@ namespace larg4 {
 	
     } // Loop over AuxDets
 	
+    mf::LogInfo("LArG4")
+      << nKeptParticles << "/" << nGeneratedParticles << " particles kept.";
+    
     if (fdumpSimChannels) {
       mf::LogInfo out("DumpSimChannels");
       out << "Wires: " << scCol->size() << " channels with signal" << std::endl;

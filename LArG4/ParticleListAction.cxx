@@ -34,9 +34,20 @@
 const G4bool debug = false;
 
 namespace larg4 {
-
+  
+  struct CurrentParticleData_t {
+    simb::MCParticle* particle = nullptr;
+    bool              keep     = false;
+    
+    bool doKeep() const { return keep; }
+    void clear() { particle = nullptr; keep = false; }
+    bool operator!() const { return !particle; }
+    operator bool() const { return bool(particle); }
+  }; // CurrentParticleData_t
+  
   // Initialize static members.
-  simb::MCParticle* ParticleListAction::fparticle       = 0;
+//  static CurrentParticleData_t ParticleListAction::fparticle;
+  simb::MCParticle* ParticleListAction::fparticle = 0;
   int               ParticleListAction::fCurrentTrackID = sim::NoParticleId;
   int               ParticleListAction::fTrackIDOffset  = 0;
 
@@ -173,7 +184,7 @@ namespace larg4 {
 	if(fparticleList->find(fCurrentTrackID) == fparticleList->end() )
 	  fCurrentTrackID = sim::NoParticleId;
 	
-	// set fparticle to 0 as we are not stepping this particle and 
+	// clear fparticle as we are not stepping this particle and 
 	// adding trajectory points to it
 	fparticle = 0;
 	return;
