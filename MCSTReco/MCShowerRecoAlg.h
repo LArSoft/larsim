@@ -29,7 +29,9 @@
 // STL
 #include <set>
 #include <vector>
+
 #include <sstream>
+#include <memory>
 
 // ROOT
 #include <TString.h>
@@ -45,7 +47,7 @@ namespace sim
     /// Default constructor with fhicl parameters
     explicit MCShowerRecoAlg(fhicl::ParameterSet const& pset);
 
-    std::vector<sim::MCShower> Reconstruct(MCRecoPart& part_v,MCRecoEdep& edep_v);
+    std::unique_ptr<std::vector<sim::MCShower>> Reconstruct(MCRecoPart& part_v,MCRecoEdep& edep_v);
 
   protected:
 

@@ -13,15 +13,15 @@ namespace sim {
 
   //##################################################################
   MCShowerRecoAlg::MCShowerRecoAlg(fhicl::ParameterSet const& pset) 
-    : fPartAlg(pset.get< fhicl::ParameterSet >("MCShowerRecoPart"))
+    : fPartAlg(pset.get<fhicl::ParameterSet>("MCShowerRecoPart")),   
+      fDebugMode(pset.get<bool>("DebugMode")),
+      fMinShowerEnergy(pset.get<double>("MinShowerEnergy")),
+      fMinNumDaughters(pset.get<unsigned int>("MinNumDaughters"))
   //##################################################################
   {
-    fDebugMode = pset.get<bool>("DebugMode");
-    fMinShowerEnergy = pset.get<double>("MinShowerEnergy");
-    fMinNumDaughters = pset.get<unsigned int>("MinNumDaughters");
   }
 
-  std::vector<sim::MCShower> 
+  std::unique_ptr<std::vector<sim::MCShower>> 
                MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
 				    MCRecoEdep& edep_v)
   {
@@ -29,8 +29,9 @@ namespace sim {
     art::ServiceHandle<geo::Geometry> geo;
 
     fPartAlg.ConstructShower(part_v);
-
-    std::vector<sim::MCShower> mcshower;
+    auto result = std::make_unique<std::vector<sim::MCShower>>();
+    auto& mcshower = *result;
+    //std::vector<sim::MCShower> mcshower;
     // Get shower info from grouped particles
     const std::vector<unsigned int> shower_index_v = fPartAlg.ShowerMothers();
     mcshower.reserve(shower_index_v.size());
@@ -448,7 +449,7 @@ namespace sim {
 	std::cout<<std::endl<<std::endl;
       }
     }
-    return mcshower;
+    return result;
   }
 }
 
