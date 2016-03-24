@@ -1,0 +1,129 @@
+#
+# File:     dump_mcreco.fcl
+# Purpose:  Dump on screen MC track and shower content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     March 21st, 2016
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpMCParticlesAndReco
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      # grab all the "DumpMCParticles" messages and put them in DumpMCParticles.log
+      DumpMCParticles: {
+        append: false
+        categories: {
+          DumpMCParticles: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCParticles.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCParticles 
+
+      # grab all the "DumpMCTracks" messages and put them in DumpMCTracks.log
+      DumpMCTracks: {
+        append: false
+        categories: {
+          DumpMCTracks: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCTracks.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCTracks
+      
+      # grab all the "DumpMCShowers" messages and put them in DumpMCShowers.log
+      DumpMCShowers: {
+        append: false
+        categories: {
+          DumpMCShowers: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCShowers.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCShowers
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpMCTracks: { limit: 0 }
+          DumpMCShowers: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpmcparticles: {
+      module_label: dumpmcparticles
+      module_type:  DumpMCParticles
+
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCParticles"
+
+      # specify the label of the simb::MCParticle data product (or producer)
+      InputParticles: "largeant"
+      
+      # print this many trajectory points per output line (default: 3; 0 skips all)
+      PointsPerLine: 2
+      
+    } # dumpmcparticles
+    dumpmctracks: {
+      module_label: dumpmctracks
+      module_type:  DumpMCTracks
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCTracks"
+      
+      # specify the label of the sim::MCTrack data product (or producer)
+      InputTracks: "mcreco"
+      
+    } # dumpmctracks
+    
+    dumpmcshowers: {
+      module_label: dumpmcshowers
+      module_type:  DumpMCShowers
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCShowers"
+      
+      # specify the label of the sim::MCShower data product (or producer)
+      InputShowers: "mcreco"
+      
+    } # dumpmcshowers
+  } # analyzers
+  
+  dumpers: [ dumpmcparticles, dumpmctracks, dumpmcshowers ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics
