@@ -79,6 +79,11 @@ namespace sim
 
   };
 
+  struct energycharge{
+    float energy;
+    float charge;
+  };
+
   class MCEdep {
   public:
     MCEdep(){ Clear(); }
@@ -88,17 +93,19 @@ namespace sim
     short z;
     */
     sim::UniquePosition pos;
-    std::map<geo::PlaneID,float> energy;
-    std::map<geo::PlaneID,float> charge;
+    //std::map<geo::PlaneID,float> energy;
+    //std::map<geo::PlaneID,float> charge;
     geo::PlaneID pid;
+
+    std::map<geo::PlaneID, sim::energycharge> energycharges;
 
     std::map<unsigned short,sim::MCEdepHit> mchits;
     void Clear() {
       //x=y=z=kINVALID_SHORT;
       pos._x = pos._y = pos._z = 0;
       //energy = -1;
-      energy.clear();
-      charge.clear();
+    //  energy.clear();
+    //  charge.clear();
       mchits.clear();
     }
   };

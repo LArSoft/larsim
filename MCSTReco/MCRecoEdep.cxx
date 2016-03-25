@@ -50,7 +50,13 @@ namespace sim {
 
     art::ServiceHandle<geo::Geometry> geom;
     art::ServiceHandle<util::DetectorProperties> detp;
-
+/*    
+    int i = 0;
+    std::map<geo::PlaneID, int> planeindex;
+    for(auto const& pid : geom->PlaneIDs()){
+       planeindex[pid] = ++i;
+    }
+*/
     // Key map to identify a unique particle energy deposition point
     std::map<unsigned int, std::map<UniquePosition, int> > hit_index_m;
 
@@ -110,16 +116,19 @@ namespace sim {
 	    edep.pos = pos;
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
-
 	    for(auto const& pid : geom->PlaneIDs()){
-	      edep.charge[pid] = 0;
-	      edep.energy[pid] = 0;
+	     // edep.charge[pid] = 0;
+	    //  edep.energy[pid] = 0;
+              edep.energycharges[pid].charge = 0;
+              edep.energycharges[pid].energy = 0;
 	    }
-
+            
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
 	    //edep.energy      = ide.energy;
-	    edep.energy[pid] = ide.energy;
-	    edep.charge[pid] = charge;
+	    //edep.energy[pid] = ide.energy;
+	    //edep.charge[pid] = charge;
+	    edep.energycharges[pid].charge = charge;
+            edep.energycharges[pid].energy = ide.energy;
 	    edep.pid         = pid;
 
 	    // If configured to save MC hits, do so
@@ -143,9 +152,13 @@ namespace sim {
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
 
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-	    edep.charge[pid] += charge;
+            edep.energycharges[pid].charge += charge;
+	    //edep.charge[pid] += charge;
+            //edep.energycharges[edep.planeindex[pid]].charge += charge;
 	    //if(pid == edep.pid) edep.energy += ide.energy;
-	    edep.energy[pid] += ide.energy;
+	    //edep.energy[pid] += ide.energy;
+	    edep.energycharges[pid].energy += ide.energy;
+           // edep.energycharges[edep.planeindex[pid]].energy += ide.energy;
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {
