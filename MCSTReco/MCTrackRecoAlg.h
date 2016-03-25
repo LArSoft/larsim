@@ -43,7 +43,7 @@ namespace sim
 
     /// Default constructor with fhicl parameters
     explicit MCTrackRecoAlg(fhicl::ParameterSet const& pset);
-    std::vector<sim::MCTrack> Reconstruct(MCRecoPart& part_v, MCRecoEdep& edep_v);
+    std::unique_ptr<std::vector<sim::MCTrack>> Reconstruct(MCRecoPart& part_v, MCRecoEdep& edep_v);
 
   protected:
     bool             fDebugMode;

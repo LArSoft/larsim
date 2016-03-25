@@ -22,20 +22,18 @@ namespace sim {
     fDebugMode = pset.get<bool>("DebugMode");
   }
 
-  std::vector<sim::MCTrack> MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
+  std::unique_ptr<std::vector<sim::MCTrack>> MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
 				   MCRecoEdep& edep_v)
   {
-
-    std::vector<sim::MCTrack> mctracks;
+    auto result = std::make_unique<std::vector<sim::MCTrack>>();
+    auto& mctracks = *result;
 
     for(size_t i=0; i<part_v.size(); ++i) {
-
       auto const& mini_part = part_v[i];
-
       if( part_v._pdg_list.find(mini_part._pdgcode) == part_v._pdg_list.end() ) continue;
-
+    
       ::sim::MCTrack mini_track;
-      
+    
       std::vector<double> dEdx; 
       std::vector<std::vector<double> > dQdx; 
       dQdx.resize(3);
@@ -277,7 +275,7 @@ namespace sim {
 
       std::cout<<std::endl<<std::endl;
     }
-    return mctracks;
+    return result;
   }
 }
 

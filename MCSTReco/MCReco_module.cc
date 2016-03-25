@@ -90,7 +90,7 @@ void MCReco::produce(art::Event & evt)
 
   //Add MCShowers and MCTracks to the event 
   evt.put(fMCSAlg.Reconstruct(fPart,fEdep));
-  evt.put(std::make_unique<std::vector<sim::MCTrack>>(fMCTAlg.Reconstruct(fPart,fEdep)));
+  evt.put(fMCTAlg.Reconstruct(fPart,fEdep));
 }
 
 DEFINE_ART_MODULE(MCReco)
