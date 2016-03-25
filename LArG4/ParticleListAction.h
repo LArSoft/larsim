@@ -57,7 +57,7 @@ namespace larg4 {
   
 
     // TrackID of the current particle, EveID if the particle is from an EM shower
-    static int               GetCurrentTrackID()  { return fCurrentTrackID; }
+    static int               GetCurrentTrackID() { return fCurrentTrackID; }
 			                                                     
     void                     ResetTrackIDOffset() { fTrackIDOffset = 0;     }
 
@@ -72,7 +72,7 @@ namespace larg4 {
 
     G4double                 fenergyCut;             ///< The minimum energy for a particle to 		     	  
                                                      ///< be included in the list.
-    static simb::MCParticle* fparticle;              ///< The particle and trajectory information 
+    simb::MCParticle*        fparticle;              ///< The particle and trajectory information 
                                                      ///< for a single particle.		
     sim::ParticleList*       fparticleList;          ///< The accumulated particle information for 
                                                      ///< all particles in the event.	

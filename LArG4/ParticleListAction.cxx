@@ -47,9 +47,8 @@ namespace larg4 {
   
   // Initialize static members.
 //  static CurrentParticleData_t ParticleListAction::fparticle;
-  simb::MCParticle* ParticleListAction::fparticle = 0;
-  int               ParticleListAction::fCurrentTrackID = sim::NoParticleId;
-  int               ParticleListAction::fTrackIDOffset  = 0;
+    int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
+    int ParticleListAction::fTrackIDOffset = 0;
 
   //----------------------------------------------------------------------------
   // Constructor.
@@ -57,6 +56,7 @@ namespace larg4 {
 					 bool   storeTrajectories,
 					 bool   keepEMShowerDaughters)
     : fenergyCut(energyCut * GeV)
+    , fparticle(nullptr)
     , fparticleList(0)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
