@@ -50,15 +50,9 @@ namespace sim {
 
     art::ServiceHandle<geo::Geometry> geom;
     art::ServiceHandle<util::DetectorProperties> detp;
-/*    
-    int i = 0;
-    std::map<geo::PlaneID, int> planeindex;
-    for(auto const& pid : geom->PlaneIDs()){
-       planeindex[pid] = ++i;
-    }
-*/
+
     // Key map to identify a unique particle energy deposition point
-    std::map<unsigned int, std::map<UniquePosition, int> > hit_index_m;
+    std::map<unsigned int, std::map<UniquePosition, int>> hit_index_m;
 
     if(_debug_mode) std::cout<<"Processing "<<schArray.size()<<" channels..."<<std::endl;
     // Loop over channels
@@ -87,11 +81,8 @@ namespace sim {
 	  int hit_index = -1;
 	  
 	  auto hit_index_track_iter = hit_index_m.find(real_track_id);
-	  //std::cout<<"Inspecting: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index_track_iter == hit_index_m.end()) {
 	    // create new entry here
-	    //_track_index.insert(std::pair<unsigned int,size_t>(real_track_id,_mc_edeps.size()));
-	    //_mc_edeps.push_back(std::vector<sim::MCEdep>());
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
             hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
 	  }
@@ -117,16 +108,11 @@ namespace sim {
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
 	    for(auto const& pid : geom->PlaneIDs()){
-	     // edep.charge[pid] = 0;
-	    //  edep.energy[pid] = 0;
               edep.energycharges[pid].charge = 0;
               edep.energycharges[pid].energy = 0;
 	    }
             
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-	    //edep.energy      = ide.energy;
-	    //edep.energy[pid] = ide.energy;
-	    //edep.charge[pid] = charge;
 	    edep.energycharges[pid].charge = charge;
             edep.energycharges[pid].energy = ide.energy;
 	    edep.pid         = pid;
@@ -153,12 +139,8 @@ namespace sim {
 
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
             edep.energycharges[pid].charge += charge;
-	    //edep.charge[pid] += charge;
-            //edep.energycharges[edep.planeindex[pid]].charge += charge;
 	    //if(pid == edep.pid) edep.energy += ide.energy;
-	    //edep.energy[pid] += ide.energy;
 	    edep.energycharges[pid].energy += ide.energy;
-           // edep.energycharges[edep.planeindex[pid]].energy += ide.energy;
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {
