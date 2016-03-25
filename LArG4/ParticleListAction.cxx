@@ -426,5 +426,21 @@ namespace larg4 {
 
     return fparticleList;
   }
+ 
+  //----------------------------------------------------------------------------
+  // Yields the ParticleList accumulated during the current event.
+  sim::ParticleList&& ParticleListAction::YieldList()
+  {
+    // check if the ParticleNavigator has entries, and if
+    // so grab the highest track id value from it to 
+    // add to the fTrackIDOffset
+    int highestID = 0;
+    for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
+      if( (*pn).first > highestID ) highestID = (*pn).first;
+      
+    fTrackIDOffset = highestID + 1;
+
+    return std::move(*fparticleList);
+  } // ParticleList&& ParticleListAction::YieldList()
 
 } // namespace LArG4

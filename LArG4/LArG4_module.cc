@@ -407,14 +407,15 @@ namespace larg4 {
         // The following tells Geant4 to track the particles in this interaction.
         fG4Help->G4Run(mct);
 
-        const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
+        // receive the particle list
+        sim::ParticleList particleList = fparticleListAction->YieldList();
         
         for(auto const& partPair: particleList) {
-          simb::MCParticle const& p = *(partPair.second);
+          simb::MCParticle& p = *(partPair.second);
           ++nGeneratedParticles;
           if (!KeepParticle(p)) continue;
           ++nKeptParticles;
-          partCol->push_back(p);
+          partCol->push_back(std::move(p));
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
         }//for
 

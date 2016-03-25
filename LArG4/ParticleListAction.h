@@ -63,6 +63,9 @@ namespace larg4 {
 
     // Returns the ParticleList accumulated during the current event.
     const sim::ParticleList* GetList() const;
+    
+    // Yields the ParticleList accumulated during the current event.
+    sim::ParticleList&& YieldList();
 
   private:
 

@@ -155,8 +155,19 @@ namespace sim {
 
     // Because this list contains pointers, we have to provide the
     // copy and assignment constructors.
-    ParticleList( const ParticleList& rhs );
-    ParticleList& operator=( const ParticleList& rhs );
+  //  ParticleList( const ParticleList& rhs );
+  //  ParticleList& operator=( const ParticleList& rhs );
+    
+    // you know what? let's make it UNCOPIABLE instead!
+    // The cost of copying this buauty is such that we don't want it
+    // to happen unless really requested (copy())
+    ParticleList( const ParticleList& rhs ) = delete;
+    ParticleList& operator=( const ParticleList& rhs ) = delete;
+    ParticleList( ParticleList&& rhs ) = default;
+    ParticleList& operator=( ParticleList&& rhs ) = default;
+
+    /// Returns a copy of this object
+    ParticleList MakeCopy() const;
 
     // The methods advertised above:
 
