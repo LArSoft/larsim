@@ -108,13 +108,13 @@ namespace sim {
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
 	    for(auto const& pid : geom->PlaneIDs()){
-              edep.energycharges[pid].charge = 0;
-              edep.energycharges[pid].energy = 0;
+              edep.deposits[pid].charge = 0;
+              edep.deposits[pid].energy = 0;
 	    }
             
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-	    edep.energycharges[pid].charge = charge;
-            edep.energycharges[pid].energy = ide.energy;
+	    edep.deposits[pid].charge = charge;
+            edep.deposits[pid].energy = ide.energy;
 	    edep.pid         = pid;
 
 	    // If configured to save MC hits, do so
@@ -138,9 +138,9 @@ namespace sim {
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
 
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-            edep.energycharges[pid].charge += charge;
+            edep.deposits[pid].charge += charge;
 	    //if(pid == edep.pid) edep.energy += ide.energy;
-	    edep.energycharges[pid].energy += ide.energy;
+	    edep.deposits[pid].energy += ide.energy;
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {

@@ -262,7 +262,7 @@ namespace sim {
 
 	  double energy = 0;
 	  double npid = 0;
-	  for(auto const& pid_energy : edep.energycharges) {
+	  for(auto const& pid_energy : edep.deposits) {
 	    npid++;
 	    energy += pid_energy.second.energy;
 
@@ -296,8 +296,8 @@ namespace sim {
 	  mcs_daughter_mom[3] += energy;
 
 	  // Charge
-	  auto q_iter = edep.energycharges.find(edep.pid);
-	  if(q_iter != edep.energycharges.end())
+	  auto q_iter = edep.deposits.find(edep.pid);
+	  if(q_iter != edep.deposits.end())
 	    plane_charge[edep.pid.Plane] += (double)((*q_iter).second.charge);	  
 
 	}///Looping through the MCShower daughter's energy depositions
@@ -347,7 +347,7 @@ namespace sim {
 	    double E = 0;
 	    double N = 0;
 	    
-	    for(auto const& pid_energy : edep.energycharges) {
+	    for(auto const& pid_energy : edep.deposits) {
 	      N += 1;
 	      E += pid_energy.second.energy;
 	    }
@@ -360,8 +360,8 @@ namespace sim {
 	    mcs_daughter_dedx += E;
 
 	    // Charge
-	    auto q_iter = edep.energycharges.find(edep.pid);
-	    if(q_iter != edep.energycharges.end())
+	    auto q_iter = edep.deposits.find(edep.pid);
+	    if(q_iter != edep.deposits.end())
 	      plane_dqdx[edep.pid.Plane] += (double)((*q_iter).second.charge);	  
 	    
 

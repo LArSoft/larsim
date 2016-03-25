@@ -178,7 +178,7 @@ namespace sim {
 	    int npid = 0;
 	    double engy = 0;
 	    
-	    for(auto const& pid_energy : edep.energycharges){
+	    for(auto const& pid_energy : edep.deposits){
 	      engy += pid_energy.second.energy;
 	      npid++;
 	    }
@@ -190,8 +190,8 @@ namespace sim {
 	    step_dedx += engy;
 	    
 	    // dQdx Calculation
-	    auto q_iter = edep.energycharges.find(edep.pid);
-	    if(q_iter != edep.energycharges.end()){
+	    auto q_iter = edep.deposits.find(edep.pid);
+	    if(q_iter != edep.deposits.end()){
 	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second.charge);	  	
 	    }
 	    

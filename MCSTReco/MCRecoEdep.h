@@ -79,7 +79,7 @@ namespace sim
 
   };
 
-  struct energycharge{
+  struct deposit{
     float energy;
     float charge;
   };
@@ -97,7 +97,7 @@ namespace sim
     //std::map<geo::PlaneID,float> charge;
     geo::PlaneID pid;
 
-    std::map<geo::PlaneID, sim::energycharge> energycharges;
+    std::map<geo::PlaneID, sim::deposit> deposits;
 
     std::map<unsigned short,sim::MCEdepHit> mchits;
     void Clear() {
