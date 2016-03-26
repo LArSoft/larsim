@@ -127,7 +127,6 @@ namespace larg4 {
     void produce (art::Event& evt); 
     void beginJob();
     void beginRun(art::Run& run);
-    bool KeepParticle(simb::MCParticle const& part) const;
 
   private:
     g4b::G4Helper*             fG4Help;             ///< G4 interface object                                           
@@ -144,8 +143,6 @@ namespace larg4 {
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
-    
-    std::unique_ptr<PositionInVolumeFilter> fParticleFilter;
     
     /// Configures and returns a particle filter
     std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
@@ -289,7 +286,6 @@ namespace larg4 {
     std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(), fKeepParticlesInVolumes.end());
     fparticleListAction->ParticleFilter(CreateParticleVolumeFilter(volnameset));
     
-    fParticleFilter = CreateParticleVolumeFilter(volnameset);
   }
   
   std::unique_ptr<PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter
@@ -343,21 +339,6 @@ namespace larg4 {
   } // CreateParticleVolumeFilter()
     
 
-  bool LArG4::KeepParticle(simb::MCParticle const& part) const {
-  //  return true; // keep everything (some filtering might have happened already)
-    // if no volume in the list, keep everything
-    if (!fParticleFilter) return true;
-    // check every point in the trajectory
-    const int nPoints = (int) part.NumberTrajectoryPoints();
-    for (int iPoint = 0; iPoint < nPoints; ++iPoint) {
-      TLorentzVector const& pos = part.Position(iPoint);
-      std::array<double, 3> const xyz = { pos.X(), pos.Y(), pos.Z() };
-      if (fParticleFilter->mustKeep(xyz)) return true;
-    } // for trajectory points
-    // if we haven't decided for keeping it yet, it's too late! drop it.
-    return false;
-  } // LArG4::KeepParticle()
-  
   void LArG4::produce(art::Event& evt)
   {
     LOG_DEBUG("LArG4") << "produce()";
@@ -392,7 +373,6 @@ namespace larg4 {
     }
     
     unsigned int nGeneratedParticles = 0;
-    unsigned int nKeptParticles = 0;
     
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
@@ -413,8 +393,9 @@ namespace larg4 {
         for(auto const& partPair: particleList) {
           simb::MCParticle& p = *(partPair.second);
           ++nGeneratedParticles;
-          if (!KeepParticle(p)) continue;
-          ++nKeptParticles;
+          
+          // if the particle has been marked as dropped, we don't save it
+          if (ParticleListAction::isDropped(&p)) continue;
           partCol->push_back(std::move(p));
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
         }//for
@@ -592,7 +573,8 @@ namespace larg4 {
     } // Loop over AuxDets
 	
     mf::LogInfo("LArG4")
-      << nKeptParticles << "/" << nGeneratedParticles << " particles kept.";
+      << "Geant4 simulated " << nGeneratedParticles << " MC particles, we keep "
+      << partCol->size() << " .";
     
     if (fdumpSimChannels) {
       mf::LogInfo out("DumpSimChannels");

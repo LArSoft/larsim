@@ -35,20 +35,18 @@ const G4bool debug = false;
 
 namespace larg4 {
   
-  struct CurrentParticleData_t {
-    simb::MCParticle* particle = nullptr;
-    bool              keep     = false;
-    
-    bool doKeep() const { return keep; }
-    void clear() { particle = nullptr; keep = false; }
-    bool operator!() const { return !particle; }
-    operator bool() const { return bool(particle); }
-  }; // CurrentParticleData_t
-  
   // Initialize static members.
-//  static CurrentParticleData_t ParticleListAction::fparticle;
-    int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
-    int ParticleListAction::fTrackIDOffset = 0;
+  int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
+  int ParticleListAction::fTrackIDOffset = 0;
+  
+  //----------------------------------------------------------------------------
+  // Dropped particle test
+  
+  bool ParticleListAction::isDropped(simb::MCParticle const* p) {
+    return p->Trajectory().empty();
+  } // ParticleListAction::isDropped()
+
+
 
   //----------------------------------------------------------------------------
   // Constructor.
@@ -56,7 +54,6 @@ namespace larg4 {
 					 bool   storeTrajectories,
 					 bool   keepEMShowerDaughters)
     : fenergyCut(energyCut * GeV)
-    , fparticle(nullptr)
     , fparticleList(0)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
@@ -80,10 +77,11 @@ namespace larg4 {
   void ParticleListAction::BeginOfEventAction(const G4Event*)
   {
     // Clear any previous particle information.
-    fparticle = 0;
+    fCurrentParticle.clear();
     fparticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
+    
   }
 
   //-------------------------------------------------------------
@@ -123,6 +121,7 @@ namespace larg4 {
     // ID number that we'll use in the ParticleList.
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
+
     // And the particle's parent:
     G4int parentID = track->GetParentID();
 
@@ -184,9 +183,9 @@ namespace larg4 {
 	if(fparticleList->find(fCurrentTrackID) == fparticleList->end() )
 	  fCurrentTrackID = sim::NoParticleId;
 	
-	// clear fparticle as we are not stepping this particle and 
+	// clear current particle as we are not stepping this particle and 
 	// adding trajectory points to it
-	fparticle = 0;
+	fCurrentParticle.clear();
 	return;
 	
       } // end if keeping EM shower daughters
@@ -195,7 +194,7 @@ namespace larg4 {
       // cut, don't add it to our list.
       G4double energy = track->GetKineticEnergy();
       if( energy < fenergyCut ){
-	fparticle = 0;
+	fCurrentParticle.clear();
 
 	// do add the particle to the parent id map though
 	// and set the current track id to be it's ultimate parent
@@ -236,38 +235,52 @@ namespace larg4 {
     double mass = dynamicParticle->GetMass()/GeV;
 
     // Create the sim::Particle object.
-    fparticle = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    fCurrentParticle.clear();
+    fCurrentParticle.particle
+      = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    // if we are not filtering, we have a decision already
+    if (!fFilter) fCurrentParticle.keep = true;
     
     // Polarization.
     const G4ThreeVector& polarization = track->GetPolarization();
-    fparticle->SetPolarization( TVector3( polarization.x(),
+    fCurrentParticle.particle->SetPolarization( TVector3( polarization.x(),
 					  polarization.y(),
 					  polarization.z() ) );
 
     // Save the particle in the ParticleList.
-    fparticleList->Add( fparticle );
+    fparticleList->Add( fCurrentParticle.particle );
   }
 
   //----------------------------------------------------------------------------
   void ParticleListAction::PostTrackingAction( const G4Track* aTrack)
   {
-    if(fparticle && aTrack){
-      fparticle->SetWeight(aTrack->GetWeight());
+    if (!fCurrentParticle.hasParticle()) return;
+    
+    // if we have found no reason to keep it, drop it!
+    // (we might still need parentage information though)
+    if (!fCurrentParticle.keep) {
+      MarkCurrentAsDropped();
+      return;
+    }
+
+    if(aTrack){
+      fCurrentParticle.particle->SetWeight(aTrack->GetWeight());
       G4String process = aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-      fparticle->SetEndProcess(process);
+      fCurrentParticle.particle->SetEndProcess(process);
 
 
     }
 
     return;
   }
-
+  
+  
   //----------------------------------------------------------------------------
   // With every step, add to the particle's trajectory.
   void ParticleListAction::SteppingAction(const G4Step* step)
   {
     
-    if ( fparticle == 0 ) {
+    if ( !fCurrentParticle.hasParticle() ) {
       return;
     }
 
@@ -276,7 +289,7 @@ namespace larg4 {
     // exception: In PreTrackingAction, the correct time information
     // is not available.  So add the correct vertex information here.
 
-    if ( fparticle->NumberTrajectoryPoints() == 0 ){
+    if ( fCurrentParticle.particle->NumberTrajectoryPoints() == 0 ){
       
       // Get the pre/along-step information from the G4Step.
       const G4StepPoint* preStepPoint = step->GetPreStepPoint();
@@ -298,7 +311,8 @@ namespace larg4 {
 			      energy / GeV);
       
       // Add the first point in the trajectory.
-      fparticle->AddTrajectoryPoint( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom );
+      
     } // end if this is the first step
 
     // At this point, the particle is being transported through the
@@ -341,7 +355,8 @@ namespace larg4 {
 			      energy / GeV );
       
       // Add another point in the trajectory.
-      fparticle->AddTrajectoryPoint( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom );
+      
     }
   }
 
@@ -442,5 +457,62 @@ namespace larg4 {
 
     return std::move(*fparticleList);
   } // ParticleList&& ParticleListAction::YieldList()
+  
+  
+  //----------------------------------------------------------------------------
+  void ParticleListAction::AddPointToCurrentParticle
+    (TLorentzVector const& pos, TLorentzVector const& mom)
+  {
+    
+    // Add the first point in the trajectory.
+    fCurrentParticle.particle->AddTrajectoryPoint(pos, mom);
+    
+    // also see if we can decide to keep the particle
+    if (!fCurrentParticle.keep)
+        fCurrentParticle.keep = fFilter->mustKeep(pos);
+    
+  } // ParticleListAction::AddPointToCurrentParticle()
+  
 
+  //----------------------------------------------------------------------------
+  void ParticleListAction::MarkCurrentAsDropped() {
+    if (!fCurrentParticle.hasParticle()) return;
+    
+    // hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
+    // and adopted in LArSoft, after which the correct line is as simple as:
+    // *fCurrentParticle.particle = MakeDropped(*fCurrentParticle.particle);
+    
+    fCurrentParticle.particle->~MCParticle();
+    new(fCurrentParticle.particle) simb::MCParticle
+      (MakeDropped(*fCurrentParticle.particle));
+    
+  } // ParticleListAction::MarkCurrentAsDropped()
+  
+  //----------------------------------------------------------------------------
+  //--- create a dropped particle copying from an existing one
+  simb::MCParticle ParticleListAction::MakeDropped(simb::MCParticle const& p) {
+    //
+    // We replace the content of the particle pointed by p
+    // with a "dropped" particle that has the same PDG ID, ID, mother
+    // and daughters, and nothing else.
+    //
+    simb::MCParticle dropped(
+      p.TrackId(),                       // trackId
+      p.PdgCode(),                       // pdg
+      {},                                 // process
+      p.Mother(),                        // mother
+      simb::MCParticle::s_uninitialized,  // mass
+      0                                   // status
+      );
+    
+    // copy the daughters (no better way than this, unfortunately)
+    int const nDaughters = p.NumberDaughters();
+    for (int i = 0; i < nDaughters; ++i)
+      dropped.AddDaughter(p.Daughter(i));
+    
+    return dropped;
+  } // ParticleListAction::MakeDropped()
+  
+  //----------------------------------------------------------------------------
+  
 } // namespace LArG4

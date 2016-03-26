@@ -15,6 +15,8 @@
 // ROOT libraries
 #include "TGeoVolume.h"
 #include "TGeoMatrix.h" // TGeoCombiTrans
+#include "TLorentzVector.h"
+#include "TVector3.h"
 
 // C/C++ standard libraries
 #include <array>
@@ -45,6 +47,8 @@ namespace larg4 {
    */
   class PositionInVolumeFilter: public KeepByPositionFilterTag {
       public:
+    
+    using Point_t = std::array<double, 3>;
     
     /// Due to the structure of ROOT geometry, volumes and their transformations
     /// are not living in the same place; so we need to keep both.
@@ -79,7 +83,7 @@ namespace larg4 {
      * If no decision is made after the track is over, the track should be
      * dropped.
      */
-    bool mustKeep(std::array<double, 3> const& pos) const
+    bool mustKeep(Point_t const& pos) const
       {
         // if no volume is specified, it means we don't filter
         if (volumeInfo.empty()) return true;
@@ -92,6 +96,13 @@ namespace larg4 {
         } // for volumes
         return false;
       } // mustKeep()
+    
+    bool mustKeep(TVector3 const& pos) const
+      { return mustKeep(Point_t{ pos.X(), pos.Y(), pos.Z() }); }
+
+    bool mustKeep(TLorentzVector const& pos) const
+      { return mustKeep(Point_t{ pos.X(), pos.Y(), pos.Z() }); }
+
     
       protected:
     std::vector<VolumeInfo_t> volumeInfo; ///< all good volumes
