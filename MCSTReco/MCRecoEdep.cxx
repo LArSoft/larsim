@@ -45,8 +45,8 @@ namespace sim {
 
   void MCRecoEdep::MakeMCEdep(const std::vector<sim::SimChannel>& schArray)
   {
-  //  _mc_edeps.clear();
-  //  _track_index.clear();
+    _mc_edeps.clear();
+    _track_index.clear();
 
     art::ServiceHandle<geo::Geometry> geom;
     art::ServiceHandle<util::DetectorProperties> detp;
