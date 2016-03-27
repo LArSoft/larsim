@@ -45,8 +45,8 @@ namespace sim {
 
   void MCRecoEdep::MakeMCEdep(const std::vector<sim::SimChannel>& schArray)
   {
-    _mc_edeps.clear();
-    _track_index.clear();
+  //  _mc_edeps.clear();
+  //  _track_index.clear();
 
     art::ServiceHandle<geo::Geometry> geom;
     art::ServiceHandle<util::DetectorProperties> detp;
@@ -84,17 +84,17 @@ namespace sim {
 	  UniquePosition pos(ide.x, ide.y, ide.z);
 
 	  int hit_index = -1;
-	  
+	   
 	  auto hit_index_track_iter = hit_index_m.find(real_track_id);
 	  if(hit_index_track_iter == hit_index_m.end()) {
 	    // create new entry here
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
             hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
+            
 	  }
 	  else {
 	    
 	    auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
-	    
 	    if(hit_index_pos_iter == (*hit_index_track_iter).second.end()) {
 	      int new_hit_index = this->__GetEdepArray__(real_track_id).size();
 	      (*hit_index_track_iter).second.insert(std::make_pair(pos,new_hit_index));
@@ -192,7 +192,7 @@ namespace sim {
     }
     
 
-
+  
   }
 
 
