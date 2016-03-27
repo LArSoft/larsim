@@ -47,7 +47,9 @@ namespace sim {
 
     // Copy each entry in the other ParticleList.
     for (std::pair<int, simb::MCParticle*> const& partInfo: m_particleList)
-      list.insert(new simb::MCParticle(*(partInfo.second)));
+      list.insert(partInfo.second? new simb::MCParticle(*(partInfo.second)): nullptr);
+    
+    list.m_archive = m_archive;
     
     return list;
   } // ParticleList::MakeCopy()
@@ -66,6 +68,7 @@ namespace sim {
     // Add each ID that fails the cut to the list.
     for ( const_iterator i = m_particleList.begin(); i != m_particleList.end(); ++i ){
       const simb::MCParticle* particle = (*i).second;
+      if (!particle) continue;
       Double_t totalInitialEnergy = particle->E();
       if ( totalInitialEnergy < cut ) { 
 	keyList.insert( (*i).first ); 
@@ -87,7 +90,7 @@ namespace sim {
     return (*i).first;
   }
   //----------------------------------------------------------------------------
-  ParticleList::mapped_type ParticleList::Particle( const size_type index ) const
+  ParticleList::mapped_type const& ParticleList::Particle( const size_type index ) const
   {
     const_iterator i = m_particleList.begin();
     std::advance(i,index);
@@ -246,7 +249,7 @@ namespace sim {
     
 //     return result;
 //   }
-  
+
   //----------------------------------------------------------------------------
   // Just in case: define the result of "scalar * ParticleList" to be
   // the same as "ParticleList * scalar".
@@ -263,7 +266,7 @@ namespace sim {
   //  - If it's a primary particle, add it to the list of primaries.
   void ParticleList::insert( simb::MCParticle* particle ) 
   { 
-    int trackID = particle->TrackId();
+    int trackID = key(particle);
     iterator insertion = m_particleList.lower_bound( trackID );
     if ( insertion == m_particleList.end() ){
       // The best "hint" we can give is that the particle will go at
@@ -289,6 +292,34 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
+  void ParticleList::Archive( const key_type& key )
+  {
+     auto& part = m_particleList.at(key);
+     if (part == nullptr) return; // already archived, nothing to do
+     
+     // create a new archive item with the particle;
+     m_archive[key] = archived_info_type(*part);
+     
+     // dispose of the particle in the list (the cell will still be there
+     delete part;
+     part = nullptr;
+  } // ParticleList::Archive()
+  
+  
+  //----------------------------------------------------------------------------
+  void sim::ParticleList::Archive( const mapped_type& part ) {
+    Archive(key(part));
+  }
+  
+  //----------------------------------------------------------------------------
+  int ParticleList::GetMotherOf( const key_type& key ) const
+  {
+     auto part = m_particleList.at(key);
+     return part? part->Mother(): m_archive.at(key).Mother();
+  } // ParticleList::GetMotherOf()
+  
+  
+  //----------------------------------------------------------------------------
   void ParticleList::clear()
   {
     for ( iterator i = m_particleList.begin(); i != m_particleList.end(); ++i ){
@@ -296,6 +327,7 @@ namespace sim {
     }
 
     m_particleList.clear();
+    m_archive.clear();
   }
 
   //----------------------------------------------------------------------------
@@ -325,36 +357,21 @@ namespace sim {
 	  particle != list.end(); ++particle, ++nParticle ){
       output.width( numberOfDigits );
       output << nParticle << ": " 
-	     << "<" << (*particle).first 
-	     << "," << *((*particle).second) 
-	     << ">" << std::endl;
+	     << "<" << (*particle).first << ",";
+      if (particle->second)
+	     output << *(particle->second);
+      else {
+        auto iArch = list.m_archive.find(particle->first);
+        if (iArch == list.m_archive.end())
+          output << "lost [INTERNAL ERROR!]";
+        else
+          output << "(archived) " << iArch->second;
+      }
+      output << ">" << std::endl;
     }
 
     return output;
   }
-
-  //----------------------------------------------------------------------------
-  // operator[] in a non-const context.
-  ParticleList::mapped_type ParticleList::operator[]( const key_type& key)
-  {
-    const_iterator i = m_particleList.find(abs(key));
-    if( i == m_particleList.end() ) 
-      throw cet::exception("ParticleList") << "i == m_particleList.end()\n";
-
-    return (*i).second;
-  }
-
-  // operator[] in a const context; not usual for maps, but I find it useful.
-  ParticleList::mapped_type ParticleList::operator[]( const key_type& key) const
-  {
-    const_iterator i = m_particleList.find(abs(key));
-    if( i == m_particleList.end() ) 
-      throw cet::exception("ParticleList") << "i == m_particleList.end()\n";
-
-    return (*i).second;
-  }
-
-
 
   //----------------------------------------------------------------------------
   // Static variable for eve ID calculator. We're using an unique_ptr,
@@ -395,4 +412,13 @@ namespace sim {
     eveIdCalculator.reset(calc);
   }
 
+  //----------------------------------------------------------------------------
+  std::ostream& operator<<
+    ( std::ostream& output, const ParticleList::archived_info_type& info )
+  {
+    output << "Mother ID=" << info.Mother() << std::endl;
+    return output;
+  }
+  //----------------------------------------------------------------------------
+  
 } // namespace sim
