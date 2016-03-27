@@ -27,6 +27,8 @@ namespace sim {
   {
     auto result = std::make_unique<std::vector<sim::MCTrack>>();
     auto& mctracks = *result;
+    PlaneIndex p;
+    auto pindex = p.create_map();
 
     for(size_t i=0; i<part_v.size(); ++i) {
       auto const& mini_part = part_v[i];
@@ -178,8 +180,8 @@ namespace sim {
 	    int npid = 0;
 	    double engy = 0;
 	    
-	    for(auto const& pid_energy : edep.deposits){
-	      engy += pid_energy.second.energy;
+	    for(auto const& pid_energy : edep.deps){
+	      engy += pid_energy.energy;
 	      npid++;
 	    }
 
@@ -189,14 +191,10 @@ namespace sim {
 	    
 	    step_dedx += engy;
 	    
-	    // dQdx Calculation
-	    auto q_iter = edep.deposits.find(edep.pid);
-	    if(q_iter != edep.deposits.end()){
-	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second.charge);	  	
-	    }
-	    
+          auto q_i = pindex.find(edep.pid);
+          if(q_i != pindex.end())
+            step_dqdx[edep.pid.Plane] += (double)(edep.deps[pindex[edep.pid]].charge);
 	  }
-	  
 	}
 	
 	// Normalize to the 3D distance between the MCSteps 

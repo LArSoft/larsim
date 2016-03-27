@@ -28,6 +28,9 @@ namespace sim {
     
     art::ServiceHandle<geo::Geometry> geo;
 
+    PlaneIndex p;
+    auto pindex = p.create_map();
+
     fPartAlg.ConstructShower(part_v);
     auto result = std::make_unique<std::vector<sim::MCShower>>();
     auto& mcshower = *result;
@@ -262,9 +265,9 @@ namespace sim {
 
 	  double energy = 0;
 	  double npid = 0;
-	  for(auto const& pid_energy : edep.deposits) {
+	  for(auto const& pid_energy : edep.deps) {
 	    npid++;
-	    energy += pid_energy.second.energy;
+	    energy += pid_energy.energy;
 
 	  }
 	  energy /= npid;
@@ -296,9 +299,9 @@ namespace sim {
 	  mcs_daughter_mom[3] += energy;
 
 	  // Charge
-	  auto q_iter = edep.deposits.find(edep.pid);
-	  if(q_iter != edep.deposits.end())
-	    plane_charge[edep.pid.Plane] += (double)((*q_iter).second.charge);	  
+          auto q_i = pindex.find(edep.pid);
+          if(q_i != pindex.end())
+            plane_charge[edep.pid.Plane] += (double)(edep.deps[pindex[edep.pid]].charge);
 
 	}///Looping through the MCShower daughter's energy depositions
 
@@ -347,9 +350,9 @@ namespace sim {
 	    double E = 0;
 	    double N = 0;
 	    
-	    for(auto const& pid_energy : edep.deposits) {
+	    for(auto const& pid_energy : edep.deps) {
 	      N += 1;
-	      E += pid_energy.second.energy;
+	      E += pid_energy.energy;
 	    }
 
 	    if(N > 0){
@@ -360,15 +363,9 @@ namespace sim {
 	    mcs_daughter_dedx += E;
 
 	    // Charge
-	    auto q_iter = edep.deposits.find(edep.pid);
-	    if(q_iter != edep.deposits.end())
-	      plane_dqdx[edep.pid.Plane] += (double)((*q_iter).second.charge);	  
-	    
-
-	    // auto q_iter = edep.charge.find(edep.pid);
-	    // if(q_iter == edep.charge.end()) continue;
-	    // plane_dqdx += edep.charge.second;	  
-
+	    auto q_i = pindex.find(edep.pid);
+            if(q_i != pindex.end())
+              plane_dqdx[edep.pid.Plane] += (double)(edep.deps[pindex[edep.pid]].charge); 
 	  }
 	}
       }

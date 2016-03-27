@@ -54,6 +54,11 @@ namespace sim {
     // Key map to identify a unique particle energy deposition point
     std::map<unsigned int, std::map<UniquePosition, int>> hit_index_m;
 
+    PlaneIndex p;
+    auto pindex = p.create_map();
+
+    std::vector<sim::deposit> localdep(pindex.size()); 
+
     if(_debug_mode) std::cout<<"Processing "<<schArray.size()<<" channels..."<<std::endl;
     // Loop over channels
     for(size_t i=0; i<schArray.size(); ++i) {
@@ -86,18 +91,17 @@ namespace sim {
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
             hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
 	  }
-	  else{
+	  else {
 	    
 	    auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
 	    
 	    if(hit_index_pos_iter == (*hit_index_track_iter).second.end()) {
 	      int new_hit_index = this->__GetEdepArray__(real_track_id).size();
 	      (*hit_index_track_iter).second.insert(std::make_pair(pos,new_hit_index));
-	      
 	    }
 	    else
 	      hit_index = (*hit_index_pos_iter).second;
-	  }
+ 	  }
 	  //std::cout<<"Finished checking: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index < 0) {
 	    
@@ -107,14 +111,10 @@ namespace sim {
 	    edep.pos = pos;
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
-	    for(auto const& pid : geom->PlaneIDs()){
-              edep.deposits[pid].charge = 0;
-              edep.deposits[pid].energy = 0;
-	    }
-            
+            edep.deps =  localdep;
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-	    edep.deposits[pid].charge = charge;
-            edep.deposits[pid].energy = ide.energy;
+	    edep.deps[pindex[pid]].charge = charge;
+            edep.deps[pindex[pid]].energy = ide.energy;
 	    edep.pid         = pid;
 
 	    // If configured to save MC hits, do so
@@ -138,9 +138,9 @@ namespace sim {
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
 
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
-            edep.deposits[pid].charge += charge;
+            edep.deps[pindex[pid]].charge += charge;
 	    //if(pid == edep.pid) edep.energy += ide.energy;
-	    edep.deposits[pid].energy += ide.energy;
+	    edep.deps[pindex[pid]].energy += ide.energy;
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {

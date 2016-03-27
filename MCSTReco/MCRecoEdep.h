@@ -97,8 +97,8 @@ namespace sim
     //std::map<geo::PlaneID,float> charge;
     geo::PlaneID pid;
 
-    std::map<geo::PlaneID, sim::deposit> deposits;
-
+    //std::map<geo::PlaneID, sim::deposit> deposits;
+    std::vector<sim::deposit> deps;
     std::map<unsigned short,sim::MCEdepHit> mchits;
     void Clear() {
       //x=y=z=kINVALID_SHORT;
@@ -108,6 +108,20 @@ namespace sim
     //  charge.clear();
       mchits.clear();
     }
+  };
+
+  struct PlaneIndex{
+    static std::map<geo::PlaneID, size_t> create_map()
+        {
+          art::ServiceHandle<geo::Geometry> geom;
+          std::map<geo::PlaneID, size_t> m;
+          size_t i = 0;
+          for(auto const& pid : geom->PlaneIDs()){
+            m[pid] = i;
+            i++;
+          }
+          return m;
+        }
   };
 
   class MCRecoEdep {
