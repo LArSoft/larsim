@@ -41,42 +41,18 @@ namespace sim {
   //----------------------------------------------------------------------------
   // Copy constructor.  Note that since this class inherits from
   // TObject, we have to copy its information explicitly.
-  ParticleList::ParticleList( const ParticleList& rhs ) 
+  ParticleList ParticleList::MakeCopy() const 
   {
-    // Clear any contents that we already possess.
-    this->clear();
+    ParticleList list;
 
     // Copy each entry in the other ParticleList.
-    for ( const_iterator entry = rhs.m_particleList.begin();
-	  entry != rhs.m_particleList.end(); ++entry ){
-      const simb::MCParticle* original = (*entry).second;
-      simb::MCParticle* copy = new simb::MCParticle( *original );
-      this->insert( copy );
-    }
-  }
-
-  //----------------------------------------------------------------------------
-  // Assignment constructor.
-  ParticleList& ParticleList::operator=( const ParticleList& rhs )
-  {
-    // Usual test for self-assignment.
-    if ( this == &rhs ) return *this;
-
-    // Clear any contents that we already possess.
-    this->clear();
-
-    // Copy each entry in the other ParticleList.
-    for ( const_iterator entry = rhs.m_particleList.begin();
-	  entry != rhs.m_particleList.end(); ++entry ){
-      const simb::MCParticle* original = (*entry).second;
-      simb::MCParticle* copy = new simb::MCParticle( *original );
-      this->insert( copy );
-    }
+    for (std::pair<int, simb::MCParticle*> const& partInfo: m_particleList)
+      list.insert(new simb::MCParticle(*(partInfo.second)));
     
-    return *this;
-  }
+    return list;
+  } // ParticleList::MakeCopy()
 
-  //----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   // Apply an energy cut to the particles.
   void ParticleList::Cut( const double& cut )
   {

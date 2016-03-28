@@ -17,6 +17,9 @@
 #ifndef LArG4_ParticleListAction_h
 #define LArG4_ParticleListAction_h
 
+#include "LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "Simulation/ParticleList.h" // larg4::PositionInVolumeFilter
+
 #include "SimulationBase/MCParticle.h"
 #include "G4Base/UserAction.h"
 
@@ -37,6 +40,22 @@ namespace larg4 {
   class ParticleListAction : public g4b::UserAction
   {
   public:
+    struct ParticleInfo_t {
+      
+      simb::MCParticle* particle = nullptr;  ///< simple structure representing particle
+      bool              keep = false;        ///< if there was decision to keep
+      
+      /// Resets the information (does not release memory it does not own)
+      void clear() { particle = nullptr; keep = false; }
+      
+      /// Returns whether there is a particle
+      bool hasParticle() const { return particle; }
+      
+      /// Rerturns whether there is a particle known to be kept
+      bool keepParticle() const { return hasParticle() && keep; }
+      
+    }; // ParticleInfo_t
+
     // Standard constructors and destructors;
     ParticleListAction(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false);
     virtual ~ParticleListAction();
@@ -49,13 +68,24 @@ namespace larg4 {
     virtual void     	     PostTrackingAction(const G4Track*);
     virtual void     	     SteppingAction    (const G4Step* );
 
+    /// Grabs a particle filter
+    void ParticleFilter(std::unique_ptr<PositionInVolumeFilter>&& filter)
+      { fFilter = std::move(filter); }
+  
+
     // TrackID of the current particle, EveID if the particle is from an EM shower
-    static int               GetCurrentTrackID()  { return fCurrentTrackID; }
+    static int               GetCurrentTrackID() { return fCurrentTrackID; }
 			                                                     
     void                     ResetTrackIDOffset() { fTrackIDOffset = 0;     }
 
     // Returns the ParticleList accumulated during the current event.
     const sim::ParticleList* GetList() const;
+    
+    // Yields the ParticleList accumulated during the current event.
+    sim::ParticleList&& YieldList();
+
+    /// returns whether the specified particle has been marked as dropped
+    static bool isDropped(simb::MCParticle const* p);
 
   private:
 
@@ -65,7 +95,7 @@ namespace larg4 {
 
     G4double                 fenergyCut;             ///< The minimum energy for a particle to 		     	  
                                                      ///< be included in the list.
-    static simb::MCParticle* fparticle;              ///< The particle and trajectory information 
+    ParticleInfo_t           fCurrentParticle;       ///< information about the particle currently being simulated
                                                      ///< for a single particle.		
     sim::ParticleList*       fparticleList;          ///< The accumulated particle information for 
                                                      ///< all particles in the event.	
@@ -76,6 +106,18 @@ namespace larg4 {
     static int               fTrackIDOffset;         ///< offset added to track ids when running over		  
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
+    
+    std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
+    
+    /// Adds a trajectory point to the current particle, and runs the filter
+    void AddPointToCurrentParticle
+       (TLorentzVector const& pos, TLorentzVector const& mom);
+    
+    /// Changes the current particle so that isDropped() will return true
+    void MarkCurrentAsDropped();
+    
+    static simb::MCParticle MakeDropped(simb::MCParticle const& p);
+    
   };
 
 } // namespace LArG4
