@@ -26,20 +26,15 @@ namespace sim {
   const std::vector<sim::MCEdep>& MCRecoEdep::GetEdepArrayAt(size_t edep_index) const
   {
     if(edep_index >= _mc_edeps.size()) 
-      
       throw cet::exception(__FUNCTION__) << Form("Track ID %zu not found!",edep_index);
-
     return _mc_edeps.at(edep_index);
   }
 
   std::vector<sim::MCEdep>& MCRecoEdep::__GetEdepArray__(unsigned int track_id)
   { 
     if(ExistTrack(track_id)) return _mc_edeps.at((*_track_index.find(track_id)).second);
-
     _track_index.insert(std::pair<unsigned int,size_t>(track_id,_mc_edeps.size()));
-    
     _mc_edeps.push_back(std::vector<sim::MCEdep>());
-    
     return (*(_mc_edeps.rbegin()));
   }
 
@@ -52,7 +47,9 @@ namespace sim {
     art::ServiceHandle<util::DetectorProperties> detp;
 
     // Key map to identify a unique particle energy deposition point
-    std::map<unsigned int, std::map<UniquePosition, int>> hit_index_m;
+    //std::map<unsigned int, std::map<UniquePosition, int>> hit_index_m;
+
+    std::map<std::pair<unsigned int, UniquePosition>, int> testmap;
 
     PlaneIndex p;
     auto pindex = p.create_map();
@@ -84,24 +81,26 @@ namespace sim {
 	  UniquePosition pos(ide.x, ide.y, ide.z);
 
 	  int hit_index = -1;
-	   
-	  auto hit_index_track_iter = hit_index_m.find(real_track_id);
-	  if(hit_index_track_iter == hit_index_m.end()) {
+	  auto key = std::make_pair(real_track_id, pos);
+          auto hit_index_track_iter = testmap.find(key);
+          if(hit_index_track_iter == testmap.end()) {
+	  //auto hit_index_track_iter = hit_index_m.find(real_track_id);
+	  //if(hit_index_track_iter == hit_index_m.end()) {
 	    // create new entry here
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-            hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
-            
+            //hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
+            testmap[key]= new_hit_index;
 	  }
 	  else {
-	    
-	    auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
+	    hit_index = (*hit_index_track_iter).second;
+	   /* auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
 	    if(hit_index_pos_iter == (*hit_index_track_iter).second.end()) {
 	      int new_hit_index = this->__GetEdepArray__(real_track_id).size();
 	      (*hit_index_track_iter).second.insert(std::make_pair(pos,new_hit_index));
 	    }
 	    else
 	      hit_index = (*hit_index_pos_iter).second;
- 	  }
+ 	*/  }
 	  //std::cout<<"Finished checking: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index < 0) {
 	    
@@ -130,13 +129,12 @@ namespace sim {
 	    //std::cout<<"Inserting: "<<this->__GetEdepArray__(real_track_id).size()<<std::flush;
 	    this->__GetEdepArray__(real_track_id).push_back(edep);
 	    //std::cout<<" now became "<<this->__GetEdepArray__(real_track_id).size()<<std::endl;
-	  }else{
+	  } else {
 	    //std::cout<<"Existing ... "<<hit_index<<" (size = "<<this->__GetEdepArray__(real_track_id).size()<<std::endl;
 	    // Append charge to the relevant edep (@ hit_index)
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    double charge = ide.numElectrons;
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
-
 	    auto pid = geom->ChannelToWire(ch)[0].planeID();
             edep.deps[pindex[pid]].charge += charge;
 	    //if(pid == edep.pid) edep.energy += ide.energy;
@@ -144,7 +142,6 @@ namespace sim {
 
 	    // If configured to store hit, store
 	    if(_save_mchit) {
-	      
 	      // Check if channel is already stored. If so, append. Else store new.
 	      auto hit_iter = edep.mchits.find(ch);
 	      if( hit_iter == edep.mchits.end() ) {
@@ -155,9 +152,7 @@ namespace sim {
 		mchit.qSum = charge;
 		mchit.qMax = charge;
 		edep.mchits.insert(std::pair<unsigned short,sim::MCEdepHit>(ch,mchit));
-
-	      }else{
-
+	      } else {
 		if( (*hit_iter).second.timeStart > hit_time )
 		  throw cet::exception(__FUNCTION__) << "Found hit before the already-registered hit's start time!";
 		(*hit_iter).second.qSum += charge;
@@ -166,11 +161,9 @@ namespace sim {
 		  (*hit_iter).second.qMax = charge;
 		  (*hit_iter).second.timeMax = hit_time;
 		}
-		
 	      }
 	    }
 	  }
-	  
 	} // end looping over ides in this tick
 	//std::cout<<"End looping over ides in tick: "<<hit_time<<std::endl;
       } // end looping over ticks in this channel
@@ -178,25 +171,15 @@ namespace sim {
     }// end looping over channels
 
     if(_debug_mode) {
-
       std::cout<< Form("  Collected %zu particles' energy depositions...",_mc_edeps.size()) << std::endl;
       for(auto const& track_id_index : _track_index ) {
-
 	auto track_id   = track_id_index.first;
 	auto edep_index = track_id_index.second;
-
 	//	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
-
       }
       std::cout<<std::endl;
     }
-    
-
-  
   }
-
-
-
 }
 
 #endif
