@@ -591,11 +591,13 @@ namespace larg4 {
       << partCol->size() << " .";
     
     if (fdumpSimChannels) {
-      mf::LogInfo out("DumpSimChannels");
-      out << "Wires: " << scCol->size() << " channels with signal" << std::endl;
+      mf::LogVerbatim("DumpSimChannels")
+        << "Event " << evt.id()
+        << ": " << scCol->size() << " channels with signal";
       unsigned int nChannels = 0;
       for (const sim::SimChannel& sc: *scCol) {
-        out << " #" << nChannels << ": ";
+         mf::LogVerbatim out("DumpSimChannels");
+         out << " #" << nChannels << ": ";
         // dump indenting with "    ", but not on the first line
         sc.Dump(out, "  ");
         ++nChannels;
