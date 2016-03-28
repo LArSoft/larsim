@@ -1,5 +1,5 @@
 #
-# File:     dump_mcreco.fcl
+# File:     dump_mcparticlesandreco.fcl
 # Purpose:  Dump on screen MC track and shower content
 # Author:   Gianluca Petrillo (petrillo@fnal.gov)
 # Date:     March 21st, 2016
@@ -60,6 +60,7 @@ services: {
             timespan: 1000
           }
           RecoBaseDefaultCtor: { limit: 0 }
+          DumpMCParticles: { limit: 0 }
           DumpMCTracks: { limit: 0 }
           DumpMCShowers: { limit: 0 }
           default: {}
