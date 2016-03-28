@@ -332,11 +332,18 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   // An erase that includes the deletion of the associated Particle*.
+  ParticleList::iterator ParticleList::erase( iterator position )
+  {
+    delete position->second;
+    return m_particleList.erase( position );
+  }
+
   ParticleList::size_type ParticleList::erase( const key_type& key )
   {
     iterator entry = m_particleList.find( abs(key) );
-    delete (*entry).second;
-    return m_particleList.erase( abs(key) );
+    if (entry == m_particleList.end()) return 0;
+    erase(entry);
+    return 1;
   }
 
 

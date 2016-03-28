@@ -484,7 +484,7 @@ namespace larg4 {
   void ParticleListAction::MarkCurrentAsDropped() {
     if (!fCurrentParticle.hasParticle()) return;
     
-    // hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
+    // FIXME hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
     // and adopted in LArSoft, after which the correct line is as simple as:
     // *fCurrentParticle.particle = MakeDropped(*fCurrentParticle.particle);
     

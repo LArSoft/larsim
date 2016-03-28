@@ -390,15 +390,29 @@ namespace larg4 {
         // receive the particle list
         sim::ParticleList particleList = fparticleListAction->YieldList();
         
-        for(auto const& partPair: particleList) {
-          simb::MCParticle& p = *(partPair.second);
+        
+        //for(auto const& partPair: particleList) {
+        //  simb::MCParticle& p = *(partPair.second);
+        auto iPartPair = particleList.begin();
+        while (iPartPair != particleList.end()) {
+          simb::MCParticle& p = *(iPartPair->second);
           ++nGeneratedParticles;
           
           // if the particle has been marked as dropped, we don't save it
-          if (ParticleListAction::isDropped(&p)) continue;
+          // (as of LArSoft ~v5.6 this does not ever happen because
+          // ParticleListAction has already taken care of deleting them)
+          if (ParticleListAction::isDropped(&p)) {
+            ++iPartPair;
+            continue;
+          }
           partCol->push_back(std::move(p));
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
-        }//for
+          // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
+          // is solved and adopted in LArSoft, after which moving will suffice
+          // to avoid dramatic memory usage spikes;
+          // for now, we immediately disposed of used particles
+          iPartPair = particleList.erase(iPartPair);
+        } // while(particleList)
 
 
         // Has the user request a detailed dump of the output objects?

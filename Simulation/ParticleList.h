@@ -282,6 +282,7 @@ namespace sim {
 
     void clear();
     size_type erase( const key_type& key );
+    iterator erase( iterator key );
 
     friend std::ostream& operator<< ( std::ostream& output, const ParticleList& );
     friend std::ostream& operator<<
