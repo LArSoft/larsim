@@ -28,7 +28,7 @@ class MCReco;
 class MCReco : public art::EDProducer {
 public:
   explicit MCReco(fhicl::ParameterSet const & p);
-  virtual ~MCReco();
+//  virtual ~MCReco();
 
   void produce(art::Event & e) override;
 
@@ -52,11 +52,11 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
   produces< std::vector< sim::MCShower> >();
   produces< std::vector< sim::MCTrack>  >();
   // Call appropriate produces<>() functions here.
-}
 
-MCReco::~MCReco()
-{
+//MCReco::~MCReco()
+//{
   // Clean up dynamic memory and other resources here.
+//}
 }
 
 void MCReco::produce(art::Event & evt)
@@ -91,6 +91,8 @@ void MCReco::produce(art::Event & evt)
   //Add MCShowers and MCTracks to the event 
   evt.put(fMCSAlg.Reconstruct(fPart,fEdep));
   evt.put(fMCTAlg.Reconstruct(fPart,fEdep));
+  
+  fEdep.Clear();
 }
 
 DEFINE_ART_MODULE(MCReco)

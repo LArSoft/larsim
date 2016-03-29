@@ -49,7 +49,7 @@ namespace sim {
     // Key map to identify a unique particle energy deposition point
     //std::map<unsigned int, std::map<UniquePosition, int>> hit_index_m;
 
-    std::map<std::pair<unsigned int, UniquePosition>, int> testmap;
+    std::map<std::pair<UniquePosition, unsigned int>, int> testmap;
 
     PlaneIndex p;
     auto pindex = p.create_map();
@@ -81,26 +81,16 @@ namespace sim {
 	  UniquePosition pos(ide.x, ide.y, ide.z);
 
 	  int hit_index = -1;
-	  auto key = std::make_pair(real_track_id, pos);
+	  auto key = std::make_pair(pos, real_track_id);
           auto hit_index_track_iter = testmap.find(key);
           if(hit_index_track_iter == testmap.end()) {
-	  //auto hit_index_track_iter = hit_index_m.find(real_track_id);
-	  //if(hit_index_track_iter == hit_index_m.end()) {
 	    // create new entry here
 	    int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-            //hit_index_m[real_track_id].insert(std::make_pair(pos,new_hit_index));
             testmap[key]= new_hit_index;
 	  }
 	  else {
 	    hit_index = (*hit_index_track_iter).second;
-	   /* auto hit_index_pos_iter = (*hit_index_track_iter).second.find(pos);
-	    if(hit_index_pos_iter == (*hit_index_track_iter).second.end()) {
-	      int new_hit_index = this->__GetEdepArray__(real_track_id).size();
-	      (*hit_index_track_iter).second.insert(std::make_pair(pos,new_hit_index));
-	    }
-	    else
-	      hit_index = (*hit_index_pos_iter).second;
- 	*/  }
+ 	  }
 	  //std::cout<<"Finished checking: hit-time="<<hit_time<<" : PartID="<<real_track_id<<std::endl;
 	  if(hit_index < 0) {
 	    

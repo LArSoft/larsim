@@ -144,6 +144,12 @@ namespace sim
     const std::map<unsigned int,size_t> TrackIndexMap() const
     { return _track_index; }
 
+    void Clear() {
+      _mc_edeps.clear();
+      _track_index.clear();
+      std::vector<std::vector<sim::MCEdep>>().swap(_mc_edeps);
+      std::map<unsigned int,size_t>().swap(_track_index);  
+  }
   protected:
 
     std::vector<sim::MCEdep>& __GetEdepArray__(unsigned int track_id);
