@@ -110,8 +110,9 @@
 #include "SimulationBase/MCParticle.h"
 
 #include <set>
-#include <iostream>
+#include <ostream>
 #include <map>
+#include <cstdlib> // std::abs()
 
 namespace sim {
 
@@ -141,13 +142,35 @@ namespace sim {
     virtual ~ParticleList();
 
   private:
+    struct archived_info_type {
+      int parentID = 0;
+      
+      archived_info_type() = default;
+      
+      archived_info_type(int pid): parentID(pid) {}
+      archived_info_type(simb::MCParticle const& part)
+        : parentID(part.Mother())
+        {}
+      archived_info_type(simb::MCParticle const* part)
+        : parentID(part->Mother())
+        {}
+      
+      int Mother() const { return parentID; }
+      
+      friend std::ostream& operator<<
+        ( std::ostream& output, const ParticleList::archived_info_type& );
+    }; // archived_info_type
+    
+    
     typedef std::set< int >                primaries_type;
+    typedef std::map<int, archived_info_type> archive_type;
     typedef primaries_type::iterator       primaries_iterator;
     typedef primaries_type::const_iterator primaries_const_iterator;
 
     list_type       m_particleList; ///< Sorted list of particles in the event
     primaries_type  m_primaries;    ///< Sorted list of the track IDs of 
                                     ///< primary particles.
+    archive_type    m_archive;      ///< archive of the particles no longer among us
 
 #ifndef __GCCXML__
 
@@ -178,9 +201,21 @@ namespace sim {
     void Cut( const double& );
 
     const key_type& TrackId( const size_type ) const;
-    mapped_type Particle( const size_type ) const;
+    mapped_type const& Particle( const size_type ) const;
     mapped_type Particle( const size_type );
 
+    /// Returns whether we have this particle, live (with full information)
+    bool HasParticle( int trackID ) const
+      {
+        auto iParticle = find(trackID);
+        return (iParticle != end()) && (iParticle->second != nullptr);
+      }
+    
+    /// Returns whether we have had this particle, archived or live
+    bool KnownParticle( int trackID ) const
+      { return find(trackID) != end(); }
+    
+    
     bool IsPrimary( int trackID ) const;
     int NumberOfPrimaries() const;
     
@@ -220,13 +255,16 @@ namespace sim {
     // get the particles by index number instead of track ID.
     // Note that this only works in a const context.  Use the insert() 
     // or Add() methods to add a new particle to the list.
-    mapped_type operator[]( const key_type& key ) const;
+    mapped_type const& operator[]( const key_type& key ) const;
     // This non-const version of operator[] does NOT permit you to insert
     // Particles into the list.  Use Add() or insert() for that.
     mapped_type operator[]( const key_type& key );
     mapped_type at(const key_type& key);      
-    mapped_type at(const key_type& key) const;
+    mapped_type const& at(const key_type& key) const;
 
+    /// Extracts the key from the specified value
+    key_type key(mapped_type const& part) const;
+    
     // These two methods do the same thing:
     // - Add the Particle to the list, using the track ID as the key.
     // - Update the list of primary particles as needed.
@@ -234,12 +272,22 @@ namespace sim {
     // takes over management of the pointer.  Don't delete it yourself!
     void insert( simb::MCParticle* value );
     void Add( simb::MCParticle* value );
+    
+    /// Removes the particle from the list, keeping minimal info of it
+    void Archive( const key_type& key );
+    void Archive( const mapped_type& key );
+    
+    /// This function seeks for the exact key, not its absolute value
+    int GetMotherOf( const key_type& key ) const;
 
     void clear();
     size_type erase( const key_type& key );
+    iterator erase( iterator key );
 
     friend std::ostream& operator<< ( std::ostream& output, const ParticleList& );
-
+    friend std::ostream& operator<<
+      ( std::ostream& output, const ParticleList::archived_info_type& );
+    
     // Methods associated with the eve ID calculation.
     // Calculate the eve ID.
     int EveId ( const int trackID ) const;
@@ -266,7 +314,7 @@ inline    sim::ParticleList::size_type              sim::ParticleList::size()   
 inline    bool sim::ParticleList::empty()                                       const { return m_particleList.empty();  }
 inline    void sim::ParticleList::Add(simb::MCParticle* value)                        { insert(value);                  }
 inline    void sim::ParticleList::swap( sim::ParticleList& other )                         
-{ m_particleList.swap( other.m_particleList ); }
+{ m_particleList.swap( other.m_particleList ); m_archive.swap( other.m_archive ); m_primaries.swap( other.m_primaries); }
 inline    sim::ParticleList::iterator       sim::ParticleList::find(const sim::ParticleList::key_type& key)              
 { return m_particleList.find(abs(key));        }
 inline    sim::ParticleList::const_iterator sim::ParticleList::find(const sim::ParticleList::key_type& key)        const 
@@ -280,9 +328,15 @@ inline    sim::ParticleList::iterator       sim::ParticleList::lower_bound(const
 inline    sim::ParticleList::const_iterator sim::ParticleList::lower_bound(const sim::ParticleList::key_type& key) const 
 { return m_particleList.lower_bound(abs(key)); }
 inline    sim::ParticleList::mapped_type sim::ParticleList::at(const sim::ParticleList::key_type& key)       
-{ return operator[](key); }
-inline    sim::ParticleList::mapped_type sim::ParticleList::at(const sim::ParticleList::key_type& key) const 
-{ return operator[](key); }
+{ return m_particleList.at(std::abs(key)); }
+inline    sim::ParticleList::mapped_type const& sim::ParticleList::at(const sim::ParticleList::key_type& key) const 
+{ return m_particleList.at(std::abs(key)); }
+inline    sim::ParticleList::mapped_type sim::ParticleList::operator[] (const sim::ParticleList::key_type& key)       
+{ return at(key); }
+inline    sim::ParticleList::mapped_type const& sim::ParticleList::operator[] (const sim::ParticleList::key_type& key) const 
+{ return at(key); }
+inline    sim::ParticleList::key_type sim::ParticleList::key(mapped_type const& part) const { return part->TrackId(); }
+
 
 #endif
 

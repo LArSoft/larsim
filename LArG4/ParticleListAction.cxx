@@ -43,7 +43,7 @@ namespace larg4 {
   // Dropped particle test
   
   bool ParticleListAction::isDropped(simb::MCParticle const* p) {
-    return p->Trajectory().empty();
+    return !p || p->Trajectory().empty();
   } // ParticleListAction::isDropped()
 
 
@@ -180,7 +180,7 @@ namespace larg4 {
 	// isn't saved in the particle list because it is below the energy cut
 	// which will put a bogus track id value into the sim::IDE object for 
 	// the sim::SimChannel if we don't check it.
-	if(fparticleList->find(fCurrentTrackID) == fparticleList->end() )
+   if(!fparticleList->KnownParticle(fCurrentTrackID))
 	  fCurrentTrackID = sim::NoParticleId;
 	
 	// clear current particle as we are not stepping this particle and 
@@ -209,7 +209,7 @@ namespace larg4 {
       // if not, then see if it is possible to walk up the fParentIDMap to find the
       // ultimate parent of this particle.  Use that ID as the parent ID for this
       // particle
-      if( fparticleList->find(parentID) == fparticleList->end() ){
+      if( !fparticleList->KnownParticle(parentID) ){
 	// do add the particle to the parent id map
 	// just in case it makes a daughter that we have to track as well
 	fParentIDMap[trackID] = parentID;
@@ -217,7 +217,7 @@ namespace larg4 {
 	
 	// if we still can't find the parent in the particle navigator, 
 	// we have to give up
-	if( fparticleList->find(pid) == fparticleList->end() ){
+   if( !fparticleList->KnownParticle(pid) ){
 	  mf::LogWarning("ParticleListAction") << "can't find parent id: "
 					       << parentID 
 					       << " in the particle list, or fParentIDMap."
@@ -259,7 +259,10 @@ namespace larg4 {
     // if we have found no reason to keep it, drop it!
     // (we might still need parentage information though)
     if (!fCurrentParticle.keep) {
-      MarkCurrentAsDropped();
+    //  MarkCurrentAsDropped();
+      fparticleList->Archive(fCurrentParticle.particle);
+      // after the particle is archived, it is deleted
+      fCurrentParticle.clear();
       return;
     }
 
@@ -374,11 +377,13 @@ namespace larg4 {
     void operator()( sim::ParticleList::value_type& particleListEntry )
     {
       // We're looking at this Particle in the list.
-      simb::MCParticle* particle = particleListEntry.second;
+      int particleID = particleListEntry.first;
 
-      // The parent ID of this particle.
-      int parentID = particle->Mother();
-
+      // The parent ID of this particle;
+      // we ask the particle list since the particle itself might have been lost
+      // ("archived"), but the particle list still holds the information we need
+      int parentID = particleList->GetMotherOf(particleID);
+      
       // If the parentID <= 0, this is a primary particle.
       if ( parentID <= 0 ) return;
 
@@ -396,11 +401,12 @@ namespace larg4 {
 	// daughter that passed the cut (e.g., a nuclear decay).
 	return;
       }
+      if ( !parentEntry->second ) return; // particle archived, nothing to update
 
       // Add the current particle to the daughter list of the
       // parent.
       simb::MCParticle* parent = (*parentEntry).second;
-      parent->AddDaughter( particle->TrackId() );
+      parent->AddDaughter( particleID );
     }
   private:
     sim::ParticleList* particleList;     
@@ -478,7 +484,7 @@ namespace larg4 {
   void ParticleListAction::MarkCurrentAsDropped() {
     if (!fCurrentParticle.hasParticle()) return;
     
-    // hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
+    // FIXME hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
     // and adopted in LArSoft, after which the correct line is as simple as:
     // *fCurrentParticle.particle = MakeDropped(*fCurrentParticle.particle);
     

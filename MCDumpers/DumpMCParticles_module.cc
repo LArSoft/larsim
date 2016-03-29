@@ -208,8 +208,10 @@ void sim::DumpMCParticles::analyze(art::Event const& event) {
     << Particles.size() << " MCParticle's";
   
   unsigned int iParticle = 0;
-  mf::LogVerbatim log(fOutputCategory);
   for (simb::MCParticle const& particle: Particles) {
+    // flush on every particle,
+    // since the output buffer might grow too large otherwise
+    mf::LogVerbatim log(fOutputCategory);
     
     // a bit of a header
     log << "\n[#" << (iParticle++) << "] ";
