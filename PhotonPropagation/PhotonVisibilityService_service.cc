@@ -26,6 +26,7 @@
 // LArSoft includes
 #include "PhotonPropagation/PhotonVisibilityService.h"
 #include "PhotonPropagation/PhotonLibrary.h"
+#include "Simulation/PhotonVoxels.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
@@ -159,7 +160,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Eventually we will calculate the light quenching factor here
-  double PhotonVisibilityService::GetQuenchingFactor(double /* dQdx */)
+  double PhotonVisibilityService::GetQuenchingFactor(double /* dQdx */) const
   {
     // for now, no quenching
     return 1.0;
@@ -172,9 +173,9 @@ namespace phot{
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point xyz
 
-  const std::vector<float>* PhotonVisibilityService::GetAllVisibilities(double * xyz) const
+  float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    size_t VoxID = fVoxelDef.GetVoxelID(xyz);
     return GetLibraryEntries(VoxID);
   }
 
@@ -182,7 +183,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double PhotonVisibilityService::DistanceToOpDet( double* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::DistanceToOpDet( double const* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
@@ -194,7 +195,7 @@ namespace phot{
 
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double PhotonVisibilityService::SolidAngleFactor( double* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::SolidAngleFactor( double const* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
@@ -202,7 +203,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetVisibility(double * xyz, unsigned int OpChannel)
+  float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel) const
   {
     int VoxID = fVoxelDef.GetVoxelID(xyz);  
     return GetLibraryEntry(VoxID, OpChannel);
@@ -243,7 +244,7 @@ namespace phot{
 
   
 
-  const std::vector<float>* PhotonVisibilityService::GetLibraryEntries(int VoxID) const
+  float const* PhotonVisibilityService::GetLibraryEntries(int VoxID) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();

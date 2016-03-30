@@ -369,8 +369,12 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   xyz[2]=x0[2]/cm;
 
   // Get the visibility vector for this point
-  const std::vector<float>* Visibilities = nullptr;
-  if(!pvs->UseParameterization())Visibilities = pvs->GetAllVisibilities(xyz);
+  float const* Visibilities = nullptr;
+  size_t NOpChannels = 0;
+  if(!pvs->UseParameterization()) {
+    Visibilities = pvs->GetAllVisibilities(xyz);
+    NOpChannels = pvs->NOpChannels();
+  }
 
 
   G4MaterialPropertyVector* Fast_Intensity = 
@@ -648,9 +652,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	  }
 	else
     {
-	  for(size_t OpDet=0; OpDet!=Visibilities->size(); OpDet++)
+	  for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
-		G4int DetThisPMT = G4int(G4Poisson(Visibilities->at(OpDet) * Num));
+		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 		if(DetThisPMT>0) 
         {
 		    DetectedNum[OpDet]=DetThisPMT;

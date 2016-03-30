@@ -13,9 +13,10 @@
 #include "TTree.h"
 #include "TKey.h"
 
+
 namespace phot{
   
-  std::vector<float> PhotonLibrary::EmptyChannelsList; // used for invalid return value
+  std::string const PhotonLibrary::OpChannelBranchName = "OpChannel";
   
   //------------------------------------------------------------
 
@@ -49,19 +50,20 @@ namespace phot{
 
 
     tt->Branch("Voxel",      &Voxel,      "Voxel/I");
-    tt->Branch("OpChannel",  &OpChannel,  "OpChannel/I");
+    tt->Branch(OpChannelBranchName.c_str(),  &OpChannel,  (OpChannelBranchName + "/I").c_str());
     tt->Branch("Visibility", &Visibility, "Visibility/F");
  
 
-    for(size_t ivox=0; ivox!=fLookupTable.size(); ++ivox)
+    for(size_t ivox=0; ivox!= fNVoxels; ++ivox)
       {
-	for(size_t ichan=0; ichan!=fLookupTable.at(ivox).size(); ++ichan)
+	for(size_t ichan=0; ichan!= fNOpChannels; ++ichan)
 	  {
-	    if(fLookupTable[ivox].at(ichan) > 0)
+	    Visibility = uncheckedAccess(ivox, ichan);
+	    if (Visibility > 0)
 	      {
 		Voxel      = ivox;
 		OpChannel  = ichan;
-		Visibility = fLookupTable[ivox][ichan];
+		// visibility is already set
 		tt->Fill();
 	      }
 	  }	
@@ -78,12 +80,8 @@ namespace phot{
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
 
-    fLookupTable.resize(NVoxels);    
+    fLookupTable.resize(LibrarySize(), 0.);
 
-    for(size_t ivox=0; ivox!=NVoxels; ivox++)
-      {
-        fLookupTable[ivox].resize(NOpChannels,0);
-      }
   }
 
 
@@ -128,10 +126,10 @@ namespace phot{
 
     
     fNVoxels     = NVoxels;
-    fNOpChannels = 1;      // Minimum default, overwritten by library reading
+    fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
 
     
-    fLookupTable.resize(NVoxels);    
+    fLookupTable.resize(LibrarySize(), 0.);
 
 
     size_t NEntries = tt->GetEntries();
@@ -139,26 +137,11 @@ namespace phot{
     for(size_t i=0; i!=NEntries; ++i) {
       tt->GetEntry(i);
 
-      // Set # of optical channels to 1 more than largest one seen
-      if (OpChannel >= (int)fNOpChannels)
-        fNOpChannels = OpChannel+1;
-
-      // Expand this voxel's vector if needed
-      if (fLookupTable[Voxel].size() < fNOpChannels)
-        fLookupTable[Voxel].resize(fNOpChannels, 0);
-
       // Set the visibility at this optical channel
-      fLookupTable[Voxel].at(OpChannel) = Visibility;
-    }
+      uncheckedAccess(Voxel, OpChannel) = Visibility;
+      
+    } // for entries
 
-    // Go through the table and fill in any missing 0's
-    for(size_t ivox=0; ivox!=NVoxels; ivox++)
-    {
-      if (fLookupTable[ivox].size() < fNOpChannels)
-	fLookupTable[ivox].resize(fNOpChannels,0);
-    }
-    
-    
     mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
 
 
@@ -174,34 +157,62 @@ namespace phot{
 
   //----------------------------------------------------
 
-  float PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) 
+  float PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) const
   { 
-    if(/*(Voxel<0)||*/(Voxel>=fNVoxels)||/*(OpChannel<0)||*/(OpChannel>=fNOpChannels))
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       return 0;   
     else
-      return fLookupTable[Voxel].at(OpChannel); 
+      return uncheckedAccess(Voxel, OpChannel); 
   }
 
   //----------------------------------------------------
 
   void PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count) 
   { 
-    if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range"; 
     else
-      fLookupTable[Voxel].at(OpChannel) = Count; 
+      uncheckedAccess(Voxel, OpChannel) = Count; 
   }
 
   //----------------------------------------------------
 
-  const std::vector<float>* PhotonLibrary::GetCounts(size_t Voxel) const
+  float const* PhotonLibrary::GetCounts(size_t Voxel) const
   { 
-    if(/*(Voxel<0)||*/(Voxel>=fNVoxels))
-      return EmptyList(); // FIXME!!! better to throw an exception!
-    else 
-      return &(fLookupTable[Voxel]);
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fLookupTable.data() + uncheckedIndex(Voxel, 0);
   }
 
+  //----------------------------------------------------
   
+  size_t PhotonLibrary::ExtractNOpChannels(TTree* tree) {
+    TBranch* channelBranch = tree->GetBranch(OpChannelBranchName.c_str());
+    if (!channelBranch) {
+      throw art::Exception(art::errors::NotFound)
+        << "Tree '" << tree->GetName() << "' has no branch 'OpChannel'";
+    }
+    
+    // fix a new local address for the branch
+    char* oldAddress = channelBranch->GetAddress();
+    Int_t channel;
+    channelBranch->SetAddress(&channel);
+    Int_t maxChannel = -1;
+    
+    // read all the channel values and pick the largest one
+    Long64_t iEntry = 0;
+    while (channelBranch->GetEntry(iEntry++)) {
+      if (channel > maxChannel) maxChannel = channel;
+    } // while
+    
+    LOG_DEBUG("PhotonLibrary")
+      << "Detected highest channel to be " << maxChannel << " from " << iEntry
+      << " tree entries";
+    
+    // restore the old branch address
+    channelBranch->SetAddress(oldAddress);
+    
+    return size_t(maxChannel + 1);
+    
+  } // PhotonLibrary::ExtractNOpChannels()
   
 }

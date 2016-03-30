@@ -189,20 +189,21 @@ namespace phot {
     
       std::vector<int> Coords = TheVoxelDef.GetVoxelCoords(i);
                 
-      const std::vector<float>* Visibilities = pvs->GetLibraryEntries(i);
+      const float* Visibilities = pvs->GetLibraryEntries(i);
+      size_t NOpChannels = pvs->NOpChannels();
       
       float TotalVis=0;
       if (fOpDet < 0) {
-        for(size_t ichan=0; ichan!=Visibilities->size(); ++ichan)
+        for(size_t ichan=0; ichan!=NOpChannels; ++ichan)
         {
-          TotalVis+=Visibilities->at(ichan);	
+          TotalVis+=Visibilities[ichan];	
         }
       }
       else {
-        TotalVis = Visibilities->at(fOpDet);
+        TotalVis = Visibilities[fOpDet];
       }
       
-      VisByN->Fill(Visibilities->size());
+      VisByN->Fill(NOpChannels);
       
       if(TotalVis==0)
 	{

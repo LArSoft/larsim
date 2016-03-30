@@ -15,7 +15,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "PhotonPropagation/PhotonLibrary.h"
-#include "Simulation/PhotonVoxels.h"
 
 ///General LArSoft Utilities
 namespace phot{
@@ -27,13 +26,13 @@ namespace phot{
     
     void reconfigure(fhicl::ParameterSet const& p);
     
-    double GetQuenchingFactor(double dQdx);
+    double GetQuenchingFactor(double dQdx) const;
     
-    double DistanceToOpDet(                 double* xyz, unsigned int OpDet );
-    double SolidAngleFactor(                double* xyz, unsigned int OpDet );
-    float GetVisibility(                    double* xyz, unsigned int OpChannel );         
+    static double DistanceToOpDet(          double const* xyz, unsigned int OpDet );
+    static double SolidAngleFactor(         double const* xyz, unsigned int OpDet );
+    float GetVisibility(                    double const* xyz, unsigned int OpChannel ) const;         
 
-    const std::vector<float>* GetAllVisibilities( double* xyz ) const;
+    float const* GetAllVisibilities( double const* xyz ) const;
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -44,7 +43,7 @@ namespace phot{
     
     void SetLibraryEntry(   int VoxID, int OpChannel, float N);
     float GetLibraryEntry( int VoxID, int OpChannel) const;
-    const std::vector<float>* GetLibraryEntries( int VoxID ) const;
+    float const* GetLibraryEntries( int VoxID ) const;
 
     
     bool IsBuildJob() const { return fLibraryBuildJob; }
