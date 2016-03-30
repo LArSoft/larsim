@@ -11,7 +11,7 @@ larevt		v05_06_00
 gcc		v4_9_3
 genie_xsec      v2_10_2 
 genie_phyopt    v2_10_2 
-larsoft_data    v0_06_00
+larsoft_data    v0_06_01
 artextensions   v1_02_07
 
 cetbuildtools	v4_18_04	-	only_for_build
