@@ -263,7 +263,7 @@ namespace phot{
   }
 
   //------------------------------------------------------
-  int PhotonVisibilityService::NOpChannels()
+  size_t PhotonVisibilityService::NOpChannels() const
   {
     if(fTheLibrary == 0)
       LoadLibrary();

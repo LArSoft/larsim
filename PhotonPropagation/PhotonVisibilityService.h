@@ -50,7 +50,7 @@ namespace phot{
     bool UseParameterization() const {return fParameterization;}
 
     sim::PhotonVoxelDef GetVoxelDef() const {return fVoxelDef; }
-    int NOpChannels();
+    size_t NOpChannels() const;
     
   private:
     
