@@ -522,11 +522,11 @@ namespace larg4 {
             std::map<unsigned int, unsigned int>::iterator itertest = channelToscCol.find(ichan);
             if (itertest == channelToscCol.end()) {
               channelToscCol[ichan] = scCol->size();
-              scCol->push_back(std::move(sc));
+              scCol->emplace_back(std::move(sc));
             }
             else {
               unsigned int idtest = itertest->second;
-              auto const tdcideMap = sc.TDCIDEMap();
+              auto const& tdcideMap = sc.TDCIDEMap();
               for(auto const& tdcide : tdcideMap){
                  for(auto const& ide : tdcide.second){
                     double xyz[3] = {ide.x, ide.y, ide.z};
@@ -540,7 +540,7 @@ namespace larg4 {
             } // end if check to see if we've put SimChannels in for ichan yet or not
           }
           else {
-            scCol->push_back(std::move(sc));
+            scCol->emplace_back(std::move(sc));
           } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
         } // end loop over simchannels for this TPC
         // mark it for clearing
