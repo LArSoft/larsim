@@ -1,0 +1,82 @@
+#
+# File:     dump_simchannels.fcl
+# Purpose:  Dump on screen SimChannel content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     March 30, 2016
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpSimChannels
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpSimChannels" messages and put them in DumpSimChannels.log
+      DumpSimChannels: {
+        append: false
+        categories: {
+          DumpSimChannels: { limit: -1 }
+          fileAction: { limit: 0 } # RootInput
+          TimeTracker: { limit: 0 }
+          MemoryTracker: { limit: 0 }
+          default: { limit: 0 }
+        }
+        filename: "DumpSimChannels.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpSimChannels
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpSimChannels: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpsimchannels: {
+      module_label: dumpsimchannels
+      module_type:  DumpSimChannels
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpSimChannels"
+      
+      # specify the label of the sim::SimChannel data product (or producer)
+      InputSimChannels: "largeant"
+      
+    } # dumpsimchannels
+  } # analyzers
+  
+  dumpers: [ dumpsimchannels ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics
