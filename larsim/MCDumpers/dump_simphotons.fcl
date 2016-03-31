@@ -1,0 +1,82 @@
+#
+# File:     dump_simphotons.fcl
+# Purpose:  Dump on screen SimPhotons content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     March 30, 2016
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpSimPhotons
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpSimPhotons" messages and put them in DumpSimPhotons.log
+      DumpSimPhotons: {
+        append: false
+        categories: {
+          DumpSimPhotons: { limit: -1 }
+          fileAction: { limit: 0 } # RootInput
+          TimeTracker: { limit: 0 }
+          MemoryTracker: { limit: 0 }
+          default: { limit: 0 }
+        }
+        filename: "DumpSimPhotons.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpSimPhotons
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpSimPhotons: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpsimphotons: {
+      module_label: dumpsimphotons
+      module_type:  DumpSimPhotons
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpSimPhotons"
+      
+      # specify the label of the sim::SimPhotons data product (or producer)
+      InputPhotons: "largeant"
+      
+    } # dumpsimchannels
+  } # analyzers
+  
+  dumpers: [ dumpsimphotons ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics
