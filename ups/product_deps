@@ -20,9 +20,9 @@ end_product_list
   
 # e9  - with gcc 4.9.3 and -std=c++14
 qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	larsoft_data	artextensions	notes
-e9:debug	e9:debug	default		dkcharmtau	-nq-	-nq-		e9:nu:s30:debug
-e9:opt		e9:opt		default		dkcharmtau	-nq-	-nq-		e9:nu:s30:opt
-e9:prof		e9:prof		default		dkcharmtau	-nq-	-nq-		e9:nu:s30:prof
+e9:debug	e9:debug	default		dkcharmtau	-nq-	-nq-		e9:nu:s31:debug
+e9:opt		e9:opt		default		dkcharmtau	-nq-	-nq-		e9:nu:s31:opt
+e9:prof		e9:prof		default		dkcharmtau	-nq-	-nq-		e9:nu:s31:prof
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
