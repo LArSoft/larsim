@@ -84,23 +84,10 @@ namespace sim
     float charge;
   };
 
-  class MCEdep {
-  public:
-    MCEdep(){ Clear(); }
-    /*
-    short x;
-    short y;
-    short z;
-    */
+  struct MCEdep {
     sim::UniquePosition pos;
     geo::PlaneID pid;
     std::vector<sim::deposit> deps;
-    std::map<unsigned short,sim::MCEdepHit> mchits;
-    void Clear() {
-      //x=y=z=kINVALID_SHORT;
-      pos._x = pos._y = pos._z = 0;
-      mchits.clear();
-    }
   };
 
   struct PlaneIndex{
