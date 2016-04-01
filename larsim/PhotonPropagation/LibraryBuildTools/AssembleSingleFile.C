@@ -34,7 +34,7 @@ void AssembleSingleFile(std::string FileList, std::string BaseDirectory, std::st
 
 TChain * CreateChainFromList_opt(std::string ListFileName, std::string BaseDirectory, std::string ChainName, bool DoCheck)
 {
-  ifstream InputFile(ListFileName.c_str());
+  std::ifstream InputFile(ListFileName.c_str());
   std::string FileName;
 
   TChain * TheChain = new TChain(ChainName.c_str());
