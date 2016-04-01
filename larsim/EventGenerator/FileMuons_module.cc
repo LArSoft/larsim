@@ -75,7 +75,7 @@ namespace evgen {
     std::string              fTreeName;
     std::vector<std::string> fBranchNames;
 
-    ifstream                *fMuonFile;
+    std::ifstream                *fMuonFile;
     TFile                   *fMuonFileR;
     TTree                   *TNtuple;
     unsigned int             countFile;
@@ -154,7 +154,7 @@ namespace evgen{
 
     if (fMuonsFileType.compare("text")==0) 
       {
-	fMuonFile = new ifstream(fFileName.c_str());
+	fMuonFile = new std::ifstream(fFileName.c_str());
 	long begin = fMuonFile->tellg();
 	fMuonFile->seekg (0, std::ios::end);
 	long end = fMuonFile->tellg();

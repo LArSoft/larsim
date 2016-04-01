@@ -1460,7 +1460,7 @@ namespace evgen{
 
     // initiate flux-wtd XSections.
     std::cout << "NuWroGen: Here's the output of the .txt file" << std::endl;
-    ifstream xsecTxtFile((fFileName+".txt").c_str());
+    std::ifstream xsecTxtFile((fFileName+".txt").c_str());
     unsigned int cntline(0);
     std::string line;
     if (xsecTxtFile.is_open())

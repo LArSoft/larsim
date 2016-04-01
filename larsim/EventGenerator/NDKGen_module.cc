@@ -130,7 +130,7 @@ namespace evgen{
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
-    fEventFile = new ifstream(fNdkFile.c_str());
+    fEventFile = new std::ifstream(fNdkFile.c_str());
     if(!fEventFile->good())
       exit(0);
     // create a default random engine; obtain the random seed from SeedService,

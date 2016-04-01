@@ -124,7 +124,7 @@ namespace evgen{
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
-    fEventFile = new ifstream(fNuanceFile.c_str());
+    fEventFile = new std::ifstream(fNuanceFile.c_str());
    }
 
   //____________________________________________________________________________

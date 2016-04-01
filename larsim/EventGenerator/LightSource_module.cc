@@ -115,7 +115,7 @@ namespace evgen {
     static const int  kSCAN = 1;
 
     // File stream, filename and empty string for file processing
-    ifstream           fInputFile;
+    std::ifstream      fInputFile;
     std::string        fFileName;      
     char               fDummyString[256];
 

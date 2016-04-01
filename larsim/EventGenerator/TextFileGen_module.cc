@@ -111,7 +111,7 @@ evgen::TextFileGen::~TextFileGen()
 //------------------------------------------------------------------------------
 void evgen::TextFileGen::beginJob()
 {
-  fInputFile = new ifstream(fInputFileName.c_str());
+  fInputFile = new std::ifstream(fInputFileName.c_str());
 
   // check that the file is a good one
   if( !fInputFile->good() )
