@@ -91,7 +91,7 @@ namespace sim
   };
 
   struct PlaneIndex{
-    static std::map<geo::PlaneID, size_t> create_map()
+    std::map<geo::PlaneID, size_t> create_map() const
         {
           art::ServiceHandle<geo::Geometry> geom;
           std::map<geo::PlaneID, size_t> m;
