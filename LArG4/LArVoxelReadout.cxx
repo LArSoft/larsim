@@ -580,41 +580,6 @@ namespace larg4 {
         } // for deposit on TDCs
       } // for deposit on channels
 
-#if 0
-      // Now store them in SimChannels
-      ChannelMap_t& ChannelDataMap = fChannelMaps[cryostat][tpc];
-      
-      // browse deposited data on each channel: (channel; deposit data in time)
-      for(auto const& deposit_per_channel: DepositsToStore){
-         
-         raw::ChannelID_t channel = deposit_per_channel.first;
-         // find whether we already have this channel
-         auto iChannelData = ChannelDataMap.find(channel);
-         
-         // channelData is the SimChannel these deposits are going to be added to
-         // If there is such a channel already, use it (first beanch).
-         // If it's a new channel, the inner assignment creates a new SimChannel
-         // in the map, and we save its reference in channelData
-         sim::SimChannel& channelData
-         = (iChannelData != ChannelDataMap.end())
-         ? iChannelData->second
-         : (ChannelDataMap[channel] = sim::SimChannel(channel))
-         ;
-         
-         // go through all deposits, one for each TDC: (TDC, deposit data)
-         for(auto const& deposit_per_tdc: deposit_per_channel.second) {
-            channelData.AddIonizationElectrons(
-               trackID,
-               deposit_per_tdc.first,            // that is, TDC
-               deposit_per_tdc.second.electrons, // that is, deposited electrons
-               xyz,
-               deposit_per_tdc.second.energy     // that is, deposited energy
-               );
-         } // for deposit on TDCs 
-    } // for deposit on channels
-    
-#endif // 0
-
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
       mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"

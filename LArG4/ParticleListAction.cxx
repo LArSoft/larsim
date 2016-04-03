@@ -259,7 +259,6 @@ namespace larg4 {
     // if we have found no reason to keep it, drop it!
     // (we might still need parentage information though)
     if (!fCurrentParticle.keep) {
-    //  MarkCurrentAsDropped();
       fparticleList->Archive(fCurrentParticle.particle);
       // after the particle is archived, it is deleted
       fCurrentParticle.clear();
@@ -480,45 +479,6 @@ namespace larg4 {
   } // ParticleListAction::AddPointToCurrentParticle()
   
 
-  //----------------------------------------------------------------------------
-  void ParticleListAction::MarkCurrentAsDropped() {
-    if (!fCurrentParticle.hasParticle()) return;
-    
-    // FIXME hack until https://cdcvs.fnal.gov/redmine/issues/12067 is solved,
-    // and adopted in LArSoft, after which the correct line is as simple as:
-    // *fCurrentParticle.particle = MakeDropped(*fCurrentParticle.particle);
-    
-    fCurrentParticle.particle->~MCParticle();
-    new(fCurrentParticle.particle) simb::MCParticle
-      (MakeDropped(*fCurrentParticle.particle));
-    
-  } // ParticleListAction::MarkCurrentAsDropped()
-  
-  //----------------------------------------------------------------------------
-  //--- create a dropped particle copying from an existing one
-  simb::MCParticle ParticleListAction::MakeDropped(simb::MCParticle const& p) {
-    //
-    // We replace the content of the particle pointed by p
-    // with a "dropped" particle that has the same PDG ID, ID, mother
-    // and daughters, and nothing else.
-    //
-    simb::MCParticle dropped(
-      p.TrackId(),                       // trackId
-      p.PdgCode(),                       // pdg
-      {},                                 // process
-      p.Mother(),                        // mother
-      simb::MCParticle::s_uninitialized,  // mass
-      0                                   // status
-      );
-    
-    // copy the daughters (no better way than this, unfortunately)
-    int const nDaughters = p.NumberDaughters();
-    for (int i = 0; i < nDaughters; ++i)
-      dropped.AddDaughter(p.Daughter(i));
-    
-    return dropped;
-  } // ParticleListAction::MakeDropped()
-  
   //----------------------------------------------------------------------------
   
 } // namespace LArG4

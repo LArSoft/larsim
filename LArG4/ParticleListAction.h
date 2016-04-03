@@ -113,11 +113,6 @@ namespace larg4 {
     void AddPointToCurrentParticle
        (TLorentzVector const& pos, TLorentzVector const& mom);
     
-    /// Changes the current particle so that isDropped() will return true
-    void MarkCurrentAsDropped();
-    
-    static simb::MCParticle MakeDropped(simb::MCParticle const& p);
-    
   };
 
 } // namespace LArG4
