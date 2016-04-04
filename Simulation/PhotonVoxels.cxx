@@ -1,9 +1,6 @@
 
 #include "Simulation/PhotonVoxels.h"
 
-#include "iostream"
-
-
 
 namespace sim {
 
