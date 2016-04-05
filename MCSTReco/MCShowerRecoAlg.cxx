@@ -28,8 +28,7 @@ namespace sim {
     
     art::ServiceHandle<geo::Geometry> geo;
 
-    PlaneIndex p;
-    auto pindex = p.create_map();
+    auto pindex = details::createPlaneIndexMap();
 
     fPartAlg.ConstructShower(part_v);
     auto result = std::make_unique<std::vector<sim::MCShower>>();

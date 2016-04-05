@@ -27,8 +27,7 @@ namespace sim {
   {
     auto result = std::make_unique<std::vector<sim::MCTrack>>();
     auto& mctracks = *result;
-    PlaneIndex p;
-    auto pindex = p.create_map();
+    auto pindex = details::createPlaneIndexMap();
 
     for(size_t i=0; i<part_v.size(); ++i) {
       auto const& mini_part = part_v[i];

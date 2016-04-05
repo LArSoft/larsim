@@ -11,6 +11,18 @@
 
 namespace sim {
 
+  namespace details {
+    std::map<geo::PlaneID, size_t> createPlaneIndexMap(){
+      art::ServiceHandle<geo::Geometry> geom;
+      std::map<geo::PlaneID, size_t> m;
+      size_t i = 0;
+      for(auto const& pid : geom->PlaneIDs()){
+        m[pid] = i;
+        i++;
+      }
+      return m;
+    }
+  }
   //const unsigned short MCEdepHit::kINVALID_USHORT = std::numeric_limits<unsigned short>::max();
 
   //const short MCEdep::kINVALID_SHORT = std::numeric_limits<short>::max();
@@ -49,8 +61,7 @@ namespace sim {
     // Key map to identify a unique particle energy deposition point
     std::map<std::pair<UniquePosition, unsigned int>, int> hit_index_m;
 
-    PlaneIndex p;
-    auto pindex = p.create_map();
+    auto pindex = details::createPlaneIndexMap();
 
     std::vector<sim::deposit> localdep(pindex.size()); 
 

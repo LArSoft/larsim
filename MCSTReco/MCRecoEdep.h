@@ -34,6 +34,13 @@
 namespace sim
 {
 
+  namespace details {
+    // Returns a map with all available plane IDs,
+    //  each mapped into an index from a compact range.
+    std::map<geo::PlaneID, size_t> createPlaneIndexMap();
+  } // namespace details
+
+
   class MCEdepHit {
     
   public:
@@ -88,20 +95,6 @@ namespace sim
     sim::UniquePosition pos;
     geo::PlaneID pid;
     std::vector<sim::deposit> deps;
-  };
-
-  struct PlaneIndex{
-    std::map<geo::PlaneID, size_t> create_map() const
-        {
-          art::ServiceHandle<geo::Geometry> geom;
-          std::map<geo::PlaneID, size_t> m;
-          size_t i = 0;
-          for(auto const& pid : geom->PlaneIDs()){
-            m[pid] = i;
-            i++;
-          }
-          return m;
-        }
   };
 
   class MCRecoEdep {
