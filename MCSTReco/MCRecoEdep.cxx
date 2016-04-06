@@ -63,8 +63,6 @@ namespace sim {
 
     auto pindex = details::createPlaneIndexMap();
 
-    std::vector<sim::deposit> localdep(pindex.size()); 
-
     if(_debug_mode) std::cout<<"Processing "<<schArray.size()<<" channels..."<<std::endl;
     // Loop over channels
     for(size_t i=0; i<schArray.size(); ++i) {
@@ -101,20 +99,16 @@ namespace sim {
 	  double charge = ide.numElectrons;
 	  if(hit_index < 0) {
 	    // This particle energy deposition is never recorded so far. Create a new Edep
-	    MCEdep edep;
-	    edep.pos = pos;
+            sim::MCEdep::deposit dep(ide.energy, charge);
+	    MCEdep edep(pos, pid, pindex.size(), dep, channel_id);
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
-            edep.deps =  localdep;
-	    edep.deps[channel_id].charge = charge;
-            edep.deps[channel_id].energy = ide.energy;
-	    edep.pid         = pid;
 	    this->__GetEdepArray__(real_track_id).push_back(edep);
 	  } else {
 	    // Append charge to the relevant edep (@ hit_index)
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
-            edep.deps[channel_id].charge += charge;
-	    edep.deps[channel_id].energy += ide.energy;
+            edep._deps[channel_id]._charge += charge;
+	    edep._deps[channel_id]._energy += ide.energy;
 	  }
 	} // end looping over ides in this tick
       } // end looping over ticks in this channel

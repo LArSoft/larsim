@@ -153,7 +153,7 @@ namespace sim {
 	//Iterate through all the energy deposition points
 	for(auto const& edep : edeps){
 	  // 'x_0' definition
-	  TVector3 x_0(edep.pos._x, edep.pos._y, edep.pos._z);
+	  TVector3 x_0(edep._pos._x, edep._pos._y, edep._pos._z);
 	  // 'A' definition 
 	  TVector3 A(step_trk.Position().X() - x_0.X(), 
 		     step_trk.Position().Y() - x_0.Y(), 
@@ -171,16 +171,16 @@ namespace sim {
 	  // Add in a voxel before and after to account for MCSteps
 	  // the line distance allows for 1mm GEANT multiple columb scattering correction, 
 	  // small compared to average MCStep-to-MCStep distance
-	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist + 0.03 &&
-	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >=    0 - 0.03 && 
+	  if( (a*edep._pos._x + b*edep._pos._y + c*edep._pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) <= dist + 0.03 &&
+	      (a*edep._pos._x + b*edep._pos._y + c*edep._pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) >=    0 - 0.03 && 
 	      LineDist < 0.1){
 
 	    //dEdx Calculation 
 	    int npid = 0;
 	    double engy = 0;
 	    
-	    for(auto const& pid_energy : edep.deps){
-	      engy += pid_energy.energy;
+	    for(auto const& pid_energy : edep._deps){
+	      engy += pid_energy._energy;
 	      npid++;
 	    }
 
@@ -189,10 +189,10 @@ namespace sim {
 	    else{engy = 0;}
 	    
 	    step_dedx += engy;
-	    
-          auto q_i = pindex.find(edep.pid);
+	  auto const pid = edep._pid; 
+          auto q_i = pindex.find(pid);
           if(q_i != pindex.end())
-            step_dqdx[edep.pid.Plane] += (double)(edep.deps[pindex[edep.pid]].charge);
+            step_dqdx[pid.Plane] += (double)(edep._deps[pindex[pid]]._charge);
 	  }
 	}
 	
