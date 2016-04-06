@@ -100,15 +100,15 @@ namespace sim {
 	  if(hit_index < 0) {
 	    // This particle energy deposition is never recorded so far. Create a new Edep
             sim::MCEdep::deposit dep(ide.energy, charge);
-	    MCEdep edep(pos, pid, pindex.size(), dep, channel_id);
+	    MCEdep edep(pos, pid, pindex.size(), ide.energy, charge, channel_id);
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    this->__GetEdepArray__(real_track_id).push_back(edep);
 	  } else {
 	    // Append charge to the relevant edep (@ hit_index)
 	    //float charge = ide.numElectrons * detp->ElectronsToADC();
 	    MCEdep &edep = this->__GetEdepArray__(real_track_id).at(hit_index);
-            edep._deps[channel_id]._charge += charge;
-	    edep._deps[channel_id]._energy += ide.energy;
+            edep.deps[channel_id].charge += charge;
+	    edep.deps[channel_id].energy += ide.energy;
 	  }
 	} // end looping over ides in this tick
       } // end looping over ticks in this channel

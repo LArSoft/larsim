@@ -89,22 +89,25 @@ namespace sim
 
   struct MCEdep {
     struct deposit{
-      float _energy;
-      float _charge;
-      deposit(float e=0, float c=0) 
-      {_energy=e; _charge =c;} 
+      float energy;
+      float charge;
+      deposit() : energy(0.), charge(0.) { }
+      deposit(float e, float c) : energy(e), charge(c) { }
     };
 
-    sim::UniquePosition _pos;
-    geo::PlaneID _pid;
-    std::vector<deposit> _deps;
+    sim::UniquePosition pos;
+    geo::PlaneID pid;
+    std::vector<deposit> deps;
+    size_t num_planes;
 
-    MCEdep(sim::UniquePosition p=0, 
-           geo::PlaneID pi=geo::PlaneID(), 
-           size_t num_planes=0, 
-           deposit dep=deposit(0,0), 
-           size_t id=0)
-    {_pos=p; _pid=pi; _deps.resize(num_planes); _deps[id] = dep;}
+    MCEdep() : pos(0), pid(geo::PlaneID()), num_planes(0) { }
+ 
+    MCEdep(sim::UniquePosition p, 
+           geo::PlaneID pi, 
+           size_t num_planes, 
+           float e, float c,  
+           size_t id) : 
+           pos(p), pid(pi) { deps.resize(num_planes); deps[id].energy=e; deps[id].charge=c;}
   };
 
   class MCRecoEdep {

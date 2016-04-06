@@ -177,15 +177,15 @@ namespace sim {
 	double min_dist = sim::kINVALID_DOUBLE;
 	for(auto const& edep : daughter_edep) {
 	  
-	  double dist = sqrt( pow(edep._pos._x - daughter_part._start_vtx[0],2) +
-			      pow(edep._pos._y - daughter_part._start_vtx[1],2) +
-			      pow(edep._pos._z - daughter_part._start_vtx[2],2) );
+	  double dist = sqrt( pow(edep.pos._x - daughter_part._start_vtx[0],2) +
+			      pow(edep.pos._y - daughter_part._start_vtx[1],2) +
+			      pow(edep.pos._z - daughter_part._start_vtx[2],2) );
 	  
 	  if(dist < min_dist) {
 	    min_dist = dist;
-	    mcs_daughter_vtx[0] = edep._pos._x;
-	    mcs_daughter_vtx[1] = edep._pos._y;
-	    mcs_daughter_vtx[2] = edep._pos._z;
+	    mcs_daughter_vtx[0] = edep.pos._x;
+	    mcs_daughter_vtx[1] = edep.pos._y;
+	    mcs_daughter_vtx[2] = edep.pos._z;
 	    mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + daughter_part._start_vtx[3];	    
 	  }
 
@@ -210,9 +210,9 @@ namespace sim {
 
 	    for(auto const& edep : daughter_edep) {
 	      std::vector<double> shower_dep_dir(3,0);
-	      shower_dep_dir[0] = edep._pos._x - mcshower[mcs_index].Start().X();
-	      shower_dep_dir[1] = edep._pos._y - mcshower[mcs_index].Start().Y();
-	      shower_dep_dir[2] = edep._pos._z - mcshower[mcs_index].Start().Z();
+	      shower_dep_dir[0] = edep.pos._x - mcshower[mcs_index].Start().X();
+	      shower_dep_dir[1] = edep.pos._y - mcshower[mcs_index].Start().Y();
+	      shower_dep_dir[2] = edep.pos._z - mcshower[mcs_index].Start().Z();
 	      
 	      double dist = sqrt( pow(shower_dep_dir[0],2) + pow(shower_dep_dir[1],2) + pow(shower_dep_dir[2],2) );
 	      for(auto& v : shower_dep_dir) v /= dist;
@@ -224,9 +224,9 @@ namespace sim {
 	      if(dist < min_dist && angle < 10) {
 		
 		min_dist = dist;
-		mcs_daughter_vtx[0] = edep._pos._x;
-		mcs_daughter_vtx[1] = edep._pos._y;
-		mcs_daughter_vtx[2] = edep._pos._z;
+		mcs_daughter_vtx[0] = edep.pos._x;
+		mcs_daughter_vtx[1] = edep.pos._y;
+		mcs_daughter_vtx[2] = edep.pos._z;
 		mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + mcshower[mcs_index].Start().T();
 	      }
 	    }
@@ -255,18 +255,18 @@ namespace sim {
 	for(auto const& edep : daughter_edep) {
 
 	  // Compute unit vector to this energy deposition
-	  mom[0] = edep._pos._x - mcs_daughter_vtx[0];
-	  mom[1] = edep._pos._y - mcs_daughter_vtx[1];
-	  mom[2] = edep._pos._z - mcs_daughter_vtx[2];
+	  mom[0] = edep.pos._x - mcs_daughter_vtx[0];
+	  mom[1] = edep.pos._y - mcs_daughter_vtx[1];
+	  mom[2] = edep.pos._z - mcs_daughter_vtx[2];
 
 	  // Weight by energy (momentum)
 	  double magnitude = sqrt(pow(mom.at(0),2) + pow(mom.at(1),2) + pow(mom.at(2),2));
 
 	  double energy = 0;
 	  double npid = 0;
-	  for(auto const& pid_energy : edep._deps) {
+	  for(auto const& pid_energy : edep.deps) {
 	    npid++;
-	    energy += pid_energy._energy;
+	    energy += pid_energy.energy;
 
 	  }
 	  energy /= npid;
@@ -281,9 +281,9 @@ namespace sim {
 	  //Determine the direction of the shower right at the start point 
 	  double E = 0;
 	  double N = 0;
-	  if(sqrt( pow( edep._pos._x - mcs_daughter_vtx[0],2) + 
-		   pow( edep._pos._y - mcs_daughter_vtx[1],2) + 
-		   pow( edep._pos._z - mcs_daughter_vtx[2],2)) < 2.4 && magnitude>1.e-10){
+	  if(sqrt( pow( edep.pos._x - mcs_daughter_vtx[0],2) + 
+		   pow( edep.pos._y - mcs_daughter_vtx[1],2) + 
+		   pow( edep.pos._z - mcs_daughter_vtx[2],2)) < 2.4 && magnitude>1.e-10){
 	    
 	    mcs_daughter_dir[0] += mom.at(0);
 	    mcs_daughter_dir[1] += mom.at(1);
@@ -298,10 +298,10 @@ namespace sim {
 	  mcs_daughter_mom[3] += energy;
 
 	  // Charge
-	  auto const pid = edep._pid;
+	  auto const pid = edep.pid;
           auto q_i = pindex.find(pid);
           if(q_i != pindex.end())
-            plane_charge[pid.Plane] += (double)(edep._deps[pindex[pid]]._charge);
+            plane_charge[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
 
 	}///Looping through the MCShower daughter's energy depositions
 
@@ -344,15 +344,15 @@ namespace sim {
 	  }
 	  else{mcs_daughter_dedx += 0; continue;}
 	  //Radial Distance
-	  if( (a*edep._pos._x + b*edep._pos._y + c*edep._pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) < 2.4 &&
-	      (a*edep._pos._x + b*edep._pos._y + c*edep._pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) > 0){
+	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) < 2.4 &&
+	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) > 0){
 	     
 	    double E = 0;
 	    double N = 0;
 	    
-	    for(auto const& pid_energy : edep._deps) {
+	    for(auto const& pid_energy : edep.deps) {
 	      N += 1;
-	      E += pid_energy._energy;
+	      E += pid_energy.energy;
 	    }
 
 	    if(N > 0){
@@ -363,10 +363,10 @@ namespace sim {
 	    mcs_daughter_dedx += E;
 
 	    // Charge
-	    auto const pid = edep._pid;
+	    auto const pid = edep.pid;
 	    auto q_i = pindex.find(pid);
             if(q_i != pindex.end())
-              plane_dqdx[pid.Plane] += (double)(edep._deps[pindex[pid]]._charge); 
+              plane_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge); 
 	  }
 	}
       }
