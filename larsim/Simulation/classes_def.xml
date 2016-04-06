@@ -39,6 +39,7 @@
   <version ClassVersion="11" checksum="1122283400"/>
   <version ClassVersion="10" checksum="2225942541"/>
  </class>
+ <enum name="sim::BeamType_t"                                                    />
 <!-- vector<int> is defined in libart_Persistency_WrappedStdDictionaries_dict.so -->
 <!-- <class name="std::vector<int>"                                             	 /> -->
 <!--  <class name="art::Wrapper< std::vector<int>               >"		         /> -->
