@@ -9,6 +9,8 @@
 
 #include "MCRecoEdep.h"
 
+// #include "Utilities/DetectorProperties.h"
+
 namespace sim {
 
   namespace details {
@@ -56,7 +58,7 @@ namespace sim {
     _track_index.clear();
 
     art::ServiceHandle<geo::Geometry> geom;
-    art::ServiceHandle<util::DetectorProperties> detp;
+  //  art::ServiceHandle<util::DetectorProperties> detp;
 
     // Key map to identify a unique particle energy deposition point
     std::map<std::pair<UniquePosition, unsigned int>, int> hit_index_m;

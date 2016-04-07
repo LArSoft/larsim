@@ -5,9 +5,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/FindManyP.h"
@@ -18,8 +15,6 @@
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/SimChannel.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/LArProperties.h"
 #include "Geometry/Geometry.h"
 // STL
 #include <map>
