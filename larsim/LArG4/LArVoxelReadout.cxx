@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <utility> // std::move()
+#include <cassert>
 
 // GEANT
 #include "Geant4/G4HCofThisEvent.hh"
@@ -20,8 +21,6 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
-#include "Geant4/Randomize.hh"
-#include "Geant4/G4Poisson.hh"
 
 // framework libraries
 #include "cetlib/exception.h"
@@ -32,6 +31,11 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
+
+// CLHEP
+#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/RandFlat.h"
 
 namespace larg4 {
   
@@ -130,6 +134,11 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
+      // this must be always true, unless caller has been sloppy
+      assert(fRadioGen); // No radiological decay random generator provided?!
+      CLHEP::RandPoisson RadioProbRand(*fRadioGen);
+      CLHEP::RandFlat PosAndDirRand(*fRadioGen);
+      
       auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
@@ -158,16 +167,14 @@ namespace larg4 {
           xyz2[1] -= height * 0.5;
           xyz2[2] -= length * 0.5;
           
-          int ndecays = G4Poisson(expected_decays);
-          for (int i=0;i<ndecays;++i){
+          long ndecays = RadioProbRand.fire(expected_decays);
+          for (long i=0;i<ndecays;++i){
             // randomize the simulation time and position
             
             double xyz3[3]={0.,0.,0.};
             
             bool scc = false;
-            xyz3[0] = G4UniformRand();
-            xyz3[1] = G4UniformRand();
-            xyz3[2] = G4UniformRand();
+            PosAndDirRand.fireArray(3, xyz3);
             
             xyz3[0] = (xyz3[0]*width  + xyz2[0])*CLHEP::cm;
             xyz3[1] = (xyz3[1]*height + xyz2[1])*CLHEP::cm;
@@ -178,12 +185,14 @@ namespace larg4 {
             
             scc = false;
             for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
-            
+              
+              double rnd[2];
+              PosAndDirRand.fireArray(2, rnd);
               G4ThreeVector decpath(1.0,0.0,0.0);  
               decpath.setMag(d2*CLHEP::cm);  // displacement between midpoints is half the total length
-              double angle = G4UniformRand()*TMath::Pi()*2.0;
+              double angle = rnd[0]*TMath::Pi()*2.0;
               decpath.setPhi(angle);
-              double ct=2.0*(G4UniformRand()-0.5);
+              double ct=2.0*(rnd[1]-0.5);
               if (ct<-1.0) ct=-1.0;
               if (ct>1.0) ct=1.0;
               angle = TMath::ACos(ct);
@@ -375,7 +384,12 @@ namespace larg4 {
                                                  unsigned int tickmax /* = 4096 */)
   {
     auto const * ts = lar::providerFrom<detinfo::DetectorClocksService>();
+
+    // this must be always true, unless caller has been sloppy
+    assert(fPropGen); // No propagation random generator provided?!
     
+    CLHEP::RandGauss PropRand(*fPropGen);
+
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to
     // increase its execution speed.
@@ -475,11 +489,11 @@ namespace larg4 {
       }
 
       // Smear drift times by x position and drift time
-      G4RandGauss::shootArray( nClus, &XDiff[0], 0., LDiffSig);
+      PropRand.fireArray( nClus, &XDiff[0], 0., LDiffSig);
 
       // Smear the Y,Z position by the transverse diffusion
-      G4RandGauss::shootArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
-      G4RandGauss::shootArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
+      PropRand.fireArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
+      PropRand.fireArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
@@ -517,7 +531,9 @@ namespace larg4 {
 
             if (radiological != notradiological){
               if (p == 0 && k == 0){
-                double tmptdc = ((double) tickmax) * G4UniformRand();
+                assert(fRadioGen); // No propagation random generator provided?!
+                CLHEP::RandFlat RadioRand(*fRadioGen);
+                double tmptdc = ((double) tickmax) * RadioRand.fire();
                 if (radiological == firstrad) radiologicaltdcoffset = tmptdc - tdc;
               }
               if ( (int) tdc >= -radiologicaltdcoffset)  {

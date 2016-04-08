@@ -17,6 +17,8 @@
 #include "TH1.h"
 #include "TH2.h"
 
+namespace CLHEP { class HepRandomEngine; }
+
 namespace larg4 {
 
   // The Ionization and Scintillation singleton
@@ -24,6 +26,7 @@ namespace larg4 {
   {
   public:
 
+    static IonizationAndScintillation* CreateInstance(CLHEP::HepRandomEngine& engine);
     static IonizationAndScintillation* Instance();
 
     // Method to reset the internal variables held in the ISCalculation
@@ -37,7 +40,7 @@ namespace larg4 {
 
   private:
 
-    IonizationAndScintillation();
+    IonizationAndScintillation(CLHEP::HepRandomEngine& engine);
     ~IonizationAndScintillation();
 
     larg4::ISCalculation* fISCalc;             ///< object to calculate ionization and scintillation
@@ -56,6 +59,7 @@ namespace larg4 {
     TH1F*                 fElectronsPerEDep;   ///< histogram of electrons per MeV deposited
     TH1F*                 fPhotonsPerEDep;     ///< histogram of photons per MeV deposited
     TH2F*                 fElectronsVsPhotons; ///< histogram of electrons vs photons per step 
+    CLHEP::HepRandomEngine& fEngine;           ///< random engine
   };
 
 } // namespace larg4

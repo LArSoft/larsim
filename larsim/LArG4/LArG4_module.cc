@@ -41,8 +41,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Persistency/Common/Ptr.h"
@@ -77,6 +75,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "G4Base/DetectorConstruction.h"
 #include "G4Base/UserActionManager.h"
+#include "larcore/CoreUtils/DebugUtils.h" // printBacktrace()
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"
@@ -114,7 +113,20 @@ namespace larg4 {
   class ParticleListAction;
   
   /**
-   * @brief
+   * @brief Runs Geant4 simulation and propagation of electrons and photons to readout
+   *
+   *
+   * Randomness
+   * -----------
+   *
+   * The random number generators used by this process are:
+   * - 'GEANT' instance: used by Geant4
+   * - 'propagation' instance: used in electron propagation
+   * - 'radio' instance: used for radiological decay
+   *
+   *
+   * Configuration parameters
+   * -------------------------
    *
    * - <b>G4PhysListName</b> (string, default "larg4::PhysicsList"):
    *     whether to use the G4 overlap checker, which catches different issues than ROOT
@@ -130,8 +142,15 @@ namespace larg4 {
    *     list of volumes in which to keep MCParticles (empty keeps all)
    * - <b>GeantCommandFile</b> (string, required):
    *     G4 macro file to pass to G4Helper for setting G4 command
-   * - <b>Seed</b> (pset key, not defined by default): if defined, override random
-   *     number service, which is obtained from the SeedService by default.
+   * - <b>Seed</b> (pset key, not defined by default): if defined, override the seed for
+   *     random number generator used in Geant4 simulation (which is obtained from
+   *     SeedService by default)
+   * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
+   *     override the seed for the random generator used for electrons propagation
+   *     to the wire planes (obtained from the SeedService by default)
+   * - <b>RadioSeed</b> (pset key, not defined by default): if defined,
+   *     override the seed for the random generator used for radiological decay
+   *     (obtained from the SeedService by default)
    * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
    *     optional list of generator labels which produce MCTruth;
    *     otherwise look for anything that has made MCTruth
@@ -175,6 +194,79 @@ namespace larg4 {
 } // namespace LArG4
 
 namespace larg4 {
+#if 0
+  namespace debug {
+    using namespace lar::debug;
+     
+    CallInfoPrinter::opt const PrintOptions
+      = CallInfoPrinter::defaultOptions()
+      .set(CallInfoPrinter::opt::address, false);
+    
+    class HepJamesRandomNoisy: public CLHEP::HepJamesRandom {
+        public:
+      using Base_t = CLHEP::HepJamesRandom;
+      HepJamesRandomNoisy(std::istream &is): Base_t(is) {} 
+      HepJamesRandomNoisy(): Base_t() {}
+      HepJamesRandomNoisy(long seed): Base_t(seed) {}
+      HepJamesRandomNoisy(int rowIndex, int colIndex)
+        : Base_t(rowIndex, colIndex) {}
+      HepJamesRandomNoisy(CLHEP::HepJamesRandom const& from)
+        : Base_t(from) {}
+      virtual std::string get_name() const
+        { std::ostringstream sstr; sstr << ((void*) this); return sstr.str(); }
+      virtual double flat() override
+        {
+          auto rnd = Base_t::flat();
+          mf::LogTrace log("HepJamesRandomNoisy");
+          log << "RANDOM[\"" << get_name() << "\"]: " << rnd << "\n";
+        //  printBacktrace(log);
+          return rnd;
+        }
+    };
+    
+    class HepJamesRandomNoisyCounting: public HepJamesRandomNoisy {
+        public:
+      using Base_t = CLHEP::HepJamesRandom;
+      using HepJamesRandomNoisy::HepJamesRandomNoisy;
+      virtual double flat() override
+        {
+          auto rnd = Base_t::flat();
+          mf::LogTrace log("HepJamesRandomNoisy");
+          log << "RANDOM[\"" << get_name() << "\"]: (#"
+            << (n++) << ") " << rnd << "\n";
+          printBacktrace(log, 10, "  ", &PrintOptions);
+          return rnd;
+        }
+      unsigned int n { 0 };
+    };
+      
+    class HepJamesRandomNoisyProp: public HepJamesRandomNoisy {
+        public:
+      using HepJamesRandomNoisy::HepJamesRandomNoisy;
+      
+      virtual std::string get_name() const { return "Prop"; }
+    };
+    
+    class HepJamesRandomNoisyRadio: public HepJamesRandomNoisy {
+        public:
+      using HepJamesRandomNoisy::HepJamesRandomNoisy;
+      
+      virtual std::string get_name() const { return "Radio"; }
+    };
+    
+    class HepJamesRandomNoisyNamed: public HepJamesRandomNoisyCounting {
+        public:
+      using Base_t = HepJamesRandomNoisyCounting;
+
+      
+      HepJamesRandomNoisyNamed(std::string my_name): Base_t(), name(my_name) {}
+      
+      virtual std::string get_name() const { return name; }
+      
+      std::string name;
+    };
+  }
+#endif // 0
 
   //----------------------------------------------------------------------
   // Constructor
@@ -191,13 +283,49 @@ namespace larg4 {
 
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
-
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+#if 0
+    auto* myEngine = new debug::HepJamesRandomNoisyNamed("Geant4");
+    CLHEP::HepRandom::setTheEngine(myEngine);
+    
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from SeedService,
-    // unless overridden in configuration with key "Seed"
+    // unless overridden in configuration with key "Seed" or "GEANTSeed"
+    auto seed = art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "G4Engine", "GEANT", pset, { "GEANTSeed", "Seed" });
+
+    // same thing for the propagation engine:
     art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "G4Engine", pset, "Seed");
+      ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
+    static_assert(sizeof(debug::HepJamesRandomNoisyProp) <= sizeof(CLHEP::HepJamesRandom),
+      "Too bad(1)");
+    auto* pPropGen = dynamic_cast<CLHEP::HepJamesRandom*>(&(rng->getEngine("propagation")));
+    pPropGen->~HepJamesRandom();
+    new(pPropGen) debug::HepJamesRandomNoisyProp; 
+    // and again for radio decay
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
+    static_assert(sizeof(debug::HepJamesRandomNoisyRadio) <= sizeof(CLHEP::HepJamesRandom),
+      "Too bad(2)");
+    auto* pRadioGen = dynamic_cast<CLHEP::HepJamesRandom*>(&(rng->getEngine("radio")));
+    pRadioGen->~HepJamesRandom();
+    new(pRadioGen) debug::HepJamesRandomNoisyRadio; 
+
+#else
+    // setup the random number service for Geant4, the "G4Engine" label is a
+    // special tag setting up a global engine for use by Geant4/CLHEP;
+    // obtain the random seed from SeedService,
+    // unless overridden in configuration with key "Seed" or "GEANTSeed"
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "G4Engine", "GEANT", pset, { "GEANTSeed", "Seed" });
+    // same thing for the propagation engine:
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
+    // and again for radio decay
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
+#endif // 0
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object
@@ -239,6 +367,7 @@ namespace larg4 {
   void LArG4::beginJob()
   {
     art::ServiceHandle<geo::Geometry> geom;
+    auto* rng = &*(art::ServiceHandle<art::RandomNumberGenerator>());
 
     fG4Help = new g4b::G4Helper(fG4MacroPath, fG4PhysListName);
     if(fCheckOverlaps) fG4Help->SetOverlapCheck(true);
@@ -252,8 +381,16 @@ namespace larg4 {
     // Tell the detector about the parallel LAr voxel geometry.
     std::vector<G4VUserParallelWorld*> pworlds;
 
+    // create the ionization and scintillation calculator;
+    // this is a singleton (!) so it does not make sense
+    // to create it in LArVoxelReadoutGeometry
+    IonizationAndScintillation::CreateInstance(rng->getEngine("propagation"));
+
     // make a parallel world for each TPC in the detector
-    pworlds.push_back( new LArVoxelReadoutGeometry("LArVoxelReadoutGeometry") );
+    pworlds.push_back(new LArVoxelReadoutGeometry(
+      "LArVoxelReadoutGeometry",
+      rng->getEngine("propagation"), rng->getEngine("radio")
+      ));
     pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
     pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );
 

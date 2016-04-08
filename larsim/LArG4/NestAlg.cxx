@@ -35,6 +35,9 @@
 #include "larsim/LArG4/NestAlg.h"
 #include "larsim/LArG4/G4ThermalElectron.hh"
 
+#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandFlat.h"
+
 G4bool diffusion = true;
 
 G4bool SinglePhase=false, ThomasImelTail=true, OutElectrons=true;
@@ -44,12 +47,13 @@ G4double biExc = 0.77; //for alpha particles (bi-excitonic collisions)
 //----------------------------------------------------------------------------
 // Default constructor will return no photons or electrons unless the set 
 // methods are called.
-NestAlg::NestAlg()
+NestAlg::NestAlg(CLHEP::HepRandomEngine& engine)
   : fYieldFactor(0)
   , fExcitationRatio(0)
   , fNumScintPhotons(0)
   , fNumIonElectrons(0)
   , fEnergyDep(0.)
+  , fEngine(engine)
 {
   fElementPropInit[2] = false;
   fElementPropInit[10] = false;
@@ -59,12 +63,13 @@ NestAlg::NestAlg()
 }
   
 //----------------------------------------------------------------------------
-NestAlg::NestAlg(double const& yieldFactor)
+NestAlg::NestAlg(double yieldFactor, CLHEP::HepRandomEngine& engine)
   : fYieldFactor(yieldFactor)
   , fExcitationRatio(0.)
   , fNumScintPhotons(0)
   , fNumIonElectrons(0)
   , fEnergyDep(0.)
+  , fEngine(engine)
 {
   fElementPropInit[2] = false;
   fElementPropInit[10] = false;
@@ -74,14 +79,13 @@ NestAlg::NestAlg(double const& yieldFactor)
 }
 
 //----------------------------------------------------------------------------
-NestAlg::~NestAlg()
-{
-}
-
-//----------------------------------------------------------------------------
 const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track const& aTrack,
 								      G4Step  const& aStep)
 {
+  CLHEP::RandGauss GaussGen(fEngine);
+  CLHEP::RandFlat  UniformGen(fEngine);
+
+
   // reset the variables accessed by other objects 
   // make the energy deposit the energy in this step,
   // set the number of electrons and photons to 0
@@ -235,17 +239,17 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     fExcitationRatio = 0.00; //nominal (true value unknown)
     ResolutionScale = 0.2; //Aprile, Bolotnikov, Bolozdynya, Doke
     PhotMean = 15.9*CLHEP::eV;
-    tau1 = G4RandGauss::shoot(10.0*CLHEP::ns,0.0*CLHEP::ns);
+    tau1 = GaussGen.fire(10.0*CLHEP::ns,0.0*CLHEP::ns);
     tau3 = 1.6e3*CLHEP::ns;
-    tauR = G4RandGauss::shoot(13.00*CLHEP::s,2.00*CLHEP::s); //McKinsey et al. 2003
+    tauR = GaussGen.fire(13.00*CLHEP::s,2.00*CLHEP::s); //McKinsey et al. 2003
     break;
   case 10: //neon
     ScintillationYield = 1 / (29.2*CLHEP::eV);
     fExcitationRatio = 0.00; //nominal (true value unknown)
     ResolutionScale = 0.13; //Aprile et. al book
     PhotMean = 15.5*CLHEP::eV; PhotWidth = 0.26*CLHEP::eV;
-    tau1 = G4RandGauss::shoot(10.0*CLHEP::ns,10.*CLHEP::ns);
-    tau3 = G4RandGauss::shoot(15.4e3*CLHEP::ns,200*CLHEP::ns); //Nikkel et al. 2008
+    tau1 = GaussGen.fire(10.0*CLHEP::ns,10.*CLHEP::ns);
+    tau3 = GaussGen.fire(15.4e3*CLHEP::ns,200*CLHEP::ns); //Nikkel et al. 2008
     break;
   case 18: //argon
     ScintillationYield = 1 / (19.5*CLHEP::eV);
@@ -263,9 +267,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       DokeBirks[2] = 0.75;
     } nDensity /= 39.948; //molar mass in grams per mole
     PhotMean = 9.69*CLHEP::eV; PhotWidth = 0.22*CLHEP::eV;
-    tau1 = G4RandGauss::shoot(6.5*CLHEP::ns,0.8*CLHEP::ns); //err from wgted avg.
-    tau3 = G4RandGauss::shoot(1300*CLHEP::ns,50*CLHEP::ns); //ibid.
-    tauR = G4RandGauss::shoot(0.8*CLHEP::ns,0.2*CLHEP::ns); //Kubota 1979
+    tau1 = GaussGen.fire(6.5*CLHEP::ns,0.8*CLHEP::ns); //err from wgted avg.
+    tau3 = GaussGen.fire(1300*CLHEP::ns,50*CLHEP::ns); //ibid.
+    tauR = GaussGen.fire(0.8*CLHEP::ns,0.2*CLHEP::ns); //Kubota 1979
     biExc = 0.6; break;
   case 36: //krypton
     if ( Phase == kStateGas ) ScintillationYield = 1 / (30.0*CLHEP::eV);
@@ -273,9 +277,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     fExcitationRatio = 0.08; //Aprile et. al book
     ResolutionScale = 0.05; //Doke 1976
     PhotMean = 8.43*CLHEP::eV;
-    tau1 = G4RandGauss::shoot(2.8*CLHEP::ns,.04*CLHEP::ns);
-    tau3 = G4RandGauss::shoot(93.*CLHEP::ns,1.1*CLHEP::ns);
-    tauR = G4RandGauss::shoot(12.*CLHEP::ns,.76*CLHEP::ns);
+    tau1 = GaussGen.fire(2.8*CLHEP::ns,.04*CLHEP::ns);
+    tau3 = GaussGen.fire(93.*CLHEP::ns,1.1*CLHEP::ns);
+    tauR = GaussGen.fire(12.*CLHEP::ns,.76*CLHEP::ns);
     break;
   case 54: //xenon
   default: nDensity /= 131.293;
@@ -310,8 +314,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       //these singlet and triplet times may not be the ones you're
       //used to, but are the world average: Kubota 79, Hitachi 83 (2
       //data sets), Teymourian 11, Morikawa 89, and Akimov '02
-      tau1 = G4RandGauss::shoot(3.1*CLHEP::ns,.7*CLHEP::ns); //err from wgted avg.
-      tau3 = G4RandGauss::shoot(24.*CLHEP::ns,1.*CLHEP::ns); //ibid.
+      tau1 = GaussGen.fire(3.1*CLHEP::ns,.7*CLHEP::ns); //err from wgted avg.
+      tau3 = GaussGen.fire(24.*CLHEP::ns,1.*CLHEP::ns); //ibid.
     } //end liquid
     else if ( Phase == kStateGas ) {
       if(!fAlpha) fExcitationRatio=0.07; //Nygren NIM A 603 (2009) p. 340
@@ -332,8 +336,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       if(ElectricField)ThomasImel=1.2733e-5*pow(Townsend/Density,-0.68426);
       // field\density dependence from Kobayashi 2004 and Saito 2003
       PhotMean = 7.1*CLHEP::eV; PhotWidth = 0.2*CLHEP::eV;
-      tau1 = G4RandGauss::shoot(5.18*CLHEP::ns,1.55*CLHEP::ns);
-      tau3 = G4RandGauss::shoot(100.1*CLHEP::ns,7.9*CLHEP::ns);
+      tau1 = GaussGen.fire(5.18*CLHEP::ns,1.55*CLHEP::ns);
+      tau3 = GaussGen.fire(100.1*CLHEP::ns,7.9*CLHEP::ns);
     } //end gas information (preliminary guesses)
     else {
       tau1 = 3.5*CLHEP::ns; tau3 = 20.*CLHEP::ns; tauR = 40.*CLHEP::ns;
@@ -527,8 +531,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   //work function, the energy deposited, and yield reduction, for NR
   G4double sigma = sqrt(ResolutionScale*MeanNumberOfQuanta); //Fano
   G4int NumQuanta = //stochastic variation in NumQuanta
-    G4int(floor(G4RandGauss::shoot(MeanNumberOfQuanta,sigma)+0.5));
-  G4double LeffVar = G4RandGauss::shoot(fYieldFactor,0.25*fYieldFactor);
+    G4int(floor(GaussGen.fire(MeanNumberOfQuanta,sigma)+0.5));
+  G4double LeffVar = GaussGen.fire(fYieldFactor,0.25*fYieldFactor);
   if (LeffVar > 1) LeffVar = 1.00000; if (LeffVar < 0) LeffVar = 0;
   if ( fYieldFactor < 1 ) NumQuanta = BinomFluct(NumQuanta,LeffVar);
   //if E below work function, can't make any quanta, and if NumQuanta
@@ -771,7 +775,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       if( FanoFactor <= 0 || fVeryHighEnergy ) FanoFactor = 0;
       NumQuanta = NumPhotons + NumElectrons; 
       if(z1==54 && FanoFactor) NumElectrons = G4int(
-						    floor(G4RandGauss::shoot(NumElectrons,
+						    floor(GaussGen.fire(NumElectrons,
 									     sqrt(FanoFactor*NumElectrons))+0.5));
       NumPhotons = NumQuanta - NumElectrons;
       if ( NumElectrons <= 0 ) NumElectrons = 0;
@@ -808,9 +812,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	G4DynamicParticle* aQuantum;
 	
 	// Generate random direction
-	G4double cost = 1. - 2.*G4UniformRand();
+	G4double cost = 1. - 2.*UniformGen.fire();
 	G4double sint = std::sqrt((1.-cost)*(1.+cost));
-	G4double phi = CLHEP::twopi*G4UniformRand();
+	G4double phi = CLHEP::twopi*UniformGen.fire();
 	G4double sinp = std::sin(phi); G4double cosp = std::cos(phi);
 	G4double px = sint*cosp; G4double py = sint*sinp;
 	G4double pz = cost;
@@ -826,14 +830,14 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  G4double sz = -sint;
 	  G4ThreeVector photonPolarization(sx, sy, sz);
 	  G4ThreeVector perp = photonMomentum.cross(photonPolarization);
-	  phi = CLHEP::twopi*G4UniformRand();
+	  phi = CLHEP::twopi*UniformGen.fire();
 	  sinp = std::sin(phi);
 	  cosp = std::cos(phi);
 	  photonPolarization = cosp * photonPolarization + sinp * perp;
 	  photonPolarization = photonPolarization.unit();
 	  
 	  // Generate a new photon or electron:
-	  sampledEnergy = G4RandGauss::shoot(PhotMean,PhotWidth);
+	  sampledEnergy = GaussGen.fire(PhotMean,PhotWidth);
 	  aQuantum = new G4DynamicParticle(G4OpticalPhoton::OpticalPhoton(),
 					   photonMomentum);
 	  aQuantum->SetPolarization(photonPolarization.x(),
@@ -874,7 +878,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	// <<1 ns after the initial interaction in the simulation, then
 	// singlet, triplet lifetimes, and recombination time, are
 	// handled here, to create a realistic S1 pulse shape/timing
-	G4double aSecondaryTime = t0+G4UniformRand()*(t1-t0)+evtStrt;
+	G4double aSecondaryTime = t0+UniformGen.fire()*(t1-t0)+evtStrt;
 	if (tau1<0) tau1=0; if (tau3<0) tau3=0; if (tauR<0) tauR=0;
 	if ( aQuantum->GetDefinition()->
 	     GetParticleName()=="opticalphoton" ) {
@@ -895,18 +899,18 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	    //into correct units to work here, and separately done for
 	    //excitation and recombination processes for electron recoils
 	    //and assumed same for all LET (may vary)
-	    SingTripRatioX = G4RandGauss::shoot(0.17,0.05);
-	    SingTripRatioR = G4RandGauss::shoot(0.8,0.2);
+	    SingTripRatioX = GaussGen.fire(0.17,0.05);
+	    SingTripRatioR = GaussGen.fire(0.8,0.2);
 	    if ( z1 == 18 ) {
 	      SingTripRatioR = 0.2701+0.003379*LET-4.7338e-5*pow(LET,2.)
 		+8.1449e-6*pow(LET,3.); SingTripRatioX = SingTripRatioR;
 	      if( LET < 3 ) {
-		SingTripRatioX = G4RandGauss::shoot(0.36,0.06);
-		SingTripRatioR = G4RandGauss::shoot(0.5,0.2); }
+		SingTripRatioX = GaussGen.fire(0.36,0.06);
+		SingTripRatioR = GaussGen.fire(0.5,0.2); }
 	    }
 	  }
 	  else if ( fAlpha ) { //alpha particles
-	    SingTripRatioR = G4RandGauss::shoot(2.3,0.51);
+	    SingTripRatioR = GaussGen.fire(2.3,0.51);
 	    //currently based on Dawson 05 and Tey. 11 (arXiv:1103.3689)
 	    //real ratio is likely a gentle function of LET
 	    if (z1==18) SingTripRatioR = (-0.065492+1.9996
@@ -916,7 +920,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  else { //nuclear recoil
 	    //based loosely on Hitachi et al. Phys. Rev. B 27 (1983) 5279
 	    //with an eye to reproducing Akimov 2002 Fig. 9
-	    SingTripRatioR = G4RandGauss::shoot(7.8,1.5);
+	    SingTripRatioR = GaussGen.fire(7.8,1.5);
 	    if (z1==18) SingTripRatioR = 0.22218*pow(energ/CLHEP::keV,0.48211);
 	    SingTripRatioX = SingTripRatioR;
 	  }
@@ -926,22 +930,22 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  if ( k > NumExcitons ) {
 	    //the recombination time is non-exponential, but approximates
 	    //to exp at long timescales (see Kubota '79)
-	    aSecondaryTime += tauR*(1./G4UniformRand()-1);
-	    if(G4UniformRand()<SingTripRatioR/(1+SingTripRatioR))
-	      aSecondaryTime -= tau1*log(G4UniformRand());
-	    else aSecondaryTime -= tau3*log(G4UniformRand());
+	    aSecondaryTime += tauR*(1./UniformGen.fire()-1);
+	    if(UniformGen.fire()<SingTripRatioR/(1+SingTripRatioR))
+	      aSecondaryTime -= tau1*log(UniformGen.fire());
+	    else aSecondaryTime -= tau3*log(UniformGen.fire());
 	  }
 	  else {
-	    if(G4UniformRand()<SingTripRatioX/(1+SingTripRatioX))
-	      aSecondaryTime -= tau1*log(G4UniformRand());
-	    else aSecondaryTime -= tau3*log(G4UniformRand());
+	    if(UniformGen.fire()<SingTripRatioX/(1+SingTripRatioX))
+	      aSecondaryTime -= tau1*log(UniformGen.fire());
+	    else aSecondaryTime -= tau3*log(UniformGen.fire());
 	  }
 	}
 	else { //electron trapping at the liquid/gas interface
 	  G4double gainField = 12;
 	  G4double tauTrap = 884.83-62.069*gainField;
 	  if ( Phase == kStateLiquid )
-	    aSecondaryTime -= tauTrap*CLHEP::ns*log(G4UniformRand());
+	    aSecondaryTime -= tauTrap*CLHEP::ns*log(UniformGen.fire());
 	}
 	
 	// emission position distribution -- 
@@ -984,11 +988,11 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  if ( BORDER == 0 ) x0[2] = 0;
 	  G4double sigmaDT = sqrt(2*D_T*fabs(BORDER-x0[2])/vDrift);
 	  G4double sigmaDL = sqrt(2*D_L*fabs(BORDER-x0[2])/vDrift);
-	  G4double dr = std::abs(G4RandGauss::shoot(0.,sigmaDT));
-	  phi = CLHEP::twopi * G4UniformRand();
+	  G4double dr = std::abs(GaussGen.fire(0.,sigmaDT));
+	  phi = CLHEP::twopi * UniformGen.fire();
 	  aSecondaryPosition[0] += cos(phi) * dr;
 	  aSecondaryPosition[1] += sin(phi) * dr;
-	  aSecondaryPosition[2] += G4RandGauss::shoot(0.,sigmaDL);
+	  aSecondaryPosition[2] += GaussGen.fire(0.,sigmaDL);
 	  radius = std::sqrt(std::pow(aSecondaryPosition[0],2.)+
 			     std::pow(aSecondaryPosition[1],2.));
 	  if(aSecondaryPosition[2] >= BORDER && Phase == kStateLiquid) {
@@ -1182,6 +1186,9 @@ G4double NestAlg::CalculateElectronLET ( G4double E, G4int Z ) {
   
 //----------------------------------------------------------------------------
 G4int NestAlg::BinomFluct ( G4int N0, G4double prob ) {
+  CLHEP::RandGauss GaussGen(fEngine);
+  CLHEP::RandFlat  UniformGen(fEngine);
+
   G4double mean = N0*prob;
   G4double sigma = sqrt(N0*prob*(1-prob));
   G4int N1 = 0;
@@ -1190,11 +1197,11 @@ G4int NestAlg::BinomFluct ( G4int N0, G4double prob ) {
     
   if ( N0 < 10 ) {
     for(G4int i = 0; i < N0; i++) {
-      if(G4UniformRand() < prob) N1++;
+      if(UniformGen.fire() < prob) N1++;
     }
   }
   else {
-    N1 = G4int(floor(G4RandGauss::shoot(mean,sigma)+0.5));
+    N1 = G4int(floor(GaussGen.fire(mean,sigma)+0.5));
   }
   if ( N1 > N0 ) N1 = N0;
   if ( N1 < 0 ) N1 = 0;

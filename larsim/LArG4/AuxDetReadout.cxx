@@ -15,7 +15,6 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
-#include "Geant4/Randomize.hh"
 
 #include <iostream>
 #include <utility> // std::move()

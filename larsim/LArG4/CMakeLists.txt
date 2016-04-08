@@ -44,6 +44,7 @@ art_make(
                         larsim_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
+                        larcore_CoreUtils # TODO debug only: remove me!
                         SeedService_service # artextensions
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
