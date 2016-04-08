@@ -75,7 +75,6 @@
 #include "larcore/Geometry/Geometry.h"
 #include "G4Base/DetectorConstruction.h"
 #include "G4Base/UserActionManager.h"
-#include "larcore/CoreUtils/DebugUtils.h" // printBacktrace()
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"
@@ -194,79 +193,6 @@ namespace larg4 {
 } // namespace LArG4
 
 namespace larg4 {
-#if 0
-  namespace debug {
-    using namespace lar::debug;
-     
-    CallInfoPrinter::opt const PrintOptions
-      = CallInfoPrinter::defaultOptions()
-      .set(CallInfoPrinter::opt::address, false);
-    
-    class HepJamesRandomNoisy: public CLHEP::HepJamesRandom {
-        public:
-      using Base_t = CLHEP::HepJamesRandom;
-      HepJamesRandomNoisy(std::istream &is): Base_t(is) {} 
-      HepJamesRandomNoisy(): Base_t() {}
-      HepJamesRandomNoisy(long seed): Base_t(seed) {}
-      HepJamesRandomNoisy(int rowIndex, int colIndex)
-        : Base_t(rowIndex, colIndex) {}
-      HepJamesRandomNoisy(CLHEP::HepJamesRandom const& from)
-        : Base_t(from) {}
-      virtual std::string get_name() const
-        { std::ostringstream sstr; sstr << ((void*) this); return sstr.str(); }
-      virtual double flat() override
-        {
-          auto rnd = Base_t::flat();
-          mf::LogTrace log("HepJamesRandomNoisy");
-          log << "RANDOM[\"" << get_name() << "\"]: " << rnd << "\n";
-        //  printBacktrace(log);
-          return rnd;
-        }
-    };
-    
-    class HepJamesRandomNoisyCounting: public HepJamesRandomNoisy {
-        public:
-      using Base_t = CLHEP::HepJamesRandom;
-      using HepJamesRandomNoisy::HepJamesRandomNoisy;
-      virtual double flat() override
-        {
-          auto rnd = Base_t::flat();
-          mf::LogTrace log("HepJamesRandomNoisy");
-          log << "RANDOM[\"" << get_name() << "\"]: (#"
-            << (n++) << ") " << rnd << "\n";
-          printBacktrace(log, 10, "  ", &PrintOptions);
-          return rnd;
-        }
-      unsigned int n { 0 };
-    };
-      
-    class HepJamesRandomNoisyProp: public HepJamesRandomNoisy {
-        public:
-      using HepJamesRandomNoisy::HepJamesRandomNoisy;
-      
-      virtual std::string get_name() const { return "Prop"; }
-    };
-    
-    class HepJamesRandomNoisyRadio: public HepJamesRandomNoisy {
-        public:
-      using HepJamesRandomNoisy::HepJamesRandomNoisy;
-      
-      virtual std::string get_name() const { return "Radio"; }
-    };
-    
-    class HepJamesRandomNoisyNamed: public HepJamesRandomNoisyCounting {
-        public:
-      using Base_t = HepJamesRandomNoisyCounting;
-
-      
-      HepJamesRandomNoisyNamed(std::string my_name): Base_t(), name(my_name) {}
-      
-      virtual std::string get_name() const { return name; }
-      
-      std::string name;
-    };
-  }
-#endif // 0
 
   //----------------------------------------------------------------------
   // Constructor
@@ -284,35 +210,7 @@ namespace larg4 {
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-#if 0
-    auto* myEngine = new debug::HepJamesRandomNoisyNamed("Geant4");
-    CLHEP::HepRandom::setTheEngine(myEngine);
-    
-    // setup the random number service for Geant4, the "G4Engine" label is a
-    // special tag setting up a global engine for use by Geant4/CLHEP;
-    // obtain the random seed from SeedService,
-    // unless overridden in configuration with key "Seed" or "GEANTSeed"
-    auto seed = art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "G4Engine", "GEANT", pset, { "GEANTSeed", "Seed" });
 
-    // same thing for the propagation engine:
-    art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
-    static_assert(sizeof(debug::HepJamesRandomNoisyProp) <= sizeof(CLHEP::HepJamesRandom),
-      "Too bad(1)");
-    auto* pPropGen = dynamic_cast<CLHEP::HepJamesRandom*>(&(rng->getEngine("propagation")));
-    pPropGen->~HepJamesRandom();
-    new(pPropGen) debug::HepJamesRandomNoisyProp; 
-    // and again for radio decay
-    art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
-    static_assert(sizeof(debug::HepJamesRandomNoisyRadio) <= sizeof(CLHEP::HepJamesRandom),
-      "Too bad(2)");
-    auto* pRadioGen = dynamic_cast<CLHEP::HepJamesRandom*>(&(rng->getEngine("radio")));
-    pRadioGen->~HepJamesRandom();
-    new(pRadioGen) debug::HepJamesRandomNoisyRadio; 
-
-#else
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from SeedService,
@@ -325,7 +223,6 @@ namespace larg4 {
     // and again for radio decay
     art::ServiceHandle<artext::SeedService>()
       ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
-#endif // 0
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object
