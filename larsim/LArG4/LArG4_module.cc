@@ -211,12 +211,17 @@ namespace larg4 {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
 
+    if (pset.has_key("Seed")) {
+      throw art::Exception(art::errors::Configuration)
+        << "The configuration of LArG4 module has the discontinued 'Seed' parameter.\n"
+        "Seeds are now controlled by three parameters: 'GEANTSeed', 'PropagationSeed' and 'RadioSeed'.";
+    }
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from SeedService,
     // unless overridden in configuration with key "Seed" or "GEANTSeed"
     art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "G4Engine", "GEANT", pset, { "GEANTSeed", "Seed" });
+      ->createEngine(*this, "G4Engine", "GEANT", pset, "GEANTSeed");
     // same thing for the propagation engine:
     art::ServiceHandle<artext::SeedService>()
       ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
