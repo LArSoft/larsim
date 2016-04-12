@@ -203,14 +203,17 @@ void sim::DumpMCParticles::analyze(art::Event const& event) {
   auto const& Particles
     = *(event.getValidHandle<std::vector<simb::MCParticle>>(fInputParticles));
   
-    mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
+  mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
     << ": data product '" << fInputParticles.encode() << "' contains "
     << Particles.size() << " MCParticle's";
   
   unsigned int iParticle = 0;
   for (simb::MCParticle const& particle: Particles) {
-    // a bit of a header
+    // flush on every particle,
+    // since the output buffer might grow too large otherwise
     mf::LogVerbatim log(fOutputCategory);
+    
+    // a bit of a header
     log << "\n[#" << (iParticle++) << "] ";
     DumpMCParticle(log, particle, "  ", false);
   } // for

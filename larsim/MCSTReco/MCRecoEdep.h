@@ -5,9 +5,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/FindManyP.h"
@@ -18,8 +15,6 @@
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "larsim/Simulation/SimChannel.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larcore/Geometry/Geometry.h"
 // STL
 #include <map>
@@ -34,6 +29,13 @@
 namespace sim
 {
 
+  namespace details {
+    // Returns a map with all available plane IDs,
+    //  each mapped into an index from a compact range.
+    std::map<geo::PlaneID, size_t> createPlaneIndexMap();
+  } // namespace details
+
+
   class MCEdepHit {
     
   public:
@@ -43,7 +45,6 @@ namespace sim
   public:
 
     MCEdepHit(){ Clear(); }
-    ~MCEdepHit(){}
     
     unsigned short timeStart;
     unsigned short timeEnd;
@@ -66,7 +67,6 @@ namespace sim
     UniquePosition(double x=0, double y=0, double z=0)
     { _x = x; _y = y; _z = z; }
 
-    ~UniquePosition(){};
 
     inline bool operator<( const UniquePosition& rhs) const
     {
@@ -81,29 +81,27 @@ namespace sim
 
   };
 
-  class MCEdep {
-  public:
-    MCEdep(){ Clear(); }
-    ~MCEdep(){}
-    /*
-    short x;
-    short y;
-    short z;
-    */
-    sim::UniquePosition pos;
-    std::map<geo::PlaneID,float> energy;
-    std::map<geo::PlaneID,float> charge;
-    geo::PlaneID pid;
 
-    std::map<unsigned short,sim::MCEdepHit> mchits;
-    void Clear() {
-      //x=y=z=kINVALID_SHORT;
-      pos._x = pos._y = pos._z = 0;
-      //energy = -1;
-      energy.clear();
-      charge.clear();
-      mchits.clear();
-    }
+  struct MCEdep {
+    struct deposit{
+      float energy {};
+      float charge {};
+      deposit() = default;
+      deposit(float e, float c) : energy(e), charge(c) { }
+    };
+
+    sim::UniquePosition pos {};
+    geo::PlaneID pid {};
+    std::vector<deposit> deps {};
+
+    MCEdep() = default; 
+ 
+    MCEdep(sim::UniquePosition p, 
+           geo::PlaneID pi, 
+           size_t num_planes,
+           float e, float c,  
+           size_t id) : 
+           pos(p), pid(pi), deps(num_planes) { deps[id].energy=e; deps[id].charge=c;}
   };
 
   class MCRecoEdep {
@@ -113,9 +111,6 @@ namespace sim
     /// Default constructor with fhicl parameters
     MCRecoEdep(fhicl::ParameterSet const& pset);
     //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-
-    /// Default destructor
-    virtual ~MCRecoEdep(){};
 
     void MakeMCEdep(const std::vector<sim::SimChannel>& schArray);
 
@@ -136,6 +131,12 @@ namespace sim
     const std::map<unsigned int,size_t> TrackIndexMap() const
     { return _track_index; }
 
+    void Clear() {
+      _mc_edeps.clear();
+      _track_index.clear();
+      std::vector<std::vector<sim::MCEdep>>().swap(_mc_edeps);
+      std::map<unsigned int,size_t>().swap(_track_index);  
+  }
   protected:
 
     std::vector<sim::MCEdep>& __GetEdepArray__(unsigned int track_id);

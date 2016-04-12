@@ -1,0 +1,104 @@
+#
+# File:     dump_mcreco.fcl
+# Purpose:  Dump on screen MC track and shower content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     March 21st, 2016
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpMCReco
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpMCTracks" messages and put them in DumpMCTracks.log
+      DumpMCTracks: {
+        append: false
+        categories: {
+          DumpMCTracks: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCTracks.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCTracks
+      
+      # grab all the "DumpMCShowers" messages and put them in DumpMCShowers.log
+      DumpMCShowers: {
+        append: false
+        categories: {
+          DumpMCShowers: { limit: -1 }
+          default: { limit: 0 }
+        }
+        filename: "DumpMCShowers.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpMCShowers
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpMCTracks: { limit: 0 }
+          DumpMCShowers: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpmctracks: {
+      module_label: dumpmctracks
+      module_type:  DumpMCTracks
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCTracks"
+      
+      # specify the label of the sim::MCTrack data product (or producer)
+      InputTracks: "mcreco"
+      
+    } # dumpmctracks
+    
+    dumpmcshowers: {
+      module_label: dumpmcshowers
+      module_type:  DumpMCShowers
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCShowers"
+      
+      # specify the label of the sim::MCShower data product (or producer)
+      InputShowers: "mcreco"
+      
+    } # dumpmcshowers
+  } # analyzers
+  
+  dumpers: [ dumpmctracks, dumpmcshowers ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics

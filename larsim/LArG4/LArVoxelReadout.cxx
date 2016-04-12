@@ -32,6 +32,7 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 namespace larg4 {
   
@@ -388,12 +389,19 @@ namespace larg4 {
                                         1./fDriftVelocity[2]};
 
     static int radiologicaltdcoffset=0;  // static so remembers for subsequent calls for radiological sim
-
+    
+    struct Deposit_t {
+      double energy = 0.;
+      double electrons = 0.;
+      
+      void add(double more_energy, double more_electrons)
+        { energy += more_energy; electrons += more_electrons; }
+    }; // Deposit_t
+    
     // Map of electrons to store - catalogued by map[channel][tdc]
-    static std::map<uint32_t, std::map<unsigned int,double> >  ElectronsToStore;
-    static std::map<uint32_t, std::map<unsigned int,double> >  EnergyToStore;
+    std::map<raw::ChannelID_t, std::map<unsigned int, Deposit_t>> DepositsToStore;
 
-    static double xyz1[3] = {0.};
+    double xyz1[3] = {0.};
 
     double xyz[3] = {stepMidPoint.x() / CLHEP::cm,
                      stepMidPoint.y() / CLHEP::cm,
@@ -531,8 +539,7 @@ namespace larg4 {
             }
             
             // Add electrons produced by each cluster to the map
-            EnergyToStore[channel][tdc]    += nEnDiff[k];
-            ElectronsToStore[channel][tdc] += nElDiff[k];
+            DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
           }
           catch(cet::exception &e){
             mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
@@ -543,37 +550,36 @@ namespace larg4 {
       } // end loop over planes
       
       // Now store them in SimChannels
-      ChannelMap_t& ChannelMap = fChannelMaps[cryostat][tpc];
+      ChannelMap_t& ChannelDataMap = fChannelMaps[cryostat][tpc];
       
-      // check if the current channel is already in the map, otherwise add it
-      for(auto const& itread : ElectronsToStore){
+      // browse deposited data on each channel: (channel; deposit data in time)
+      for(auto const& deposit_per_channel: DepositsToStore){
         
-        uint32_t channel = itread.first;
-        std::map<uint32_t, sim::SimChannel>::iterator itchannelmap = ChannelMap.find(channel);
+        raw::ChannelID_t channel = deposit_per_channel.first;
         
-        if( itchannelmap != ChannelMap.end() ){
-          for(auto const& itreadinner : itread.second)
-            itchannelmap->second.AddIonizationElectrons(trackID,
-                                                        itreadinner.first,
-                                                        itreadinner.second,
-                                                        xyz,
-                                                        EnergyToStore[channel][itreadinner.first]);
-        }
-        else{
-          sim::SimChannel sc(channel);
-          for(auto const& itreadinner : itread.second)
-            sc.AddIonizationElectrons(trackID,
-                                      itreadinner.first,
-                                      itreadinner.second,
-                                      xyz,
-                                      EnergyToStore[channel][itreadinner.first]);
+        // find whether we already have this channel
+        auto iChannelData = ChannelDataMap.find(channel);
+        
+        // channelData is the SimChannel these deposits are going to be added to
+        // If there is such a channel already, use it (first beanch).
+        // If it's a new channel, the inner assignment creates a new SimChannel
+        // in the map, and we save its reference in channelData
+        sim::SimChannel& channelData
+          = (iChannelData == ChannelDataMap.end())
+          ? (ChannelDataMap[channel] = sim::SimChannel(channel))
+          : iChannelData->second;
+        
+        // go through all deposits, one for each TDC: (TDC, deposit data)
+        for(auto const& deposit_per_tdc: deposit_per_channel.second) {
+          channelData.AddIonizationElectrons(trackID,
+                                             deposit_per_tdc.first,
+                                             deposit_per_tdc.second.electrons,
+                                             xyz,
+                                             deposit_per_tdc.second.energy);
           
-          ChannelMap[channel] = std::move(sc);
-        }
-      }
-      ElectronsToStore.clear();
-      EnergyToStore.clear();
-      
+        } // for deposit on TDCs
+      } // for deposit on channels
+
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
       mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"
