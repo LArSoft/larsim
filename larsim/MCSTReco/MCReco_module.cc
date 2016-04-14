@@ -28,7 +28,7 @@ class MCReco;
 class MCReco : public art::EDProducer {
 public:
   explicit MCReco(fhicl::ParameterSet const & p);
-  virtual ~MCReco();
+//  virtual ~MCReco();
 
   void produce(art::Event & e) override;
 
@@ -52,17 +52,16 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
   produces< std::vector< sim::MCShower> >();
   produces< std::vector< sim::MCTrack>  >();
   // Call appropriate produces<>() functions here.
-}
 
-MCReco::~MCReco()
-{
+//MCReco::~MCReco()
+//{
   // Clean up dynamic memory and other resources here.
+//}
 }
 
 void MCReco::produce(art::Event & evt)
 {
-  std::unique_ptr< std::vector<sim::MCShower> > outShowerArray(new std::vector<sim::MCShower>);
-  std::unique_ptr< std::vector<sim::MCTrack> > outTrackArray(new std::vector<sim::MCTrack>);
+//  std::unique_ptr< std::vector<sim::MCTrack> > outTrackArray(new std::vector<sim::MCTrack>);
 
   // Retrieve mcparticles
   art::Handle<std::vector<simb::MCParticle> > mcpHandle;
@@ -89,21 +88,11 @@ void MCReco::produce(art::Event & evt)
   const std::vector<sim::SimChannel>&  sch_array(*schHandle);
   fEdep.MakeMCEdep(sch_array);
 
-  fMCSAlg.Reconstruct(fPart,fEdep);
-
-  fMCTAlg.Reconstruct(fPart,fEdep);
-
-  for(auto const& mcs : fMCSAlg.MCShower())
-
-    outShowerArray->push_back(mcs);
-
-  for(auto const& mct : fMCTAlg.MCTrack())
-
-    outTrackArray->push_back(mct);
-    
-  evt.put(std::move(outShowerArray));
-  evt.put(std::move(outTrackArray));
-
+  //Add MCShowers and MCTracks to the event 
+  evt.put(fMCSAlg.Reconstruct(fPart,fEdep));
+  evt.put(fMCTAlg.Reconstruct(fPart,fEdep));
+  
+  fEdep.Clear();
 }
 
 DEFINE_ART_MODULE(MCReco)
