@@ -9,8 +9,8 @@ fwdir   product_dir G4
 product         version
 larevt		v05_06_02
 gcc		v4_9_3
-genie_xsec      v2_10_2 
-genie_phyopt    v2_10_2 
+genie_xsec      v2_10_6 
+genie_phyopt    v2_10_6 
 larsoft_data    v0_06_01
 artextensions   v1_02_07
 
