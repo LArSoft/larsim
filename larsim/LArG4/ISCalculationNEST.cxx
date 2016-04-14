@@ -17,8 +17,9 @@
 namespace larg4{
 
   //----------------------------------------------------------------------------
-  ISCalculationNEST::ISCalculationNEST()
+  ISCalculationNEST::ISCalculationNEST(CLHEP::HepRandomEngine& engine)
     : fNest(0)
+    , fEngine(engine)
   {
     return;
   }
@@ -35,7 +36,7 @@ namespace larg4{
   void ISCalculationNEST::Initialize()
   {
     // \todo should ideally make the yield factor passed to the NestAlg ctor a parameter
-    if(!fNest) fNest = new NestAlg(1.);
+    if(!fNest) fNest = new NestAlg(1., fEngine);
 
     // Set the step size to small value if NEST is chosen, per Matthew Szydagis, 
     // "because without delta rays, the yields are wrong.  The ICARUS model that is 

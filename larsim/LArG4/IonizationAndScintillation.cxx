@@ -19,20 +19,33 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
+// C/C++ standard libraries
+#include <cassert>
+
 namespace larg4 {
 
   static IonizationAndScintillation* gInstance = 0;
 
   //......................................................................
+  IonizationAndScintillation* IonizationAndScintillation::CreateInstance
+    (CLHEP::HepRandomEngine& engine)
+  {
+    if(!gInstance) gInstance = new IonizationAndScintillation(engine);
+    return gInstance;
+  }
+
+  //......................................................................
   IonizationAndScintillation* IonizationAndScintillation::Instance()
   {
-    if(!gInstance) gInstance = new IonizationAndScintillation();
+    // the instance must have been created already by CreateInstance()
+    assert(gInstance);
     return gInstance;
   }
 
   //......................................................................
   // Constructor.
-  IonizationAndScintillation::IonizationAndScintillation()
+  IonizationAndScintillation::IonizationAndScintillation
+    (CLHEP::HepRandomEngine& engine)
     : fISCalc(0)
     , fStep(0)
     , fElectronsPerStep(0)
@@ -40,14 +53,15 @@ namespace larg4 {
     , fPhotonsPerStep(0)
     , fEnergyPerStep(0)
     , fElectronsVsPhotons(0)
+    , fEngine(engine)
   {
     art::ServiceHandle<sim::LArG4Parameters> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
 
     if(fISCalculator.compare("NEST") == 0)
-      fISCalc = new larg4::ISCalculationNEST();
+      fISCalc = new larg4::ISCalculationNEST(fEngine);
     else if(fISCalculator.compare("Separate") == 0)
-      fISCalc = new larg4::ISCalculationSeparate();
+      fISCalc = new larg4::ISCalculationSeparate(fEngine);
     else
       mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
 

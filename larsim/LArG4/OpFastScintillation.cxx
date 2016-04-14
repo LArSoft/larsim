@@ -101,6 +101,8 @@
 #include "Geant4/globals.hh"
 #include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/G4EmProcessSubType.hh"
+#include "Geant4/Randomize.hh"
+#include "Geant4/G4Poisson.hh"
 
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"

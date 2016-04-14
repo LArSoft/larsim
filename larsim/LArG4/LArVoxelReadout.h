@@ -59,10 +59,12 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
+
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
+namespace CLHEP { class HEPRandomEngine; }
 
 namespace larg4 {
 
@@ -131,6 +133,11 @@ namespace larg4 {
     // Destructor
     virtual ~LArVoxelReadout();
 
+    /// Sets the random generators to be used
+    void SetRandomEngines
+      (CLHEP::HepRandomEngine* pPropGen, CLHEP::HepRandomEngine* pRadioGen)
+      { fPropGen = pPropGen; fRadioGen = pRadioGen; }
+    
     /// Associates this readout to one specific TPC
     void SetSingleTPC(unsigned int cryostat, unsigned int tpc);
     
@@ -217,7 +224,10 @@ namespace larg4 {
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
-
+    
+    CLHEP::HepRandomEngine*                   fPropGen = nullptr;  ///< random engine for charge propagation
+    CLHEP::HepRandomEngine*                   fRadioGen = nullptr; ///< random engine for radiological decay
+    
     ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
   };
 
