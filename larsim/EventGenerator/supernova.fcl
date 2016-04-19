@@ -30,6 +30,7 @@ standard_supernova:
   GeneratorAlg: @local::standard_supernova_alg
 }
 
-dunefd_workspace_supernova: @local::standard_supernova
+#The following is moved to supernova_dune.fcl. 
+#dunefd_workspace_supernova: @local::standard_supernova
 
 END_PROLOG
