@@ -4,7 +4,7 @@ standard_supernova_alg:
 {
   # Sample this energy spectrum (found in $FW_SEARCH_PATH)
   # This value is not used if Monoenergetic neutrinos is set to true
-  EnergySpectrumFileName: "gvkm_nue_spectrum.root"
+  EnergySpectrumFileName: "gvkm_xscn_weighted_nue_spectrum.root"
   # Use the same energy for all of the simulated neutrinos
   MonoenergeticNeutrinos:   false
   # Neutrinos of this energy are generated only if 
