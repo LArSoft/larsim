@@ -28,7 +28,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // art extensions
-#include "artextensions/SeedService/SeedService.hh"
+#include "larsim/RandomUtils/LArSeedService.h"
 
 // larsoft includes
 #include "SimulationBase/MCTruth.h"
@@ -116,9 +116,9 @@ namespace evgen{
     
     if(fProjectToHeight==0.) mf::LogInfo("CORSIKAGen")<<"Using 0. for fProjectToHeight!"
     ;
-    // create a default random engine; obtain the random seed from SeedService,
+    // create a default random engine; obtain the random seed from LArSeedService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<artext::SeedService>()->createEngine(*this, p, "Seed");
+    art::ServiceHandle<sim::LArSeedService>()->createEngine(*this, p, "Seed");
 
     this->reconfigure(p);
     

@@ -44,7 +44,7 @@ art_make(
                         larsim_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        SeedService_service # artextensions
+                        larsim_RandomUtils_LArSeedService_service
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}

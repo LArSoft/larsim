@@ -1,0 +1,20 @@
+#include "simulationservices.fcl"
+#include "services_lartpcdetector.fcl"
+#include "seedservice_lartpcdetector.fcl"
+
+BEGIN_PROLOG
+
+lartpcdetector_largeantparameters:   @local::standard_largeantparameters
+
+lartpcdetector_larvoxelcalculator:   @local::standard_larvoxelcalculator
+
+
+lartpcdetector_simulation_services: {
+                          @table::lartpcdetector_services
+  LArSeedService:         @local::lartpcdetector_seedservice
+  LArG4Parameters:        @local::lartpcdetector_largeantparameters
+  LArVoxelCalculator:     @local::lartpcdetector_larvoxelcalculator
+  MagneticField:          @local::no_mag
+} # lartpcdetector_simulation_services
+
+END_PROLOG

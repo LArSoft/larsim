@@ -29,7 +29,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // art extensions
-#include "artextensions/SeedService/SeedService.hh"
+#include "larsim/RandomUtils/LArSeedService.h"
 
 // larsoft includes
 #include "SimulationBase/MCTruth.h"
@@ -106,9 +106,9 @@ namespace evgen{
   CosmicsGen::CosmicsGen(fhicl::ParameterSet const& pset)
     : fCRYHelp(0)
   {
-    // create a default random engine; obtain the random seed from SeedService,
+    // create a default random engine; obtain the random seed from LArSeedService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<artext::SeedService>()
+    art::ServiceHandle<sim::LArSeedService>()
       ->createEngine(*this, pset, "Seed");
     
     //the buffer box bounds specified here will extend on the cryostat boundaries

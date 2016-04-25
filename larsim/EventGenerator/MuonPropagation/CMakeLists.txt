@@ -9,7 +9,7 @@ art_make(
                         larcore_SummaryData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        SeedService_service # artextensions
+                        larsim_RandomUtils_LArSeedService_service
                         ${GaisserParam}
 			${MUSUN}
                         ${SIMULATIONBASE}

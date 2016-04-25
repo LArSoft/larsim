@@ -35,7 +35,7 @@ art_make(
 			   larcore_SummaryData
 			   lardata_Utilities
 			   lardata_MCBase
-			   SeedService_service # artextensions
+			   larsim_RandomUtils_LArSeedService_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}
