@@ -5,8 +5,7 @@
 # Will succeed:    yes
 # Purpose:         no range check in preDefinedSeed mode
 # 
-# The new implementation (artextensions newer than v01_00_01) do not even read
-# range check configuration.
+# LArSeedService does not even read range check configuration.
 #
 #
 

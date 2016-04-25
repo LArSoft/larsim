@@ -33,7 +33,7 @@
 #include "art/Framework/Services/System/CurrentModule.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-namespace artext {
+namespace testing {
   
   /// Returns whether the exception looks to be from LArSeedService
   bool isSeedServiceException(std::exception const& e) {
@@ -350,6 +350,6 @@ namespace artext {
     return sstr.str();
   } // SeedTest01::CreateCharacter()
 
-} // end namespace artext
+} // namespace testing
 
-DEFINE_ART_MODULE(artext::SeedTest01)
+DEFINE_ART_MODULE(testing::SeedTest01)

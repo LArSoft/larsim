@@ -37,7 +37,7 @@
 #include "art/Framework/Services/System/CurrentModule.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-namespace artext {
+namespace testing {
   
   /**
    * @brief Test module for random engine managing interface of LArSeedService
@@ -229,6 +229,6 @@ namespace artext {
     return sstr.str();
   } // RandomManagerTest::CreateCharacter()
   
-} // end namespace artext
+} // namespace testing
 
-DEFINE_ART_MODULE(artext::RandomManagerTest)
+DEFINE_ART_MODULE(testing::RandomManagerTest)
