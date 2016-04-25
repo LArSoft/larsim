@@ -1,0 +1,58 @@
+# Test the seeds service: must crash on bad policy input
+#
+# Policy:          invalid
+# Valid:           no (invalid policy name)
+# Will succeed:    no
+# Purpose:         check that invalid policy name triggers an error
+#
+
+#include "messageService.fcl"
+
+# Give this job a name.
+process_name : SeedTest01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services :
+{
+  message : @local::mf_interactive
+  RandomNumberGenerator: {}
+
+  LArSeedService: {
+    policy            : "ThisIsNotAValidPolicy"
+    baseSeed          :   123
+    maxUniqueEngines  :    20
+    checkRange        :  true
+    verbosity         :     2
+    endOfJobSummary   :  true
+  } # LArSeedService
+
+}
+
+physics :
+{
+  analyzers: {
+    stest01 : {
+      module_type : SeedTest01
+      module_name : stest01
+      testMode      : 0
+    }
+
+    stest02 : {
+      module_type : SeedTest01
+      module_name : stest02
+      testMode      : 1
+      instanceNames : [ "a", "c" ]
+    }
+  }
+
+  e1 : [stest01, stest02]
+
+  end_paths      : [e1]
+
+}
