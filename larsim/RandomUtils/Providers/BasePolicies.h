@@ -9,8 +9,8 @@
  * Documentation is up to date though.
  */
 
-#ifndef SeedService_Policies_h
-#define SeedService_Policies_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_BASEPOLICY_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_BASEPOLICY_H 1
 
 // C/C++ standard libraries
 #include <vector>
@@ -864,4 +864,4 @@ namespace sim {
 } // namespace sim
 
 
-#endif // SeedService_Policies_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_BASEPOLICY_H

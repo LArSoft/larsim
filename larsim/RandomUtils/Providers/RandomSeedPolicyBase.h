@@ -11,8 +11,8 @@
  * Also a few additional feature extensions are implemented here.
  */
 
-#ifndef SeedService_RandomSeedPolicyBase_h
-#define SeedService_RandomSeedPolicyBase_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_RANDOMSEEDPOLICYBASE_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_RANDOMSEEDPOLICYBASE_H 1
 
 // C/C++ standard libraries
 #include <vector>
@@ -499,4 +499,4 @@ namespace sim {
 } // namespace sim
 
 
-#endif // SeedService_RandomSeedPolicyBase_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_RANDOMSEEDPOLICYBASE_H

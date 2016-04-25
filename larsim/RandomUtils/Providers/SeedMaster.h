@@ -6,8 +6,8 @@
  * @see    LArSeedService.h SeedMaster.cc
  */
 
-#ifndef SeedService_SeedMaster_h
-#define SeedService_SeedMaster_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_SEEDMASTER_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_SEEDMASTER_H 1
 
 // C/C++ standard libraries
 #include <vector>
@@ -596,4 +596,4 @@ void sim::SeedMaster<SEED>::ensureUnique
 } // SeedMaster<SEED>::ensureUnique()
 
 
-#endif // SeedService_SeedMaster_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_SEEDMASTER_H

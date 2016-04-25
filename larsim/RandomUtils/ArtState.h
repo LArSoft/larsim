@@ -4,8 +4,8 @@
  * @author Rob Kutschke (kutschke@fnal.gov)
  */
 
-#ifndef SeedService_ArtState_h
-#define SeedService_ArtState_h
+#ifndef LARSIM_RANDOMUTILS_ARTSTATE_H
+#define LARSIM_RANDOMUTILS_ARTSTATE_H 1
 
 // C/C++ standard libraries
 #include <string>
@@ -139,4 +139,4 @@ namespace sim {
 
 } // namespace sim
 
-#endif /* SeedService_ArtState_h */
+#endif // LARSIM_RANDOMUTILS_ARTSTATE_H

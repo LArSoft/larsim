@@ -9,8 +9,8 @@
  * Documentation is up to date though.
  */
 
-#ifndef SeedService_PerEventPolicy_h
-#define SeedService_PerEventPolicy_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_PEREVENTPOLICY_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_PEREVENTPOLICY_H 1
 
 // C/C++ standard libraries
 #include <string>
@@ -281,4 +281,4 @@ namespace sim {
 } // namespace sim
 
 
-#endif // SeedService_PerEventPolicy_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_PEREVENTPOLICY_H

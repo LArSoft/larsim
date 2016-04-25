@@ -6,8 +6,8 @@
  *
  * The classes provided here are templates.
  */
-#ifndef SEEDSERVICE_MAPKEYITERATOR_H
-#define SEEDSERVICE_MAPKEYITERATOR_H 1
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_MAPKEYITERATOR_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_MAPKEYITERATOR_H 1
 
 // C++ standard libraries
 #include <iterator>
@@ -125,4 +125,4 @@ namespace sim {
   } // namespace SeedServiceHelper
 } // namespace sim
 
-#endif // SEEDSERVICE_MAPKEYITERATOR_H
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_MAPKEYITERATOR_H

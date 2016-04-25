@@ -1,22 +1,15 @@
 /**
  * @file LArSeedService.h
  * @brief An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
- * @author Rob Kutschke (kutschke@fnal.gov)
+ * @author Gianluca Petrillo (petrillo@fnal.gov), Rob Kutschke (kutschke@fnal.gov)
  * @date   2013/03/14 19:54:49
  * @see SeedService_service.cc
  * 
  */
 
-/******************************************************************************
- *** TODO QA
- *** 
- *** - the original code had copy constructor made private to prevent it from
- ***   being called (now it is deleted); is this a prescription for a service?
- *** 
- ******************************************************************************/
 
-#ifndef SeedService_SeedService_h
-#define SeedService_SeedService_h
+#ifndef LARSIM_RANDOMUTILS_LARSEEDSERVICE_H
+#define LARSIM_RANDOMUTILS_LARSEEDSERVICE_H 1
 
 // C/C++ standard libraries
 #include <string>
@@ -154,8 +147,7 @@ namespace sim {
     
     LArSeedService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     
-    // Accept compiler written d'tor.  Not copyable or assignable.
-    // This class is not copyable or assignable: these methods are not implemented.
+    // Accept compiler written d'tor.  Not copiable or moveable.
     LArSeedService(LArSeedService const&) = delete;
     LArSeedService const& operator=(LArSeedService const&) = delete;
     LArSeedService(LArSeedService&&) = delete;
@@ -461,4 +453,4 @@ namespace sim {
 
 DECLARE_ART_SERVICE(sim::LArSeedService, LEGACY)
 
-#endif /* SeedService_SeedService_h */
+#endif // LARSIM_RANDOMUTILS_LARSEEDSERVICE_H

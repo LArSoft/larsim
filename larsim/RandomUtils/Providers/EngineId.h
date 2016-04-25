@@ -7,8 +7,8 @@
  * instance name.
  */
 
-#ifndef SeedService_EngineId_h
-#define SeedService_EngineId_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_ENGINEID_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_ENGINEID_H 1
 
 #include <string>
 #include <ostream>
@@ -74,4 +74,4 @@ namespace sim {
   
 } // namespace sim
 
-#endif /* SeedService_EngineId_h */
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_ENGINEID_H

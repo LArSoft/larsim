@@ -9,8 +9,8 @@
  * Documentation is up to date though.
  */
 
-#ifndef SeedService_RandomPolicy_h
-#define SeedService_RandomPolicy_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_RANDOMPOLICY_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_RANDOMPOLICY_H 1
 
 // C/C++ standard libraries
 #include <ostream> // std::endl
@@ -126,4 +126,4 @@ namespace sim {
 } // namespace sim
 
 
-#endif // SeedService_RandomPolicy_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_RANDOMPOLICY_H

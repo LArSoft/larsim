@@ -9,8 +9,8 @@
  * Documentation is up to date though.
  */
 
-#ifndef SeedService_Policies_h
-#define SeedService_Policies_h
+#ifndef LARSIM_RANDOMUTILS_PROVIDERS_POLICIES_H
+#define LARSIM_RANDOMUTILS_PROVIDERS_POLICIES_H 1
 
 // including all the policy definitions:
 #include "larsim/RandomUtils/Providers/StandardPolicies.h"
@@ -18,4 +18,4 @@
 #include "larsim/RandomUtils/Providers/PerEventPolicy.h"
 
 
-#endif // SeedService_StandardPolicies_h
+#endif // LARSIM_RANDOMUTILS_PROVIDERS_POLICIES_H
