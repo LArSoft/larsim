@@ -12,8 +12,8 @@
 #define LARSIM_RANDOMUTILS_LARSEEDSERVICE_H 1
 
 #ifndef LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP
-/// Define to non-zero to include special CLHEP random engine support
-#  define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP 0
+/// Define to zero to exclude special CLHEP random engine support
+#  define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP 1
 #endif // LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP
 
 // ROOT libraries
