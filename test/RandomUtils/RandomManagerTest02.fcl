@@ -24,11 +24,13 @@ services: {
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
-    policy            : "perEvent"
-    verbosity         :     2
-    endOfJobSummary   :  true
-  } # LArSeedService
+  user : {
+     LArSeedService: {
+      policy            : "perEvent"
+      verbosity         :     2
+      endOfJobSummary   :  true
+    }
+  }
 } # services
 
 

@@ -1,43 +1,99 @@
-# using art_make here would interferes with cet_test non-HANDBUILT targets
-simple_plugin( SeedTest01 "module"
+add_subdirectory(Providers)
+
+art_make(
+  EXCLUDE GeneratedEventTimestampTestPlugin_plugin.cc
+  LIB_LIBRARIES 
     larsim_RandomUtils_LArSeedService_service
-    art_Framework_Core
-    art_Framework_Principal
-    art_Framework_Services_Registry
-    art_Framework_Services_Optional_RandomNumberGenerator_service
-    MF_MessageLogger
-    MF_Utilities
-    fhiclcpp
-    cetlib
+    ${ART_FRAMEWORK_CORE}
+    ${ART_FRAMEWORK_UTILITIES}
+    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    ${MF_MESSAGELOGGER}
+    ${MF_UTILITIES}
+    ${FHICLCPP}
+    ${CETLIB}
     ${CLHEP}
-  NO_INSTALL
-)
-
-simple_plugin( RandomManagerTest "module"
+  MODULE_LIBRARIES
+    larsim_test_RandomUtils
     larsim_RandomUtils_LArSeedService_service
-    art_Framework_Core
-    art_Framework_Principal
-    art_Framework_Services_Registry
-    art_Framework_Services_Optional_RandomNumberGenerator_service
-    MF_MessageLogger
-    MF_Utilities
-    fhiclcpp
-    cetlib
+    ${ART_FRAMEWORK_CORE}
+    ${ART_FRAMEWORK_PRINCIPAL}
+    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    ${MF_MESSAGELOGGER}
+    ${MF_UTILITIES}
+    ${FHICLCPP}
+    ${CETLIB}
     ${CLHEP}
+  SERVICE_LIBRARIES
+    larsim_RandomUtils_LArSeedService_service
+    ${ART_UTILITIES}
+    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    ${MF_MESSAGELOGGER}
+    ${MF_UTILITIES}
+    ${FHICLCPP}
+#     ${CETLIB}
+    ${ROOT_CORE}
+    ${ROOT_MATHCORE}
   NO_INSTALL
+  USE_PRODUCT_NAME
 )
 
-simple_plugin( GeneratedEventTimestampTestPlugin "plugin"
-    art_Framework_Core
-    art_Persistency_Provenance
-    MF_MessageLogger
-    MF_Utilities
-    cetlib
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-  BASENAME_ONLY
+
+#
+# The following tests verify that engine declaration may happen only on
+# construction, and that seed query can happen at any time.
+#
+cet_test( SeedTestQuerySeeds_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c seedtest_query_seeds.fcl
+  DATAFILES seedtest_query_seeds.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
 )
 
+cet_test( SeedTestRegisterOnProcessEvent_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c seedtest_register_on_process_event.fcl
+  DATAFILES seedtest_register_on_process_event.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+  TEST_PROPERTIES WILL_FAIL true
+)
+
+cet_test( SeedTestRegisterOnSubRun_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c seedtest_register_on_subrun.fcl
+  DATAFILES seedtest_register_on_subrun.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+  TEST_PROPERTIES WILL_FAIL true
+)
+
+cet_test( SeedTestRegisterOnRunRegistered_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c seedtest_register_on_run_registered.fcl
+  DATAFILES seedtest_register_on_run_registered.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+  TEST_PROPERTIES WILL_FAIL false
+)
+
+cet_test( SeedTestRegisterOnRunUnregistered_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c seedtest_register_on_run_unregistered.fcl
+  DATAFILES seedtest_register_on_run_unregistered.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+  TEST_PROPERTIES WILL_FAIL true
+)
+
+cet_test( GlobalSeedTestLinear_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c globalseedtest_linear.fcl
+  DATAFILES globalseedtest_linear.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+)
+
+cet_test( GlobalSeedTestPredefinedSeed_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c globalseedtest_predefined.fcl
+  DATAFILES globalseedtest_predefined.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+)
+
+cet_test( GlobalSeedTestPerEvent_test HANDBUILT
+  TEST_EXEC lar
+  TEST_ARGS --rethrow-all -c globalseedtest_perevent.fcl
+  DATAFILES globalseedtest_perevent.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+)
 
 #
 # Some tests are going to fail at configuration phase. Those are "failing".
@@ -46,57 +102,97 @@ simple_plugin( GeneratedEventTimestampTestPlugin "plugin"
 # Some more are art-specific and don't test anything in SeedMaster.
 #
 
-# This batch of tests is for LArSeedService ("integration" tests)
-set( SuccessfulServiceTestIndices 01 02 03 04 05 10 11 12 13 14 15 16 17 18 19 21 22 23 24 )
-foreach( ServiceTestIndex ${SuccessfulServiceTestIndices} )
-  cet_test( test${ServiceTestIndex} HANDBUILT
+
+# The first batch of tests is for LArSeedService ("integration" tests shared with SeedMaster)
+set( SuccessfulServiceSharedTests
+  LinearMap01
+  LinearMapDepr01
+  PredefinedOfs01
+  PredefinedOfs02
+  PredefinedSeed01
+  PredefinedSeed02
+  PredefinedSeed03
+  PredefinedSeed04
+  Random01
+  Random02
+  )
+foreach( ServiceTestName ${SuccessfulServiceSharedTests} )
+  cet_test( test${ServiceTestName} HANDBUILT
             TEST_EXEC art
-            TEST_ARGS --rethrow-all --config test${ServiceTestIndex}.fcl
-            DATAFILES Providers/test${ServiceTestIndex}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+            TEST_ARGS --rethrow-all --config test${ServiceTestName}.fcl
+            DATAFILES Providers/test${ServiceTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
           )
-endforeach( ServiceTestIndex )
+endforeach( ServiceTestName )
 
-# This batch of tests is for LArSeedService ("integration" tests) that do not have a corresponding unit test
-set( SuccessfulServiceTestIndices 06 07 08 25 )
-foreach( ServiceTestIndex ${SuccessfulServiceTestIndices} )
-  cet_test( test${ServiceTestIndex} HANDBUILT
+set( FailingServiceSharedTests
+  InvalidPolicy
+  LinearMapErr01
+  PredefinedOfsErr01
+  PredefinedOfsErr02
+  PredefinedOfsErr04
+  PredefinedOfsErr05
+  PredefinedSeedErr01
+  PredefinedSeedErr02
+  PredefinedSeedErr03
+  PredefinedOfsErr03
+  )
+foreach( ServiceTestName ${FailingServiceSharedTests} )
+  cet_test( test${ServiceTestName} HANDBUILT
             TEST_EXEC art
-            TEST_ARGS --rethrow-all --config test${ServiceTestIndex}.fcl
-            DATAFILES test${ServiceTestIndex}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
-          )
-endforeach( ServiceTestIndex )
-
-
-set( FailingServiceTestIndices 09 20 )
-foreach( ServiceTestIndex ${FailingServiceTestIndices} )
-  cet_test( test${ServiceTestIndex} HANDBUILT
-            TEST_EXEC art
-            TEST_ARGS --rethrow-all --config test${ServiceTestIndex}.fcl
+            TEST_ARGS --rethrow-all --config test${ServiceTestName}.fcl
             TEST_PROPERTIES WILL_FAIL true
-            DATAFILES Providers/test${ServiceTestIndex}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+            DATAFILES Providers/test${ServiceTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
           )
-endforeach( ServiceTestIndex )
+endforeach( ServiceTestName )
 
 
-# This batch of tests is for LArSeedService engine manager features
-set( ServiceManagingTestIndices 01 03 )
-foreach( ServiceManagingTestIndex ${ServiceManagingTestIndices} )
-  cet_test( RandomManagerTest${ServiceManagingTestIndex} HANDBUILT
+# The second batch of tests is for LArSeedService ("integration" tests for art service only)
+set( SuccessfulServiceOnlyTests
+  PerEvent01
+  )
+foreach( ServiceTestName ${SuccessfulServiceOnlyTests} )
+  cet_test( test${ServiceTestName} HANDBUILT
             TEST_EXEC art
-            TEST_ARGS --rethrow-all --config RandomManagerTest${ServiceManagingTestIndex}.fcl
-            DATAFILES RandomManagerTest${ServiceManagingTestIndex}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+            TEST_ARGS --rethrow-all --config test${ServiceTestName}.fcl
+            DATAFILES test${ServiceTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
           )
-endforeach( ServiceManagingTestIndex )
+endforeach( ServiceTestName )
 
-set( FailingServiceManagingTestIndices 02 )
-foreach( ServiceManagingTestIndex ${FailingServiceManagingTestIndices} )
-  cet_test( RandomManagerTest${ServiceManagingTestIndex} HANDBUILT
+set( FailingServiceOnlyTests
+  PerEventErr01
+  )
+foreach( ServiceTestName ${FailingServiceOnlyTests} )
+  cet_test( test${ServiceTestName} HANDBUILT
             TEST_EXEC art
-            TEST_ARGS --rethrow-all --config RandomManagerTest${ServiceManagingTestIndex}.fcl
+            TEST_ARGS --rethrow-all --config test${ServiceTestName}.fcl
             TEST_PROPERTIES WILL_FAIL true
-            DATAFILES RandomManagerTest${ServiceManagingTestIndex}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+            DATAFILES test${ServiceTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
           )
-endforeach( ServiceManagingTestIndex )
+endforeach( ServiceTestName )
 
 
-add_subdirectory(Providers)
+# The third batch of tests is for LArSeedService engine manager features
+set( ServiceManagingTests
+  RandomManagerTest01
+  RandomManagerTest03
+  )
+foreach( ServiceManagingTestName ${ServiceManagingTests} )
+  cet_test( ${ServiceManagingTestName} HANDBUILT
+            TEST_EXEC art
+            TEST_ARGS --rethrow-all --config ${ServiceManagingTestName}.fcl
+            DATAFILES ${ServiceManagingTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+          )
+endforeach( ServiceManagingTestName )
+
+set( FailingServiceManagingTests
+  RandomManagerTest02
+  )
+foreach( ServiceManagingTestName ${FailingServiceManagingTests} )
+  cet_test( ${ServiceManagingTestName} HANDBUILT
+            TEST_EXEC art
+            TEST_ARGS --rethrow-all --config ${ServiceManagingTestName}.fcl
+            TEST_PROPERTIES WILL_FAIL true
+            DATAFILES ${ServiceManagingTestName}.fcl Providers/messageService.fcl Providers/standardMessageDestinations.fcl
+          )
+endforeach( ServiceManagingTestName )
+

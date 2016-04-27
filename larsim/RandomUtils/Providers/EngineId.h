@@ -21,16 +21,36 @@ namespace sim {
     /// Identifier for a engine, made of module name and optional instance name
     struct EngineId {
       
+      /// structure to identify a "global" flavour constructor
+      struct Global_t {};
+      
+      /// A constant to select a "global" flavour constructor
+      static Global_t global;
+      
       /// Constructor (module name is required)
       EngineId(std::string const& mod, std::string const& inst = std::string()):
         moduleLabel(mod),
         instanceName(inst)
         {}
       
+      /// Constructor (module name is required)
+      EngineId(std::string const& inst, Global_t):
+        moduleLabel(),
+        instanceName(inst)
+        {}
+      
       // Accept compiler written d'tor, copy c'tor, copy and move assignments.
+      
+      /// Returns whether the label is "global" (no module context)
+      bool isGlobal() const { return moduleLabel.empty(); }
       
       /// Returns whether the instance label is defined
       bool hasInstanceName() const { return !instanceName.empty(); }
+      
+      /// Sets this ID to the specified global instance
+      void setGlobal(std::string inst)
+        { moduleLabel.clear(); instanceName = inst; }
+      
       
       /// Returns true if both module and instance names match
       bool operator== (EngineId const& rhs) const

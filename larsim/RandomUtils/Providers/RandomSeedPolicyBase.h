@@ -439,13 +439,34 @@ namespace sim {
     T PerInstancePolicy<SEED>::getInstanceParameter(
       fhicl::ParameterSet const& pset, SeedMasterHelper::EngineId const& id
     ) {
+      
+      // first check if the instance is actually global;
+      // if so, look for it directly in the parameter set
+      if (id.isGlobal()) {
+        // We expect the element to be just an item.
+        if (pset.is_key_to_table(id.instanceName)) {
+          // this is mostly a limitation of the FHiCL syntax,
+          // that we can overcome with some cumbersomeness if we need to.
+          throw art::Exception(art::errors::Configuration)
+            << "A seed for the global instance '" << id
+            << "' was requested, but the configuration sets named instances ("
+            << pset.get<fhicl::ParameterSet>(id.instanceName).to_compact_string()
+            << ").\n";
+        }
+        T param;
+        if (!pset.get_if_present(id.instanceName, param)) {
+          throw art::Exception(art::errors::Configuration)
+            << "LArSeedService: unable to find the parameter for global instance'"
+            << id << "'\n";
+        }
+        return param;
+      } // if global
+      
       // there must be /some/ configuration for the module
-      // FIXME: use ParameterSet::has_key() as soon as it's available
-      const auto cfgKeys = pset.get_names();
-      if (std::find(cfgKeys.begin(), cfgKeys.end(), id.moduleLabel) == cfgKeys.end()) {
+      if (!pset.has_key(id.moduleLabel)) {
         throw art::Exception(art::errors::Configuration)
-          << "A seed for the nameless instance '" << id
-          << "' was requested, but there is no configuration for '"
+          << "A seed for the instance '" << id
+          << "' was requested, but there is no configuration at all for '"
           << id.moduleLabel << "' module label.";
       }
       

@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include <memory> // std::unique_ptr<>
+#include <utility> // std::forward()
 
 // From art and its tool chain
 #include "fhiclcpp/ParameterSet.h"
@@ -221,8 +222,33 @@ namespace sim {
     /// Type for seed data base
     using map_type = std::map<EngineId, seed_t>;
     
+    /// Information for each engine
+    struct EngineInfo_t {
+        public:
+      bool hasSeeder() const { return bool(seeder); }
+      bool isFrozen() const  { return !autoseed; }
+      
+      void freeze(bool doFreeze = true) { autoseed = !doFreeze; }
+      void setSeeder(Seeder_t new_seeder) { seeder = new_seeder; }
+      
+      /// Execute the seeder (whatever arguments it has...)
+      template <typename... Args>
+      void applySeed(Args... args) const
+        { if (hasSeeder()) seeder(std::forward<Args>(args)...); }
+      
+      /// Applies the seed unless frozen
+      template <typename... Args>
+      void autoApplySeed(Args... args) const
+        { if (!isFrozen()) applySeed(std::forward<Args>(args)...); }
+      
+        private:
+      Seeder_t seeder;      ///< engine seeder
+      bool autoseed = true; ///< whether seeding can be automatic
+      
+    }; // EngineInfo_t
+    
     /// type of map of seeders associated with the engines
-    using Seeders_t = std::map<EngineId, Seeder_t>;
+    using EngineData_t = std::map<EngineId, EngineInfo_t>;
     
       public:
     /// type of data used for event seeds
@@ -240,15 +266,24 @@ namespace sim {
     static const std::vector<std::string>& policyNames();
     
     /// An iterator to the configured engine IDs
-    using EnginesIteratorBox
-      = SeedServiceHelper::MapKeyConstIteratorBox<Seeders_t>;
+    using EngineInfoIteratorBox
+      = SeedServiceHelper::MapKeyConstIteratorBox<EngineData_t>;
     
     SeedMaster(const fhicl::ParameterSet&);
     
     // Accept compiler written c'tors, assignments and d'tor.
     
     /// Returns whether the specified engine is already registered
-    bool hasEngine(EngineId const& id) const { return seeders.count(id) > 0; }
+    bool hasEngine(EngineId const& id) const
+      { return engineData.count(id) > 0; }
+    
+    /// Returns whether the specified engine has a valid seeder
+    bool hasSeeder(EngineId const& id) const
+      { 
+        auto iEngineInfo = engineData.find(id);
+        return
+          (iEngineInfo != engineData.end()) && iEngineInfo->second.hasSeeder();
+      }
     
     /// Returns the seed value for this module label
     seed_t getSeed(std::string moduleLabel);
@@ -261,9 +296,14 @@ namespace sim {
     
     //@{
     /// Returns the seed value for the event with specified data
-    seed_t getEventSeed(EventData_t const& data, std::string instanceName);
+    seed_t getEventSeed
+      (EventData_t const& data, std::string instanceName);
     seed_t getEventSeed(EventData_t const& data, EngineId const& id);
     //@}
+    
+    /// Returns the last computed seed value for the specified engine ID
+    seed_t getCurrentSeed(EngineId const& id) const
+      { return getSeedFromMap(currentSeeds, id); }
     
     
     /**
@@ -279,21 +319,50 @@ namespace sim {
     void registerSeeder(EngineId const& id, Seeder_t seeder);
     
     
+    /**
+     * @brief Register the specified function to reseed the engine id
+     * @param id ID of the engine to be associated to the seeder
+     * @param seeder function to be used for seeding the engine
+     * @throw art::Exception (art::errors::LogicError) if already registered
+     * @see registerSeeder()
+     *
+     * This method registers a seeder for a given engine ID, just as
+     * registerSeeder() does, except that it throws an exception if a seeder has
+     * already been registered for it.
+     */
+    void registerNewSeeder(EngineId const& id, Seeder_t seeder);
+    
+    
     /// Forces SeedMaster not to change the seed of a registered engine
-    void freezeSeed(EngineId const& id) { seeders.at(id) = nullptr; }
+    void freezeSeed(EngineId const& id, seed_t seed);
     
     
-    /// Reseeds the specified engine with a global seed (if any)
+    /**
+     * @brief Reseeds the specified engine with a global seed (if any)
+     * @param id ID of the engine to be reseeded
+     * @return the seed used to reseed, InvalidSeed if no reseeding happened
+     *
+     * Reseeding does not happen if either there is no seeder registered with
+     * that engine, or if that engine is already frozen.
+     */
     seed_t reseed(EngineId const& id);
     
-    /// Reseeds the specified engine with an event seed (if any)
+    /**
+     * @brief Reseeds the specified engine with an event seed (if any)
+     * @param id ID of the engine to be reseeded
+     * @param data event data to extract the seed from
+     * @return the seed used to reseed, InvalidSeed if no reseeding happened
+     *
+     * Reseeding does not happen if either there is no seeder registered with
+     * that engine, or if that engine is already frozen.
+     */
     seed_t reseedEvent(EngineId const& id, EventData_t const& data);
     
     /// Prints known (EngineId,seed) pairs
     template<typename Stream> void print(Stream&&) const;
     
     /// Returns an object to iterate in range-for through configured engine IDs
-    EnginesIteratorBox engineIDsRange() const { return { seeders }; }
+    EngineInfoIteratorBox engineIDsRange() const { return { engineData }; }
     
     /// Prepares for a new event
     void onNewEvent();
@@ -308,26 +377,40 @@ namespace sim {
     /// Which of the supported policies to use?
     Policy policy;
     
-    /// List of seeds already computed. Seeds are unique per EngineID
-    map_type knownSeeds;
+    /// List of seeds computed from configuration information.
+    map_type configuredSeeds;
     
-    /// List of event seeds already computed. Seeds are unique per EngineID
+    /// List of event seeds already computed.
     map_type knownEventSeeds;
     
-    /// List of seeder functors
-    Seeders_t seeders;
+    /// List of seeds already computed.
+    map_type currentSeeds;
+    
+    EngineData_t engineData; ///< list of all engine information
 
     /// Helper function to parse the policy name
     void setPolicy(std::string policyName);
     
-    /// Throws if the seed has already been used
+    /// @{
+    /// @brief Throws if the seed has already been used
+    /// 
+    /// It does not take into account per-event seeds, but only configured ones.
     void ensureUnique
       (EngineId const& id, seed_t seed, map_type const& map) const;
     void ensureUnique(EngineId const& id, seed_t seed) const
-      { return ensureUnique(id, seed, knownSeeds); }
+      { return ensureUnique(id, seed, configuredSeeds); }
+    /// @}
     
     /// the instance of the random policy
     std::unique_ptr<PolicyImpl_t> policy_impl;
+    
+    
+    /// Returns a seed from the specified map, or InvalidSeed if not present
+    static seed_t getSeedFromMap(map_type const& seeds, EngineId const& id)
+      {
+        auto iSeed = seeds.find(id);
+        return (iSeed == seeds.end())? InvalidSeed: iSeed->second;
+      }
     
   }; // class SeedMaster
   
@@ -377,9 +460,10 @@ template <typename SEED>
 sim::SeedMaster<SEED>::SeedMaster(fhicl::ParameterSet const& pSet):
   verbosity(pSet.get<int>("verbosity",0)),
   policy(unDefined),
-  knownSeeds(),
+  configuredSeeds(),
   knownEventSeeds(),
-  seeders()
+  currentSeeds(),
+  engineData()
 {
   
   // Throw if policy is not recognized.
@@ -442,8 +526,30 @@ template <typename SEED>
 void sim::SeedMaster<SEED>::registerSeeder
   (EngineId const& id, Seeder_t seeder)
 {
-  seeders[id] = seeder;
+  engineData[id].setSeeder(seeder); // creates anew and sets
 } // SeedMaster<SEED>::registerSeeder()
+
+
+//----------------------------------------------------------------------------
+template <typename SEED>
+void sim::SeedMaster<SEED>::registerNewSeeder
+  (EngineId const& id, Seeder_t seeder)
+{
+  if (hasEngine(id)) {
+    throw art::Exception(art::errors::LogicError)
+      << "SeedMaster(): Engine with ID='" << id << "' already registered";
+  }
+  registerSeeder(id, seeder);
+} // SeedMaster<SEED>::registerNewSeeder()
+
+
+//----------------------------------------------------------------------------
+template <typename SEED>
+void sim::SeedMaster<SEED>::freezeSeed(EngineId const& id, seed_t seed) {
+  engineData.at(id).freeze();
+  configuredSeeds[id] = seed;
+  currentSeeds[id] = seed;
+} // SeedMaster<>::freezeSeed()
 
 
 //----------------------------------------------------------------------------
@@ -451,10 +557,11 @@ template <typename SEED>
 typename sim::SeedMaster<SEED>::seed_t sim::SeedMaster<SEED>::reseed
   (EngineId const& id)
 {
+  auto const& engineInfo = engineData.at(id);
+  if (engineInfo.isFrozen()) return InvalidSeed;
   seed_t seed = getSeed(id);
   if (seed != InvalidSeed) { // reseed
-    Seeder_t seeder = seeders[id]; // it might create a new (empty) entry
-    if (seeder) seeder(id, seed);
+    engineInfo.applySeed(id, seed);
   }
   return seed;
 } // SeedMaster<SEED>::reseed()
@@ -464,10 +571,11 @@ template <typename SEED>
 typename sim::SeedMaster<SEED>::seed_t sim::SeedMaster<SEED>::reseedEvent
   (EngineId const& id, EventData_t const& data)
 {
+  auto const& engineInfo = engineData.at(id);
+  if (engineInfo.isFrozen()) return InvalidSeed;
   seed_t seed = getEventSeed(data, id);
   if (seed != InvalidSeed) { // reseed
-    Seeder_t seeder = seeders[id]; // it might create a new (empty) entry
-    if (seeder) seeder(id, seed);
+    engineInfo.autoApplySeed(id, seed);
   }
   return seed;
 } // SeedMaster<SEED>::reseedEvent()
@@ -484,11 +592,65 @@ void sim::SeedMaster<SEED>::print(Stream&& log) const {
   policy_impl->print(sstr);
   if (!sstr.str().empty()) log << '\n' << sstr.str();
   
-  if ( !knownSeeds.empty() ) {
-    log << "\n Seed Value     ModuleLabel.InstanceName";
-    for (auto const& p: knownSeeds)
-      log << "\n" << std::setw(10) << p.second << "      " << p.first;
-  } // if
+  if ( !currentSeeds.empty() ) {
+    
+    constexpr unsigned int ConfSeedWidth = 18;
+    constexpr unsigned int SepWidth1 = 2;
+    constexpr unsigned int LastSeedWidth = 18;
+    constexpr unsigned int SepWidth2 = SepWidth1 + 1;
+    
+    log << "\n "
+      << std::setw(ConfSeedWidth) << "Configured value"
+      << std::setw(SepWidth1) << ""
+      << std::setw(LastSeedWidth) << "Last value"
+      << std::setw(SepWidth2) << ""
+      << "ModuleLabel.InstanceName";
+    
+    for (auto const& p: currentSeeds) {
+      EngineId const& ID = p.first;
+      seed_t configuredSeed = getSeedFromMap(configuredSeeds, ID);
+      seed_t currentSeed = p.second;
+      
+      if (configuredSeed == InvalidSeed) {
+        if (currentSeed == InvalidSeed) {
+          log << "\n "
+            << std::setw(ConfSeedWidth) << "INVALID!!!"
+            << std::setw(SepWidth1) << ""
+            << std::setw(LastSeedWidth) << ""
+            << std::setw(SepWidth2) << ""
+            << ID;
+        }
+        else { // if seed was configured, it should be that one all the way!!
+          log << "\n "
+            << std::setw(ConfSeedWidth) << "(per event)"
+            << std::setw(SepWidth1) << ""
+            << std::setw(LastSeedWidth) << currentSeed
+            << std::setw(SepWidth2) << ""
+            << ID;
+        }
+      }
+      else {
+        if (configuredSeed == currentSeed) {
+          log << "\n "
+            << std::setw(ConfSeedWidth) << configuredSeed
+            << std::setw(SepWidth1) << ""
+            << std::setw(LastSeedWidth) << "(same)"
+            << std::setw(SepWidth2) << ""
+            << ID;
+        }
+        else { // if seed was configured, it should be that one all the way!!
+          log << "\n "
+            << std::setw(ConfSeedWidth) << configuredSeed
+            << std::setw(SepWidth1) << ""
+            << std::setw(LastSeedWidth) << currentSeed
+            << std::setw(SepWidth2) << ""
+            << ID << "  [[ERROR!!!]]";
+        }
+      } // if per job
+      if (ID.isGlobal()) log << " (global)";
+      if (hasEngine(ID) && engineData.at(ID).isFrozen()) log << " [overridden]";
+    } // for all seeds
+  } // if any seed
   log << '\n' << std::endl;
 } // SeedMaster<SEED>::print(Stream)
 
@@ -499,15 +661,23 @@ typename sim::SeedMaster<SEED>::seed_t sim::SeedMaster<SEED>::getSeed
   (EngineId const& id)
 {
   // Check for an already computed seed.
-  typename map_type::iterator iSeed = knownSeeds.find(id);
-  if (iSeed != knownSeeds.end()) return iSeed->second;
-  
+  typename map_type::const_iterator iSeed = configuredSeeds.find(id);
+  seed_t seed = InvalidSeed;
+  if (iSeed != configuredSeeds.end()) return iSeed->second;
+
   // Compute the seed.
-  seed_t seed = policy_impl->getSeed(id);
+  seed = policy_impl->getSeed(id);
   if (policy_impl->yieldsUniqueSeeds()) ensureUnique(id, seed);
   
   // Save the result.
-  knownSeeds.emplace(id, seed);
+  configuredSeeds[id] = seed;
+  
+  // for per-event policies, configured seed is invalid;
+  // in that case we don't expect to change the seed,
+  // and we should not record it as current; this should not matter anyway
+  // we still store it if there is nothing (emplace does not overwrite)
+  if (seed != InvalidSeed) currentSeeds[id] = seed;
+  else                     currentSeeds.emplace(id, seed);
   
   return seed;
 } // SeedMaster<SEED>::getSeed()
@@ -520,15 +690,23 @@ typename sim::SeedMaster<SEED>::seed_t sim::SeedMaster<SEED>::getEventSeed
 {
   // Check for an already computed seed.
   typename map_type::iterator iSeed = knownEventSeeds.find(id);
+  seed_t seed = InvalidSeed;
   if (iSeed != knownEventSeeds.end()) return iSeed->second;
-  
+
   // Compute the seed.
-  seed_t seed = policy_impl->getEventSeed(id, data);
+  seed = policy_impl->getEventSeed(id, data);
   if ((seed != InvalidSeed) && policy_impl->yieldsUniqueSeeds())
     ensureUnique(id, seed, knownEventSeeds);
-  
+    
   // Save the result.
-  knownEventSeeds.emplace(id, seed);
+  knownEventSeeds[id] = seed;
+  
+  // for configured-seed policies, per-event seed is invalid;
+  // in that case we don't expect to change the seed,
+  // and we should not record it as current
+  // we still store it if there is nothing (emplace does not overwrite)
+  if (seed != InvalidSeed) currentSeeds[id] = seed;
+  else                     currentSeeds.emplace(id, seed);
   
   return seed;
 } // SeedMaster<SEED>::getEventSeed(EngineId)

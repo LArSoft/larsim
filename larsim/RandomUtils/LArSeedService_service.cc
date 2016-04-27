@@ -10,6 +10,7 @@
 
 // Art include files
 #include "art/Utilities/Exception.h"
+#include "art/Framework/Core/EngineCreator.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
@@ -37,6 +38,8 @@ namespace sim {
     , verbosity(paramSet.get<int>("verbosity", 0))
     , bPrintEndOfJobSummary(paramSet.get<bool>("endOfJobSummary",false))
   {
+    state.transit_to(SeedServiceHelper::ArtState::inServiceConstructor);
+    
     // Register callbacks.
     iRegistry.sPreModuleConstruction.watch  (this, &LArSeedService::preModuleConstruction  );
     iRegistry.sPostModuleConstruction.watch (this, &LArSeedService::postModuleConstruction );
@@ -46,6 +49,8 @@ namespace sim {
     iRegistry.sPreModule.watch              (this, &LArSeedService::preModule              );
     iRegistry.sPostModule.watch             (this, &LArSeedService::postModule             );
     iRegistry.sPostProcessEvent.watch       (this, &LArSeedService::postProcessEvent       );
+    iRegistry.sPreModuleEndJob.watch        (this, &LArSeedService::preModuleEndJob        );
+    iRegistry.sPostModuleEndJob.watch       (this, &LArSeedService::postModuleEndJob       );
     iRegistry.sPostEndJob.watch             (this, &LArSeedService::postEndJob             );
     
   } // LArSeedService::LArSeedService()
@@ -74,30 +79,53 @@ namespace sim {
   
   
   //----------------------------------------------------------------------------
-  void LArSeedService::print() const { seeds.print(); }
+  LArSeedService::seed_t LArSeedService::getGlobalSeed(std::string instanceName) {
+    EngineId ID(instanceName, EngineId::global);
+    LOG_DEBUG("LArSeedService")
+      << "LArSeedService::getGlobalSeed(\"" << instanceName << "\")";
+    return getSeed(ID);
+  } // LArSeedService::getGlobalSeed()
   
   
   //----------------------------------------------------------------------------
   LArSeedService::seed_t LArSeedService::getSeed(EngineId const& id) {
     
-    // Are we being called from the right place?
-    ensureValidState();
+    // We require an engine to have been registered before we yield seeds;
+    // this should minimise unexpected conflicts.
+    if (hasEngine(id)) return querySeed(id); // ask the seed to seed master
     
-    // Ask the seed master about seeds...
-    return seeds.getSeed(id);
-  } // LArSeedService::getSeed(EngineID)
+    // if it hasn't been declared, we declare it now
+    // (this is for backward compatibility with the previous behaviour).
+    // registerEngineID() will eventually call this function again to get the
+    // seed... so we return it directly.
+    // Also note that this effectively "freezes" the engine since no seeder
+    // is specified.
+    return registerEngineID(id);
+        
+  } // LArSeedService::getSeed(EngineId)
   
   
-  std::pair<LArSeedService::seed_t, bool> LArSeedService::getSeed(
+  LArSeedService::seed_t LArSeedService::querySeed(EngineId const& id) {
+    return seeds.getSeed(id); // ask the seed to seed master
+  } // LArSeedService::querySeed()
+  
+  
+  std::pair<LArSeedService::seed_t, bool> LArSeedService::findSeed(
     EngineId const& id,
-    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pname
+    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pnames
   ) {
     seed_t seed = InvalidSeed;
-    bool bFrozen = readSeedParameter(seed, pset, pname);
-    // if we got a seed, but it is invalid, we pretend we got nothing
-    if (bFrozen && (seed == InvalidSeed)) bFrozen = false;
-    return { (bFrozen? seed: getSeed(id)), bFrozen };
-  } // LArSeedService::getSeed(ParameterSet)
+    // try and read the seed from configuration; if succeed, it's "frozen"
+    bool const bFrozen = readSeedParameter(seed, pset, pnames);
+    
+    // if we got a valid seed, use it as frozen
+    if (bFrozen && (seed != InvalidSeed))
+      return { seed, true };  
+    
+    // seed was not good enough; get the seed from the master
+    return { querySeed(id), false };
+    
+  } // LArSeedService::findSeed()
   
   
   //----------------------------------------------------------------------------
@@ -129,32 +157,32 @@ namespace sim {
   LArSeedService::seed_t LArSeedService::createEngine(
     art::EngineCreator& module, std::string type,
     std::string instance,
-    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pname
+    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pnames
   ) {
     EngineId id = qualify_engine_label(instance);
     registerEngineAndSeeder(id, RandomNumberGeneratorSeeder);
-    std::pair<seed_t, bool> seedInfo = getSeed(id, pset, pname);
+    std::pair<seed_t, bool> seedInfo = findSeed(id, pset, pnames);
     module.createEngine(seedInfo.first, type, instance);
     mf::LogInfo("LArSeedService")
       << "Seeding " << type << " engine \"" << id.artName()
       << "\" with seed " << seedInfo.first << ".";
-    if (seedInfo.second) freezeSeed(id);
+    if (seedInfo.second) freezeSeed(id, seedInfo.first);
     return seedInfo.first;
   } // LArSeedService::createEngine(ParameterSet)
   
   
   LArSeedService::seed_t LArSeedService::createEngine(
     art::EngineCreator& module,
-    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pname
+    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pnames
   ) {
     EngineId id = qualify_engine_label();
     registerEngineAndSeeder(id, RandomNumberGeneratorSeeder);
-    std::pair<seed_t, bool> seedInfo = getSeed(id, pset, pname);
+    std::pair<seed_t, bool> seedInfo = findSeed(id, pset, pnames);
     module.createEngine(seedInfo.first);
     mf::LogInfo("LArSeedService")
       << "Seeding default-type engine \"" << id.artName()
       << "\" with seed " << seedInfo.first << ".";
-    if (seedInfo.second) freezeSeed(id);
+    if (seedInfo.second) freezeSeed(id, seedInfo.first);
     return seedInfo.first;
   } // LArSeedService::createEngine(ParameterSet)
   
@@ -162,47 +190,102 @@ namespace sim {
   LArSeedService::seed_t LArSeedService::registerEngine
     (SeedMaster_t::Seeder_t seeder, std::string instance /* = "" */)
   {
-    EngineId id = qualify_engine_label(instance);
-    const seed_t seed = prepareEngine(id, seeder);
-    if (seeder) {
-      seeder(id, seed);
-      mf::LogInfo("LArSeedService")
-        << "Seeding registered engine \"" << id.artName()
-        << "\" with seed " << seed << ".";
-    }
-    return seed;
-  } // LArSeedService::registerEngine()
+    return registerEngineID(qualify_engine_label(instance), seeder);
+  } // LArSeedService::registerEngine(Seeder_t, string)
   
   
   LArSeedService::seed_t LArSeedService::registerEngine(
     SeedMaster_t::Seeder_t seeder, std::string instance,
-    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pname
+    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pnames
   ) {
     EngineId id = qualify_engine_label(instance);
     registerEngineAndSeeder(id, seeder);
-    std::pair<seed_t, bool> seedInfo = getSeed(id, pset, pname);
-    if (seeder) {
-      seeder(id, seedInfo.first);
-      mf::LogInfo("LArSeedService")
-        << "Seeding registered engine \"" << id.artName()
-        << "\" with seed " << seedInfo.first << ".";
-    }
-    if (seedInfo.second) freezeSeed(id);
-    return seedInfo.first;
+    std::pair<seed_t, bool> seedInfo = findSeed(id, pset, pnames);
+    seedEngine(id); // seed it before freezing
+    if (seedInfo.second) freezeSeed(id, seedInfo.first);
+    seed_t const seed = seedInfo.first;
+    return seed;
+  } // LArSeedService::registerEngine(Seeder_t, string, ParameterSet, init list)
+  
+    
+  LArSeedService::seed_t LArSeedService::declareEngine(std::string instance) {
+    return registerEngine(SeedMaster_t::Seeder_t(), instance);
+  } // LArSeedService::declareEngine(string)
+  
+  
+  LArSeedService::seed_t LArSeedService::declareEngine(
+    std::string instance,
+    fhicl::ParameterSet const& pset, std::initializer_list<std::string> pnames
+  ) {
+    return registerEngine(SeedMaster_t::Seeder_t(), instance, pset, pnames);
+  } // LArSeedService::declareEngine(string, ParameterSet, init list)
+  
+  
+  LArSeedService::seed_t LArSeedService::defineEngine
+    (SeedMaster_t::Seeder_t seeder, std::string instance /* = {} */)
+  {
+    return defineEngineID(qualify_engine_label(instance), seeder);
+  } // LArSeedService::defineEngine(string, Seeder_t)
+  
+    
+  //----------------------------------------------------------------------------
+  LArSeedService::seed_t LArSeedService::registerEngineID(
+    EngineId const& id,
+    SeedMaster_t::Seeder_t seeder /* = SeedMaster_t::Seeder_t() */
+  ) {
+    prepareEngine(id, seeder);
+    return seedEngine(id);
   } // LArSeedService::registerEngine()
   
   
-  //----------------------------------------------------------------------------
-  void LArSeedService::ensureValidState() const {
-    // getSeed may only be called from a c'tor or from a beginRun method.
-    // In all other cases, throw.
-    if ( (state.state() != SeedServiceHelper::ArtState::inModuleConstructor)
-      && (state.state() != SeedServiceHelper::ArtState::inBeginRun)
-      )
-    {
+  LArSeedService::seed_t LArSeedService::defineEngineID
+    (EngineId const& id, SeedMaster_t::Seeder_t seeder)
+  {
+    if (!hasEngine(id)) {
       throw art::Exception(art::errors::LogicError)
-        << "LArSeedService: not in a module constructor or beginRun method. May not call getSeed.";
+        << "Attempted to define engine '" << id.artName()
+        << "', that was not declared\n";
     }
+    
+    if (seeds.hasSeeder(id)) {
+      throw art::Exception(art::errors::LogicError)
+        << "Attempted to redefine engine '" << id.artName()
+        << "', that has already been defined\n";
+    }
+    
+    ensureValidState();
+    
+    seeds.registerSeeder(id, seeder);
+    seed_t const seed = seedEngine(id);
+    return seed;
+  } // LArSeedService::defineEngineID()
+  
+  
+  //----------------------------------------------------------------------------
+  void LArSeedService::ensureValidState(bool bGlobal /* = false */) const {
+    if (bGlobal) {
+      // registering engines may only happen in a service c'tor
+      // In all other cases, throw.
+      if ( (state.state() != SeedServiceHelper::ArtState::inServiceConstructor))
+      {
+        throw art::Exception(art::errors::LogicError)
+          << "LArSeedService: not in a service constructor."
+          << " May not register \"global\" engines.\n";
+      }
+    }
+    else { // context-aware engine
+      // registering engines may only happen in a c'tor
+      // (disabling the ability to do that or from a beginRun method)
+      // In all other cases, throw.
+      if ( (state.state() != SeedServiceHelper::ArtState::inModuleConstructor)
+      //  && (state.state() != SeedServiceHelper::ArtState::inModuleBeginRun)
+        )
+      {
+        throw art::Exception(art::errors::LogicError)
+          << "LArSeedService: not in a module constructor."
+          << " May not register engines.\n";
+      }
+    } // if
   } // LArSeedService::ensureValidState()
   
   
@@ -210,8 +293,8 @@ namespace sim {
   LArSeedService::seed_t LArSeedService::reseedInstance(EngineId const& id) {
     // get all the information on the current process, event and module from
     // ArtState:
-    SeedMaster_t::EventData_t data(state.getEventSeedInputData());
-    seed_t seed = seeds.reseedEvent(id, data);
+    SeedMaster_t::EventData_t const data(state.getEventSeedInputData());
+    seed_t const seed = seeds.reseedEvent(id, data);
     if (seed == InvalidSeed) {
       mf::LogDebug("LArSeedService")
         << "No random seed specific to this event for engine '" << id << "'";
@@ -234,6 +317,14 @@ namespace sim {
   void LArSeedService::reseedModule() { reseedModule(state.moduleLabel()); }
   
   
+  void LArSeedService::reseedGlobal() {
+    for (EngineId const& ID: seeds.engineIDsRange()) {
+      if (!ID.isGlobal()) continue; // not global? neeext!!
+      reseedInstance(ID);
+    } // for
+  } // LArSeedService::reseedGlobal()
+  
+  
   //----------------------------------------------------------------------------
   void LArSeedService::RandomNumberGeneratorSeeder
     (EngineId const& id, seed_t seed)
@@ -250,18 +341,21 @@ namespace sim {
   void LArSeedService::registerEngineAndSeeder
     (EngineId const& id, SeedMaster_t::Seeder_t seeder)
   {
+    // Are we being called from the right place?
+    ensureValidState(id.isGlobal());
+    
     if (hasEngine(id)) {
       throw art::Exception(art::errors::LogicError)
-        << "LArSeedService: an engine with ID '" << id
-        << "' has already been created!";
+        << "LArSeedService: an engine with ID '" << id.artName()
+        << "' has already been created!\n";
     }
-    seeds.registerSeeder(id, seeder);
-  } // LArSeedService::registerEngine()
+    seeds.registerNewSeeder(id, seeder);
+  } // LArSeedService::registerEngineAndSeeder()
   
   
   //----------------------------------------------------------------------------
-  void LArSeedService::freezeSeed(EngineId const& id)
-    { seeds.freezeSeed(id); }
+  void LArSeedService::freezeSeed(EngineId const& id, seed_t frozen_seed)
+    { seeds.freezeSeed(id, frozen_seed); }
   
   
   //----------------------------------------------------------------------------
@@ -269,7 +363,7 @@ namespace sim {
     (EngineId const& id, SeedMaster_t::Seeder_t seeder)
   {
     registerEngineAndSeeder(id, seeder);
-    return getSeed(id);
+    return querySeed(id);
   } // LArSeedService::prepareEngine()
   
   
@@ -288,7 +382,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   // Callbacks called by art.  Used to maintain information about state.
   void LArSeedService::preModuleConstruction(art::ModuleDescription const& md)  {
-    state.set_state(SeedServiceHelper::ArtState::inModuleConstructor);
+    state.transit_to(SeedServiceHelper::ArtState::inModuleConstructor);
     state.set_module(md);
   } // LArSeedService::preModuleConstruction()
   
@@ -297,7 +391,7 @@ namespace sim {
   } // LArSeedService::postModuleConstruction()
   
   void LArSeedService::preModuleBeginRun(art::ModuleDescription const& md) {
-    state.set_state(SeedServiceHelper::ArtState::inBeginRun);
+    state.transit_to(SeedServiceHelper::ArtState::inModuleBeginRun);
     state.set_module(md);
   } // LArSeedService::preModuleBeginRun()
   
@@ -306,17 +400,23 @@ namespace sim {
   } // LArSeedService::postModuleBeginRun()
   
   void LArSeedService::preProcessEvent(art::Event const& evt) {
-    state.set_state(SeedServiceHelper::ArtState::inEvent);
+    state.transit_to(SeedServiceHelper::ArtState::inEvent);
     state.set_event(evt);
     seeds.onNewEvent(); // inform the seed master that a new event has come
+    
+    LOG_DEBUG("LArSeedService") << "preProcessEvent(): will reseed global engines";
+    reseedGlobal(); // why don't we do them all?!?
+    
   } // LArSeedService::preProcessEvent()
   
   void LArSeedService::preModule(art::ModuleDescription const& md) {
-    state.set_state(SeedServiceHelper::ArtState::inModuleEvent);
+    state.transit_to(SeedServiceHelper::ArtState::inModuleEvent);
     state.set_module(md);
     
     // Reseed all the engine of this module... maybe
     // (that is, if the current policy alows it).
+    LOG_DEBUG("LArSeedService") << "preModule(): will reseed engines for module '"
+      << md.moduleLabel() << "'";
     reseedModule(md.moduleLabel());
   } // LArSeedService::preModule()
   
@@ -330,6 +430,14 @@ namespace sim {
     state.reset_state();
   } // LArSeedService::postProcessEvent()
   
+  void LArSeedService::preModuleEndJob(art::ModuleDescription const& md) {
+    state.transit_to(SeedServiceHelper::ArtState::inEndJob);
+    state.set_module(md);
+  } // LArSeedService::preModuleBeginRun()
+  
+  void LArSeedService::postModuleEndJob(art::ModuleDescription const&) {
+    state.reset_state();
+  } // LArSeedService::preModuleBeginRun()
   
   void LArSeedService::postEndJob() {
     if ((verbosity > 0) || bPrintEndOfJobSummary)

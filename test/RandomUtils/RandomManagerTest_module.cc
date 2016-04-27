@@ -7,8 +7,10 @@
 
 
 // art extensions
-#define SEEDSERVICE_USECLHEP // to have LArSeedService.h define CLHEPengineSeeder
+#define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP 1 // to have LArSeedService.h define CLHEPengineSeeder
 #include "larsim/RandomUtils/LArSeedService.h"
+
+#include "test/RandomUtils/SeedTestUtils.h"
 
 // C++ includes.
 #include <string>
@@ -74,12 +76,6 @@ namespace testing {
     CLHEP::HepRandomEngine* stdEngine;
     
     std::string moduleName() const;
-    
-    static unsigned short RollStat(CLHEP::RandFlat& rand);
-    static std::string CreateCharacter(CLHEP::HepRandomEngine& engine);
-    
-    static seed_t readSeed(CLHEP::HepRandomEngine const& engine)
-      { return engine.getSeed(); }
     
   }; // class RandomManagerTest
   
@@ -181,10 +177,10 @@ namespace testing {
       std::string const& instanceName = allInstances[iEngine];
       CLHEP::HepRandomEngine& engine = *(allEngines[iEngine]);
       
-      seed_t actualSeed = readSeed(engine);
+      seed_t actualSeed = testing::LArSeedService::readSeed(engine);
       mf::LogVerbatim("RandomManagerTest")
         << std::setw(12) << (instanceName.empty()? "<default>": instanceName)
-        << ": " << CreateCharacter(engine)
+        << ": " << testing::LArSeedService::CreateCharacter(engine)
         << "   (seed: " << actualSeed << ")";
     } // for
     
@@ -195,40 +191,6 @@ namespace testing {
     { return art::ServiceHandle<art::CurrentModule>()->label(); }
   
   
-  
-  unsigned short RandomManagerTest::RollStat(CLHEP::RandFlat& rand) {
-    std::vector<unsigned short> rolls(4);
-    unsigned int min = 6, total = 0;
-    for (int i = 0; i < 4; ++i) {
-      unsigned int roll = 1 + rand.fireInt(0, 6);
-      rolls[i] = roll;
-      if (min > roll) min = roll;
-      total += roll;
-    }
-    total -= min;
-    return total;
-  } // RandomManagerTest::RollStat()
-  
-  
-  std::string RandomManagerTest::CreateCharacter(CLHEP::HepRandomEngine& engine)
-  {
-    CLHEP::RandFlat flat(engine);
-    constexpr size_t NStats = 6;
-    static const std::array<std::string, NStats> statNames
-      = { "STR", "DEX", "CON", "INT", "WIS", "CHA" };
-    std::array<unsigned short int, NStats> stats;
-    std::generate(stats.begin(), stats.end(), [&flat]{ return RollStat(flat); });
-    
-    short int bonus = 0;
-    std::ostringstream sstr;
-    for (size_t iStat = 0; iStat < NStats; ++iStat) {
-      sstr << "  " << statNames[iStat] << "=" << std::setw(2) << stats[iStat];
-      bonus += stats[iStat] / 2 - 5;
-    } // for
-    sstr << "  [bonus: " << std::setw(3) << std::showpos << bonus << "]";
-    return sstr.str();
-  } // RandomManagerTest::CreateCharacter()
-  
-} // namespace testing
+} // end namespace testing
 
 DEFINE_ART_MODULE(testing::RandomManagerTest)

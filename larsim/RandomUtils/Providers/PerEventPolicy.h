@@ -200,7 +200,7 @@ namespace sim {
       if (!info.isTimeValid) {
         throw art::Exception(art::errors::InvalidNumber)
           << "Input event has an invalid timestamp,"
-          " random seed per-event policy EventTimestamp_v1 can't be used.";
+          " random seed per-event policy EventTimestamp_v1 can't be used.\n";
       }
       std::string s = UniqueEventString(info)
         + " Process: " + info.processName
@@ -231,7 +231,7 @@ namespace sim {
       }
       if (algo == saUndefined) {
         throw art::Exception(art::errors::Configuration)
-          << "No valid event random seed algorithm specified!";
+          << "No valid event random seed algorithm specified!\n";
       }
       
       // read an optional overall offset
@@ -266,11 +266,11 @@ namespace sim {
           break;
         case saUndefined:
           throw art::Exception(art::errors::Configuration)
-            << "Per-event random number seeder not configured!";
+            << "Per-event random number seeder not configured!\n";
         default:
           throw art::Exception(art::errors::LogicError)
             << "Unsupported per-event random number seeder (#"
-            << ((int) algo) << ")";
+            << ((int) algo) << ")\n";
       } // switch
       return seed + offset;
     } // PerEventPolicy<SEED>::createEventSeed()
