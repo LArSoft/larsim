@@ -12,13 +12,16 @@
 #include "larsim/LArG4/ISCalculation.h"
 #include "larsim/LArG4/NestAlg.h"
 
+// forward declaration
+namespace CLHEP { class HepRandomEngine; } 
+
 namespace larg4 {
 
   class ISCalculationNEST : public ISCalculation {
 
  public:
 
-   ISCalculationNEST();
+   ISCalculationNEST(CLHEP::HepRandomEngine& engine);
    virtual ~ISCalculationNEST();
 
    void   Initialize();
@@ -33,6 +36,7 @@ namespace larg4 {
 
    NestAlg* fNest;     ///< the fast optical simulation process
    double   fStepSize; ///< maximum step to take
+   CLHEP::HepRandomEngine& fEngine; ///< random engine
  };
 }
 #endif // LARG4_ISCALCULATIONNEST_H

@@ -23,7 +23,7 @@
 namespace larg4{
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::ISCalculationSeparate()
+  ISCalculationSeparate::ISCalculationSeparate(CLHEP::HepRandomEngine&)
   {
   }
 

@@ -40,20 +40,11 @@ namespace sim
   public:
 
     /// Default constructor with fhicl parameters
-    MCTrackRecoAlg(fhicl::ParameterSet const& pset);
-
-    /// Default destructor
-    virtual ~MCTrackRecoAlg(){};
-
-    void Reconstruct(MCRecoPart& part_v, MCRecoEdep& edep_v);
-
-    const std::vector<sim::MCTrack>& MCTrack() const { return fMCTrack; }
+    explicit MCTrackRecoAlg(fhicl::ParameterSet const& pset);
+    std::unique_ptr<std::vector<sim::MCTrack>> Reconstruct(MCRecoPart& part_v, MCRecoEdep& edep_v);
 
   protected:
-
     bool             fDebugMode;
-    
-    std::vector<sim::MCTrack> fMCTrack;
 
   }; // class MCShowerHitRecoAlg
   

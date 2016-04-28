@@ -9,8 +9,8 @@ fwdir   product_dir G4
 product         version
 larevt		v06_00_00_rc1
 gcc		v4_9_3
-genie_xsec      v2_10_2 
-genie_phyopt    v2_10_2 
+genie_xsec      v2_10_6 
+genie_phyopt    v2_10_6 
 larsoft_data    v0_06_01
 artextensions   v1_02_07
 
@@ -19,10 +19,10 @@ end_product_list
 
   
 # e9  - with gcc 4.9.3 and -std=c++14
-qualifier	larevt	 	genie_xsec	genie_phyopt	gcc	larsoft_data	artextensions	notes
-e9:debug	e9:debug	default		dkcharmtau	-nq-	-nq-		e9:nu:s31:debug
-e9:opt		e9:opt		default		dkcharmtau	-nq-	-nq-		e9:nu:s31:opt
-e9:prof		e9:prof		default		dkcharmtau	-nq-	-nq-		e9:nu:s31:prof
+qualifier	larevt	 	genie_xsec		genie_phyopt	gcc	larsoft_data	artextensions	notes
+e9:debug	e9:debug	defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s30:debug
+e9:opt		e9:opt		defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s30:opt
+e9:prof		e9:prof		defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s30:prof
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

@@ -34,11 +34,19 @@
 const G4bool debug = false;
 
 namespace larg4 {
-
+  
   // Initialize static members.
-  simb::MCParticle* ParticleListAction::fparticle       = 0;
-  int               ParticleListAction::fCurrentTrackID = sim::NoParticleId;
-  int               ParticleListAction::fTrackIDOffset  = 0;
+  int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
+  int ParticleListAction::fTrackIDOffset = 0;
+  
+  //----------------------------------------------------------------------------
+  // Dropped particle test
+  
+  bool ParticleListAction::isDropped(simb::MCParticle const* p) {
+    return !p || p->Trajectory().empty();
+  } // ParticleListAction::isDropped()
+
+
 
   //----------------------------------------------------------------------------
   // Constructor.
@@ -69,10 +77,11 @@ namespace larg4 {
   void ParticleListAction::BeginOfEventAction(const G4Event*)
   {
     // Clear any previous particle information.
-    fparticle = 0;
+    fCurrentParticle.clear();
     fparticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
+    
   }
 
   //-------------------------------------------------------------
@@ -112,6 +121,7 @@ namespace larg4 {
     // ID number that we'll use in the ParticleList.
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
+
     // And the particle's parent:
     G4int parentID = track->GetParentID();
 
@@ -170,12 +180,12 @@ namespace larg4 {
 	// isn't saved in the particle list because it is below the energy cut
 	// which will put a bogus track id value into the sim::IDE object for 
 	// the sim::SimChannel if we don't check it.
-	if(fparticleList->find(fCurrentTrackID) == fparticleList->end() )
+   if(!fparticleList->KnownParticle(fCurrentTrackID))
 	  fCurrentTrackID = sim::NoParticleId;
 	
-	// set fparticle to 0 as we are not stepping this particle and 
+	// clear current particle as we are not stepping this particle and 
 	// adding trajectory points to it
-	fparticle = 0;
+	fCurrentParticle.clear();
 	return;
 	
       } // end if keeping EM shower daughters
@@ -184,7 +194,7 @@ namespace larg4 {
       // cut, don't add it to our list.
       G4double energy = track->GetKineticEnergy();
       if( energy < fenergyCut ){
-	fparticle = 0;
+	fCurrentParticle.clear();
 
 	// do add the particle to the parent id map though
 	// and set the current track id to be it's ultimate parent
@@ -199,7 +209,7 @@ namespace larg4 {
       // if not, then see if it is possible to walk up the fParentIDMap to find the
       // ultimate parent of this particle.  Use that ID as the parent ID for this
       // particle
-      if( fparticleList->find(parentID) == fparticleList->end() ){
+      if( !fparticleList->KnownParticle(parentID) ){
 	// do add the particle to the parent id map
 	// just in case it makes a daughter that we have to track as well
 	fParentIDMap[trackID] = parentID;
@@ -207,7 +217,7 @@ namespace larg4 {
 	
 	// if we still can't find the parent in the particle navigator, 
 	// we have to give up
-	if( fparticleList->find(pid) == fparticleList->end() ){
+   if( !fparticleList->KnownParticle(pid) ){
 	  mf::LogWarning("ParticleListAction") << "can't find parent id: "
 					       << parentID 
 					       << " in the particle list, or fParentIDMap."
@@ -225,38 +235,54 @@ namespace larg4 {
     double mass = dynamicParticle->GetMass()/CLHEP::GeV;
 
     // Create the sim::Particle object.
-    fparticle = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    fCurrentParticle.clear();
+    fCurrentParticle.particle
+      = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    // if we are not filtering, we have a decision already
+    if (!fFilter) fCurrentParticle.keep = true;
     
     // Polarization.
     const G4ThreeVector& polarization = track->GetPolarization();
-    fparticle->SetPolarization( TVector3( polarization.x(),
+    fCurrentParticle.particle->SetPolarization( TVector3( polarization.x(),
 					  polarization.y(),
 					  polarization.z() ) );
 
     // Save the particle in the ParticleList.
-    fparticleList->Add( fparticle );
+    fparticleList->Add( fCurrentParticle.particle );
   }
 
   //----------------------------------------------------------------------------
   void ParticleListAction::PostTrackingAction( const G4Track* aTrack)
   {
-    if(fparticle && aTrack){
-      fparticle->SetWeight(aTrack->GetWeight());
+    if (!fCurrentParticle.hasParticle()) return;
+    
+    // if we have found no reason to keep it, drop it!
+    // (we might still need parentage information though)
+    if (!fCurrentParticle.keep) {
+      fparticleList->Archive(fCurrentParticle.particle);
+      // after the particle is archived, it is deleted
+      fCurrentParticle.clear();
+      return;
+    }
+
+    if(aTrack){
+      fCurrentParticle.particle->SetWeight(aTrack->GetWeight());
       G4String process = aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-      fparticle->SetEndProcess(process);
+      fCurrentParticle.particle->SetEndProcess(process);
 
 
     }
 
     return;
   }
-
+  
+  
   //----------------------------------------------------------------------------
   // With every step, add to the particle's trajectory.
   void ParticleListAction::SteppingAction(const G4Step* step)
   {
     
-    if ( fparticle == 0 ) {
+    if ( !fCurrentParticle.hasParticle() ) {
       return;
     }
 
@@ -265,7 +291,7 @@ namespace larg4 {
     // exception: In PreTrackingAction, the correct time information
     // is not available.  So add the correct vertex information here.
 
-    if ( fparticle->NumberTrajectoryPoints() == 0 ){
+    if ( fCurrentParticle.particle->NumberTrajectoryPoints() == 0 ){
       
       // Get the pre/along-step information from the G4Step.
       const G4StepPoint* preStepPoint = step->GetPreStepPoint();
@@ -287,7 +313,8 @@ namespace larg4 {
 			      energy / CLHEP::GeV);
       
       // Add the first point in the trajectory.
-      fparticle->AddTrajectoryPoint( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom );
+      
     } // end if this is the first step
 
     // At this point, the particle is being transported through the
@@ -330,7 +357,8 @@ namespace larg4 {
 			      energy / CLHEP::GeV );
       
       // Add another point in the trajectory.
-      fparticle->AddTrajectoryPoint( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom );
+      
     }
   }
 
@@ -348,11 +376,13 @@ namespace larg4 {
     void operator()( sim::ParticleList::value_type& particleListEntry )
     {
       // We're looking at this Particle in the list.
-      simb::MCParticle* particle = particleListEntry.second;
+      int particleID = particleListEntry.first;
 
-      // The parent ID of this particle.
-      int parentID = particle->Mother();
-
+      // The parent ID of this particle;
+      // we ask the particle list since the particle itself might have been lost
+      // ("archived"), but the particle list still holds the information we need
+      int parentID = particleList->GetMotherOf(particleID);
+      
       // If the parentID <= 0, this is a primary particle.
       if ( parentID <= 0 ) return;
 
@@ -370,11 +400,12 @@ namespace larg4 {
 	// daughter that passed the cut (e.g., a nuclear decay).
 	return;
       }
+      if ( !parentEntry->second ) return; // particle archived, nothing to update
 
       // Add the current particle to the daughter list of the
       // parent.
       simb::MCParticle* parent = (*parentEntry).second;
-      parent->AddDaughter( particle->TrackId() );
+      parent->AddDaughter( particleID );
     }
   private:
     sim::ParticleList* particleList;     
@@ -415,5 +446,39 @@ namespace larg4 {
 
     return fparticleList;
   }
+ 
+  //----------------------------------------------------------------------------
+  // Yields the ParticleList accumulated during the current event.
+  sim::ParticleList&& ParticleListAction::YieldList()
+  {
+    // check if the ParticleNavigator has entries, and if
+    // so grab the highest track id value from it to 
+    // add to the fTrackIDOffset
+    int highestID = 0;
+    for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
+      if( (*pn).first > highestID ) highestID = (*pn).first;
+      
+    fTrackIDOffset = highestID + 1;
 
+    return std::move(*fparticleList);
+  } // ParticleList&& ParticleListAction::YieldList()
+  
+  
+  //----------------------------------------------------------------------------
+  void ParticleListAction::AddPointToCurrentParticle
+    (TLorentzVector const& pos, TLorentzVector const& mom)
+  {
+    
+    // Add the first point in the trajectory.
+    fCurrentParticle.particle->AddTrajectoryPoint(pos, mom);
+    
+    // also see if we can decide to keep the particle
+    if (!fCurrentParticle.keep)
+        fCurrentParticle.keep = fFilter->mustKeep(pos);
+    
+  } // ParticleListAction::AddPointToCurrentParticle()
+  
+
+  //----------------------------------------------------------------------------
+  
 } // namespace LArG4

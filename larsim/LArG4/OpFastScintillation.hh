@@ -86,8 +86,6 @@
 
 #include "Geant4/globals.hh"
 #include "Geant4/templates.hh"
-#include "Geant4/Randomize.hh"
-#include "Geant4/G4Poisson.hh"
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4ParticleMomentum.hh"
 #include "Geant4/G4Step.hh"

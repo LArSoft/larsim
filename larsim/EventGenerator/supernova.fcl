@@ -4,7 +4,7 @@ standard_supernova_alg:
 {
   # Sample this energy spectrum (found in $FW_SEARCH_PATH)
   # This value is not used if Monoenergetic neutrinos is set to true
-  EnergySpectrumFileName: "nue_spectrum.root"
+  EnergySpectrumFileName: "gvkm_xscn_weighted_nue_spectrum.root"
   # Use the same energy for all of the simulated neutrinos
   MonoenergeticNeutrinos:   false
   # Neutrinos of this energy are generated only if 
@@ -30,6 +30,7 @@ standard_supernova:
   GeneratorAlg: @local::standard_supernova_alg
 }
 
-dunefd_workspace_supernova: @local::standard_supernova
+#The following is moved to supernova_dune.fcl. 
+#dunefd_workspace_supernova: @local::standard_supernova
 
 END_PROLOG

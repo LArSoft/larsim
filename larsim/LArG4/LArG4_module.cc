@@ -41,8 +41,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Persistency/Common/Ptr.h"
@@ -67,6 +65,7 @@
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "larsim/LArG4/AuxDetReadoutGeometry.h"
 #include "larsim/LArG4/AuxDetReadout.h"
+#include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "SimulationBase/MCTruth.h"
@@ -114,7 +113,20 @@ namespace larg4 {
   class ParticleListAction;
   
   /**
-   * @brief
+   * @brief Runs Geant4 simulation and propagation of electrons and photons to readout
+   *
+   *
+   * Randomness
+   * -----------
+   *
+   * The random number generators used by this process are:
+   * - 'GEANT' instance: used by Geant4
+   * - 'propagation' instance: used in electron propagation
+   * - 'radio' instance: used for radiological decay
+   *
+   *
+   * Configuration parameters
+   * -------------------------
    *
    * - <b>G4PhysListName</b> (string, default "larg4::PhysicsList"):
    *     whether to use the G4 overlap checker, which catches different issues than ROOT
@@ -130,8 +142,15 @@ namespace larg4 {
    *     list of volumes in which to keep MCParticles (empty keeps all)
    * - <b>GeantCommandFile</b> (string, required):
    *     G4 macro file to pass to G4Helper for setting G4 command
-   * - <b>Seed</b> (pset key, not defined by default): if defined, override random
-   *     number service, which is obtained from the SeedService by default.
+   * - <b>Seed</b> (pset key, not defined by default): if defined, override the seed for
+   *     random number generator used in Geant4 simulation (which is obtained from
+   *     SeedService by default)
+   * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
+   *     override the seed for the random generator used for electrons propagation
+   *     to the wire planes (obtained from the SeedService by default)
+   * - <b>RadioSeed</b> (pset key, not defined by default): if defined,
+   *     override the seed for the random generator used for radiological decay
+   *     (obtained from the SeedService by default)
    * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
    *     optional list of generator labels which produce MCTruth;
    *     otherwise look for anything that has made MCTruth
@@ -149,8 +168,6 @@ namespace larg4 {
     void produce (art::Event& evt); 
     void beginJob();
     void beginRun(art::Run& run);
-    void FillInterestingVolumes(std::set<std::string> const& vol_names);
-    bool KeepParticle(simb::MCParticle const& part) const;
 
   private:
     g4b::G4Helper*             fG4Help;             ///< G4 interface object                                           
@@ -168,8 +185,11 @@ namespace larg4 {
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
-    std::vector<std::pair<TGeoVolume const*, TGeoCombiTrans*>> fGeoVolumePairs; ///< Volumes and transformations for fKeepParticlesInVolumes
-
+    
+    /// Configures and returns a particle filter
+    std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
+      (std::set<std::string> const& vol_names) const;
+    
   };
 
 } // namespace LArG4
@@ -191,13 +211,25 @@ namespace larg4 {
 
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
 
+    if (pset.has_key("Seed")) {
+      throw art::Exception(art::errors::Configuration)
+        << "The configuration of LArG4 module has the discontinued 'Seed' parameter.\n"
+        "Seeds are now controlled by three parameters: 'GEANTSeed', 'PropagationSeed' and 'RadioSeed'.";
+    }
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from SeedService,
-    // unless overridden in configuration with key "Seed"
+    // unless overridden in configuration with key "Seed" or "GEANTSeed"
     art::ServiceHandle<artext::SeedService>()
-      ->createEngine(*this, "G4Engine", pset, "Seed");
+      ->createEngine(*this, "G4Engine", "GEANT", pset, "GEANTSeed");
+    // same thing for the propagation engine:
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
+    // and again for radio decay
+    art::ServiceHandle<artext::SeedService>()
+      ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object
@@ -239,6 +271,7 @@ namespace larg4 {
   void LArG4::beginJob()
   {
     art::ServiceHandle<geo::Geometry> geom;
+    auto* rng = &*(art::ServiceHandle<art::RandomNumberGenerator>());
 
     fG4Help = new g4b::G4Helper(fG4MacroPath, fG4PhysListName);
     if(fCheckOverlaps) fG4Help->SetOverlapCheck(true);
@@ -252,8 +285,16 @@ namespace larg4 {
     // Tell the detector about the parallel LAr voxel geometry.
     std::vector<G4VUserParallelWorld*> pworlds;
 
+    // create the ionization and scintillation calculator;
+    // this is a singleton (!) so it does not make sense
+    // to create it in LArVoxelReadoutGeometry
+    IonizationAndScintillation::CreateInstance(rng->getEngine("propagation"));
+
     // make a parallel world for each TPC in the detector
-    pworlds.push_back( new LArVoxelReadoutGeometry("LArVoxelReadoutGeometry") );
+    pworlds.push_back(new LArVoxelReadoutGeometry(
+      "LArVoxelReadoutGeometry",
+      rng->getEngine("propagation"), rng->getEngine("radio")
+      ));
     pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
     pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );
 
@@ -305,16 +346,29 @@ namespace larg4 {
   }
 
   void LArG4::beginRun(art::Run& run){
-    //Fill interesting volumes object
+    // prepare the filter object (null if no filtering)
+    
     std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(), fKeepParticlesInVolumes.end());
-    FillInterestingVolumes(volnameset);
+    fparticleListAction->ParticleFilter(CreateParticleVolumeFilter(volnameset));
+    
   }
   
-  void LArG4::FillInterestingVolumes(std::set<std::string> const& vol_names) {
+  std::unique_ptr<PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter
+    (std::set<std::string> const& vol_names) const
+  {
+    
+    // if we don't have favourite volumes, don't even bother creating a filter
+    if (vol_names.empty()) return {};
+    
     auto const& geom = *art::ServiceHandle<geo::Geometry>();
-  
+    
     std::vector<std::vector<TGeoNode const*>> node_paths
       = geom.FindAllVolumePaths(vol_names);
+    
+    // collection of interesting volumes
+    PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
+    GeoVolumePairs.reserve(node_paths.size()); // because we are obsessed
+  
     //for each interesting volume, follow the node path and collect
     //total rotations and translations
     for (size_t iVolume = 0; iVolume < node_paths.size(); ++iVolume) {
@@ -323,10 +377,10 @@ namespace larg4 {
       TGeoTranslation* pTransl = new TGeoTranslation(0.,0.,0.);
       TGeoRotation* pRot = new TGeoRotation();
       for (TGeoNode const* node: path) {
-	TGeoTranslation thistranslate(*node->GetMatrix());
-	TGeoRotation thisrotate(*node->GetMatrix());
-	pTransl->Add(&thistranslate);
-	*pRot=*pRot * thisrotate;
+        TGeoTranslation thistranslate(*node->GetMatrix());
+        TGeoRotation thisrotate(*node->GetMatrix());
+        pTransl->Add(&thistranslate);
+        *pRot=*pRot * thisrotate;
       }
       
       //for some reason, pRot and pTransl don't have tr and rot bits set correctly
@@ -341,32 +395,15 @@ namespace larg4 {
       
       TGeoCombiTrans* pTransf = new TGeoCombiTrans(*pTransl2,*pRot2);
 
-      fGeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
+      GeoVolumePairs.emplace_back(node_paths[iVolume].back()->GetVolume(), pTransf);
 
     }
-
-  } // FillInterestingVolumes()
     
-  bool LArG4::KeepParticle(simb::MCParticle const& part) const {
-    // if no volume in the list, keep everything
-    if (fKeepParticlesInVolumes.empty()) return true;
-    // check every point in the trajectory
-    const int nPoints = (int) part.NumberTrajectoryPoints();
-    for (int iPoint = 0; iPoint < nPoints; ++iPoint) {
-      TLorentzVector const& pos = part.Position(iPoint);
-      double const master[3] = { pos.X(), pos.Y(), pos.Z() };
-      double local[3];
-      for(unsigned int j=0;j<fGeoVolumePairs.size();j++){
-        // transform the point to relative to the volume
-        fGeoVolumePairs[j].second->MasterToLocal(master, local);
-        // containment check
-        if (fGeoVolumePairs[j].first->Contains(local)) return true;
-      } // for volumes
+    return std::make_unique<PositionInVolumeFilter>(std::move(GeoVolumePairs));
+    
+  } // CreateParticleVolumeFilter()
+    
 
-    } // for trajectory points
-    return false;
-  } // LArG4::KeepParticle()
-  
   void LArG4::produce(art::Event& evt)
   {
     LOG_DEBUG("LArG4") << "produce()";
@@ -400,6 +437,8 @@ namespace larg4 {
 	evt.getByLabel(fInputLabels[i],mclists[i]);
     }
     
+    unsigned int nGeneratedParticles = 0;
+    
     // Need to process Geant4 simulation for each interaction separately.
     for(size_t mcl = 0; mcl < mclists.size(); ++mcl){
 
@@ -413,14 +452,32 @@ namespace larg4 {
         // The following tells Geant4 to track the particles in this interaction.
         fG4Help->G4Run(mct);
 
-        const sim::ParticleList& particleList = *( fparticleListAction->GetList() );
+        // receive the particle list
+        sim::ParticleList particleList = fparticleListAction->YieldList();
         
-        for(auto const& partPair: particleList) {
-	  simb::MCParticle const& p = *(partPair.second);
-	  if (!KeepParticle(p)) continue;
-          partCol->push_back(p);
+        
+        //for(auto const& partPair: particleList) {
+        //  simb::MCParticle& p = *(partPair.second);
+        auto iPartPair = particleList.begin();
+        while (iPartPair != particleList.end()) {
+          simb::MCParticle& p = *(iPartPair->second);
+          ++nGeneratedParticles;
+          
+          // if the particle has been marked as dropped, we don't save it
+          // (as of LArSoft ~v5.6 this does not ever happen because
+          // ParticleListAction has already taken care of deleting them)
+          if (ParticleListAction::isDropped(&p)) {
+            ++iPartPair;
+            continue;
+          }
+          partCol->push_back(std::move(p));
           util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
-        }//for
+          // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
+          // is solved and adopted in LArSoft, after which moving will suffice
+          // to avoid dramatic memory usage spikes;
+          // for now, we immediately disposed of used particles
+          iPartPair = particleList.erase(iPartPair);
+        } // while(particleList)
 
 
         // Has the user request a detailed dump of the output objects?
@@ -530,11 +587,11 @@ namespace larg4 {
             std::map<unsigned int, unsigned int>::iterator itertest = channelToscCol.find(ichan);
             if (itertest == channelToscCol.end()) {
               channelToscCol[ichan] = scCol->size();
-              scCol->push_back(std::move(sc));
+              scCol->emplace_back(std::move(sc));
             }
             else {
               unsigned int idtest = itertest->second;
-              auto const tdcideMap = sc.TDCIDEMap();
+              auto const& tdcideMap = sc.TDCIDEMap();
               for(auto const& tdcide : tdcideMap){
                  for(auto const& ide : tdcide.second){
                     double xyz[3] = {ide.x, ide.y, ide.z};
@@ -548,7 +605,7 @@ namespace larg4 {
             } // end if check to see if we've put SimChannels in for ichan yet or not
           }
           else {
-            scCol->push_back(std::move(sc));
+            scCol->emplace_back(std::move(sc));
           } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
         } // end loop over simchannels for this TPC
         // mark it for clearing
@@ -594,12 +651,18 @@ namespace larg4 {
 	
     } // Loop over AuxDets
 	
+    mf::LogInfo("LArG4")
+      << "Geant4 simulated " << nGeneratedParticles << " MC particles, we keep "
+      << partCol->size() << " .";
+    
     if (fdumpSimChannels) {
-      mf::LogInfo out("DumpSimChannels");
-      out << "Wires: " << scCol->size() << " channels with signal" << std::endl;
+      mf::LogVerbatim("DumpSimChannels")
+        << "Event " << evt.id()
+        << ": " << scCol->size() << " channels with signal";
       unsigned int nChannels = 0;
       for (const sim::SimChannel& sc: *scCol) {
-        out << " #" << nChannels << ": ";
+         mf::LogVerbatim out("DumpSimChannels");
+         out << " #" << nChannels << ": ";
         // dump indenting with "    ", but not on the first line
         sc.Dump(out, "  ");
         ++nChannels;

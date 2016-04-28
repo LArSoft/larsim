@@ -1,9 +1,6 @@
 
 #include "larsim/Simulation/PhotonVoxels.h"
 
-#include "iostream"
-
-
 
 namespace sim {
 
@@ -145,7 +142,7 @@ namespace sim {
 
   }
 
-  int PhotonVoxelDef::GetVoxelID(double* Position) const
+  int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
 
     // figure out how many steps this point is in the x,y,z directions

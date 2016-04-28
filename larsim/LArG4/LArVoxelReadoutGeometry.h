@@ -34,14 +34,19 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 #include "Geant4/G4UserLimits.hh"
 
+// Forward declarations
+namespace CLHEP { class HepRandomEngine; }
+
 namespace larg4 {
 
   class LArVoxelReadoutGeometry : public G4VUserParallelWorld
   {
   public:
     /// Constructor and destructor.
-    LArVoxelReadoutGeometry( const G4String name = "LArVoxelReadoutGeometry" );
-    virtual ~LArVoxelReadoutGeometry();
+    LArVoxelReadoutGeometry(
+      const G4String name,
+      CLHEP::HepRandomEngine& PropGen, CLHEP::HepRandomEngine& RadioGen
+      );
 
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the LAr voxel readout.  Required of
@@ -59,6 +64,9 @@ namespace larg4 {
     art::ServiceHandle<geo::Geometry> fGeo;       ///< Handle to the geometry    
     std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management, 
                                                   ///< so we have to
+    
+    CLHEP::HepRandomEngine*           fPropGen  = nullptr; ///< random engine for charge propagation
+    CLHEP::HepRandomEngine*           fRadioGen = nullptr; ///< random engine for radiological decay
   };
 
 } // namespace larg4

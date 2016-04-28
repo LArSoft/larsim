@@ -16,13 +16,16 @@
 
 #include "larsim/LArG4/ISCalculation.h"
 
+// forward declaration
+namespace CLHEP { class HepRandomEngine; }
+
 namespace larg4 {
 
  class ISCalculationSeparate : public ISCalculation {
 
  public:
 
-   ISCalculationSeparate();
+   ISCalculationSeparate(CLHEP::HepRandomEngine&);
    virtual ~ISCalculationSeparate();
 
    void   Initialize();

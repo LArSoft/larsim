@@ -22,19 +22,19 @@ namespace sim {
     fDebugMode = pset.get<bool>("DebugMode");
   }
 
-  void MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
+  std::unique_ptr<std::vector<sim::MCTrack>> MCTrackRecoAlg::Reconstruct(MCRecoPart& part_v,
 				   MCRecoEdep& edep_v)
   {
+    auto result = std::make_unique<std::vector<sim::MCTrack>>();
+    auto& mctracks = *result;
+    auto pindex = details::createPlaneIndexMap();
 
-    fMCTrack.clear();
     for(size_t i=0; i<part_v.size(); ++i) {
-
       auto const& mini_part = part_v[i];
-
       if( part_v._pdg_list.find(mini_part._pdgcode) == part_v._pdg_list.end() ) continue;
-
+    
       ::sim::MCTrack mini_track;
-      
+    
       std::vector<double> dEdx; 
       std::vector<std::vector<double> > dQdx; 
       dQdx.resize(3);
@@ -88,7 +88,7 @@ namespace sim {
       // JZ : I think we should remove zero length MCTracks because I do not see their utility
       // JZ : Someone could make this a fcl parameter, I did not
       if(mini_track.size() == 0){
-	fMCTrack.push_back(mini_track);
+	mctracks.push_back(mini_track);
 	continue;
       }
       
@@ -179,8 +179,8 @@ namespace sim {
 	    int npid = 0;
 	    double engy = 0;
 	    
-	    for(auto const& pid_energy : edep.energy){
-	      engy += pid_energy.second;
+	    for(auto const& pid_energy : edep.deps){
+	      engy += pid_energy.energy;
 	      npid++;
 	    }
 
@@ -189,15 +189,11 @@ namespace sim {
 	    else{engy = 0;}
 	    
 	    step_dedx += engy;
-	    
-	    // dQdx Calculation
-	    auto q_iter = edep.charge.find(edep.pid);
-	    if(q_iter != edep.charge.end()){
-	      step_dqdx[edep.pid.Plane] += (double)((*q_iter).second);	  	
-	    }
-	    
+	  auto const pid = edep.pid; 
+          auto q_i = pindex.find(pid);
+          if(q_i != pindex.end())
+            step_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
 	  }
-	  
 	}
 	
 	// Normalize to the 3D distance between the MCSteps 
@@ -231,7 +227,7 @@ namespace sim {
       mini_track.dQdx(dQdx);
       
 
-      fMCTrack.push_back(mini_track);
+      mctracks.push_back(mini_track);
       
     
       
@@ -239,7 +235,7 @@ namespace sim {
     
     if(fDebugMode) {
 
-      for(auto const& prof : fMCTrack) {
+      for(auto const& prof : mctracks) {
 	
 	std::cout
 	  
@@ -276,6 +272,7 @@ namespace sim {
 
       std::cout<<std::endl<<std::endl;
     }
+    return result;
   }
 }
 

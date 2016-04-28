@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <utility> // std::move()
+#include <cassert>
 
 // GEANT
 #include "Geant4/G4HCofThisEvent.hh"
@@ -20,8 +21,6 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
-#include "Geant4/Randomize.hh"
-#include "Geant4/G4Poisson.hh"
 
 // framework libraries
 #include "cetlib/exception.h"
@@ -32,6 +31,12 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+
+// CLHEP
+#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/RandFlat.h"
 
 namespace larg4 {
   
@@ -130,6 +135,11 @@ namespace larg4 {
     // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
       
     if (fArgon39DecayRate > 0){
+      // this must be always true, unless caller has been sloppy
+      assert(fRadioGen); // No radiological decay random generator provided?!
+      CLHEP::RandPoisson RadioProbRand(*fRadioGen);
+      CLHEP::RandFlat PosAndDirRand(*fRadioGen);
+      
       auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
       double samplerate  = fClock.TickPeriod(); // in ns/tick
       int readwindow = detprop->NumberTimeSamples(); // in clock ticks
@@ -158,16 +168,14 @@ namespace larg4 {
           xyz2[1] -= height * 0.5;
           xyz2[2] -= length * 0.5;
           
-          int ndecays = G4Poisson(expected_decays);
-          for (int i=0;i<ndecays;++i){
+          long ndecays = RadioProbRand.fire(expected_decays);
+          for (long i=0;i<ndecays;++i){
             // randomize the simulation time and position
             
             double xyz3[3]={0.,0.,0.};
             
             bool scc = false;
-            xyz3[0] = G4UniformRand();
-            xyz3[1] = G4UniformRand();
-            xyz3[2] = G4UniformRand();
+            PosAndDirRand.fireArray(3, xyz3);
             
             xyz3[0] = (xyz3[0]*width  + xyz2[0])*CLHEP::cm;
             xyz3[1] = (xyz3[1]*height + xyz2[1])*CLHEP::cm;
@@ -178,12 +186,14 @@ namespace larg4 {
             
             scc = false;
             for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
-            
+              
+              double rnd[2];
+              PosAndDirRand.fireArray(2, rnd);
               G4ThreeVector decpath(1.0,0.0,0.0);  
               decpath.setMag(d2*CLHEP::cm);  // displacement between midpoints is half the total length
-              double angle = G4UniformRand()*TMath::Pi()*2.0;
+              double angle = rnd[0]*TMath::Pi()*2.0;
               decpath.setPhi(angle);
-              double ct=2.0*(G4UniformRand()-0.5);
+              double ct=2.0*(rnd[1]-0.5);
               if (ct<-1.0) ct=-1.0;
               if (ct>1.0) ct=1.0;
               angle = TMath::ACos(ct);
@@ -375,7 +385,12 @@ namespace larg4 {
                                                  unsigned int tickmax /* = 4096 */)
   {
     auto const * ts = lar::providerFrom<detinfo::DetectorClocksService>();
+
+    // this must be always true, unless caller has been sloppy
+    assert(fPropGen); // No propagation random generator provided?!
     
+    CLHEP::RandGauss PropRand(*fPropGen);
+
     // This routine gets called frequently, once per every particle
     // traveling through every voxel. Use whatever tricks we can to
     // increase its execution speed.
@@ -388,12 +403,19 @@ namespace larg4 {
                                         1./fDriftVelocity[2]};
 
     static int radiologicaltdcoffset=0;  // static so remembers for subsequent calls for radiological sim
-
+    
+    struct Deposit_t {
+      double energy = 0.;
+      double electrons = 0.;
+      
+      void add(double more_energy, double more_electrons)
+        { energy += more_energy; electrons += more_electrons; }
+    }; // Deposit_t
+    
     // Map of electrons to store - catalogued by map[channel][tdc]
-    static std::map<uint32_t, std::map<unsigned int,double> >  ElectronsToStore;
-    static std::map<uint32_t, std::map<unsigned int,double> >  EnergyToStore;
+    std::map<raw::ChannelID_t, std::map<unsigned int, Deposit_t>> DepositsToStore;
 
-    static double xyz1[3] = {0.};
+    double xyz1[3] = {0.};
 
     double xyz[3] = {stepMidPoint.x() / CLHEP::cm,
                      stepMidPoint.y() / CLHEP::cm,
@@ -475,11 +497,11 @@ namespace larg4 {
       }
 
       // Smear drift times by x position and drift time
-      G4RandGauss::shootArray( nClus, &XDiff[0], 0., LDiffSig);
+      PropRand.fireArray( nClus, &XDiff[0], 0., LDiffSig);
 
       // Smear the Y,Z position by the transverse diffusion
-      G4RandGauss::shootArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
-      G4RandGauss::shootArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
+      PropRand.fireArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
+      PropRand.fireArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
@@ -517,7 +539,9 @@ namespace larg4 {
 
             if (radiological != notradiological){
               if (p == 0 && k == 0){
-                double tmptdc = ((double) tickmax) * G4UniformRand();
+                assert(fRadioGen); // No propagation random generator provided?!
+                CLHEP::RandFlat RadioRand(*fRadioGen);
+                double tmptdc = ((double) tickmax) * RadioRand.fire();
                 if (radiological == firstrad) radiologicaltdcoffset = tmptdc - tdc;
               }
               if ( (int) tdc >= -radiologicaltdcoffset)  {
@@ -531,8 +555,7 @@ namespace larg4 {
             }
             
             // Add electrons produced by each cluster to the map
-            EnergyToStore[channel][tdc]    += nEnDiff[k];
-            ElectronsToStore[channel][tdc] += nElDiff[k];
+            DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
           }
           catch(cet::exception &e){
             mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
@@ -543,37 +566,36 @@ namespace larg4 {
       } // end loop over planes
       
       // Now store them in SimChannels
-      ChannelMap_t& ChannelMap = fChannelMaps[cryostat][tpc];
+      ChannelMap_t& ChannelDataMap = fChannelMaps[cryostat][tpc];
       
-      // check if the current channel is already in the map, otherwise add it
-      for(auto const& itread : ElectronsToStore){
+      // browse deposited data on each channel: (channel; deposit data in time)
+      for(auto const& deposit_per_channel: DepositsToStore){
         
-        uint32_t channel = itread.first;
-        std::map<uint32_t, sim::SimChannel>::iterator itchannelmap = ChannelMap.find(channel);
+        raw::ChannelID_t channel = deposit_per_channel.first;
         
-        if( itchannelmap != ChannelMap.end() ){
-          for(auto const& itreadinner : itread.second)
-            itchannelmap->second.AddIonizationElectrons(trackID,
-                                                        itreadinner.first,
-                                                        itreadinner.second,
-                                                        xyz,
-                                                        EnergyToStore[channel][itreadinner.first]);
-        }
-        else{
-          sim::SimChannel sc(channel);
-          for(auto const& itreadinner : itread.second)
-            sc.AddIonizationElectrons(trackID,
-                                      itreadinner.first,
-                                      itreadinner.second,
-                                      xyz,
-                                      EnergyToStore[channel][itreadinner.first]);
+        // find whether we already have this channel
+        auto iChannelData = ChannelDataMap.find(channel);
+        
+        // channelData is the SimChannel these deposits are going to be added to
+        // If there is such a channel already, use it (first beanch).
+        // If it's a new channel, the inner assignment creates a new SimChannel
+        // in the map, and we save its reference in channelData
+        sim::SimChannel& channelData
+          = (iChannelData == ChannelDataMap.end())
+          ? (ChannelDataMap[channel] = sim::SimChannel(channel))
+          : iChannelData->second;
+        
+        // go through all deposits, one for each TDC: (TDC, deposit data)
+        for(auto const& deposit_per_tdc: deposit_per_channel.second) {
+          channelData.AddIonizationElectrons(trackID,
+                                             deposit_per_tdc.first,
+                                             deposit_per_tdc.second.electrons,
+                                             xyz,
+                                             deposit_per_tdc.second.energy);
           
-          ChannelMap[channel] = std::move(sc);
-        }
-      }
-      ElectronsToStore.clear();
-      EnergyToStore.clear();
-      
+        } // for deposit on TDCs
+      } // for deposit on channels
+
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
       mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"

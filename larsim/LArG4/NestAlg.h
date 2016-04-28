@@ -6,13 +6,15 @@
 #include "Geant4/G4Track.hh"
 #include "Geant4/G4VParticleChange.hh"
 
+// forward declarations
+namespace CLHEP { class HepRandomEngine; }
+
 class NestAlg {
 
  public :
 
-  NestAlg();
-  NestAlg(double const& yieldFactor);
-  ~NestAlg();
+  NestAlg(CLHEP::HepRandomEngine& engine);
+  NestAlg(double yieldFactor, CLHEP::HepRandomEngine& engine);
 
   const G4VParticleChange& CalculateIonizationAndScintillation(G4Track const& aTrack,
 							       G4Step  const& aStep);
@@ -42,6 +44,7 @@ class NestAlg {
   std::map<int,bool> fElementPropInit; ///< map of noble element z to flag 
                                        ///< for whether that element's material
                                        ///< properties table has been initialized
+  CLHEP::HepRandomEngine& fEngine;     ///< random engine
 };
 
 #endif //NESTALG_H
