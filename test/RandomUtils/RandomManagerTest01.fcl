@@ -23,13 +23,15 @@ services: {
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
-    policy            : "autoIncrement"
-    verbosity         :     2
-    endOfJobSummary   :  true
-    baseSeed          :   123
-    checkRange        :  false
-  } # LArSeedService
+  user : {
+     LArSeedService: {
+      policy            : "autoIncrement"
+      verbosity         :     2
+      endOfJobSummary   :  true
+      baseSeed          :   123
+      checkRange        :  false
+    }
+  }
 } # services
 
 
@@ -47,7 +49,7 @@ physics: {
       
       instanceNames : [ "One", "Two" ]
       
-      Seed_Two      : 12345
+      Seed_Two      : 12342
     } # multiple
     
     multipleAndUnmngd: {
@@ -58,7 +60,7 @@ physics: {
       externalInstance: Unmanaged
       standardInstance: Standard
       
-      Seed_Two      :   12345
+      Seed_Two      :   12343
       Seed_Three    :       0 # invalid seed => use LArSeedService
       Seed_Unmanaged:   12345
       Seed_Standard :   54321

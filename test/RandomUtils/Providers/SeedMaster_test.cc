@@ -3,7 +3,7 @@
  * @brief  Test the SeedMaster object, core of LArSeedService
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   December 3rd, 2014
- * @see    LArSeedService.hh SeedTest01_module.cc
+ * @see    LArSeedService.h SeedTest01_module.cc
  *
  * The test runs based on the configuration file specified on the command line.
  * 
@@ -190,115 +190,55 @@ int TestModule(SeedMaster_t& seeds, const fhicl::ParameterSet& pset) {
   unsigned int nExpectedErrors = pset.get<unsigned int>("expectedErrors", 0);
   
   unsigned int nErrors = 0;
-  const int mode = pset.get<int>("testMode", 0);
-  switch (mode) {
-    case 0: {
-      if (!instance_names.empty()) {
-        LOG_ERROR(module_id) << "test mode 0 does not use instances!";
-        ++nErrors; // non-fatal
-      }
-      
-      // seed test: do we successfully get seeds?
-      seed_t seed = ObtainSeed(seeds, module_name);
-      if (seed == 0) {
-        LOG_ERROR(module_id) << "got seed 0!";
-        if (++nErrors <= nExpectedErrors) {
-          mf::LogProblem(module_id) << "  (error #" << nErrors
-            << ", " << nExpectedErrors << " expected)";
-        }
-      }
-      seed_t seed2 = ObtainSeed(seeds, module_name);
-      mf::LogVerbatim("SeedMaster_test") << module_id << ":"
-        << "\n  Seed is :  " << seed
-        << "\n  Seed2 is : " << seed2;
-      if (seed != seed2) {
-        LOG_ERROR(module_id)
-          << "seed has changed: " << seed << " => " << seed2;
-        if (++nErrors <= nExpectedErrors) {
-          mf::LogProblem(module_id) << "  (error #" << nErrors
-            << ", " << nExpectedErrors << " expected)";
-        }
-      }
-      if (seed2 == 0) {
-        LOG_ERROR(module_id) << "got seed 0!";
-        if (++nErrors <= nExpectedErrors) {
-          mf::LogProblem(module_id) << "  (error #" << nErrors
-            << ", " << nExpectedErrors << " expected)";
-        }
-      }
-      break;
-    } // test mode 0
-    
-    case 1: {
-      if (instance_names.empty()) {
-        LOG_ERROR(module_id)
-          << "instance names are required for test mode 1!";
-        ++nErrors;
-      }
-      
-      mf::LogVerbatim("SeedMaster_test")
-        << module_id << " has " << instance_names.size() << " seed instances:";
-      
-      // seed test: do we successfully get seeds?
-      std::vector<seed_t> our_seeds;
-      for (std::string instance_name: instance_names) {
-        seed_t seed = ObtainSeed(seeds, module_name, instance_name);
-        mf::LogVerbatim("SeedMaster_test")
-          << "Seed for '" << instance_name << "' is: " << seed;
-        if (seed == 0) {
-          LOG_ERROR(module_id)
-            << "instance " << instance_name << " got seed 0!";
-          if (++nErrors <= nExpectedErrors) {
-            mf::LogProblem(module_id) << "  (error #" << nErrors
-              << ", " << nExpectedErrors << " expected)";
-          }
-        }
-        our_seeds.push_back(seed);
-      } // for first loop
-      
-      // consistency test: are they still the same?
-      std::vector<seed_t>::const_iterator iOldSeed = our_seeds.begin();
-      for (std::string instance_name: instance_names) {
-        seed_t seed = ObtainSeed(seeds, module_name, instance_name);
-        mf::LogVerbatim("SeedMaster_test")
-          << "Seed2 for '" << instance_name << "' is: " << seed;
-        if (seed != *iOldSeed) {
-          LOG_ERROR(module_id)
-            << "seed has changed for instance "
-            << instance_name << ": " << *iOldSeed << " => " << seed;
-          if (++nErrors <= nExpectedErrors) {
-            mf::LogProblem(module_id) << " error " << nErrors
-              << ", " << nExpectedErrors << " expected";
-          }
-        } // if different from before
-        if (*iOldSeed == 0) {
-          LOG_ERROR(module_id)
-            << "instance " << instance_name << " got seed 0!";
-          if (++nErrors <= nExpectedErrors) {
-            mf::LogProblem(module_id) << "  (error #" << nErrors
-              << ", " << nExpectedErrors << " expected)";
-          }
-        } // if seed is 0
-        ++iOldSeed;
-      } // for second loop
-      break;
-    } // if test mode 1
-    
-    case 2: case 3: case 4:
+  if (instance_names.empty()) {
+    instance_names.push_back("");
+    mf::LogInfo("SeedMaster_test") << "Added a default engine instance.";
+  }  
+  mf::LogVerbatim("SeedMaster_test")
+    << module_id << " has " << instance_names.size() << " seed instances:";
+  
+  // seed test: do we successfully get seeds?
+  std::vector<seed_t> our_seeds;
+  for (std::string instance_name: instance_names) {
+    seed_t seed = ObtainSeed(seeds, module_name, instance_name);
+    mf::LogVerbatim("SeedMaster_test")
+      << "Seed for '" << instance_name << "' is: " << seed;
+    if (seed == 0) {
       LOG_ERROR(module_id)
-        << "test modes other than 0 and 1 are not supported"
-        " by the SeedMaster test (this is mode " << mode << ").";
+        << "instance " << instance_name << " got seed 0!";
       if (++nErrors <= nExpectedErrors) {
         mf::LogProblem(module_id) << "  (error #" << nErrors
           << ", " << nExpectedErrors << " expected)";
       }
-    default:
-      LOG_ERROR(module_id) << "unsupported test mode " << mode << ".";
+    }
+    our_seeds.push_back(seed);
+  } // for declaration loop
+  
+  // consistency test: are they still the same?
+  std::vector<seed_t>::const_iterator iOldSeed = our_seeds.begin();
+  for (std::string instance_name: instance_names) {
+    seed_t seed = ObtainSeed(seeds, module_name, instance_name);
+    mf::LogVerbatim("SeedMaster_test")
+      << "Seed for '" << instance_name << "' is: " << seed << " (second query)";
+    if (seed != *iOldSeed) {
+      LOG_ERROR(module_id)
+        << "seed has changed for instance "
+        << instance_name << ": " << *iOldSeed << " => " << seed;
+      if (++nErrors <= nExpectedErrors) {
+        mf::LogProblem(module_id) << " error " << nErrors
+          << ", " << nExpectedErrors << " expected";
+      }
+    } // if different from before
+    if (*iOldSeed == 0) {
+      LOG_ERROR(module_id)
+        << "instance " << instance_name << " got seed 0!";
       if (++nErrors <= nExpectedErrors) {
         mf::LogProblem(module_id) << "  (error #" << nErrors
           << ", " << nExpectedErrors << " expected)";
       }
-  } // switch
+    } // if seed is 0
+    ++iOldSeed;
+  } // for consistency check
   
   // as many errors as expected, balance is even
   return (nErrors > nExpectedErrors)?
@@ -317,7 +257,7 @@ int main(int argc, const char** argv) {
   //***
   std::string config_path;
   std::string parameter_set_name;
-  std::vector<std::string> module_types{ "SeedTest01" };
+  std::vector<std::string> module_types{ "SeedTestPolicy" };
   
   int iParam = 0;
   // configuration file path (mandatory)

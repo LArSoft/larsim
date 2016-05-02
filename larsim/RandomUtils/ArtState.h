@@ -7,8 +7,8 @@
 #ifndef LARSIM_RANDOMUTILS_ARTSTATE_H
 #define LARSIM_RANDOMUTILS_ARTSTATE_H 1
 
-// C/C++ standard libraries
-#include <string>
+// LArSeedService libraries
+#include "larsim/RandomUtils/Providers/EventSeedInputData.h"
 
 // framework libraries
 #include "art/Utilities/Exception.h"
@@ -17,8 +17,11 @@
 #include "art/Persistency/Provenance/ModuleDescription.h"
 #include "art/Framework/Principal/Event.h"
 
-// LArSeedService libraries
-#include "larsim/RandomUtils/Providers/EventSeedInputData.h"
+// supporting libraries
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// C/C++ standard libraries
+#include <string>
 
 
 namespace sim {
@@ -30,18 +33,21 @@ namespace sim {
         public:
       typedef enum {
         unDefined,             ///< not assigned yet
+        inServiceConstructor,  ///< in service construction phase
         inModuleConstructor,   ///< in module construction phase
         inBeginRun,            ///< in begin of run phase
+        inModuleBeginRun,      ///< in begin of run for a module
         inEvent,               ///< in event phase
         inModuleEvent,         ///< in event processing by a module
+        inEndJob,              ///< in end job
         inOther                ///< none of the above
       } state_type; ///< type of state of art (what's doing)
       
       using EventInfo_t = art::EventAuxiliary;
       
       
-      ArtState()
-        : artState(unDefined)
+      ArtState(state_type start_state = unDefined)
+        : artState(start_state)
         , lastEvent()
         , lastModule()
         , procName()
@@ -53,8 +59,19 @@ namespace sim {
       /// Records the status of ART
       void set_state(state_type astate) { artState = astate; }
       
+      /// Records the new status of ART and returns the old one
+      state_type transit_to(state_type astate)
+        {
+          state_type old_state = state();
+          set_state(astate);
+          LOG_DEBUG("ArtState")
+            << "LArSeedService::ArtState: transition from "
+            << stateName(old_state) << " to " << stateName();
+          return old_state;
+        } // transit_to()
+      
       /// Resets the status to "something else" (inOther)
-      void reset_state() { set_state(inOther); }
+      void reset_state() { transit_to(inOther); }
       
       /// Records the specified event ID
       void set_event(art::Event const& evt)
@@ -94,6 +111,8 @@ namespace sim {
       
       state_type state() const { return artState; }
       
+      std::string stateName() const { return stateName(state()); }
+      
       art::EventID const& eventID() const { return lastEvent.id(); }
       
       EventInfo_t const& eventInfo() const { return lastEvent; }
@@ -126,6 +145,24 @@ namespace sim {
           return data;
         } // getEventSeedInputData()
       /// @}
+      
+      static std::string stateName(state_type state)
+        {
+          switch (state) {
+            case unDefined:            return "(not assigned yet)";
+            case inServiceConstructor: return "service construction";
+            case inModuleConstructor:  return "module construction";
+            case inBeginRun:           return "begin of run";
+            case inModuleBeginRun:     return "begin of run for module";
+            case inEvent:              return "event preparation";
+            case inModuleEvent:        return "event processing by a module";
+            case inEndJob:             return "end job";
+            case inOther:              return "unidentified";
+          } // switch
+          throw art::Exception(art::errors::LogicError)
+            << "artext::SeedServiceHelper::ArtState::stateName: unknown state #"
+            << ((int) state) << "\n";
+        } // stateName()
       
         protected:
       state_type artState; ///< current state of the art

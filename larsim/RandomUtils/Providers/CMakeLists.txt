@@ -1,13 +1,4 @@
-
-# art_make(
-#   LIB_LIBRARIES
-#     art_Utilities
-#     MF_MessageLogger
-#     MF_Utilities
-#     fhiclcpp
-#     cetlib
-# )
-
+# currently only headers here
 
 install_source()
 install_headers()
