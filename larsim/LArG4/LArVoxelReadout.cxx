@@ -30,7 +30,7 @@
 // LArSoft code
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
-#include "larevt/SpaceCharge/SpaceCharge.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
@@ -441,11 +441,9 @@ namespace larg4 {
 
       // Get SCE {x,y,z} offsets for particular location in TPC      
       std::vector<double> posOffsets;
-      if (fLgpHandle->EnableSCE() == true)
-      {
-        art::ServiceHandle<spacecharge::SpaceCharge> SCEHandle;
-        posOffsets = SCEHandle->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
-      }
+      auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+      if (SCE->EnableSimulationSCE() == true)
+        posOffsets = SCE->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
       else
         posOffsets.resize(3,0.0);
 

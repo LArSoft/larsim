@@ -9,7 +9,6 @@ art_make(
           LIB_LIBRARIES 
                         larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
-                        larevt_SpaceCharge_SpaceCharge_service
                         lardata_Utilities
 			larsim_Simulation
                         larcore_Geometry
@@ -40,7 +39,6 @@ art_make(
                         ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
-                        larevt_SpaceCharge_SpaceCharge_service
                         larsim_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
