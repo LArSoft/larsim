@@ -443,12 +443,14 @@ namespace larg4 {
       std::vector<double> posOffsets;
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimulationSCE() == true)
+      {
         posOffsets = SCE->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
+      }
       else
+      {
         posOffsets.resize(3,0.0);
-
-      if (tpcg.DriftDirection() == geo::kNegX)
-        posOffsets.at(0) *= -1.0;
+      }
+      posOffsets.at(0) *= -1.0;
 
       // Drift time (nano-sec)
       double TDrift;
