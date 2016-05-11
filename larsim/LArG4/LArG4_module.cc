@@ -49,7 +49,7 @@
 #include "cetlib/search_path.h"
 
 // art extensions
-#include "artextensions/SeedService/SeedService.hh"
+#include "larsim/RandomUtils/LArSeedService.h"
 
 // LArSoft Includes
 #include "larsim/LArG4/LArVoxelReadoutGeometry.h"
@@ -144,13 +144,13 @@ namespace larg4 {
    *     G4 macro file to pass to G4Helper for setting G4 command
    * - <b>Seed</b> (pset key, not defined by default): if defined, override the seed for
    *     random number generator used in Geant4 simulation (which is obtained from
-   *     SeedService by default)
+   *     LArSeedService by default)
    * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
    *     override the seed for the random generator used for electrons propagation
-   *     to the wire planes (obtained from the SeedService by default)
+   *     to the wire planes (obtained from the LArSeedService by default)
    * - <b>RadioSeed</b> (pset key, not defined by default): if defined,
    *     override the seed for the random generator used for radiological decay
-   *     (obtained from the SeedService by default)
+   *     (obtained from the LArSeedService by default)
    * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
    *     optional list of generator labels which produce MCTruth;
    *     otherwise look for anything that has made MCTruth
@@ -220,15 +220,15 @@ namespace larg4 {
     }
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
-    // obtain the random seed from SeedService,
+    // obtain the random seed from LArSeedService,
     // unless overridden in configuration with key "Seed" or "GEANTSeed"
-    art::ServiceHandle<artext::SeedService>()
+    art::ServiceHandle<sim::LArSeedService>()
       ->createEngine(*this, "G4Engine", "GEANT", pset, "GEANTSeed");
     // same thing for the propagation engine:
-    art::ServiceHandle<artext::SeedService>()
+    art::ServiceHandle<sim::LArSeedService>()
       ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
     // and again for radio decay
-    art::ServiceHandle<artext::SeedService>()
+    art::ServiceHandle<sim::LArSeedService>()
       ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's

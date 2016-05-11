@@ -12,17 +12,16 @@ gcc		v4_9_3
 genie_xsec      v2_10_6a 
 genie_phyopt    v2_10_6 
 larsoft_data    v0_06_01
-artextensions   v1_02_07
 
 cetbuildtools	v5_01_03	-	only_for_build
 end_product_list
 
   
 # e9  - with gcc 4.9.3 and -std=c++14
-qualifier	larevt	 	genie_xsec		genie_phyopt	gcc	larsoft_data	artextensions	notes
-e9:debug	e9:debug	defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s31:debug
-e9:opt		e9:opt		defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s31:opt
-e9:prof		e9:prof		defaultplusccmec	dkcharmtau	-nq-	-nq-		e9:nu:s31:prof
+qualifier	larevt	 	genie_xsec		genie_phyopt	gcc	larsoft_data	notes
+e9:debug	e9:debug	defaultplusccmec	dkcharmtau	-nq-	-nq-	
+e9:opt		e9:opt		defaultplusccmec	dkcharmtau	-nq-	-nq-	
+e9:prof		e9:prof		defaultplusccmec	dkcharmtau	-nq-	-nq-	
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

@@ -47,7 +47,7 @@ extern "C" {
 #include "cetlib/search_path.h"
 
 // art extensions
-#include "artextensions/SeedService/SeedService.hh"
+#include "larsim/RandomUtils/LArSeedService.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -151,9 +151,9 @@ namespace detsim{
     std::string compression(pset.get< std::string >("CompressionType"));
     if(compression.compare("Huffman") == 0) fCompression = raw::kHuffman;
 
-    // create a default random engine; obtain the random seed from SeedService,
+    // create a default random engine; obtain the random seed from LArSeedService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<artext::SeedService>()
+    art::ServiceHandle<sim::LArSeedService>()
       ->createEngine(*this, pset, "Seed");
   }
 

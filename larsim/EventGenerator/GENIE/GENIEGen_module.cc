@@ -41,7 +41,7 @@
 #include "art/Framework/Core/EDProducer.h"
 
 // art extensions
-#include "artextensions/SeedService/SeedService.hh"
+#include "larsim/RandomUtils/LArSeedService.h"
 
 // LArSoft includes
 #include "SimulationBase/MCTruth.h"
@@ -71,7 +71,7 @@ namespace evgen {
    * *RandomSeed* configuration parameter. This and all the other parameters
    * are inherited from the art module (that is, `GENIEGen`) configuration.
    * LArSoft meddles with this mechanism to provide support for the standard
-   * "Seed" parameter and SeedService service.
+   * "Seed" parameter and LArSeedService service.
    * 
    * Configuration parameters
    * -------------------------
@@ -84,7 +84,7 @@ namespace evgen {
    *   a configuration error)
    * 
    * As custom, if the random seed is not provided by the configuration, one is
-   * fetched from `SeedService` (if available), with the behaviour in
+   * fetched from `LArSeedService` (if available), with the behaviour in
 	* lar::util::FetchRandomSeed().
    */
   class GENIEGen : public art::EDProducer {
@@ -190,7 +190,7 @@ namespace evgen{
       // unless overridden in configuration with key "Seed"
       unsigned int seed;
       if (!GENIEconfig.get_if_present("Seed", seed))
-        seed = art::ServiceHandle<artext::SeedService>()->getSeed();
+        seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
       
       // The seed is not passed to RandomNumberGenerator,
       // since GENIE uses a TRandom generator that is owned by the GENIEHelper.

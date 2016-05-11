@@ -46,7 +46,7 @@ simple_plugin(SimWire "module"
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
                       lardata_Utilities
-                      SeedService_service # artextensions
+                      larsim_RandomUtils_LArSeedService_service
                       ${ART_FRAMEWORK_CORE}
                       ${ART_FRAMEWORK_PRINCIPAL}
                       ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -72,7 +72,7 @@ simple_plugin(SimWireT962 "module"
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
                           lardata_Utilities
-                          SeedService_service # artextensions
+                          larsim_RandomUtils_LArSeedService_service
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
