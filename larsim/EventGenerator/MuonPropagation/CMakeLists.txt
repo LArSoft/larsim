@@ -5,7 +5,7 @@ art_make(
           MODULE_LIBRARIES 
 	  		larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
-                        larsim_Simulation
+                        larsimobj_Simulation
                         larcoreobj_SummaryData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service

@@ -12,11 +12,11 @@
 #include "larsim/TriggerAlgo/TriggerAlgoBase.h"
 
 // LArSoft include
-#include "lardata/OpticalDetectorData/OpticalTypes.h"
-#include "lardata/OpticalDetectorData/PMTTrigger.h"
-#include "lardata/OpticalDetectorData/FIFOChannel.h"
-#include "larsim/Simulation/BeamGateInfo.h"
-#include "lardata/RawData/RawDigit.h"
+#include "lardataobj/OpticalDetectorData/OpticalTypes.h"
+#include "lardataobj/OpticalDetectorData/PMTTrigger.h"
+#include "lardataobj/OpticalDetectorData/FIFOChannel.h"
+#include "larsimobj/Simulation/BeamGateInfo.h"
+#include "lardataobj/RawData/RawDigit.h"
 
 namespace trigger
 {

@@ -18,7 +18,7 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/MCBase/MCLimits.h"
+#include "lardataobj/MCBase/MCLimits.h"
 
 // STL
 #include <set>

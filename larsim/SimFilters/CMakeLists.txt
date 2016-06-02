@@ -2,12 +2,12 @@
 art_make( 
           MODULE_LIBRARIES larcore_Geometry
 			larcore_Geometry_Geometry_service
-			larsim_Simulation
+			larsimobj_Simulation
 			larsim_MCCheater_BackTracker_service
 	                lardata_Utilities
 			larevt_Filters
-			lardata_RawData
-			lardata_RecoBase
+			lardataobj_RawData
+			lardataobj_RecoBase
 			lardata_RecoObjects  
                         nusimdata_SimulationBase
                         ${LARRECO_LIB}

@@ -11,7 +11,7 @@ art_make(
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larevt_SpaceCharge_SpaceCharge_service
                         lardata_Utilities
-			larsim_Simulation
+			larsimobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
@@ -41,7 +41,7 @@ art_make(
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
                         larevt_SpaceCharge_SpaceCharge_service
-                        larsim_Simulation
+                        larsimobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service

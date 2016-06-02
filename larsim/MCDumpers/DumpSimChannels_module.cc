@@ -8,7 +8,7 @@
 
 
 // nutools libraries
-#include "larsim/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"

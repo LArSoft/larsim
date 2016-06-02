@@ -22,7 +22,7 @@
 #include "MCRecoPart.h"
 #include "MCShowerRecoPart.h"
 #include "MCRecoEdep.h"
-#include "lardata/MCBase/MCShower.h"
+#include "lardataobj/MCBase/MCShower.h"
 
 // STL
 #include <set>

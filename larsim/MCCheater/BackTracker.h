@@ -19,7 +19,7 @@
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "larsim/Simulation/ParticleList.h"
-#include "larsim/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larsim/Simulation/LArVoxelList.h"

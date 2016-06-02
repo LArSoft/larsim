@@ -3,7 +3,7 @@ include_directories ( $ENV{GENIE_INC}/GENIE )
 
 art_make( 
           MODULE_LIBRARIES 
-                        larsim_Simulation
+                        larsimobj_Simulation
                         nusimdata_SimulationBase
                         larcoreobj_SummaryData
                         larcore_Geometry

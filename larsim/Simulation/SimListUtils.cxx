@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/Simulation/SimListUtils.h"
-#include "larsim/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 

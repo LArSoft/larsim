@@ -7,8 +7,8 @@
  */
 
 // LArSoft libraries
-#include "lardata/MCBase/MCStep.h"
-#include "lardata/MCBase/MCTrack.h"
+#include "lardataobj/MCBase/MCStep.h"
+#include "lardataobj/MCBase/MCTrack.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"

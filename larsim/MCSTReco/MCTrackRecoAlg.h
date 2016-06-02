@@ -21,7 +21,7 @@
 
 #include "MCRecoPart.h"
 #include "MCRecoEdep.h"
-#include "lardata/MCBase/MCTrack.h"
+#include "lardataobj/MCBase/MCTrack.h"
 
 // STL
 #include <set>

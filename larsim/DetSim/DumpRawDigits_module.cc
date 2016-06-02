@@ -25,8 +25,8 @@
 // LArSoft includes
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::View_t
-#include "lardata/RawData/raw.h" // raw::Uncompress()
-#include "lardata/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h" // raw::Uncompress()
+#include "lardataobj/RawData/RawDigit.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 

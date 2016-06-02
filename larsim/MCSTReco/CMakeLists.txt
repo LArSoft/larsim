@@ -5,11 +5,11 @@ art_make(
 	  
           LIB_LIBRARIES    larcore_Geometry
 			   larcore_Geometry_Geometry_service
-			   larsim_Simulation
+			   larsimobj_Simulation
 			   nusimdata_SimulationBase
 			   larcoreobj_SummaryData
 			   lardata_Utilities
-			   lardata_MCBase
+			   lardataobj_MCBase
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}
@@ -30,11 +30,11 @@ art_make(
           MODULE_LIBRARIES larsim_MCSTReco
 			   larcore_Geometry
 			   larcore_Geometry_Geometry_service
-			   larsim_Simulation
+			   larsimobj_Simulation
 			   nusimdata_SimulationBase
 			   larcoreobj_SummaryData
 			   lardata_Utilities
-			   lardata_MCBase
+			   lardataobj_MCBase
 			   larsim_RandomUtils_LArSeedService_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}

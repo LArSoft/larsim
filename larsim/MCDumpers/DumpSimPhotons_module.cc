@@ -8,7 +8,7 @@
 
 
 // nutools libraries
-#include "larsim/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/SimPhotons.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"

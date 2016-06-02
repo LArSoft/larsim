@@ -59,8 +59,8 @@
 #ifndef Simulation_LArVoxelData_h_
 #define Simulation_LArVoxelData_h_
 
-#include "lardata/Utilities/VectorMap.h"
-#include "lardata/Utilities/SumSecondFunction.h"
+#include "lardataobj/Utilities/VectorMap.h"
+#include "lardataobj/Utilities/SumSecondFunction.h"
 #include "larsim/Simulation/LArVoxelID.h"
 
 #include <numeric>

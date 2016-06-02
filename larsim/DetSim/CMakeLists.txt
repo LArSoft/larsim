@@ -2,7 +2,7 @@
 art_make( NO_PLUGINS
           
           LIB_LIBRARIES larevt_Filters
-                        lardata_RawData
+                        lardataobj_RawData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
@@ -22,7 +22,7 @@ art_make( NO_PLUGINS
 
 
 simple_plugin(SimWireAna "module"
-                         lardata_RawData
+                         lardataobj_RawData
                          ${ART_FRAMEWORK_CORE}
                          ${ART_FRAMEWORK_PRINCIPAL}
                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -40,8 +40,8 @@ simple_plugin(SimWireAna "module"
 )
 
 simple_plugin(SimWire "module"
-                      larsim_Simulation
-                      lardata_RawData
+                      larsimobj_Simulation
+                      lardataobj_RawData
                       larcore_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
@@ -66,8 +66,8 @@ simple_plugin(SimWire "module"
 )
 
 simple_plugin(SimWireT962 "module"
-                          larsim_Simulation
-                          lardata_RawData
+                          larsimobj_Simulation
+                          lardataobj_RawData
                           larcore_Geometry
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
@@ -92,7 +92,7 @@ simple_plugin(SimWireT962 "module"
 )
 
 simple_plugin(WienerFilterAna "module"
-                              lardata_RawData
+                              lardataobj_RawData
                               larcore_Geometry
                               larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
@@ -113,7 +113,7 @@ simple_plugin(WienerFilterAna "module"
 
 simple_plugin(DumpRawDigits "module"
                             larevt_Filters
-                            lardata_RawData
+                            lardataobj_RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
                             ${ART_FRAMEWORK_SERVICES_REGISTRY}

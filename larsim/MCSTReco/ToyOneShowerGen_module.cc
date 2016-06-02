@@ -32,7 +32,7 @@
 #include "larcoreobj/SummaryData/RunData.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsim/Simulation/sim.h"
+#include "larsimobj/Simulation/sim.h"
 
 class ToyOneShowerGen;
 

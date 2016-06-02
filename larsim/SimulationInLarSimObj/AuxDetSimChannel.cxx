@@ -8,7 +8,7 @@
 
 
 // our header
-#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 
 // C/C++ standard library
 #include <limits> // std::numeric_limits<>

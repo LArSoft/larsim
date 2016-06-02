@@ -8,7 +8,7 @@
 
 #include "larsim/LArG4/ParticleListAction.h"
 #include "nutools/G4Base/PrimaryParticleInformation.h"
-#include "larsim/Simulation/sim.h"
+#include "larsimobj/Simulation/sim.h"
 #include "larsim/Simulation/ParticleList.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
