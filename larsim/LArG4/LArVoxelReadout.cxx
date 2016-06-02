@@ -30,8 +30,9 @@
 // LArSoft code
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
-#include "larevt/SpaceCharge/SpaceCharge.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
@@ -441,16 +442,16 @@ namespace larg4 {
 
       // Get SCE {x,y,z} offsets for particular location in TPC      
       std::vector<double> posOffsets;
-      if (fLgpHandle->EnableSCE() == true)
+      auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+      if (SCE->EnableSimulationSCE() == true)
       {
-        art::ServiceHandle<spacecharge::SpaceCharge> SCEHandle;
-        posOffsets = SCEHandle->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
+        posOffsets = SCE->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
       }
       else
+      {
         posOffsets.resize(3,0.0);
-
-      if (tpcg.DriftDirection() == geo::kNegX)
-        posOffsets.at(0) *= -1.0;
+      }
+      posOffsets.at(0) *= -1.0;
 
       // Drift time (nano-sec)
       double TDrift;

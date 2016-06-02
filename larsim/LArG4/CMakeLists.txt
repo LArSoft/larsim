@@ -9,7 +9,6 @@ art_make(
           LIB_LIBRARIES 
                         larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
-                        larevt_SpaceCharge_SpaceCharge_service
                         lardata_Utilities
 			larsimobj_Simulation
                         larcore_Geometry
