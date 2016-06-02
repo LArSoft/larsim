@@ -46,7 +46,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art libraries
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // art extensions
 #include "larsim/RandomUtils/Providers/SeedMaster.h"

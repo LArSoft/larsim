@@ -26,7 +26,7 @@ art_make(
     ${CLHEP}
   SERVICE_LIBRARIES
     larsim_RandomUtils_LArSeedService_service
-    ${ART_UTILITIES}
+    art_Utilities canvas_Utilities
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${MF_MESSAGELOGGER}
     ${MF_UTILITIES}

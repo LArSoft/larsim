@@ -20,8 +20,8 @@
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/ParticleList.h" // larg4::PositionInVolumeFilter
 
-#include "SimulationBase/MCParticle.h"
-#include "G4Base/UserAction.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nutools/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>

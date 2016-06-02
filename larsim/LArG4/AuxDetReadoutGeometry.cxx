@@ -4,7 +4,7 @@
 /// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "G4Base/DetectorConstruction.h"
+#include "nutools/G4Base/DetectorConstruction.h"
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"

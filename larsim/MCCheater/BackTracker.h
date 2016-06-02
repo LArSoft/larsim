@@ -16,14 +16,14 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "SimulationBase/MCParticle.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "larsim/Simulation/ParticleList.h"
 #include "larsim/Simulation/SimChannel.h"
 #include "larsim/Simulation/EveIdCalculator.h"
-#include "SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 #include "larsim/Simulation/LArVoxelList.h"
-#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
 #include "lardata/RecoBase/Hit.h"
 

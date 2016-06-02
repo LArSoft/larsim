@@ -68,9 +68,9 @@
 #include "TLorentzVector.h"
 
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
+#include "larcoreobj/SummaryData/RunData.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 namespace evgen {
   class TextFileGen;

@@ -40,13 +40,13 @@
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "EventGeneratorBase/evgenbase.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nutools/EventGeneratorBase/evgenbase.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 
 // root includes
 

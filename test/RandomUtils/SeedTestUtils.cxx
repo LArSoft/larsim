@@ -22,7 +22,7 @@
 #include "CLHEP/Random/RandFlat.h"
 
 // Framework includes.
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace testing {

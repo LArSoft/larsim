@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/LArG4/ParticleListAction.h"
-#include "G4Base/PrimaryParticleInformation.h"
+#include "nutools/G4Base/PrimaryParticleInformation.h"
 #include "larsim/Simulation/sim.h"
 #include "larsim/Simulation/ParticleList.h"
 

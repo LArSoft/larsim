@@ -31,7 +31,7 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"

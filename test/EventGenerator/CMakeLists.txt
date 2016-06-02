@@ -8,7 +8,7 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
   ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-  ${ART_PERSISTENCY_PROVENANCE}
+  art_Persistency_Provenance canvas_Persistency_Provenance
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}
   ${FHICLCPP}

@@ -23,12 +23,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"

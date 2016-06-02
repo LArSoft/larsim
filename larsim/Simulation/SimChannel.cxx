@@ -13,7 +13,7 @@
 
 #include "larsim/Simulation/SimChannel.h"
 #include "larsim/Simulation/sim.h"
-#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

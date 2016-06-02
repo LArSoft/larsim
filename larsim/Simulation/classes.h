@@ -16,11 +16,11 @@
 //    plans to fix it soon.  We can always work around it 
 //    by putting the string inside another object.
 
-#include "art/Persistency/Common/Wrapper.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // Simulation includes
 #include "larsim/Simulation/SimChannel.h"

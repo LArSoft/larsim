@@ -12,7 +12,7 @@
 #ifndef LARG4_IONIZATIONANDSCINTILLAITONACTION_H
 #define LARG4_IONIZATIONANDSCINTILLATIONACTION_H
 
-#include "G4Base/UserAction.h"
+#include "nutools/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>

@@ -15,7 +15,7 @@
 #include <stdexcept>
 
 // LArSoft headers
-#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h" // util::kBogusX
 
 namespace sim{
 

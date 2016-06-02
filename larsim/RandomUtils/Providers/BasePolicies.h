@@ -27,7 +27,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // Art include files
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // Some helper classes
 #include "larsim/RandomUtils/Providers/EngineId.h"

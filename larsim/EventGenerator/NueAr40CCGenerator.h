@@ -18,7 +18,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 

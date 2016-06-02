@@ -15,7 +15,7 @@
 #include <vector>
 
 // LArSoft libraries
-#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
 
 namespace sim {

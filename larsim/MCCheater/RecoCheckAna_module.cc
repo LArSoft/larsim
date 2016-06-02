@@ -28,7 +28,7 @@
 #include "lardata/RecoBase/Vertex.h"
 #include "lardata/RecoBase/Event.h"
 #include "larsim/MCCheater/BackTracker.h"
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "larsim/Simulation/ParticleList.h"
 
 namespace cheat {

@@ -25,7 +25,7 @@
 #ifndef LArG4_VisualizationAction_H
 #define LArG4_VisualizationAction_H
 
-#include "G4Base/UserAction.h"
+#include "nutools/G4Base/UserAction.h"
 #include "Geant4/globals.hh"
 
 // Forward declarations of G4 classes that are arguments to

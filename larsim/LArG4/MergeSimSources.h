@@ -12,7 +12,7 @@
  *
 */
 
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 #include "larsim/Simulation/SimChannel.h"
 #include "larsim/Simulation/SimPhotons.h"

@@ -2,7 +2,7 @@
 cet_test( SeedMaster_test
   NO_AUTO
   LIBRARIES
-    ${ART_UTILITIES}
+    art_Utilities canvas_Utilities
     ${MF_MESSAGELOGGER}
     ${MF_UTILITIES}
     ${FHICLCPP}

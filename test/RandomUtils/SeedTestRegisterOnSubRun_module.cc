@@ -13,7 +13,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Framework includes.
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/SubRun.h"
