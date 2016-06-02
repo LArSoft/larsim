@@ -25,7 +25,7 @@
 #include "larsim/Simulation/LArVoxelList.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
-#include "lardata/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/Hit.h"
 
 namespace recob{
   class SpacePoint;

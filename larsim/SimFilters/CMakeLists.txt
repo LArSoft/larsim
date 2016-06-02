@@ -2,7 +2,7 @@
 art_make( 
           MODULE_LIBRARIES larcore_Geometry
 			larcore_Geometry_Geometry_service
-			larsimobj_Simulation
+			larsim_Simulation larsimobj_Simulation
 			larsim_MCCheater_BackTracker_service
 	                lardata_Utilities
 			larevt_Filters

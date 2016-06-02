@@ -38,7 +38,7 @@ extern "C" {
 #include "larsimobj/Simulation/sim.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
-#include "lardata/RecoBase/Wire.h"
+#include "lardataobj/RecoBase/Wire.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

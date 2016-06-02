@@ -21,7 +21,7 @@ art_make(
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
           SERVICE_LIBRARIES larsim_PhotonPropagation
-                        larsimobj_Simulation
+                        larsim_Simulation larsimobj_Simulation
                         larevt_Filters
 	                lardataobj_RawData
 	                larcore_Geometry
@@ -40,12 +40,10 @@ art_make(
 			${CETLIB}
 			${ROOT_BASIC_LIB_LIST}
           MODULE_LIBRARIES larsim_PhotonPropagation
-                           larsim_PhotonPropagation_PhotonVisibilityService_service
-                        larsimobj_Simulation
-                  			${ROOT_BASIC_LIB_LIST}
+                        larsim_PhotonPropagation_PhotonVisibilityService_service
+                        larsim_Simulation larsimobj_Simulation
                         larcore_Geometry
       	                larcore_Geometry_Geometry_service
-                        
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -58,6 +56,7 @@ art_make(
 			${MF_UTILITIES}
 			${FHICLCPP}
 			${CETLIB}
+                  	${ROOT_BASIC_LIB_LIST}
 	 )
 
 install_headers()

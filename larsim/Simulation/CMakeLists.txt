@@ -6,6 +6,7 @@ art_make( NO_PLUGINS
           
           LIB_LIBRARIES larsim_Simulation_LArVoxelCalculator_service
 	                larsim_Simulation_LArG4Parameters_service
+			larsimobj_Simulation
 	                lardata_Utilities
 	                nusimdata_SimulationBase
                         ${ART_FRAMEWORK_CORE}

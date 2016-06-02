@@ -5,7 +5,7 @@ art_make(
 	  
           LIB_LIBRARIES    larcore_Geometry
 			   larcore_Geometry_Geometry_service
-			   larsimobj_Simulation
+			   larsim_Simulation larsimobj_Simulation
 			   nusimdata_SimulationBase
 			   larcoreobj_SummaryData
 			   lardata_Utilities
@@ -30,7 +30,7 @@ art_make(
           MODULE_LIBRARIES larsim_MCSTReco
 			   larcore_Geometry
 			   larcore_Geometry_Geometry_service
-			   larsimobj_Simulation
+			   larsim_Simulation larsimobj_Simulation
 			   nusimdata_SimulationBase
 			   larcoreobj_SummaryData
 			   lardata_Utilities

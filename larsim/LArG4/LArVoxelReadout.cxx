@@ -32,7 +32,7 @@
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
