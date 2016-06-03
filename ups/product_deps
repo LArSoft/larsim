@@ -1,14 +1,14 @@
 # The parent line must be the first non-comment line in the file 
 # This line defines the product name and version
-parent	larsim	v06_00_00_rc3
+parent	larsim	v06_00_00_rc4
 defaultqual	e10
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt		v06_00_00_rc3
-larsimobj	v1_01_01
+larevt		v06_00_00_rc4
+larsimobj	v1_02_00
 genie_xsec      v2_10_6a 
 genie_phyopt    v2_10_6 
 larsoft_data    v1_00_00
@@ -19,9 +19,9 @@ end_product_list
   
 # e10  - with gcc 4.9.3 and -std=c++14
 qualifier	larevt	 	genie_xsec		genie_phyopt	larsimobj	larsoft_data	notes
-e10:debug	e10:debug	defaultplusccmec	dkcharmtau	e10:nu:debug	-nq-	
-e10:opt		e10:opt		defaultplusccmec	dkcharmtau	e10:nu:opt	-nq-	
-e10:prof	e10:prof	defaultplusccmec	dkcharmtau	e10:nu:prof	-nq-	
+e10:debug	e10:debug	defaultplusccmec	dkcharmtau	e10:debug	-nq-	
+e10:opt		e10:opt		defaultplusccmec	dkcharmtau	e10:opt		-nq-	
+e10:prof	e10:prof	defaultplusccmec	dkcharmtau	e10:prof	-nq-	
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
