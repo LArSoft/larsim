@@ -8,7 +8,7 @@ fwdir   product_dir G4
 #
 product         version
 larevt		v06_00_00_rc4
-larsimobj	v1_02_00
+larsimobj	v06_00_00_rc4
 genie_xsec      v2_10_6a 
 genie_phyopt    v2_10_6 
 larsoft_data    v1_00_00
