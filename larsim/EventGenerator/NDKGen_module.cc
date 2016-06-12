@@ -26,6 +26,7 @@
 #include "TSystem.h"
 
 #include "CLHEP/Random/RandGaussQ.h"
+#include "CLHEP/Random/RandFlat.h"
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -311,13 +312,15 @@ namespace evgen{
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandGaussQ gauss(engine);
+    //CLHEP::RandGaussQ gauss(engine);
+    CLHEP::RandFlat flat(engine);
+
+    double fvCut (5.0); // force vtx to be this far from any wall.
 
     // appropriate to 4APA dune geom
-    double X0 =  0.0 + gauss.fire(0,1.0*geo->DetHalfWidth());
-    double Y0 = 0.0  + gauss.fire(0,1.*geo->DetHalfHeight());
-    double Z0 = geo->DetLength() + 0.5*gauss.fire(0,geo->DetLength());
-    double fvCut (5.0); // force vtx to be this far from any wall.
+    double X0 = 0.0 + flat.fire(-2.0*geo->DetHalfWidth()+fvCut ,2.0*geo->DetHalfWidth()-fvCut);
+    double Y0 = 0.0 + flat.fire(-2.0*geo->DetHalfHeight()+fvCut,2.0*geo->DetHalfHeight()-fvCut);
+    double Z0 = 0.0 + flat.fire(fvCut,2.0*geo->DetLength() - fvCut);
     //    if (X0 < fvCut) X0 = fvCut;
     if (X0 > 2.0*geo->DetHalfWidth() - fvCut ) X0 = 2.0*geo->DetHalfWidth()-fvCut;
     if (X0 < -2.0*geo->DetHalfWidth() + fvCut ) X0 = -2.0*geo->DetHalfWidth()+fvCut;
