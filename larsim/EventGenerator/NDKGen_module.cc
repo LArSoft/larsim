@@ -25,7 +25,6 @@
 #include "TDatabasePDG.h"
 #include "TSystem.h"
 
-#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
 
 // Framework includes
@@ -312,30 +311,43 @@ namespace evgen{
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
-    //CLHEP::RandGaussQ gauss(engine);
     CLHEP::RandFlat flat(engine);
 
     double fvCut (5.0); // force vtx to be this far from any wall.
 
-    // appropriate to 4APA dune geom
-    double X0 = 0.0 + flat.fire(-2.0*geo->DetHalfWidth()+fvCut ,2.0*geo->DetHalfWidth()-fvCut);
-    double Y0 = 0.0 + flat.fire(-2.0*geo->DetHalfHeight()+fvCut,2.0*geo->DetHalfHeight()-fvCut);
-    double Z0 = 0.0 + flat.fire(fvCut,2.0*geo->DetLength() - fvCut);
-    //    if (X0 < fvCut) X0 = fvCut;
-    if (X0 > 2.0*geo->DetHalfWidth() - fvCut ) X0 = 2.0*geo->DetHalfWidth()-fvCut;
-    if (X0 < -2.0*geo->DetHalfWidth() + fvCut ) X0 = -2.0*geo->DetHalfWidth()+fvCut;
-    if (Y0 < -2.0*geo->DetHalfHeight() + fvCut) Y0 = -2.0*geo->DetHalfHeight()+fvCut;
-    if (Y0 > 2.0*geo->DetHalfHeight() - fvCut) Y0 = 2.0*geo->DetHalfHeight()-fvCut;
-    if (Z0 < fvCut) Z0 = fvCut;
-    if (Z0 > 2.0*geo->DetLength() - fvCut) Z0 = 2.0*geo->DetLength() - fvCut;
-    /*
-	X0 = geo->DetHalfWidth();
-	Y0 = 0.0;
-	Z0 = 0.5*geo->DetLength();
-	*/
+    // Find boundary of active volume
+    double minx = 1e9;
+    double maxx = -1e9;
+    double miny = 1e9;
+    double maxy = -1e9;
+    double minz = 1e9;
+    double maxz = -1e9;
+    for (size_t i = 0; i<geo->NTPC(); ++i)
+    {
+      double local[3] = {0.,0.,0.};
+      double world[3] = {0.,0.,0.};
+      const geo::TPCGeo &tpc = geo->TPC(i);
+      tpc.LocalToWorld(local,world);
+      if (minx>world[0]-geo->DetHalfWidth(i)) 
+        minx = world[0]-geo->DetHalfWidth(i);
+      if (maxx<world[0]+geo->DetHalfWidth(i))
+        maxx = world[0]+geo->DetHalfWidth(i);
+      if (miny>world[1]-geo->DetHalfHeight(i))
+        miny = world[1]-geo->DetHalfHeight(i);
+      if (maxy<world[1]+geo->DetHalfHeight(i))
+        maxy = world[1]+geo->DetHalfHeight(i);
+      if (minz>world[2]-geo->DetLength(i)/2.)
+        minz = world[2]-geo->DetLength(i)/2.;
+      if (maxz<world[2]+geo->DetLength(i)/2.)
+        maxz = world[2]+geo->DetLength(i)/2.;
+    }
+
+    // Assign vertice position
+    double X0 = 0.0 + flat.fire( minx+fvCut , maxx-fvCut );
+    double Y0 = 0.0 + flat.fire( miny+fvCut , maxy-fvCut );
+    double Z0 = 0.0 + flat.fire( minz+fvCut , maxz-fvCut );
 
     std::cout << "NDKGen_module: X, Y, Z of vtx: " << X0 << ", "<< Y0 << ", "<< Z0 << std::endl;
-
     
     if(!fEventFile->good())
       std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
