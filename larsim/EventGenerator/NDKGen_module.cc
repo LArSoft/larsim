@@ -241,9 +241,9 @@ namespace evgen{
 
     std::cout << std::endl;
     std::cout<<"------------------------------------------------------------------------------"<<std::endl;
-//  std::cout << "run    : " << evt.Header().Run() << std::endl;
-//  std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
-//  std::cout << "event  : " << evt.Header().Event() << std::endl;
+    //std::cout << "run    : " << evt.Header().Run() << std::endl;
+    //std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
+    //std::cout << "event  : " << evt.Header().Event() << std::endl;
     std::cout << "event  : " << evt.id().event() << std::endl;  
 
     // TODO: fill more quantities out, as below.
@@ -349,78 +349,96 @@ namespace evgen{
 
     std::cout << "NDKGen_module: X, Y, Z of vtx: " << X0 << ", "<< Y0 << ", "<< Z0 << std::endl;
     
+    int GenieEvt = -999;
+    
     if(!fEventFile->good())
       std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
     
     while(getline(*fEventFile,k)){
-      if (!k.compare(0,25,"GENIE Interaction Summary")) // testing for new event.
-        break;
-      if (k.compare(0,1,"|") || k.compare(1,2,"  ")) continue; // uninteresting line if it doesn't start with "|" and if second and third characters aren't spaces.
-      if (k.find("Fin-Init") != std::string::npos) continue; // Meh.
-      if (k.find("Ar") != std::string::npos) continue; // Meh.
-      if (k.find("HadrBlob") != std::string::npos) continue; // Meh.
-      if (k.find("NucBindE") != std::string::npos) continue; // Meh. atmo
-      if (k.find("FLAGS") != std::string::npos) break; // Event end. gevgen_ndcy
-      if (k.find("Vertex") != std::string::npos) break; // Event end. atmo
 
-      //      if (!k.compare(26,1,"3") || !k.compare(26,1,"1")) ; // New event or stable particles.
-      if (!k.compare(26,1,"1"))  // New event or stable particles.
-      {
+      if (k.find("** Event:")!= std::string::npos) {
+        std::istringstream in;
+        in.clear();
+        in.str(k);
+        std::string dummy;   
+        in>> dummy>> dummy>> dummy >> dummy>> dummy>> dummy>> dummy >> dummy>> dummy>> dummy >> GenieEvt;
+        std::cout<<"Genie Evt "<< GenieEvt <<" art evt "<<evt.id().event()<<"\n";
+      }
 
-	std::istringstream in;
-	in.clear();
-	in.str(k);
+      if (GenieEvt+1 != static_cast<int>(evt.id().event()))
+        continue;
+      else {
 
-	in>>p1>> Idx >>p2>> Name >>p3>> Ist >>p4>> PDG >>p5>>Mother1 >> p6 >> Mother2 >>p7>> Daughter1 >>p8>> Daughter2 >>p9>>Px>>p10>>Py>>p11>>Pz>>p12>>E>>p13>> m>>p14;
-      //std::cout<<std::setprecision(9)<<dollar<<"  "<<name<<"  "<<PDGCODE<<"  "<<energy<<"  "<<cosx<<" "<<cosy<<"  "<<cosz<<"  "<<partnumber<<std::endl;
-	if (Ist!=1) continue;
+        if (!k.compare(0,25,"GENIE Interaction Summary")) // testing for new event.
+          break;
+        if (k.compare(0,1,"|") || k.compare(1,2,"  ")) continue; // uninteresting line if it doesn't start with "|" and if second and third characters aren't spaces.
+        if (k.find("Fin-Init") != std::string::npos) continue; // Meh.
+        if (k.find("Ar") != std::string::npos) continue; // Meh.
+        if (k.find("Cl") != std::string::npos) continue; // ignore chlorine nucleus in nnbar events
+        if (k.find("HadrBlob") != std::string::npos) continue; // Meh.
+        if (k.find("NucBindE") != std::string::npos) continue; // Meh. atmo
+        if (k.find("FLAGS") != std::string::npos) break; // Event end. gevgen_ndcy
+        if (k.find("Vertex") != std::string::npos) break; // Event end. atmo
 
-	std::cout << "PDG = " << PDG << std::endl;	
-	
-	const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
-	const TParticlePDG* definition = databasePDG->GetParticle(PDG);
-	Mass = definition->Mass(); // GeV
-	if (E-Mass < 0.001) continue; // KE is too low.
-	
-	//	  if(partnumber == -1)
-	Status = 1;
-	  
-	simb::MCParticle mcpart(trackid,
-				PDG,
-				primary,		    
-				FirstMother,
-				Mass,
-				Status
-				);
-		
-	P = std::sqrt(pow(E,2.) - pow(Mass,2.)); // GeV/c
-	std::cout << "Momentum = " << P << std::endl;
-	
-	TLorentzVector pos(X0, Y0, Z0, 0);
+        //      if (!k.compare(26,1,"3") || !k.compare(26,1,"1")) ; // New event or stable particles.
+        if (!k.compare(26,1,"1"))  // New event or stable particles.
+        {
 
-	Tpos = pos; // for target
-	
-	TLorentzVector mom(Px,Py,Pz, E);
-	
-	mcpart.AddTrajectoryPoint(pos,mom);
-	truth.Add(mcpart);
-	
-	
-      }// loop over particles in an event
-      truth.SetOrigin(simb::kUnknown);
-      
-      //if (!k.compare(1,1,"FLAGS")) // end of event
-      //  break;  
-      
+      	  std::istringstream in;
+      	  in.clear();
+      	  in.str(k);
+
+      	  in>>p1>> Idx >>p2>> Name >>p3>> Ist >>p4>> PDG >>p5>>Mother1 >> p6 >> Mother2 >>p7>> Daughter1 >>p8>> Daughter2 >>p9>>Px>>p10>>Py>>p11>>Pz>>p12>>E>>p13>> m>>p14;
+          //std::cout<<std::setprecision(9)<<dollar<<"  "<<name<<"  "<<PDGCODE<<"  "<<energy<<"  "<<cosx<<" "<<cosy<<"  "<<cosz<<"  "<<partnumber<<std::endl;
+      	  if (Ist!=1) continue;
+
+      	  std::cout << "PDG = " << PDG << std::endl;	
+      	
+      	  const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
+      	  const TParticlePDG* definition = databasePDG->GetParticle(PDG);
+      	  Mass = definition->Mass(); // GeV
+      	  if (E-Mass < 0.001) continue; // KE is too low.
+      	
+      	  //	  if(partnumber == -1)
+      	  Status = 1;
+      	  
+      	  simb::MCParticle mcpart(trackid,
+      		  		PDG,
+      			  	primary,		    
+      		  		FirstMother,
+      			  	Mass,
+      		  		Status
+      			  	);
+      		
+      	  P = std::sqrt(pow(E,2.) - pow(Mass,2.)); // GeV/c
+      	  std::cout << "Momentum = " << P << std::endl;
+      	
+      	  TLorentzVector pos(X0, Y0, Z0, 0);
+
+      	  Tpos = pos; // for target
+      	
+      	  TLorentzVector mom(Px,Py,Pz, E);
+      	
+      	  mcpart.AddTrajectoryPoint(pos,mom);
+      	  truth.Add(mcpart);
+      	
+      	
+        }// loop over particles in an event
+        truth.SetOrigin(simb::kUnknown);
+            
+        //if (!k.compare(1,1,"FLAGS")) // end of event
+        //  break;  
+
+      }
     } // end while loop
     
     /////////////////////////////////
-      std::cout << "NDKGen.cxx: Putting " << truth.NParticles() << " tracks on stack." << std::endl; 
-      truthcol->push_back(truth);
-      //FillHistograms(truth);  
-      evt.put(std::move(truthcol));
+    std::cout << "NDKGen.cxx: Putting " << truth.NParticles() << " tracks on stack." << std::endl; 
+    truthcol->push_back(truth);
+    //FillHistograms(truth);  
+    evt.put(std::move(truthcol));
       
-      return;
+    return;
   }
   
 //   //......................................................................
