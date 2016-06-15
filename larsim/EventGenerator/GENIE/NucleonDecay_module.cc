@@ -48,7 +48,7 @@ public:
 private:
 
   // Declare member data here.
-  const EventRecordVisitorI * mcgen;
+  const genie::EventRecordVisitorI * mcgen;
 
 };
 
@@ -60,9 +60,9 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   // Call appropriate produces<>() functions here.
   string sname   = "genie::EventGenerator";
   string sconfig = "NucleonDecay";
-  AlgFactory * algf = AlgFactory::Instance();
+  genie::AlgFactory * algf = genie::AlgFactory::Instance();
   mcgen =
-    dynamic_cast<const EventRecordVisitorI *> (algf->GetAlgorithm(sname,sconfig));
+    dynamic_cast<const genie::EventRecordVisitorI *> (algf->GetAlgorithm(sname,sconfig));
   if(!mcgen) {
     throw cet::exception("NucleonDecay") << "Couldn't instantiate the nucleon decay generator"; 
   }
