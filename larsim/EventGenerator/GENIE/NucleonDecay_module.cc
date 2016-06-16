@@ -1,10 +1,29 @@
 ////////////////////////////////////////////////////////////////////////
 // Class:       NucleonDecay
 // Module Type: producer
-// File:        NucleonDecay_module.cc
+// GENIE nucleon decay generator
 //
-// Generated at Tue Jun 14 13:52:51 2016 by Tingjun Yang using artmod
-// from cetpkgsupport v1_10_02.
+// Converted from gNucleonDecayEvGen.cxx by
+// tjyang@fnal.gov
+//
+//  Nucleon decay mode ID:
+// ---------------------------------------------------------
+//  ID |   Decay Mode                     |   Current Limit 
+//     |                                  |   (1E+34 yrs)
+// ---------------------------------------------------------
+//   0 |   p --> e^{+}      + \pi^{0}     |   1.3
+//   1 |   p --> \mu^{+}    + \pi^{0}     |   1.1
+//   2 |   p --> e^{+}      + \eta^{0}    |   0.42
+//   3 |   p --> \mu^{+}    + \eta^{0}    |   0.13
+//   4 |   p --> e^{+}      + \rho^{0}    |   0.07
+//   5 |   p --> \mu^{+}    + \rho^{0}    |   0.02
+//   6 |   p --> e^{+}      + \omega^{0}  |   0.03
+//   7 |   p --> \mu^{+}    + \omega^{0}  |   0.08
+//   8 |   n --> e^{+}      + \pi^{-}     |   0.2
+//   9 |   n --> \mu^{+}    + \pi^{-}     |   0.1
+//  10 |   p --> \bar{\nu}} + K^{+}       |   0.4
+// ---------------------------------------------------------
+//
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -17,8 +36,10 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "GENIE/Algorithm/AlgFactory.h"
-#include "GENIE/EVGCore/EventRecordVisitorI.h"
+#include "Algorithm/AlgFactory.h"
+#include "EVGCore/EventRecordVisitorI.h"
+#include "EVGCore/EventRecord.h"
+#include "NucleonDecay/NucleonDecayMode.h"
 
 #include <memory>
 #include <string>
@@ -35,6 +56,7 @@ public:
 
   // Plugins should not be copied or assigned.
   NucleonDecay(NucleonDecay const &) = delete;
+  virtual ~NucleonDecay();
   NucleonDecay(NucleonDecay &&) = delete;
   NucleonDecay & operator = (NucleonDecay const &) = delete;
   NucleonDecay & operator = (NucleonDecay &&) = delete;
@@ -49,7 +71,7 @@ private:
 
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
-
+  genie::NucleonDecayMode_t gOptDecayMode    = genie::kNDNull;             // nucleon decay mode
 };
 
 
@@ -66,11 +88,33 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   if(!mcgen) {
     throw cet::exception("NucleonDecay") << "Couldn't instantiate the nucleon decay generator"; 
   }
+  int fDecayMode = p.get<int>("DecayMode");
+  gOptDecayMode = (genie::NucleonDecayMode_t) fDecayMode;
+
+}
+
+evgen::NucleonDecay::~NucleonDecay(){
+  delete mcgen;
 }
 
 void evgen::NucleonDecay::produce(art::Event & e)
 {
   // Implementation of required member function here.
+  genie::EventRecord * event = new genie::EventRecord;
+  int target = 1000180400;  //Only use argon target
+  int decay  = (int)gOptDecayMode;
+  genie::Interaction * interaction = genie::Interaction::NDecay(target,decay);
+  event->AttachSummary(interaction);
+  
+  // Simulate decay     
+  mcgen->ProcessEventRecord(event);
+  
+  LOG_DEBUG("NucleonDecay")
+    << "Generated event: " << *event;
+  
+  delete event;
+  return;
+
 }
 
 void evgen::NucleonDecay::beginJob()
