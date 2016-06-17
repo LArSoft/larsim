@@ -77,6 +77,7 @@ art_make(
                         ${FHICLCPP}
                         ${CETLIB}
                         ${CLHEP}
+#			${GMESSENGER}
 			${GALGORITHM}		
 			${GBARYONRESONANCE}
 			${GBASE}
@@ -99,7 +100,6 @@ art_make(
 			${GINTERACTION}
 			${GLLEWELLYNSMITH}
 			${GMEC}
-			${GMESSENGER}
 			${GNUGAMMA}
 			${GNUE}
 			${GNTUPLE}
@@ -118,6 +118,7 @@ art_make(
 			${GMUELOSS}
 			${GREWEIGHT}
 			${GNUCLEONDECAY}
+			${GMESSENGER}
                         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
                         ${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}

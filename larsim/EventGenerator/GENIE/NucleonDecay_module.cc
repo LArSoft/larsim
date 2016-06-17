@@ -36,10 +36,12 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// GENIE includes
 #include "Algorithm/AlgFactory.h"
 #include "EVGCore/EventRecordVisitorI.h"
 #include "EVGCore/EventRecord.h"
 #include "NucleonDecay/NucleonDecayMode.h"
+#include "PDG/PDGLibrary.h"
 
 #include <memory>
 #include <string>
@@ -56,7 +58,6 @@ public:
 
   // Plugins should not be copied or assigned.
   NucleonDecay(NucleonDecay const &) = delete;
-  virtual ~NucleonDecay();
   NucleonDecay(NucleonDecay &&) = delete;
   NucleonDecay & operator = (NucleonDecay const &) = delete;
   NucleonDecay & operator = (NucleonDecay &&) = delete;
@@ -76,10 +77,9 @@ private:
 
 
 evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
-// :
-// Initialize member data here.
 {
-  // Call appropriate produces<>() functions here.
+  genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
+
   string sname   = "genie::EventGenerator";
   string sconfig = "NucleonDecay";
   genie::AlgFactory * algf = genie::AlgFactory::Instance();
@@ -91,10 +91,6 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   int fDecayMode = p.get<int>("DecayMode");
   gOptDecayMode = (genie::NucleonDecayMode_t) fDecayMode;
 
-}
-
-evgen::NucleonDecay::~NucleonDecay(){
-  delete mcgen;
 }
 
 void evgen::NucleonDecay::produce(art::Event & e)
