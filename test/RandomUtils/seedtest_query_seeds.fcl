@@ -1,0 +1,49 @@
+# Test seed queries to the seeds service.
+#
+# Policy:          random
+# Valid:           yes
+# Will succeed:    yes
+# Purpose:         check that getSeed() works in any context
+# Limited context: this test is art-specific
+#
+
+#include "messageService.fcl"
+
+
+process_name : SeedTestQuerySeeds
+
+
+source: {
+  module_type : EmptyEvent
+  maxEvents : 2
+}
+
+
+services : {
+  message: @local::mf_interactive
+  RandomNumberGenerator: {}
+
+  LArSeedService: {
+    policy            : random
+    verbosity         :     2
+    endOfJobSummary   :  true
+  } # LArSeedService
+
+} # services
+
+
+physics: {
+  analyzers: {
+    
+    testMod: {
+      module_type: SeedTestQuerySeeds
+    }
+    
+  } # analyzers
+
+  tests: [ testMod ]
+
+  end_paths: [ tests ]
+
+} # physics
+

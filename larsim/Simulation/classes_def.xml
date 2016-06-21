@@ -1,0 +1,74 @@
+<!--                                                                                  -->
+<!--  $Id: classes_def.xml,v 1.10 2010/04/12 18:12:28  Exp $                          -->
+<!--  $Author:  $                                                                     -->
+<!--  $Date: 2010/04/12 18:12:28 $                                                    -->
+<!--                                                                                  -->
+<!--  Include art::Wrapper lines for objects that we would like to put into the event -->
+<!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
+<!--  for all objects that are data members of those objects.                         -->
+
+
+<lcgdict>
+ <class name="sim::OnePhoton"                ClassVersion="12"                   >
+  <version ClassVersion="12" checksum="124883757"/>
+  <version ClassVersion="11" checksum="1948463887"/>
+ </class>
+ <class name="sim::SimPhotonsLite"           ClassVersion="10"                   >
+  <version ClassVersion="10" checksum="4093907155"/>
+ </class>
+ <class name="sim::SimPhotons"               ClassVersion="12"              	 >
+  <version ClassVersion="12" checksum="3876354274"/>
+ </class>
+ <class name="sim::SimChannel"               ClassVersion="14"              	 >
+  <version ClassVersion="14" checksum="2917495953"/>
+ </class>
+ <class name="sim::AuxDetSimChannel"         ClassVersion="12"                   >
+  <version ClassVersion="12" checksum="3670394285"/>
+  <version ClassVersion="11" checksum="4004990893"/>
+  <version ClassVersion="10" checksum="999879376"/>
+ </class>
+ <class name="sim::AuxDetIDE"                ClassVersion="10"                   >
+  <version ClassVersion="10" checksum="3594257473"/>
+ </class>
+ <class name="sim::IDE"                      ClassVersion="11"                   >
+  <version ClassVersion="11" checksum="1123102836"/>
+  <version ClassVersion="10" checksum="3981386861"/>
+ </class>
+ <class name="sim::BeamGateInfo"             ClassVersion="11"              	 >
+  <version ClassVersion="11" checksum="1122283400"/>
+  <version ClassVersion="10" checksum="2225942541"/>
+ </class>
+ <class name="std::vector<int>"                                             	 />
+ <class name="std::vector<sim::OnePhoton>"                                       />
+ <class name="std::vector<sim::SimPhotonsLite>"                                  />
+ <class name="std::vector<sim::SimPhotons  >" 		     		    	 />
+ <class name="std::vector<sim::SimChannel  >"                		    	 />
+ <class name="std::vector<sim::AuxDetSimChannel>"                                />
+ <class name="std::vector<sim::AuxDetIDE>" />
+ <class name="std::vector<sim::IDE>"                                        	 />
+ <class name="std::vector<sim::BeamGateInfo>" 	    		    	         />
+ <class name="std::pair<unsigned short, std::vector<sim::IDE> >"            	 />
+ <class name="std::map<unsigned short, std::vector<sim::IDE> >"             	 />
+ <class name="art::Wrapper< std::vector<int>               >"		         />
+ <class name="art::Wrapper< std::vector<sim::SimPhotons>   >"		    	 />
+ <class name="art::Wrapper< std::vector<sim::SimPhotonsLite>   >"                />
+ <class name="art::Wrapper< std::vector<sim::SimChannel>   >"		    	 />
+ <class name="art::Wrapper< std::vector<sim::BeamGateInfo> >"		    	 />
+ <class name="art::Wrapper< std::vector<sim::AuxDetSimChannel>  >"               />
+<!---Remove the following lines once DUNE no longer uses files containing
+     DUNE10ktPhotons.  11 September 2013 brebel-->
+ <class name="sim::DUNE10ktPhotons"                                              />
+ <class name="std::vector<sim::DUNE10ktPhotons>"                                 />
+ <class name="art::Wrapper< std::vector<sim::DUNE10ktPhotons>  >"                />
+
+ <ioread 
+    version="[-13]" 
+    sourceClass="sim::SimChannel" 
+    source="unsigned short fChannel" 
+    targetClass="sim::SimChannel" 
+    target="fChannel" 
+    include="SimChannel.h">
+    <![CDATA[fChannel = onfile.fChannel;]]>
+</ioread> 
+
+</lcgdict>
