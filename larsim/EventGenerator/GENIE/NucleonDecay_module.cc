@@ -42,9 +42,22 @@
 #include "EVGCore/EventRecord.h"
 #include "NucleonDecay/NucleonDecayMode.h"
 #include "PDG/PDGLibrary.h"
+#include "GHEP/GHepParticle.h"
 
+// larsoft includes
+#include "SimulationBase/MCTruth.h"
+#include "SimulationBase/MCParticle.h"
+#include "SimulationBase/MCNeutrino.h"
+#include "EventGeneratorBase/evgenbase.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
+#include "larsim/RandomUtils/LArSeedService.h"
+
+// c++ includes
 #include <memory>
 #include <string>
+
+#include "CLHEP/Random/RandFlat.h"
 
 namespace evgen {
   class NucleonDecay;
@@ -67,6 +80,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
+  void beginRun(art::Run& run);
 
 private:
 
@@ -91,6 +105,14 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   int fDecayMode = p.get<int>("DecayMode");
   gOptDecayMode = (genie::NucleonDecayMode_t) fDecayMode;
 
+  produces< std::vector<simb::MCTruth> >();
+  produces< sumdata::RunData, art::InRun >();
+  
+  // create a default random engine; obtain the random seed from LArSeedService,
+  // unless overridden in configuration with key "Seed"
+  art::ServiceHandle<sim::LArSeedService>()
+    ->createEngine(*this, p, "Seed");
+  
 }
 
 void evgen::NucleonDecay::produce(art::Event & e)
@@ -104,14 +126,96 @@ void evgen::NucleonDecay::produce(art::Event & e)
   
   // Simulate decay     
   mcgen->ProcessEventRecord(event);
-  
+
+//  genie::Interaction *inter = event->Summary();
+//  const genie::InitialState &initState = inter->InitState();
+//  std::cout<<"initState = "<<initState.AsString()<<std::endl;
+//  const genie::ProcessInfo &procInfo = inter->ProcInfo();
+//  std::cout<<"procInfo = "<<procInfo.AsString()<<std::endl;
   LOG_DEBUG("NucleonDecay")
     << "Generated event: " << *event;
+
+  std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
+  simb::MCTruth truth;
   
+  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<art::RandomNumberGenerator> rng;
+  CLHEP::HepRandomEngine &engine = rng->getEngine();
+  CLHEP::RandFlat flat(engine);
+
+  // Find boundary of active volume
+  double minx = 1e9;
+  double maxx = -1e9;
+  double miny = 1e9;
+  double maxy = -1e9;
+  double minz = 1e9;
+  double maxz = -1e9;
+  for (size_t i = 0; i<geo->NTPC(); ++i){
+    const geo::TPCGeo &tpc = geo->TPC(i);
+    if (minx>tpc.MinX()) minx = tpc.MinX();
+    if (maxx<tpc.MaxX()) maxx = tpc.MaxX();
+    if (miny>tpc.MinY()) miny = tpc.MinY();
+    if (maxy<tpc.MaxY()) maxy = tpc.MaxY();
+    if (minz>tpc.MinZ()) minz = tpc.MinZ();
+    if (maxz<tpc.MaxZ()) maxz = tpc.MaxZ();
+  }
+
+  // Assign vertice position
+  double X0 = flat.fire( minx, maxx );
+  double Y0 = flat.fire( miny, maxy );
+  double Z0 = flat.fire( minz, maxz );
+
+  TIter partitr(event);
+  genie::GHepParticle *part = 0;
+  // GHepParticles return units of GeV/c for p.  the V_i are all in fermis
+  // and are relative to the center of the struck nucleus.
+  // add the vertex X/Y/Z to the V_i for status codes 0 and 1
+  int trackid = 0;
+  std::string primary("primary");
+  
+  while( (part = dynamic_cast<genie::GHepParticle *>(partitr.Next())) ){
+    
+    simb::MCParticle tpart(trackid, 
+                           part->Pdg(),
+                           primary,
+                           part->FirstMother(),
+                           part->Mass(), 
+                           part->Status());
+    
+    TLorentzVector pos(X0, Y0, Z0, 0);
+    TLorentzVector mom(part->Px(), part->Py(), part->Pz(), part->E());
+    tpart.AddTrajectoryPoint(pos,mom);
+    if(part->PolzIsSet()) {
+      TVector3 polz;
+      part->GetPolarization(polz);
+      tpart.SetPolarization(polz);
+    }
+    truth.Add(tpart);
+    
+    ++trackid;        
+  }// end loop to convert GHepParticles to MCParticles
+  truth.SetOrigin(simb::kUnknown);
+  truthcol->push_back(truth);
+  //FillHistograms(truth);  
+  e.put(std::move(truthcol));
+
   delete event;
   return;
 
 }
+
+void evgen::NucleonDecay::beginRun(art::Run& run)
+{
+    
+  // grab the geometry object to see what geometry we are using
+  art::ServiceHandle<geo::Geometry> geo;
+  std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+  
+  run.put(std::move(runcol));
+  
+  return;
+}
+
 
 void evgen::NucleonDecay::beginJob()
 {
