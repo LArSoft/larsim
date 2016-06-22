@@ -12,6 +12,7 @@ services:
   @table::dunefd_services
 
 }
+services.Geometry: @local::dune10kt_1x2x6_geo
 
 #Start each new event with an empty event.
 source:
