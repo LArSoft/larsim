@@ -8,8 +8,7 @@ art_make(
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service
-                        larsim_Simulation
-			larsimobj_Simulation
+                        larsim_Simulation larsimobj_Simulation
                         nusimdata_SimulationBase
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
