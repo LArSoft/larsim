@@ -123,6 +123,15 @@ simple_plugin(DumpRawDigits "module"
               
 )
 
+simple_plugin(RecompressRawDigits "module"
+                lardata_RawData
+                ${ART_FRAMEWORK_CORE}
+                ${ART_FRAMEWORK_PRINCIPAL}
+                ${MF_MESSAGELOGGER}
+                ${FHICLCPP}
+                ${CETLIB}
+)
+
 install_headers()
 install_fhicl()
 install_source()
