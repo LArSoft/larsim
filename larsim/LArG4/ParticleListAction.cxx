@@ -302,20 +302,20 @@ namespace larg4 {
       G4double time = preStepPoint->GetGlobalTime();
       
       // Remember that LArSoft uses cm, ns, GeV.
-      TLorentzVector fourPos( position.x() / CLHEP::cm,
+      TLorentzVector fourPos(position.x() / CLHEP::cm,
                              position.y() / CLHEP::cm,
                              position.z() / CLHEP::cm,
                              time / CLHEP::ns);
       
       const G4ThreeVector momentum = preStepPoint->GetMomentum();
       const G4double energy = preStepPoint->GetTotalEnergy();
-      TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
+      TLorentzVector fourMom(momentum.x() / CLHEP::GeV,
                              momentum.y() / CLHEP::GeV,
                              momentum.z() / CLHEP::GeV,
                              energy / CLHEP::GeV);
       
       // Add the first point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom, "" );
       
     } // end if this is the first step
 
@@ -360,7 +360,7 @@ namespace larg4 {
                              energy / CLHEP::GeV );
       
       // Add another point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom );
+      AddPointToCurrentParticle( fourPos, fourMom, process );
       
     }
   }
@@ -468,12 +468,13 @@ namespace larg4 {
   
   
   //----------------------------------------------------------------------------
-  void ParticleListAction::AddPointToCurrentParticle
-    (TLorentzVector const& pos, TLorentzVector const& mom)
+  void ParticleListAction::AddPointToCurrentParticle(TLorentzVector const& pos,
+                                                     TLorentzVector const& mom,
+                                                     std::string    const& process)
   {
     
     // Add the first point in the trajectory.
-    fCurrentParticle.particle->AddTrajectoryPoint(pos, mom);
+    fCurrentParticle.particle->AddTrajectoryPoint(pos, mom, process);
     
     // also see if we can decide to keep the particle
     if (!fCurrentParticle.keep)
