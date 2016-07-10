@@ -315,7 +315,7 @@ namespace larg4 {
                              energy / CLHEP::GeV);
       
       // Add the first point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom, "" );
+      AddPointToCurrentParticle( fourPos, fourMom, "Start" );
       
     } // end if this is the first step
 
@@ -360,7 +360,7 @@ namespace larg4 {
                              energy / CLHEP::GeV );
       
       // Add another point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom, process );
+      AddPointToCurrentParticle( fourPos, fourMom, std::string(process) );
       
     }
   }
