@@ -110,9 +110,10 @@ namespace larg4 {
     std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
     
     /// Adds a trajectory point to the current particle, and runs the filter
-    void AddPointToCurrentParticle
-       (TLorentzVector const& pos, TLorentzVector const& mom);
-    
+    void AddPointToCurrentParticle(TLorentzVector const& pos,
+                                   TLorentzVector const& mom,
+                                   std::string    const& process);
+
   };
 
 } // namespace LArG4
