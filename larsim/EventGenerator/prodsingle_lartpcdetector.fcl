@@ -15,7 +15,7 @@
 #
 #include "messageservice.fcl"
 #include "seedservice.fcl"
-#include "magfield.fcl"
+#include "magfield_larsoft.fcl"
 #include "geometry.fcl"
 #include "larproperties_lartpcdetector.fcl"
 #include "detectorproperties_lartpcdetector.fcl"
@@ -48,7 +48,7 @@ services:
   DatabaseUtil:              @local::standard_database             # from databaseutil.fcl
   LArG4Parameters:           @local::standard_largeantparameters   # from simulationservices.fcl
   LArVoxelCalculator:        @local::standard_larvoxelcalculator   # from simulationservices.fcl
-  MagneticField:             @local::no_mag_larsoft                # from magfield.fcl
+  MagneticField:             @local::no_mag_larsoft                # from magfield_larsoft.fcl
   LArFFT:                    @local::standard_larfft               # from larfft.fcl
   
 } # services
