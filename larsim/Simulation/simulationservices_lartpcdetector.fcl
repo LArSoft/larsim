@@ -14,7 +14,7 @@ lartpcdetector_simulation_services: {
   LArSeedService:         @local::lartpcdetector_seedservice
   LArG4Parameters:        @local::lartpcdetector_largeantparameters
   LArVoxelCalculator:     @local::lartpcdetector_larvoxelcalculator
-  MagneticField:          @local::no_mag
+  MagneticField:          @local::no_mag_larsoft
 } # lartpcdetector_simulation_services
 
 END_PROLOG
