@@ -5,19 +5,28 @@ standard_supernova_alg:
   # Sample this energy spectrum (found in $FW_SEARCH_PATH)
   # This value is not used if Monoenergetic neutrinos is set to true
   EnergySpectrumFileName: "gvkm_xscn_weighted_nue_spectrum.root"
+
   # Use the same energy for all of the simulated neutrinos
   MonoenergeticNeutrinos:   false
+
   # Neutrinos of this energy are generated only if 
   # MonoenergeticNeutrinos is set to true, otherwise this value is not used
   NeutrinoEnergy:              10
+
   # Sample Poisson distribution for each event 
   # to decide how many events to simulate
   UsePoissonDistribution:    true
+
+  # Allow zero neutrinos to be created?
+  AllowZeroNeutrinos:        false
+
   # Average or exact number of neutrinos simulated
   NumberOfNeutrinos:           10
+
   # Simulate neutrinos randomly within this time interval
   NeutrinoTimeBegin:     -2246000.0 # In ns
   NeutrinoTimeEnd:        2246000.0 # In ns
+
   # Simulate neutrinos in a box
   # Define the box using two coordinates
   ActiveVolume0:           [ -363.376, -607.829,  -0.876 ] # In cm

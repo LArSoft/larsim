@@ -103,7 +103,11 @@ namespace evgen {
     art::ServiceHandle< art::RandomNumberGenerator > randomNumberGenerator;
     CLHEP::HepRandomEngine &engine = randomNumberGenerator->getEngine();
 
-    truthCol->emplace_back(fGenerator.Generate(engine));
+    std::vector<simb::MCTruth> truths = fGenerator.Generate(engine);
+
+    for(unsigned int i = 0; i < truths.size(); ++i) {
+      truthCol->emplace_back(truths[i]);
+    }
 
     event.put(std::move(truthCol));
 

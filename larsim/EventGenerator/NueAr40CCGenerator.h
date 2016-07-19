@@ -32,7 +32,7 @@ namespace evgen {
       NueAr40CCGenerator(fhicl::ParameterSet const& parameterSet);
   
       // Simulate interactions, produce plots
-      simb::MCTruth Generate(CLHEP::HepRandomEngine& engine);
+      std::vector<simb::MCTruth> Generate(CLHEP::HepRandomEngine& engine);
   
     private:
   
@@ -98,6 +98,10 @@ namespace evgen {
       // Number of neutrinos is distributed according 
       // to Poisson distribution if this is true
       bool fUsePoissonDistribution;
+
+      // Allow zero neutrinos to be created if that is what the randonmly
+      // generated number-of-nu ends up being.
+      bool fAllowZeroNeutrinos;
       
       // Average or exact number of neutrinos generated
       int fNumberOfNeutrinos;

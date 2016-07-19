@@ -44,6 +44,8 @@ namespace evgen {
                     (parameterSet.get< std::string >("EnergySpectrumFileName"))
               , fUsePoissonDistribution
                          (parameterSet.get< bool   >("UsePoissonDistribution"))
+              , fAllowZeroNeutrinos
+                         (parameterSet.get< bool   >("AllowZeroNeutrinos"))
               , fNumberOfNeutrinos 
                          (parameterSet.get< int    >("NumberOfNeutrinos"     ))
               , fNeutrinoTimeBegin
@@ -65,18 +67,28 @@ namespace evgen {
   
   //----------------------------------------------------------------------------
   // Main routine
-  simb::MCTruth NueAr40CCGenerator::Generate(CLHEP::HepRandomEngine& engine) 
+  std::vector<simb::MCTruth> NueAr40CCGenerator::Generate(CLHEP::HepRandomEngine& engine) 
   {
 
-    simb::MCTruth truth;
-    truth.SetOrigin(simb::kSuperNovaNeutrino);
-  
-    // Loop until at least one neutrino is simulated
-    while (!truth.NParticles())
-      CreateKinematicsVector(truth, engine);
-  
-    return truth;
-  
+    std::vector<simb::MCTruth> truths;
+    
+    int NumberOfNu = this->GetNumberOfNeutrinos(engine);
+    for(int i = 0; i < NumberOfNu; ++i) {
+
+      simb::MCTruth truth;
+      truth.SetOrigin(simb::kSuperNovaNeutrino);
+      
+      // Loop until at least one neutrino is simulated
+      while (!truth.NParticles()) {
+	CreateKinematicsVector(truth, engine);
+      }      
+
+      truths.push_back(truth);
+
+    }
+
+    return truths;
+
   }
   
   //----------------------------------------------------------------------------
@@ -132,7 +144,9 @@ namespace evgen {
     if (fUsePoissonDistribution)
     {
       CLHEP::RandPoisson randPoisson(engine);
-      return randPoisson.fire(fNumberOfNeutrinos);
+      int N = randPoisson.fire(fNumberOfNeutrinos);
+      if(N == 0 && !fAllowZeroNeutrinos) N = 1;
+      return N;
     }
 
     return fNumberOfNeutrinos;
@@ -825,20 +839,13 @@ namespace evgen {
                                         CLHEP::HepRandomEngine& engine) const
   {
   
-    int numberOfNeutrinos = GetNumberOfNeutrinos(engine); 
-    for (int neutrinoNumber = 0; neutrinoNumber < numberOfNeutrinos;
-                                                   ++neutrinoNumber)
-    {
-      bool success = false;
-      while (!success)
-      {
-        double neutrinoEnergy = GetNeutrinoEnergy(engine);
-        double neutrinoTime   = GetNeutrinoTime  (engine);
-        success = ProcessOneNeutrino(truth, neutrinoEnergy, 
-                                      neutrinoTime, engine);
-      }
+    bool success = false;
+    while (!success) {
+      double neutrinoEnergy = GetNeutrinoEnergy(engine);
+      double neutrinoTime   = GetNeutrinoTime  (engine);
+      success = ProcessOneNeutrino(truth, neutrinoEnergy, neutrinoTime, engine);
     }
-  
+    
   }
   
   //----------------------------------------------------------------------------
@@ -940,8 +947,44 @@ namespace evgen {
   
     std::vector< double > vertex = GetUniformPosition(engine);
   
-    std::vector< double > electronDirection = GetIsotropicDirection(engine);
+    std::vector< double > neutrinoDirection = GetIsotropicDirection(engine);
+
+
+
+    //
+    // Add the first particle (the neutrino) to the truth list...
+    //
+
+    // NOTE: all of the values below calculated for the neutrino should be checked!
+
+    // Primary particles have negative IDs
+    int neutrinoTrackID = -1*(truth.NParticles() + 1); 
+    std::string primary("primary");
+
+    int nuePDG = 12;
+    double neutrinoP  = neutrinoEnergy/1000.0; // use GeV...
+    double neutrinoPx = neutrinoDirection.at(0)*neutrinoP;
+    double neutrinoPy = neutrinoDirection.at(1)*neutrinoP;
+    double neutrinoPz = neutrinoDirection.at(2)*neutrinoP;
+
+
+
+    simb::MCParticle neutrino(neutrinoTrackID, nuePDG, primary);
+
+    TLorentzVector neutrinoPosition(vertex.at(0), vertex.at(1), 
+                                    vertex.at(2), neutrinoTime);
+    TLorentzVector neutrinoMomentum(neutrinoPx, neutrinoPy, 
+                                    neutrinoPz, neutrinoEnergy/1000.0);
+    neutrino.AddTrajectoryPoint(neutrinoPosition, neutrinoMomentum);
   
+    truth.Add(neutrino);
+
+
+
+    //
+    // Adding the electron to truth
+    //
+
     // In MeV
     double electronEnergy    = neutrinoEnergy - 
                                (fEnergyLevels.at(lastLevel) + 1.5);
@@ -950,19 +993,16 @@ namespace evgen {
     double electronM  = 0.000511;
     double electronP  = std::sqrt(std::pow(electronEnergyGeV,2)
                                          - std::pow(electronM,2));
-    double electronPx = electronDirection.at(0)*electronP;
-    double electronPy = electronDirection.at(1)*electronP;
-    double electronPz = electronDirection.at(2)*electronP;
   
     // For the moment, electron is in same direction as neutrino
-  
-    // Adding the electron to truth
+    double electronPx = neutrinoDirection.at(0)*electronP;
+    double electronPy = neutrinoDirection.at(1)*electronP;
+    double electronPz = neutrinoDirection.at(2)*electronP;
     
     // Primary particles have negative IDs
-    int trackID = -1*(truth.NParticles() + 1); 
-    std::string primary("primary");
+    int trackID = -1*(truth.NParticles() + 1);
     int electronPDG = 11;
-    simb::MCParticle electron(trackID, electronPDG, primary);
+    simb::MCParticle electron(trackID, electronPDG, primary, neutrinoTrackID); // NOTE: should the electrons be primary?
   
     TLorentzVector electronPosition(vertex.at(0), vertex.at(1), 
                                     vertex.at(2), neutrinoTime);
@@ -1018,7 +1058,7 @@ namespace evgen {
           // Primary particles have negative IDs
           trackID = -1*(truth.NParticles() + 1);
           int gammaPDG = 22;
-          simb::MCParticle gamma(trackID, gammaPDG, primary);
+          simb::MCParticle gamma(trackID, gammaPDG, primary); // NOTE: should the gammas be primary?
         
           TLorentzVector gammaPosition(vertex.at(0), vertex.at(1), 
                                        vertex.at(2), neutrinoTime);
@@ -1056,6 +1096,19 @@ namespace evgen {
       std::cout << "level  = "   << level << std::endl;
     }
    
+    // Set the neutrino for the MCTruth object:
+    // NOTE: currently these parameters are all pretty much a guess...
+    truth.SetNeutrino(simb::kCC,
+		      simb::kQE, // not sure what the mode should be here, assumed that these are all QE???
+		      simb::kCCQE, // not sure what the int_type should be either...
+		      0, // target is AR40? not sure how to specify that...
+		      0, // nucleon pdg ???
+		      0, // quark pdg ???
+		      -1.0,  // W ??? - not sure how to calculate this from the above
+		      -1.0,  // X ??? - not sure how to calculate this from the above
+		      -1.0,  // Y ??? - not sure how to calculate this from the above
+		      -1.0); // Qsqr ??? - not sure how to calculate this from the above
+
     return true;
   
   }
