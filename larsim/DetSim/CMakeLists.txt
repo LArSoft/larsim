@@ -124,7 +124,7 @@ simple_plugin(DumpRawDigits "module"
 )
 
 simple_plugin(RecompressRawDigits "module"
-                lardata_RawData
+                lardataobj_RawData
                 ${ART_FRAMEWORK_CORE}
                 ${ART_FRAMEWORK_PRINCIPAL}
                 ${MF_MESSAGELOGGER}

@@ -11,17 +11,17 @@
  */
 
 // LArSoft libraries
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/raw.h" // raw::Compress(), raw::Uncompress()
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::Compress_t
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h" // raw::Compress(), raw::Uncompress()
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::Compress_t
 
 // framework libraries
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h" // art::ValidHandle
-#include "art/Utilities/InputTag.h"
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"
+#include "canvas/Utilities/Exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
