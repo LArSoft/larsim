@@ -186,7 +186,9 @@ void evgen::MarleyGen::produce(art::Event& e)
 
   fEventTree->Fill();
 
-  size_t fp_count = 0;
+  // Start at 1 so that all final particles are tracked
+  // (Geant4 appears to skip the electron when it has trackID = 0)
+  size_t fp_count = 1;
   for (const marley::Particle* fp : fEvent->get_final_particles()) {
 
     int pdg = fp->pdg_code();
@@ -197,8 +199,9 @@ void evgen::MarleyGen::produce(art::Event& e)
     double E = fp->total_energy() * MeV_to_GeV;
     TLorentzVector mom(px, py, pz, E);
 
-    simb::MCParticle part(fp_count, pdg, "MARLEY", -1 /* primary particle */,
-      mass, 1 /* track this particle in LArG4 */);
+    simb::MCParticle part(fp_count /* trackID to use in Geant4 */, pdg,
+      "MARLEY", -1 /* primary particle */, mass,
+      1 /* track this particle in LArG4 */);
     part.AddTrajectoryPoint(pos, mom);
     truth.Add(part);
 
