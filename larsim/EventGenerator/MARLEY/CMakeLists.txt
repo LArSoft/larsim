@@ -12,7 +12,7 @@ art_make( BASENAME_ONLY
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service
                         MARLEY
-                        #MARLEY_ROOT (uncomment if you need MARLEY object TFile I/O)
+                        MARLEY_ROOT
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}

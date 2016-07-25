@@ -16,6 +16,9 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -32,6 +35,11 @@
 // Geant4 includes
 #include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4IonTable.hh"
+
+// ROOT includes
+#include "TROOT.h"
+#include "TInterpreter.h"
+#include "TTree.h"
 
 // MARLEY includes
 #include "marley/marley_utils.hh"
@@ -61,6 +69,14 @@ protected:
 
   std::unique_ptr<marley::Generator> fMarleyGenerator;
 
+  // unique_ptr to the current event created by MARLEY
+  std::unique_ptr<marley::Event> fEvent;
+
+  // the MARLEY event TTree
+  TTree* fEventTree;
+
+  // string stream used to capture logger output from MARLEY
+  // and redirect it to the LArSoft logger
   std::stringstream fMarleyLogStream;
 
   // Function that samples a primary vertex position uniformly over the active
@@ -69,8 +85,15 @@ protected:
   void sample_vertex_pos(double& x, double& y, double& z);
   // Initializes sampling machinery for vertex position sampling
   void initialize_vertex_pos_sampling(const fhicl::ParameterSet& p);
+  // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
+  // This allows the module to write the generated events to a TTree.
+  void load_marley_dictionaries();
   // RNG seed (currently only used for primary vertex position sampling)
   uint_fast64_t fSeed;
+  // Run, subrun, and event numbers from the art::Event being processed
+  uint_fast32_t fRunNumber;
+  uint_fast32_t fSubRunNumber;
+  uint_fast32_t fEventNumber;
   // Discrete distribution object used to sample TPCs based on their active
   // masses
   std::unique_ptr<std::discrete_distribution<size_t> > fTPCDist;
@@ -80,7 +103,8 @@ protected:
 
 //------------------------------------------------------------------------------
 evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
-  : fSeed(0), fTPCDist(nullptr)
+  : fEvent(new marley::Event), fSeed(0), fRunNumber(0),
+  fSubRunNumber(0), fEventNumber(0), fTPCDist(nullptr)
 {
   // TODO: set MARLEY logging level from FHiCL parameters
   //fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
@@ -93,6 +117,21 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   LOG_INFO("MARLEY") << fMarleyLogStream.str();
   fMarleyLogStream.str("");
   fMarleyLogStream.clear();
+
+  // Do any needed setup of the MARLEY class dictionaries
+  load_marley_dictionaries();
+
+  // Create a ROOT TTree using the TFileService that will store the MARLEY
+  // event objects
+  art::ServiceHandle<art::TFileService> tfs;
+  fEventTree = tfs->make<TTree>("MARLEY Event Tree","A tree of marley::Event objects");
+  fEventTree->Branch("event", "marley::Event", fEvent.get());
+
+  // Add branches that give the art::Event run, subrun, and event numbers for
+  // easy match-ups between the MARLEY and art TTrees
+  fEventTree->Branch("run_number", &fRunNumber, "run_number/i"); // 32-bit unsigned int
+  fEventTree->Branch("subrun_number", &fSubRunNumber, "subrun_number/i"); // 32-bit unsigned int
+  fEventTree->Branch("event_number", &fEventNumber, "event_number/i"); // 32-bit unsigned int
 
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
@@ -118,6 +157,11 @@ void evgen::MarleyGen::beginRun(art::Run& run)
 void evgen::MarleyGen::produce(art::Event& e)
 {
 
+  // Get the run, subrun, and event numbers from the current art::Event
+  fRunNumber = e.run();
+  fSubRunNumber = e.subRun();
+  fEventNumber = e.event();
+
   std::unique_ptr< std::vector<simb::MCTruth> >
     truthcol(new std::vector<simb::MCTruth>);
   simb::MCTruth truth;
@@ -136,10 +180,14 @@ void evgen::MarleyGen::produce(art::Event& e)
   // TODO: include sampling of vertex times
   TLorentzVector pos(vertex_x, vertex_y, vertex_z, 0.);
 
-  marley::Event ev = fMarleyGenerator->create_event();
+  *fEvent = fMarleyGenerator->create_event();
+  //fEvent.reset(new marley::Event(fMarleyGenerator->create_event()));
+  //fEventTree->SetBranchAddress("event", fEvent.get());
+
+  fEventTree->Fill();
 
   size_t fp_count = 0;
-  for (const marley::Particle* fp : ev.get_final_particles()) {
+  for (const marley::Particle* fp : fEvent->get_final_particles()) {
 
     int pdg = fp->pdg_code();
     double mass = fp->mass() * MeV_to_GeV;
@@ -263,6 +311,49 @@ void evgen::MarleyGen::initialize_vertex_pos_sampling(const fhicl::ParameterSet&
   // of weights
   fTPCDist.reset(new std::discrete_distribution<size_t>(tpc_masses.begin(),
     tpc_masses.end()));
+}
+
+//------------------------------------------------------------------------------
+void evgen::MarleyGen::load_marley_dictionaries()
+{
+
+  static bool already_loaded_marley_dict = false;
+
+  if (already_loaded_marley_dict) return;
+
+  // Current (24 July 2016) versions of ROOT 6 require runtime
+  // loading of headers for custom classes in order to use
+  // dictionaries correctly. If we're running ROOT 6+, do the
+  // loading here, and give the user guidance if there are any
+  // problems.
+  //
+  // This is the same technique used in the MARLEY source code
+  // for the executable (src/marley.cc). If you change how this
+  // code works, please sync changes with the executable as well.
+  if (gROOT->GetVersionInt() >= 60000) {
+    LOG_INFO("MarleyGen") << "ROOT 6 or greater detected. Loading class"
+      << " information\nfrom headers \"marley/Particle.hh\""
+      << " and \"marley/Event.hh\"";
+    TInterpreter::EErrorCode* ec = new TInterpreter::EErrorCode();
+    gInterpreter->ProcessLine("#include \"marley/Particle.hh\"", ec);
+    if (*ec != 0) throw cet::exception("MarleyGen") << "Error loading"
+      << " MARLEY header Particle.hh. For MARLEY headers stored in"
+      << " /path/to/include/marley/, please add /path/to/include"
+      << " to your ROOT_INCLUDE_PATH environment variable and"
+      << " try again.";
+    gInterpreter->ProcessLine("#include \"marley/Event.hh\"");
+    if (*ec != 0) throw cet::exception("MarleyGen") << "Error loading"
+      << " MARLEY header Event.hh. For MARLEY headers stored in"
+      << " /path/to/include/marley/, please add /path/to/include"
+      << " to your ROOT_INCLUDE_PATH environment variable and"
+      << " try again.";
+  }
+
+  // No further action is required for ROOT 5 because the compiled
+  // dictionaries (which are linked to this module) contain all of
+  // the needed information
+
+  already_loaded_marley_dict = true;
 }
 
 DEFINE_ART_MODULE(evgen::MarleyGen)
