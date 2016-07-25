@@ -94,9 +94,9 @@ physics.producers.largeant.DumpSimChannels: false
 
 # Adjustments to the standard LArG4 parameters
 services.user.LArG4Parameters.UseCustomPhysics: true
-# HadronHP not currently enabled in LArSoft as a custom physics option. Fix this!
-services.user.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm", "SynchrotronAndGN", "Ion", "HadronHP", "Decay",
-                                                "HadronElastic", "Stopping"] #, "ChargeExchange" ]
+# Uses NeutronHP data (very important for neutrino-induced neutron emission!)
+# which is not enabled by default in LArSoft.
+services.user.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm", "SynchrotronAndGN", "Ion", "NeutronHP", "Decay", "HadronElastic", "Stopping" ]
 services.user.LArG4Parameters.ParticleKineticEnergyCut: 0.01e-3
 services.user.LArG4Parameters.StoreTrajectories: true
 services.user.LArG4Parameters.KeepEMShowerDaughters: true
