@@ -213,6 +213,7 @@ namespace larg4 {
     double                                    fTransverseDiffusion;
     double                                    fElectronLifetime;
     double                                    fElectronClusterSize;
+    int					      fMinNumberOfElCluster;
     double                                    fSampleRate;
     int                                       fTriggerOffset;
     double                                    fArgon39DecayRate;
