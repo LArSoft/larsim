@@ -1,0 +1,35 @@
+# Geant4 macro file for controlling Geant4 operations in LArG4.
+
+# Place any G4 commands in this file.  Don't include /run/initialize
+# or /run/beamOn; that's handled by LArG4_module.cc.
+
+# Sets some verbose levels.  Note that these lines can be commented
+# out if you don't need the Geant4 status information.
+
+# The following line, if enabled, will display the contents of this
+# file as G4 executes them.
+#/control/verbose 2
+
+# The following line, if enabled, will trace through the execution of
+# some Geant4 routines.
+#/run/verbose 2
+
+# The following line will display every track and step for every
+# event. Don't enable it unless you're prepared to handle a lot of
+# output!
+#/tracking/verbose 1
+
+#################################################################
+# The following commands create a HepRep file that can be used with
+# Paraview.  The specific volumes chosen only look at the TPC,
+# if volWorld_PV is desired, there cannot be any overlapping volumes in
+# the world volume
+
+/vis/open HepRepXML
+/vis/heprep/appendGeometry false
+/vis/drawVolume volTPC_PV
+/vis/drawVolume LArVoxelReadoutGeometry
+
+# Refresh ready for run
+/vis/viewer/flush
+
