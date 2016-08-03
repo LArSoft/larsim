@@ -45,7 +45,7 @@ namespace evgen {
               , fUsePoissonDistribution
                          (parameterSet.get< bool   >("UsePoissonDistribution"))
               , fAllowZeroNeutrinos
-                         (parameterSet.get< bool   >("AllowZeroNeutrinos"))
+                         (parameterSet.get< bool   >("AllowZeroNeutrinos"    ))
               , fNumberOfNeutrinos 
                          (parameterSet.get< int    >("NumberOfNeutrinos"     ))
               , fNeutrinoTimeBegin
@@ -961,7 +961,7 @@ namespace evgen {
     int neutrinoTrackID = -1*(truth.NParticles() + 1); 
     std::string primary("primary");
 
-    int nuePDG = 12;
+    int    nuePDG     = 12;
     double neutrinoP  = neutrinoEnergy/1000.0; // use GeV...
     double neutrinoPx = neutrinoDirection.at(0)*neutrinoP;
     double neutrinoPy = neutrinoDirection.at(1)*neutrinoP;
@@ -969,7 +969,11 @@ namespace evgen {
 
 
 
-    simb::MCParticle neutrino(neutrinoTrackID, nuePDG, primary);
+    // Create the neutrino:
+    //   * set the mother to -1 since it is primary
+    //   * set the mass to something < 0 so that the constructor looks up the mass from the pdg tables
+    //   * set the status bit to 0 so that geant doesn't waste any CPU tracking the neutrino
+    simb::MCParticle neutrino(neutrinoTrackID, nuePDG, primary, -1, -1, 0);
 
     TLorentzVector neutrinoPosition(vertex.at(0), vertex.at(1), 
                                     vertex.at(2), neutrinoTime);
@@ -994,15 +998,16 @@ namespace evgen {
     double electronP  = std::sqrt(std::pow(electronEnergyGeV,2)
                                          - std::pow(electronM,2));
   
-    // For the moment, electron is in same direction as neutrino
-    double electronPx = neutrinoDirection.at(0)*electronP;
-    double electronPy = neutrinoDirection.at(1)*electronP;
-    double electronPz = neutrinoDirection.at(2)*electronP;
+    // For the moment, choose an isotropic direction for the electron.
+    std::vector< double > electronDirection = GetIsotropicDirection(engine);    
+    double electronPx = electronDirection.at(0)*electronP;
+    double electronPy = electronDirection.at(1)*electronP;
+    double electronPz = electronDirection.at(2)*electronP;
     
     // Primary particles have negative IDs
     int trackID = -1*(truth.NParticles() + 1);
     int electronPDG = 11;
-    simb::MCParticle electron(trackID, electronPDG, primary, neutrinoTrackID); // NOTE: should the electrons be primary?
+    simb::MCParticle electron(trackID, electronPDG, primary);
   
     TLorentzVector electronPosition(vertex.at(0), vertex.at(1), 
                                     vertex.at(2), neutrinoTime);
