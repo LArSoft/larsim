@@ -172,7 +172,7 @@ namespace cheat{
     // loop over all sim::SimChannels and fill a vector
     // of sim::IDE objects for the given track id
     for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-      const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = fSimChannels[sc]->TDCIDEMap();
+      const auto & tdcidemap = fSimChannels[sc]->TDCIDEMap();
       
       // loop over the IDEMAP      
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){

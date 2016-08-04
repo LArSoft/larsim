@@ -220,7 +220,7 @@ namespace larg {
     double totalElectrons = 0;
     double totalEnergy   = 0;
     for (const auto& sc : scVec ) {
-      std::map<unsigned short, std::vector<sim::IDE>> tdcidemap=sc.TDCIDEMap();
+      const auto & tdcidemap=sc.TDCIDEMap();
       fTDCsPerChannel->Fill(tdcidemap.size());
 
       for (const auto& tdcide : tdcidemap) {
