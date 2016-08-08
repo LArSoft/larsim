@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <memory>
@@ -29,10 +29,10 @@
 #include "larsim/RandomUtils/LArSeedService.h"
 
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "larsim/Simulation/sim.h"
+#include "larcoreobj/SummaryData/RunData.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "larsimobj/Simulation/sim.h"
 
 class ToyOneShowerGen;
 

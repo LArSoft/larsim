@@ -32,14 +32,14 @@
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // larsoft includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "EventGeneratorBase/evgenbase.h"
-#include "EventGeneratorBase/CRY/CRYHelper.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nutools/EventGeneratorBase/evgenbase.h"
+#include "nutools/EventGeneratorBase/CRY/CRYHelper.h"
 #include "larcore/Geometry/geo.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 
 namespace evgen {
 

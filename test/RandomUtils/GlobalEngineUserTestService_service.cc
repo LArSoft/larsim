@@ -12,7 +12,7 @@
 #include "test/RandomUtils/GlobalEngineUserTestService.h"
 
 // framework libraries
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

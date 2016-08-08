@@ -37,21 +37,21 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include "art/Framework/Core/EDProducer.h"
 
 // art extensions
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // LArSoft includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCFlux.h"
-#include "SimulationBase/GTruth.h"
-#include "larsim/Simulation/BeamGateInfo.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCFlux.h"
+#include "nusimdata/SimulationBase/GTruth.h"
+#include "larsimobj/Simulation/BeamGateInfo.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
-#include "larcore/SummaryData/POTSummary.h"
-#include "EventGeneratorBase/GENIE/GENIEHelper.h"
+#include "larcoreobj/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/POTSummary.h"
+#include "nutools/EventGeneratorBase/GENIE/GENIEHelper.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 ///Event Generation using GENIE, cosmics or single particles

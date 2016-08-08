@@ -10,20 +10,20 @@ art_make(
                         larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         lardata_Utilities
-			larsim_Simulation
+			larsim_Simulation larsimobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        ${SIMULATIONBASE}
-                        ${G4BASE}
+                        nusimdata_SimulationBase
+                        nutools_G4Base
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                        ${ART_PERSISTENCY_COMMON}
-                        ${ART_PERSISTENCY_PROVENANCE}
-                        ${ART_UTILITIES}
+                        art_Persistency_Common canvas_Persistency_Common
+                        art_Persistency_Provenance canvas_Persistency_Provenance
+                        art_Utilities canvas_Utilities
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${FHICLCPP}
@@ -39,11 +39,11 @@ art_make(
                         ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
-                        larsim_Simulation
+                        larsim_Simulation larsimobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service
-                        ${SIMULATIONBASE}
+                        nusimdata_SimulationBase
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
@@ -52,7 +52,7 @@ art_make(
                         ${FHICLCPP}
                         ${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                        G4Base
+                        nutools_G4Base
                         CLHEP
                         ${G4_LIB_LIST}
                 )

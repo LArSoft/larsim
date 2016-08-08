@@ -18,7 +18,7 @@
 
 // From art and its tool chain
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // Some helper classes
 #include "larsim/RandomUtils/Providers/MapKeyIterator.h"
@@ -433,7 +433,7 @@ namespace sim {
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Art include files
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 
 //----------------------------------------------------------------------------

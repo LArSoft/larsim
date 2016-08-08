@@ -70,15 +70,15 @@
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "EventGeneratorBase/evgenbase.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nutools/EventGeneratorBase/evgenbase.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
 #include "TVector3.h"
@@ -115,7 +115,7 @@ namespace evgen {
     static const int  kSCAN = 1;
 
     // File stream, filename and empty string for file processing
-    ifstream           fInputFile;
+    std::ifstream      fInputFile;
     std::string        fFileName;      
     char               fDummyString[256];
 

@@ -16,7 +16,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/OpDetGeo.h"
-#include "larsim/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/SimPhotons.h"
 
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;

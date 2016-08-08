@@ -20,14 +20,14 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib/exception.h"
 
 // LArSoft Includes
 #include "larsim/MCCheater/BackTracker.h"
 #include "larsim/Simulation/ParticleList.h"
-#include "larsim/Simulation/sim.h"
+#include "larsimobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // ROOT includes
@@ -235,7 +235,7 @@ namespace larg4 {
       double numIDEs=0.0;
       double scCharge=0.0;
       double scEnergy=0.0;
-      const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = sccol[sc]->TDCIDEMap();
+      const auto & tdcidemap = sccol[sc]->TDCIDEMap();
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
 	const std::vector<sim::IDE> idevec = (*mapitr).second;
 	numIDEs += idevec.size();

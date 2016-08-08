@@ -18,7 +18,7 @@
 #ifndef LArG4_G4BADIDEAACTION_H
 #define LArG4_G4BADIDEAACTION_H
 
-#include "G4Base/UserAction.h"
+#include "nutools/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>

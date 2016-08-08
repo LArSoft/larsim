@@ -12,11 +12,11 @@
  *
 */
 
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
-#include "larsim/Simulation/SimChannel.h"
-#include "larsim/Simulation/SimPhotons.h"
-#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 
 namespace sim{
 

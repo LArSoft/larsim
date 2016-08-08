@@ -68,9 +68,9 @@
 #include "TLorentzVector.h"
 
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
+#include "larcoreobj/SummaryData/RunData.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 namespace evgen {
   class TextFileGen;
@@ -111,7 +111,7 @@ evgen::TextFileGen::~TextFileGen()
 //------------------------------------------------------------------------------
 void evgen::TextFileGen::beginJob()
 {
-  fInputFile = new ifstream(fInputFileName.c_str());
+  fInputFile = new std::ifstream(fInputFileName.c_str());
 
   // check that the file is a good one
   if( !fInputFile->good() )

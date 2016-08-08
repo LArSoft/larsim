@@ -10,7 +10,7 @@
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/globals.hh"
 
-#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/AuxDetGeo.h"
 #include "larcore/Geometry/AuxDetSensitiveGeo.h"

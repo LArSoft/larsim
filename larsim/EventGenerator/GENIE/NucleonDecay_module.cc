@@ -32,7 +32,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -45,12 +45,12 @@
 #include "GHEP/GHepParticle.h"
 
 // larsoft includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "SimulationBase/MCNeutrino.h"
-#include "EventGeneratorBase/evgenbase.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCNeutrino.h"
+#include "nutools/EventGeneratorBase/evgenbase.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // c++ includes

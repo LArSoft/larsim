@@ -23,10 +23,10 @@
 #include "art/Framework/Principal/Handle.h"
 
 // LArSoft includes
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::View_t
-#include "lardata/RawData/raw.h" // raw::Uncompress()
-#include "lardata/RawData/RawDigit.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::View_t
+#include "lardataobj/RawData/raw.h" // raw::Uncompress()
+#include "lardataobj/RawData/RawDigit.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 

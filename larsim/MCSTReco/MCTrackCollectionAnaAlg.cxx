@@ -7,7 +7,7 @@
  * 
  */
 
-#include "lardata/MCBase/MCTrack.h"
+#include "lardataobj/MCBase/MCTrack.h"
 #include "TTree.h"
 #include <numeric>
 

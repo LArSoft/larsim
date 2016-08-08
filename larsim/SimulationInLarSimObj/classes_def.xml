@@ -34,11 +34,15 @@
   <version ClassVersion="11" checksum="1123102836"/>
   <version ClassVersion="10" checksum="3981386861"/>
  </class>
- <class name="sim::BeamGateInfo"             ClassVersion="11"              	 >
+ <class name="sim::BeamGateInfo"             ClassVersion="12"              	 >
+  <version ClassVersion="12" checksum="2778107387"/>
   <version ClassVersion="11" checksum="1122283400"/>
   <version ClassVersion="10" checksum="2225942541"/>
  </class>
- <class name="std::vector<int>"                                             	 />
+ <enum name="sim::BeamType_t"                                                    />
+<!-- vector<int> is defined in libart_Persistency_WrappedStdDictionaries_dict.so -->
+<!-- <class name="std::vector<int>"                                             	 /> -->
+<!--  <class name="art::Wrapper< std::vector<int>               >"		         /> -->
  <class name="std::vector<sim::OnePhoton>"                                       />
  <class name="std::vector<sim::SimPhotonsLite>"                                  />
  <class name="std::vector<sim::SimPhotons  >" 		     		    	 />
@@ -49,7 +53,6 @@
  <class name="std::vector<sim::BeamGateInfo>" 	    		    	         />
  <class name="std::pair<unsigned short, std::vector<sim::IDE> >"            	 />
  <class name="std::map<unsigned short, std::vector<sim::IDE> >"             	 />
- <class name="art::Wrapper< std::vector<int>               >"		         />
  <class name="art::Wrapper< std::vector<sim::SimPhotons>   >"		    	 />
  <class name="art::Wrapper< std::vector<sim::SimPhotonsLite>   >"                />
  <class name="art::Wrapper< std::vector<sim::SimChannel>   >"		    	 />

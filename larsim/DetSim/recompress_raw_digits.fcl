@@ -1,0 +1,34 @@
+#
+# File:    recompress_raw_digits.fcl
+# Purpose: Recompresses a raw::RawDigit data product
+# Author:  Gianluca Petrillo (petrillo@fnal.gov)
+# Date:    June 14, 2016
+# Version: 1.0
+# 
+# Input:
+#  - a raw::RawDigit collection ("daq" by default)
+# 
+# 
+# Changes:
+# 20160614 (petrillo@fnal.gov) [v1.0]
+#   first version
+#
+
+BEGIN_PROLOG
+
+standard_recompress_raw_digits: {
+  
+  module_type: "RecompressRawDigits"
+  
+  # input tag for the original raw::RawDigit collection
+  rawDigitLabel: "daq"
+  
+  # compression mode
+  compressionType: "Huffman"
+      
+  # instance name: none
+  # instanceName: ""
+  
+} # standard_recompress_raw_digits
+
+END_PROLOG

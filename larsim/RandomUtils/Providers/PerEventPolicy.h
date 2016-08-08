@@ -21,7 +21,7 @@
 // From art and its tool chain
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // Some helper classes
 #include "larsim/RandomUtils/Providers/RandomSeedPolicyBase.h"

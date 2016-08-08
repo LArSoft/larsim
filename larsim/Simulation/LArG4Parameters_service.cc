@@ -37,7 +37,8 @@ namespace sim {
     fKeepEMShowerDaughters  = pset.get< bool                     >("KeepEMShowerDaughters"   );
     fLongitudinalDiffusion  = pset.get< double 			 >("LongitudinalDiffusion"   );   
     fTransverseDiffusion    = pset.get< double 			 >("TransverseDiffusion"     );     
-    fElectronClusterSize    = pset.get< double 			 >("ElectronClusterSize"     );     
+    fElectronClusterSize    = pset.get< double 			 >("ElectronClusterSize"     );  
+    fMinNumberOfElCluster   = pset.get< int			 >("MinNumberOfElCluster"    );   
     fEnabledPhysics         = pset.get< std::vector<std::string> >("EnabledPhysics"          );
     fK0Bias                 = pset.get< int                      >("CosmogenicK0Bias"        );	     
     fXBias                  = pset.get< int    			 >("CosmogenicXSMNBiasOn"    );    

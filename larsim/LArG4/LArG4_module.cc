@@ -22,8 +22,8 @@
 #ifndef LARG4_LARG4_H
 #define LARG4_LARG4_H 1
 
-#include "G4Base/G4Helper.h"
-#include "G4Base/ConvertMCTruthToG4.h"
+#include "nutools/G4Base/G4Helper.h"
+#include "nutools/G4Base/ConvertMCTruthToG4.h"
 
 // C++ Includes
 #include <sstream> // std::ostringstream
@@ -43,8 +43,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
 
@@ -68,14 +68,14 @@
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 #include "larsim/Simulation/ParticleList.h"
-#include "larsim/Simulation/SimPhotons.h"
-#include "larsim/Simulation/SimChannel.h"
-#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larsimobj/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 #include "larcore/Geometry/Geometry.h"
-#include "G4Base/DetectorConstruction.h"
-#include "G4Base/UserActionManager.h"
+#include "nutools/G4Base/DetectorConstruction.h"
+#include "nutools/G4Base/UserActionManager.h"
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"

@@ -11,10 +11,10 @@
 #include "larsim/RandomUtils/Providers/EventSeedInputData.h"
 
 // framework libraries
-#include "art/Utilities/Exception.h"
-#include "art/Persistency/Provenance/EventAuxiliary.h"
-#include "art/Persistency/Provenance/Timestamp.h"
-#include "art/Persistency/Provenance/ModuleDescription.h"
+#include "canvas/Utilities/Exception.h"
+#include "canvas/Persistency/Provenance/EventAuxiliary.h"
+#include "canvas/Persistency/Provenance/Timestamp.h"
+#include "canvas/Persistency/Provenance/ModuleDescription.h"
 #include "art/Framework/Principal/Event.h"
 
 // supporting libraries

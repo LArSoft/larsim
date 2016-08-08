@@ -16,7 +16,7 @@
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/MCCheater/BackTracker.h"
-#include "lardata/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/Hit.h"
 
 
 // Framework includes

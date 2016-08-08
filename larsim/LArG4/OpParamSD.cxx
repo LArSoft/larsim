@@ -18,7 +18,7 @@
 
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "larsim/LArG4/OpDetLookup.h"
-#include "larsim/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/SimPhotons.h"
 
 // Geant4 includes
 

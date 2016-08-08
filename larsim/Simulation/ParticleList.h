@@ -107,7 +107,7 @@
 #ifndef SIM_PARTICLELIST_H
 #define SIM_PARTICLELIST_H
 
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 #include <set>
 #include <ostream>

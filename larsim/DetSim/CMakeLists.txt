@@ -2,7 +2,7 @@
 art_make( NO_PLUGINS
           
           LIB_LIBRARIES larevt_Filters
-                        lardata_RawData
+                        lardataobj_RawData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
@@ -10,9 +10,9 @@ art_make( NO_PLUGINS
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                        ${ART_PERSISTENCY_COMMON}
-                        ${ART_PERSISTENCY_PROVENANCE}
-                        ${ART_UTILITIES}
+                        art_Persistency_Common canvas_Persistency_Common
+                        art_Persistency_Provenance canvas_Persistency_Provenance
+                        art_Utilities canvas_Utilities
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${FHICLCPP}
@@ -22,15 +22,15 @@ art_make( NO_PLUGINS
 
 
 simple_plugin(SimWireAna "module"
-                         lardata_RawData
+                         lardataobj_RawData
                          ${ART_FRAMEWORK_CORE}
                          ${ART_FRAMEWORK_PRINCIPAL}
                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                         ${ART_PERSISTENCY_COMMON}
-                         ${ART_PERSISTENCY_PROVENANCE}
-                         ${ART_UTILITIES}
+                         art_Persistency_Common canvas_Persistency_Common
+                         art_Persistency_Provenance canvas_Persistency_Provenance
+                         art_Utilities canvas_Utilities
                          ${MF_MESSAGELOGGER}
                          ${MF_UTILITIES}
                          ${FHICLCPP}
@@ -40,8 +40,8 @@ simple_plugin(SimWireAna "module"
 )
 
 simple_plugin(SimWire "module"
-                      larsim_Simulation
-                      lardata_RawData
+                      larsim_Simulation larsimobj_Simulation
+                      lardataobj_RawData
                       larcore_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
@@ -53,9 +53,9 @@ simple_plugin(SimWire "module"
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                      ${ART_PERSISTENCY_COMMON}
-                      ${ART_PERSISTENCY_PROVENANCE}
-                      ${ART_UTILITIES}
+                      art_Persistency_Common canvas_Persistency_Common
+                      art_Persistency_Provenance canvas_Persistency_Provenance
+                      art_Utilities canvas_Utilities
                       ${MF_MESSAGELOGGER}
                       ${MF_UTILITIES}
                       ${FHICLCPP}
@@ -66,8 +66,8 @@ simple_plugin(SimWire "module"
 )
 
 simple_plugin(SimWireT962 "module"
-                          larsim_Simulation
-                          lardata_RawData
+                          larsim_Simulation larsimobj_Simulation
+                          lardataobj_RawData
                           larcore_Geometry
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
@@ -79,9 +79,9 @@ simple_plugin(SimWireT962 "module"
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                          ${ART_PERSISTENCY_COMMON}
-                          ${ART_PERSISTENCY_PROVENANCE}
-                          ${ART_UTILITIES}
+                          art_Persistency_Common canvas_Persistency_Common
+                          art_Persistency_Provenance canvas_Persistency_Provenance
+                          art_Utilities canvas_Utilities
                           ${MF_MESSAGELOGGER}
                           ${MF_UTILITIES}
                           ${FHICLCPP}
@@ -92,7 +92,7 @@ simple_plugin(SimWireT962 "module"
 )
 
 simple_plugin(WienerFilterAna "module"
-                              lardata_RawData
+                              lardataobj_RawData
                               larcore_Geometry
                               larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
@@ -100,9 +100,9 @@ simple_plugin(WienerFilterAna "module"
                               ${ART_FRAMEWORK_SERVICES_REGISTRY}
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                              ${ART_PERSISTENCY_COMMON}
-                              ${ART_PERSISTENCY_PROVENANCE}
-                              ${ART_UTILITIES}
+                              art_Persistency_Common canvas_Persistency_Common
+                              art_Persistency_Provenance canvas_Persistency_Provenance
+                              art_Utilities canvas_Utilities
                               ${MF_MESSAGELOGGER}
                               ${MF_UTILITIES}
                               ${FHICLCPP}
@@ -113,7 +113,7 @@ simple_plugin(WienerFilterAna "module"
 
 simple_plugin(DumpRawDigits "module"
                             larevt_Filters
-                            lardata_RawData
+                            lardataobj_RawData
                             ${ART_FRAMEWORK_CORE}
                             ${ART_FRAMEWORK_PRINCIPAL}
                             ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -121,6 +121,15 @@ simple_plugin(DumpRawDigits "module"
                             ${FHICLCPP}
                             ${CETLIB}
               
+)
+
+simple_plugin(RecompressRawDigits "module"
+                lardataobj_RawData
+                ${ART_FRAMEWORK_CORE}
+                ${ART_FRAMEWORK_PRINCIPAL}
+                ${MF_MESSAGELOGGER}
+                ${FHICLCPP}
+                ${CETLIB}
 )
 
 install_headers()

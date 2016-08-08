@@ -85,7 +85,7 @@
 #ifndef SIM_PARTICLEHISTORY_H
 #define SIM_PARTICLEHISTORY_H
 
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 #include <deque>
 #include <iostream>

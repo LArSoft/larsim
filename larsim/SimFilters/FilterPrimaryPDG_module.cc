@@ -20,14 +20,14 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib/exception.h"
 
 // LArSoft Includes
 #include "larsim/MCCheater/BackTracker.h"
 #include "larsim/Simulation/ParticleList.h"
-#include "larsim/Simulation/sim.h"
+#include "larsimobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes

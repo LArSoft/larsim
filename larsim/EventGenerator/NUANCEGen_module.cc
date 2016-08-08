@@ -42,10 +42,10 @@
 #include "art/Framework/Core/EDProducer.h"
 
 // LArSoft includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCNeutrino.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCNeutrino.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 
 // class TH1F;
 // class TH2F;
@@ -124,7 +124,7 @@ namespace evgen{
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
-    fEventFile = new ifstream(fNuanceFile.c_str());
+    fEventFile = new std::ifstream(fNuanceFile.c_str());
    }
 
   //____________________________________________________________________________

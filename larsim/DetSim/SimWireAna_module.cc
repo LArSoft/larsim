@@ -39,8 +39,8 @@ extern "C" {
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/RawData/raw.h"
-#include "lardata/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
+#include "lardataobj/RawData/RawDigit.h"
 #include "lardata/Utilities/LArFFT.h"
 
 #include "TComplex.h"

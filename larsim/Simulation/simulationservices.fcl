@@ -14,6 +14,7 @@ standard_largeantparameters:
  LongitudinalDiffusion:    6.2e-9  #in cm^2/ns
  TransverseDiffusion:      16.3e-9 #in cm^2/ns
  ElectronClusterSize:      600.0   #number of ionization electrons to drift in a unit
+ MinNumberOfElCluster:     0	   #minimum number of electron clusters
  EnabledPhysics:           [ "Em", "SynchrotronAndGN", "Ion", "Hadron", 
                              "Decay", "HadronElastic", "Stopping", "NeutronTrackingCut" ]
  CosmogenicK0Bias:         0 # 0 is off. N is the number of secondaries to produce.

@@ -6,7 +6,7 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-#include "G4Base/DetectorConstruction.h"
+#include "nutools/G4Base/DetectorConstruction.h"
 
 // C/C++ libraries
 #include <vector>

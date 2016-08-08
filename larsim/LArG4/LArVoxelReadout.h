@@ -50,7 +50,7 @@
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/globals.hh"
 
-#include "larsim/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -213,6 +213,7 @@ namespace larg4 {
     double                                    fTransverseDiffusion;
     double                                    fElectronLifetime;
     double                                    fElectronClusterSize;
+    int					      fMinNumberOfElCluster;
     double                                    fSampleRate;
     int                                       fTriggerOffset;
     double                                    fArgon39DecayRate;

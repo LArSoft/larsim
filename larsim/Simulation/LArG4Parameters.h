@@ -23,7 +23,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
 namespace sim {
 
@@ -49,6 +49,7 @@ namespace sim {
     double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
     double TransverseDiffusion()                              const { return fTransverseDiffusion;    }
     double ElectronClusterSize()                              const { return fElectronClusterSize;    }
+    int    MinNumberOfElCluster()			      const { return fMinNumberOfElCluster;   }
     const std::vector<std::string>& EnabledPhysics()          const { return fEnabledPhysics;         }
     int    K0Bias()                                           const { return fK0Bias;                 }
     int    MNXBias()                                          const { return fXBias;                  }
@@ -76,6 +77,7 @@ namespace sim {
     double                   fTransverseDiffusion;   ///< Amount of diffusion in the transverse direction, cm^2/ns
     double                   fElectronClusterSize;   ///< Number of ionization electrons in a given cluster 
                                                      ///< to be simulated in the readout simulation
+    int 		     fMinNumberOfElCluster;   ///< Minimum number of electron clusters
     std::vector<std::string> fEnabledPhysics;        ///< List of enabled physics processes if using Custom physics
     int                      fK0Bias;                ///< Turns on secondary particle bias for K0, Lambda, 
                                                      ///< neutrons in MuNuclear

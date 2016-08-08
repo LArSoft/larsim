@@ -24,10 +24,10 @@
 #include "larsim/RandomUtils/LArSeedService.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // LArSoft includes
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "larcore/Geometry/Geometry.h"
 
 #include "CLHEP/Random/RandomEngine.h"

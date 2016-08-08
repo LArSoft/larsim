@@ -8,14 +8,14 @@
 
 
 // nutools libraries
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -159,8 +159,8 @@ void sim::DumpMCParticles::DumpMCParticle(
       out << "stops at ("
         << stop.X() << ", " << stop.Y() << ", " << stop.Z() << "; "
         << stop.T() << ") cm with momentum ("
-        << start_mom.X() << ", " << start_mom.Y()
-        << ", " << start_mom.Z() << "; " << start_mom.T() << ") GeV/c by "
+        << stop_mom.X() << ", " << stop_mom.Y()
+        << ", " << stop_mom.Z() << "; " << stop_mom.T() << ") GeV/c by "
         << (particle.EndProcess().empty()? "magics": particle.EndProcess())
         << " into ";
       const unsigned int nDaughters = particle.NumberDaughters();

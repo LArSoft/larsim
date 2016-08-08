@@ -9,7 +9,7 @@
 #include "larsim/Simulation/EveIdCalculator.h"
 #include "larsim/Simulation/ParticleList.h"
 #include "larsim/Simulation/ParticleHistory.h"
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 namespace sim {
 

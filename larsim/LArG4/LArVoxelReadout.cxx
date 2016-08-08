@@ -31,7 +31,8 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
@@ -105,6 +106,7 @@ namespace larg4 {
 						    detprop->Temperature())/1000.;
     
     fElectronClusterSize   = fLgpHandle->ElectronClusterSize();
+    fMinNumberOfElCluster  = fLgpHandle->MinNumberOfElCluster();
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
     fTransverseDiffusion   = fLgpHandle->TransverseDiffusion();
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
@@ -479,23 +481,34 @@ namespace larg4 {
       double SqrtT    = std::sqrt(TDrift);
       double LDiffSig = SqrtT * LDiff_const;
       double TDiffSig = SqrtT * TDiff_const;
-      const int nClus = (int) std::ceil(nElectrons / fElectronClusterSize);
-
+      double electronclsize = fElectronClusterSize;
+      
+      int nClus = (int) std::ceil(nElectrons / electronclsize);
+      if (nClus < fMinNumberOfElCluster)
+      {
+      	electronclsize = nElectrons / fMinNumberOfElCluster; 
+      	if (electronclsize < 1.0)
+      	{
+      		electronclsize = 1.0;
+      	}
+      	nClus = (int) std::ceil(nElectrons / electronclsize);
+      }
+      
       // Compute arrays of values as quickly as possible.
       std::vector< double > XDiff(nClus);
       std::vector< double > YDiff(nClus);
       std::vector< double > ZDiff(nClus);
-      std::vector< double > nElDiff(nClus, fElectronClusterSize);
+      std::vector< double > nElDiff(nClus, electronclsize);
       std::vector< double > nEnDiff(nClus);
 
       // fix the number of electrons in the last cluster, that has smaller size
-      nElDiff.back() = nElectrons - (nClus-1)*fElectronClusterSize;
-
+      nElDiff.back() = nElectrons - (nClus-1)*electronclsize;
+      
       for(size_t xx = 0; xx < nElDiff.size(); ++xx){
         if(nElectrons > 0) nEnDiff[xx] = energy/nElectrons*nElDiff[xx];
         else               nEnDiff[xx] = 0.;
       }
-
+      
       // Smear drift times by x position and drift time
       PropRand.fireArray( nClus, &XDiff[0], 0., LDiffSig);
 

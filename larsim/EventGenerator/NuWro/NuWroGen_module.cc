@@ -50,10 +50,10 @@
 
 
 // LArSoft includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 
 // #include "NWtree.h"
 
@@ -1460,7 +1460,7 @@ namespace evgen{
 
     // initiate flux-wtd XSections.
     std::cout << "NuWroGen: Here's the output of the .txt file" << std::endl;
-    ifstream xsecTxtFile((fFileName+".txt").c_str());
+    std::ifstream xsecTxtFile((fFileName+".txt").c_str());
     unsigned int cntline(0);
     std::string line;
     if (xsecTxtFile.is_open())

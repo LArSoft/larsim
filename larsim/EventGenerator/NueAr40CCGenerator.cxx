@@ -11,7 +11,7 @@
 #include "cetlib/exception.h"
 
 // nutools includes
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
 #include "TMath.h"

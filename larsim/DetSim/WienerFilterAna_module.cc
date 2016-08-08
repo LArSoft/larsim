@@ -35,10 +35,10 @@ extern "C" {
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/Simulation/sim.h"
-#include "lardata/RawData/raw.h"
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RecoBase/Wire.h"
+#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/RawData/raw.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RecoBase/Wire.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

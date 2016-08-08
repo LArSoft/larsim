@@ -25,8 +25,8 @@ extern "C" {
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Persistency/Common/Ptr.h" 
-#include "art/Persistency/Common/PtrVector.h" 
+#include "canvas/Persistency/Common/Ptr.h" 
+#include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -44,7 +44,7 @@ extern "C" {
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/TPCGeo.h"
-#include "larsim/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/SimChannel.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 namespace geo { class Geometry; }
@@ -220,7 +220,7 @@ namespace larg {
     double totalElectrons = 0;
     double totalEnergy   = 0;
     for (const auto& sc : scVec ) {
-      std::map<unsigned short, std::vector<sim::IDE>> tdcidemap=sc.TDCIDEMap();
+      const auto & tdcidemap=sc.TDCIDEMap();
       fTDCsPerChannel->Fill(tdcidemap.size());
 
       for (const auto& tdcide : tdcidemap) {

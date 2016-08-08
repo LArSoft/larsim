@@ -13,7 +13,7 @@
 
 // framework libraries
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Provenance/Timestamp.h"
+#include "canvas/Persistency/Provenance/Timestamp.h"
 #include "art/Framework/Core/EmptyEventTimestampPlugin.h"
 
 // Event generation namespace

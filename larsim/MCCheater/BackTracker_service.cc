@@ -18,11 +18,11 @@
 #include "larsim/MCCheater/BackTracker.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/RecoBase/Hit.h"
-#include "lardata/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larsim/Simulation/EmEveIdCalculator.h"
-#include "SimulationBase/MCParticle.h"
-#include "larsim/Simulation/sim.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "larsimobj/Simulation/sim.h"
 #include "larsim/Simulation/SimListUtils.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
@@ -172,7 +172,7 @@ namespace cheat{
     // loop over all sim::SimChannels and fill a vector
     // of sim::IDE objects for the given track id
     for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-      const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = fSimChannels[sc]->TDCIDEMap();
+      const auto & tdcidemap = fSimChannels[sc]->TDCIDEMap();
       
       // loop over the IDEMAP      
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
