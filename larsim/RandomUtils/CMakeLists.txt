@@ -12,6 +12,7 @@ art_make(
     MF_Utilities
     fhiclcpp
     cetlib
+    ${ROOT_CORE}
 )
 
 

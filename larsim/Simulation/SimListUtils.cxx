@@ -48,11 +48,11 @@ namespace sim{
     for(auto itr = sccol.begin(); itr != sccol.end(); ++itr){
       
       // get all sim::IDE associated with this channel
-      const std::map<unsigned short, std::vector<sim::IDE> > &idemap = (*itr)->TDCIDEMap();
-      std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
+      const auto &idemap = (*itr)->TDCIDEMap();
+      //std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
 
       // loop over all the sim::IDE values
-      for(mitr = idemap.begin(); mitr != idemap.end(); mitr++){
+      for(auto mitr = idemap.begin(); mitr != idemap.end(); mitr++){
 
 	double time = (*mitr).first - detprop->TriggerOffset();
 	time *= detprop->SamplingRate();

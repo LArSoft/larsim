@@ -235,7 +235,7 @@ namespace larg4 {
       double numIDEs=0.0;
       double scCharge=0.0;
       double scEnergy=0.0;
-      const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = sccol[sc]->TDCIDEMap();
+      const auto & tdcidemap = sccol[sc]->TDCIDEMap();
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
 	const std::vector<sim::IDE> idevec = (*mapitr).second;
 	numIDEs += idevec.size();

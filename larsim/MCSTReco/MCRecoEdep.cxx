@@ -71,7 +71,7 @@ namespace sim {
 
       // Get data to loop over
       auto const& sch = schArray[i];
-      const std::map<unsigned short,std::vector<sim::IDE>> &sch_map(sch.TDCIDEMap());
+      const auto &sch_map(sch.TDCIDEMap());
       // Channel
       UInt_t ch = sch.Channel();
       // Loop over ticks
