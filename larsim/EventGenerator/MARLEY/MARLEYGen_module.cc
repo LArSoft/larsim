@@ -163,7 +163,82 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   marley::Logger::Instance().add_stream(fMarleyLogStream,
     marley::Logger::LogLevel::INFO);
 
+  // Delay creating the MARLEY generator until now so that we'll be able to
+  // see all of its logger messages.
+  fMarleyGenerator = std::make_unique<marley::Generator>();
+
+  // Configure the module (including MARLEY itself) using the FHiCL parameters
   this->reconfigure(p);
+
+  const auto& seed_service = art::ServiceHandle<sim::LArSeedService>();
+
+  // Register the MARLEY generator with the seed service. For simplicity, we
+  // use a lambda as the seeder function (see LArSeedService.h for details).
+  // This allows the SeedService to automatically re-seed MARLEY whenever
+  // necessary. The user can set an explicit seed for MARLEY in the FHiCL
+  // configuration file using the "seed" parameter within the
+  // "marley_parameters" table. If you need to get the seed for MARLEY from the
+  // SeedService, note that we're using "MARLEY" as its generator instance
+  // name.
+  sim::LArSeedService::seed_t marley_seed = seed_service->registerEngine(
+    [gen = this->fMarleyGenerator.get()](
+      sim::LArSeedService::EngineId const& /* unused */,
+      sim::LArSeedService::seed_t lar_seed) -> void
+    {
+      // Since we're capturing a pointer to the MARLEY generator value,
+      // double-check that it's still good. This will prevent segfaults.
+      if (gen) {
+        auto seed = static_cast<uint_fast64_t>(lar_seed);
+        gen->reseed(seed);
+      }
+    },
+    "MARLEY", p.get<fhicl::ParameterSet>("marley_parameters"), { "seed" }
+  );
+
+  // Unless I'm mistaken, the call to registerEngine should seed the generator
+  // with the seed from the FHiCL configuration file if one is included, but it
+  // doesn't appear to do so (as of 16 Aug 2016, larsoft v06_03_00). As a
+  // workaround, I manually reseed the generator (if needed) here using the
+  // result of the call to registerEngine, which will be the seed from the
+  // FHiCL file if one was given.
+  // TODO: figure out what's going on here, and remove this workaround as
+  // needed
+  uint_fast64_t marley_cast_seed = static_cast<uint_fast64_t>(marley_seed);
+  if (marley_cast_seed != fMarleyGenerator->get_seed()) {
+    fMarleyGenerator->reseed(marley_cast_seed);
+  }
+
+  // Get the FHiCL parameters controlling the vertex location(s)
+  fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex",
+    fhicl::ParameterSet()));
+
+  // Also register the TPC sampling engine with the seed service. Use a similar
+  // lambda for simplicity. If you need the seed later, get it from the seed
+  // service using "MarleyGenTPCEngine" as the instance name.
+  sim::LArSeedService::seed_t tpc_seed = seed_service->registerEngine(
+    [this](sim::LArSeedService::EngineId const& /* unused */,
+      sim::LArSeedService::seed_t lar_seed) -> void
+    {
+      // Since we're capturing the this pointer by value, double-check that
+      // it's still good (and that the pointer to the TPC engine is still
+      // alive) before using it. This will prevent segfaults.
+      if (this) {
+        auto seed = static_cast<uint_fast64_t>(lar_seed);
+        // Use the obtained seed to prepare the random number engine.  This is
+        // an attempt to do a decent job, but optimally accomplishing this can
+        // be tricky (see, for example,
+        // http://www.pcg-random.org/posts/cpp-seeding-surprises.html)
+        std::seed_seq seed_sequence{seed};
+        this->fTPCEngine.seed(seed_sequence);
+      }
+    },
+    "MarleyGenTPCEngine", vertex_params, { "seed" }
+  );
+
+  // TODO: resolve the other workaround mentioned above, then fix this as well
+  uint_fast64_t tpc_cast_seed = static_cast<uint_fast64_t>(tpc_seed);
+  std::seed_seq tpc_seed_sequence{tpc_cast_seed};
+  fTPCEngine.seed(tpc_seed_sequence);
 
   // Log initialization information from the MARLEY generator
   LOG_INFO("MARLEY") << fMarleyLogStream.str();
@@ -303,8 +378,9 @@ void evgen::MarleyGen::reconfigure(const fhicl::ParameterSet& p)
 {
   fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
 
-  // TODO: make fixed vertex possible
+  // TODO: allow setting a constant vertex location
   //fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex"));
+  //reconfigure_vertex(vertex_params);
 
   fhicl::ParameterSet marley_params(p.get<fhicl::ParameterSet>(
     "marley_parameters"));
@@ -358,8 +434,10 @@ int evgen::MarleyGen::neutrino_pdg(const std::string& nu) {
 //------------------------------------------------------------------------------
 void evgen::MarleyGen::reconfigure_marley(const fhicl::ParameterSet& p)
 {
-  // Replace the current generator with a default-constructed one
-  fMarleyGenerator = std::make_unique<marley::Generator>();
+  // Remove any previous reaction data and nuclear structure data owned by the
+  // MARLEY generator
+  fMarleyGenerator->clear_reactions();
+  fMarleyGenerator->get_structure_db().clear();
 
   // Get the incident neutrino direction 3-vector from the FHiCL parameters
   fhicl::ParameterSet dir_params = p.get<fhicl::ParameterSet>("direction",
@@ -383,11 +461,6 @@ void evgen::MarleyGen::reconfigure_marley(const fhicl::ParameterSet& p)
   prepare_reactions(reactions);
   prepare_structure(structure);
   prepare_neutrino_source(source_params);
-
-  // Seed the generator
-  uint_fast64_t marley_seed = art::ServiceHandle< sim::LArSeedService >()
-    ->getSeed();
-  fMarleyGenerator->reseed(marley_seed);
 }
 
 //------------------------------------------------------------------------------
@@ -754,18 +827,6 @@ void evgen::MarleyGen::sample_vertex_pos(double& x, double& y, double& z)
 void evgen::MarleyGen::initialize_vertex_pos_sampling(
   const fhicl::ParameterSet& p)
 {
-  // Get the RNG seed from the configuration file (or, if it's not set, use a
-  // seed from the LArSeedService)
-  fSeed = p.get<uint_fast64_t>("Seed",
-    art::ServiceHandle< sim::LArSeedService >()->getSeed());
-
-  // Use the obtained seed to prepare the random number engine.  This is an
-  // attempt to do a decent job, but optimally accomplishing this can be tricky
-  // (see, for example,
-  // http://www.pcg-random.org/posts/cpp-seeding-surprises.html)
-  std::seed_seq seed_sequence{fSeed};
-  fTPCEngine.seed(seed_sequence);
-
   // Get the active masses of each of the TPCs in the current geometry. Use
   // them as weights for sampling a TPC to use for the primary vertex.
   art::ServiceHandle<geo::Geometry> geom;
