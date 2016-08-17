@@ -198,6 +198,9 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
+const int NTPCs = 300;
+
+
 namespace simb { class MCTruth; }
 
 namespace evgen {
@@ -305,6 +308,19 @@ namespace evgen {
 
     // TTree
     TTree* fTree;
+    /*
+    // TTree for CryoPos
+    TTree* fCryos;
+    int NumTPCs;
+    double TPCMinX[NTPCs];
+    double TPCMaxX[NTPCs];
+    double TPCMinY[NTPCs];
+    double TPCMaxY[NTPCs];
+    double TPCMinZ[NTPCs];
+    double TPCMaxZ[NTPCs];
+    double CryoSize[6];
+    double DetHall[6];
+    */
   };
 }
 
@@ -409,7 +425,19 @@ namespace evgen{
     fTree->Branch("theta"  ,&theta  , "theta/D" );
     fTree->Branch("phi"    ,&phi    , "phi/D"   );
     fTree->Branch("depth"  ,&dep    , "dep/D"   );
-  }
+    /*
+    fCryos = tfs->make<TTree>("CryoSizes","cryo tree");
+    fCryos->Branch("NumTPCs" , &NumTPCs , "NumTPCs/I"       );
+    fCryos->Branch("TPCMinX" , &TPCMinX , "TPCMinX[NumTPCs]/D");
+    fCryos->Branch("TPCMaxX" , &TPCMaxX , "TPCMaxX[NumTPCs]/D");
+    fCryos->Branch("TPCMinY" , &TPCMinY , "TPCMinY[NumTPCs]/D");
+    fCryos->Branch("TPCMaxY" , &TPCMaxY , "TPCMaxY[NumTPCs]/D");
+    fCryos->Branch("TPCMinZ" , &TPCMinZ , "TPCMinZ[NumTPCs]/D");
+    fCryos->Branch("TPCMaxZ" , &TPCMaxZ , "TPCMaxZ[NumTPCs]/D");
+    fCryos->Branch("CryoSize", &CryoSize, "CryoSize[6]/D"   );
+    fCryos->Branch("DetHall" , &DetHall , "DetHall[6]/D"    );
+    */
+ }
 
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Run
@@ -450,7 +478,30 @@ namespace evgen{
     std::cout << "Zenith angle range = " << fThetamin << " - " << fThetamax << " degrees" << std::endl;
     std::cout << "Azimuthal angle range = " << fPhimin << " - " << fPhimax << " degrees" << std::endl;
     std::cout << "Global intensity = " << FI << " (cm^2 s)^(-1) or s^(-1) (for muons on the surface)" << std::endl;
-     
+    /*
+    NumTPCs = geo->NTPC(0);
+    std::cout << "There are " << NumTPCs << " in cryostat 0" << std::endl;
+    for (unsigned int c=0; c<geo->Ncryostats(); c++) {
+      const geo::CryostatGeo& cryostat=geo->Cryostat(c);
+      geo->CryostatBoundaries( CryoSize, 0 );
+      std::cout << "Cryo bounds " << CryoSize[0] << " "<< CryoSize[1] << " "<< CryoSize[2] << " "<< CryoSize[3] << " "<< CryoSize[4] << " "<< CryoSize[5] << std::endl;
+      for (unsigned int t=0; t<cryostat.NTPC(); t++) {
+	geo::TPCID id;
+	id.Cryostat=c;
+	id.TPC=t;
+	id.isValid=true;
+	const geo::TPCGeo& tpc=cryostat.TPC(id);
+	TPCMinX[t] = tpc.MinX();
+	TPCMaxX[t] = tpc.MaxX();
+	TPCMinY[t] = tpc.MinY();
+	TPCMaxY[t] = tpc.MaxY();
+	TPCMinZ[t] = tpc.MinZ();
+	TPCMaxZ[t] = tpc.MaxZ();
+	std::cout << t << "\t" << TPCMinX[t] << " " << TPCMaxX[t] << " " << TPCMinY[t] << " " << TPCMaxY[t] << " " << TPCMinZ[t] << " " << TPCMaxZ[t] << std::endl;
+      }
+    }
+    fCryos -> Fill();
+    */
     return;
   }
 
