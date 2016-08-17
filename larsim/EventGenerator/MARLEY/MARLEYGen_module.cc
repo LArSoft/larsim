@@ -63,11 +63,23 @@ using InterpMethod = marley::InterpolationGrid<double>::InterpolationMethod;
 // anonynmous namespace for helper functions, etc.
 namespace {
 
+  // We need to convert from MARLEY's energy units (MeV) to LArSoft's
+  // (GeV) using this conversion factor
+  constexpr double MeV_to_GeV = 1e-3;
+
   void source_check_positive(double x, const char* description,
     const char* source_type)
   {
     if (x <= 0.) throw cet::exception("MarleyGen")
       << "Non-positive " << description << " value defined for a "
+      << source_type << " neutrino source";
+  }
+
+  void source_check_nonnegative(double x, const char* description,
+    const char* source_type)
+  {
+    if (x < 0.) throw cet::exception("MarleyGen")
+      << "Negative " << description << " value defined for a "
       << source_type << " neutrino source";
   }
 
@@ -104,6 +116,9 @@ public:
   virtual void beginRun(art::Run& run) override;
   virtual void reconfigure(const fhicl::ParameterSet& p) override;
 
+  void add_marley_particles(simb::MCTruth& truth,
+    const std::vector<marley::Particle*>& particles,
+    const TLorentzVector& vertex_pos, bool track);
   void prepare_neutrino_source(const fhicl::ParameterSet& p);
   std::string find_file(const std::string& fileName,
     const std::string& fileType);
@@ -251,14 +266,16 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   // Create a ROOT TTree using the TFileService that will store the MARLEY
   // event objects
   art::ServiceHandle<art::TFileService> tfs;
-  fEventTree = tfs->make<TTree>("MARLEY Event Tree","A tree of marley::Event objects");
+  fEventTree = tfs->make<TTree>("MARLEY Event Tree",
+    "A tree of marley::Event objects");
   fEventTree->Branch("events", "marley::Event", fEvent.get());
 
   // Add branches that give the art::Event run, subrun, and event numbers for
-  // easy match-ups between the MARLEY and art TTrees
-  fEventTree->Branch("run_number", &fRunNumber, "run_number/i"); // 32-bit unsigned int
-  fEventTree->Branch("subrun_number", &fSubRunNumber, "subrun_number/i"); // 32-bit unsigned int
-  fEventTree->Branch("event_number", &fEventNumber, "event_number/i"); // 32-bit unsigned int
+  // easy match-ups between the MARLEY and art TTrees. All three are recorded
+  // as 32-bit unsigned integers.
+  fEventTree->Branch("run_number", &fRunNumber, "run_number/i");
+  fEventTree->Branch("subrun_number", &fSubRunNumber, "subrun_number/i");
+  fEventTree->Branch("event_number", &fEventNumber, "event_number/i");
 
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
@@ -281,58 +298,33 @@ void evgen::MarleyGen::beginRun(art::Run& run)
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::produce(art::Event& e)
+void evgen::MarleyGen::add_marley_particles(simb::MCTruth& truth,
+  const std::vector<marley::Particle*>& particles,
+  const TLorentzVector& vertex_pos, bool track)
 {
+  // Loop over the vector of MARLEY particles and add simb::MCParticle
+  // versions of each of them to the MCTruth object.
+  for (const marley::Particle* p : particles) {
+    // Treat all of these particles as primaries, which have negative
+    // track IDs by convention
+    int trackID = -1*(truth.NParticles() + 1);
 
-  // Get the run, subrun, and event numbers from the current art::Event
-  fRunNumber = e.run();
-  fSubRunNumber = e.subRun();
-  fEventNumber = e.event();
-
-  std::unique_ptr< std::vector<simb::MCTruth> >
-    truthcol(new std::vector<simb::MCTruth>);
-  simb::MCTruth truth;
-
-  static double vertex_x = 0.;
-  static double vertex_y = 0.;
-  static double vertex_z = 0.;
-
-  // We need to convert from MARLEY's energy units (MeV) to LArSoft's
-  // (GeV) using this conversion factor
-  static constexpr double MeV_to_GeV = 1e-3;
-
-  // Sample a primary vertex location for this event
-  sample_vertex_pos(vertex_x, vertex_y, vertex_z);
-
-  // TODO: include sampling of vertex times
-  TLorentzVector pos(vertex_x, vertex_y, vertex_z, 0.);
-
-  *fEvent = fMarleyGenerator->create_event();
-  //fEvent.reset(new marley::Event(fMarleyGenerator->create_event()));
-  //fEventTree->SetBranchAddress("event", fEvent.get());
-
-  fEventTree->Fill();
-
-  // Start at 1 so that all final particles are tracked
-  // (Geant4 appears to skip the electron when it has trackID = 0)
-  size_t fp_count = 1;
-  for (const marley::Particle* fp : fEvent->get_final_particles()) {
-
-    int pdg = fp->pdg_code();
-    double mass = fp->mass() * MeV_to_GeV;
-    double px = fp->px() * MeV_to_GeV;
-    double py = fp->py() * MeV_to_GeV;
-    double pz = fp->pz() * MeV_to_GeV;
-    double E = fp->total_energy() * MeV_to_GeV;
+    int pdg = p->pdg_code();
+    double mass = p->mass() * MeV_to_GeV;
+    double px = p->px() * MeV_to_GeV;
+    double py = p->py() * MeV_to_GeV;
+    double pz = p->pz() * MeV_to_GeV;
+    double E = p->total_energy() * MeV_to_GeV;
     TLorentzVector mom(px, py, pz, E);
 
-    simb::MCParticle part(fp_count /* trackID to use in Geant4 */, pdg,
-      "MARLEY", -1 /* primary particle */, mass,
-      1 /* track this particle in LArG4 */);
-    part.AddTrajectoryPoint(pos, mom);
-    truth.Add(part);
+    int status = 0; // don't track the particles in LArG4 by default
+    if (track) status = 1;
 
-    ++fp_count;
+    simb::MCParticle part(trackID /* trackID to use in Geant4 */, pdg,
+      "MARLEY", -1 /* primary particle */, mass, status);
+
+    part.AddTrajectoryPoint(vertex_pos, mom);
+    truth.Add(part);
 
     // If Geant4 has not yet produced a particle definition for a nucleus
     // generated by MARLEY, then prepare one. The LArG4 module will refuse to
@@ -348,7 +340,80 @@ void evgen::MarleyGen::produce(art::Event& e)
       else LOG_INFO("MarleyGen") << "Failed to create ion Z = " << Z
         << ", A = " << A;
     }
+
   }
+}
+
+//------------------------------------------------------------------------------
+void evgen::MarleyGen::produce(art::Event& e)
+{
+
+  // Get the run, subrun, and event numbers from the current art::Event
+  fRunNumber = e.run();
+  fSubRunNumber = e.subRun();
+  fEventNumber = e.event();
+
+  std::unique_ptr< std::vector<simb::MCTruth> >
+    truthcol(new std::vector<simb::MCTruth>);
+  simb::MCTruth truth;
+
+  truth.SetOrigin(simb::kSuperNovaNeutrino);
+
+  static double vertex_x = 0.;
+  static double vertex_y = 0.;
+  static double vertex_z = 0.;
+
+  // Sample a primary vertex location for this event
+  sample_vertex_pos(vertex_x, vertex_y, vertex_z);
+
+  // TODO: include sampling of vertex times
+  TLorentzVector vertex_pos(vertex_x, vertex_y, vertex_z, 0.);
+
+  *fEvent = fMarleyGenerator->create_event();
+
+  fEventTree->Fill();
+
+  // Add the initial and final state particles to the MCTruth object.
+  add_marley_particles(truth, fEvent->get_initial_particles(), vertex_pos,
+    false);
+  add_marley_particles(truth, fEvent->get_final_particles(), vertex_pos,
+    true);
+
+  // calculate a few parameters for the call to SetNeutrino
+  const marley::Particle& nu = fEvent->projectile();
+  const marley::Particle& lep = fEvent->ejectile();
+  double qx = nu.px() - lep.px();
+  double qy = nu.py() - lep.py();
+  double qz = nu.pz() - lep.pz();
+  double Enu = nu.total_energy();
+  double Elep = lep.total_energy();
+  double Q2 = qx*qx + qy*qy + qz*qz - std::pow(Enu - Elep, 2);
+
+  // For definitions of Bjorken x, etc., a good reference is Mark Thomson's
+  // set of slides on deep inelastic scattering (http://tinyurl.com/hcn5n6l)
+  double bjorken_x = Q2 / (2 * fEvent->target().mass() * (Enu - Elep));
+  double inelasticity_y = 1. - Elep / Enu;
+
+  // Include the initial excitation energy of the final-state nucleus when
+  // calculating W (the final-state invariant mass of the hadronic system)
+  // since the other parameters (X, Y) also take into account the 2-2
+  // scattering reaction only.
+  const marley::Particle& res = fEvent->residue();
+  double hadronic_mass_W = res.mass() + fEvent->Ex();
+
+  // TODO: do a more careful job of setting the parameters here
+  truth.SetNeutrino(
+    simb::kCC, // change when MARLEY can handle NC
+    simb::kUnknownInteraction, // not sure what the mode should be
+    simb::kUnknownInteraction, // not sure what the interaction type should be
+    marley_utils::get_nucleus_pid(18, 40), // Ar-40 PDG code
+    marley_utils::NEUTRON, // nucleon PDG
+    0, // MARLEY handles low enough energies that we shouldn't need HitQuark
+    hadronic_mass_W * MeV_to_GeV,
+    bjorken_x, // dimensionless
+    inelasticity_y, // dimensionless
+    Q2 * std::pow(MeV_to_GeV, 2)
+  );
 
   truthcol->push_back(truth);
 
@@ -610,7 +675,7 @@ void evgen::MarleyGen::prepare_neutrino_source(const fhicl::ParameterSet& p)
     double temp = p.get<double>("temperature");
     double eta = p.get<double>("eta", 0.);
 
-    source_check_positive(Emin, "Emin", "Fermi-Dirac");
+    source_check_nonnegative(Emin, "Emin", "Fermi-Dirac");
     source_check_positive(temp, "temperature", "Fermi-Dirac");
 
     if (Emax <= Emin) throw cet::exception("MarleyGen")
@@ -631,7 +696,7 @@ void evgen::MarleyGen::prepare_neutrino_source(const fhicl::ParameterSet& p)
     double Emean = p.get<double>("Emean");
     double beta = p.get<double>("beta", 4.5);
 
-    source_check_positive(Emin, "Emin", "beta-fit");
+    source_check_nonnegative(Emin, "Emin", "beta-fit");
     source_check_positive(Emean, "Emean", "beta-fit");
 
     if (Emax <= Emin) throw cet::exception("MarleyGen")
