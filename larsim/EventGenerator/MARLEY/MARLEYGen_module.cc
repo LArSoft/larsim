@@ -117,12 +117,12 @@ public:
   virtual void reconfigure(const fhicl::ParameterSet& p) override;
 
   void add_marley_particles(simb::MCTruth& truth,
-    const std::vector<marley::Particle*>& particles,
-    const TLorentzVector& vertex_pos, bool track);
+    const std::vector<marley::Particle*>& particles, bool track);
   void prepare_neutrino_source(const fhicl::ParameterSet& p);
   std::string find_file(const std::string& fileName,
     const std::string& fileType);
   void reconfigure_marley(const fhicl::ParameterSet& p);
+  void reconfigure_vertex(const fhicl::ParameterSet& p);
   void prepare_reactions(const std::vector<std::string>& files);
   void prepare_structure(const std::vector<std::string>& files);
   void check_pdf_pairs(const std::vector<double>& Es,
@@ -130,9 +130,15 @@ public:
   InterpMethod get_interpolation_method(const std::string& rule);
   int neutrino_pdg(const std::string& nu);
 
+  enum class vertex_type_t { kSampled, kFixed };
+
 protected:
 
-  std::string fMarleyLoggingLevel;
+  vertex_type_t fVertexType;
+
+  //std::string fMarleyLoggingLevel;
+
+  TLorentzVector fVertexPosition;
 
   std::unique_ptr<marley::Generator> fMarleyGenerator;
 
@@ -146,17 +152,14 @@ protected:
   // and redirect it to the LArSoft logger
   std::stringstream fMarleyLogStream;
 
-  // Function that samples a primary vertex position uniformly over the active
-  // TPC volumes. The variables x, y, and z are loaded with the appropriate
-  // values.
-  void sample_vertex_pos(double& x, double& y, double& z);
+  // Function that selects a primary vertex location for each event. The
+  // result is saved to fVertexPosition.
+  void update_vertex_pos();
   // Initializes sampling machinery for vertex position sampling
   void initialize_vertex_pos_sampling(const fhicl::ParameterSet& p);
   // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
   // This allows the module to write the generated events to a TTree.
   void load_marley_dictionaries();
-  // RNG seed (currently only used for primary vertex position sampling)
-  uint_fast64_t fSeed;
   // Run, subrun, and event numbers from the art::Event being processed
   uint_fast32_t fRunNumber;
   uint_fast32_t fSubRunNumber;
@@ -170,8 +173,8 @@ protected:
 
 //------------------------------------------------------------------------------
 evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
-  : fEvent(new marley::Event), fSeed(0), fRunNumber(0),
-  fSubRunNumber(0), fEventNumber(0), fTPCDist(nullptr)
+  : fVertexType(vertex_type_t::kSampled), fEvent(new marley::Event),
+  fRunNumber(0), fSubRunNumber(0), fEventNumber(0), fTPCDist(nullptr)
 {
   // TODO: set MARLEY logging level from FHiCL parameters
   //fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
@@ -299,8 +302,7 @@ void evgen::MarleyGen::beginRun(art::Run& run)
 
 //------------------------------------------------------------------------------
 void evgen::MarleyGen::add_marley_particles(simb::MCTruth& truth,
-  const std::vector<marley::Particle*>& particles,
-  const TLorentzVector& vertex_pos, bool track)
+  const std::vector<marley::Particle*>& particles, bool track)
 {
   // Loop over the vector of MARLEY particles and add simb::MCParticle
   // versions of each of them to the MCTruth object.
@@ -323,7 +325,7 @@ void evgen::MarleyGen::add_marley_particles(simb::MCTruth& truth,
     simb::MCParticle part(trackID /* trackID to use in Geant4 */, pdg,
       "MARLEY", -1 /* primary particle */, mass, status);
 
-    part.AddTrajectoryPoint(vertex_pos, mom);
+    part.AddTrajectoryPoint(fVertexPosition, mom);
     truth.Add(part);
 
     // If Geant4 has not yet produced a particle definition for a nucleus
@@ -359,25 +361,16 @@ void evgen::MarleyGen::produce(art::Event& e)
 
   truth.SetOrigin(simb::kSuperNovaNeutrino);
 
-  static double vertex_x = 0.;
-  static double vertex_y = 0.;
-  static double vertex_z = 0.;
-
-  // Sample a primary vertex location for this event
-  sample_vertex_pos(vertex_x, vertex_y, vertex_z);
-
-  // TODO: include sampling of vertex times
-  TLorentzVector vertex_pos(vertex_x, vertex_y, vertex_z, 0.);
+  // Get the primary vertex location for this event
+  update_vertex_pos();
 
   *fEvent = fMarleyGenerator->create_event();
 
   fEventTree->Fill();
 
   // Add the initial and final state particles to the MCTruth object.
-  add_marley_particles(truth, fEvent->get_initial_particles(), vertex_pos,
-    false);
-  add_marley_particles(truth, fEvent->get_final_particles(), vertex_pos,
-    true);
+  add_marley_particles(truth, fEvent->get_initial_particles(), false);
+  add_marley_particles(truth, fEvent->get_final_particles(), true);
 
   // calculate a few parameters for the call to SetNeutrino
   const marley::Particle& nu = fEvent->projectile();
@@ -441,18 +434,15 @@ void evgen::MarleyGen::produce(art::Event& e)
 //------------------------------------------------------------------------------
 void evgen::MarleyGen::reconfigure(const fhicl::ParameterSet& p)
 {
-  fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
+  //fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
 
-  // TODO: allow setting a constant vertex location
-  //fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex"));
-  //reconfigure_vertex(vertex_params);
+  fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex"));
+  reconfigure_vertex(vertex_params);
 
   fhicl::ParameterSet marley_params(p.get<fhicl::ParameterSet>(
     "marley_parameters"));
 
   reconfigure_marley(marley_params);
-
-  initialize_vertex_pos_sampling(p);
 }
 
 //------------------------------------------------------------------------------
@@ -861,51 +851,78 @@ void evgen::MarleyGen::prepare_neutrino_source(const fhicl::ParameterSet& p)
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::sample_vertex_pos(double& x, double& y, double& z)
+void evgen::MarleyGen::update_vertex_pos()
 {
-  // Sample a TPC index using the active masses as weights
-  size_t tpc_index = fTPCDist->operator()(fTPCEngine);
+  // sample a new position if needed
+  if (fVertexType == vertex_type_t::kSampled) {
+    // Sample a TPC index using the active masses as weights
+    size_t tpc_index = fTPCDist->operator()(fTPCEngine);
 
-  // Get the dimensions of this TPC's active volume
-  art::ServiceHandle<geo::Geometry> geom;
-  const auto& tpc = geom->TPC(tpc_index);
-  double minX = tpc.MinX();
-  double maxX = tpc.MaxX();
-  double minY = tpc.MinY();
-  double maxY = tpc.MaxY();
-  double minZ = tpc.MinZ();
-  double maxZ = tpc.MaxZ();
-  std::uniform_real_distribution<double>::param_type x_range(minX, maxX);
-  std::uniform_real_distribution<double>::param_type y_range(minY, maxY);
-  std::uniform_real_distribution<double>::param_type z_range(minZ, maxZ);
+    // Get the dimensions of this TPC's active volume
+    art::ServiceHandle<geo::Geometry> geom;
+    const auto& tpc = geom->TPC(tpc_index);
+    double minX = tpc.MinX();
+    double maxX = tpc.MaxX();
+    double minY = tpc.MinY();
+    double maxY = tpc.MaxY();
+    double minZ = tpc.MinZ();
+    double maxZ = tpc.MaxZ();
+    std::uniform_real_distribution<double>::param_type x_range(minX, maxX);
+    std::uniform_real_distribution<double>::param_type y_range(minY, maxY);
+    std::uniform_real_distribution<double>::param_type z_range(minZ, maxZ);
 
-  // Sample a location uniformly over this volume
-  static std::uniform_real_distribution<double> uniform_dist;
-  x = uniform_dist(fTPCEngine, x_range);
-  y = uniform_dist(fTPCEngine, y_range);
-  z = uniform_dist(fTPCEngine, z_range);
-  LOG_INFO("MarleyGen") << "Sampled primary vertex in TPC #"
-    << tpc_index << ", x = " << x << ", y = " << y << ", z = " << z;
+    // Sample a location uniformly over this volume
+    static std::uniform_real_distribution<double> uniform_dist;
+    double x = uniform_dist(fTPCEngine, x_range);
+    double y = uniform_dist(fTPCEngine, y_range);
+    double z = uniform_dist(fTPCEngine, z_range);
+    LOG_INFO("MarleyGen") << "Sampled primary vertex in TPC #"
+      << tpc_index << ", x = " << x << ", y = " << y << ", z = " << z;
+
+    // Update the vertex position 4-vector
+    fVertexPosition.SetXYZT(x, y, z, 0.); // TODO: add time sampling
+  }
+
+  // if we're using a fixed vertex position, we don't need to do any sampling
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::initialize_vertex_pos_sampling(
-  const fhicl::ParameterSet& p)
+void evgen::MarleyGen::reconfigure_vertex(const fhicl::ParameterSet& p)
 {
-  // Get the active masses of each of the TPCs in the current geometry. Use
-  // them as weights for sampling a TPC to use for the primary vertex.
-  art::ServiceHandle<geo::Geometry> geom;
-  std::vector<double> tpc_masses;
-  size_t num_tpcs = geom->NTPC();
-  for (size_t iTPC = 0; iTPC < num_tpcs; ++iTPC) {
-    // For each TPC, use its active mass (returned in kg) as its sampling weight
-    tpc_masses.push_back(geom->TPC(iTPC).ActiveMass());
-  }
+  std::string type = p.get<std::string>("type", "sampled");
 
-  // Load the discrete distribution used to sample TPCs with the up-to-date set
-  // of weights
-  fTPCDist.reset(new std::discrete_distribution<size_t>(tpc_masses.begin(),
-    tpc_masses.end()));
+  if (type == "sampled") {
+
+    fVertexType = vertex_type_t::kSampled;
+
+    // Get the active masses of each of the TPCs in the current geometry. Use
+    // them as weights for sampling a TPC to use for the primary vertex.
+    art::ServiceHandle<geo::Geometry> geom;
+    std::vector<double> tpc_masses;
+    size_t num_tpcs = geom->NTPC();
+    for (size_t iTPC = 0; iTPC < num_tpcs; ++iTPC) {
+      // For each TPC, use its active mass (returned in kg) as its sampling
+      // weight
+      tpc_masses.push_back(geom->TPC(iTPC).ActiveMass());
+    }
+
+    // Load the discrete distribution used to sample TPCs with the up-to-date
+    // set of weights
+    fTPCDist.reset(new std::discrete_distribution<size_t>(tpc_masses.begin(),
+      tpc_masses.end()));
+  }
+  else if (type == "fixed") {
+
+    fVertexType = vertex_type_t::kFixed;
+
+    double Vx = p.get<double>("x");
+    double Vy = p.get<double>("y");
+    double Vz = p.get<double>("z");
+
+    fVertexPosition.SetXYZT(Vx, Vy, Vz, 0.); // TODO: add time setting
+  }
+  else throw cet::exception("MarleyGen") << "Invalid vertex type '"
+    << type << "' requested. Allowed values are 'sampled' and 'fixed'";
 }
 
 //------------------------------------------------------------------------------

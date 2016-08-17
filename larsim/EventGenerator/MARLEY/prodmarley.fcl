@@ -22,9 +22,9 @@ source:
 {
   module_type: EmptyEvent
   timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
-  maxEvents:  10000          # Number of events to create
-  firstRun:   1              # Run number to use for this file
-  firstEvent: 1              # Number of first event in the file
+  maxEvents:  100         # Number of events to create
+  firstRun:   1           # Run number to use for this file
+  firstEvent: 1           # Number of first event in the file
 }
 
 # Define and configure some modules to do work on each event.
@@ -35,52 +35,91 @@ physics:
 
  producers:
  {
-   # Generate events from a MARLEY HepEvt file
+   # Generate events using MARLEY
    generator: { module_type: "MARLEYGen"
+
+                # Sample primary vertex locations uniformly over
+                # all active TPC volumes.
                 vertex: {
                   type: "sampled"
+                  # Seed for selecting a primary vertex location
+                  #seed: 54321
                 }
+
+                # Use a fixed primary vertex location
                 #vertex: {
                 #  type: "fixed"
                 #  x: 0.
                 #  y: 0.
                 #  z: 0.
                 #}
+
+                # FHiCL parameters that will be used to configure the
+                # marley::Generator object.
                 marley_parameters: {
+
+                  # Seed for the MARLEY generator (handled
+                  # automatically by LArSeedService unless it
+                  # is given explicitly here)
+                  #seed: 12345
+
+                  # Incident neutrino direction 3-vector
                   direction: {
                     x: 0.
                     y: 0.
                     z: 1.
                   }
-                  reactions: [ "ve40ArCC_1998.react" ]
+
+                  # The user must define at least one reaction
+                  # by passing MARLEY the name of a matrix element
+                  # data file. Two are currently available, both
+                  # for the reaction ve + 40Ar --> e- + 40K*.
+                  # The 2009 version uses an (n,p) scattering
+                  # measurement for the experimental matrix elements,
+                  # while the 1998 version uses a 40Ti beta decay
+                  # measurement.
+                  reactions: [ "ve40ArCC_2009.react" ]
+                  #reactions: [ "ve40ArCC_1998.react" ]
+
+                  # Nuclear structure (discrete levels and gamma-ray
+                  # branching ratios) data files in the TALYS format
+                  # may be specified here. The recommended data
+                  # files are z019, z018, and z017 from TALYS-1.6,
+                  # which are included with MARLEY v0.9.5.
                   structure: [ "z019", "z018", "z017" ]
+
+                  # Examples of all currently-allowed MARLEY neutrino
+                  # sources are given below. Only one of these FHiCL tables
+                  # should be left uncommented at a time.
                   source: { 
-                            type: "mono"
+                            type: "monoenergetic"
+                            # May be either a string or a PDG code. Note that
+                            # for the current reactions, only ve is allowed.
                             neutrino: "ve"
                             energy: 10. # MeV
                           }
                   #source: {
-                  #          type: "dar"
+                  #          type: "decay-at-rest"
                   #          neutrino: 12
                   #        }
                   #source: {
-                  #          type: "fd"
+                  #          type: "fermi-dirac"
                   #          neutrino: "ve"
                   #          Emin: 0. # MeV
                   #          Emax: 60. # MeV
                   #          temperature: 3.5 # MeV
-                  #          eta: 0. # optional (default 0)
+                  #          eta: 0. # optional
                   #        }
                   #source: {
-                  #          type: "bf"
+                  #          type: "beta-fit"
                   #          neutrino: "ve"
                   #          Emin: 0. # MeV
                   #          Emax: 60. # MeV
                   #          Emean: 10. # MeV
-                  #          beta: 0. # optional (default ?)
+                  #          beta: 0. # optional
                   #        }
                   #source: {
-                  #          type: "hist"
+                  #          type: "histogram"
                   #          neutrino: "ve"
                   #          E_bin_lefts: [ 1., 2., 3. ] # MeV
                   #          weights: [ 0.1, 1, 8 ] # bin probabilities
@@ -119,25 +158,26 @@ physics:
    rns:       { module_type: "RandomNumberSaver" }
  }
 
- #define the producer and filter modules for this path, order matters, 
- #filters reject all following items.  see lines starting physics.producers below
+ # define the producer and filter modules for this path, order matters, filters
+ # reject all following items.  see lines starting physics.producers below
  simulate: [ generator, largeant, daq, caldata, rns ]
  
- #define the output stream, there could be more than one if using filters 
+ # define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
 
- #trigger_paths is a keyword and contains the paths that modify the art::event, 
- #ie filters and producers
+ # trigger_paths is a keyword and contains the paths that modify the
+ # art::event, ie filters and producers
  trigger_paths: [simulate]
 
- #end_paths is a keyword and contains the paths that do not modify the art::Event, 
- #ie analyzers and output streams.  these all run simultaneousy
+ # end_paths is a keyword and contains the paths that do not modify the
+ # art::Event, ie analyzers and output streams.  these all run simultaneousy
  end_paths:     [stream1]
 }
 
-#block to define where the output goes.  if you defined a filter in the physics
-#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
-#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+# block to define where the output goes.  if you defined a filter in the
+# physics block and put it in the trigger_paths then you need to put a
+# SelectEvents: {SelectEvents: [XXX]} entry in the output stream you want those
+# to go to, where XXX is the label of the filter module(s)
 outputs:
 {
  out1:
@@ -148,25 +188,17 @@ outputs:
  }
 }
 
-# Specify the RNG seed to use
-#physics.producers.generator.Seed: 847234282
-
 # Make sure that the geometry is what we think it is
 services.user.Geometry: @local::dune10kt_workspace_geo
 
-# Toggle dumping information about the true particle trajectories in each event to stdout and the debug.log file as events are
-# being simulated in largeant
-physics.producers.largeant.DumpParticleList: false
-# Also toggle dumping information about simulated detector response (sim::SimChannel objects) being made by largeant
-physics.producers.largeant.DumpSimChannels: false
-# Ensure that empty rawDigits aren't saved
-physics.producers.daq.SaveEmptyChannel: false
-
 # Adjustments to the standard LArG4 parameters
 services.user.LArG4Parameters.UseCustomPhysics: true
-# Uses NeutronHP data (very important for neutrino-induced neutron emission!)
+# Use NeutronHP data (very important for neutrino-induced neutron emission!)
 # which is not enabled by default in LArSoft.
-services.user.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm", "SynchrotronAndGN", "Ion", "NeutronHP", "Decay", "HadronElastic", "Stopping" ]
+services.user.LArG4Parameters.EnabledPhysics:
+  [ "LowEnergyEm",
+    "SynchrotronAndGN", "Ion", "NeutronHP", "Decay", "HadronElastic",
+    "Stopping" ]
 services.user.LArG4Parameters.ParticleKineticEnergyCut: 0.01e-3 # GeV
 services.user.LArG4Parameters.StoreTrajectories: true
 services.user.LArG4Parameters.KeepEMShowerDaughters: true
