@@ -1,6 +1,5 @@
 
-include_directories ( $ENV{MARLEY_INC} )
-link_directories ( $ENV{MARLEY_LIB} )
+#include_directories ( $ENV{MARLEY_INC} )
 
 art_make( BASENAME_ONLY
           MODULE_LIBRARIES 
@@ -11,8 +10,8 @@ art_make( BASENAME_ONLY
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service
-                        MARLEY
-                        MARLEY_ROOT
+                        ${MARLEY}
+                        ${MARLEY_ROOT}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}

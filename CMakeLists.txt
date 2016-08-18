@@ -48,6 +48,7 @@ find_ups_product( lardataobj )
 find_ups_product( lardata v1_00_00 )
 find_ups_product( larevt v1_00_00 )
 find_ups_product( larsimobj )
+find_ups_product( marley )
 find_ups_product( nutools )
 find_ups_product( nusimdata )
 find_ups_product( art v1_09_00 )
@@ -100,6 +101,9 @@ cet_find_library( GUTILS NAMES GUtils PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GGEO NAMES GGeo PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GFLUXDRIVERS NAMES GFluxDrivers PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GMUELOSS NAMES GMuELoss PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
+# marley libraries
+cet_find_library( MARLEY NAMES MARLEY PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
+cet_find_library( MARLEY_ROOT NAMES MARLEY_ROOT PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
