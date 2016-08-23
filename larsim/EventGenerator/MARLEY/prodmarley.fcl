@@ -1,5 +1,6 @@
 # Generates events in the DUNE 10kt workspace geometry (4 APAs)
 
+#include "marley.fcl"
 #include "services_dune.fcl"
 #include "largeantmodules_dune.fcl"
 #include "detsimmodules_dune.fcl"
@@ -36,116 +37,7 @@ physics:
  producers:
  {
    # Generate events using MARLEY
-   generator: { module_type: "MARLEYGen"
-
-                # Sample primary vertex locations uniformly over
-                # all active TPC volumes.
-                vertex: {
-                  type: "sampled"
-                  # Seed for selecting a primary vertex location
-                  #seed: 54321
-                }
-
-                # Use a fixed primary vertex location
-                #vertex: {
-                #  type: "fixed"
-                #  x: 0.
-                #  y: 0.
-                #  z: 0.
-                #}
-
-                # FHiCL parameters that will be used to configure the
-                # marley::Generator object.
-                marley_parameters: {
-
-                  # Seed for the MARLEY generator (handled
-                  # automatically by LArSeedService unless it
-                  # is given explicitly here)
-                  #seed: 12345
-
-                  # Incident neutrino direction 3-vector
-                  direction: {
-                    x: 0.
-                    y: 0.
-                    z: 1.
-                  }
-
-                  # The user must define at least one reaction
-                  # by passing MARLEY the name of a matrix element
-                  # data file. Two are currently available, both
-                  # for the reaction ve + 40Ar --> e- + 40K*.
-                  # The 2009 version uses an (n,p) scattering
-                  # measurement for the experimental matrix elements,
-                  # while the 1998 version uses a 40Ti beta decay
-                  # measurement.
-                  reactions: [ "ve40ArCC_2009.react" ]
-                  #reactions: [ "ve40ArCC_1998.react" ]
-
-                  # Nuclear structure (discrete levels and gamma-ray
-                  # branching ratios) data files in the TALYS format
-                  # may be specified here. The recommended data
-                  # files are z019, z018, and z017 from TALYS-1.6,
-                  # which are included with MARLEY v0.9.5.
-                  structure: [ "z019", "z018", "z017" ]
-
-                  # Examples of all currently-allowed MARLEY neutrino
-                  # sources are given below. Only one of these FHiCL tables
-                  # should be left uncommented at a time.
-                  source: { 
-                            type: "monoenergetic"
-                            # May be either a string or a PDG code. Note that
-                            # for the current reactions, only ve is allowed.
-                            neutrino: "ve"
-                            energy: 10. # MeV
-                          }
-                  #source: {
-                  #          type: "decay-at-rest"
-                  #          neutrino: 12
-                  #        }
-                  #source: {
-                  #          type: "fermi-dirac"
-                  #          neutrino: "ve"
-                  #          Emin: 0. # MeV
-                  #          Emax: 60. # MeV
-                  #          temperature: 3.5 # MeV
-                  #          eta: 0. # optional
-                  #        }
-                  #source: {
-                  #          type: "beta-fit"
-                  #          neutrino: "ve"
-                  #          Emin: 0. # MeV
-                  #          Emax: 60. # MeV
-                  #          Emean: 10. # MeV
-                  #          beta: 0. # optional
-                  #        }
-                  #source: {
-                  #          type: "histogram"
-                  #          neutrino: "ve"
-                  #          E_bin_lefts: [ 1., 2., 3. ] # MeV
-                  #          weights: [ 0.1, 1, 8 ] # bin probabilities
-                  #          Emax: 4. # MeV
-                  #        }
-                  #source: {
-                  #          type: "grid"
-                  #          neutrino: "ve"
-                  #          rule: "linlin"
-                  #          energies: [ 1., 2., 3. ] # MeV
-                  #          prob_densities: [ 0.1, 0.5, 0.1 ] # prob. density
-                  #        }
-                  #source: {
-                  #          type: "th1"
-                  #          neutrino: "ve"
-                  #          tfile: "myhist.root"
-                  #          namecycle: "sourcehist"
-                  #        }
-                  #source: {
-                  #          type: "tgraph"
-                  #          neutrino: "ve"
-                  #          tfile: "mygraph.root"
-                  #          namecycle: "sourcegraph"
-                  #        }
-                }
-              }
+   generator: @local::standard_marley
    # Track particles in the detector using Geant4
    largeant:  @local::dunefd_largeant
    # Simulate TPC wire responses
@@ -192,13 +84,16 @@ outputs:
 services.user.Geometry: @local::dune10kt_workspace_geo
 
 # Adjustments to the standard LArG4 parameters
-services.user.LArG4Parameters.UseCustomPhysics: true
-# Use NeutronHP data (very important for neutrino-induced neutron emission!)
-# which is not enabled by default in LArSoft.
-services.user.LArG4Parameters.EnabledPhysics:
-  [ "LowEnergyEm",
-    "SynchrotronAndGN", "Ion", "NeutronHP", "Decay", "HadronElastic",
-    "Stopping" ]
-services.user.LArG4Parameters.ParticleKineticEnergyCut: 0.01e-3 # GeV
+services.user.LArG4Parameters.ParticleKineticEnergyCut: 1.0e-5 # GeV
 services.user.LArG4Parameters.StoreTrajectories: true
 services.user.LArG4Parameters.KeepEMShowerDaughters: true
+# Use NeutronHP data (very important for neutrino-induced neutron emission!)
+# which is not enabled by default in LArSoft.
+services.user.LArG4Parameters.UseCustomPhysics: true
+services.user.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm",
+                                           "SynchrotronAndGN",
+                                           "Ion",
+                                           "NeutronHP",
+                                           "Decay",
+                                           "HadronElastic",
+                                           "Stopping" ]
