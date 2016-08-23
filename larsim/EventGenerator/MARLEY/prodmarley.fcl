@@ -202,4 +202,3 @@ services.user.LArG4Parameters.EnabledPhysics:
 services.user.LArG4Parameters.ParticleKineticEnergyCut: 0.01e-3 # GeV
 services.user.LArG4Parameters.StoreTrajectories: true
 services.user.LArG4Parameters.KeepEMShowerDaughters: true
-services.user.LArG4Parameters.ISCalculator: "NEST"
