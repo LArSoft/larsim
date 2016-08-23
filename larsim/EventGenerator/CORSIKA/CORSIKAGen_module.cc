@@ -230,11 +230,11 @@ namespace evgen{
     //do the fetching, store local filepaths in locallist
     std::vector<std::string> locallist;
     for(unsigned int i=0; i<selectedflist.size(); i++){
-      mf::LogInfo("CorsikaGen") << "Fetching: "<<selectedflist[i].first<<" "<<selectedflist[i].second<<"\n";
+      mf::LogInfo("CorsikaGen")
+        << "Fetching: "<<selectedflist[i].first<<" "<<selectedflist[i].second<<"\n";
       std::string fetchedfile(fIFDH->fetchInput(selectedflist[i].first));
-      mf::LogInfo("CorsikaGen") << "Fetched; local path: "<<fetchedfile<<"\n";
+      LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile;
       locallist.push_back(fetchedfile);
-      mf::LogInfo("CorsikaGen") << "Done; local path: "<<fetchedfile<<"\n";
     }
     
     //open the files in fShowerInputFilesLocalPaths with sqlite3
@@ -301,7 +301,7 @@ namespace evgen{
       double bounds[6] = {0.};
       geom->CryostatBoundaries(bounds, c); 
       for (unsigned int bnd = 0; bnd<6; bnd++){
-        mf::LogInfo("CORSIKAGen")<<"Cryo Boundary: "<<bnd<<"="<<bounds[bnd]<<" ( + Buffer="<<fBuffBox[bnd]<<")\n";
+        mf::LogVerbatim("CORSIKAGen")<<"Cryo Boundary: "<<bnd<<"="<<bounds[bnd]<<" ( + Buffer="<<fBuffBox[bnd]<<")\n";
         if(fabs(bounds[bnd])>fabs(fShowerBounds[bnd])){
           fShowerBounds[bnd]=bounds[bnd];
         }
@@ -313,15 +313,18 @@ namespace evgen{
     fShowerBounds[4] = fShowerBounds[4] - fShowerAreaExtension;
     fShowerBounds[5] = fShowerBounds[5] + fShowerAreaExtension;
     
-    mf::LogInfo("CORSIKAGen")<<"Area extended by : "<<fShowerAreaExtension<<"\n";
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed betweeen: x="<<fShowerBounds[0]<<","<<fShowerBounds[1]
-                             <<" & z="<<fShowerBounds[4]<<","<<fShowerBounds[5]<<"\n";
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed with random XZ shift: "<<fRandomXZShift<<" cm"<<"\n";   
     double showersArea=(fShowerBounds[1]/100-fShowerBounds[0]/100)*(fShowerBounds[5]/100-fShowerBounds[4]/100);
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed over area: "<<showersArea<<" m^2"<<"\n";
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed over time: "<<fSampleTime<<" s"<<"\n";
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed with time offset: "<<fToffset<<" s"<<"\n";
-    mf::LogInfo("CORSIKAGen")<<"Showers to be distributed at y: "<<fShowerBounds[3]<<" cm"<<"\n";
+    
+    mf::LogInfo("CORSIKAGen")
+      <<  "Area extended by : "<<fShowerAreaExtension
+      <<"\nShowers to be distributed betweeen: x="<<fShowerBounds[0]<<","<<fShowerBounds[1]
+                             <<" & z="<<fShowerBounds[4]<<","<<fShowerBounds[5]
+      <<"\nShowers to be distributed with random XZ shift: "<<fRandomXZShift<<" cm"
+      <<"\nShowers to be distributed over area: "<<showersArea<<" m^2"
+      <<"\nShowers to be distributed over time: "<<fSampleTime<<" s"
+      <<"\nShowers to be distributed with time offset: "<<fToffset<<" s"
+      <<"\nShowers to be distributed at y: "<<fShowerBounds[3]<<" cm"
+      ;
     
     //db variables
     sqlite3_stmt *statement;
@@ -347,7 +350,7 @@ namespace evgen{
             oneMinusGamma = 1 + energySlope;
             EiToOneMinusGamma = pow(lowerLimitOfEnergyRange, oneMinusGamma);
             EfToOneMinusGamma = pow(upperLimitOfEnergyRange, oneMinusGamma);
-            mf::LogInfo("CORSIKAGen")<<"For showers input "<< i<<" found e_hi="<<upperLimitOfEnergyRange<<", e_lo="<<lowerLimitOfEnergyRange<<", slope="<<energySlope<<", k="<<fShowerFluxConstants[i]<<"\n";
+            mf::LogVerbatim("CORSIKAGen")<<"For showers input "<< i<<" found e_hi="<<upperLimitOfEnergyRange<<", e_lo="<<lowerLimitOfEnergyRange<<", slope="<<energySlope<<", k="<<fShowerFluxConstants[i]<<"\n";
           }else{
             throw cet::exception("CORSIKAGen") << "Unexpected sqlite3_step return value: (" <<res<<"); "<<"ERROR:"<<sqlite3_errmsg(fdb[i])<<"\n";
           }         
@@ -358,7 +361,7 @@ namespace evgen{
       //this is computed, how?
       double NShowers=( M_PI * showersArea * fShowerFluxConstants[i] * (EfToOneMinusGamma - EiToOneMinusGamma) / oneMinusGamma )*fSampleTime; 
       fNShowersPerEvent.push_back((int)NShowers);
-      mf::LogInfo("CORSIKAGen")<<"For showers input "<< i
+      mf::LogVerbatim("CORSIKAGen")<<"For showers input "<< i
                                <<" the number of showers per event is "<<(int)NShowers<<"\n";
     }
   }
@@ -423,7 +426,7 @@ namespace evgen{
         //build and do query to get nshowers
         double thisrnd=engine.flat(); //need a new random number for each query
         TString kthisStatement=TString::Format(kStatement.Data(),thisrnd,nShowerQry,thisrnd);
-        mf::LogInfo("CORSIKAGen")<<"Executing: "<<kthisStatement<<"\n";
+        LOG_DEBUG("CORSIKAGen")<<"Executing: "<<kthisStatement;
         if ( sqlite3_prepare(fdb[i], kthisStatement.Data(), -1, &statement, 0 ) == SQLITE_OK ){
           int res=0;
           //loop over database rows, pushing particles into mctruth object
