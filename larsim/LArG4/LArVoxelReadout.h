@@ -205,6 +205,12 @@ namespace larg4 {
                                   Radio_t radiological=notradiological, 
                                   unsigned int tickmax=4096); // used to randomize the TDC tick values  
 
+    bool Has(std::vector<unsigned short int> v, unsigned short int tpc) const
+    {  	
+    	for (auto c: v) if (c == tpc) return true;	
+    	return false;
+    }
+
     // Used in electron-cluster calculations
     // External parameters for the electron-cluster calculation.
     // obtained from LArG4Parameters, LArProperties, and DetectorProperties services
@@ -218,6 +224,7 @@ namespace larg4 {
     int                                       fTriggerOffset;
     double                                    fArgon39DecayRate;
     bool                                      fDontDriftThem;
+    std::vector<unsigned short int>           fSkipWireSignalInTPCs;
 
     std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service

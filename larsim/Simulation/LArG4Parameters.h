@@ -56,6 +56,7 @@ namespace sim {
     int    MNXSBias()                                         const { return fXSBias;                 }
     bool   KeepEMShowerDaughters()                            const { return fKeepEMShowerDaughters;  }
     bool   DisableWireplanes()                                const { return fDisableWireplanes;      }
+    const std::vector<unsigned short int> SkipWireSignalInTPCs() const { return fSkipWireSignalInTPCs;}
     const std::string IonAndScintCalculator()                 const { return fIonAndScintCalculator;  }
     const std::vector<std::string> OpticalParamVolumes()      const { return fOpticalParamVolumes;    }
     const std::vector<std::string> OpticalParamModels()       const { return fOpticalParamModels;     }
@@ -88,6 +89,7 @@ namespace sim {
                                                      ///< particles from an EM shower in the output
     bool                     fDisableWireplanes;     ///< Turn of LAr sensitivity and remove charge 
                                                      ///< drift simulation - use for running pure optical sims 
+    std::vector<unsigned short int> fSkipWireSignalInTPCs;  ///< selective disabling of drift simulation 
     bool                     fUseModBoxRecomb;       ///< Use Modified Box model recombination instead of Birks
     std::string              fIonAndScintCalculator; ///< Name of algorithm to use to calculate the number of 
                                                      ///< ionization electrons and scintillation photons

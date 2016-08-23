@@ -110,6 +110,7 @@ namespace larg4 {
     fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
     fTransverseDiffusion   = fLgpHandle->TransverseDiffusion();
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
+    fSkipWireSignalInTPCs  = fLgpHandle->SkipWireSignalInTPCs();
 
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
@@ -153,6 +154,12 @@ namespace larg4 {
       
       for (unsigned short int cryo = 0; cryo < fGeoHandle->Ncryostats(); ++cryo) {
         for (unsigned short int tpc = 0; tpc < fGeoHandle->NTPC(cryo); ++tpc) {
+        
+          if (Has(fSkipWireSignalInTPCs, tpc))
+          {
+      	    continue;
+	  }        
+        
           const geo::TPCGeo &tpcg = fGeoHandle->TPC(fTPC,fCstat);
           double width = tpcg.HalfWidth()*2.0;
           double height = tpcg.HalfHeight()*2.0;
@@ -357,6 +364,10 @@ namespace larg4 {
             if (!pPVinTPC) continue;
             cryostat = pPVinTPC->ID.Cryostat;
             tpc = pPVinTPC->ID.TPC;
+	    if (Has(fSkipWireSignalInTPCs, tpc))
+	    {
+	    	return true;
+	    }
             break;
           } // while
           if (depth < pTouchable->GetHistoryDepth()) {
@@ -370,6 +381,7 @@ namespace larg4 {
         
         // Note that if there is no particle ID for this energy deposit, the
         // trackID will be sim::NoParticleId.
+        
         DriftIonizationElectrons(midPoint, g4time, trackID, cryostat, tpc);
       } // end we are drifting
     } // end there is non-zero energy deposition

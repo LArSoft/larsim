@@ -51,6 +51,7 @@ namespace sim {
 
     fIonAndScintCalculator   = pset.get< std::string              >("IonAndScintCalculator", "Separate");
     fDisableWireplanes       = pset.get< bool                     >("DisableWireplanes"       );
+    fSkipWireSignalInTPCs    = pset.get< std::vector<unsigned short int> >("SkipWireSignalInTPCs"      );
     fUseModBoxRecomb         = pset.get< bool                     >("UseModBoxRecomb"         );
     fOpticalParamVolumes     = pset.get< std::vector<std::string> >("OpticalParamVolumes"     );
     fOpticalParamModels      = pset.get< std::vector<std::string> >("OpticalParamModels"      );
