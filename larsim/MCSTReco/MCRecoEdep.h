@@ -14,7 +14,7 @@
 // LArSoft
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsimobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 // STL
 #include <map>

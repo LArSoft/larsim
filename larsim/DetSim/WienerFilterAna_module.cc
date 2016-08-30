@@ -35,7 +35,7 @@ extern "C" {
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RecoBase/Wire.h"

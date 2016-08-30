@@ -15,7 +15,7 @@
 #include "lardataobj/OpticalDetectorData/OpticalTypes.h"
 #include "lardataobj/OpticalDetectorData/PMTTrigger.h"
 #include "lardataobj/OpticalDetectorData/FIFOChannel.h"
-#include "larsimobj/Simulation/BeamGateInfo.h"
+#include "lardataobj/Simulation/BeamGateInfo.h"
 #include "lardataobj/RawData/RawDigit.h"
 
 namespace trigger

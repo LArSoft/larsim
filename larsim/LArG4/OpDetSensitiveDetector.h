@@ -20,7 +20,7 @@
 
 
 #include "Geant4/G4VSensitiveDetector.hh"
-#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h"
 
 
 #ifndef OpDetSensitiveDetector_h

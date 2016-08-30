@@ -40,7 +40,7 @@ simple_plugin(SimWireAna "module"
 )
 
 simple_plugin(SimWire "module"
-                      larsim_Simulation larsimobj_Simulation
+                      larsim_Simulation lardataobj_Simulation
                       lardataobj_RawData
                       larcore_Geometry
                       larcore_Geometry_Geometry_service
@@ -66,7 +66,7 @@ simple_plugin(SimWire "module"
 )
 
 simple_plugin(SimWireT962 "module"
-                          larsim_Simulation larsimobj_Simulation
+                          larsim_Simulation lardataobj_Simulation
                           lardataobj_RawData
                           larcore_Geometry
                           larcore_Geometry_Geometry_service

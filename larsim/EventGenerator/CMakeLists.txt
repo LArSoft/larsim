@@ -14,7 +14,7 @@ art_make(
 			${Boost_SYSTEM_LIBRARY}
           MODULE_LIBRARIES larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
-                           larsim_Simulation larsimobj_Simulation
+                           larsim_Simulation lardataobj_Simulation
                            larcoreobj_SummaryData
                            larcore_Geometry
                            larcore_Geometry_Geometry_service

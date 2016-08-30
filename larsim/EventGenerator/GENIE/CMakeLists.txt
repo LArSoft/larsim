@@ -56,7 +56,7 @@ cet_find_library( GREINSEHGAL NAMES ${GRSSPELLING} PATHS ENV GENIE_LIB NO_DEFAUL
 
 art_make( 
           MODULE_LIBRARIES 
-                        larsim_Simulation larsimobj_Simulation
+                        larsim_Simulation lardataobj_Simulation
                         nusimdata_SimulationBase
                         larcoreobj_SummaryData
                         larcore_Geometry

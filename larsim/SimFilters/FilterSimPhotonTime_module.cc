@@ -25,7 +25,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "larsimobj/Simulation/SimPhotons.h"
+#include "lardataobj/Simulation/SimPhotons.h"
 
 namespace simfilter {
   class FilterSimPhotonTime;

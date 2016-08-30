@@ -27,7 +27,7 @@
 // LArSoft Includes
 #include "larsim/MCCheater/BackTracker.h"
 #include "larsim/Simulation/ParticleList.h"
-#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // ROOT includes

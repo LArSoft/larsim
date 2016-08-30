@@ -10,7 +10,7 @@ art_make(
                         larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         lardata_Utilities
-			larsim_Simulation larsimobj_Simulation
+			larsim_Simulation lardataobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
@@ -39,7 +39,7 @@ art_make(
                         ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
-                        larsim_Simulation larsimobj_Simulation
+                        larsim_Simulation lardataobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_RandomUtils_LArSeedService_service

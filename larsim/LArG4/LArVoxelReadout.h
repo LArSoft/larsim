@@ -50,7 +50,7 @@
 #include "Geant4/G4PVPlacement.hh"
 #include "Geant4/globals.hh"
 
-#include "larsimobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larsim/Simulation/LArG4Parameters.h"

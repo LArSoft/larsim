@@ -29,7 +29,7 @@
 // LArSoft Includes
 #include "larsim/Simulation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes

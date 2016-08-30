@@ -13,7 +13,7 @@
 #include <vector>
 #include <string>
 #include "larsim/Simulation/LArVoxelList.h"
-#include "larsimobj/Simulation/SimPhotons.h"
+#include "lardataobj/Simulation/SimPhotons.h"
 
 namespace art { class Event; }
 

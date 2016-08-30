@@ -22,7 +22,7 @@
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "larsim/Simulation/EmEveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsimobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h"
 #include "larsim/Simulation/SimListUtils.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
