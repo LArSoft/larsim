@@ -31,7 +31,7 @@ namespace larg4{
    virtual double               StepSizeLimit()              const 		      = 0;
 
    //Method to get electric field
-   double EFieldAtStep(double fEfield, const G4Step* step); //value of field with any corrections for this step  
+   double EFieldAtStep(double fEfield, const G4Step* step) const; //value of field with any corrections for this step  
 
  protected:
 

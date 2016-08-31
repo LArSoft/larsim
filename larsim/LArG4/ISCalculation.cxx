@@ -27,22 +27,18 @@ namespace larg4 {
   }
 
   //......................................................................                                                    
-  double ISCalculation::EFieldAtStep(double fEfield, const G4Step* step)
+  double ISCalculation::EFieldAtStep(double fEfield, const G4Step* step) const
   {
-
     double EField = fEfield;
     std::vector<double> EfieldOffsets;
     CLHEP::Hep3Vector EfieldVec;
     auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    if (SCE->EnableSimEfieldSCE() == true)
+    if (SCE->EnableSimEfieldSCE())
       {
         G4ThreeVector midPoint = 0.5*( step->GetPreStepPoint()->GetPosition() + step->GetPostStepPoint()->GetPosition() );
-	mf::LogInfo("ISCalculationSeparate before: ") << fEfield;
         EfieldOffsets = SCE->GetEfieldOffsets(midPoint.x()/CLHEP::cm,midPoint.y()/CLHEP::cm,midPoint.z()/CLHEP::cm);
         EfieldVec.set(fEfield + fEfield*EfieldOffsets.at(0), fEfield*EfieldOffsets.at(1), fEfield*EfieldOffsets.at(2));
         EField = EfieldVec.mag();
-	mf::LogInfo("ISCalculationSeparate after: ") <<  "x: " << midPoint.x()/CLHEP::cm << " y: " << midPoint.y()/CLHEP::cm << " z: " << midPoint.z()/CLHEP::cm;
-	mf::LogInfo("ISCalculationSeparate after: ") << EField;
       }
 
     return EField;
