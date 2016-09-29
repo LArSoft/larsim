@@ -43,6 +43,7 @@
 #include "NucleonDecay/NucleonDecayMode.h"
 #include "PDG/PDGLibrary.h"
 #include "GHEP/GHepParticle.h"
+#include "Utils/AppInit.h"
 
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -112,7 +113,9 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   // unless overridden in configuration with key "Seed"
   art::ServiceHandle<sim::LArSeedService>()
     ->createEngine(*this, p, "Seed");
-  
+
+  unsigned int seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+  genie::utils::app_init::RandGen(seed);
 }
 
 void evgen::NucleonDecay::produce(art::Event & e)
