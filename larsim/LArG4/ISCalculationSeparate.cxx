@@ -6,7 +6,6 @@
 /// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/G4LossTableManager.hh"
@@ -41,7 +40,7 @@ namespace larg4{
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     double density       = detprop->Density(detprop->Temperature());
-    fEfield       = detprop->Efield();
+    fEfield              = detprop->Efield();
     fScintByParticleType = larp->ScintByParticleType();
     fGeVToElectrons      = lgpHandle->GeVToElectrons();
     
@@ -85,7 +84,6 @@ namespace larg4{
   // fNumIonElectrons returns a value that is not corrected for life time effects
   void ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
   {
-
     fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
 
     // Get the recombination factor for this voxel - Nucl.Instrum.Meth.A523:275-286,2004
@@ -105,21 +103,20 @@ namespace larg4{
     double dx     = totstep.mag()/CLHEP::cm;
     double recomb = 0.;
     double dEdx   = fEnergyDeposit/dx;
-    double EFieldStep = EFieldAtStep(fEfield,step);
 
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if(dEdx < 1.) dEdx = 1.;
 
     if(fUseModBoxRecomb) {
       if (dx){
-	double Xi = fModBoxB * dEdx / EFieldStep;
+	double Xi = fModBoxB * dEdx / fEfield;
 	recomb = log(fModBoxA + Xi) / Xi;
       }
       else 
 	recomb = 0;
     } 
     else{
-      recomb = fRecombA/(1. + dEdx * fRecombk / EFieldStep);
+      recomb = fRecombA/(1. + dEdx * fRecombk / fEfield);
     }
 
 

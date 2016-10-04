@@ -456,7 +456,7 @@ namespace larg4 {
       // Get SCE {x,y,z} offsets for particular location in TPC      
       std::vector<double> posOffsets;
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-      if (SCE->EnableSimSpatialSCE() == true)
+      if (SCE->EnableSimulationSCE() == true)
       {
         posOffsets = SCE->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
       }
