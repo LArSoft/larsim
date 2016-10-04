@@ -367,12 +367,12 @@ namespace sim {
     template <typename SEED>
     void CheckedRangePolicy<SEED>::CheckRangeConfiguration() const {
       if (!range_check.isConfigured()) {
-        std::ostringstream sstr;
-        sstr << "configuration of policy '" << this->getName()
+        art::Exception e(art::errors::Configuration);
+        e << "configuration of policy '" << this->getName()
           << "' incomplete:";
         for (std::string const& name: range_check.missingConfig())
-          sstr << " " << name;
-        throw art::Exception(art::errors::Configuration) << sstr.str();
+          e << " " << name;
+        throw e;
       }
     } // CheckedRangePolicy<SEED>::CheckRangeConfiguration()
     
