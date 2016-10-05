@@ -39,7 +39,7 @@ namespace larg4 {
  private:
 
    double                fStepSize;            ///< maximum step to take				  
-   double 	   	 fEfield;              ///< value of electric field from LArProperties service  
+   double                fEfield;              ///< value of electric field from LArProperties service
    double 	   	 fGeVToElectrons;      ///< conversion factor from LArProperties service	  
    double 	   	 fRecombA;             ///< from LArG4Parameters service			  
    double 	   	 fRecombk;             ///< from LArG4Parameters service			  
