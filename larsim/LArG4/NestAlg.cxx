@@ -809,7 +809,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       else NumQuanta = 0;
       for(k = 0; k < NumQuanta; k++) {
 	G4double sampledEnergy;
-	G4DynamicParticle* aQuantum;
+	std::unique_ptr<G4DynamicParticle> aQuantum;
 	
 	// Generate random direction
 	G4double cost = 1. - 2.*UniformGen.fire();
@@ -838,7 +838,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  
 	  // Generate a new photon or electron:
 	  sampledEnergy = GaussGen.fire(PhotMean,PhotWidth);
-	  aQuantum = new G4DynamicParticle(G4OpticalPhoton::OpticalPhoton(),
+	  aQuantum = std::make_unique<G4DynamicParticle>(G4OpticalPhoton::OpticalPhoton(),
 					   photonMomentum);
 	  aQuantum->SetPolarization(photonPolarization.x(),
 				    photonPolarization.y(),
@@ -849,8 +849,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  if(ElectricField) {
 	    // point all electrons straight up, for drifting
 	    G4ParticleMomentum electronMomentum(0, 0, -FieldSign);
-	    aQuantum = 
-	      new G4DynamicParticle(G4ThermalElectron::ThermalElectron(),
+	    aQuantum = std::make_unique<G4DynamicParticle>(G4ThermalElectron::ThermalElectron(),
 				    electronMomentum);
 	    if ( Phase == kStateGas ) {
 	      sampledEnergy = GetGasElectronDriftSpeed(ElectricField,nDensity);
@@ -861,8 +860,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  else {
 	    // use "photonMomentum" for the electrons in the case of zero
 	    // electric field, which is just randomized vector we made
-	    aQuantum = 
-	      new G4DynamicParticle(G4ThermalElectron::ThermalElectron(),
+	    aQuantum = std::make_unique<G4DynamicParticle>(G4ThermalElectron::ThermalElectron(),
 				    photonMomentum);
 	    sampledEnergy = 1.38e-23*(CLHEP::joule/CLHEP::kelvin)*Temperature;
 	  }
@@ -1004,8 +1002,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  // GEANT4 business: stuff you need to make a new track
 	if ( aSecondaryTime < 0 ) aSecondaryTime = 0; //no neg. time
 	/*
-	  G4Track * aSecondaryTrack = 
-	  new G4Track(aQuantum,aSecondaryTime,aSecondaryPosition);
+	  auto aSecondaryTrack = 
+	  std::make_unique<G4Track>(aQuantum,aSecondaryTime,aSecondaryPosition);
 	  if ( k < NumPhotons || radius < R_MAX )
 	  {
 	  
