@@ -44,11 +44,9 @@ standard_largeantparameters:
  # This format is chosen to allow for future extensions to the model
  #  for, eg, DUNE wireplane development.
  #
- OpticalParamParameters:   [ [ [30,  3, 0.15], 
- 	 		       [-30, 3, 0.15],
-                               [0,   3, 0.15],
-                               [90,  3.5, 0.2],
-                               [0,   3.5, 0.2] ] ]	
+ OpticalParamParameters:   [ [ [60,  3, 0.15], 
+ 	 		       [-60, 3, 0.15],
+                               [0,   3, 0.15] ] ]	
  UseLitePhotons: false 
 }
 

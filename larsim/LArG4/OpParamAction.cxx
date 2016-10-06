@@ -142,9 +142,9 @@ namespace larg4
     for(size_t i=0; i!=fWireDirections.size(); ++i)
       {
 	G4ThreeVector ProjDirection = PhotonDirection - fWireDirections.at(i) * (fWireDirections.at(i).dot(PhotonDirection.unit()));
-	
+
 	  // fWireDirections.at(i).cross(PhotonDirection.cross(fWireDirections.at(i)).unit());
-	double CosTheta =  std::abs(fPlaneNormal.dot(ProjDirection));
+	double CosTheta =  (ProjDirection.mag() > 0 ? std::abs(fPlaneNormal.dot(ProjDirection))/ProjDirection.mag() : 1.0);
 	if(CosTheta < fDPRatios.at(i)) 
 	  return 0;
 	else
