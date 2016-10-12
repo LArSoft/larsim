@@ -29,7 +29,7 @@
 #include "lardataobj/RecoBase/Event.h"
 #include "larsim/MCCheater/BackTracker.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsim/Simulation/ParticleList.h"
+#include "nutools/ParticleNavigation/ParticleList.h"
 
 namespace cheat {
   class RecoCheckAna;

@@ -18,9 +18,9 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsim/Simulation/ParticleList.h"
+#include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimChannel.h"
-#include "larsim/Simulation/EveIdCalculator.h"
+#include "nutools/ParticleNavigation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larsim/Simulation/LArVoxelList.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"

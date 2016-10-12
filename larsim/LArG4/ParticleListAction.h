@@ -18,7 +18,7 @@
 #define LArG4_ParticleListAction_h
 
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
-#include "larsim/Simulation/ParticleList.h" // larg4::PositionInVolumeFilter
+#include "nutools/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
 
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nutools/G4Base/UserAction.h"
