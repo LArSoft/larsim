@@ -26,7 +26,7 @@
 
 // LArSoft Includes
 #include "larsim/MCCheater/BackTracker.h"
-#include "larsim/Simulation/ParticleList.h"
+#include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 

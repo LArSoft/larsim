@@ -69,7 +69,7 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "larsim/Simulation/ParticleList.h"
+#include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"

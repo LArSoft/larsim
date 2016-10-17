@@ -1,7 +1,7 @@
 
 simple_plugin(BackTracker "service"
 			lardata_Utilities
-                        larsim_Simulation lardataobj_Simulation
+                        larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         lardataobj_RecoBase
 	                larcore_Geometry
 	                larcore_Geometry_Geometry_service
@@ -30,7 +30,7 @@ simple_plugin(BackTrackerLoader "module"
 simple_plugin(CheckBackTracking "module"
                         larsim_MCCheater_BackTracker_service
                         lardataobj_RecoBase
-                        larsim_Simulation lardataobj_Simulation
+                        larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -46,7 +46,7 @@ simple_plugin(CheckBackTracking "module"
 simple_plugin(RecoCheckAna "module"
                         larsim_MCCheater_BackTracker_service
                         lardataobj_RecoBase
-			larsim_Simulation lardataobj_Simulation
+			larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			nusimdata_SimulationBase
 			${MF_MESSAGELOGGER}
                         ${ART_FRAMEWORK_CORE}

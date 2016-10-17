@@ -28,11 +28,11 @@ standard_lightsource_scanmode:
                               #  in the TFileService
 
  PosDist:            0        # Flags specifying random distribution 
- PDist:              0        #  0 = Uniform
+ PDist:              1        #  0 = Uniform
  TDist:              0        #  1 = Gaussian
 
- P:                  9.7      # Central photon momentum in eV
- SigmaP:             0.1      # Width of momentum distribution
+ P:                  9.7      # Central photon momentum in eV (arxiv:1511.07718)
+ SigmaP:             0.25     # Width of momentum distribution (arxiv:1511.07718)
  T0:                 0.0      # Central time for photon production
  SigmaT:             0.0      # Extent in time
  N:                  10000    # Number of photons to make per voxel
