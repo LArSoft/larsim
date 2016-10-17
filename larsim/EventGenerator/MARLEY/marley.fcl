@@ -44,7 +44,7 @@ standard_marley:
     # by passing MARLEY the name of a matrix element
     # data file. Two are currently available, both
     # for the reaction ve + 40Ar --> e- + 40K*.
-    # The 2009 version uses an (n,p) scattering
+    # The 2009 version uses an (p,n) scattering
     # measurement for the experimental matrix elements,
     # while the 1998 version uses a 40Ti beta decay
     # measurement.
