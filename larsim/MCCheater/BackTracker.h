@@ -143,12 +143,12 @@ namespace cheat{
 
     const std::vector<const sim::SimChannel*>& SimChannels() const { return fSimChannels; } 
 
-  private:
-
-    void ChannelToTrackID(std::vector<sim::TrackIDE>& trackIDEs,
+    void ChannelToTrackIDEs(std::vector<sim::TrackIDE>& trackIDEs,
 			  raw::ChannelID_t channel,
 			  const double hit_start_time,
 			  const double hit_end_time);
+    
+  private:
 
     const sim::SimChannel* FindSimChannel(raw::ChannelID_t channel) const;
 
