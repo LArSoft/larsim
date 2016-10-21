@@ -11,9 +11,8 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "ProdMUSUN_hist.root" }
-  TimeTracker:       {}
-  Timing:       {}
-  SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
+  TimeTracker:  {}
+  MemoryTracker:         { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
   FileCatalogMetadata:  @local::art_file_catalog_mc  
   @table::dunefd_simulation_services

@@ -19,8 +19,8 @@
 
 services: {
   RandomNumberGenerator: {}
-  Timing:                {}
-  SimpleMemoryCheck:     {}
+  TimeTracker:           {}
+  MemoryTracker:         {}
   LArSeedService: {
     policy:    "perEvent"
     algorithm: "EventTimestamp_v1"

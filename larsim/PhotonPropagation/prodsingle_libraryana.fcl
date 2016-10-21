@@ -15,7 +15,7 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "fastOptical_reconstruct_pmt15_3events_qe100_hist_uboone.root" }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
 }

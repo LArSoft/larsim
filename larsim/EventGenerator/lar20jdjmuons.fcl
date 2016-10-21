@@ -13,7 +13,7 @@ services:
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "out/dejong4580ft_WC_Muons_gen_hist.root" }
   scheduler:    { wantTracer: true wantSummary: true }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::dunefd_simulation_services
 }
