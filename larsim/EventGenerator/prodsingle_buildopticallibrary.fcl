@@ -19,14 +19,14 @@ services:
   TFileService: { fileName: "PhotonLibraryFile.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::microboone_simulation_services
+                @table::microboone_simulation_services
 }
 
 
-services.user.PhotonVisibilityService: @local::standard_photonvisibilityservice_buildlib
-services.user.BackTracker: ""
-services.user.LArFFT: ""
-services.user.SignalShapingServiceMicroBooNE: ""
+services.PhotonVisibilityService: @local::standard_photonvisibilityservice_buildlib
+services.BackTracker: ""
+services.LArFFT: ""
+services.SignalShapingServiceMicroBooNE: ""
 
 #Start each new event with an empty event.
 source:
@@ -86,10 +86,10 @@ outputs:
 # Begin optical specific parts:
 
 # set quantum efficiency supressed scint yield to 0.03 * 24000 
-services.user.DetectorPropertiesService.ScintYield: 72
+services.DetectorPropertiesService.ScintYield: 72
 
 # enable optical physics in LArG4
-services.user.LArG4Parameters.EnabledPhysics: [ "Em", 
+services.LArG4Parameters.EnabledPhysics: [ "Em", 
 						"Optical", 
 						"SynchrotronAndGN", 
 						"Ion", 
@@ -100,7 +100,7 @@ services.user.LArG4Parameters.EnabledPhysics: [ "Em",
 						"NeutronTrackingCut" ]
 
 # enable this custom physics list
-services.user.LArG4Parameters.UseCustomPhysics: true
+services.LArG4Parameters.UseCustomPhysics: true
 
 # do not allow lightsource to write output into root file
 physics.producers.generator.FillTree: false

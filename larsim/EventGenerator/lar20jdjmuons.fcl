@@ -15,7 +15,7 @@ services:
   scheduler:    { wantTracer: true wantSummary: true }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::dunefd_simulation_services
+                @table::dunefd_simulation_services
 }
 
 #Start each new event with an empty event.

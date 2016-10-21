@@ -16,12 +16,12 @@ services:
   Timing:       {}
   SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::dunefd_simulation_services
+                @table::dunefd_simulation_services
 }
 
-services.user.LArFFT.FFTOption: "" 
-services.user.Geometry.GDML: "dune4apa36deg.gdml"
-services.user.Geometry.ROOT: "dune4apa36deg.gdml"
+services.LArFFT.FFTOption: "" 
+services.Geometry.GDML: "dune4apa36deg.gdml"
+services.Geometry.ROOT: "dune4apa36deg.gdml"
 
 #Start each new event with an empty event.
 source:

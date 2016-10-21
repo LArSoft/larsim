@@ -19,14 +19,10 @@ services: {
   RandomNumberGenerator: {}
   Timing:                {}
   SimpleMemoryCheck:     {}
-  
-  user: {
-    LArSeedService: {
-      policy:    "perEvent"
-      algorithm: "EventTimestamp_v1"
-    } # LArSeedService
-  } # user
-  
+  LArSeedService: {
+    policy:    "perEvent"
+    algorithm: "EventTimestamp_v1"
+  } # LArSeedService
 } # services
 
 

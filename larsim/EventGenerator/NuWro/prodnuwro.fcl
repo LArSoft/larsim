@@ -12,10 +12,10 @@ services:
   TFileService: { fileName: "nuwro_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::microboone_simulation_services
+                @table::microboone_simulation_services
 }
 
-services.user.LArFFT.FFTOption: "" 
+services.LArFFT.FFTOption: "" 
 
 #Start each new event with an empty event.
 source:
