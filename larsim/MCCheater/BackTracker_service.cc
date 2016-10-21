@@ -217,7 +217,7 @@ namespace cheat{
     const double start = hit->PeakTimeMinusRMS();
     const double end   = hit->PeakTimePlusRMS();
 	
-    this->ChannelToTrackID(trackIDEs, hit->Channel(), start, end);
+    this->ChannelToTrackIDEs(trackIDEs, hit->Channel(), start, end);
 
     return trackIDEs;
   }
@@ -236,7 +236,7 @@ namespace cheat{
     for(auto itr = allhits.begin(); itr != allhits.end(); ++itr) {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
-      this->ChannelToTrackID(tids, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
+      this->ChannelToTrackIDEs(tids, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
       for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
           if(itid->trackID == *itkid) {
@@ -355,7 +355,7 @@ namespace cheat{
       const double start = (*itr)->PeakTimeMinusRMS();
       const double end   = (*itr)->PeakTimePlusRMS();
 
-      this->ChannelToTrackID(trackIDEs, (*itr)->Channel(), start, end);
+      this->ChannelToTrackIDEs(trackIDEs, (*itr)->Channel(), start, end);
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < trackIDEs.size(); ++i) {
@@ -582,7 +582,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void BackTracker::ChannelToTrackID(std::vector<sim::TrackIDE>&   trackIDEs,
+  void BackTracker::ChannelToTrackIDEs(std::vector<sim::TrackIDE>&   trackIDEs,
 				     raw::ChannelID_t channel,
 				     const double hit_start_time,
 				     const double hit_end_time)
