@@ -16,11 +16,11 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "ana_hist.root" }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
   message:      @local::standard_warning
 #  message:      @local::standard_debug # If you turn this on, uncomment the debug lines below
-  user:         @local::microboone_services 	     
+                @table::microboone_services 	     
 }
 
 source:

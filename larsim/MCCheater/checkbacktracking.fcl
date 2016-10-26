@@ -10,7 +10,7 @@ services:
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "backtrack_hist.root" }
   message:      @local::standard_info
-  user:         @local::argoneut_simulation_services 	     
+                @table::argoneut_simulation_services 	     
 }
 
 

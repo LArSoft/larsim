@@ -29,7 +29,7 @@ autoincrement_seedservice: {
   # this is the first seed that is returned;
   # override it with:
   # 
-  # services.user.LArSeedService.baseSeed: MySeed
+  # services.LArSeedService.baseSeed: MySeed
   # 
   baseSeed          : 2829
   
@@ -50,7 +50,7 @@ linearmapping_seedservice: {
   
   # this is the number of this job in an absolute batch count; override it with:
   # 
-  # services.user.LArSeedService.nJob: NJOB
+  # services.LArSeedService.nJob: NJOB
   #
   nJob            :  1
   maxUniqueEngines: 20

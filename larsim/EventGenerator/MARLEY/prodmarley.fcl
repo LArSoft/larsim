@@ -14,7 +14,7 @@ services:
   TFileService: { fileName: "marley_hist.root" }
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::dunefd_simulation_services
+                @table::dunefd_simulation_services
 }
 
 
@@ -81,16 +81,16 @@ outputs:
 }
 
 # Make sure that the geometry is what we think it is
-services.user.Geometry: @local::dune10kt_workspace_geo
+services.Geometry: @local::dune10kt_workspace_geo
 
 # Adjustments to the standard LArG4 parameters
-services.user.LArG4Parameters.ParticleKineticEnergyCut: 1.0e-5 # GeV
-services.user.LArG4Parameters.StoreTrajectories: true
-services.user.LArG4Parameters.KeepEMShowerDaughters: true
+services.LArG4Parameters.ParticleKineticEnergyCut: 1.0e-5 # GeV
+services.LArG4Parameters.StoreTrajectories: true
+services.LArG4Parameters.KeepEMShowerDaughters: true
 # Use NeutronHP data (very important for neutrino-induced neutron emission!)
 # which is not enabled by default in LArSoft.
-services.user.LArG4Parameters.UseCustomPhysics: true
-services.user.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm",
+services.LArG4Parameters.UseCustomPhysics: true
+services.LArG4Parameters.EnabledPhysics: [ "LowEnergyEm",
                                            "SynchrotronAndGN",
                                            "Ion",
                                            "NeutronHP",
