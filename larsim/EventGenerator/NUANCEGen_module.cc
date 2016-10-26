@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fstream>
+#include <memory> // std::unique_ptr<>
 
 // ROOT includes
 #include "TH1.h"
@@ -31,6 +32,7 @@
 #include "TStopwatch.h"
 
 // Framework includes
+#include "canvas/Utilities/Exception.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -74,7 +76,7 @@ namespace evgen {
 
         std::string         fNuanceFile;
         double              fBeamVerticalAngle;
-	std::ifstream      *fEventFile;
+	std::unique_ptr<std::ifstream> fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
 	
 	
@@ -123,9 +125,14 @@ namespace evgen{
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
-
-    fEventFile = new std::ifstream(fNuanceFile.c_str());
-   }
+    
+    mf::LogInfo("NUANCEGen") << "Reading events from '" << fNuanceFile << "'";
+    fEventFile = std::make_unique<std::ifstream>(fNuanceFile.c_str());
+    if (!(fEventFile->good())) {
+      throw art::Exception(art::errors::NotFound)
+        << "Failed to open input file '" << fNuanceFile << "'.\n";
+    }
+  }
 
   //____________________________________________________________________________
   NUANCEGen::~NUANCEGen()
