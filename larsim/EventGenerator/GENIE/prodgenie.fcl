@@ -9,10 +9,10 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "genie_hist.root" }
-  Timing:       {}
-  SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
+  TimeTracker:  {}
+  MemoryTracker:         { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::argoneut_simulation_services
+                @table::argoneut_simulation_services
 }
 
 #Start each new event with an empty event.

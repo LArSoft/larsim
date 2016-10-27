@@ -12,12 +12,12 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "single_hist_uboone.root" }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::microboone_simulation_services
+                @table::microboone_simulation_services
 }
-services.user.PhotonVisibilityService: @local::standard_photonvisibilityservice
-services.user.OpDigiProperties:        @local::microboone_opdigiproperties
+services.PhotonVisibilityService: @local::standard_photonvisibilityservice
+services.OpDigiProperties:        @local::microboone_opdigiproperties
 
 #Start each new event with an empty event.
 source:
@@ -81,10 +81,10 @@ outputs:
 }
 
 # set quantum efficiency supressed scint yield to 0.03 * 24000
-services.user.DetectorPropertiesService.ScintYield: 24000
+services.DetectorPropertiesService.ScintYield: 24000
 
 # enable optical physics in LArG4
-services.user.LArG4Parameters.EnabledPhysics: [ "Em",
+services.LArG4Parameters.EnabledPhysics: [ "Em",
                                                 "FastOptical",
                                                 "SynchrotronAndGN",
                                                 "Ion",
@@ -95,10 +95,10 @@ services.user.LArG4Parameters.EnabledPhysics: [ "Em",
                                                 "NeutronTrackingCut" ]
 
 # enable this custom physics list
-services.user.LArG4Parameters.UseCustomPhysics: true
+services.LArG4Parameters.UseCustomPhysics: true
 
 # disable cerenkov light
-services.user.DetectorPropertiesService.EnableCerenkovLight: false
+services.DetectorPropertiesService.EnableCerenkovLight: false
 
 
 

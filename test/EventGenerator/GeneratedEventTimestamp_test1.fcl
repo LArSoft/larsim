@@ -17,16 +17,12 @@
 
 services: {
   RandomNumberGenerator: {}
-  Timing:                {}
-  SimpleMemoryCheck:     {}
-  
-  user: {
-    LArSeedService: {
-      policy:    "perEvent"
-      algorithm: "EventTimestamp_v1"
-    } # LArSeedService
-  } # user
-  
+  TimeTracker:           {}
+  MemoryTracker:         {}
+  LArSeedService: {
+    policy:    "perEvent"
+    algorithm: "EventTimestamp_v1"
+  } # LArSeedService
 } # services
 
 
