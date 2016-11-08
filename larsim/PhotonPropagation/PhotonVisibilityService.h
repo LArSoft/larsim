@@ -73,6 +73,6 @@ namespace phot{
     
     
   }; // class PhotonVisibilityService
-} //namespace utils
+} //namespace phot
 DECLARE_ART_SERVICE(phot::PhotonVisibilityService, LEGACY)
 #endif // UTIL_DETECTOR_PROPERTIES_H
