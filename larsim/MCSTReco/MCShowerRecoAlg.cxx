@@ -437,8 +437,8 @@ namespace sim {
 		  prof.DetProfile().Px(),prof.DetProfile().Py(),prof.DetProfile().Pz(),prof.DetProfile().E())
 	  << std::endl		  
 	  << "    Charge per plane: ";
-	
-	for(size_t i=0; i<geo->PlaneIDs().size(); ++i) {
+	size_t const nPlanes = prof.Charge().size();
+	for(size_t i=0; i<nPlanes; ++i) {
 	  
 	  std::cout << " | Plane " << i << std::flush;
 	  std::cout << " ... Q = " << prof.Charge(i) << std::flush;

@@ -18,7 +18,7 @@ namespace sim {
       art::ServiceHandle<geo::Geometry> geom;
       std::map<geo::PlaneID, size_t> m;
       size_t i = 0;
-      for(auto const& pid : geom->PlaneIDs()){
+      for(auto const& pid : geom->IteratePlaneIDs()){
         m[pid] = i;
         i++;
       }
