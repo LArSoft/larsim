@@ -6,23 +6,7 @@
 // Converted from gNucleonDecayEvGen.cxx by
 // tjyang@fnal.gov
 //
-//  Nucleon decay mode ID:
-// ---------------------------------------------------------
-//  ID |   Decay Mode                     |   Current Limit 
-//     |                                  |   (1E+34 yrs)
-// ---------------------------------------------------------
-//   0 |   p --> e^{+}      + \pi^{0}     |   1.3
-//   1 |   p --> \mu^{+}    + \pi^{0}     |   1.1
-//   2 |   p --> e^{+}      + \eta^{0}    |   0.42
-//   3 |   p --> \mu^{+}    + \eta^{0}    |   0.13
-//   4 |   p --> e^{+}      + \rho^{0}    |   0.07
-//   5 |   p --> \mu^{+}    + \rho^{0}    |   0.02
-//   6 |   p --> e^{+}      + \omega^{0}  |   0.03
-//   7 |   p --> \mu^{+}    + \omega^{0}  |   0.08
-//   8 |   n --> e^{+}      + \pi^{-}     |   0.2
-//   9 |   n --> \mu^{+}    + \pi^{-}     |   0.1
-//  10 |   p --> \bar{\nu}} + K^{+}       |   0.4
-// ---------------------------------------------------------
+// 2016 PDG numbering scheme in pp.8-10 of http://www-pdg.lbl.gov/2016/listings/rpp2016-list-p.pdf (tau1 through tau60)
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +25,7 @@
 #include "EVGCore/EventRecordVisitorI.h"
 #include "EVGCore/EventRecord.h"
 #include "NucleonDecay/NucleonDecayMode.h"
+#include "NucleonDecay/NucleonDecayUtils.h"
 #include "PDG/PDGLibrary.h"
 #include "GHEP/GHepParticle.h"
 #include "Utils/AppInit.h"
@@ -88,6 +73,7 @@ private:
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
   genie::NucleonDecayMode_t gOptDecayMode    = genie::kNDNull;             // nucleon decay mode
+  int dpdg = 0;
 };
 
 
@@ -105,6 +91,13 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   }
   int fDecayMode = p.get<int>("DecayMode");
   gOptDecayMode = (genie::NucleonDecayMode_t) fDecayMode;
+
+  if (p.get<int>("DecayedNucleon") > 0 ){
+    dpdg = p.get<int>("DecayedNucleon");
+  }
+  else{
+    dpdg = genie::utils::nucleon_decay::DecayedNucleonPdgCode(gOptDecayMode);
+  }
 
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
@@ -124,7 +117,7 @@ void evgen::NucleonDecay::produce(art::Event & e)
   genie::EventRecord * event = new genie::EventRecord;
   int target = 1000180400;  //Only use argon target
   int decay  = (int)gOptDecayMode;
-  genie::Interaction * interaction = genie::Interaction::NDecay(target,decay);
+  genie::Interaction * interaction = genie::Interaction::NDecay(target,decay,dpdg);
   event->AttachSummary(interaction);
   
   // Simulate decay     
