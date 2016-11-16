@@ -43,6 +43,7 @@ cet_find_library( GFLUXDRIVERS NAMES GFluxDrivers PATHS ENV GENIE_LIB NO_DEFAULT
 cet_find_library( GMUELOSS NAMES GMuELoss PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GREWEIGHT NAMES GReWeight PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GNUCLEONDECAY NAMES GNucleonDecay PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
+cet_find_library( GNEUTRONOSC NAMES GNeutronOsc PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 # prior to GENIE R-2_9_0 Sehgal's name was spelled incorrectly
 # so if minor version # is 8 or less use GReinSeghal, otherwise GReinSehgal
 # parse_ups_version returns VMAJ, VMIN, and VPRJ
@@ -118,6 +119,7 @@ art_make(
 			${GMUELOSS}
 			${GREWEIGHT}
 			${GNUCLEONDECAY}
+			${GNEUTRONOSC}
 			${GMESSENGER}
                         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
                         ${ROOT_BASIC_LIB_LIST}

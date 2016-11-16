@@ -87,5 +87,11 @@ standard_ndk:
  DecayedNucleon:   2212
 }
 
+#neutron-antineutron oscillation
+standard_nosc:
+{
+ module_type:      "NeutronOsc"
+ DecayMode:        0
+}
 
 END_PROLOG
