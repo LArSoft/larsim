@@ -54,6 +54,7 @@ find_ups_product( art v1_09_00 )
 find_ups_product( cetbuildtools v4_09_00 )
 find_ups_geant4( geant4 v4_9_6 )
 find_ups_product( postgresql v9_1_5 )
+find_ups_product( ifdhc )
 
 #  Find all the libraries needed by our dependent CMakeList.txt files
 cet_find_library( BOOST_SERIALIZATION NAMES boost_serialization PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
@@ -103,6 +104,9 @@ cet_find_library( GMUELOSS NAMES GMuELoss PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 # marley libraries
 cet_find_library( MARLEY NAMES MARLEY PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
 cet_find_library( MARLEY_ROOT NAMES MARLEY_ROOT PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
+
+# temporarily needed since this is an unexpected header path
+include_directories( $ENV{IFDHC_FQ_DIR}/inc )
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
