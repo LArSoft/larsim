@@ -1,7 +1,7 @@
 
 #include_directories ( $ENV{MARLEY_INC} )
 
-art_make( BASENAME_ONLY
+art_make( 
           MODULE_LIBRARIES 
                         larsim_Simulation lardataobj_Simulation
                         lardataobj_Simulation
