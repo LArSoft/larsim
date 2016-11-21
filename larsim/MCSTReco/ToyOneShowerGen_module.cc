@@ -26,7 +26,7 @@
 #include "TF1.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
@@ -135,9 +135,9 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // Random engine initialization
   //
-  // create a default random engine; obtain the random seed from LArSeedService,
+  // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  art::ServiceHandle<sim::LArSeedService>()->createEngine(*this, p, "Seed");
+  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, p, "Seed");
   art::ServiceHandle<art::RandomNumberGenerator> rng;
   CLHEP::HepRandomEngine &engine = rng->getEngine();
   fFlatRandom = new CLHEP::RandFlat(engine);

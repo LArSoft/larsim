@@ -3,7 +3,7 @@ add_subdirectory(Providers)
 art_make(
   EXCLUDE GeneratedEventTimestampTestPlugin_plugin.cc
   LIB_LIBRARIES 
-    larsim_RandomUtils_LArSeedService_service
+    nutools_RandomUtils_NuRandomService_service
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_UTILITIES}
     ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
@@ -14,7 +14,7 @@ art_make(
     ${CLHEP}
   MODULE_LIBRARIES
     larsim_test_RandomUtils
-    larsim_RandomUtils_LArSeedService_service
+    nutools_RandomUtils_NuRandomService_service
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -25,7 +25,7 @@ art_make(
     ${CETLIB}
     ${CLHEP}
   SERVICE_LIBRARIES
-    larsim_RandomUtils_LArSeedService_service
+    nutools_RandomUtils_NuRandomService_service
     art_Utilities canvas_Utilities
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${MF_MESSAGELOGGER}

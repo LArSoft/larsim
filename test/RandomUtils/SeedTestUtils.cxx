@@ -1,6 +1,6 @@
 /**
  * @file   SeedTestUtils.cxx
- * @brief  Functions used in LArSeedService tests (implementation file)
+ * @brief  Functions used in NuRandomService tests (implementation file)
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   March 17, 2016
  * @see    SeedTestUtils.h
@@ -10,7 +10,7 @@
 #include "SeedTestUtils.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // C++ includes.
 #include <string>
@@ -26,22 +26,22 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace testing {
-  namespace LArSeedService {
+  namespace NuRandomService {
     
-    /// Returns whether the exception looks to be from LArSeedService
+    /// Returns whether the exception looks to be from NuRandomService
     bool isSeedServiceException(std::exception const& e) {
       
-      // is it an art::Exception? (LArSeedService exceptions are)
+      // is it an art::Exception? (NuRandomService exceptions are)
       art::Exception const* art_exc = dynamic_cast<art::Exception const*>(&e);
       if (!art_exc) return false;
       
-      // All configuration exceptions are from LArSeedService.
+      // All configuration exceptions are from NuRandomService.
       // Why? just because.
       if (art_exc->categoryCode() == art::errors::Configuration)
         return true;
       
-      // does it have "LArSeedService" in the message? (LArSeedService exceptions should)
-      if ( (art_exc->explain_self().find("LArSeedService") == std::string::npos)
+      // does it have "NuRandomService" in the message? (NuRandomService exceptions should)
+      if ( (art_exc->explain_self().find("NuRandomService") == std::string::npos)
         && (art_exc->explain_self().find("SeedMaster") == std::string::npos)
         )
         return false;
@@ -51,7 +51,7 @@ namespace testing {
     } // isSeedServiceException(exception)
     
     
-    /// Returns whether the exception looks to be from LArSeedService and has specified code
+    /// Returns whether the exception looks to be from NuRandomService and has specified code
     bool isSeedServiceException
       (std::exception const& e, art::errors::ErrorCodes code)
     {
@@ -100,6 +100,6 @@ namespace testing {
       { return engine.getSeed(); }
     
     
-  } // namespace LArSeedService
+  } // namespace NuRandomService
 } // namespace testing
   

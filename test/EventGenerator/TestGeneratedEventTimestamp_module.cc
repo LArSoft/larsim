@@ -30,7 +30,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // artextensions libraries
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 
 class TestGeneratedEventTimestamp: public art::EDAnalyzer {
@@ -53,9 +53,9 @@ TestGeneratedEventTimestamp::TestGeneratedEventTimestamp
   (fhicl::ParameterSet const& pset)
   : EDAnalyzer(pset)
 {
-  // create two default random engines; obtain the random seed from LArSeedService,
+  // create two default random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
-  art::ServiceHandle<sim::LArSeedService> Seeds;
+  art::ServiceHandle<rndm::NuRandomService> Seeds;
   Seeds->createEngine(*this, pset, "Seed");
   Seeds->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed");
 } // TestGeneratedEventTimestamp::TestGeneratedEventTimestamp()
@@ -70,7 +70,7 @@ void TestGeneratedEventTimestamp::analyze(art::Event const& event) {
   CLHEP::HepRandomEngine const& MainEngine = rng->getEngine();
   CLHEP::HepRandomEngine const& AuxEngine = rng->getEngine("aux");
   
-  sim::LArSeedService::seed_t seed = MainEngine.getSeed(),
+  rndm::NuRandomService::seed_t seed = MainEngine.getSeed(),
     aux_seed = AuxEngine.getSeed();
   
   log

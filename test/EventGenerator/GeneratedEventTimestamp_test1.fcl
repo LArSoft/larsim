@@ -1,12 +1,12 @@
 #
 # File:    GeneratedEventTimestamp_test1.fcl
-# Brief:   Test for GeneratedEventTimestamp and LArSeedService per-event policy
+# Brief:   Test for GeneratedEventTimestamp and NuRandomService per-event policy
 # Date:    February 23rd, 2015
 # Author:  Gianluca Petrillo (petrillo@fnal.gov)
 # Version: 1.0
 # 
 # Description:
-#   The test exercises LArSeedService's per-event seed policy on a newly generated
+#   The test exercises NuRandomService's per-event seed policy on a newly generated
 #   event (using EmptyEvent source module).
 # 
 # Changes:
@@ -19,10 +19,10 @@ services: {
   RandomNumberGenerator: {}
   TimeTracker:           {}
   MemoryTracker:         {}
-  LArSeedService: {
+  NuRandomService: {
     policy:    "perEvent"
     algorithm: "EventTimestamp_v1"
-  } # LArSeedService
+  } # NuRandomService
 } # services
 
 

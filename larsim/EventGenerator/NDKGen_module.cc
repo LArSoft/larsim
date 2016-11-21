@@ -39,7 +39,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 
 // LArSoft includes
@@ -133,9 +133,9 @@ namespace evgen{
     fEventFile = new std::ifstream(fNdkFile.c_str());
     if(!fEventFile->good())
       exit(0);
-    // create a default random engine; obtain the random seed from LArSeedService,
+    // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<sim::LArSeedService>()
+    art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, pset, "Seed");
 
   }

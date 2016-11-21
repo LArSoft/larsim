@@ -9,7 +9,7 @@
 # 
 # Use this as:
 # 
-# services.LArSeedService: @local::standard_seedservice
+# services.NuRandomService: @local::standard_seedservice
 # 
 # 
 # Changes:
@@ -29,7 +29,7 @@ autoincrement_seedservice: {
   # this is the first seed that is returned;
   # override it with:
   # 
-  # services.LArSeedService.baseSeed: MySeed
+  # services.NuRandomService.baseSeed: MySeed
   # 
   baseSeed          : 2829
   
@@ -50,7 +50,7 @@ linearmapping_seedservice: {
   
   # this is the number of this job in an absolute batch count; override it with:
   # 
-  # services.LArSeedService.nJob: NJOB
+  # services.NuRandomService.nJob: NJOB
   #
   nJob            :  1
   maxUniqueEngines: 20

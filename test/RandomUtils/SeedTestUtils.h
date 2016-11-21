@@ -1,6 +1,6 @@
 /**
  * @file   SeedTestUtils.h
- * @brief  Functions used in LArSeedService tests
+ * @brief  Functions used in NuRandomService tests
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   March 17, 2016
  * @see    SeedTestUtils.cxx
@@ -25,16 +25,16 @@ namespace CLHEP {
 
 
 namespace testing {
-  namespace LArSeedService {
+  namespace NuRandomService {
     
     /// Type of seed
     using seed_t = art::RandomNumberGenerator::seed_t;
     
-    /// Returns whether the exception looks to be from LArSeedService
+    /// Returns whether the exception looks to be from NuRandomService
     bool isSeedServiceException(std::exception const& e);
     
     
-    /// Returns whether the exception looks to be from LArSeedService
+    /// Returns whether the exception looks to be from NuRandomService
     /// and has specified code
     bool isSeedServiceException
       (std::exception const& e, art::errors::ErrorCodes code);
@@ -52,7 +52,7 @@ namespace testing {
     /// @}
     
     
-  } // namespace LArSeedService
+  } // namespace NuRandomService
 } // namespace testing
   
 #endif // ARTEXTENSIONS_TEST_SEEDSERVICE_SEEDTESTUTILS_H

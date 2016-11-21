@@ -1,4 +1,4 @@
-# Test the seed manager component of LArSeedService.
+# Test the seed manager component of NuRandomService.
 # 
 # Policy:       autoIncrement
 # Valid:        yes
@@ -22,7 +22,7 @@ source: {
 services: {
   message : @local::mf_interactive
   RandomNumberGenerator: {}
-  LArSeedService: {
+  NuRandomService: {
    policy            : "autoIncrement"
    verbosity         :     2
    endOfJobSummary   :  true
@@ -58,7 +58,7 @@ physics: {
       standardInstance: Standard
       
       Seed_Two      :   12343
-      Seed_Three    :       0 # invalid seed => use LArSeedService
+      Seed_Three    :       0 # invalid seed => use NuRandomService
       Seed_Unmanaged:   12345
       Seed_Standard :   54321
     } # multipleAndUnmngd

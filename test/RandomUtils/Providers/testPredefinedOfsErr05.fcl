@@ -34,7 +34,7 @@ services :
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "preDefinedOffset"
     baseSeed          :     1
     maxUniqueEngines  :    20

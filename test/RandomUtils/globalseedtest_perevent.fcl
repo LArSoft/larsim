@@ -27,11 +27,11 @@ services: {
   message : @local::mf_debugging
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "perEvent"
     verbosity         :     2
     endOfJobSummary   :  true
-  } # LArSeedService
+  } # NuRandomService
   
   GlobalEngineUserTestService: {
     instances: [

@@ -23,7 +23,7 @@ services :
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "ThisIsNotAValidPolicy"
     baseSeed          :   123
     maxUniqueEngines  :    20

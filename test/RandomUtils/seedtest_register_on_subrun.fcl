@@ -23,7 +23,7 @@ services : {
   message: @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "preDefinedOffset"
     baseSeed          :     1
     maxUniqueEngines  :     6
@@ -32,7 +32,7 @@ services : {
     endOfJobSummary   :  true
 
     testMod : 0
-  } # LArSeedService
+  } # NuRandomService
 
 } # services
 

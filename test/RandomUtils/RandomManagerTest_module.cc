@@ -1,14 +1,14 @@
 /**
  * @file   RandomManagerTest_module.cc
- * @brief  Test of the random engine managing interface of LArSeedService
+ * @brief  Test of the random engine managing interface of NuRandomService
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   February 19th, 2015
  */
 
 
 // art extensions
-#define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP 1 // to have LArSeedService.h define CLHEPengineSeeder
-#include "larsim/RandomUtils/LArSeedService.h"
+#define NUTOOLS_RANDOMUTILS_NuRandomService_USECLHEP 1 // to have NuRandomService.h define CLHEPengineSeeder
+#include "nutools/RandomUtils/NuRandomService.h"
 
 #include "test/RandomUtils/SeedTestUtils.h"
 
@@ -42,7 +42,7 @@
 namespace testing {
   
   /**
-   * @brief Test module for random engine managing interface of LArSeedService
+   * @brief Test module for random engine managing interface of NuRandomService
    * 
    * The test writes on screen the random seeds it gets.
    * 
@@ -53,7 +53,7 @@ namespace testing {
    * - *externalInstance* (string, optional): if specified, an engine not
    *   managed by RandomNumberGenerator is also used, with this instance name
    * - *standardInstance* (string, optional): if specified, an engine
-   *   is created by RandomNumberGenerator but not registered is LArSeedService
+   *   is created by RandomNumberGenerator but not registered is NuRandomService
    *   is also used, with this instance name
    * - *Seed*, *Seed_XXX* (strings, optional): set the seed of instance `XXX`
    *   to a set value ("Seed" sets the seed of the anonymous instance)
@@ -90,7 +90,7 @@ namespace testing {
     stdEngine(nullptr)
   {
     
-    art::ServiceHandle<sim::LArSeedService> EngineManager;
+    art::ServiceHandle<rndm::NuRandomService> EngineManager;
     
     // check if we want an "external" engine
     if (pset.get_if_present("externalInstance", externalInstanceName)) {
@@ -99,8 +99,8 @@ namespace testing {
       extEngine.reset(new CLHEP::Ranlux64Engine);
       
       EngineManager->registerEngine(
-      //  sim::LArSeedService::CLHEPengineSeeder(extEngine.get()),
-        [this](sim::LArSeedService::EngineId const&, seed_t seed)
+      //  rndm::NuRandomService::CLHEPengineSeeder(extEngine.get()),
+        [this](rndm::NuRandomService::EngineId const&, seed_t seed)
           { this->extEngine->setSeed(seed, 0); },
         externalInstanceName, pset, "Seed_" + externalInstanceName
         );
@@ -177,10 +177,10 @@ namespace testing {
       std::string const& instanceName = allInstances[iEngine];
       CLHEP::HepRandomEngine& engine = *(allEngines[iEngine]);
       
-      seed_t actualSeed = testing::LArSeedService::readSeed(engine);
+      seed_t actualSeed = testing::NuRandomService::readSeed(engine);
       mf::LogVerbatim("RandomManagerTest")
         << std::setw(12) << (instanceName.empty()? "<default>": instanceName)
-        << ": " << testing::LArSeedService::CreateCharacter(engine)
+        << ": " << testing::NuRandomService::CreateCharacter(engine)
         << "   (seed: " << actualSeed << ")";
     } // for
     

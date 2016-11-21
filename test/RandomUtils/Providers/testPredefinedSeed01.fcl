@@ -26,7 +26,7 @@ services :
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "preDefinedSeed"
     baseSeed          :     1
     maxUniqueEngines  :     6

@@ -42,7 +42,7 @@ art_make(
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        larsim_RandomUtils_LArSeedService_service
+                        nutools_RandomUtils_NuRandomService_service
                         nusimdata_SimulationBase
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}

@@ -26,7 +26,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
@@ -184,20 +184,20 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   // Configure the module (including MARLEY itself) using the FHiCL parameters
   this->reconfigure(p);
 
-  const auto& seed_service = art::ServiceHandle<sim::LArSeedService>();
+  const auto& seed_service = art::ServiceHandle<rndm::NuRandomService>();
 
   // Register the MARLEY generator with the seed service. For simplicity, we
-  // use a lambda as the seeder function (see LArSeedService.h for details).
+  // use a lambda as the seeder function (see NuRandomService.h for details).
   // This allows the SeedService to automatically re-seed MARLEY whenever
   // necessary. The user can set an explicit seed for MARLEY in the FHiCL
   // configuration file using the "seed" parameter within the
   // "marley_parameters" table. If you need to get the seed for MARLEY from the
   // SeedService, note that we're using "MARLEY" as its generator instance
   // name.
-  sim::LArSeedService::seed_t marley_seed = seed_service->registerEngine(
+  rndm::NuRandomService::seed_t marley_seed = seed_service->registerEngine(
     [gen = this->fMarleyGenerator.get()](
-      sim::LArSeedService::EngineId const& /* unused */,
-      sim::LArSeedService::seed_t lar_seed) -> void
+      rndm::NuRandomService::EngineId const& /* unused */,
+      rndm::NuRandomService::seed_t lar_seed) -> void
     {
       // Since we're capturing a pointer to the MARLEY generator value,
       // double-check that it's still good. This will prevent segfaults.
@@ -229,9 +229,9 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   // Also register the TPC sampling engine with the seed service. Use a similar
   // lambda for simplicity. If you need the seed later, get it from the seed
   // service using "MarleyGenTPCEngine" as the instance name.
-  sim::LArSeedService::seed_t tpc_seed = seed_service->registerEngine(
-    [this](sim::LArSeedService::EngineId const& /* unused */,
-      sim::LArSeedService::seed_t lar_seed) -> void
+  rndm::NuRandomService::seed_t tpc_seed = seed_service->registerEngine(
+    [this](rndm::NuRandomService::EngineId const& /* unused */,
+      rndm::NuRandomService::seed_t lar_seed) -> void
     {
       // Since we're capturing the this pointer by value, double-check that
       // it's still good (and that the pointer to the TPC engine is still

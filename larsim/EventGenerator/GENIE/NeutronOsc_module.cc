@@ -58,7 +58,7 @@
 #include "nutools/EventGeneratorBase/evgenbase.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // c++ includes
 #include <memory>
@@ -115,12 +115,12 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
   
-  // create a default random engine; obtain the random seed from LArSeedService,
+  // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  art::ServiceHandle<sim::LArSeedService>()
+  art::ServiceHandle<rndm::NuRandomService>()
     ->createEngine(*this, p, "Seed");
 
-  unsigned int seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+  unsigned int seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
   genie::utils::app_init::RandGen(seed);
 }
 

@@ -24,7 +24,7 @@ services :
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "linearMapping"
     # baseSeed is now deprecated, but still supported as legacy;
     # use 'nJob' instead!

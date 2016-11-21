@@ -10,9 +10,9 @@
 #define ARTEXT_SEEDSERVICE_TEST_GLOBALENGINEUSERSERVICE_H
 
 
-// LArSeedService
-#define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USEROOT 1 // get testing::TRandomSeeder (it's a test...)
-#include "larsim/RandomUtils/LArSeedService.h"
+// NuRandomService
+#define NUTOOLS_RANDOMUTILS_NuRandomService_USEROOT 1 // get testing::TRandomSeeder (it's a test...)
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // From art and its tool chain.
 #include "fhiclcpp/ParameterSet.h"
@@ -38,8 +38,8 @@ namespace testing {
    /**
     * @brief Test service registering its own ßs
     * 
-    * The service owns all its engines and is asks LArSeedService for their seeds.
-    * LArSeedService will use global identifiers for them, that is identifiers not
+    * The service owns all its engines and is asks NuRandomService for their seeds.
+    * NuRandomService will use global identifiers for them, that is identifiers not
     * bound to the art execution context (that is, not bound to a specific
     * module).
     * 

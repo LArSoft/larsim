@@ -3,7 +3,7 @@
 # or test SeedService's per-event policy with GenerateEventTimestamp plug-in.
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
-  larsim_RandomUtils_LArSeedService_service
+  nutools_RandomUtils_NuRandomService_service
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}

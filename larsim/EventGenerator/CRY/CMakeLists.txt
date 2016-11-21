@@ -6,7 +6,7 @@ art_make(
                         larcoreobj_SummaryData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        larsim_RandomUtils_LArSeedService_service
+                        nutools_RandomUtils_NuRandomService_service
                         nutools_EventGeneratorBase_CRY
                         ${CRY}
                         nusimdata_SimulationBase
