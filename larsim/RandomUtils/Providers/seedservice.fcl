@@ -9,7 +9,7 @@
 # 
 # Use this as:
 # 
-# services.NuRandomService: @local::standard_seedservice
+# services.NuRandomService: @local::standard_NuRandomService
 # 
 # 
 # Changes:
@@ -20,7 +20,7 @@
 BEGIN_PROLOG
 
 
-autoincrement_seedservice: {
+autoincrement_NuRandomService: {
   # policy: autoIncrement
   # each time a seed is requested, a counter is increased and its value returned
   # as seed; the first seed returned is baseSeed
@@ -39,10 +39,10 @@ autoincrement_seedservice: {
   
   # print into the log all seeds at the end of the job
   endOfJobSummary   :  true
-} # autoincrement_seedservice
+} # autoincrement_NuRandomService
 
 
-linearmapping_seedservice: {
+linearmapping_NuRandomService: {
   # policy: linearIncrement
   # each time a seed is requested, a counter is increased and its value returned
   # as seed; the first seed returned is nJob x maxUniqueEngines
@@ -61,10 +61,10 @@ linearmapping_seedservice: {
   
   # print into the log all seeds at the end of the job
   endOfJobSummary   :  true
-} # linearmapping_seedservice
+} # linearmapping_NuRandomService
 
 
-random_seedservice: {
+random_NuRandomService: {
   # policy: random
   # each time a seed is requested, a random number is returned.
   # 
@@ -76,10 +76,10 @@ random_seedservice: {
   
   # print into the log all seeds at the end of the job
   endOfJobSummary   :  true
-} # random_seedservice
+} # random_NuRandomService
 
 
-per_event_seedservice: {
+per_event_NuRandomService: {
   # policy: perEvent
   # on each event, the seed is computed from event information
   # 
@@ -87,11 +87,11 @@ per_event_seedservice: {
   
   # print into the log all seeds at the end of the job
   endOfJobSummary   :  false
-} # per_event_seedservice
+} # per_event_NuRandomService
 
 
 # choose our autoIncrement configuration as "standard"
-standard_seedservice: @local::autoincrement_seedservice
+standard_NuRandomService: @local::autoincrement_NuRandomService
 
 
 END_PROLOG

@@ -18,7 +18,7 @@ BEGIN_PROLOG
 # 
 # Each event gets its own random stream; requires a timestamp plugin on generation
 # 
-lartpcdetector_seedservice: @local::per_event_seedservice # from seedservice.fcl
+lartpcdetector_seedservice: @local::per_event_NuRandomService # from seedservice.fcl
 
 
 END_PROLOG

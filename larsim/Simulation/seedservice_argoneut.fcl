@@ -23,7 +23,7 @@ BEGIN_PROLOG
 # behaviour that existed before NuRandomService.
 # You don't want this for production.
 # 
-argoneut_seedservice: @local::random_seedservice # from seedservice.fcl
+argoneut_seedservice: @local::random_NuRandomService # from seedservice.fcl
 
 
 END_PROLOG
