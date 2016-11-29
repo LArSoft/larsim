@@ -11,7 +11,7 @@ lartpcdetector_larvoxelcalculator:   @local::standard_larvoxelcalculator
 
 lartpcdetector_simulation_services: {
                           @table::lartpcdetector_services
-  LArSeedService:         @local::lartpcdetector_seedservice
+  NuRandomService:         @local::lartpcdetector_seedservice
   LArG4Parameters:        @local::lartpcdetector_largeantparameters
   LArVoxelCalculator:     @local::lartpcdetector_larvoxelcalculator
   MagneticField:          @local::no_mag_larsoft

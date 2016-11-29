@@ -18,7 +18,7 @@ art_make(
                            larcoreobj_SummaryData
                            larcore_Geometry
                            larcore_Geometry_Geometry_service
-                           larsim_RandomUtils_LArSeedService_service
+                           nutools_RandomUtils_NuRandomService_service
                            larsim_EventGenerator
                            nusimdata_SimulationBase
                            ${ART_FRAMEWORK_CORE}
@@ -39,16 +39,6 @@ art_make(
                            ${ROOT_EG}
         )
 
-simple_plugin( GeneratedEventTimestamp "plugin"
-                                       ${ART_FRAMEWORK_CORE}
-                                       art_Persistency_Provenance canvas_Persistency_Provenance
-                                       ${MF_MESSAGELOGGER}
-                                       ${MF_UTILITIES}
-                                       ${CETLIB}
-				       ${Boost_FILESYSTEM_LIBRARY}
-				       ${Boost_SYSTEM_LIBRARY}
-               
-             )
 
 install_headers()
 install_fhicl()

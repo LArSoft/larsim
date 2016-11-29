@@ -1,6 +1,6 @@
 #
 # File:    seedservice_lartpcdetector.fcl
-# Desc:    custom configurations of LArSeedService for a generic LArTPC detector
+# Desc:    custom configurations of NuRandomService for a generic LArTPC detector
 # Author:  Gianluca Petrillo (petrillo@fnal.gov)
 # Date:    April 25th, 2016
 # Version: 1.0
@@ -18,7 +18,7 @@ BEGIN_PROLOG
 # 
 # Each event gets its own random stream; requires a timestamp plugin on generation
 # 
-lartpcdetector_seedservice: @local::per_event_seedservice # from seedservice.fcl
+lartpcdetector_seedservice: @local::per_event_NuRandomService # from seedservice.fcl
 
 
 END_PROLOG

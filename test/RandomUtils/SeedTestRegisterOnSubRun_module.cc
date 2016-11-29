@@ -7,7 +7,7 @@
 
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // Supporting library include files
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -26,7 +26,7 @@ namespace art { class SubRun; }
 namespace testing {
   
   /**
-   * @brief Test module for LArSeedService
+   * @brief Test module for NuRandomService
    * 
    * The test tries to get a seed of an unknown engine during begin subrun.
    * 
@@ -59,7 +59,7 @@ namespace testing {
   
   void SeedTestRegisterOnSubRun::beginSubRun(art::SubRun const&) {
     
-    art::ServiceHandle<sim::LArSeedService> Seeds;
+    art::ServiceHandle<rndm::NuRandomService> Seeds;
     auto const seed = Seeds->getSeed(); // should throw
     
     mf::LogError("SeedTestRegisterOnSubRun")

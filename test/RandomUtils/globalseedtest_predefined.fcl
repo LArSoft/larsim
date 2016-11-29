@@ -22,7 +22,7 @@ services: {
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "preDefinedSeed"
     verbosity         :     2
     endOfJobSummary   :  true

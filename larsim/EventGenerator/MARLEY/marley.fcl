@@ -28,7 +28,7 @@ standard_marley:
   marley_parameters: 
   {
     # Seed for the MARLEY generator (handled
-    # automatically by LArSeedService unless it
+    # automatically by NuRandomService unless it
     # is given explicitly here)
     #seed: 12345
 

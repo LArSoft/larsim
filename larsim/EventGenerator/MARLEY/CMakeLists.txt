@@ -9,7 +9,7 @@ art_make(
                         larcoreobj_SummaryData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        larsim_RandomUtils_LArSeedService_service
+                        nutools_RandomUtils_NuRandomService_service
                         ${MARLEY}
                         ${MARLEY_ROOT}
                         ${ART_FRAMEWORK_CORE}

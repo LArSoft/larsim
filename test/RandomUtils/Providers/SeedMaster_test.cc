@@ -1,9 +1,9 @@
 /**
  * @file   SeedMaster_test.cc
- * @brief  Test the SeedMaster object, core of LArSeedService
+ * @brief  Test the SeedMaster object, core of NuRandomService
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   December 3rd, 2014
- * @see    LArSeedService.h SeedTest01_module.cc
+ * @see    NuRandomService.h SeedTest01_module.cc
  *
  * The test runs based on the configuration file specified on the command line.
  * 
@@ -11,7 +11,7 @@
  * 
  * In general, the configuration files good for SeedTest01 module should be
  * good for this one as well (as long as ParameterSetPath is specified as
- * services.LArSeedService).
+ * services.NuRandomService).
  * 
  * The configuration is in FHiCL format; no search of the FHiCL file is
  * performed: the path of the configuration file must be available from the
@@ -19,7 +19,7 @@
  * 
  * The optional parameter set path selects which part of the configuration file
  * should be used to configure the SeedMaster. For a typical art configuration,
- * it would be "services.LArSeedService". An empty path (default) uses the
+ * it would be "services.NuRandomService". An empty path (default) uses the
  * whole configuration directly.
  * 
  * For each specified ModuleType, all the art modules with that type are
@@ -49,14 +49,14 @@
 #include "canvas/Utilities/Exception.h"
 
 // art extensions
-#include "larsim/RandomUtils/Providers/SeedMaster.h"
+#include "nutools/RandomUtils/Providers/SeedMaster.h"
 
 
 //------------------------------------------------------------------------------
 //--- stuff to facilitate the interaction with SeedMaster
 //---
 using seed_t = unsigned long;
-using SeedMaster_t = sim::SeedMaster<seed_t>;
+using SeedMaster_t = rndm::SeedMaster<seed_t>;
 
 /// Returns the seed for the specified module/instance, or 0 on error
 seed_t ObtainSeed
@@ -91,7 +91,7 @@ inline fhicl::ParameterSet GetConfiguration
 
 inline fhicl::ParameterSet FindSeedServiceConfiguration(
   const fhicl::ParameterSet& full_pset,
-  std::string key = "services.LArSeedService"
+  std::string key = "services.NuRandomService"
 ) {
   return GetConfiguration(full_pset, key);
 } // FindSeedServiceConfiguration()

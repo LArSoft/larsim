@@ -7,7 +7,7 @@
 
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // Supporting library include files
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -29,7 +29,7 @@ namespace art {
 namespace testing {
   
   /**
-   * @brief Test module for LArSeedService
+   * @brief Test module for NuRandomService
    * 
    * The test tries to get a seed of an unknown engine during event processing.
    * 
@@ -67,7 +67,7 @@ namespace testing {
     //    [we don't have such engine, but that does not matter for the test]
     // 2. gets the seed associated with that engine
     
-    auto seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+    auto seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
     mf::LogInfo("SeedTestQuerySeeds")
       << "Declared a default engine, got seed=" << seed;
   }
@@ -76,7 +76,7 @@ namespace testing {
   //----------------------------------------------------------------------------
   void SeedTestQuerySeeds::analyze(art::Event const&) {
     
-    auto seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+    auto seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
     mf::LogInfo("SeedTestQuerySeeds")
       << "In event loop: got seed=" << seed << " for the default engine";
     
@@ -85,7 +85,7 @@ namespace testing {
   
   void SeedTestQuerySeeds::beginRun(art::Run const&) {
     
-    auto seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+    auto seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
     mf::LogInfo("SeedTestQuerySeeds")
       << "At begin run: got seed=" << seed << " for the default engine";
     
@@ -94,7 +94,7 @@ namespace testing {
   
   void SeedTestQuerySeeds::beginSubRun(art::SubRun const&) {
     
-    auto seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+    auto seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
     mf::LogInfo("SeedTestQuerySeeds")
       << "At begin subrun: got seed=" << seed << " for the default engine";
     
@@ -103,7 +103,7 @@ namespace testing {
   
   void SeedTestQuerySeeds::endJob() {
     
-    auto seed = art::ServiceHandle<sim::LArSeedService>()->getSeed();
+    auto seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
     mf::LogInfo("SeedTestQuerySeeds")
       << "At end job: got seed=" << seed << " for the default engine";
     

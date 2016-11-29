@@ -1,16 +1,16 @@
 /**
  * @file SeedTestPolicy_module.cc
- * @brief Test the LArSeedService.
+ * @brief Test the NuRandomService.
  * @author Rob Kutschke (kutschke@fnal.gov), Gianluca Petrillo (petrillo@fnal.gov)
- * @see LArSeedService.hh
+ * @see NuRandomService.hh
  */
 
 // test library
 #include "SeedTestUtils.h"
 
 // LArSoft libraries
-#define LARSIM_RANDOMUTILS_LARSEEDSERVICE_USECLHEP 1
-#include "larsim/RandomUtils/LArSeedService.h"
+#define NUTOOLS_RANDOMUTILS_NuRandomService_USECLHEP 1
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // framework
 #include "canvas/Utilities/Exception.h"
@@ -42,7 +42,7 @@
 namespace testing {
   
   /**
-   * @brief Test module for LArSeedService
+   * @brief Test module for NuRandomService
    * 
    * The test writes on screen the random seeds it gets.
    * 
@@ -54,10 +54,10 @@ namespace testing {
    *   for each instance name here specified; if not specified, a single
    *   default instance is used
    * - <b>expectedErrors</b> (unsigned integer, default: 0): expect this number
-   *   of errors from LArSeedService, and throw an exception if we get a different
+   *   of errors from NuRandomService, and throw an exception if we get a different
    *   number
    * - <b>useGenerators</b> (boolean, default: true): uses
-   *   art RandomGeneratorService with the seeds from LArSeedService
+   *   art RandomGeneratorService with the seeds from NuRandomService
    * - <b>perEventSeeds</b> (boolean, default: false): set it to true if the
    *   selected policy gives per-event seeds; in this case, the check of
    *   seed always being the same is skipped
@@ -74,7 +74,7 @@ namespace testing {
     virtual void endJob() override;
     
       private:
-    using seed_t = testing::LArSeedService::seed_t;
+    using seed_t = testing::NuRandomService::seed_t;
     
     std::vector<std::string> instanceNames;
     std::vector<seed_t> startSeeds; ///< seeds after the constructor
@@ -131,7 +131,7 @@ testing::SeedTestPolicy::SeedTestPolicy(fhicl::ParameterSet const& pset)
     
   } // anonymous block
   
-  auto* Seeds = &*(art::ServiceHandle<sim::LArSeedService>());
+  auto* Seeds = &*(art::ServiceHandle<rndm::NuRandomService>());
   
   // by default, have at least one, default engine instance
   if (instanceNames.empty()) instanceNames.push_back("");
@@ -158,7 +158,7 @@ testing::SeedTestPolicy::SeedTestPolicy(fhicl::ParameterSet const& pset)
     // for a seed exactly once per instance, no matter what.
     // This is relevant for the error count.
     // Out of it, a seed is returned.
-    seed_t seed = sim::LArSeedService::InvalidSeed;
+    seed_t seed = rndm::NuRandomService::InvalidSeed;
     if (isLocalEngine(iEngine)) {
       if (useGenerators) {
         localEngine = std::make_unique<CLHEP::HepJamesRandom>();
@@ -188,7 +188,7 @@ testing::SeedTestPolicy::SeedTestPolicy(fhicl::ParameterSet const& pset)
     seed_t const expectedSeed = startSeeds.at(iEngine);
     if (seed != expectedSeed) {
       throw art::Exception(art::errors::LogicError)
-        << "LArSeedService returned different seed values for engine instance '"
+        << "NuRandomService returned different seed values for engine instance '"
         << instanceName << "': first " << expectedSeed << ", now " << seed
         << "\n";
     } // if unexpected seed
@@ -206,7 +206,7 @@ testing::SeedTestPolicy::SeedTestPolicy(fhicl::ParameterSet const& pset)
     bBug = true;
   }
   catch(std::exception const& e) {
-    if (!testing::LArSeedService::isSeedServiceException(e)) throw;
+    if (!testing::NuRandomService::isSeedServiceException(e)) throw;
   }
   if (bBug) {
     throw art::Exception(art::errors::LogicError)
@@ -236,7 +236,7 @@ void testing::SeedTestPolicy::analyze(art::Event const& event) {
       //
       // check seed (if per event, it should be the opposite)
       //
-      seed_t const actualSeed = testing::LArSeedService::readSeed(engine);
+      seed_t const actualSeed = testing::NuRandomService::readSeed(engine);
       if (perEventSeeds) {
         if (actualSeed == startSeed) {
           // this has a ridiculously low chance of begin fortuitous
@@ -258,7 +258,7 @@ void testing::SeedTestPolicy::analyze(art::Event const& event) {
       //
       mf::LogVerbatim("SeedTestPolicy")
         << std::setw(12) << (instanceName.empty()? "<default>": instanceName)
-        << ": " << testing::LArSeedService::CreateCharacter(engine)
+        << ": " << testing::NuRandomService::CreateCharacter(engine)
         << "   (seed: " << actualSeed << ")";
       
     } // for
@@ -286,15 +286,15 @@ testing::SeedTestPolicy::seed_t testing::SeedTestPolicy::obtainSeed
 {
   // Returns the seed for the specified engine instance, or 0 in case of
   // configuration error (in which case, an error counter is increased)
-  seed_t seed = sim::LArSeedService::InvalidSeed;
+  seed_t seed = rndm::NuRandomService::InvalidSeed;
   try {
-    art::ServiceHandle<sim::LArSeedService> seeds;
+    art::ServiceHandle<rndm::NuRandomService> seeds;
     // currently (v0_00_03), the two calls are actually equivalent
     seed
       = instanceName.empty()? seeds->getSeed(): seeds->getSeed(instanceName);
   }
   catch(art::Exception& e) {
-    if (!testing::LArSeedService::isSeedServiceException(e)) throw;
+    if (!testing::NuRandomService::isSeedServiceException(e)) throw;
     
     ++nErrors;
     mf::LogError log("SeedTestPolicy");
@@ -307,7 +307,7 @@ testing::SeedTestPolicy::seed_t testing::SeedTestPolicy::obtainSeed
 
 
 bool testing::SeedTestPolicy::handleSeedServiceException(art::Exception& e) {
-  if (!testing::LArSeedService::isSeedServiceException(e)) return false;
+  if (!testing::NuRandomService::isSeedServiceException(e)) return false;
   
   ++nErrors;
   mf::LogError log("SeedTest01");
@@ -341,11 +341,11 @@ testing::SeedTestPolicy::seed_t testing::SeedTestPolicy::verifySeed
 {
   CLHEP::HepRandomEngine const& engine = getRandomEngine(iEngine);
   
-  seed_t const actualSeed = testing::LArSeedService::readSeed(engine);
+  seed_t const actualSeed = testing::NuRandomService::readSeed(engine);
   seed_t const expectedSeed = startSeeds.at(iEngine);
   // if the expected seed is invalid, we are not even sure it was ever set;
   // the engine is in an invalid state and that's it
-  if (!sim::LArSeedService::isSeedValid(expectedSeed)) return actualSeed;
+  if (!rndm::NuRandomService::isSeedValid(expectedSeed)) return actualSeed;
   
   if (actualSeed != expectedSeed) {
     std::string const& instanceName = instanceNames[iEngine];

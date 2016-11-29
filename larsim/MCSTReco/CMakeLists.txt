@@ -35,7 +35,7 @@ art_make(
 			   larcoreobj_SummaryData
 			   lardata_Utilities
 			   lardataobj_MCBase
-			   larsim_RandomUtils_LArSeedService_service
+			   nutools_RandomUtils_NuRandomService_service
 			   ${ART_FRAMEWORK_CORE}
 			   ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_BASIC}

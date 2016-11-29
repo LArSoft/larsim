@@ -37,7 +37,7 @@ services:
   TimeTracker:           {}
   MemoryTracker:         {}
   RandomNumberGenerator: {} # ART native random number generator
-  LArSeedService:           @local::per_event_seedservice # defined in ${ARTEXTENSIONS_DIR}/fcl/seedservice.fcl
+  NuRandomService:           @local::per_event_NuRandomService # defined in ${ARTEXTENSIONS_DIR}/fcl/seedservice.fcl
   
   # LArSoft services
   Geometry:                  @local::standard_geo                  # from geometry.fcl

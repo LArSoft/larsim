@@ -57,17 +57,17 @@ testing::GlobalEngineUserTestService::GlobalEngineUserTestService
   //
   // register all the engines
   //
-  sim::LArSeedService& Seeds = *(art::ServiceHandle<sim::LArSeedService>());
-  // LArSeedService::createEngine() can't be called here
+  rndm::NuRandomService& Seeds = *(art::ServiceHandle<rndm::NuRandomService>());
+  // NuRandomService::createEngine() can't be called here
   //   because it needs a EngineCreator: good
   
   for (auto& engine: engines) {
     
-    // LArSeedService::registerEngine() should instead succeed;
-    // sim::LArSeedService::TRandomSeeder is optionally declared (inline)
-    // in LArSeedService.h
+    // NuRandomService::registerEngine() should instead succeed;
+    // rndm::NuRandomService::TRandomSeeder is optionally declared (inline)
+    // in NuRandomService.h
     auto seed = Seeds.registerEngine
-      (sim::LArSeedService::TRandomSeeder(engine.get()), engine->GetTitle());
+      (rndm::NuRandomService::TRandomSeeder(engine.get()), engine->GetTitle());
     
     mf::LogInfo("GlobalEngineUserTestService")
       << "Registered my random engine "
@@ -106,7 +106,7 @@ testing::GlobalEngineUserTestService::GlobalEngineUserTestService
 
 void testing::GlobalEngineUserTestService::CheckSeed(TRandom const& engine) {
   
-  auto& Seeds = *(art::ServiceHandle<sim::LArSeedService>());
+  auto& Seeds = *(art::ServiceHandle<rndm::NuRandomService>());
   
   auto expectedSeed = Seeds.getGlobalCurrentSeed(engine.GetTitle());
   auto actualSeed = engine.GetSeed();

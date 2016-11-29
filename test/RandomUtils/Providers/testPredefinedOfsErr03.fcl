@@ -24,7 +24,7 @@ services :
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-   LArSeedService: {
+   NuRandomService: {
      policy            : "preDefinedOffset"
      verbosity         :     2
      endOfJobSummary   :  false

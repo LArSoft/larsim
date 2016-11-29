@@ -34,7 +34,7 @@
 #include "cetlib/exception.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -117,9 +117,9 @@ namespace evgen{
 
     this->reconfigure(pset);
 
-    // create a default random engine; obtain the random seed from LArSeedService,
+    // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<sim::LArSeedService>()
+    art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, pset, "Seed");
 
     produces< std::vector<simb::MCTruth> >();

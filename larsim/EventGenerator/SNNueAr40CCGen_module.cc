@@ -21,7 +21,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // art extensions
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -71,8 +71,8 @@ namespace evgen {
     produces< sumdata::RunData, art::InRun >();
 
     // Create a default random engine: obtain the random seed
-    // freom LArSeedService, unless overriden in configuration with key "Seed"
-    art::ServiceHandle< sim::LArSeedService >()
+    // freom NuRandomService, unless overriden in configuration with key "Seed"
+    art::ServiceHandle< rndm::NuRandomService >()
       ->createEngine(*this, pset, "Seed");
 
   }

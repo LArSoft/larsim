@@ -22,7 +22,7 @@ services: {
   message : @local::mf_interactive
   RandomNumberGenerator: {}
 
-  LArSeedService: {
+  NuRandomService: {
     policy            : "linearMapping"
     nJob              :   123
     maxUniqueEngines  :    20
