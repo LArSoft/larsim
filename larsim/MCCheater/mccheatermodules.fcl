@@ -32,5 +32,9 @@ standard_backtrackerloader:
 {
  module_type:        "BackTrackerLoader"
 }
+standard_photonbacktrackerloader:
+{
+ module_type:        "PhotonBackTrackerLoader"
+}
 
 END_PROLOG
