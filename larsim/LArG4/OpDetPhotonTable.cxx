@@ -94,8 +94,12 @@ namespace larg4 {
   }//END void OpDetPhotonTable::AdOpDetBacktrackerRecords
 
   // cOpDetBacktrackerRecord return.
-  std::vector<sim::OpDetBacktrackerRecord >& OpDetPhotonTable::GetOpDetBacktrackerRecords() 
-  { return cOpDetBacktrackerRecordsCol; }
+  std::vector<sim::OpDetBacktrackerRecord> OpDetPhotonTable::YieldOpDetBacktrackerRecords() {
+    // we give the result to the caller, and don't retain it
+    std::vector<sim::OpDetBacktrackerRecord> result;
+    std::swap(result, cOpDetBacktrackerRecordsCol);
+    return result;
+  } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
 
 
 

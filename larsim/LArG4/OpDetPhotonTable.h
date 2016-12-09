@@ -66,7 +66,8 @@ namespace larg4 {
       void ClearTable(size_t nch=0);
 
       void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
-      std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords();
+    //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords();
+      std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
       
     protected:
       OpDetPhotonTable();

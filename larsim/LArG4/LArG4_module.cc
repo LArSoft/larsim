@@ -528,7 +528,7 @@ namespace larg4 {
             LitePhotonCol->push_back(ph);
           }
         }
-        *cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->GetOpDetBacktrackerRecords();
+        *cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
       }
     }
       
