@@ -109,7 +109,7 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
-#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+//#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
@@ -585,26 +585,26 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          StepPhotonTable[itdetphot->first] = StepPhotons;
          //Iterate over Step Photon Table to add photons to OpDetBacktrackerRecords.
 
-         sim::OpDetBacktrackerRecord tmpSOC(itdetphot->first);
-         int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
-         CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
-         CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
+         //sim::OpDetBacktrackerRecord tmpSOC(itdetphot->first);
+         //int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
+         //CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
+         //CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
          //Note the use of xO (letter O) instead of x0. This is to differentiate the positions here with the earlier declared double* x0
-         double xO = ( ( (prePoint.getX() + postPoint.getX() ) / 2.0) / CLHEP::cm );
-         double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
-         double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
-         double* xyzPos = new double[3]{xO,yO,zO};
-         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
+         //double xO = ( ( (prePoint.getX() + postPoint.getX() ) / 2.0) / CLHEP::cm );
+         //double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
+         //double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
+         //double const xyzPos[3] = {xO,yO,zO};
+         //double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
 
          //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
-         for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
-         {
-           int photonTime = stepPhotonsIt->first;
-           int numPhotons = stepPhotonsIt->second;
-           tmpSOC.AddScintillationPhotons(thisG4TrackID, photonTime, numPhotons, xyzPos, energy);
-         }
+         //for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
+         //{
+         //  int photonTime = stepPhotonsIt->first;
+         //  int numPhotons = stepPhotonsIt->second;
+         //  tmpSOC.AddScintillationPhotons(thisG4TrackID, photonTime, numPhotons, xyzPos, energy);
+         //}
          //Add SOC to simchannels. (opdetphotonTABLE->instance().addOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc)
-         litefst->AddOpDetBacktrackerRecord(tmpSOC);
+         //litefst->AddOpDetBacktrackerRecord(tmpSOC);
         }
         litefst->AddPhoton(&StepPhotonTable);
       }
