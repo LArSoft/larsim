@@ -17,7 +17,7 @@
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/OpDetGeo.h"
 #include "lardataobj/Simulation/SimPhotons.h"
-//#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;
@@ -65,11 +65,10 @@ namespace larg4 {
   }
 
   //--------------------------------------------------- cOpDetBacktrackerRecord population
-  /*
   //J Stock. 11 Oct 2016
   void OpDetPhotonTable::AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc){
     int iChan = soc.OpDetNum();
-//    std::map<int,int> cOpChannelToSOCMap;
+    //std::map<int,int> cOpChannelToSOCMap;
     std::map<int, int>::iterator channelPosition = cOpChannelToSOCMap.find(iChan);
     if (channelPosition == cOpChannelToSOCMap.end() ){
       cOpChannelToSOCMap[iChan] = cOpDetBacktrackerRecordsCol.size();
@@ -101,7 +100,7 @@ namespace larg4 {
     std::swap(result, cOpDetBacktrackerRecordsCol);
     return result;
   } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
-  */
+  
 
 
 
