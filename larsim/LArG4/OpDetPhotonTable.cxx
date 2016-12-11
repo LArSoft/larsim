@@ -98,6 +98,7 @@ namespace larg4 {
     // we give the result to the caller, and don't retain it
     std::vector<sim::OpDetBacktrackerRecord> result;
     std::swap(result, cOpDetBacktrackerRecordsCol);
+    cOpChannelToSOCMap.clear();
     return result;
   } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
   
