@@ -585,7 +585,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          StepPhotonTable[itdetphot->first] = StepPhotons;
          //Iterate over Step Photon Table to add photons to OpDetBacktrackerRecords.
 
-         sim::OpDetBacktrackerRecord tmpSOC(itdetphot->first);
+         sim::OpDetBacktrackerRecord tmpOpDetBTRecord(itdetphot->first);
          int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
          CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
          CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
@@ -601,10 +601,10 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          {
            int photonTime = stepPhotonsIt->first;
            int numPhotons = stepPhotonsIt->second;
-           tmpSOC.AddScintillationPhotons(thisG4TrackID, photonTime, numPhotons, xyzPos, energy);
+           tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, photonTime, numPhotons, xyzPos, energy);
          }
-         //Add SOC to simchannels. (opdetphotonTABLE->instance().addOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc)
-         litefst->AddOpDetBacktrackerRecord(tmpSOC);
+         //Add OpDetBackTrackerRecord. (opdetphotonTABLE->instance().addOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord BTRrecord)
+         litefst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord);
         }
         litefst->AddPhoton(&StepPhotonTable);
       }
