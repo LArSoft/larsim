@@ -119,6 +119,10 @@
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
+// support libraries
+#include "cetlib/exception.h"
+
+
 namespace larg4{
 
 /////////////////////////
@@ -360,15 +364,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   G4MaterialPropertiesTable* aMaterialPropertiesTable =
     aMaterial->GetMaterialPropertiesTable();
 
-  double xyz[3];
-  xyz[0]=x0[0]/CLHEP::cm;
-  xyz[1]=x0[1]/CLHEP::cm;
-  xyz[2]=x0[2]/CLHEP::cm;
-
   // Get the visibility vector for this point
-  float const* Visibilities = nullptr;
   size_t NOpChannels = 0;
-  Visibilities = pvs->GetAllVisibilities(xyz);
   NOpChannels = pvs->NOpChannels();
 
 
@@ -465,6 +462,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
   }
 
+  double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
+  float const* Visibilities = pvs->GetAllVisibilities(xyz);
   
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
@@ -540,8 +539,13 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     //std::cout << "++++++++++++" << Num << "++++++++++" << std::endl;
     
 
-
-
+    // here we go: now if visibilities are invalid, we are in trouble
+    if (!Visibilities && (NOpChannels > 0)) {
+      throw cet::exception("OpFastScintillator")
+        << "Photon library does not cover point ( " << xyz[0] << ", "
+        << xyz[1] << ", " << xyz[2] << " ) cm.\n";
+    }
+    
     std::map<int, int> DetectedNum;
 	  for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
