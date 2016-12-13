@@ -540,24 +540,26 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     
 
     // here we go: now if visibilities are invalid, we are in trouble
-    if (!Visibilities && (NOpChannels > 0)) {
-      throw cet::exception("OpFastScintillator")
-        << "Photon library does not cover point ( " << xyz[0] << ", "
-        << xyz[1] << ", " << xyz[2] << " ) cm.\n";
-    }
+    //if (!Visibilities && (NOpChannels > 0)) {
+    //  throw cet::exception("OpFastScintillator")
+    //    << "Photon library does not cover point ( " << xyz[0] << ", "
+    //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
+    //}
     
-    std::map<int, int> DetectedNum;
-	  for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+    if(!Visibilities){
+    }else{
+      std::map<int, int> DetectedNum;
+	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
-		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
-		if(DetThisPMT>0) 
+    		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+    		if(DetThisPMT>0) 
         {
-		    DetectedNum[OpDet]=DetThisPMT;
-		    //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-		    //   //   it->second<<" " << Num << " " << DetThisPMT;  
+		      DetectedNum[OpDet]=DetThisPMT;
+		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
         }
       }
-	  // Now we run through each PMT figuring out num of detected photons
+	    // Now we run through each PMT figuring out num of detected photons
 	
       if(lgp->UseLitePhotons())
       {
@@ -615,11 +617,11 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       else
       {
 	  // And then add these to the total collection for the event	    
-      for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
-	    itdetphot!=DetectedNum.end(); ++itdetphot)
-      {
-	    for (G4int i = 0; i < itdetphot->second; ++i) 
+        for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
+	      itdetphot!=DetectedNum.end(); ++itdetphot)
         {
+	        for (G4int i = 0; i < itdetphot->second; ++i) 
+          {
             G4double deltaTime = aStep.GetStepLength() /
                 ((pPreStepPoint->GetVelocity()+
                   pPostStepPoint->GetVelocity())/2.);
@@ -652,11 +654,12 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             PhotToAdd.SetInSD          = false;
 			
             fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
+          }
         }
       }
-      }
-    
+    }
   }
+
   
   return 0;
   }
