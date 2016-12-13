@@ -72,7 +72,7 @@
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
-//#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 #include "nutools/G4Base/DetectorConstruction.h"
@@ -243,7 +243,7 @@ namespace larg4 {
     if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
     else{
       produces< std::vector<sim::SimPhotonsLite> >();
-    //  produces< std::vector<sim::OpDetBacktrackerRecord>   >();
+      produces< std::vector<sim::OpDetBacktrackerRecord>   >();
     }
 
     produces< std::vector<simb::MCParticle> >();
@@ -419,7 +419,7 @@ namespace larg4 {
     std::unique_ptr< std::vector<simb::MCParticle> >               partCol                    (new std::vector<simb::MCParticle  >);
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
-    //std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
+    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
 
 
     // Fetch the lists of LAr voxels and particles.
@@ -528,7 +528,7 @@ namespace larg4 {
             LitePhotonCol->push_back(ph);
           }
         }
-        //*cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
+        *cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
       }
     }
       
@@ -681,7 +681,7 @@ namespace larg4 {
     if(!fUseLitePhotons) evt.put(std::move(PhotonCol));
     else{
       evt.put(std::move(LitePhotonCol));
-    //  evt.put(std::move(cOpDetBacktrackerRecordCol));
+      evt.put(std::move(cOpDetBacktrackerRecordCol));
     }
     evt.put(std::move(tpassn));
 

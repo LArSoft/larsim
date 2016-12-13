@@ -34,7 +34,7 @@
 
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
-//#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include <map>
 #include <memory>
 #include <exception>
@@ -65,9 +65,9 @@ namespace larg4 {
       std::map<int, int>&                  GetLitePhotonsForOpChannel(int opchannel); 
       void ClearTable(size_t nch=0);
 
-      //void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
-    //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords();
-    //  std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
+      void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
+    //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords(); //Replaced by YieldOpDetBacktrackerRecords()
+      std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
       
     protected:
       OpDetPhotonTable();
@@ -75,8 +75,8 @@ namespace larg4 {
     private:
 
       std::map<int, std::map<int,int> >     fLitePhotons;
-      //std::vector< sim::OpDetBacktrackerRecord >      cOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
-      //std::map<int, int>  cOpChannelToSOCMap; //Where each OpChan is in 
+      std::vector< sim::OpDetBacktrackerRecord >      cOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
+      std::map<int, int>  cOpChannelToSOCMap; //Where each OpChan is.
       std::vector<sim::SimPhotons> fDetectedPhotons;
 
     };
