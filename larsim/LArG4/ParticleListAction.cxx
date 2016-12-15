@@ -124,7 +124,7 @@ namespace larg4 {
     fCurrentTrackID = trackID;
 
     // And the particle's parent:
-    G4int parentID = track->GetParentID();
+    G4int parentID = track->GetParentID() + fTrackIDOffset;
 
     std::string process_name = "unknown";
 
