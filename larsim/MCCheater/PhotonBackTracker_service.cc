@@ -31,7 +31,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   PhotonBackTracker::PhotonBackTracker(const fhicl::ParameterSet& pset,
-			   art::ActivityRegistry& reg)
+         art::ActivityRegistry& reg)
   {
     reconfigure(pset);
 
@@ -67,8 +67,8 @@ namespace cheat{
     // if that is the case, we'll take care of it later
     if(pHandle.failedToGet()){
       mf::LogWarning("PhotonBackTracker") << "failed to get handle to simb::MCParticle from "
-				    << fG4ModuleLabel
-				    << ", return";
+            << fG4ModuleLabel
+            << ", return";
       return;
     }
 
@@ -82,31 +82,31 @@ namespace cheat{
 
     if( fo.isValid() ){
       for(size_t p = 0; p < pHandle->size(); ++p){
-	
-	simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
-	fParticleList.Add(part);
-	
-	// get the simb::MCTruth associated to this sim::ParticleList
-	try{
-	  art::Ptr<simb::MCTruth> mct = fo.at(p);
-	  if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
-	  else{
-	    // check that we are not adding a simb::MCTruth twice to the collection
-	    // we know that all the particles for a given simb::MCTruth are put into the
-	    // collection of particles at the same time, so we can just check that the 
-	    // current art::Ptr has a different id than the last one put 
-	    if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
-	  }
-	  // fill the track id to mctruth index map
-	  fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
-	}
-	catch(cet::exception &ex){
-	  mf::LogWarning("PhotonBackTracker") << "unable to find MCTruth from ParticleList "
-					<< "created in " << fG4ModuleLabel << " " 
-					<< "any attempt to get the MCTruth objects from "
-					<< "the backtracker will fail\n"
-					<< "message from caught exception:\n" << ex;
-	}	
+  
+  simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
+  fParticleList.Add(part);
+  
+  // get the simb::MCTruth associated to this sim::ParticleList
+  try{
+    art::Ptr<simb::MCTruth> mct = fo.at(p);
+    if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
+    else{
+      // check that we are not adding a simb::MCTruth twice to the collection
+      // we know that all the particles for a given simb::MCTruth are put into the
+      // collection of particles at the same time, so we can just check that the 
+      // current art::Ptr has a different id than the last one put 
+      if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
+    }
+    // fill the track id to mctruth index map
+    fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
+  }
+  catch(cet::exception &ex){
+    mf::LogWarning("PhotonBackTracker") << "unable to find MCTruth from ParticleList "
+          << "created in " << fG4ModuleLabel << " " 
+          << "any attempt to get the MCTruth objects from "
+          << "the backtracker will fail\n"
+          << "message from caught exception:\n" << ex;
+  }  
       }// end loop over particles to get MCTruthList  
     }// end if fo.isValid()
 
@@ -119,10 +119,10 @@ namespace cheat{
     fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
 
     LOG_DEBUG("PhotonBackTracker") << "PhotonBackTracker has " << cOpDetBacktrackerRecords.size()
-			     << " sim::OpDetBacktrackerRecords and " << GetSetOfTrackIDs().size()
-			     << " tracks.  The particles are:\n"
-			     << fParticleList
-			     << "\n the MCTruth information is\n";
+           << " sim::OpDetBacktrackerRecords and " << GetSetOfTrackIDs().size()
+           << " tracks.  The particles are:\n"
+           << fParticleList
+           << "\n the MCTruth information is\n";
     for(size_t mc = 0; mc < fMCTruthList.size(); ++mc)
       LOG_DEBUG("PhotonBackTracker") << *(fMCTruthList.at(mc).get());
     
@@ -136,8 +136,8 @@ namespace cheat{
 
     if(part_it == fParticleList.end()){
       mf::LogWarning("PhotonBackTracker") << "can't find particle with track id "
-				    << id << " in sim::ParticleList"
-				    << " returning null pointer";
+            << id << " in sim::ParticleList"
+            << " returning null pointer";
       return 0;
     }
 
@@ -161,8 +161,8 @@ namespace cheat{
 
     if(/* mct < 0 || */ mct > fMCTruthList.size() ) 
       throw cet::exception("PhotonBackTracker") << "attempting to find MCTruth index for "
-					  << "out of range value: " << mct
-					  << "/" << fMCTruthList.size() << "\n";
+            << "out of range value: " << mct
+            << "/" << fMCTruthList.size() << "\n";
 
     return fMCTruthList[mct];
   }
@@ -179,12 +179,12 @@ namespace cheat{
       
       // loop over the SDPMAP      
       for(auto mapitr = pdTimeSDPmap.begin(); mapitr != pdTimeSDPmap.end(); mapitr++){
-	
-	// loop over the vector of SDP objects.
-	const std::vector<sim::SDP>& sdpvec = (*mapitr).second;
-	for(size_t iv = 0; iv < sdpvec.size(); ++iv){ 
-	  if( abs(sdpvec[iv].trackID) == id) sdps.push_back(sdpvec[iv]);
-	}
+  
+  // loop over the vector of SDP objects.
+  const std::vector<sim::SDP>& sdpvec = (*mapitr).second;
+  for(size_t iv = 0; iv < sdpvec.size(); ++iv){ 
+    if( abs(sdpvec[iv].trackID) == id) sdps.push_back(sdpvec[iv]);
+  }
 
       } // end loop over map from sim::OpDetBacktrackerRecord
     } // end loop over sim::OpDetBacktrackerRecords
@@ -221,14 +221,14 @@ namespace cheat{
     const double start = (pTime-pWidth)*1000-fDelay;
     const double end   = (pTime+pWidth)*1000-fDelay;
 
-	  this->ChannelToTrackSDPs(trackSDPs, opHit->OpChannel(), start, end);
+    this->ChannelToTrackSDPs(trackSDPs, opHit->OpChannel(), start, end);
 
     return trackSDPs;
   }
   
   //----------------------------------------------------------------------
   const std::vector<std::vector<art::Ptr<recob::OpHit>>> PhotonBackTracker::TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allOpHits, 
-										   std::vector<int> const& tkIDs)
+                       std::vector<int> const& tkIDs)
   {
     // returns a subset of the opHits in the allOpHits collection that are matched
     // to MC particles listed in tkIDs
@@ -369,7 +369,7 @@ namespace cheat{
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < trackSDPs.size(); ++i) {
-	trackIDs.insert(trackSDPs[i].trackID);
+  trackIDs.insert(trackSDPs[i].trackID);
       }
    
       itr++;
@@ -380,7 +380,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double PhotonBackTracker::OpHitCollectionPurity(std::set<int>                              trackIDs, 
-					  std::vector< art::Ptr<recob::OpHit> > const& opHits)
+            std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -397,10 +397,10 @@ namespace cheat{
       // don't double count if this opHit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end()){
-	  desired += 1.;
-	  break;
-	}
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end()){
+    desired += 1.;
+    break;
+  }
       }
 
     }// end loop over opHits
@@ -413,7 +413,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double PhotonBackTracker::OpHitChargeCollectionPurity(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::OpHit> > const& opHits)
+            std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -432,10 +432,10 @@ namespace cheat{
       // don't double count if this opHit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end()){
-	  desired += opHit->Area();
-	  break;
-	}
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end()){
+    desired += opHit->Area();
+    break;
+  }
       }
 
     }// end loop over opHits
@@ -449,16 +449,16 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int>                              trackIDs, 
-					      std::vector< art::Ptr<recob::OpHit> > const& opHits,
-					      std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
-					      geo::View_t                         const& view)
+                std::vector< art::Ptr<recob::OpHit> > const& opHits,
+                std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
+                geo::View_t                         const& view)
   {
      throw cet::exception("PhotonBackTracker")<<"This function is not supported. OpHits do not have type View.\n";
   }
 
   double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int>                              trackIDs, 
-					      std::vector< art::Ptr<recob::OpHit> > const& opHits,
-					      std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
+                std::vector< art::Ptr<recob::OpHit> > const& opHits,
+                std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
     // and the energy associated with the desired trackID
@@ -478,11 +478,11 @@ namespace cheat{
       // also don't double count if this opHit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
-	   opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
-	  desired += 1.;
-	  break;
-	}
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
+     opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
+    desired += 1.;
+    break;
+  }
       }
     }// end loop over opHits
 
@@ -498,15 +498,15 @@ namespace cheat{
       std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
 
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	// don't worry about opHits where the energy fraction for the chosen
-	// trackID is < 0.1
-	// also don't double count if this opHit has more than one of the
-	// desired track IDs associated with it
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
-	   opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
-	  total += 1.;
-	  break;
-	}
+  // don't worry about opHits where the energy fraction for the chosen
+  // trackID is < 0.1
+  // also don't double count if this opHit has more than one of the
+  // desired track IDs associated with it
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
+     opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
+    total += 1.;
+    break;
+  }
       }
 
     }// end loop over all opHits
@@ -519,15 +519,15 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						    std::vector< art::Ptr<recob::OpHit> > const& opHits,
-						    std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
-						    geo::View_t                         const& view)
+                std::vector< art::Ptr<recob::OpHit> > const& opHits,
+                std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
+                geo::View_t                         const& view)
   {
      throw cet::exception("PhotonBackTracker")<<"This function is not supported. OpHits do not have type View.\n";
   }
   double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						    std::vector< art::Ptr<recob::OpHit> > const& opHits,
-						    std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
+                std::vector< art::Ptr<recob::OpHit> > const& opHits,
+                std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
     // and the energy associated with the desired trackID
@@ -547,11 +547,11 @@ namespace cheat{
       // also don't double count if this opHit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
-	   opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
-	  desired += opHit->Area();
-	  break;
-	}
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
+     opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
+    desired += opHit->Area();
+    break;
+  }
       }
     }// end loop over opHits
 
@@ -567,15 +567,15 @@ namespace cheat{
       std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
 
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
-	// don't worry about opHits where the energy fraction for the chosen
-	// trackID is < 0.1
-	// also don't double count if this opHit has more than one of the
-	// desired track IDs associated with it
-	if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
-	   opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
-	  total += opHit->Area();
-	  break;
-	}
+  // don't worry about opHits where the energy fraction for the chosen
+  // trackID is < 0.1
+  // also don't double count if this opHit has more than one of the
+  // desired track IDs associated with it
+  if(trackIDs.find(opHitTrackIDs[e].trackID) != trackIDs.end() &&
+     opHitTrackIDs[e].energyFrac             >= fMinOpHitEnergyFraction){
+    total += opHit->Area();
+    break;
+  }
       }
 
     }// end loop over all opHits
@@ -599,16 +599,16 @@ namespace cheat{
 
     if(!opDet)
       throw cet::exception("PhotonBackTracker") << "No sim::OpDetBacktrackerRecord corresponding "
-					  << "to opDetNum: " << opDetNum << "\n";
+            << "to opDetNum: " << opDetNum << "\n";
 
     return opDet;
   }
 
   //----------------------------------------------------------------------
   void PhotonBackTracker::ChannelToTrackSDPs(std::vector<sim::TrackSDP>&   trackSDPs,
-				     int channel,
-				     const double opHit_start_time,
-				     const double opHit_end_time)
+             int channel,
+             const double opHit_start_time,
+             const double opHit_end_time)
   {
     trackSDPs.clear();
 
@@ -629,7 +629,7 @@ namespace cheat{
       // first get the total energy represented by all track ids for 
       // this channel and range of tdc values
       for(size_t e = 0; e < simSDPs.size(); ++e)
-	totalE += simSDPs[e].energy;
+  totalE += simSDPs[e].energy;
       
       
       // protect against a divide by zero below
@@ -638,21 +638,21 @@ namespace cheat{
       // loop over the entries in the map and fill the input vectors
       
       for(size_t e = 0; e < simSDPs.size(); ++e){
-	
-	if(simSDPs[e].trackID == sim::NoParticleId) continue;
-	
-	sim::TrackSDP info;
-	info.trackID    = simSDPs[e].trackID;
-	info.energyFrac = simSDPs[e].energy/totalE;
-	info.energy     = simSDPs[e].energy;
-	
-	trackSDPs.push_back(info);
-	
+  
+  if(simSDPs[e].trackID == sim::NoParticleId) continue;
+  
+  sim::TrackSDP info;
+  info.trackID    = simSDPs[e].trackID;
+  info.energyFrac = simSDPs[e].energy/totalE;
+  info.energy     = simSDPs[e].energy;
+  
+  trackSDPs.push_back(info);
+  
       }
     }// end try
     catch(cet::exception e){
       mf::LogWarning("PhotonBackTracker") << "caught exception \n"
-				    << e;
+            << e;
     }
 
     return;
@@ -696,12 +696,12 @@ namespace cheat{
       z += weight * sdp.z;
 
     }// end loop over sim::SDPs
-	
+  
     // if the sum of the weights is still 0, then return
     // the obviously stupid default values
     if(w < 1.e-5)
       throw cet::exception("PhotonBackTracker") << "No sim::SDPs providing non-zero number of photons"
-					  << " can't determine originating location from truth\n";
+            << " can't determine originating location from truth\n";
 
     xyz[0] = x/w;
     xyz[1] = y/w;

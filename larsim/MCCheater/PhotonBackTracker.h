@@ -42,7 +42,7 @@ namespace cheat{
   public:
 
     PhotonBackTracker(fhicl::ParameterSet const& pset,
-		art::ActivityRegistry&     reg);
+    art::ActivityRegistry&     reg);
     ~PhotonBackTracker();
 
     void reconfigure(fhicl::ParameterSet const& pset);
@@ -80,7 +80,7 @@ namespace cheat{
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allhits,
-									std::vector<int> const& tkIDs);
+                  std::vector<int> const& tkIDs);
     
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
@@ -99,43 +99,43 @@ namespace cheat{
     std::vector<double>  SimSDPsToXYZ(std::vector<sim::SDP> const& ides);
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
-    std::vector<double>  OpHitToXYZ(art::Ptr<recob::OpHit> const& hit);				  
+    std::vector<double>  OpHitToXYZ(art::Ptr<recob::OpHit> const& hit);          
     
     // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
 /*    std::vector<double> SpacePointToXYZ(art::Ptr<recob::SpacePoint> const& spt,
-					art::Event                  const& evt,
-					std::string                 const& label);*/
+          art::Event                  const& evt,
+          std::string                 const& label);*/
 
     // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
 /*    std::vector<double> SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits);*/
     
     // method to return the fraction of hits in a collection that come from the specified Geant4 track ids 
     double              OpHitCollectionPurity(std::set<int>                              trackIDs, 
-					    std::vector< art::Ptr<recob::OpHit> > const& hits);
+              std::vector< art::Ptr<recob::OpHit> > const& hits);
     
     // method to return the fraction of all hits in an event from a specific set of Geant4 track IDs that are 
     // represented in a collection of hits
     double              OpHitCollectionEfficiency(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::OpHit> > const& hits,
-						std::vector< art::Ptr<recob::OpHit> > const& allhits);
+            std::vector< art::Ptr<recob::OpHit> > const& hits,
+            std::vector< art::Ptr<recob::OpHit> > const& allhits);
     double              OpHitCollectionEfficiency(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::OpHit> > const& hits,
-						std::vector< art::Ptr<recob::OpHit> > const& allhits,
-						geo::View_t                         const& view);
+            std::vector< art::Ptr<recob::OpHit> > const& hits,
+            std::vector< art::Ptr<recob::OpHit> > const& allhits,
+            geo::View_t                         const& view);
 
     // method to return the fraction of charge in a collection that come from the specified Geant4 track ids 
     double              OpHitChargeCollectionPurity(std::set<int>                              trackIDs, 
-						  std::vector< art::Ptr<recob::OpHit> > const& hits);
+              std::vector< art::Ptr<recob::OpHit> > const& hits);
     
     // method to return the fraction of all charge in an event from a specific set of Geant4 track IDs that are 
     // represented in a collection of hits
     double              OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						      std::vector< art::Ptr<recob::OpHit> > const& hits,
-						      std::vector< art::Ptr<recob::OpHit> > const& allhits);
+                  std::vector< art::Ptr<recob::OpHit> > const& hits,
+                  std::vector< art::Ptr<recob::OpHit> > const& allhits);
     double              OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						      std::vector< art::Ptr<recob::OpHit> > const& hits,
-						      std::vector< art::Ptr<recob::OpHit> > const& allhits,
-						      geo::View_t                         const& view);
+                  std::vector< art::Ptr<recob::OpHit> > const& hits,
+                  std::vector< art::Ptr<recob::OpHit> > const& allhits,
+                  geo::View_t                         const& view);
   
     // method to return all EveIDs corresponding to the current sim::ParticleList
     std::set<int>       GetSetOfEveIDs();
@@ -152,9 +152,9 @@ namespace cheat{
     const std::vector<const sim::OpDetBacktrackerRecord*>& OpDetBacktrackerRecords() const { return cOpDetBacktrackerRecords; } 
 
     void ChannelToTrackSDPs(std::vector<sim::TrackSDP>& trackSDPs,
-			  int channel,
-			  const double hit_start_time,
-			  const double hit_end_time);
+        int channel,
+        const double hit_start_time,
+        const double hit_end_time);
     
   private:
 
