@@ -493,8 +493,8 @@ void evgen::MarleyGen::reconfigure_marley(const fhicl::ParameterSet& p)
 
   fhicl::ParameterSet source_params = p.get<fhicl::ParameterSet>("source");
 
-  prepare_reactions(reactions);
   prepare_structure(structure);
+  prepare_reactions(reactions);
   prepare_neutrino_source(source_params);
 }
 
