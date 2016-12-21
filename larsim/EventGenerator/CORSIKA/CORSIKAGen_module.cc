@@ -41,6 +41,7 @@
 
 #include <sqlite3.h> 
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 #include "ifdh.h"  //to handle flux files
 
 namespace evgen {
@@ -75,7 +76,7 @@ namespace evgen {
                                         double xyzout[]);
     
     int fShowerInputs=0; ///< Number of shower inputs to process from    
-    std::vector<int> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
+    std::vector<double> fNShowersPerEvent; ///< Number of showers to put in each event of duration fSampleTime; one per showerinput
     std::vector<int> fMaxShowers; //< Max number of showers to query, one per showerinput
     double fShowerBounds[6]={0.,0.,0.,0.,0.,0.}; ///< Boundaries of area over which showers are to be distributed
     double fToffset_corsika=0.; ///< Timing offset to account for propagation time through atmosphere, populated from db
@@ -119,6 +120,7 @@ namespace evgen{
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
     art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, p, "Seed");
+    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "","pois", p,"SeedPoisson");
 
     this->reconfigure(p);
     
@@ -360,7 +362,7 @@ namespace evgen{
       
       //this is computed, how?
       double NShowers=( M_PI * showersArea * fShowerFluxConstants[i] * (EfToOneMinusGamma - EiToOneMinusGamma) / oneMinusGamma )*fSampleTime; 
-      fNShowersPerEvent.push_back((int)NShowers);
+      fNShowersPerEvent.push_back(NShowers);
       mf::LogVerbatim("CORSIKAGen")<<"For showers input "<< i
                                <<" the number of showers per event is "<<(int)NShowers<<"\n";
     }
@@ -390,6 +392,9 @@ namespace evgen{
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat flat(engine);
 
+    CLHEP::HepRandomEngine &engine_pois = rng->getEngine("pois");
+    CLHEP::RandPoissonQ randpois(engine_pois);
+
     // get geometry and figure where to project particles to, based on CRYHelper
     art::ServiceHandle<geo::Geometry> geom;
     double x1, x2;
@@ -415,7 +420,9 @@ namespace evgen{
     int shower,pdg;
     double px,py,pz,x,z,tParticleTime,etot,showerTime=0.,showerXOffset=0.,showerZOffset=0.,t;
     for(int i=0; i<fShowerInputs; i++){
-      nShowerCntr=fNShowersPerEvent[i];
+      nShowerCntr=randpois.fire(fNShowersPerEvent[i]);
+      mf::LogInfo("CORSIKAGEN") << " Shower input " << i << " with mean " << fNShowersPerEvent[i] << " generating " << nShowerCntr;
+
       while(nShowerCntr>0){
         //how many showers should we query?
         if(nShowerCntr>fMaxShowers[i]){
