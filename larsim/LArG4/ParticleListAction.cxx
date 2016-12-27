@@ -120,11 +120,13 @@ namespace larg4 {
 
     // Get Geant4's ID number for this track.  This will be the same
     // ID number that we'll use in the ParticleList.
+    // It is offset by the number of tracks accumulated from the previous Geant4
+    // runs (if any)
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
 
-    // And the particle's parent:
-    G4int parentID = track->GetParentID();
+    // And the particle's parent (same offset as above):
+    G4int parentID = track->GetParentID() + fTrackIDOffset;
 
     std::string process_name = "unknown";
 

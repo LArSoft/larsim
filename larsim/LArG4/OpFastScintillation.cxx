@@ -109,6 +109,7 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
@@ -117,6 +118,10 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+
+// support libraries
+#include "cetlib/exception.h"
+
 
 namespace larg4{
 
@@ -359,18 +364,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   G4MaterialPropertiesTable* aMaterialPropertiesTable =
     aMaterial->GetMaterialPropertiesTable();
 
-  double xyz[3];
-  xyz[0]=x0[0]/CLHEP::cm;
-  xyz[1]=x0[1]/CLHEP::cm;
-  xyz[2]=x0[2]/CLHEP::cm;
-
   // Get the visibility vector for this point
-  float const* Visibilities = nullptr;
   size_t NOpChannels = 0;
-  if(!pvs->UseParameterization()) {
-    Visibilities = pvs->GetAllVisibilities(xyz);
-    NOpChannels = pvs->NOpChannels();
-  }
+  NOpChannels = pvs->NOpChannels();
 
 
   G4MaterialPropertyVector* Fast_Intensity = 
@@ -466,6 +462,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
   }
 
+  double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
+  float const* Visibilities = pvs->GetAllVisibilities(xyz);
   
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
@@ -541,124 +539,27 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     //std::cout << "++++++++++++" << Num << "++++++++++" << std::endl;
     
 
-
-
-    std::map<int, int> DetectedNum;
-    if(!Visibilities && !(pvs->UseParameterization()))
+    // here we go: now if visibilities are invalid, we are in trouble
+    //if (!Visibilities && (NOpChannels > 0)) {
+    //  throw cet::exception("OpFastScintillator")
+    //    << "Photon library does not cover point ( " << xyz[0] << ", "
+    //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
+    //}
+    
+    if(!Visibilities){
+    }else{
+      std::map<int, int> DetectedNum;
+	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
-	// if null pointer, this means no data for this voxel - in 
-	// this case do nothing.
-	//mf::LogInfo("OpFastScintillation")<<"Warning : null vis vector"<<std::endl;
-      }
-    else
-    {
-	 if(pvs->UseParameterization())
-	  {
-        art::ServiceHandle<geo::Geometry> geo;
-
-        double OpDetCenter[3];
-        unsigned int o=0; unsigned int c=0;
-        TVector3 fPlaneNorm(1,0,0);
-        int CageId = -1;
-
-        for(int i = 0; i < 6; i++)
+    		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+    		if(DetThisPMT>0) 
         {
-          geo->OpDetGeoFromOpDet(200*i).GetCenter(OpDetCenter);
-          if(std::abs(xyz[0] - OpDetCenter[0])< 231) 
-          {
-            CageId = i;
-            break;
-          }
-        }
-
-        if(CageId == -1) break;
-              
-        for(int OpDet= 200*CageId; OpDet < 200*CageId + 200; OpDet++)
-        {
-          geo->OpDetGeoFromOpDet(OpDet).GetCenter(OpDetCenter);
-
-          if(Num > 0) 
-          {
-            double normalizedvisibility = 0.;
-            double distance;
-            double dx = xyz[0]-OpDetCenter[0];
-            double dy = xyz[1]-OpDetCenter[1];
-
-            //Calculate the visibility along the paddle
-            for(int i = 0; i<10; i++)
-            {
-              double dz = xyz[2]-OpDetCenter[2] - 22.5*(i-4.5);
-              TVector3 PhotonToDetector(dx,dy,dz);
-              //double CosTheta = fPlaneNorm.Dot(PhotonToDetector.Unit());
-
-              double distancesquare = dx*dx + dy*dy + dz*dz;
-              if(distancesquare > 1000000) continue;
-              distance = std::sqrt(distancesquare);
-
-              //Stitch the attenuation function of the Acrylic bar to visibility function
-              //normalizedvisibility += std::exp(-0.2*i)*(7.98*10000000000/distancesquare - 1.38*1000000000/distance 
-              //+ 4940000 + 37480*distance - 306.3*distancesquare + 0.604 * distancesquare * distance ) 
-              //* std::exp(-distance*0.0374)*std::abs(xyz[0] - OpDetCenter[0])/2000000000;
-              //Without attenuation in the Acrylic bar
-              //normalizedvisibility += (7.98*10000000000/distancesquare - 1.38*1000000000/distance + 4940000 + 
-              //37480*  distance - 306.3*distancesquare + 0.604 * distancesquare * distance ) 
-              //* std::exp(-distance*0.0374)*std::abs(xyz[0] - OpDetCenter[0])/       2000000000;
-                
-              //Another fitting function;
-              normalizedvisibility += /*(1-0.03/CosTheta)**/(477200 - 11980*distance + 120*distancesquare - 
-                      0.5726*distancesquare*distance + 0.001086*distancesquare*distancesquare ) 
-                     * std::exp(-0.0528*distance)/40000;
-            }
-            G4int DetThisPMT = G4int(G4Poisson(normalizedvisibility*Num));
-            if(DetThisPMT>0)
-            {
-              DetectedNum[OpDet] = DetThisPMT;
-            }
-          }
-       }
-
-    std::map<int, std::map<int, int>> StepPhotonTable;
-    // And then add these to the total collection for the event	    
-	for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
-	    itdetphot!=DetectedNum.end(); ++itdetphot)
-	  {
-          std::map<int, int>  StepPhotons;
-          for (G4int i = 0; i < itdetphot->second; ++i) 
-	      {
-            G4double deltaTime = aStep.GetStepLength() /
-                ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.);
-		
-		
-            if (ScintillationRiseTime==0.0) {
-                deltaTime = deltaTime - 
-                    ScintillationTime * std::log( G4UniformRand() );
-            } else {
-                deltaTime = deltaTime +
-                    sample_time(ScintillationRiseTime, ScintillationTime);
-            }		
-		
-            G4double aSecondaryTime = t0 + deltaTime;
-            float Time = aSecondaryTime;
-            int ticks = static_cast<int>(Time);
-            StepPhotons[ticks]++;
-	      }
-         StepPhotonTable[itdetphot->first] = StepPhotons;
-	  }
-    litefst->AddPhoton(&StepPhotonTable);
-	  }
-	else
-    {
-	  for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
-      {
-		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
-		if(DetThisPMT>0) 
-        {
-		    DetectedNum[OpDet]=DetThisPMT;
-		    //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-		    //   //   it->second<<" " << Num << " " << DetThisPMT;  
+		      DetectedNum[OpDet]=DetThisPMT;
+		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
         }
       }
-	  // Now we run through each PMT figuring out num of detected photons
+	    // Now we run through each PMT figuring out num of detected photons
 	
       if(lgp->UseLitePhotons())
       {
@@ -688,17 +589,39 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             StepPhotons[ticks]++;
           }
          StepPhotonTable[itdetphot->first] = StepPhotons;
+         //Iterate over Step Photon Table to add photons to OpDetBacktrackerRecords.
+
+         sim::OpDetBacktrackerRecord tmpOpDetBTRecord(itdetphot->first);
+         int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
+         CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
+         CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
+         //Note the use of xO (letter O) instead of x0. This is to differentiate the positions here with the earlier declared double* x0
+         double xO = ( ( (prePoint.getX() + postPoint.getX() ) / 2.0) / CLHEP::cm );
+         double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
+         double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
+         double const xyzPos[3] = {xO,yO,zO};
+         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
+
+         //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
+         for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
+         {
+           int photonTime = stepPhotonsIt->first;
+           int numPhotons = stepPhotonsIt->second;
+           tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, photonTime, numPhotons, xyzPos, energy);
+         }
+         //Add OpDetBackTrackerRecord. (opdetphotonTABLE->instance().addOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord BTRrecord)
+         litefst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord);
         }
         litefst->AddPhoton(&StepPhotonTable);
       }
       else
       {
 	  // And then add these to the total collection for the event	    
-      for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
-	    itdetphot!=DetectedNum.end(); ++itdetphot)
-      {
-	    for (G4int i = 0; i < itdetphot->second; ++i) 
+        for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
+	      itdetphot!=DetectedNum.end(); ++itdetphot)
         {
+	        for (G4int i = 0; i < itdetphot->second; ++i) 
+          {
             G4double deltaTime = aStep.GetStepLength() /
                 ((pPreStepPoint->GetVelocity()+
                   pPostStepPoint->GetVelocity())/2.);
@@ -731,12 +654,12 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             PhotToAdd.SetInSD          = false;
 			
             fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
+          }
         }
       }
-      }
-    }
     }
   }
+
   
   return 0;
   }

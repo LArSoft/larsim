@@ -17,6 +17,7 @@
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/OpDetGeo.h"
 #include "lardataobj/Simulation/SimPhotons.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;
@@ -62,6 +63,45 @@ namespace larg4 {
       }
     }
   }
+
+  //--------------------------------------------------- cOpDetBacktrackerRecord population
+  //J Stock. 11 Oct 2016
+  void OpDetPhotonTable::AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc){
+    int iChan = soc.OpDetNum();
+    //std::map<int,int> cOpChannelToSOCMap;
+    std::map<int, int>::iterator channelPosition = cOpChannelToSOCMap.find(iChan);
+    if (channelPosition == cOpChannelToSOCMap.end() ){
+      cOpChannelToSOCMap[iChan] = cOpDetBacktrackerRecordsCol.size();
+      cOpDetBacktrackerRecordsCol.emplace_back(std::move(soc));
+    }else{
+      unsigned int idtest = channelPosition->second;
+      auto const& timePDclockSDPsMap = soc.timePDclockSDPsMap();
+      for(auto const& timePDclockSDP : timePDclockSDPsMap){
+        for(auto const& sdp : timePDclockSDP.second){
+          double xyz[3] = {sdp.x, sdp.y, sdp.z};
+          cOpDetBacktrackerRecordsCol.at(idtest).AddScintillationPhotons(
+              sdp.trackID,
+              timePDclockSDP.first,
+              sdp.numPhotons,
+              xyz,
+              sdp.energy);
+        }//end sdp : timesdp.second
+      }//end const timesdp : timeSDPMap
+    }// if chanPos == cOpChan else
+    
+    
+    
+  }//END void OpDetPhotonTable::AdOpDetBacktrackerRecords
+
+  // cOpDetBacktrackerRecord return.
+  std::vector<sim::OpDetBacktrackerRecord> OpDetPhotonTable::YieldOpDetBacktrackerRecords() {
+    // we give the result to the caller, and don't retain it
+    std::vector<sim::OpDetBacktrackerRecord> result;
+    std::swap(result, cOpDetBacktrackerRecordsCol);
+    cOpChannelToSOCMap.clear();
+    return result;
+  } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
+  
 
 
 

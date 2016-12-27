@@ -2,6 +2,7 @@
 /// \file OpDetPhotonTable.h
 //
 /// \author  bjpjones@mit.edu
+//  Eddited by JStock <jason.stock@mines.sdsmt.edu>
 ////////////////////////////////////////////////////////////////////////
 // 
 // This class holds a collection of PMT hits to be stored
@@ -28,9 +29,12 @@
 //
 // Ben Jones, MIT, 11/10/12
 //
+//
+//Changes have been made to this object to include the OpDetBacktrackerRecords for use in the photonbacktracker
 
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include <map>
 #include <memory>
 #include <exception>
@@ -55,26 +59,26 @@ namespace larg4 {
       void AddPhoton( std::map<int, std::map<int, int>>* StepPhoton);
 
       std::vector<sim::SimPhotons >& GetPhotons();
-      sim::SimPhotons&               GetPhotonsForOpChannel(size_t opcannel);
+      sim::SimPhotons&               GetPhotonsForOpChannel(size_t opchannel);
       
       std::map<int, std::map<int, int> >   GetLitePhotons();
-      std::map<int, int>& GetLitePhotonsForOpChannel(int opcannel); 
+      std::map<int, int>&                  GetLitePhotonsForOpChannel(int opchannel); 
       void ClearTable(size_t nch=0);
+
+      void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
+    //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords(); //Replaced by YieldOpDetBacktrackerRecords()
+      std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
       
     protected:
       OpDetPhotonTable();
 
     private:
 
-      std::map<int, std::map<int,int> > fLitePhotons;
-
-      /**
-      // std::map<int, sim::SimPhotons* > fDetectedPhotons;
-      - Use a vector of SimPhotons instead of map
-      - Vector index = channel number
-      - Vector size is initialized @ ClearTable() call
-       */
+      std::map<int, std::map<int,int> >     fLitePhotons;
+      std::vector< sim::OpDetBacktrackerRecord >      cOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
+      std::map<int, int>  cOpChannelToSOCMap; //Where each OpChan is.
       std::vector<sim::SimPhotons> fDetectedPhotons;
+
     };
 
 }

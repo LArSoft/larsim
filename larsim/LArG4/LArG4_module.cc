@@ -72,6 +72,7 @@
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 #include "nutools/G4Base/DetectorConstruction.h"
@@ -240,7 +241,10 @@ namespace larg4 {
     fUseLitePhotons = lgp->UseLitePhotons();
 
     if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
-    else                 produces< std::vector<sim::SimPhotonsLite> >();
+    else{
+      produces< std::vector<sim::SimPhotonsLite> >();
+      produces< std::vector<sim::OpDetBacktrackerRecord>   >();
+    }
 
     produces< std::vector<simb::MCParticle> >();
     produces< std::vector<sim::SimChannel>  >();
@@ -409,12 +413,14 @@ namespace larg4 {
     LOG_DEBUG("LArG4") << "produce()";
 
     // loop over the lists and put the particles and voxels into the event as collections
-    std::unique_ptr< std::vector<simb::MCParticle> > partCol  (new std::vector<simb::MCParticle  >);
-    std::unique_ptr< std::vector<sim::SimChannel>  > scCol    (new std::vector<sim::SimChannel>);
-    std::unique_ptr< std::vector<sim::SimPhotons>  > PhotonCol(new std::vector<sim::SimPhotons>);
-    std::unique_ptr< std::vector<sim::SimPhotonsLite>  > LitePhotonCol(new std::vector<sim::SimPhotonsLite>);
-    std::unique_ptr< art::Assns<simb::MCTruth, simb::MCParticle> > tpassn(new art::Assns<simb::MCTruth, simb::MCParticle>);
-    std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
+    std::unique_ptr< std::vector<sim::SimChannel>  >               scCol                      (new std::vector<sim::SimChannel>);
+    std::unique_ptr< std::vector< sim::AuxDetSimChannel > >        adCol                      (new  std::vector<sim::AuxDetSimChannel> );
+    std::unique_ptr< art::Assns<simb::MCTruth, simb::MCParticle> > tpassn                     (new art::Assns<simb::MCTruth, simb::MCParticle>);
+    std::unique_ptr< std::vector<simb::MCParticle> >               partCol                    (new std::vector<simb::MCParticle  >);
+    std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
+    std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
+    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
+
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
@@ -503,11 +509,10 @@ namespace larg4 {
     if(theOpDetDet){
       if(!fUseLitePhotons){      
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
-        
-	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
-	PhotonCol->reserve(ThePhotons.size());
-	for(auto& it : ThePhotons)
-	  PhotonCol->push_back(std::move(it));
+       	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
+      	PhotonCol->reserve(ThePhotons.size());
+      	for(auto& it : ThePhotons)
+      	  PhotonCol->push_back(std::move(it));
       }
       else{
         LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
@@ -523,6 +528,7 @@ namespace larg4 {
             LitePhotonCol->push_back(ph);
           }
         }
+        *cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
       }
     }
       
@@ -673,7 +679,10 @@ namespace larg4 {
     evt.put(std::move(adCol));
     evt.put(std::move(partCol));
     if(!fUseLitePhotons) evt.put(std::move(PhotonCol));
-    else evt.put(std::move(LitePhotonCol));
+    else{
+      evt.put(std::move(LitePhotonCol));
+      evt.put(std::move(cOpDetBacktrackerRecordCol));
+    }
     evt.put(std::move(tpassn));
 
     return;
