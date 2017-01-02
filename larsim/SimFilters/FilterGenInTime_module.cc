@@ -62,6 +62,7 @@ namespace simfilter {
     bool   fKeepOnlyMuons; //keep based only on muons if enabled
     double fMinT,fMaxT; //<time range in which to keep particles
     bool   fSortParticles; //create new MCTruth collections with particles sorted by their timing
+    bool   fAlwaysPass; // flag to have filter always pass (to be used with sorting...)
   };
 
 } // namespace simfilter
@@ -74,6 +75,7 @@ namespace simfilter {
     , fMinT    (pset.get< double > ("MinT",0.0)      )
     , fMaxT    (pset.get< double > ("MaxT")      )
     , fSortParticles ( pset.get< bool > ("SortParticles",false) )
+    , fAlwaysPass (pset.get<bool>("AlwaysPass",false))
   {
     if(fSortParticles)
       produces< std::vector<simb::MCTruth> >("intime");
@@ -188,7 +190,7 @@ namespace simfilter {
       evt.put(std::move(truthOutOfTimePtr),"outtime");
     }
     
-    return keepEvent;
+    return (keepEvent || fAlwaysPass);
   }
   
 } // namespace simfilter
