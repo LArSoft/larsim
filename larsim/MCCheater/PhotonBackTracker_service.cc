@@ -1,10 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: PhotonBackTracker_service.cc,v 1.3 2011/12/13 05:57:02 bckhouse Exp $
+// $Id: PhotonBackTracker_service.cc
 //
 //
 // \file: PhotonBackTracker_service.cc
 //
-// brebel@fnal.gov
+//jason.stock@mines.sdsmt.edu
+//Based on the BackTracker_service by Brian Rebel
 //
 ////////////////////////////////////////////////////////////////////////
 #include <map>
