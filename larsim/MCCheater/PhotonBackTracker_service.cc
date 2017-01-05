@@ -84,35 +84,46 @@ namespace cheat{
     if( fo.isValid() ){
       for(size_t p = 0; p < pHandle->size(); ++p){
   
-  simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
-  fParticleList.Add(part);
+        simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
+        fParticleList.Add(part);
   
-  // get the simb::MCTruth associated to this sim::ParticleList
-  try{
-    art::Ptr<simb::MCTruth> mct = fo.at(p);
-    if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
-    else{
-      // check that we are not adding a simb::MCTruth twice to the collection
-      // we know that all the particles for a given simb::MCTruth are put into the
-      // collection of particles at the same time, so we can just check that the 
-      // current art::Ptr has a different id than the last one put 
-      if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
-    }
-    // fill the track id to mctruth index map
-    fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
-  }
-  catch(cet::exception &ex){
-    mf::LogWarning("PhotonBackTracker") << "unable to find MCTruth from ParticleList "
+        // get the simb::MCTruth associated to this sim::ParticleList
+        try{
+          art::Ptr<simb::MCTruth> mct = fo.at(p);
+          if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
+          else{
+            // check that we are not adding a simb::MCTruth twice to the collection
+            // we know that all the particles for a given simb::MCTruth are put into the
+            // collection of particles at the same time, so we can just check that the 
+            // current art::Ptr has a different id than the last one put 
+            if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
+          }
+          // fill the track id to mctruth index map
+          fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
+        }
+        catch(cet::exception &ex){
+          mf::LogWarning("PhotonBackTracker") << "unable to find MCTruth from ParticleList "
           << "created in " << fG4ModuleLabel << " " 
           << "any attempt to get the MCTruth objects from "
-          << "the backtracker will fail\n"
+          << "the photon backtracker will fail\n"
           << "message from caught exception:\n" << ex;
-  }  
+        }  
       }// end loop over particles to get MCTruthList  
     }// end if fo.isValid()
 
     // grab the sim::OpDetBacktrackerRecords for this event
-    evt.getView(fG4ModuleLabel, cOpDetBacktrackerRecords);
+
+    try{evt.getView(fG4ModuleLabel, cOpDetBacktrackerRecords);}
+    catch(...){ 
+      static bool have_complained=false;
+      if(have_complained==false){
+        mf::LogWarning("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event. All calls to the PhotonBackTracker will fail.\n"
+          <<"This message will be generated only once per lar invokation. If this is event one, be aware the PhotonBackTracker may not work on any events from this file.\n"
+          <<"Please change the log level to debug if you need more information for each event.\n";
+        have_complained=true;
+      }
+      mf::LogDebug("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event.\n";
+    }
 
     // grab the voxel list for this event
     //fVoxelList = sim::SimListUtils::GetLArVoxelList(evt, fG4ModuleLabel);
@@ -270,10 +281,8 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  // plist is assumed to have adopted the appropriate EveIdCalculator prior to 
-  // having been passed to this method. It is likely that the EmEveIdCalculator is
-  // the one you always want to use
-  std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToEveID(art::Ptr<recob::OpHit> const& opHit)
+
+  std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToEveSDPs(art::Ptr<recob::OpHit> const& opHit)
   {
     std::vector<sim::TrackSDP> trackSDPs = this->OpHitToTrackID(opHit);
 
@@ -298,6 +307,12 @@ namespace cheat{
       eveSDPs.push_back(std::move(temp));
     }
 
+    return eveSDPs;
+  }
+  std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToEveID(art::Ptr<recob::OpHit> const& opHit)
+  {
+    mf::LogWarning("PhotonBackTracker") << "PhotonBackTracker::OpHitToEveID is being replaced with PhotonBackTracker::OpHitToEveSDPs. Please \n update your code accordingly.\n ";
+    std::vector<sim::TrackSDP> eveSDPs = OpHitToEveSDPs(opHit);
     return eveSDPs;
   }
 

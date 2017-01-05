@@ -84,6 +84,7 @@ namespace cheat{
     
     // method to return the EveIDs of particles contributing ionization
     // electrons to the identified hit
+    std::vector<sim::TrackSDP> OpHitToEveSDPs(art::Ptr<recob::OpHit> const& hit);
     std::vector<sim::TrackSDP> OpHitToEveID(art::Ptr<recob::OpHit> const& hit);
     
     //@{
