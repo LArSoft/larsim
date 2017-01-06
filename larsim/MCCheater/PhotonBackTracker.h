@@ -163,6 +163,8 @@ namespace cheat{
 
     const sim::OpDetBacktrackerRecord* FindOpDetBacktrackerRecord(int channel) const;
 
+    bool have_complained;
+
     sim::ParticleList                      fParticleList;          ///< ParticleList to map track ID to sim::Particle
     sim::LArVoxelList                      fVoxelList;             ///< List to map the position of energy depostions
                                                                    ///< in voxels to the particles depositing the 

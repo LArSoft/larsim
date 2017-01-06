@@ -51,6 +51,7 @@ namespace cheat{
     fMinOpHitEnergyFraction = pset.get<double     >("MinimumOpHitEnergyFraction", 0.1);
     fDelay                  = pset.get< double > ("Delay");
     std::cout<<"Delay set to be :"<<fDelay<<"\n";
+    have_complained         = false;
   }
 
   //----------------------------------------------------------------------
@@ -114,8 +115,8 @@ namespace cheat{
     // grab the sim::OpDetBacktrackerRecords for this event
 
     try{evt.getView(fG4ModuleLabel, cOpDetBacktrackerRecords);}
-    catch(...){ 
-      static bool have_complained=false;
+    catch(art::Exception const& e){
+      if(e.categoryCode() != art::errors::ProductNotFound) throw;
       if(have_complained==false){
         mf::LogWarning("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event. All calls to the PhotonBackTracker will fail.\n"
           <<"This message will be generated only once per lar invokation. If this is event one, be aware the PhotonBackTracker may not work on any events from this file.\n"
