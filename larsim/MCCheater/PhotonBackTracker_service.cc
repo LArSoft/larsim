@@ -50,7 +50,6 @@ namespace cheat{
     fG4ModuleLabel          = pset.get<std::string>("G4ModuleLabel",            "largeant");
     fMinOpHitEnergyFraction = pset.get<double     >("MinimumOpHitEnergyFraction", 0.1);
     fDelay                  = pset.get< double > ("Delay");
-    std::cout<<"Delay set to be :"<<fDelay<<"\n";
     have_complained         = false;
   }
 
@@ -632,7 +631,7 @@ namespace cheat{
     double totalE = 0.;
 
     try{
-      const sim::OpDetBacktrackerRecord* schannel = this->FindOpDetBacktrackerRecord(channel);
+      const sim::OpDetBacktrackerRecord* schannel = this->FindOpDetBacktrackerRecord( geom->OpDetFromOpChannel(channel) );
       
       // loop over the photons in the channel and grab those that are in time 
       // with the identified opHit start and stop times
