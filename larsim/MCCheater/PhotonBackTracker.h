@@ -150,7 +150,7 @@ namespace cheat{
     // method to return all TrackIDs corresponding to the given list of hits
     std::set<int>       GetSetOfTrackIDs(std::vector< art::Ptr<recob::OpHit> > const& hits);
 
-    const std::vector<const sim::OpDetBacktrackerRecord*>& OpDetBacktrackerRecords() const { return cOpDetBacktrackerRecords; } 
+    const std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>& OpDetBacktrackerRecords() const { return cOpDetBacktrackerRecords; } 
 
     void ChannelToTrackSDPs(std::vector<sim::TrackSDP>& trackSDPs,
         int channel,
@@ -161,7 +161,9 @@ namespace cheat{
 
     geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
 
-    const sim::OpDetBacktrackerRecord* FindOpDetBacktrackerRecord(int channel) const;
+    const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBacktrackerRecord(int channel) const;
+
+    const void shouldThisFail() const;
 
     bool have_complained;
 
@@ -170,7 +172,7 @@ namespace cheat{
                                                                    ///< in voxels to the particles depositing the 
                                                                    ///< energy
     std::vector< art::Ptr<simb::MCTruth> > fMCTruthList;           ///< all the MCTruths for the event
-    std::vector<const sim::OpDetBacktrackerRecord*>  cOpDetBacktrackerRecords;         ///< all the OpDetBacktrackerRecords for the event
+    std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>  cOpDetBacktrackerRecords;         ///< all the OpDetBacktrackerRecords for the event
     std::map<int, int>                     fTrackIDToMCTruthIndex; ///< map of track ids to MCTruthList entry
     std::string                            fG4ModuleLabel;         ///< label for geant4 module
     double                                 fMinOpHitEnergyFraction;  ///< minimum fraction of energy a track id has to 

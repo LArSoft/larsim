@@ -112,18 +112,37 @@ namespace cheat{
     }// end if fo.isValid()
 
     // grab the sim::OpDetBacktrackerRecords for this event
-
+    
+    /*
     try{evt.getView(fG4ModuleLabel, cOpDetBacktrackerRecords);}
     catch(art::Exception const& e){
       if(e.categoryCode() != art::errors::ProductNotFound) throw;
       if(have_complained==false){
+      }
+    }
+    */
+
+    art::Handle< std::vector< sim::OpDetBacktrackerRecord> > cPBTRHandle;
+    //    std::vector< art::Ptr< sim::OpDetBacktrackerRecords > > cOpDetBacktrackerRecords;
+    evt.getByLabel(fG4ModuleLabel, cPBTRHandle);
+    if(cPBTRHandle.failedToGet()){//Failed to get products. Prepare for controlled freak out. Assuming this is because there is no OpDetBacktrackerRecords, we will not cause things to fail, but will prepare to fail if a user tries to call backtracker functionality.
+      auto failMode = cPBTRHandle.whyFailed();
+      if(failMode->categoryCode() != art::errors::ProductNotFound) throw;
+      else if(have_complained==false){
+        std::cout<<"FAILED BECAUSE "<<(*failMode)<<"\n";
+        have_complained=true;
         mf::LogWarning("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event. All calls to the PhotonBackTracker will fail.\n"
           <<"This message will be generated only once per lar invokation. If this is event one, be aware the PhotonBackTracker may not work on any events from this file.\n"
-          <<"Please change the log level to debug if you need more information for each event.\n";
-        have_complained=true;
+          <<"Please change the log level to debug if you need more information for each event.\n"
+          <<"Failed with :"<<(*failMode)<<"\n";
+        mf::LogDebug("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event.\n";
+      }else{
+        mf::LogDebug("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event.\n";
       }
-      mf::LogDebug("PhotonBackTracker")<<"Failed to get BackTrackerRecords from this event.\n";
+    }else{//Did not fail to get products. All is well. Run as expected.
+      art::fill_ptr_vector(cOpDetBacktrackerRecords, cPBTRHandle);
     }
+
 
     // grab the voxel list for this event
     //fVoxelList = sim::SimListUtils::GetLArVoxelList(evt, fG4ModuleLabel);
@@ -142,8 +161,19 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
+  const void PhotonBackTracker::shouldThisFail() const{
+    //I need to revisit this and see if this check is too aggressive, as it only takes one failed event to set have_complained to true for the rest of the file.
+    //I currently do believe this is okay, as have_complained only flips on ProductNotFound errors, and if that happens in one event of a file,
+    // it should happen in all events of the file.
+    if( have_complained==true ){
+      throw cet::exception("PhotonBackTracker1") << "PhotonBackTracker methods called on a file without OpDetPhotonBacktrackerRecords. Backtracked information is not available.";
+    }
+  }
+
+  //----------------------------------------------------------------------
   const simb::MCParticle* PhotonBackTracker::TrackIDToParticle(int const& id) const
   {
+    shouldThisFail();
     sim::ParticleList::const_iterator part_it = fParticleList.find(id);
 
     if(part_it == fParticleList.end()){
@@ -159,6 +189,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   const simb::MCParticle* PhotonBackTracker::TrackIDToMotherParticle(int const& id) const
   {
+    shouldThisFail();
     // get the mother id from the particle navigator
     // the EveId was adopted in the Rebuild method
  
@@ -168,6 +199,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   const art::Ptr<simb::MCTruth>& PhotonBackTracker::TrackIDToMCTruth(int const& id) const
   {
+    shouldThisFail();
     // find the entry in the MCTruth collection for this track id
     size_t mct = fTrackIDToMCTruthIndex.find(abs(id))->second;
 
@@ -182,6 +214,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::vector<sim::SDP> PhotonBackTracker::TrackIDToSimSDP(int const& id) const
   {
+    shouldThisFail();
     std::vector<sim::SDP> sdps;
 
     // loop over all sim::OpDetBacktrackerRecords and fill a vector
@@ -207,12 +240,14 @@ namespace cheat{
   //----------------------------------------------------------------------
   const art::Ptr<simb::MCTruth>& PhotonBackTracker::ParticleToMCTruth(const simb::MCParticle* p) const
   {
+    shouldThisFail();
     return this->TrackIDToMCTruth(p->TrackId());
   }
 
   //----------------------------------------------------------------------
   std::vector<const simb::MCParticle*> PhotonBackTracker::MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) const
   {
+    shouldThisFail();
     std::vector<const simb::MCParticle*> ret;
     
     // sim::ParticleList::value_type is a pair (track ID, particle pointer)
@@ -227,6 +262,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToTrackID(art::Ptr<recob::OpHit> const& opHit)
   {
+    shouldThisFail();
     std::vector<sim::TrackSDP> trackSDPs;
     const double pTime = opHit->PeakTime();
     const double pWidth= opHit->Width();
@@ -242,6 +278,7 @@ namespace cheat{
   const std::vector<std::vector<art::Ptr<recob::OpHit>>> PhotonBackTracker::TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allOpHits, 
                        std::vector<int> const& tkIDs)
   {
+    shouldThisFail();
     // returns a subset of the opHits in the allOpHits collection that are matched
     // to MC particles listed in tkIDs
     
@@ -284,6 +321,7 @@ namespace cheat{
 
   std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToEveSDPs(art::Ptr<recob::OpHit> const& opHit)
   {
+    shouldThisFail();
     std::vector<sim::TrackSDP> trackSDPs = this->OpHitToTrackID(opHit);
 
     // make a map of evd ID values and fraction of energy represented by
@@ -319,6 +357,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::set<int> PhotonBackTracker::GetSetOfEveIDs()
   {
+    shouldThisFail();
     std::set<int> eveIDs;
 
     sim::ParticleList::const_iterator plitr = fParticleList.begin();
@@ -335,6 +374,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::set<int> PhotonBackTracker::GetSetOfTrackIDs()
   {
+    shouldThisFail();
     // fParticleList::value_type is a pair (track, particle pointer)
     std::set<int> trackIDs;
     for (const sim::ParticleList::value_type& pl: fParticleList)
@@ -346,6 +386,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::set<int> PhotonBackTracker::GetSetOfEveIDs(std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
+    shouldThisFail();
     std::set<int> eveIDs;
 
     std::vector< art::Ptr<recob::OpHit> >::const_iterator itr = opHits.begin();
@@ -366,6 +407,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::set<int> PhotonBackTracker::GetSetOfTrackIDs(std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
+    shouldThisFail();
     std::set<int> trackIDs;
 
     std::vector< art::Ptr<recob::OpHit> >::const_iterator itr = opHits.begin();
@@ -398,6 +440,7 @@ namespace cheat{
   double PhotonBackTracker::OpHitCollectionPurity(std::set<int>                              trackIDs, 
             std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
+    shouldThisFail();
     // get the list of EveIDs that correspond to the opHits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
     float total   = 1.*opHits.size();;
@@ -431,6 +474,7 @@ namespace cheat{
   double PhotonBackTracker::OpHitChargeCollectionPurity(std::set<int>                              trackIDs, 
             std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
+    shouldThisFail();
     // get the list of EveIDs that correspond to the opHits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
     float total   = 0;
@@ -476,6 +520,7 @@ namespace cheat{
                 std::vector< art::Ptr<recob::OpHit> > const& opHits,
                 std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
   {
+    shouldThisFail();
     // get the list of EveIDs that correspond to the opHits in this collection
     // and the energy associated with the desired trackID
     float desired = 0.;
@@ -545,6 +590,7 @@ namespace cheat{
                 std::vector< art::Ptr<recob::OpHit> > const& opHits,
                 std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
   {
+    shouldThisFail();
     // get the list of EveIDs that correspond to the opHits in this collection
     // and the energy associated with the desired trackID
     float desired = 0.;
@@ -605,17 +651,21 @@ namespace cheat{
 
 
   //----------------------------------------------------------------------
-  const sim::OpDetBacktrackerRecord* PhotonBackTracker::FindOpDetBacktrackerRecord(int opDetNum) const
+  const art::Ptr< sim::OpDetBacktrackerRecord > PhotonBackTracker::FindOpDetBacktrackerRecord(int opDetNum) const
   {
-    const sim::OpDetBacktrackerRecord* opDet = 0;
+    shouldThisFail();
+    art::Ptr< sim::OpDetBacktrackerRecord > opDet;
 
     for(size_t sc = 0; sc < cOpDetBacktrackerRecords.size(); ++sc){
+      //This could become a bug. What if it occurs twice (shouldn't happen in correct recorts, but still, no error handeling included for the situation
       if(cOpDetBacktrackerRecords[sc]->OpDetNum() == opDetNum) opDet = cOpDetBacktrackerRecords[sc];
     }
 
     if(!opDet)
-      throw cet::exception("PhotonBackTracker") << "No sim::OpDetBacktrackerRecord corresponding "
+    {
+      throw cet::exception("PhotonBackTracker2") << "No sim::OpDetBacktrackerRecord corresponding "
             << "to opDetNum: " << opDetNum << "\n";
+    }
 
     return opDet;
   }
@@ -626,12 +676,13 @@ namespace cheat{
              const double opHit_start_time,
              const double opHit_end_time)
   {
+    shouldThisFail();
     trackSDPs.clear();
 
     double totalE = 0.;
 
     try{
-      const sim::OpDetBacktrackerRecord* schannel = this->FindOpDetBacktrackerRecord( geom->OpDetFromOpChannel(channel) );
+      const art::Ptr< sim::OpDetBacktrackerRecord > schannel = this->FindOpDetBacktrackerRecord( geom->OpDetFromOpChannel(channel) );
       
       // loop over the photons in the channel and grab those that are in time 
       // with the identified opHit start and stop times
@@ -678,6 +729,7 @@ namespace cheat{
   void PhotonBackTracker::OpHitToSimSDPs(recob::OpHit const& opHit,
                                  std::vector<sim::SDP>&      sdps) const
   {
+    shouldThisFail();
     // Get services.
     const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
     
@@ -693,6 +745,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::vector<double> PhotonBackTracker::SimSDPsToXYZ(std::vector<sim::SDP> const& sdps)
   {
+    shouldThisFail();
     std::vector<double> xyz(3, -999.);
 
     double x = 0.;
@@ -729,6 +782,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::vector<double> PhotonBackTracker::OpHitToXYZ(art::Ptr<recob::OpHit> const& opHit)
   {
+    shouldThisFail();
     std::vector<sim::SDP> sdps;
     OpHitToSimSDPs(opHit, sdps);
     return SimSDPsToXYZ(sdps);
