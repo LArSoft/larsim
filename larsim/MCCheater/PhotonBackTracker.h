@@ -3,10 +3,18 @@
 /// \brief back track the reconstruction to the simulation
 ///
 /// \version $Id: Geometry.h,v 1.16 2009/11/03 22:53:20 brebel Exp $
-/// \author  brebel@fnal.gov
+/// \author  jstock@fnal.gov
+//  \adapted from BackTracker.h by brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_PHOTONBACKTRACKERER_H
 #define CHEAT_PHOTONBACKTRACKERER_H
+#ifdef __GNUC__
+#define DEPRECATED __attribute__((deprecated))
+#else 
+#define DEPRECATED
+#endif
+
+
 
 #include <vector>
 
@@ -76,7 +84,9 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    std::vector<sim::TrackSDP> OpHitToTrackID(art::Ptr<recob::OpHit> const& hit);
+    DEPRECATED std::vector<sim::TrackSDP> OpHitToTrackID(art::Ptr<recob::OpHit> const& hit)
+      {return OpHitToTrackSDPs(hit);}
+    std::vector<sim::TrackSDP> OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& hit);
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allhits,
@@ -89,11 +99,17 @@ namespace cheat{
     
     //@{
     // method to return sim::SDP objects associated with a given hit
-    void                 OpHitToSimSDPs(recob::OpHit const& hit,
+    void                 OpHitToSDPs(recob::OpHit const& hit,
                                       std::vector<sim::SDP>&      ides) const;
-    void                 OpHitToSimSDPs(art::Ptr<recob::OpHit> const& hit,
+    DEPRECATED void      OpHitToSimSDPs(recob::OpHit const& hit,
                                       std::vector<sim::SDP>&      ides) const
-                                      { OpHitToSimSDPs(*hit, ides); }
+                                      { OpHitToSDPs( hit, ides); }
+    void                 OpHitToSDPs(art::Ptr<recob::OpHit> const& hit,
+                                      std::vector<sim::SDP>&      ides) const
+                                      { OpHitToSDPs(*hit, ides); }
+    DEPRECATED void      OpHitToSimSDPs(art::Ptr<recob::OpHit> const& hit,
+                                      std::vector<sim::SDP>&      ides) const
+                                      { OpHitToSDPs(*hit, ides); }
     //@}
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit

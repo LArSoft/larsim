@@ -260,7 +260,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToTrackID(art::Ptr<recob::OpHit> const& opHit)
+  std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit)
   {
     shouldThisFail();
     std::vector<sim::TrackSDP> trackSDPs;
@@ -322,7 +322,7 @@ namespace cheat{
   std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToEveSDPs(art::Ptr<recob::OpHit> const& opHit)
   {
     shouldThisFail();
-    std::vector<sim::TrackSDP> trackSDPs = this->OpHitToTrackID(opHit);
+    std::vector<sim::TrackSDP> trackSDPs = this->OpHitToTrackSDPs(opHit);
 
     // make a map of evd ID values and fraction of energy represented by
     // that eve id in this opHit
@@ -451,7 +451,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < opHits.size(); ++h){
       art::Ptr<recob::OpHit> opHit = opHits[h];
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
 
       // don't double count if this opHit has more than one of the
       // desired track IDs associated with it
@@ -485,7 +485,7 @@ namespace cheat{
     // the correct view by definition then.
     for(size_t h = 0; h < opHits.size(); ++h){
       art::Ptr<recob::OpHit> opHit = opHits[h];
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
        
       total+=opHit->Area(); // sum up the charge in the cluster
 
@@ -532,7 +532,7 @@ namespace cheat{
     for(size_t h = 0; h < opHits.size(); ++h){
 
       art::Ptr<recob::OpHit> opHit = opHits[h];
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
 
       // don't worry about opHits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -556,7 +556,7 @@ namespace cheat{
       // in the case of 3D objects we take all opHits
       //if(opHit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
 
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
   // don't worry about opHits where the energy fraction for the chosen
@@ -602,7 +602,7 @@ namespace cheat{
     for(size_t h = 0; h < opHits.size(); ++h){
 
       art::Ptr<recob::OpHit> opHit = opHits[h];
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
 
       // don't worry about opHits where the energy fraction for the chosen
       // trackID is < 0.1
@@ -626,7 +626,7 @@ namespace cheat{
       // in the case of 3D objects we take all opHits
       //if(opHit->View() != view && view != geo::k3D ) continue;
 
-      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackID(opHit);
+      std::vector<sim::TrackSDP> opHitTrackIDs = this->OpHitToTrackSDPs(opHit);
 
       for(size_t e = 0; e < opHitTrackIDs.size(); ++e){
   // don't worry about opHits where the energy fraction for the chosen
@@ -726,7 +726,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void PhotonBackTracker::OpHitToSimSDPs(recob::OpHit const& opHit,
+  void PhotonBackTracker::OpHitToSDPs(recob::OpHit const& opHit,
                                  std::vector<sim::SDP>&      sdps) const
   {
     shouldThisFail();
@@ -784,7 +784,7 @@ namespace cheat{
   {
     shouldThisFail();
     std::vector<sim::SDP> sdps;
-    OpHitToSimSDPs(opHit, sdps);
+    OpHitToSDPs(opHit, sdps);
     return SimSDPsToXYZ(sdps);
   }
 
