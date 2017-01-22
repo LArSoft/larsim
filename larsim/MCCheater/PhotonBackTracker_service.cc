@@ -687,11 +687,11 @@ namespace cheat{
       // loop over the photons in the channel and grab those that are in time 
       // with the identified opHit start and stop times
       const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
-      int start_tdc = ts->OpticalG4Time2TDC( opHit_start_time );
-      int end_tdc   = ts->OpticalG4Time2TDC( opHit_end_time   );
-      if(start_tdc<0) start_tdc = 0;
-      if(end_tdc<0) end_tdc = 0;
-      std::vector<sim::SDP> simSDPs = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
+      //int start_tdc = ts->OpticalG4Time2TDC( opHit_start_time );
+      //int end_tdc   = ts->OpticalG4Time2TDC( opHit_end_time   );
+//      if(start_tdc<0) start_tdc = 0;
+//      if(end_tdc<0) end_tdc = 0;
+      std::vector<sim::SDP> simSDPs = schannel->TrackIDsAndEnergies(opHit_start_time, opHit_end_time);
       
       // first get the total energy represented by all track ids for 
       // this channel and range of tdc values
