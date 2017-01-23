@@ -766,8 +766,8 @@ namespace cheat{
 
     }// end loop over sim::SDPs
   
-    // if the sum of the weights is still 0, then return
-    // the obviously stupid default values
+    //If the sum of the weights is still zero, then fail to return a value. 
+    //A hit with no contributing photons does't make sense.
     if(w < 1.e-5)
       throw cet::exception("PhotonBackTracker") << "No sim::SDPs providing non-zero number of photons"
             << " can't determine originating location from truth\n";
