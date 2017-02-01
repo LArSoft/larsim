@@ -4,6 +4,12 @@ BEGIN_PROLOG
 # with sides parallel to the x, y, and z axes, and within a specified time window.  The parameters Nuclide through
 # T1 are arrays, so that many volumes can be specified to be radioactive with different nuclides.
 
+# The generator randomly samples points in the space and checks the material present at that point using the current geometry,
+# and compares the material's name with the corresponding regex in the vector of strings "Material".  Only matching materials
+# contribute radiological decays.  Reasoning for this -- if we put radionuclides in the geometry spec, then GENIE will need
+# cross sections for them, even if they contribute a vanishingly small fraction of the nuclei.  We may also have several kinds
+# of materials with the same name -- not all FR4 might come from the same supplier for example.
+
 standard_radiogen:
 {
  module_type:           "RadioGen"
