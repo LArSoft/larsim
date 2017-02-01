@@ -12,6 +12,7 @@ art_make(
                         ${CLHEP}
 			${Boost_FILESYSTEM_LIBRARY}
 			${Boost_SYSTEM_LIBRARY}
+                        ${ROOT_GEOM}
           MODULE_LIBRARIES larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
                            larsim_Simulation lardataobj_Simulation
