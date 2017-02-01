@@ -102,6 +102,9 @@ namespace evgen {
 
     //double betaphasespace(double mass, double q); // older parameterization.
 
+    // the generator randomly samples points in a rectangular prism of space and time, and only selects those points in
+    // volumes with materials that match the regexes in fMaterial.  One can use wildcards * and ? for broader matches.
+
     std::vector<std::string> fNuclide;   ///< List of nuclides to simulate.  Example:  "39Ar".
     std::vector<std::string> fMaterial;  ///< List of regexes of materials in which to generate the decays.  Example: "LAr"  
     std::vector<double> fBq;             ///< Radioactivity in Becquerels (decay per sec) per cubic cm.
@@ -177,6 +180,7 @@ namespace evgen{
     // check for consistency of vector sizes
     
     unsigned int nsize = fNuclide.size();
+    if (  fMaterial.size() != nsize ) throw cet::exception("RadioGen") << "Different size Material vector and Nuclide vector\n";
     if (  fBq.size() != nsize ) throw cet::exception("RadioGen") << "Different size Bq vector and Nuclide vector\n";
     if (  fT0.size() != nsize ) throw cet::exception("RadioGen") << "Different size T0 vector and Nuclide vector\n";
     if (  fT1.size() != nsize ) throw cet::exception("RadioGen") << "Different size T1 vector and Nuclide vector\n";
