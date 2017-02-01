@@ -270,7 +270,9 @@ namespace evgen{
 	// discard decays that are not in the proper material
 
 	std::string volmaterial = geomanager->FindNode(pos.X(),pos.Y(),pos.Z())->GetMedium()->GetMaterial()->GetName();
+	//mf::LogDebug("RadioGen") << "Position: " << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << pos.T() << " " << volmaterial << " " << fMaterial[i] << std::endl;
 	if ( ! std::regex_match(volmaterial, std::regex(fMaterial[i])) ) continue;
+	//mf::LogDebug("RadioGen") << "Decay accepted" << std::endl;
 
 	int pdgid=0;  // electron=11, photon=22, alpha = 1000020040
         double t = 0; // kinetic energy of particle GeV
