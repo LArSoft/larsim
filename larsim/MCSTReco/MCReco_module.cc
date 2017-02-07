@@ -93,6 +93,7 @@ void MCReco::produce(art::Event & evt)
   evt.put(fMCTAlg.Reconstruct(fPart,fEdep));
   
   fEdep.Clear();
+  fPart.clear();
 }
 
 DEFINE_ART_MODULE(MCReco)
