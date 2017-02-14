@@ -100,7 +100,6 @@ namespace larg4 {
     auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fElectronLifetime      = detprop->ElectronLifetime();
-    fArgon39DecayRate      = larp->Argon39DecayRate();
     for (int i = 0; i<3; ++i)
       fDriftVelocity[i]    = detprop->DriftVelocity(detprop->Efield(i),
 						    detprop->Temperature())/1000.;
@@ -115,136 +114,13 @@ namespace larg4 {
     LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
-                                  <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2]
-                                  << "\n Argon 39 Decay Rate: " << fArgon39DecayRate;
+                                  <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
   }
 
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
-    // put in Argon 39 radioactive decays.  
-    /// \todo -- make optical flashes to go along with these decays
-    
-    // get readout window from DetectorProperties service
-    // get Argon 39 rate from LArG4 parameter
-    // call Drift Ionilzation Electrons
-    // negative track number (-39? -3939?)
-      
-    // break each radioactive decay into two steps to allow hits on two wires.
-    // distribute the hits throughout the drift volume 
-      
-    // consider calling util::LarProperties::Eloss and ElossVar
-    // to get more precise range and fluctuate it randomly.  Probably doesn't matter much
-      
-    if (fArgon39DecayRate > 0){
-      // this must be always true, unless caller has been sloppy
-      assert(fRadioGen); // No radiological decay random generator provided?!
-      CLHEP::RandPoisson RadioProbRand(*fRadioGen);
-      CLHEP::RandFlat PosAndDirRand(*fRadioGen);
-      
-      auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      double samplerate  = fClock.TickPeriod(); // in ns/tick
-      int readwindow = detprop->NumberTimeSamples(); // in clock ticks
-      double timewindow = samplerate*readwindow;
-      
-      const double e39 = 0.565;  // Beta energy in MeV
-      const double dx = 0.565/2.12; // range assuming MIP (use Eloss to get a better range)
-      const double d2 = dx*0.5;
-      
-      for (unsigned short int cryo = 0; cryo < fGeoHandle->Ncryostats(); ++cryo) {
-        for (unsigned short int tpc = 0; tpc < fGeoHandle->NTPC(cryo); ++tpc) {
-        
-          if (Has(fSkipWireSignalInTPCs, tpc))
-          {
-      	    continue;
-	  }        
-        
-          const geo::TPCGeo &tpcg = fGeoHandle->TPC(fTPC,fCstat);
-          double width = tpcg.HalfWidth()*2.0;
-          double height = tpcg.HalfHeight()*2.0;
-          double length = tpcg.Length();
-          double tpcvolume = length*width*height;
-          
-          const double expected_decays = tpcvolume*fArgon39DecayRate*timewindow*1E-9;  // the 1E-9 is to convert the ns to seconds
-
-          // TPC global position
-          
-          double xyz1[3] = {0.,0.,0.};
-          double xyz2[3] = {0.,0.,0.};
-          tpcg.LocalToWorld(xyz1,xyz2);  // gives a point in the middle
-          xyz2[0] -= width * 0.5;
-          xyz2[1] -= height * 0.5;
-          xyz2[2] -= length * 0.5;
-          
-          long ndecays = RadioProbRand.fire(expected_decays);
-          for (long i=0;i<ndecays;++i){
-            // randomize the simulation time and position
-            
-            double xyz3[3]={0.,0.,0.};
-            
-            bool scc = false;
-            PosAndDirRand.fireArray(3, xyz3);
-            
-            xyz3[0] = (xyz3[0]*width  + xyz2[0])*CLHEP::cm;
-            xyz3[1] = (xyz3[1]*height + xyz2[1])*CLHEP::cm;
-            xyz3[2] = (xyz3[2]*length + xyz2[2])*CLHEP::cm;
-            
-            G4ThreeVector midpoint1(xyz3[0],xyz3[1],xyz3[2]);
-            G4ThreeVector midpoint2;
-            
-            scc = false;
-            for (int itr=0;itr<20; ++itr){  // fixed number of tries to make sure we stay in the TPC for the second endpoint.
-              
-              double rnd[2];
-              PosAndDirRand.fireArray(2, rnd);
-              G4ThreeVector decpath(1.0,0.0,0.0);  
-              decpath.setMag(d2*CLHEP::cm);  // displacement between midpoints is half the total length
-              double angle = rnd[0]*TMath::Pi()*2.0;
-              decpath.setPhi(angle);
-              double ct=2.0*(rnd[1]-0.5);
-              if (ct<-1.0) ct=-1.0;
-              if (ct>1.0) ct=1.0;
-              angle = TMath::ACos(ct);
-              decpath.setTheta(angle);
-              midpoint2 = midpoint1 + decpath;
-              if (  (midpoint2.x() > xyz2[0]*CLHEP::cm && midpoint2.x() < (xyz2[0]+width)*CLHEP::cm) &&
-                    (midpoint2.y() > xyz2[1]*CLHEP::cm && midpoint2.y() < (xyz2[1]+height)*CLHEP::cm) &&
-                    (midpoint2.z() > xyz2[2]*CLHEP::cm && midpoint2.z() < (xyz2[2]+length)*CLHEP::cm) ){
-                scc = true;
-                break;
-              }
-            } // for itt
-
-            if (scc){
-              // Have to make a G4Step in order to use the IonizationAndScintillation service
-
-              // make a G4Step to be passed to the IonizationAndScintillation instance to reset it
-              G4ThreeVector pretv(0., 0., 0.);
-              G4ThreeVector posttv(0., 0., dx);
-              G4StepPoint preStep  = G4StepPoint();
-              G4StepPoint postStep = G4StepPoint();
-              preStep.SetPosition(pretv);
-              postStep.SetPosition(posttv);
-
-              // we only use the magnitude of the step and the energy
-              // deposited in the service, so only set those.
-              /// \todo Make sure the decays are handled properly if using the NEST version of ISCalculation.
-              G4Step step = G4Step();
-              step.SetTotalEnergyDeposit(0.5*e39);
-              step.SetPreStepPoint(&preStep);
-              step.SetPostStepPoint(&postStep);
-              larg4::IonizationAndScintillation::Instance()->Reset(&step);
-
-              DriftIonizationElectrons
-                (midpoint1,0.0,-(UINT_MAX - 10), cryo, tpc, firstrad, readwindow);
-              DriftIonizationElectrons
-                (midpoint2,0.0,-(UINT_MAX - 10), cryo, tpc, subsequentrad, readwindow);
-            } // if scc
-          } // for decays
-        } // for tpc
-      } // for cryostat
-    } // if argon decay
   } // LArVoxelReadout::EndOfEvent()
 
   //---------------------------------------------------------------------------------------
@@ -394,9 +270,7 @@ namespace larg4 {
   void LArVoxelReadout::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
                                                  const double simTime,
                                                  int trackID,
-                                                 unsigned short int cryostat, unsigned short int tpc,
-                                                 Radio_t radiological /* = notradiological */,
-                                                 unsigned int tickmax /* = 4096 */)
+                                                 unsigned short int cryostat, unsigned short int tpc)
   {
     auto const * ts = lar::providerFrom<detinfo::DetectorClocksService>();
 
@@ -416,8 +290,6 @@ namespace larg4 {
                                         1./fDriftVelocity[1], 
                                         1./fDriftVelocity[2]};
 
-    static int radiologicaltdcoffset=0;  // static so remembers for subsequent calls for radiological sim
-    
     struct Deposit_t {
       double energy = 0.;
       double electrons = 0.;
@@ -559,26 +431,6 @@ namespace larg4 {
             // Add potential decay/capture/etc delay effect, simTime.
             unsigned int tdc = fClock.Ticks(ts->G4ToElecTime(TDiff + simTime));
 
-            // on the first time we decide a tdc for a radiological, throw a random time for it.
-            // save it for other clusters, planes, and second (or subsequent) calls to this function
-
-            if (radiological != notradiological){
-              if (p == 0 && k == 0){
-                assert(fRadioGen); // No propagation random generator provided?!
-                CLHEP::RandFlat RadioRand(*fRadioGen);
-                double tmptdc = ((double) tickmax) * RadioRand.fire();
-                if (radiological == firstrad) radiologicaltdcoffset = tmptdc - tdc;
-              }
-              if ( (int) tdc >= -radiologicaltdcoffset)  {
-                tdc += radiologicaltdcoffset;
-              }
-              // skip the radiological deposition if it results in a negative tdc.
-              // should only happen due to diffusion or wire plane spacing.
-              else 
-                continue;  
-                
-            }
-            
             // Add electrons produced by each cluster to the map
             DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
           }

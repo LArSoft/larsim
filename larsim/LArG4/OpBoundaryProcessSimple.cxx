@@ -4,7 +4,7 @@
 // boundaries between different materials.  The relevant reflectivities
 // are read in by an implementation of the MaterialPropertiesLoader.
 //
-// The required parameters are total reflectance and radio of diffuse
+// The required parameters are total reflectance and ratio of diffuse
 // to specular reflectance.  Each photon crossing a boundary with a
 // defined reflectance is randomly either reflected or absorbed and killed
 // according to the supplied probability.

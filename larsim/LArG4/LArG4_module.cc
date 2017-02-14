@@ -123,7 +123,6 @@ namespace larg4 {
    * The random number generators used by this process are:
    * - 'GEANT' instance: used by Geant4
    * - 'propagation' instance: used in electron propagation
-   * - 'radio' instance: used for radiological decay
    *
    *
    * Configuration parameters
@@ -149,9 +148,6 @@ namespace larg4 {
    * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
    *     override the seed for the random generator used for electrons propagation
    *     to the wire planes (obtained from the NuRandomService by default)
-   * - <b>RadioSeed</b> (pset key, not defined by default): if defined,
-   *     override the seed for the random generator used for radiological decay
-   *     (obtained from the NuRandomService by default)
    * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
    *     optional list of generator labels which produce MCTruth;
    *     otherwise look for anything that has made MCTruth
@@ -217,7 +213,7 @@ namespace larg4 {
     if (pset.has_key("Seed")) {
       throw art::Exception(art::errors::Configuration)
         << "The configuration of LArG4 module has the discontinued 'Seed' parameter.\n"
-        "Seeds are now controlled by three parameters: 'GEANTSeed', 'PropagationSeed' and 'RadioSeed'.";
+        "Seeds are now controlled by two parameters: 'GEANTSeed' and 'PropagationSeed'.";
     }
     // setup the random number service for Geant4, the "G4Engine" label is a
     // special tag setting up a global engine for use by Geant4/CLHEP;
@@ -228,9 +224,6 @@ namespace larg4 {
     // same thing for the propagation engine:
     art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
-    // and again for radio decay
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, "HepJamesRandom", "radio", pset, "RadioSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object
@@ -297,7 +290,7 @@ namespace larg4 {
     // make a parallel world for each TPC in the detector
     pworlds.push_back(new LArVoxelReadoutGeometry(
       "LArVoxelReadoutGeometry",
-      rng->getEngine("propagation"), rng->getEngine("radio")
+      rng->getEngine("propagation")
       ));
     pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
     pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );

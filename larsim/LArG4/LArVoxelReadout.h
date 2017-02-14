@@ -135,8 +135,8 @@ namespace larg4 {
 
     /// Sets the random generators to be used
     void SetRandomEngines
-      (CLHEP::HepRandomEngine* pPropGen, CLHEP::HepRandomEngine* pRadioGen)
-      { fPropGen = pPropGen; fRadioGen = pRadioGen; }
+      (CLHEP::HepRandomEngine* pPropGen)
+      { fPropGen = pPropGen; }
     
     /// Associates this readout to one specific TPC
     void SetSingleTPC(unsigned int cryostat, unsigned int tpc);
@@ -193,17 +193,11 @@ namespace larg4 {
 
   private:
 
-    typedef enum radiologicaltype {
-      notradiological,
-      firstrad,
-      subsequentrad } Radio_t;
 
     void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
                                   const double g4time,
                                   int trackID,
-                                  unsigned short int cryostat, unsigned short int tpc,
-                                  Radio_t radiological=notradiological, 
-                                  unsigned int tickmax=4096); // used to randomize the TDC tick values  
+                                  unsigned short int cryostat, unsigned short int tpc);
 
     bool Has(std::vector<unsigned short int> v, unsigned short int tpc) const
     {  	
@@ -222,7 +216,6 @@ namespace larg4 {
     int					      fMinNumberOfElCluster;
     double                                    fSampleRate;
     int                                       fTriggerOffset;
-    double                                    fArgon39DecayRate;
     bool                                      fDontDriftThem;
     std::vector<unsigned short int>           fSkipWireSignalInTPCs;
 
@@ -234,7 +227,6 @@ namespace larg4 {
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
     
     CLHEP::HepRandomEngine*                   fPropGen = nullptr;  ///< random engine for charge propagation
-    CLHEP::HepRandomEngine*                   fRadioGen = nullptr; ///< random engine for radiological decay
     
     ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
   };

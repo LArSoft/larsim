@@ -126,10 +126,10 @@ namespace larg4 {
   // Constructor and destructor.
   LArVoxelReadoutGeometry::LArVoxelReadoutGeometry(
       const G4String name,
-      CLHEP::HepRandomEngine& PropGen, CLHEP::HepRandomEngine& RadioGen
+      CLHEP::HepRandomEngine& PropGen
     )
     : G4VUserParallelWorld(name)
-    , fPropGen(&PropGen), fRadioGen(&RadioGen)
+    , fPropGen(&PropGen)
   {
     larg4::IonizationAndScintillation *ios = larg4::IonizationAndScintillation::Instance();
     std::unique_ptr<G4UserLimits> fStepLimit(new G4UserLimits(ios->StepSizeLimit()));
@@ -203,7 +203,7 @@ namespace larg4 {
     // routines will be called every time a particle deposits energy in
     // a voxel that overlaps the LAr TPC.
     LArVoxelReadout* larVoxelReadout = new LArVoxelReadout("LArVoxelSD");
-    larVoxelReadout->SetRandomEngines(fPropGen, fRadioGen);
+    larVoxelReadout->SetRandomEngines(fPropGen);
     if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat(0).NTPC() == 1))
       larVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
 
