@@ -373,8 +373,8 @@ namespace evgen{
     else if (fAngleDist == kHIST){
       double theta = SelectFromHist(hThetaHist[i]);
       double phi = SelectFromHist(hPhiHist[i]);
-      thxz = 0;
-      thyz = 0; //FIXME
+      thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
+      thyz = (180./M_PI) * std::atan2(std::sin(theta) * std::sin(phi), std::cos(theta)); // converting from theta,phi, to thetaxz, thetayz
     }
     else {
       
@@ -488,8 +488,19 @@ namespace evgen{
       else if (fAngleDist == kHIST){
         double theta = SelectFromHist(hThetaHist[i]);
         double phi = SelectFromHist(hPhiHist[i]);
-        thxz = 0;
-        thyz = 0; //FIXME
+        thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
+        thyz = (180./M_PI) * std::atan(std::tan(theta) * std::sin(phi)); // converting from theta,phi, to thetaxz, thetayz
+//        double tmpsinthxz = std::sin(thxz);
+//        double tmpsinthyz = std::sin(thyz);
+//        thxz = std::asin(tmpsinthxz);
+//        thyz = std::asin(tmpsinthyz);
+        
+//        std::cout << "DEBUG::" << std::endl;
+//        std::cout << "theta = " << theta << ", phi = " << phi << std::endl;
+//        std::cout << "therefore x = " << std::sin(theta)*std::cos(phi) << ", y = " << std::sin(theta)*std::sin(phi) << ", z = " << std::cos(theta) << std::endl;
+//
+//        std::cout << "thetaxz = " << thxz << ", thetayz = " << thyz << std::endl;
+
       }
       else {
         
