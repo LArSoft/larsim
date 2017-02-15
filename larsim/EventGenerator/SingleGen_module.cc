@@ -48,6 +48,8 @@
 #include "TVector3.h"
 #include "TDatabasePDG.h"
 #include "TMath.h"
+#include "TFile.h"
+#include "TH1.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -72,12 +74,15 @@ namespace evgen {
 
     void SampleOne(unsigned int   i, 
 		   simb::MCTruth &mct);        
+    void SampleMany(simb::MCTruth &mct);        
     void Sample(simb::MCTruth &mct);        
     void printVecs(std::vector<std::string> const& list);
     bool PadVector(std::vector<double> &vec);      
-
+    double SelectFromHist(const TH1 *h);
+    
     static const int kUNIF = 0;    
     static const int kGAUS = 1;    
+    static const int kHIST = 2;    // histogram for distribution
 
     int                 fMode;           ///< Particle Selection Mode 
                                          ///< 0--generate a list of all particles, 
@@ -100,12 +105,22 @@ namespace evgen {
     std::vector<double> fSigmaT;         ///< Variation in t position (s)    
     int                 fPosDist;        ///< How to distribute xyz (gaus, or uniform)        
     int                 fTDist;          ///< How to distribute t  (gaus, or uniform)        
+    bool                fSingleVertex;   ///< if true - all particles produced at the same location        
     std::vector<double> fTheta0XZ;       ///< Angle in XZ plane (degrees)    
     std::vector<double> fTheta0YZ;       ///< Angle in YZ plane (degrees)    
     std::vector<double> fSigmaThetaXZ;   ///< Variation in angle in XZ plane    
     std::vector<double> fSigmaThetaYZ;   ///< Variation in angle in YZ plane    
     int                 fAngleDist;      ///< How to distribute angles (gaus, uniform)
+    std::string fHistFileName;               ///< Filename containing histogram of momenta
+    std::vector<std::string> fPHist;     ///< name of histogram of momenta
+    std::vector<std::string> fThetaHist; ///< name of histogram for theta distribution
+    std::vector<std::string> fPhiHist;   ///< name of histogram for phi distribution
 
+    TFile *fHistFile;                    /// actual TFile containing histograms
+    std::vector<TH1*> hPHist ;           /// actual TH1 for momentum distributions
+    std::vector<TH1*> hThetaHist ;       /// actual TH1 for theta distributions
+    std::vector<TH1*> hPhiHist ;         /// actual TH1 for phi distributions
+    
   };
 }
 
@@ -137,12 +152,9 @@ namespace evgen{
   {
     // do not put seed in reconfigure because we don't want to reset 
     // the seed midstream
-
     fPadOutVectors = p.get< bool                >("PadOutVectors");
     fMode          = p.get< int                 >("ParticleSelectionMode");
     fPDG           = p.get< std::vector<int>    >("PDG");
-    fP0            = p.get< std::vector<double> >("P0");
-    fSigmaP        = p.get< std::vector<double> >("SigmaP");
     fPDist         = p.get< int                 >("PDist");
     fTDist         = p.get< int                 >("TDist");
     fX0            = p.get< std::vector<double> >("X0");
@@ -154,11 +166,17 @@ namespace evgen{
     fSigmaZ        = p.get< std::vector<double> >("SigmaZ");
     fSigmaT        = p.get< std::vector<double> >("SigmaT");
     fPosDist       = p.get< int                 >("PosDist");
-    fTheta0XZ      = p.get< std::vector<double> >("Theta0XZ");
-    fTheta0YZ      = p.get< std::vector<double> >("Theta0YZ");
-    fSigmaThetaXZ  = p.get< std::vector<double> >("SigmaThetaXZ");
-    fSigmaThetaYZ  = p.get< std::vector<double> >("SigmaThetaYZ");
+    fHistFileName  = p.get< std::string         >("HistogramFile","");
+    fPHist       = p.get< std::vector<std::string> >("PHist");
+    fP0          = p.get< std::vector<double> >("P0");
+    fSigmaP      = p.get< std::vector<double> >("SigmaP");
     fAngleDist     = p.get< int                 >("AngleDist");
+    fThetaHist   = p.get< std::vector<std::string> >("ThetaHist");
+    fPhiHist     = p.get< std::vector<std::string> >("PhiHist");
+    fTheta0XZ    = p.get< std::vector<double> >("Theta0XZ");
+    fTheta0YZ    = p.get< std::vector<double> >("Theta0YZ");
+    fSigmaThetaXZ= p.get< std::vector<double> >("SigmaThetaXZ");
+    fSigmaThetaYZ= p.get< std::vector<double> >("SigmaThetaYZ");
 
     std::vector<std::string> vlist(15);
     vlist[0]  = "PDG";
@@ -177,23 +195,26 @@ namespace evgen{
     vlist[13] = "T0";
     vlist[14] = "SigmaT";
 
+//    vlist[15] = "PHist";
+//    vlist[16] = "ThetaHist";
+//    vlist[17] = "PhiHist";
     
     // begin tests for multiple particle error possibilities  
     std::string list;
-    if( !this->PadVector(fP0          ) ) list.append(vlist[1] .append(", \n"));
-    if( !this->PadVector(fSigmaP      ) ) list.append(vlist[2] .append(", \n"));
-    if( !this->PadVector(fX0          ) ) list.append(vlist[3] .append(", \n"));
-    if( !this->PadVector(fY0          ) ) list.append(vlist[4] .append(", \n"));
-    if( !this->PadVector(fZ0          ) ) list.append(vlist[5] .append(", \n"));
-    if( !this->PadVector(fSigmaX      ) ) list.append(vlist[6] .append(", \n"));
-    if( !this->PadVector(fSigmaY      ) ) list.append(vlist[7] .append(", \n"));
-    if( !this->PadVector(fSigmaZ      ) ) list.append(vlist[8] .append(", \n"));
-    if( !this->PadVector(fTheta0XZ    ) ) list.append(vlist[9] .append(", \n"));
-    if( !this->PadVector(fTheta0YZ    ) ) list.append(vlist[10].append(", \n"));
-    if( !this->PadVector(fSigmaThetaXZ) ) list.append(vlist[11].append(", \n"));
-    if( !this->PadVector(fSigmaThetaYZ) ) list.append(vlist[12].append("  \n"));
-    if( !this->PadVector(fT0          ) ) list.append(vlist[13].append(", \n"));
-    if( !this->PadVector(fSigmaT      ) ) list.append(vlist[14].append(", \n"));
+    if( !this->PadVector(fP0          ) ){ list.append(vlist[1].append(", \n")); }
+    if( !this->PadVector(fSigmaP      ) ){ list.append(vlist[2].append(", \n")); }
+    if( !this->PadVector(fX0          ) ){ list.append(vlist[3].append(", \n")); }
+    if( !this->PadVector(fY0          ) ){ list.append(vlist[4].append(", \n")); }
+    if( !this->PadVector(fZ0          ) ){ list.append(vlist[5].append(", \n")); }
+    if( !this->PadVector(fSigmaX      ) ){ list.append(vlist[6].append(", \n")); }
+    if( !this->PadVector(fSigmaY      ) ){ list.append(vlist[7].append(", \n")); }
+    if( !this->PadVector(fSigmaZ      ) ){ list.append(vlist[8].append(", \n")); }
+    if( !this->PadVector(fTheta0XZ    ) ){ list.append(vlist[9].append(", \n")); }
+    if( !this->PadVector(fTheta0YZ    ) ){ list.append(vlist[10].append(", \n")); }
+    if( !this->PadVector(fSigmaThetaXZ) ){ list.append(vlist[11].append(", \n")); }
+    if( !this->PadVector(fSigmaThetaYZ) ){ list.append(vlist[12].append("  \n")); }
+    if( !this->PadVector(fT0          ) ){ list.append(vlist[13].append(", \n")); }
+    if( !this->PadVector(fSigmaT      ) ){ list.append(vlist[14].append(", \n")); }
 
     
 
@@ -206,6 +227,21 @@ namespace evgen{
 					<< " and/or you have set fPadOutVectors to false. \n";
     
     if(fPDG.size() > 1 && fPadOutVectors) this->printVecs(vlist);
+
+    // If needed, get histograms for momentum and angle distributions
+    if (fHistFileName != ""){
+      fHistFile = new TFile(fHistFileName.c_str());
+    }
+    if (fPDist==kHIST){
+      hPHist.reserve(fPDG.size());
+      hThetaHist.reserve(fPDG.size());
+      hPhiHist.reserve(fPDG.size());
+      for (unsigned int i(0); i < fPDG.size(); ++i){
+        hPHist.emplace_back( (TH1*)fHistFile->Get( fPHist[i].c_str() ) );
+        hThetaHist.emplace_back( (TH1*)fHistFile->Get( fThetaHist[i].c_str() ));
+        hPhiHist.emplace_back( (TH1*)fHistFile->Get( fPhiHist[i].c_str() ));
+      }
+    }
 
     return;
   }
@@ -287,9 +323,13 @@ namespace evgen{
     if (fPDist == kGAUS) {
       p = gauss.fire(fP0[i], fSigmaP[i]);
     }
-    else {
+    else if (fPDist == kHIST){
+      p = SelectFromHist(hPHist[i]);
+    }
+    else{// if (fPDist == kUNIF) {
       p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
     }
+//    else {std::cout << "do not understand the value of PDist!";}
 
     static TDatabasePDG  pdgt;
     TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
@@ -329,6 +369,12 @@ namespace evgen{
     if (fAngleDist == kGAUS) {
       thxz = gauss.fire(fTheta0XZ[i], fSigmaThetaXZ[i]);
       thyz = gauss.fire(fTheta0YZ[i], fSigmaThetaYZ[i]);
+    }
+    else if (fAngleDist == kHIST){
+      double theta = SelectFromHist(hThetaHist[i]);
+      double phi = SelectFromHist(hPhiHist[i]);
+      thxz = 0;
+      thyz = 0; //FIXME
     }
     else {
       
@@ -373,16 +419,138 @@ namespace evgen{
   }
 
   //____________________________________________________________________________
+  // Draw the type, momentum and position for all particles from the 
+  // FCIHL description.  Start positions will all match but momenta and angles drawn from
+  // distributions defined in the fhicls
+  void SingleGen::SampleMany(simb::MCTruth &mct){
+
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandGaussQ gauss(engine);
+
+    // Choose position
+    TVector3 x;
+    if (fPosDist == kGAUS) {
+      x[0] = gauss.fire(fX0[0], fSigmaX[0]);;
+      x[1] = gauss.fire(fY0[0], fSigmaY[0]);
+      x[2] = gauss.fire(fZ0[0], fSigmaZ[0]);
+    }
+    else {
+      x[0] = fX0[0] + fSigmaX[0]*(2.0*flat.fire()-1.0);
+      x[1] = fY0[0] + fSigmaY[0]*(2.0*flat.fire()-1.0);
+      x[2] = fZ0[0] + fSigmaZ[0]*(2.0*flat.fire()-1.0);
+    }
+
+    double t = 0.;
+    if(fTDist==kGAUS){
+      t = gauss.fire(fT0[0], fSigmaT[0]);
+    }
+    else{
+      t = fT0[0] + fSigmaT[0]*(2.0*flat.fire()-1.0);
+    }
+
+    TLorentzVector pos(x[0], x[1], x[2], t);
+    
+    // loop through particles and select momenta and angles
+    for (unsigned int i(0); i<fPDG.size(); ++i){
+      // Choose momentum
+      double p = 0.0;
+      double m = 0.0;
+      if (fPDist == kGAUS) {
+        p = gauss.fire(fP0[i], fSigmaP[i]);
+      }
+      else if (fPDist == kHIST){
+        p = SelectFromHist(hPHist[i]);
+      }
+      else {
+        p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
+      }
+  
+      static TDatabasePDG  pdgt;
+      TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
+      if (pdgp) m = pdgp->Mass();
+     
+  
+      // Choose angles
+      double thxz = 0;
+      double thyz = 0;
+      
+      double thyzrads = 0; 
+      double thyzradsplussigma = 0;
+      double thyzradsminussigma = 0;
+  
+      if (fAngleDist == kGAUS) {
+        thxz = gauss.fire(fTheta0XZ[i], fSigmaThetaXZ[i]);
+        thyz = gauss.fire(fTheta0YZ[i], fSigmaThetaYZ[i]);
+      }
+      else if (fAngleDist == kHIST){
+        double theta = SelectFromHist(hThetaHist[i]);
+        double phi = SelectFromHist(hPhiHist[i]);
+        thxz = 0;
+        thyz = 0; //FIXME
+      }
+      else {
+        
+        // Choose angles flat in phase space, which is flat in theta_xz 
+        // and flat in sin(theta_yz).
+     
+        thxz = fTheta0XZ[i] + fSigmaThetaXZ[i]*(2.0*flat.fire()-1.0);
+       
+        thyzrads = std::asin(std::sin((M_PI/180.)*(fTheta0YZ[i]))); //Taking asin of sin gives value between -Pi/2 and Pi/2 regardless of user input
+        thyzradsplussigma = TMath::Min((thyzrads + ((M_PI/180.)*fabs(fSigmaThetaYZ[i]))), M_PI/2.);
+        thyzradsminussigma = TMath::Max((thyzrads - ((M_PI/180.)*fabs(fSigmaThetaYZ[i]))), -M_PI/2.);
+           
+        //uncomment line to print angular variation info
+        //std::cout << "Central angle: " << (180./M_PI)*thyzrads << " Max angle: " << (180./M_PI)*thyzradsplussigma << " Min angle: " << (180./M_PI)*thyzradsminussigma << std::endl; 
+  
+        double sinthyzmin = std::sin(thyzradsminussigma);
+        double sinthyzmax = std::sin(thyzradsplussigma);
+        double sinthyz = sinthyzmin + flat.fire() * (sinthyzmax - sinthyzmin);
+        thyz = (180. / M_PI) * std::asin(sinthyz);
+      }
+      
+      double thxzrad=thxz*M_PI/180.0;	
+      double thyzrad=thyz*M_PI/180.0;
+  
+      TLorentzVector pvec(p*std::cos(thyzrad)*std::sin(thxzrad),
+  			p*std::sin(thyzrad),
+  			p*std::cos(thxzrad)*std::cos(thyzrad),
+  			std::sqrt(p*p+m*m));
+   
+      // set track id to -i as these are all primary particles and have id <= 0
+      int trackid = -1*(i+1);
+      std::string primary("primary");
+  
+      simb::MCParticle part(trackid, fPDG[i], primary);
+      part.AddTrajectoryPoint(pos, pvec);
+  
+      //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
+      //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
+      //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl; 
+       
+      mct.Add(part);
+    }
+  }
+
+
+  //____________________________________________________________________________
   void SingleGen::Sample(simb::MCTruth &mct) 
   {
 
     switch (fMode) {
     case 0: // List generation mode: every event will have one of each
 	    // particle species in the fPDG array
-      for (unsigned int i=0; i<fPDG.size(); ++i) {
-	SampleOne(i,mct);
-      }//end loop over particles
-      break;
+        if (fSingleVertex){
+          SampleMany(mct);
+        }
+        else{
+          for (unsigned int i=0; i<fPDG.size(); ++i) {
+            SampleOne(i,mct);
+          }//end loop over particles
+        }
+        break;
     case 1: // Random selection mode: every event will exactly one particle
             // selected randomly from the fPDG array
       {
@@ -414,7 +582,7 @@ namespace evgen{
 			     << " The new input particle configuration is:\n" ;
 
     std::string values;
-    for(size_t i = 0; i < list.size(); ++i){
+    for(size_t i = 0; i <=1; ++i){// list.size(); ++i){
 
       values.append(list[i]);
       values.append(": [ ");      
@@ -450,6 +618,26 @@ namespace evgen{
 
     return;
   }
+  
+  
+  //____________________________________________________________________________
+  double SingleGen::SelectFromHist(const TH1 *h)
+  {
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat   flat(engine);
+    
+    double throw_value = h->Integral() * flat.fire();
+    double cum_value(0);
+    for (int i(0); i < h->GetNbinsX()+1; ++i){
+      cum_value += h->GetBinContent(i);
+      if (throw_value < cum_value){
+        return flat.fire()*h->GetBinWidth(i) + h->GetBinLowEdge(i);
+      }
+    }
+    return throw_value; // for some reason we've gone through all bins and failed?
+  }
+
 
 }//end namespace evgen
 
