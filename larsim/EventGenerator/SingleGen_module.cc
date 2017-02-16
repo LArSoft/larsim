@@ -373,8 +373,11 @@ namespace evgen{
     else if (fAngleDist == kHIST){
       double theta = SelectFromHist(hThetaHist[i]);
       double phi = SelectFromHist(hPhiHist[i]);
+      // converting from theta,phi, to thetaxz, thetayz.
+      // Had to reverse engineer this coordinate system myself though
+      // So not convined by it yet. AF
       thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
-      thyz = (180./M_PI) * std::atan2(std::sin(theta) * std::sin(phi), std::cos(theta)); // converting from theta,phi, to thetaxz, thetayz
+      thyz = (180./M_PI) * std::atan2(std::sin(theta) * std::sin(phi), std::cos(theta)); 
     }
     else {
       
@@ -488,8 +491,11 @@ namespace evgen{
       else if (fAngleDist == kHIST){
         double theta = SelectFromHist(hThetaHist[i]);
         double phi = SelectFromHist(hPhiHist[i]);
+        // converting from theta,phi, to thetaxz, thetayz.
+        // Had to reverse engineer this coordinate system myself though
+        // So not convined by it yet. AF
         thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
-        thyz = (180./M_PI) * std::atan(std::tan(theta) * std::sin(phi)); // converting from theta,phi, to thetaxz, thetayz
+        thyz = (180./M_PI) * std::asin(std::sin(theta) * std::sin(phi)); 
 //        double tmpsinthxz = std::sin(thxz);
 //        double tmpsinthyz = std::sin(thyz);
 //        thxz = std::asin(tmpsinthxz);
