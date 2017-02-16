@@ -496,17 +496,6 @@ namespace evgen{
         // So not convined by it yet. AF
         thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
         thyz = (180./M_PI) * std::asin(std::sin(theta) * std::sin(phi)); 
-//        double tmpsinthxz = std::sin(thxz);
-//        double tmpsinthyz = std::sin(thyz);
-//        thxz = std::asin(tmpsinthxz);
-//        thyz = std::asin(tmpsinthyz);
-        
-//        std::cout << "DEBUG::" << std::endl;
-//        std::cout << "theta = " << theta << ", phi = " << phi << std::endl;
-//        std::cout << "therefore x = " << std::sin(theta)*std::cos(phi) << ", y = " << std::sin(theta)*std::sin(phi) << ", z = " << std::cos(theta) << std::endl;
-//
-//        std::cout << "thetaxz = " << thxz << ", thetayz = " << thyz << std::endl;
-
       }
       else {
         
