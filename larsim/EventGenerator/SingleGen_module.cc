@@ -377,7 +377,7 @@ namespace evgen{
       // Had to reverse engineer this coordinate system myself though
       // So not convined by it yet. AF
       thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
-      thyz = (180./M_PI) * std::atan2(std::sin(theta) * std::sin(phi), std::cos(theta)); 
+      thyz = (180./M_PI) * std::asin(std::sin(theta) * std::sin(phi)); 
     }
     else {
       
