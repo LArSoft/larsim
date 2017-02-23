@@ -10,6 +10,7 @@ art_make(
     ${MF_MESSAGELOGGER}
     ${MF_UTILITIES}
     ${CETLIB}
+    ${ROOT_EG}
     ${ROOT_BASIC_LIB_LIST}
   )
 
