@@ -341,6 +341,13 @@ namespace larg4 {
       // Drift time (nano-sec)
       double TDrift;
       XDrift += posOffsets.at(0);
+      
+      // Space charge distortion could push the energy deposit beyond the wire
+      // plane (see issue #15131). Given that we don't have any subtlety in the
+      // simulation of this region, bringing the deposit exactly on the plane
+      // should be enough for the time being.
+      if (XDrift < 0.) XDrift = 0.;
+      
       TDrift = XDrift * RecipDriftVel[0];
       if (tpcg.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
         TDrift = ((XDrift - tpcg.PlanePitch(0,1)) * RecipDriftVel[0] 
@@ -393,12 +400,26 @@ namespace larg4 {
         else               nEnDiff[xx] = 0.;
       }
       
+      double const avegageYtransversePos
+        = (stepMidPoint.y()/CLHEP::cm) + posOffsets.at(1);
+      double const avegageZtransversePos
+        = (stepMidPoint.z()/CLHEP::cm) + posOffsets.at(2);
+      
       // Smear drift times by x position and drift time
-      PropRand.fireArray( nClus, &XDiff[0], 0., LDiffSig);
-
-      // Smear the Y,Z position by the transverse diffusion
-      PropRand.fireArray( nClus, &YDiff[0], (stepMidPoint.y()/CLHEP::cm)+posOffsets.at(1),TDiffSig);
-      PropRand.fireArray( nClus, &ZDiff[0], (stepMidPoint.z()/CLHEP::cm)+posOffsets.at(2),TDiffSig);
+      if (LDiffSig > 0.0)
+        PropRand.fireArray( nClus, &XDiff[0], 0., LDiffSig);
+      else
+        XDiff.assign(nClus, 0.0);
+      
+      if (TDiffSig > 0.0) {
+        // Smear the Y,Z position by the transverse diffusion
+        PropRand.fireArray( nClus, &YDiff[0], avegageYtransversePos, TDiffSig);
+        PropRand.fireArray( nClus, &ZDiff[0], avegageZtransversePos, TDiffSig);
+      }
+      else {
+        YDiff.assign(nClus, avegageYtransversePos);
+        ZDiff.assign(nClus, avegageZtransversePos);
+      }
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
