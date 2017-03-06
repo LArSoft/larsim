@@ -10,13 +10,14 @@ simple_plugin(PhotonBackTracker "service"
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+                        canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
 			${ROOT_BASIC_LIB_LIST}
 )
 
@@ -31,13 +32,14 @@ simple_plugin(BackTracker "service"
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+                        canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
 			${ROOT_BASIC_LIB_LIST}
               
 )
@@ -65,7 +67,7 @@ simple_plugin(CheckBackTracking "module"
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
               
 )
 
@@ -80,13 +82,14 @@ simple_plugin(RecoCheckAna "module"
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+                        canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
 			${ROOT_BASIC_LIB_LIST}
              
 )
