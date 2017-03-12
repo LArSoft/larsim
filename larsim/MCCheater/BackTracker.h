@@ -64,7 +64,15 @@ namespace cheat{
     const simb::MCParticle*              TrackIDToParticle(int const& id)       const;
     const simb::MCParticle*              TrackIDToMotherParticle(int const& id) const;
 
+    /// Loop over all sim::SimChannels and fill a vector of sim::IDE objects for the given
+    /// track id. Note that this function will return sim::IDE from ALL planes and you
+    /// do not have the plane id information in sim::IDE; use the overloaded function
+    /// TrackIDToSimIDE(int const& id, const geo::View_t view) to select view.
     std::vector<sim::IDE>                TrackIDToSimIDE(int const& id)         const;
+
+    /// Loop over sim::SimChannels in which belong to selected view and fill a vector
+    /// of sim::IDE objects for the given track id.
+    std::vector<sim::IDE>                TrackIDToSimIDE(int const& id, const geo::View_t view) const;
 
     // Get art::Ptr<> to simb::MCTruth and related information
     const art::Ptr<simb::MCTruth>&       TrackIDToMCTruth(int const& id)                        const;

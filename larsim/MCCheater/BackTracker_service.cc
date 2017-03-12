@@ -190,6 +190,31 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
+  std::vector<sim::IDE> BackTracker::TrackIDToSimIDE(int const& id, const geo::View_t view) const
+  {
+    std::vector<sim::IDE> ides;
+    const geo::Geometry* geom = &*(art::ServiceHandle<geo::Geometry>());
+
+    // loop over all sim::SimChannels and fill a vector
+    // of sim::IDE objects for the given track id
+    for(const sim::SimChannel* sc : fSimChannels){
+        if (geom->View(sc->Channel()) != view) continue;
+
+        // loop over the IDEMAP
+        for(const auto & item : sc->TDCIDEMap()){
+
+            // loop over the vector of IDE objects.
+            for(const sim::IDE & ide : item.second){
+                if (abs(ide.trackID) == id) ides.push_back(ide);
+            }
+
+        } // end loop over map from sim::SimChannel
+    } // end loop over sim::SimChannels
+
+    return ides;
+  }
+
+  //----------------------------------------------------------------------
   const art::Ptr<simb::MCTruth>& BackTracker::ParticleToMCTruth(const simb::MCParticle* p) const
   {
     return this->TrackIDToMCTruth(p->TrackId());
