@@ -1,0 +1,39 @@
+#
+# File:    empty_events.fcl
+# Purpose: Generates empty events with a timestamp.
+# Date:    March 15, 2017
+# Author:  Gianluca Petrillo (petrillo@fnal.gov)
+# Description:
+# 
+# An empty event with a timestamp is a container whose purpose is to "fix" the
+# random numbers generated for this event. This is achieved on jobs which use
+# the "perEvent" policy of NuRandomService, which bases its random seeds on
+# event timestamp.
+# 
+# Note that if the timestamp plugin takes the timestamp from the system clock,
+# that clock must have a very good resolution, since art will take little time
+# from an event to the next, and their tiem stamps must be different.
+# This should not be a problem with `GeneratedEventTimestamp` plugin, whose
+# clock resolution is supposed to be at the nanosecond level.
+# Also note that if files are produced in different jobs, there is a faint
+# chance that two empty events have the same time stamp. If the events have
+# same time stamp *and* event ID, they'll get the same random seed and will be
+# duplicate of each other.
+#
+# Dependencies: none
+#
+# Example:
+# The command:
+#     
+#     lar -c empty_events.fcl -n 100 -o 'emptyevents-%tc.root'
+#     
+# will create 100 empty events in a file named 'emptyevents-%tc.root', where %tc
+# is replaced by `RootOutput` module with the usual creation time of the file.
+# Note that the creation time is in seconds, so for batch jobs you have to make
+# sure the output file names are actually different.
+# 
+
+sources: {
+  module_type: EmptyEvent
+  timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
+}
