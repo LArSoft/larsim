@@ -61,6 +61,7 @@ simple_plugin(SimWire "module"
                       ${FHICLCPP}
                       ${CETLIB}
                       ${CLHEP}
+                      ${ROOT_GEOM}
                       ${ROOT_BASIC_LIB_LIST}
               
 )
@@ -87,6 +88,7 @@ simple_plugin(SimWireT962 "module"
                           ${FHICLCPP}
                           ${CETLIB}
                           ${CLHEP}
+                          ${ROOT_GEOM}
                           ${ROOT_BASIC_LIB_LIST}
               
 )
