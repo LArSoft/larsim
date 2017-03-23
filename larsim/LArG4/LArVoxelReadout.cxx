@@ -303,9 +303,9 @@ namespace larg4 {
 
     double xyz1[3] = {0.};
 
-    double xyz[3] = {stepMidPoint.x() / CLHEP::cm,
-                     stepMidPoint.y() / CLHEP::cm,
-                     stepMidPoint.z() / CLHEP::cm};
+    double const xyz[3] = {stepMidPoint.x() / CLHEP::cm,
+                           stepMidPoint.y() / CLHEP::cm,
+                           stepMidPoint.z() / CLHEP::cm};
 
     // Already know which TPC we're in because we have been told
 
@@ -326,21 +326,17 @@ namespace larg4 {
       if(XDrift < 0.) return;
 
       // Get SCE {x,y,z} offsets for particular location in TPC      
-      std::vector<double> posOffsets;
+      geo::Vector_t posOffsets;
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true)
       {
-        posOffsets = SCE->GetPosOffsets(stepMidPoint.x()/CLHEP::cm,stepMidPoint.y()/CLHEP::cm,stepMidPoint.z()/CLHEP::cm);
+        posOffsets = SCE->GetPosOffsets({ xyz[0], xyz[1], xyz[2] });
       }
-      else
-      {
-        posOffsets.resize(3,0.0);
-      }
-      posOffsets.at(0) *= -1.0;
+      posOffsets.SetX(-posOffsets.X());
 
       // Drift time (nano-sec)
       double TDrift;
-      XDrift += posOffsets.at(0);
+      XDrift += posOffsets.X();
       
       // Space charge distortion could push the energy deposit beyond the wire
       // plane (see issue #15131). Given that we don't have any subtlety in the
@@ -401,9 +397,9 @@ namespace larg4 {
       }
       
       double const avegageYtransversePos
-        = (stepMidPoint.y()/CLHEP::cm) + posOffsets.at(1);
+        = (stepMidPoint.y()/CLHEP::cm) + posOffsets.Y();
       double const avegageZtransversePos
-        = (stepMidPoint.z()/CLHEP::cm) + posOffsets.at(2);
+        = (stepMidPoint.z()/CLHEP::cm) + posOffsets.Z();
       
       // Smear drift times by x position and drift time
       if (LDiffSig > 0.0)
