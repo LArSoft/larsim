@@ -372,7 +372,7 @@ namespace evgen{
 	name = "RadioGen_";
 	name += nuclide;
 	name += "_Alpha";
-	TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np-1);
+	TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np);
 	for (int i=0; i<np; i++)
 	  {
 	    alphahist->SetBinContent(i+1,y[i]);
@@ -397,7 +397,7 @@ namespace evgen{
 	name = "RadioGen_";
 	name += nuclide;
 	name += "_Beta";
-	TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np-1);
+	TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np);
 
 	for (int i=0; i<np; i++)
 	  {
@@ -421,7 +421,7 @@ namespace evgen{
 	name = "RadioGen_";
 	name += nuclide;
 	name += "_Gamma";
-	TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np-1);
+	TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np);
 	for (int i=0; i<np; i++)
 	  {
 	    gammahist->SetBinContent(i+1,y[i]);
