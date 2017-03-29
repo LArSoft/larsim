@@ -33,7 +33,7 @@
 # sure the output file names are actually different.
 # 
 
-sources: {
+source: {
   module_type: EmptyEvent
   timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
 }
