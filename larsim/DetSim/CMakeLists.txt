@@ -10,13 +10,14 @@ art_make( NO_PLUGINS
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                        art_Persistency_Common canvas_Persistency_Common
-                        art_Persistency_Provenance canvas_Persistency_Provenance
-                        art_Utilities canvas_Utilities
+                        art_Persistency_Common
+                        art_Persistency_Provenance
+                        art_Utilities
+                        canvas
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${FHICLCPP}
-                        ${CETLIB}
+                        cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
          )
 
@@ -28,13 +29,14 @@ simple_plugin(SimWireAna "module"
                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                         art_Persistency_Common canvas_Persistency_Common
-                         art_Persistency_Provenance canvas_Persistency_Provenance
-                         art_Utilities canvas_Utilities
+                         art_Persistency_Common
+                         art_Persistency_Provenance
+                         art_Utilities
+                         canvas
                          ${MF_MESSAGELOGGER}
                          ${MF_UTILITIES}
                          ${FHICLCPP}
-                         ${CETLIB}
+                         cetlib cetlib_except
                          ${ROOT_BASIC_LIB_LIST}
               
 )
@@ -53,13 +55,14 @@ simple_plugin(SimWire "module"
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                      art_Persistency_Common canvas_Persistency_Common
-                      art_Persistency_Provenance canvas_Persistency_Provenance
-                      art_Utilities canvas_Utilities
+                      art_Persistency_Common
+                      art_Persistency_Provenance
+                      art_Utilities
+                      canvas
                       ${MF_MESSAGELOGGER}
                       ${MF_UTILITIES}
                       ${FHICLCPP}
-                      ${CETLIB}
+                      cetlib cetlib_except
                       ${CLHEP}
                       ${ROOT_GEOM}
                       ${ROOT_BASIC_LIB_LIST}
@@ -80,13 +83,14 @@ simple_plugin(SimWireT962 "module"
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                          art_Persistency_Common canvas_Persistency_Common
-                          art_Persistency_Provenance canvas_Persistency_Provenance
-                          art_Utilities canvas_Utilities
+                          art_Persistency_Common
+                          art_Persistency_Provenance
+                          art_Utilities
+                          canvas
                           ${MF_MESSAGELOGGER}
                           ${MF_UTILITIES}
                           ${FHICLCPP}
-                          ${CETLIB}
+                          cetlib cetlib_except
                           ${CLHEP}
                           ${ROOT_GEOM}
                           ${ROOT_BASIC_LIB_LIST}
@@ -102,13 +106,14 @@ simple_plugin(WienerFilterAna "module"
                               ${ART_FRAMEWORK_SERVICES_REGISTRY}
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                              art_Persistency_Common canvas_Persistency_Common
-                              art_Persistency_Provenance canvas_Persistency_Provenance
-                              art_Utilities canvas_Utilities
+                              art_Persistency_Common
+                              art_Persistency_Provenance
+                              art_Utilities
+                              canvas
                               ${MF_MESSAGELOGGER}
                               ${MF_UTILITIES}
                               ${FHICLCPP}
-                              ${CETLIB}
+                              cetlib cetlib_except
                               ${ROOT_BASIC_LIB_LIST}
               
 )
@@ -121,7 +126,7 @@ simple_plugin(DumpRawDigits "module"
                             ${ART_FRAMEWORK_SERVICES_REGISTRY}
                             ${MF_MESSAGELOGGER}
                             ${FHICLCPP}
-                            ${CETLIB}
+                            cetlib cetlib_except
               
 )
 
@@ -131,7 +136,7 @@ simple_plugin(RecompressRawDigits "module"
                 ${ART_FRAMEWORK_PRINCIPAL}
                 ${MF_MESSAGELOGGER}
                 ${FHICLCPP}
-                ${CETLIB}
+                cetlib cetlib_except
 )
 
 install_headers()
