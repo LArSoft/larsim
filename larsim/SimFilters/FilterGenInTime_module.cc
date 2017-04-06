@@ -77,9 +77,9 @@ namespace simfilter {
     , fSortParticles ( pset.get< bool > ("SortParticles",false) )
     , fAlwaysPass (pset.get<bool>("AlwaysPass",false))
   {
-    if(fSortParticles)
+    if(fSortParticles) {
       produces< std::vector<simb::MCTruth> >("intime");
-      produces< std::vector<simb::MCTruth> >("outtime");
+      produces< std::vector<simb::MCTruth> >("outtime"); }
   }
 
   FilterGenInTime::~FilterGenInTime() {}
