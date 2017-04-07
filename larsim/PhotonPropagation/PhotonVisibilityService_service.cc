@@ -51,6 +51,9 @@ namespace phot{
     fLibraryBuildJob(false),
     fDoNotLoadLibrary(false),
     fParameterization(false),
+    fStoreReflected(false),
+    fStoreReflT0(false),
+    fIncludePropTime(false),
     fTheLibrary(0)
   {
     this->reconfigure(pset);
@@ -78,7 +81,7 @@ namespace phot{
 						 << LibraryFileWithPath
 						 << std::endl;
 	  size_t NVoxels = GetVoxelDef().GetNVoxels();
-	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels);
+	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
 	}
       }
       else {
@@ -103,7 +106,7 @@ namespace phot{
       {
 	mf::LogInfo("PhotonVisibilityService") << " Vis service "
 					       << " Storing Library entries to file..." <<std::endl;
-	fTheLibrary->StoreLibraryToFile(fLibraryFile);
+	fTheLibrary->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0);
       }
   }
   
@@ -119,7 +122,9 @@ namespace phot{
     fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
     fLibraryFile          = p.get< std::string >("LibraryFile"         );
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
-
+    fStoreReflected       = p.get< bool        >("StoreReflected"    );
+    fStoreReflT0          = p.get< bool        >("StoreReflT0"    );
+    fIncludePropTime      = p.get< bool        >("IncludePropTime");
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
   	
@@ -151,6 +156,91 @@ namespace phot{
     
     fVoxelDef = sim::PhotonVoxelDef(fXmin, fXmax, fNx, fYmin, fYmax, fNy, fZmin, fZmax, fNz);
 
+    if(fIncludePropTime)
+      {
+	// Construct parameterized model parameter functions.         
+	std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
+	std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
+	//range of distances where the parametrization is valid                                            
+	fD_break = p.get<double>("D_break");
+	fD_max = p.get<double>("D_max");
+
+	fTF1_sampling_factor = p.get<double>("TF1_sampling_factor");	
+
+	std::vector<double> direct_landauNormpars = p.get<std::vector<double> >("Direct_landauNormpars");
+	fparslogNorm = new TF1("fparslogNorm", direct_functions[0].c_str(), 0., fD_break);
+	for(unsigned int i=0; i<direct_landauNormpars.size(); ++i)
+	  fparslogNorm->SetParameter(i, direct_landauNormpars[i]);
+	
+	std::vector<double> direct_landauMPVpars = p.get<std::vector<double> >("Direct_landauMPVpars");
+	fparsMPV = new TF1("fparsMPV", direct_functions[1].c_str(), 0., fD_break);
+	for(unsigned int i=0; i<direct_landauMPVpars.size(); ++i)       
+	  fparsMPV->SetParameter(i, direct_landauMPVpars[i]);
+
+	std::vector<double> direct_landauWidthpars = p.get<std::vector<double> >("Direct_landauWidthpars");
+	fparsWidth = new TF1("fparsWidth", direct_functions[2].c_str(), 0., fD_break);
+	for(unsigned int i=0; i<direct_landauWidthpars.size(); ++i)                
+	  fparsWidth->SetParameter(i, direct_landauWidthpars[i]);
+
+	std::vector<double> direct_expoCtepars = p.get<std::vector<double> >("Direct_expoCtepars");
+	fparsCte = new TF1("fparsCte", direct_functions[3].c_str(), 0., fD_break);
+	for(unsigned int i=0; i<direct_expoCtepars.size(); ++i)  
+	  fparsCte->SetParameter(i, direct_expoCtepars[i]);
+
+	std::vector<double> direct_expoSlopepars = p.get<std::vector<double> >("Direct_expoSlopepars");
+	fparsSlope = new TF1("fparsSlope", direct_functions[4].c_str(), 0., fD_break);
+	for(unsigned int i=0; i<direct_expoSlopepars.size(); ++i)
+	  fparsSlope->SetParameter(i, direct_expoSlopepars[i]);
+
+	std::vector<double> direct_landauNormpars_far = p.get<std::vector<double> >("Direct_landauNormpars_far");
+        fparslogNorm_far = new TF1("fparslogNorm_far", direct_functions[5].c_str(), fD_break, fD_max);
+        for(unsigned int i=0; i<direct_landauNormpars_far.size(); ++i)
+          fparslogNorm_far->SetParameter(i, direct_landauNormpars_far[i]);
+
+	std::vector<double> direct_landauMPVpars_far = p.get<std::vector<double> >("Direct_landauMPVpars_far");
+        fparsMPV_far = new TF1("fparsMPV_far", direct_functions[6].c_str(), fD_break, fD_max);
+        for(unsigned int i=0; i<direct_landauMPVpars_far.size(); ++i)
+          fparsMPV_far->SetParameter(i, direct_landauMPVpars_far[i]);
+
+	std::vector<double> direct_expoCtepars_far = p.get<std::vector<double> >("Direct_expoCtepars_far");
+	fparsCte_far = new TF1("fparsCte_far", direct_functions[7].c_str(), fD_break - 50., fD_max);
+	for(unsigned int i=0; i<direct_expoCtepars_far.size(); ++i)
+          fparsCte_far->SetParameter(i, direct_expoCtepars_far[i]);
+
+	std::vector<std::string> reflected_functions = p.get<std::vector<std::string> >("Reflected_functions");
+        //times where the parametrizations are valid or change
+	fT0_max = p.get<double>("T0_max");
+	fT0_break_point = p.get<double>("T0_break_point");
+
+	std::vector<double> reflected_landauNormpars = p.get<std::vector<double> >("Reflected_landauNormpars");
+	fparslogNorm_refl = new TF1("fparslogNorm_refl", reflected_functions[0].c_str(), 0., fT0_max);
+	for(unsigned int i=0; i<reflected_landauNormpars.size(); ++i)
+	  fparslogNorm_refl->SetParameter(i, reflected_landauNormpars[i]);
+
+	std::vector<double> reflected_landauMPVpars = p.get<std::vector<double> >("Reflected_landauMPVpars");
+	fparsMPV_refl = new TF1("fparsMPV_refl", reflected_functions[1].c_str(), 0., fT0_max);
+	for(unsigned int i=0; i<reflected_landauMPVpars.size(); ++i)
+	  fparsMPV_refl->SetParameter(i, reflected_landauMPVpars[i]);
+
+	std::vector<double> reflected_landauWidthpars = p.get<std::vector<double> >("Reflected_landauWidthpars");
+	fparsWidth_refl = new TF1("fparsWidth_refl", reflected_functions[2].c_str(), 0., fT0_max);
+	for(unsigned int i=0; i<reflected_landauWidthpars.size(); ++i)
+	  fparsWidth_refl->SetParameter(i, reflected_landauWidthpars[i]);
+
+	std::vector<double> reflected_expoCtepars = p.get<std::vector<double> >("Reflected_expoCtepars");
+	fparsCte_refl = new TF1("fparsCte_refl", reflected_functions[3].c_str(), 0., fT0_max);
+	for(unsigned int i=0; i<reflected_expoCtepars.size(); ++i)
+	  fparsCte_refl->SetParameter(i, reflected_expoCtepars[i]);
+
+	std::vector<double> reflected_expoSlopepars = p.get<std::vector<double> >("Reflected_expoSlopepars");
+	fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
+	for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
+	  fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
+
+
+      }
+
+
     return;
 	
   }
@@ -173,10 +263,10 @@ namespace phot{
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point xyz
 
-  float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz) const
+  float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz, bool wantReflected) const
   {
     size_t VoxID = fVoxelDef.GetVoxelID(xyz);
-    return GetLibraryEntries(VoxID);
+    return GetLibraryEntries(VoxID, wantReflected);
   }
 
 
@@ -203,10 +293,10 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel) const
+  float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
   {
     int VoxID = fVoxelDef.GetVoxelID(xyz);  
-    return GetLibraryEntry(VoxID, OpChannel);
+    return GetLibraryEntry(VoxID, OpChannel, wantReflected);
   }
 
 
@@ -231,35 +321,88 @@ namespace phot{
   
   //------------------------------------------------------
 
-  void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N)
+  void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N, bool wantReflected)
   {
     if(fTheLibrary == 0)
       LoadLibrary();
-
-    fTheLibrary->SetCount(VoxID,OpChannel, N);
+    
+    if(!wantReflected) 
+      fTheLibrary->SetCount(VoxID,OpChannel, N);
+    else 
+      fTheLibrary->SetReflCount(VoxID,OpChannel, N);
+    
+    //std::cout<< " PVS logging " << VoxID << " " << OpChannel<<std::endl;
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------
 
-  
-
-  float const* PhotonVisibilityService::GetLibraryEntries(int VoxID) const
+  float const* PhotonVisibilityService::GetLibraryEntries(int VoxID, bool wantReflected) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return fTheLibrary->GetCounts(VoxID);
+    if(!wantReflected)
+      return fTheLibrary->GetCounts(VoxID);
+    else
+      return fTheLibrary->GetReflCounts(VoxID);
   }
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetLibraryEntry(int VoxID, int Channel) const
+  float PhotonVisibilityService::GetLibraryEntry(int VoxID, int Channel, bool wantReflected) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return fTheLibrary->GetCount(VoxID, Channel);
+    if(!wantReflected)
+      return fTheLibrary->GetCount(VoxID, Channel);
+    else
+      return fTheLibrary->GetReflCount(VoxID, Channel);
+  }
+  // Methodes to handle the extra library parameter refl T0
+  //------------------------------------------------------
+
+  // Get a vector of the refl <tfirst> of each OpDet
+  //  in the event to a point xyz
+
+  float const* PhotonVisibilityService::GetReflT0s(double const* xyz) const
+  {
+    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    return GetLibraryReflT0Entries(VoxID);
+  }
+
+  //------------------------------------------------------
+
+  float const* PhotonVisibilityService::GetLibraryReflT0Entries(int VoxID) const
+  {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    return fTheLibrary->GetReflT0s(VoxID);
+  }
+
+  //------------------------------------------------------     
+
+  void PhotonVisibilityService::SetLibraryReflT0Entry(int VoxID, int OpChannel, float T0)
+  {
+
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    fTheLibrary->SetReflT0(VoxID,OpChannel,T0);
+
+    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+  }
+
+  //------------------------------------------------------      
+
+  float PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, int Channel) const
+  {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    return fTheLibrary->GetReflT0(VoxID, Channel);
   }
 
   //------------------------------------------------------
@@ -269,6 +412,36 @@ namespace phot{
       LoadLibrary();
     
     return fTheLibrary->NOpChannels();
+  }
+
+  //------------------------------------------------------
+  void PhotonVisibilityService::SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const
+  {
+    functions[0] = fparslogNorm;
+    functions[1] = fparsMPV;
+    functions[2] = fparsWidth;
+    functions[3] = fparsCte;
+    functions[4] = fparsSlope; 
+    functions[5] = fparslogNorm_far;
+    functions[6] = fparsMPV_far;
+    functions[7] = fparsCte_far;
+
+    d_break = fD_break;
+    d_max = fD_max;
+    tf1_sampling_factor = fTF1_sampling_factor;
+  }
+
+  //------------------------------------------------------
+  void PhotonVisibilityService::SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const
+  {
+    functions[0] = fparslogNorm_refl;
+    functions[1] = fparsMPV_refl;
+    functions[2] = fparsWidth_refl;
+    functions[3] = fparsCte_refl;
+    functions[4] = fparsSlope_refl;
+
+    t0_max = fT0_max;
+    t0_break_point = fT0_break_point;
   }
 
 } // namespace

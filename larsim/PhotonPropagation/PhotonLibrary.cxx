@@ -23,6 +23,8 @@ namespace phot{
   PhotonLibrary::PhotonLibrary()
   {
     fLookupTable.clear();
+    fReflLookupTable.clear();
+    fReflTLookupTable.clear();
   }
 
   
@@ -31,11 +33,13 @@ namespace phot{
   PhotonLibrary::~PhotonLibrary()
   {
     fLookupTable.clear();
+    fReflLookupTable.clear();
+    fReflTLookupTable.clear();
   }
   
   //------------------------------------------------------------
   
-  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile)
+  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0)
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -47,23 +51,35 @@ namespace phot{
     Int_t     Voxel;
     Int_t     OpChannel;
     Float_t   Visibility;
-
+    Float_t   ReflVisibility;
+    Float_t   ReflTfirst;
 
     tt->Branch("Voxel",      &Voxel,      "Voxel/I");
     tt->Branch(OpChannelBranchName.c_str(),  &OpChannel,  (OpChannelBranchName + "/I").c_str());
     tt->Branch("Visibility", &Visibility, "Visibility/F");
- 
-
+    if(storeReflected)
+      { tt->Branch("ReflVisibility", &ReflVisibility, "ReflVisibility/F");
+	if (fLookupTable.size() != fReflLookupTable.size())
+          throw cet::exception(" Photon Library ") << "Reflected light lookup table is different size than Direct table \n"
+                                                   << "this should not be happening. ";
+      }
+    if(storeReflT0)
+      tt->Branch("ReflTfirst", &ReflTfirst, "ReflTfirst/F");
+    
     for(size_t ivox=0; ivox!= fNVoxels; ++ivox)
       {
 	for(size_t ichan=0; ichan!= fNOpChannels; ++ichan)
 	  {
 	    Visibility = uncheckedAccess(ivox, ichan);
-	    if (Visibility > 0)
+	    if(storeReflected)
+	      ReflVisibility = uncheckedAccessRefl(ivox, ichan);
+	    if(storeReflT0)
+	      ReflTfirst = uncheckedAccessReflT(ivox, ichan);
+	    if (Visibility > 0 || ReflVisibility > 0)
 	      {
 		Voxel      = ivox;
 		OpChannel  = ichan;
-		// visibility is already set
+		// visibility(ies) is(are) already set
 		tt->Fill();
 	      }
 	  }	
@@ -76,21 +92,27 @@ namespace phot{
   void PhotonLibrary::CreateEmptyLibrary( size_t NVoxels, size_t NOpChannels)
   {
     fLookupTable.clear();
+    fReflLookupTable.clear();
+    fReflTLookupTable.clear();
 
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
 
     fLookupTable.resize(LibrarySize(), 0.);
+    fReflLookupTable.resize(LibrarySize(), 0.);
+    fReflTLookupTable.resize(LibrarySize(), 0.);
 
   }
 
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels)
+  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool getReflected, bool getReflT0)
   {
     fLookupTable.clear();
-    
+    fReflLookupTable.clear();
+    fReflTLookupTable.clear();
+
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: " << LibraryFile.c_str()<<std::endl;
 
     TFile *f = nullptr;
@@ -117,21 +139,28 @@ namespace phot{
     Int_t     Voxel;
     Int_t     OpChannel;
     Float_t   Visibility;
+    Float_t   ReflVisibility;
+    Float_t   ReflTfirst;
 
     tt->SetBranchAddress("Voxel",      &Voxel);
     tt->SetBranchAddress("OpChannel",  &OpChannel);
     tt->SetBranchAddress("Visibility", &Visibility);
-
-
-
+    if(getReflected)
+      tt->SetBranchAddress("ReflVisibility", &ReflVisibility);
+    if(getReflT0)
+      tt->SetBranchAddress("ReflTfirst", &ReflTfirst);
+    
     
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
 
     
     fLookupTable.resize(LibrarySize(), 0.);
-
-
+    if(getReflected)
+      fReflLookupTable.resize(LibrarySize(), 0.);
+    if(getReflT0)
+      fReflTLookupTable.resize(LibrarySize(), 0.);
+    
     size_t NEntries = tt->GetEntries();
 
     for(size_t i=0; i!=NEntries; ++i) {
@@ -139,7 +168,11 @@ namespace phot{
 
       // Set the visibility at this optical channel
       uncheckedAccess(Voxel, OpChannel) = Visibility;
-      
+      if(getReflected)
+	uncheckedAccessRefl(Voxel, OpChannel) = ReflVisibility;
+      if(getReflT0)
+	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
+
     } // for entries
 
     mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
@@ -164,6 +197,24 @@ namespace phot{
     else
       return uncheckedAccess(Voxel, OpChannel); 
   }
+  //----------------------------------------------------
+
+  float PhotonLibrary::GetReflCount(size_t Voxel, size_t OpChannel) const
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      return 0;
+    else
+      return uncheckedAccessRefl(Voxel, OpChannel);
+  }
+  //----------------------------------------------------
+
+  float PhotonLibrary::GetReflT0(size_t Voxel, size_t OpChannel) const
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      return 0;
+    else
+      return uncheckedAccessReflT(Voxel, OpChannel);
+  }
 
   //----------------------------------------------------
 
@@ -174,6 +225,24 @@ namespace phot{
     else
       uncheckedAccess(Voxel, OpChannel) = Count; 
   }
+  //----------------------------------------------------
+
+  void PhotonLibrary::SetReflCount(size_t Voxel, size_t OpChannel, float Count)
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range";
+    else
+      uncheckedAccessRefl(Voxel, OpChannel) = Count;
+  }
+  //----------------------------------------------------
+
+  void PhotonLibrary::SetReflT0(size_t Voxel, size_t OpChannel, float Count)
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range";
+    else
+      uncheckedAccessReflT(Voxel, OpChannel) = Count;
+  }
 
   //----------------------------------------------------
 
@@ -181,6 +250,22 @@ namespace phot{
   { 
     if (Voxel >= fNVoxels) return nullptr;
     else return fLookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+
+  //---------------------------------------------------- 
+
+  float const* PhotonLibrary::GetReflCounts(size_t Voxel) const
+  {
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fReflLookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+
+  //----------------------------------------------------
+
+  float const* PhotonLibrary::GetReflT0s(size_t Voxel) const
+  {
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fReflTLookupTable.data() + uncheckedIndex(Voxel, 0);
   }
 
   //----------------------------------------------------
