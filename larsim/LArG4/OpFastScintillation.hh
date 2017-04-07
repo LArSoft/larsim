@@ -98,6 +98,9 @@
 #include "Geant4/G4PhysicsOrderedFreeVector.hh"
 #include "Geant4/G4EmSaturation.hh"
 
+#include "fhiclcpp/ParameterSet.h"
+#include "TF1.h"
+
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
 // Class inherits publicly from G4VRestDiscreteProcess.
@@ -126,9 +129,7 @@ public: // Without description
 	// Constructors and Destructor
 	////////////////////////////////
 
-	OpFastScintillation(const G4String& processName = "Scintillation",
-                                 G4ProcessType type = fElectromagnetic);
-
+        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
         OpFastScintillation(const OpFastScintillation &right);
 
 	~OpFastScintillation();	
@@ -227,6 +228,12 @@ public: // With description
         void DumpPhysicsTable() const;
         // Prints the fast and slow scintillation integral tables.
 
+        std::vector<double> GetVUVTime(double, int);
+        std::vector<double> GetVisibleTimeOnlyCathode(double, int);
+       // Update configuration parameters.
+
+       //void reconfigure(const fhicl::ParameterSet& pset);
+
 protected:
 
         void BuildThePhysicsTable();
@@ -264,10 +271,18 @@ private:
         G4double sample_time(G4double tau1, G4double tau2);
 
         G4EmSaturation* emSaturation;
-
-  //double fGlobalTimeOffset;
-  
+        // functions and parameters for the propagation time parametrization
+        TF1 const* functions_vuv[8];
+        TF1 const* functions_vis[5];                     
+        double fd_break;
+        double fd_max;
+        double ftf1_sampling_factor;
+        double ft0_max, ft0_break_point; 
+  //double fGlobalTimeOffset;  
 };
+
+  double finter_d(double*, double*);
+  double LandauPlusExpoFinal(double*, double*);
 
 ////////////////////
 // Inline methods

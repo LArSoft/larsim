@@ -106,7 +106,6 @@
 
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
-#include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
@@ -123,6 +122,8 @@
 // support libraries
 #include "cetlib/exception.h"
 
+#include "TRandom3.h"
+#include "TMath.h"
 
 namespace larg4{
 
@@ -142,8 +143,7 @@ namespace larg4{
   // Constructors
   /////////////////
   
-  OpFastScintillation::OpFastScintillation(const G4String& processName,
-						 G4ProcessType type)
+  OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
   : G4VRestDiscreteProcess(processName, type)
   {
         SetProcessSubType(25);
@@ -169,6 +169,14 @@ namespace larg4{
         BuildThePhysicsTable();
 
         emSaturation = NULL;
+
+        gRandom->SetSeed(0);
+	art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+	if(pvs->IncludePropTime()) {
+	  pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+	  pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+	}
+
 }
 
   OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
@@ -187,6 +195,7 @@ namespace larg4{
     BuildThePhysicsTable();
   }
 
+
         ////////////////
         // Destructors
         ////////////////
@@ -201,6 +210,7 @@ OpFastScintillation::~OpFastScintillation()
            theSlowIntegralTable->clearAndDestroy();
            delete theSlowIntegralTable;
         }
+
 }
 
         ////////////
@@ -245,7 +255,8 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
       
         G4ThreeVector x0 = pPreStepPoint->GetPosition();
         G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
-      
+
+
 	///////////////////////////////////////////////////////////////////////////////////
 	//   This is the old G4 way - but we do things differently - Ben J, Oct Nov 2012.
 	///////////////////////////////////////////////////////////////////////////////////
@@ -320,7 +331,6 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
 	double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
         RecordPhotonsProduced(aStep, MeanNumberOfPhotons);
-
 	
 	if (verboseLevel>0) {
 	  G4cout << "\n Exiting from OpFastScintillation::DoIt -- NumberOfSecondaries = " 
@@ -354,7 +364,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   const G4Material* aMaterial = aTrack->GetMaterial();
 
   G4int materialIndex = aMaterial->GetIndex();
-	
+  G4int tracknumber = aStep.GetTrack()->GetTrackID();
 
   G4ThreeVector x0 = pPreStepPoint->GetPosition();
   G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
@@ -465,6 +475,13 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
   double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
   float const* Visibilities = pvs->GetAllVisibilities(xyz);
+  float const* ReflVisibilities = nullptr;
+  float const* ReflT0s = nullptr;
+  if(pvs->StoreReflected()) {
+    ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
+    if(pvs->StoreReflT0())
+      ReflT0s = pvs->GetReflT0s(xyz); 
+  }
   
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
@@ -550,15 +567,24 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     if(!Visibilities){
     }else{
       std::map<int, int> DetectedNum;
+      std::map<int, int> ReflDetectedNum;
 	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
     		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+
     		if(DetThisPMT>0) 
         {
 		      DetectedNum[OpDet]=DetThisPMT;
 		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
 		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
         }
+		if(pvs->StoreReflected()) {
+		  G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+		  if(ReflDetThisPMT>0)
+		    {
+		      ReflDetectedNum[OpDet]=ReflDetThisPMT;
+		    }
+                }	
       }
 	    // Now we run through each PMT figuring out num of detected photons
 	
@@ -593,8 +619,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          //Iterate over Step Photon Table to add photons to OpDetBacktrackerRecords.
 
          sim::OpDetBacktrackerRecord tmpOpDetBTRecord(itdetphot->first);
-//         int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
-         int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
+         int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
          CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
          CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
          //Note the use of xO (letter O) instead of x0. This is to differentiate the positions here with the earlier declared double* x0
@@ -617,11 +642,28 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
         litefst->AddPhoton(&StepPhotonTable);
       }
       else
-      {
-	  // And then add these to the total collection for the event	    
-        for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
-	      itdetphot!=DetectedNum.end(); ++itdetphot)
-        {
+       {
+	 // We need to know the positions of the different optical detectors                                                      
+	 art::ServiceHandle<geo::Geometry> geo;
+	 // And then add these to the total collection for the event	    
+	 for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
+	     itdetphot!=DetectedNum.end(); ++itdetphot)
+	   {
+	     G4double propagation_time = 0;
+	     std::vector<double> arrival_time_dist_vuv;
+	     if(pvs->IncludePropTime()) {
+	       // Get VUV photons arrival time distribution from the parametrization 
+	       double OpDetCenter[3];
+	       geo->OpDetGeoFromOpDet(itdetphot->first).GetCenter(OpDetCenter);
+	       G4ThreeVector OpDetPoint(OpDetCenter[0]*CLHEP::cm,OpDetCenter[1]*CLHEP::cm,OpDetCenter[2]*CLHEP::cm);
+	       double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS! 
+	       arrival_time_dist_vuv = GetVUVTime(distance_in_cm, itdetphot->second);//in ns
+	       if(!(arrival_time_dist_vuv.size()>0)) {
+		 //G4cout<<"Number of VUV detected photons = "<<itdetphot->second<<" ... too small, => No photons simulated!"<<G4endl;
+		 continue;
+	       }
+	     }
+	     
 	        for (G4int i = 0; i < itdetphot->second; ++i) 
           {
             G4double deltaTime = aStep.GetStepLength() /
@@ -640,24 +682,104 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             }		
 		
             G4double aSecondaryTime = t0 + deltaTime;
-		
+	    if(pvs->IncludePropTime())
+	      propagation_time = arrival_time_dist_vuv.at(i)*CLHEP::ns;
+	
             // The sim photon in this case stores its production point and time
             TVector3 PhotonPosition(x0[0],x0[1],x0[2]);
 		
             // We don't know anything about the momentum dir, so set it to be Z		
             float Energy = 9.7*CLHEP::eV;
             float Time = aSecondaryTime;
-		
+	    if(pvs->IncludePropTime())
+	      Time += propagation_time;
+	    
             // Make a photon object for the collection
 	    sim::OnePhoton PhotToAdd;
             PhotToAdd.InitialPosition  = PhotonPosition;
             PhotToAdd.Energy           = Energy;
             PhotToAdd.Time             = Time;
             PhotToAdd.SetInSD          = false;
-			
+	    PhotToAdd.MotherTrackID    = tracknumber;
+
             fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
           }
         }
+	 // repeat the same for the reflected light, in case it has been sored
+	 if(pvs->StoreReflected())
+	   {
+	     for(std::map<int,int>::const_iterator itdetphot = ReflDetectedNum.begin();
+		 itdetphot!=ReflDetectedNum.end(); ++itdetphot)
+	       {
+		 G4double propagation_time = 0;
+		 std::vector<double> arrival_time_dist_vis;
+		 if(pvs->IncludePropTime()) {
+		   // Get Visible photons arrival time distribution from the parametrization
+		   double OpDetCenter[3];
+		   geo->OpDetGeoFromOpDet(itdetphot->first).GetCenter(OpDetCenter);
+		   G4ThreeVector OpDetPoint(OpDetCenter[0]*CLHEP::cm,OpDetCenter[1]*CLHEP::cm,OpDetCenter[2]*CLHEP::cm);
+		   double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS!
+		   double t0_vis_lib = ReflT0s[itdetphot->first];		   
+		   arrival_time_dist_vis = GetVisibleTimeOnlyCathode(t0_vis_lib, itdetphot->second);
+		   if(!(arrival_time_dist_vis.size()>0)) {
+		     //G4cout<<"Number of Visible detected photons = "<<itdetphot->second<<" ... too small, => No photons simulated!"<<G4endl; 
+		     continue;
+		   }
+		 }
+		 for (G4int i = 0; i < itdetphot->second; ++i)
+		   {
+		     G4double deltaTime = aStep.GetStepLength() /
+		       ((pPreStepPoint->GetVelocity()+
+			 pPostStepPoint->GetVelocity())/2.);
+
+		     if (ScintillationRiseTime==0.0)
+		       {
+                deltaTime = deltaTime -
+		  ScintillationTime * std::log( G4UniformRand() );
+		       }
+		     else
+		       {
+              deltaTime = deltaTime +
+		sample_time(ScintillationRiseTime, ScintillationTime);
+		       }
+		     G4double aSecondaryTime = t0 + deltaTime;
+		     if(pvs->IncludePropTime())		   
+		       propagation_time = arrival_time_dist_vis.at(i)*CLHEP::ns;
+
+		     TVector3 PhotonPosition(x0[0],x0[1],x0[2]);
+
+		     // We don't know anything about the momentum dir, so set it to be Z                                                                     
+		     std::map<double,double> tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
+		     const int nbins=tpbemission.size();
+
+		     double * parent=new double[nbins];
+
+		     int ii=0;
+		     for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter)
+		       { parent[ii++]=(*iter).second;
+		       }
+
+		     CLHEP::RandGeneral rgen0(parent,nbins);
+
+		     double energy_reemited = rgen0.fire()*((*(--tpbemission.end())).first-(*tpbemission.begin()).first)+(*tpbemission.begin()).first;
+
+		     float Energy = energy_reemited*CLHEP::eV;
+		     float Time = aSecondaryTime;
+		     if(pvs->IncludePropTime())
+		       Time += propagation_time;
+
+		     // Make a photon object for the collection  
+		     sim::OnePhoton PhotToAdd;
+		     PhotToAdd.InitialPosition  = PhotonPosition;
+		     PhotToAdd.Energy           = Energy;
+		     PhotToAdd.Time             = Time;
+		     PhotToAdd.MotherTrackID    = tracknumber;
+		     PhotToAdd.SetInSD          = false;
+		     fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
+		     delete [] parent;
+		   }     
+	       }
+	   }
       }
     }
   }
@@ -882,5 +1004,176 @@ G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2)
         }
         return -1.0;
 }
+
+//                         ======TIMING PARAMETRIZATION=====           //
+
+// Parametrization of the VUV light timing (result from direct transport + Rayleigh scattering ONLY)
+// using a landau + expo function.The function below returns the arrival time distribution given the
+// distance IN CENTIMETERS between the scintillation/ionization point and the optical detectotr.
+std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_photons) {
+
+  //-----Distances in cm and times in ns-----// 
+  //gRandom->SetSeed(0);
+  std::vector<double> arrival_time_distrb;
+  arrival_time_distrb.clear();
+
+  // Parametrization data: 
+
+  if(distance < 10 || distance > fd_max) {
+    G4cout<<"WARNING: Parametrization of Direct Light not fully reliable"<<G4endl;
+    G4cout<<"Too close/far to the PMT  -> set 0 VUV photons(?)!!!!!!"<<G4endl;
+    return arrival_time_distrb;
+  }
+  //signals (remember this is transportation) no longer than 1us  
+  const double signal_t_range = 1000.;
+  const double vuv_vgroup = 10.13;//cm/ns     
+  double t_direct = distance/vuv_vgroup;
+  // Defining the two functions (Landau + Exponential) describing the timing vs distance  
+  double pars_landau[3] = {functions_vuv[1]->Eval(distance), functions_vuv[2]->Eval(distance),
+			   pow(10.,functions_vuv[0]->Eval(distance))};
+  if(distance > fd_break) {
+    pars_landau[0]=functions_vuv[6]->Eval(distance);
+    pars_landau[1]=functions_vuv[2]->Eval(fd_break);
+    pars_landau[2]=pow(10.,functions_vuv[5]->Eval(distance));
+  }
+  TF1 *flandau = new TF1("flandau","[2]*TMath::Landau(x,[0],[1])",0,signal_t_range/2);
+  flandau->SetParameters(pars_landau);
+  double pars_expo[2] = {functions_vuv[3]->Eval(distance), functions_vuv[4]->Eval(distance)};
+  if(distance > (fd_break - 50.)) {
+    pars_expo[0] = functions_vuv[7]->Eval(distance);
+    pars_expo[1] = functions_vuv[4]->Eval(fd_break - 50.);
+  }
+  TF1 *fexpo = new TF1("fexpo","expo",0, signal_t_range/2);
+  fexpo->SetParameters(pars_expo);
+  //this is to find the intersection point between the two functions:      
+  TF1 *fint = new TF1("fint",finter_d,flandau->GetMaximumX(),3*t_direct,5);
+  double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+  fint->SetParameters(parsInt);
+  double t_int = fint->GetMinimumX();
+  double minVal = fint->Eval(t_int);
+  //the functions must intersect!!!     
+  if(minVal>0.015)
+    G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
+
+  TF1 *fVUVTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+  double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+  fVUVTiming->SetParameters(parsfinal);
+  // Set the number of points used to sample the function                         
+
+  int f_sampling = 1000;
+  if(distance < 50)
+    f_sampling *= ftf1_sampling_factor;
+  fVUVTiming->SetNpx(f_sampling);
+
+  for(int i=0; i<number_photons; i++)
+    arrival_time_distrb.push_back(fVUVTiming->GetRandom());
+
+  //deleting ...                                                                                     
+  delete flandau;
+  delete fexpo;
+  delete fint;
+  delete fVUVTiming;
+
+  return arrival_time_distrb;
+}
+
+// Parametrization of the Visible light timing (result from direct transport + Rayleigh scattering ONLY) 
+// using a landau + exponential function. The function below returns the arrival time distribution given the 
+// time of the first visible photon in the PMT. The light generated has been reflected by the cathode ONLY.
+std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, int number_photons){
+  //-----Distances in cm and times in ns-----//  
+  //gRandom->SetSeed(0);  
+               
+  std::vector<double> arrival_time_distrb;
+  arrival_time_distrb.clear();
+  // Parametrization data:
+
+  if(t0 < 8 || t0 > ft0_max) {
+    G4cout<<"WARNING: Parametrization of Cathode-Only reflected Light not fully reliable"<<G4endl;
+    G4cout<<"Too close/far to the PMT  -> set 0 Visible photons(?)!!!!!!"<<G4endl;
+    return arrival_time_distrb;
+  }
+  //signals (remember this is transportation) no longer than 1us     
+  const double signal_t_range = 1000.;
+  double pars_landau[3] = {functions_vis[1]->Eval(t0), functions_vis[2]->Eval(t0),
+                           pow(10.,functions_vis[0]->Eval(t0))};
+  double pars_expo[2] = {functions_vis[3]->Eval(t0), functions_vis[4]->Eval(t0)};
+  if(t0 > ft0_break_point) {
+    pars_landau[0] = -0.798934 + 1.06216*t0;
+    pars_landau[1] = functions_vis[2]->Eval(ft0_break_point);
+    pars_landau[2] = pow(10.,functions_vis[0]->Eval(ft0_break_point));
+    pars_expo[0] = functions_vis[3]->Eval(ft0_break_point);
+    pars_expo[1] = functions_vis[4]->Eval(ft0_break_point);
+  }
+
+  // Defining the two functions (Landau + Exponential) describing the timing vs t0                  
+  TF1 *flandau = new TF1("flandau","[2]*TMath::Landau(x,[0],[1])",0,signal_t_range/2);
+  flandau->SetParameters(pars_landau);
+  TF1 *fexpo = new TF1("fexpo","expo",0, signal_t_range/2);
+  fexpo->SetParameters(pars_expo);
+  //this is to find the intersection point between the two functions:                                                          
+  TF1 *fint = new TF1("fint",finter_d,flandau->GetMaximumX(),2*t0,5);
+  double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+  fint->SetParameters(parsInt);
+  double t_int = fint->GetMinimumX();
+  double minVal = fint->Eval(t_int);
+  //the functions must intersect!!!                                             
+  if(minVal>0.015)
+    G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
+
+  TF1 *fVisTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+  double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+  fVisTiming->SetParameters(parsfinal);
+  // Set the number of points used to sample the function                                  
+
+  int f_sampling = 1000;
+  if(t0 < 20)
+    f_sampling *= ftf1_sampling_factor;
+  fVisTiming->SetNpx(f_sampling);
+
+  for(int i=0; i<number_photons; i++)
+    arrival_time_distrb.push_back(fVisTiming->GetRandom());
+
+  //deleting ...                                    
+
+  delete flandau;
+  delete fexpo;
+  delete fint;
+  delete fVisTiming;
+
+  return arrival_time_distrb;
+}
+
+double finter_d(double *x, double *par) {
+
+  double y1 = par[2]*TMath::Landau(x[0],par[0],par[1]);
+  double y2 = TMath::Exp(par[3]+x[0]*par[4]);
+
+  return TMath::Abs(y1 - y2);
+}
+double LandauPlusExpoFinal(double *x, double *par)
+{
+  // par0 = joining point
+  // par1 = Landau MPV 
+  // par2 = Landau widt
+  // par3 = normalization 
+  // par4 = Expo cte  
+  // par5 = Expo tau 
+  double y1 = par[3]*TMath::Landau(x[0],par[1],par[2]);
+  double y2 = TMath::Exp(par[4]+x[0]*par[5]);
+  if(x[0] > par[0]) y1 = 0.;
+  if(x[0] < par[0]) y2 = 0.;
+
+  return (y1 + y2);
+}
+double finter_r(double *x, double *par) {
+
+  double y1 = par[2]*TMath::Landau(x[0],par[0],par[1]);
+  double y2 = par[5]*TMath::Landau(x[0],par[3],par[4]);
+
+  return TMath::Abs(y1 - y2);
+}
+
+
 
 }
