@@ -150,7 +150,7 @@ namespace larg4 {
    * A few optional behaviours are supported:
    * 
    * * lead off-plane charge to the planes: regulated by
-   *   `SetOffPlaneChargeRecoveryMargin()`, if charge which reaches a wire plane
+   *   `RecoverOffPlaneDeposit()`, if charge which reaches a wire plane
    *   is actually off it by less than the chosen margin, it's accounted for by
    *   that plane; by default the margin is 0 and all the charge off the plane
    *   is lost (with a warning)
@@ -262,10 +262,11 @@ namespace larg4 {
      * @param plane the plane to test the position against
      * @return a position on plane, unless pos is too far from it
      * 
-     * This method considers the distance of the position `pos` from the
-     * `plane`. If the position is less than a configurable margin far from the
-     * plane, the closest point on the plane to that position is returned.
-     * Otherwise the position itself is returned.
+     * This method considers the distance of the position `pos` from the active
+     * part of the `plane` (see `geo::Plane::DeltaFromActivePlane()`).
+     * If the position is less than a configurable margin far from the plane,
+     * the closest point on the plane to that position is returned. Otherwise,
+     * the position itself is returned.
      * 
      * Ionization charge may be drifted so that when it arrives to the plane, it
      * actually does not hit the area covered by wires. This can happen for many
