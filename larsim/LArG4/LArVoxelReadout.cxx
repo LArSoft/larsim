@@ -293,9 +293,10 @@ namespace larg4 {
     
     //
     // compute the distance of the landing position on the two frame
-    // coordinates ("width" and "depth")
+    // coordinates ("width" and "depth");
+    // keep the point within 10 micrometers (0.001 cm) from the border
     //
-    auto const offPlane = plane.DeltaFromActivePlane(landingPos);
+    auto const offPlane = plane.DeltaFromActivePlane(landingPos, 0.001);
     
     //
     // if both the distances are below the margin, move the point to
