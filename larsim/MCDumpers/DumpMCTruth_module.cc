@@ -221,13 +221,10 @@ void sim::DumpMCTruth::DumpMCParticle(
   else {
     TLorentzVector const& start = particle.Position();
     TLorentzVector const& start_mom = particle.Momentum();
-    out << "\n" << indent << "created at " << start << " cm by ";
-    if (particle.Mother() == 0) out << "the gods";
-    else {
-      out << (particle.Process().empty()? "magics": particle.Process())
-        << " from ID=" << particle.Mother();
-    }
-    out << " with momentum " << start_mom << " GeV/c";
+    out << "\n" << indent << "created at " << start << " cm by "
+      << (particle.Process().empty()? "magics": particle.Process())
+      << " from ID=" << particle.Mother()
+      << " with momentum " << start_mom << " GeV/c";
     out << "\n" << indent;
     if (nPoints == 1) {
       out << "still alive!";
