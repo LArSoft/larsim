@@ -31,7 +31,6 @@
 #include <map> // std::ostringstream
 #include <set> // std::ostringstream
 #include <iostream>
-// #include <cstring>
 #include <sys/stat.h>
 
 // Framework includes
@@ -45,7 +44,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 
 // art extensions
@@ -646,7 +645,7 @@ namespace larg4 {
         G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
         if ( !sd ){
           throw cet::exception("LArG4") << "Sensitive detector '"
-          << name
+          << name.str()
           << "' does not exist\n";
         }
         

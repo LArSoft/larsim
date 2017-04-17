@@ -533,7 +533,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   G4int NumQuanta = //stochastic variation in NumQuanta
     G4int(floor(GaussGen.fire(MeanNumberOfQuanta,sigma)+0.5));
   G4double LeffVar = GaussGen.fire(fYieldFactor,0.25*fYieldFactor);
-  if (LeffVar > 1) LeffVar = 1.00000; if (LeffVar < 0) LeffVar = 0;
+  if (LeffVar > 1) { LeffVar = 1.00000; }
+  if (LeffVar < 0) { LeffVar = 0; }
   if ( fYieldFactor < 1 ) NumQuanta = BinomFluct(NumQuanta,LeffVar);
   //if E below work function, can't make any quanta, and if NumQuanta
   //less than zero because Gaussian fluctuated low, update to zero
@@ -877,7 +878,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	// singlet, triplet lifetimes, and recombination time, are
 	// handled here, to create a realistic S1 pulse shape/timing
 	G4double aSecondaryTime = t0+UniformGen.fire()*(t1-t0)+evtStrt;
-	if (tau1<0) tau1=0; if (tau3<0) tau3=0; if (tauR<0) tauR=0;
+	if (tau1<0) { tau1=0; }
+	if (tau3<0) { tau3=0; }
+	if (tauR<0) { tauR=0; }
 	if ( aQuantum->GetDefinition()->
 	     GetParticleName()=="opticalphoton" ) {
 	  if ( abs(z2-z1) && !fAlpha && //electron recoil
@@ -962,7 +965,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	//re-scale radius to ensure no generation of quanta outside
 	//the active volume of your simulation due to Geant4 rounding
 	if ( radius >= R_TOL ) {
-	  if (x0[0] == 0) x0[0] = 1*CLHEP::nm; if (x0[1] == 0) x0[1] = 1*CLHEP::nm;
+	  if (x0[0] == 0) { x0[0] = 1*CLHEP::nm; }
+	  if (x0[1] == 0) { x0[1] = 1*CLHEP::nm; }
 	  radius -= R_TOL; phi = atan ( x0[1] / x0[0] );
 	  x0[0] = fabs(radius*cos(phi))*((fabs(x0[0]))/(x0[0]));
 	  x0[1] = fabs(radius*sin(phi))*((fabs(x0[1]))/(x0[1]));
