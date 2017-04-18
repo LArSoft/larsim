@@ -7,6 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // standard library includes
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <regex>
@@ -22,6 +23,15 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
+#include "fhiclcpp/types/OptionalTable.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/detail/ParameterArgumentTypes.h"
+#include "fhiclcpp/types/detail/ParameterBase.h"
+#include "fhiclcpp/types/detail/TableBase.h"
 #include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -44,56 +54,367 @@
 #include "TTree.h"
 
 // MARLEY includes
-#include "marley/marley_utils.hh"
 #include "marley/Event.hh"
 #include "marley/Generator.hh"
-#include "marley/InterpolationGrid.hh"
-#include "marley/Logger.hh"
-#include "marley/NeutrinoSource.hh"
-#include "marley/NuclearReaction.hh"
-#include "marley/StructureDatabase.hh"
+#include "marley/JSON.hh"
+#include "marley/JSONConfig.hh"
 
-
-using InterpMethod = marley::InterpolationGrid<double>::InterpolationMethod;
 
 // anonynmous namespace for helper functions, etc.
 namespace {
+  using Name = fhicl::Name;
+  using Comment = fhicl::Comment;
 
   // We need to convert from MARLEY's energy units (MeV) to LArSoft's
   // (GeV) using this conversion factor
   constexpr double MeV_to_GeV = 1e-3;
 
-  void source_check_positive(double x, const char* description,
-    const char* source_type)
+  template <typename T> marley::JSON fhicl_atom_to_json(
+    const fhicl::Atom<T>* atom)
   {
-    if (x <= 0.) throw cet::exception("MarleyGen")
-      << "Non-positive " << description << " value defined for a "
-      << source_type << " neutrino source";
+    return marley::JSON(atom->operator()());
   }
 
-  void source_check_nonnegative(double x, const char* description,
-    const char* source_type)
+  template <typename T> marley::JSON fhicl_optional_atom_to_json(
+    const fhicl::OptionalAtom<T>* opt_atom)
   {
-    if (x < 0.) throw cet::exception("MarleyGen")
-      << "Negative " << description << " value defined for a "
-      << source_type << " neutrino source";
+    T value;
+    if (opt_atom->operator()(value)) return marley::JSON(value);
+    // Return a null JSON object if the fhicl::OptionalAtom wasn't used
+    else return marley::JSON();
   }
 
-  std::string neutrino_pdg_to_string(int pdg) {
-    if (pdg == marley_utils::ELECTRON_NEUTRINO)
-      return std::string("ve");
-    else if (pdg == marley_utils::ELECTRON_ANTINEUTRINO)
-      return std::string("vebar");
-    else if (pdg == marley_utils::MUON_NEUTRINO)
-      return std::string("vu");
-    else if (pdg == marley_utils::MUON_ANTINEUTRINO)
-      return std::string("vubar");
-    else if (pdg == marley_utils::TAU_NEUTRINO)
-      return std::string("vt");
-    else if (pdg == marley_utils::TAU_ANTINEUTRINO)
-      return std::string("vtbar");
-    else return std::string("?");
+  template <typename S> marley::JSON fhicl_sequence_to_json(const S* sequence)
+  {
+    marley::JSON array = marley::JSON::make(
+      marley::JSON::DataType::Array);
+
+    for (size_t i = 0; i < sequence->size(); ++i) {
+      array.append(sequence->operator()(i));
+    }
+    return array;
   }
+
+  marley::JSON fhicl_parameter_to_json(
+    const fhicl::detail::ParameterBase* par)
+  {
+    // Don't bother with the rest of the analysis if we've been handed a
+    // nullptr or if the parameter is disabled in the current configuration
+    if (par && par->should_use()) {
+
+      auto type = par->parameter_type();
+      if (fhicl::is_atom(type)) {
+
+        // This is an ugly hack to load FHiCL atoms into JSON objects. We have
+        // to do it type-by-type using the current (12/2016) implementation of
+        // the fhicl::Atom and fhicl::OptionalAtom template classes.
+        if (!par->is_optional()) {
+          if (auto atm = dynamic_cast<const fhicl::Atom<double>* >(par))
+            return fhicl_atom_to_json<>(atm);
+          else if (auto atm = dynamic_cast<const
+            fhicl::Atom<std::string>* >(par))
+          {
+            return fhicl_atom_to_json<>(atm);
+          }
+          else throw cet::exception("MarleyGen") << "Failed to deduce"
+            << " the type of the FHiCL atom " << par->key();
+        }
+        else { // optional atoms
+          if (auto opt_atom = dynamic_cast<const
+            fhicl::OptionalAtom<double>* >(par))
+          {
+            return fhicl_optional_atom_to_json<>(opt_atom);
+          }
+          else if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<
+            std::string>* >(par))
+          {
+            return fhicl_optional_atom_to_json<>(opt_atom);
+          }
+          else throw cet::exception("MarleyGen") << "Failed to deduce"
+            << " the type of the FHiCL optional atom " << par->key();
+        }
+      }
+      else if (fhicl::is_sequence(type)) {
+
+        // This is another ugly hack to allow us to fill the JSON array. We
+        // have to do it type-by-type using the current (12/2016)
+        // implementation of the fhicl::Sequence template class.
+        if (auto seq = dynamic_cast<const fhicl::Sequence<double>* >(par))
+          return fhicl_sequence_to_json<>(seq);
+        else if (auto seq = dynamic_cast<const
+          fhicl::Sequence<double, 3>* >(par))
+        {
+          return fhicl_sequence_to_json<>(seq);
+        }
+        else if (auto seq = dynamic_cast<const
+          fhicl::Sequence<std::string>* >(par))
+        {
+          return fhicl_sequence_to_json<>(seq);
+        }
+        else throw cet::exception("MarleyGen") << "Failed to deduce"
+          << " the type of the FHiCL sequence " << par->key();
+
+        return marley::JSON();
+      }
+      else if (fhicl::is_table(type)) {
+
+        // Downcast the parameter pointer into a TableBase pointer so that we
+        // can iterate over its members
+        auto table = dynamic_cast<const fhicl::detail::TableBase*>(par);
+        if (!table) throw cet::exception("MarleyGen") << "Failed dynamic_cast"
+          << " of fhicl::detail::ParameterBase* to fhicl::detail::TableBase*"
+          << " when fhicl_is_table() was true";
+
+        // Create an empty JSON object
+        marley::JSON object = marley::JSON::make(
+          marley::JSON::DataType::Object);
+
+        // Load it with the members of the table recursively
+        for (const auto& m : table->members()) {
+          if (m && m->should_use()) {
+            marley::JSON temp = fhicl_parameter_to_json(m.get());
+	    // Skip members that are null (typically unused optional FHiCL
+	    // parameters)
+            if (!temp.is_null()) object[ m->name() ] = temp;
+          }
+        }
+        return object;
+      }
+    }
+
+    // Return a null JSON object if something strange happened.
+    return marley::JSON();
+  }
+
+  /// Collection of configuration parameters used to
+  /// determine the vertex location for each event
+  struct Vertex_Config {
+    fhicl::Atom<std::string> type_ {
+      Name("type"),
+      Comment("Technique used to choose MARLEY vertex locations"),
+      "sampled" // default value
+    };
+
+    fhicl::OptionalAtom<std::string> seed_ {
+      Name("seed"),
+      Comment("Seed used for sampling MARLEY vertex locations"),
+      [this]() -> bool { return type_() == "sampled"; }
+    };
+
+    fhicl::Sequence<double, 3> position_ {
+      Name("position"),
+      Comment("Coordinates of the fixed vertex position"),
+      [this]() -> bool { return type_() == "fixed"; }
+    };
+
+  }; // struct Vertex_Config
+
+  /// Collection of configuration parameters that will be
+  /// forwarded to MARLEY and used to define the neutrino
+  /// source
+  struct Source_Config {
+    fhicl::Atom<std::string> type_ {
+      Name("type"),
+      Comment("Type of neutrino source for MARLEY to use")
+    };
+
+    fhicl::Atom<std::string> neutrino_ {
+      Name("neutrino"),
+      Comment("Kind of neutrino (flavor, matter/antimatter) that the"
+        " neutrino source produces")
+    };
+
+    fhicl::Atom<double> Emin_ {
+      Name("Emin"),
+      Comment("Minimum energy (MeV) of the neutrinos produced by this"
+        " source"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "fermi-dirac") || (type == "beta-fit" );
+      }
+    };
+
+    fhicl::Atom<double> Emax_ {
+      Name("Emax"),
+      Comment("Maximum energy (MeV) of the neutrinos produced by this"
+        " source"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "fermi-dirac") || (type == "beta-fit" )
+          || (type == "histogram");
+      }
+    };
+
+    fhicl::Atom<double> temperature_ {
+      Name("temperature"),
+      Comment("Effective temperature for the Fermi-Dirac distribution"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "fermi-dirac");
+      }
+    };
+
+    fhicl::OptionalAtom<double> eta_ {
+      Name("eta"),
+      Comment("Pinching parameter for the Fermi-Dirac distribution"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "fermi-dirac");
+      }
+    };
+
+    fhicl::Atom<double> energy_ {
+      Name("energy"),
+      Comment("Energy (MeV) of the neutrinos produced by a monoenergetic"
+        " source"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "monoenergetic");
+      }
+    };
+
+    fhicl::Atom<double> Emean_ {
+      Name("Emean"),
+      Comment("Mean energy (MeV) of the neutrinos produced by a beta-fit"
+        " source"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "beta-fit");
+      }
+    };
+
+    fhicl::OptionalAtom<double> beta_ {
+      Name("beta"),
+      Comment("Pinching parameter for a beta-fit source"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "beta-fit");
+      }
+    };
+
+    fhicl::Sequence<double> E_bin_lefts_ {
+      Name("E_bin_lefts"),
+      Comment("Left edges for each energy bin in the histogram"),
+      [this]() -> bool {
+        auto type = type_();
+        return type == "histogram";
+      }
+    };
+
+    fhicl::Sequence<double> weights_ {
+      Name("weights"),
+      Comment("Weights for each energy bin in the histogram"),
+      [this]() -> bool {
+        auto type = type_();
+        return type == "histogram";
+      }
+    };
+
+    fhicl::Sequence<double> energies_ {
+      Name("energies"),
+      Comment("Energies (MeV) for each grid point"),
+      [this]() -> bool {
+        auto type = type_();
+        return type == "grid";
+      }
+    };
+
+    fhicl::Sequence<double> prob_densities_ {
+      Name("prob_densities"),
+      Comment("Probability densities for each grid point"),
+      [this]() -> bool {
+        auto type = type_();
+        return type == "grid";
+      }
+    };
+
+    fhicl::Atom<std::string> rule_ {
+      Name("rule"),
+      Comment("Interpolation rule for computing probability densities"
+        " between grid points. Allowed values include \"linlin\","
+        " \"linlog\", \"loglin\", \"loglog\", and \"constant\""),
+      [this]() -> bool {
+        auto type = type_();
+        return type == "grid";
+      }
+    };
+
+    fhicl::Atom<std::string> tfile_ {
+      Name("tfile"),
+      Comment("Name of the ROOT file that contains a TH1 or TGraph neutrino"
+        " source spectrum"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "th1") || (type == "tgraph");
+      }
+    };
+
+    fhicl::Atom<std::string> namecycle_ {
+      Name("namecycle"),
+      Comment("Namecycle of the ROOT TH1 or TGraph to use"),
+      [this]() -> bool {
+        auto type = type_();
+        return (type == "th1") || (type == "tgraph");
+      }
+    };
+
+  }; // struct Source_Config
+
+  /// Collection of configuration parameters that will be
+  /// forwarded to MARLEY
+  struct Marley_Config {
+
+    fhicl::OptionalAtom<std::string> seed_ {
+      Name("seed"),
+      Comment("Seed used for the MARLEY generator")
+    };
+
+    fhicl::Sequence<double, 3> direction_ {
+      Name("direction"),
+      Comment("3-vector that points in the direction of motion of the"
+        " incident neutrinos"),
+      std::array<double, 3> { 0., 0., 1. } // default value
+    };
+
+    fhicl::Sequence<std::string> reactions_ {
+      Name("reactions"),
+      Comment("List of matrix element data files to use to define reactions"
+        " in MARLEY")
+    };
+
+    fhicl::Sequence<std::string> structure_ {
+      Name("structure"),
+      Comment("List of TALYS format nuclear structure data files to use"
+        " in MARLEY")
+    };
+
+    fhicl::Table<Source_Config> source_ {
+      Name("source"),
+      Comment("Neutrino source configuration")
+    };
+
+  }; // struct Marley_Config
+
+  /// Collection of configuration parameters for the module
+  struct Config {
+
+    fhicl::Table<Vertex_Config> vertex_ {
+      Name("vertex"),
+      Comment("Configuration for selecting the vertex location(s)")
+    };
+
+    fhicl::Table<Marley_Config> marley_parameters_ {
+      Name("marley_parameters"),
+      Comment("Configuration for the MARLEY generator")
+    };
+
+    fhicl::Atom<std::string> module_type_ {
+      Name("module_type"),
+      Comment(),
+      "MARLEYGen" // default value
+    };
+
+  }; // struct Config
 
 }
 
@@ -105,34 +426,34 @@ class evgen::MarleyGen : public art::EDProducer {
 
 public:
 
-  explicit MarleyGen(const fhicl::ParameterSet& p);
+  // Type to enable FHiCL parameter validation by art
+  using Parameters = art::EDProducer::Table<Config>;
+
+  // Configuration-checking constructor
+  explicit MarleyGen(const Parameters& p);
   virtual ~MarleyGen();
 
   virtual void produce(art::Event& e) override;
   virtual void beginRun(art::Run& run) override;
-  virtual void reconfigure(const fhicl::ParameterSet& p) override;
+
+  virtual void reconfigure(const Parameters& p);
+  void reconfigure_marley(const fhicl::Table<Marley_Config>& conf);
+  void reconfigure_vertex(const fhicl::Table<Vertex_Config>& conf);
 
   void add_marley_particles(simb::MCTruth& truth,
     const std::vector<marley::Particle*>& particles, bool track);
-  void prepare_neutrino_source(const fhicl::ParameterSet& p);
+
   std::string find_file(const std::string& fileName,
     const std::string& fileType);
-  void reconfigure_marley(const fhicl::ParameterSet& p);
-  void reconfigure_vertex(const fhicl::ParameterSet& p);
-  void prepare_reactions(const std::vector<std::string>& files);
-  void prepare_structure(const std::vector<std::string>& files);
-  void check_pdf_pairs(const std::vector<double>& Es,
-    const std::vector<double>& PDs);
-  InterpMethod get_interpolation_method(const std::string& rule);
-  int neutrino_pdg(const std::string& nu);
+
+  void load_full_paths_into_json(marley::JSON& json,
+    const std::string& array_name);
 
   enum class vertex_type_t { kSampled, kFixed };
 
 protected:
 
   vertex_type_t fVertexType;
-
-  //std::string fMarleyLoggingLevel;
 
   TLorentzVector fVertexPosition;
 
@@ -151,36 +472,29 @@ protected:
   // Function that selects a primary vertex location for each event. The
   // result is saved to fVertexPosition.
   void update_vertex_pos();
-  // Initializes sampling machinery for vertex position sampling
-  void initialize_vertex_pos_sampling(const fhicl::ParameterSet& p);
+
   // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
   // This allows the module to write the generated events to a TTree.
   void load_marley_dictionaries();
+
   // Run, subrun, and event numbers from the art::Event being processed
   uint_fast32_t fRunNumber;
   uint_fast32_t fSubRunNumber;
   uint_fast32_t fEventNumber;
+
   // Discrete distribution object used to sample TPCs based on their active
   // masses
   std::unique_ptr<std::discrete_distribution<size_t> > fTPCDist;
+
   // RNG object used to sample TPCs
   std::mt19937_64 fTPCEngine;
 };
 
 //------------------------------------------------------------------------------
-evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
+evgen::MarleyGen::MarleyGen(const Parameters& p)
   : fVertexType(vertex_type_t::kSampled), fEvent(new marley::Event),
   fRunNumber(0), fSubRunNumber(0), fEventNumber(0), fTPCDist(nullptr)
 {
-  // TODO: set MARLEY logging level from FHiCL parameters
-  //fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
-  marley::Logger::Instance().add_stream(fMarleyLogStream,
-    marley::Logger::LogLevel::INFO);
-
-  // Delay creating the MARLEY generator until now so that we'll be able to
-  // see all of its logger messages.
-  fMarleyGenerator = std::make_unique<marley::Generator>();
-
   // Configure the module (including MARLEY itself) using the FHiCL parameters
   this->reconfigure(p);
 
@@ -206,7 +520,7 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
         gen->reseed(seed);
       }
     },
-    "MARLEY", p.get<fhicl::ParameterSet>("marley_parameters"), { "seed" }
+    "MARLEY", p().marley_parameters_.get_PSet(), { "seed" }
   );
 
   // Unless I'm mistaken, the call to registerEngine should seed the generator
@@ -221,10 +535,6 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
   if (marley_cast_seed != fMarleyGenerator->get_seed()) {
     fMarleyGenerator->reseed(marley_cast_seed);
   }
-
-  // Get the FHiCL parameters controlling the vertex location(s)
-  fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex",
-    fhicl::ParameterSet()));
 
   // Also register the TPC sampling engine with the seed service. Use a similar
   // lambda for simplicity. If you need the seed later, get it from the seed
@@ -246,7 +556,7 @@ evgen::MarleyGen::MarleyGen(const fhicl::ParameterSet& p)
         this->fTPCEngine.seed(seed_sequence);
       }
     },
-    "MarleyGenTPCEngine", vertex_params, { "seed" }
+    "MarleyGenTPCEngine", p().vertex_.get_PSet(), { "seed" }
   );
 
   // TODO: resolve the other workaround mentioned above, then fix this as well
@@ -412,17 +722,10 @@ void evgen::MarleyGen::produce(art::Event& e)
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::reconfigure(const fhicl::ParameterSet& p)
+void evgen::MarleyGen::reconfigure(const Parameters& p)
 {
-  //fMarleyLoggingLevel = p.get<std::string>("MarleyLoggingLevel", "INFO");
-
-  fhicl::ParameterSet vertex_params(p.get<fhicl::ParameterSet>("vertex"));
-  reconfigure_vertex(vertex_params);
-
-  fhicl::ParameterSet marley_params(p.get<fhicl::ParameterSet>(
-    "marley_parameters"));
-
-  reconfigure_marley(marley_params);
+  reconfigure_vertex(p().vertex_);
+  reconfigure_marley(p().marley_parameters_);
 }
 
 //------------------------------------------------------------------------------
@@ -437,397 +740,47 @@ std::string evgen::MarleyGen::find_file(const std::string& fileName,
   if (fullName.empty())
     throw cet::exception("MarleyGen")
       << "Cannot find MARLEY " << fileType << " data file '"
-      << fileName << "\'\n";
+      << fileName << '\'';
 
   return fullName;
 }
 
-//------------------------------------------------------------------------------
-int evgen::MarleyGen::neutrino_pdg(const std::string& nu) {
-
-  int pdg = 0;
-
-  bool bad = false;
-
-  // Matches integers
-  static const std::regex rx_int = std::regex("[-+]?[0-9]+");
-  if (std::regex_match(nu, rx_int)) {
-    pdg = std::stoi(nu);
-    if (!marley::NeutrinoSource::pdg_is_allowed(pdg)) bad = true;
-  }
-  else if (!marley_utils::string_to_neutrino_pdg(nu, pdg)) {
-    bad = true;
-  }
-
-  if (bad) throw cet::exception("MarleyGen") << "Invalid neutrino type"
-    << " specification '" << nu << "' given for the MARLEY"
-    << " neutrino source.";
-
-  return pdg;
-}
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::reconfigure_marley(const fhicl::ParameterSet& p)
+void evgen::MarleyGen::load_full_paths_into_json(
+  marley::JSON& json, const std::string& array_name)
 {
-  // Remove any previous reaction data and nuclear structure data owned by the
-  // MARLEY generator
-  fMarleyGenerator->clear_reactions();
-  fMarleyGenerator->get_structure_db().clear();
-
-  // Get the incident neutrino direction 3-vector from the FHiCL parameters
-  fhicl::ParameterSet dir_params = p.get<fhicl::ParameterSet>("direction",
-    fhicl::ParameterSet());
-  double Dx = dir_params.get<double>("x", 0.);
-  double Dy = dir_params.get<double>("y", 0.);
-  double Dz = dir_params.get<double>("z", 1.);
-  std::array<double, 3> dir_vec{ Dx, Dy, Dz };
-
-  // Set the incident neutrino direction using the FHiCL settings
-  fMarleyGenerator->set_neutrino_direction(dir_vec);
-
-  std::vector<std::string> reactions = p.get<std::vector<std::string> >(
-    "reactions");
-
-  std::vector<std::string> structure = p.get<std::vector<std::string> >(
-    "structure", std::vector<std::string>());
-
-  fhicl::ParameterSet source_params = p.get<fhicl::ParameterSet>("source");
-
-  prepare_structure(structure);
-  prepare_reactions(reactions);
-  prepare_neutrino_source(source_params);
-}
-
-//------------------------------------------------------------------------------
-void evgen::MarleyGen::prepare_reactions(const std::vector<std::string>& files)
-{
-  if (files.size() == 0) throw cet::exception("MarleyGen") << "At"
-    << " least one reaction must be defined in the FHiCL configuration"
-    << " file.\n";
-
-  for (auto filename : files) {
-    std::string full_name = find_file(filename, "reaction");
-
-    MARLEY_LOG_INFO() << "Loading reaction data from file " << full_name;
-    auto nr = std::make_unique<marley::NuclearReaction>(full_name,
-      fMarleyGenerator->get_structure_db());
-
-    MARLEY_LOG_INFO() << "Added reaction " << nr->get_description();
-
-    fMarleyGenerator->add_reaction(std::move(nr));
-  }
-}
-
-//------------------------------------------------------------------------------
-void evgen::MarleyGen::prepare_structure(const std::vector<std::string>& files)
-{
-  // Load data for all nuclides in each structure data file. Assume that
-  // all files use the default TALYS format.
-  for (auto filename : files) {
-    std::string full_name = find_file(filename, "structure");
-
-    auto& sdb = fMarleyGenerator->get_structure_db();
-
-    std::set<int> nucleus_PDGs = sdb.find_all_nuclides(full_name);
-
-    for (int pdg : nucleus_PDGs) {
-      int Z = marley_utils::get_particle_Z(pdg);
-      int A = marley_utils::get_particle_A(pdg);
-
-      std::string trimmed_nucid = marley_utils::trim_copy(
-        marley_utils::nuc_id(Z, A));
-
-      MARLEY_LOG_INFO() << "Loading nuclear structure data for "
-        << trimmed_nucid << " from file " << full_name;
-
-      sdb.emplace_decay_scheme(pdg, full_name);
+  if (json.has_key(array_name)) {
+    // Replace each file name (which may appear in the FHiCL configuration
+    // without a full path) with the full path found using cetlib
+    for (auto& element : json.at(array_name).array_range()) {
+      element = find_file(element.to_string(), array_name);
     }
   }
+  else throw cet::exception("MarleyGen") << "Missing \"" << array_name
+    << "\" key in the MARLEY parameters.";
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::check_pdf_pairs(const std::vector<double>& Es,
-  const std::vector<double>& PDs)
+void evgen::MarleyGen::reconfigure_marley(
+  const fhicl::Table<Marley_Config>& conf)
 {
-  if (Es.size() < 2) throw cet::exception("MarleyGen")
-    << "The energy grid defined for the neutrino source has less than"
-    << " two grid points";
+  // Convert the FHiCL parameters into a JSON object that MARLEY can understand
+  marley::JSON json = fhicl_parameter_to_json(&conf);
 
-  if (PDs.size() != Es.size()) throw cet::exception("MarleyGen")
-    << "The energy and probability density vectors used to define the"
-    << " neutrino source have different lengths.";
+  // Update the reaction and structure data file names to the full paths
+  // using cetlib to search for them
+  load_full_paths_into_json(json, "reactions");
+  load_full_paths_into_json(json, "structure");
 
-  if (Es.front() < 0.) throw cet::exception("MarleyGen")
-    << "Negative minimum energy defined for the neutrino source";
+  // Create a new MARLEY configuration based on the JSON parameters
+  LOG_INFO("MarleyGen") << "MARLEY will now use the JSON configuration\n"
+    << json.dump_string() << '\n';
+  marley::JSONConfig config(json);
 
-  double sum_of_PDs = 0.;
-
-  for (size_t i = 1; i < Es.size(); ++i) {
-    if (Es.at(i) <= Es.at(i - 1)) throw cet::exception("MarleyGen")
-      << "The grid point energies defined for the neutrino source"
-      << " are not strictly increasing";
-    double pd = PDs.at(i);
-    if (pd < 0.) throw cet::exception("MarleyGen")
-      << "Negative probability density grid point defined for the"
-      << " neutrino source";
-    sum_of_PDs += pd;
-  }
-
-  if (sum_of_PDs <= 0.) throw cet::exception("MarleyGen")
-    << "All probability density grid point values are zero for"
-    << " the neutrino source";
-}
-
-
-//------------------------------------------------------------------------------
-InterpMethod evgen::MarleyGen::get_interpolation_method(
-  const std::string& rule)
-{
-  // Try using the ENDF-style numerical codes first
-  static const std::regex rx_nonneg_int("[0-9]+");
-
-  if (std::regex_match(rule, rx_nonneg_int)) {
-    int endf_interp_code = std::stoi(rule);
-    if (endf_interp_code == 1) return InterpMethod::Constant;
-    else if (endf_interp_code == 2) return InterpMethod::LinearLinear;
-    else if (endf_interp_code == 3) return InterpMethod::LinearLog;
-    else if (endf_interp_code == 4) return InterpMethod::LogLinear;
-    else if (endf_interp_code == 5) return InterpMethod::LogLog;
-  }
-
-  // Interpolation rules may also be given as strings
-  else if (rule == "const" || rule == "constant")
-    return InterpMethod::Constant;
-  else if (rule == "lin" || rule == "linlin")
-    return InterpMethod::LinearLinear;
-  else if (rule == "log" || rule == "loglog")
-    return InterpMethod::LogLog;
-  // linear in energy, logarithmic in probability density
-  else if (rule == "linlog")
-    return InterpMethod::LinearLog;
-  // logarithmic in energy, linear in probability density
-  else if (rule == "loglin")
-    return InterpMethod::LogLinear;
-  else throw cet::exception("MarleyGen") << "Invalid interpolation rule '"
-    << rule << "' given in the neutrino source specification";
-
-  // We shouldn't ever end up here, but return something just in case
-  return InterpMethod::Constant;
-}
-
-//------------------------------------------------------------------------------
-void evgen::MarleyGen::prepare_neutrino_source(const fhicl::ParameterSet& p)
-{
-  std::string type = p.get<std::string>("type");
-  std::string nu = p.get<std::string>("neutrino");
-
-  // Particle Data Group code for the neutrino type produced by this source
-  int pdg = neutrino_pdg(nu);
-
-  std::unique_ptr<marley::NeutrinoSource> source;
-
-  if (type == "mono" || type == "monoenergetic") {
-    double energy = p.get<double>("energy");
-    source_check_positive(energy, "energy", "monoenergetic");
-    source = std::make_unique<marley::MonoNeutrinoSource>(pdg, energy);
-    MARLEY_LOG_INFO() << "Created monoenergetic "
-      << neutrino_pdg_to_string(pdg) << " source with"
-      << " neutrino energy = " << energy << " MeV";
-  }
-  else if (type == "dar" || type == "decay-at-rest") {
-    source = std::make_unique<marley::DecayAtRestNeutrinoSource>(pdg);
-     MARLEY_LOG_INFO() << "Created muon decay-at-rest "
-       << neutrino_pdg_to_string(pdg) << " source";
-  }
-  else if (type == "fd" || type == "fermi-dirac" || type == "fermi_dirac") {
-    double Emin = p.get<double>("Emin");
-    double Emax = p.get<double>("Emax");
-    double temp = p.get<double>("temperature");
-    double eta = p.get<double>("eta", 0.);
-
-    source_check_nonnegative(Emin, "Emin", "Fermi-Dirac");
-    source_check_positive(temp, "temperature", "Fermi-Dirac");
-
-    if (Emax <= Emin) throw cet::exception("MarleyGen")
-      << "Emax <= Emin for a Fermi-Dirac neutrino source";
-
-    source = std::make_unique<marley::FermiDiracNeutrinoSource>(pdg, Emin,
-      Emax, temp, eta);
-    MARLEY_LOG_INFO() << "Created Fermi-Dirac "
-      << neutrino_pdg_to_string(pdg) << " source with parameters";
-    MARLEY_LOG_INFO() << "  Emin = " << Emin << " MeV";
-    MARLEY_LOG_INFO() << "  Emax = " << Emax << " MeV";
-    MARLEY_LOG_INFO() << "  temperature = " << temp << " MeV";
-    MARLEY_LOG_INFO() << "  eta = " << eta;
-  }
-  else if (type == "bf" || type == "beta" || type == "beta-fit") {
-    double Emin = p.get<double>("Emin");
-    double Emax = p.get<double>("Emax");
-    double Emean = p.get<double>("Emean");
-    double beta = p.get<double>("beta", 4.5);
-
-    source_check_nonnegative(Emin, "Emin", "beta-fit");
-    source_check_positive(Emean, "Emean", "beta-fit");
-
-    if (Emax <= Emin) throw cet::exception("MarleyGen")
-      << "Emax <= Emin for a beta-fit neutrino source";
-
-    source = std::make_unique<marley::BetaFitNeutrinoSource>(pdg, Emin,
-      Emax, Emean, beta);
-    MARLEY_LOG_INFO() << "Created beta-fit "
-      << neutrino_pdg_to_string(pdg) << " source with parameters";
-    MARLEY_LOG_INFO() << "  Emin = " << Emin << " MeV";
-    MARLEY_LOG_INFO() << "  Emax = " << Emax << " MeV";
-    MARLEY_LOG_INFO() << "  average energy = " << Emean << " MeV";
-    MARLEY_LOG_INFO() << "  beta = " << beta;
-  }
-  else if (type == "hist" || type == "histogram") {
-    std::vector<double> Es = p.get<std::vector<double> >("E_bin_lefts");
-    std::vector<double> weights = p.get<std::vector<double> >("weights");
-    double Emax = p.get<double>("Emax");
-
-    // Add Emax to the grid
-    Es.push_back(Emax);
-
-    // Set the probability density at E = Emax to be zero (this ensures
-    // that no energies outside of the histogram will be sampled)
-    weights.push_back(0.);
-
-    // Convert from bin weights to probability densities by dividing by the
-    // width of each bin
-    int jmax = Es.size() - 1;
-    for (int j = 0; j < jmax; ++j) {
-      // TODO: The check for monotonically increasing energies that we perform
-      // in check_pdf_pairs() should ensure that we don't divide by zero here,
-      // but this might be worth looking at more carefully in the future.
-      weights.at(j) /= (Es.at(j + 1) - Es.at(j));
-    }
-
-    // Check the grid points for the probability density function
-    check_pdf_pairs(Es, weights);
-
-    // Create the source
-    source = std::make_unique<marley::GridNeutrinoSource>(Es, weights, pdg,
-      InterpMethod::Constant);
-    MARLEY_LOG_INFO() << "Created histogram "
-      << neutrino_pdg_to_string(pdg) << " source";
-  }
-  else if (type == "grid") {
-    std::vector<double> energies = p.get<std::vector<double> >("energies");
-    std::vector<double> PDs = p.get<std::vector<double> >("prob_densities");
-    std::string rule = p.get<std::string>("rule", "linlin");
-
-    InterpMethod method = get_interpolation_method(rule);
-
-    check_pdf_pairs(energies, PDs);
-
-    source = std::make_unique<marley::GridNeutrinoSource>(energies, PDs, pdg,
-      method);
-    MARLEY_LOG_INFO() << "Created grid "
-      << neutrino_pdg_to_string(pdg) << " source";
-  }
-  else if (type == "th1" || type == "tgraph") {
-    std::string tfile = p.get<std::string>("tfile");
-    std::string namecycle = p.get<std::string>("namecycle");
-
-    std::string full_name = find_file(tfile, "source");
-
-    auto file = std::make_unique<TFile>(full_name.c_str(), "read");
-    if (!file) throw cet::exception("MarleyGen")
-      << "Failed to open the ROOT file '" << tfile << "'";
-
-    if (type == "th1") {
-      std::unique_ptr<TH1> th1(dynamic_cast<TH1*>(
-        file->Get(namecycle.c_str())));
-
-      // Prevent ROOT from auto-deleting the TH1 when the TFile is closed
-      if (th1) th1->SetDirectory(nullptr);
-      else throw cet::exception("MarleyGen")
-        << "Failed to load the TH1 '" << namecycle << "'" << " from the ROOT"
-        << " file '" << full_name << "'";
-
-      // The histogram was successfully recovered from the
-      // TFile, so read in the (energy low edge, bin weight)
-      // ordered pairs. Keep the overflow bin so that we can
-      // use its left edge as the maximum energy value. Skip
-      // the unneeded underflow bin.
-      const TAxis* x_axis = th1->GetXaxis();
-      if (!x_axis) throw cet::exception("MarleyGen") << "Error finding x-axis"
-        << " of ROOT histogram (TH1 object) with namecycle '" << namecycle
-        << "' from the ROOT file '" << full_name << "'";
-
-      // include the overflow bin but not the underflow bin
-      size_t nbins = x_axis->GetNbins() + 1;
-      std::vector<double> Es(nbins);
-      std::vector<double> PDs(nbins);
-
-      for (size_t b = 1; b <= nbins; ++b) { // underflow bin is bin 0
-        Es.at(b - 1) = x_axis->GetBinLowEdge(b);
-        // the content of the overflow bin is reset to zero below
-        PDs.at(b - 1) = th1->GetBinContent(b);
-      }
-
-      // Convert the bin weights to probability densities (used
-      // by our GridNeutrinoSource object) by dividing each bin
-      // weight by the corresponding bin width.
-      for (size_t c = 0; c < nbins - 1; ++c) {
-        PDs.at(c) /= Es.at(c + 1) - Es.at(c);
-      }
-
-      // Assign zero probability density to the overflow bin's
-      // left edge. This ensures that neutrino energies will be
-      // sampled on the half-open interval [Elow, Ehigh), where
-      // Elow is the left edge of the first bin and Ehigh is the
-      // left edge of the overflow bin.
-      PDs.back() = 0.;
-
-      // Perform some standard checks to make sure that the probability
-      // density function represented by these grid points is sane.
-      check_pdf_pairs(Es, PDs);
-
-      // Now that we've processed grid points, create the grid neutrino
-      // source
-      source = std::make_unique<marley::GridNeutrinoSource>(
-        Es, PDs, pdg, InterpMethod::Constant);
-      MARLEY_LOG_INFO() << "Created a th1 "
-        << neutrino_pdg_to_string(pdg) << " source";
-    }
-    else if (type == "tgraph") {
-      std::unique_ptr<TGraph> tg(dynamic_cast<TGraph*>(
-        file->Get(namecycle.c_str())));
-
-      if (!tg) throw cet::exception("MarleyGen")
-        << "Failed to load the TGraph '" << namecycle
-        << "' from the ROOT file '" << full_name << "'";
-
-      size_t num_points = tg->GetN();
-      std::vector<double> Es(num_points);
-      std::vector<double> PDs(num_points);
-
-      // Load the energies and PDF values into our vectors
-      for(size_t p = 0; p < num_points; ++p) {
-        tg->GetPoint(p, Es.at(p), PDs.at(p));
-      }
-
-      // Perform some standard checks to make sure that the probability
-      // density function represented by these grid points is sane.
-      check_pdf_pairs(Es, PDs);
-
-      // Create a neutrino source based on the grid
-      source = std::make_unique<marley::GridNeutrinoSource>(Es,
-        PDs, pdg, InterpMethod::LinearLinear);
-      MARLEY_LOG_INFO() << "Created a tgraph "
-        << neutrino_pdg_to_string(pdg) << " source";
-    }
-    else throw cet::exception("MarleyGen") // shouldn't ever get here
-      << "Unknown error encountered while creating ROOT neutrino source"
-      << " for MARLEY.";
-  }
-  else throw cet::exception("MarleyGen") // bad neutrino source type
-    << "Unrecognized MARLEY neutrino source type '" << type << "'";
-
-  // Load the generator with the new source object
-  fMarleyGenerator->set_source(std::move(source));
+  // Create a new marley::Generator object basd on the current configuration
+  fMarleyGenerator = std::make_unique<marley::Generator>(
+    config.create_generator());
 }
 
 //------------------------------------------------------------------------------
@@ -835,6 +788,7 @@ void evgen::MarleyGen::update_vertex_pos()
 {
   // sample a new position if needed
   if (fVertexType == vertex_type_t::kSampled) {
+
     // Sample a TPC index using the active masses as weights
     size_t tpc_index = fTPCDist->operator()(fTPCEngine);
 
@@ -867,10 +821,10 @@ void evgen::MarleyGen::update_vertex_pos()
 }
 
 //------------------------------------------------------------------------------
-void evgen::MarleyGen::reconfigure_vertex(const fhicl::ParameterSet& p)
+void evgen::MarleyGen::reconfigure_vertex(
+  const fhicl::Table<Vertex_Config>& conf)
 {
-  std::string type = p.get<std::string>("type", "sampled");
-
+  auto type = conf().type_();
   if (type == "sampled") {
 
     fVertexType = vertex_type_t::kSampled;
@@ -895,9 +849,10 @@ void evgen::MarleyGen::reconfigure_vertex(const fhicl::ParameterSet& p)
 
     fVertexType = vertex_type_t::kFixed;
 
-    double Vx = p.get<double>("x");
-    double Vy = p.get<double>("y");
-    double Vz = p.get<double>("z");
+    auto vertex_pos = conf().position_();
+    double Vx = vertex_pos.at(0);
+    double Vy = vertex_pos.at(0);
+    double Vz = vertex_pos.at(0);
 
     fVertexPosition.SetXYZT(Vx, Vy, Vz, 0.); // TODO: add time setting
   }
@@ -944,7 +899,6 @@ void evgen::MarleyGen::load_marley_dictionaries()
   // No further action is required for ROOT 5 because the compiled
   // dictionaries (which are linked to this module) contain all of
   // the needed information
-
   already_loaded_marley_dict = true;
 }
 

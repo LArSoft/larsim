@@ -18,9 +18,8 @@ standard_marley:
   # Use a fixed primary vertex location
   #vertex: {
   #  type: "fixed"
-  #  x: 0.
-  #  y: 0.
-  #  z: 0.
+  #  (x, y, z) coordinates to use
+  #  position: [ 0., 0., 0. ]
   #}
 
   # FHiCL parameters that will be used to configure the
@@ -32,13 +31,8 @@ standard_marley:
     # is given explicitly here)
     #seed: 12345
 
-    # Incident neutrino direction 3-vector
-    direction: 
-    {
-      x: 0.
-      y: 0.
-      z: 1.
-    }
+    # Incident neutrino direction 3-vector [ x, y, z ]
+    direction: [ 0., 0., 1. ]
 
     # The user must define at least one reaction
     # by passing MARLEY the name of a matrix element
