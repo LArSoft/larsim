@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: SimWire.cxx,v 1.22 2010/04/23 20:30:53 seligman Exp $
 //
 // SimWire class designed to simulate signal on a wire in the TPC
 //

@@ -48,7 +48,6 @@
 // ********************************************************************
 //
 //
-// $Id: OpFastScintillation.hh,v 1.21 2010-10-28 23:29:21 gum Exp $
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
 // 

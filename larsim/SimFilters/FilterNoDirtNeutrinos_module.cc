@@ -2,7 +2,6 @@
 /// \file  FilterNoDirtNeutrinos_module.cc
 /// \brief Simple EDFilter to require neutrino interaction in TPC
 ///
-/// \version $Id: 
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef FILTER_FILTERNODIRTNUS_H

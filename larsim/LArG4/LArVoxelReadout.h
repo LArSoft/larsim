@@ -2,7 +2,6 @@
 /// \file  LArVoxelReadout.h
 /// \brief A Geant4 sensitive detector that accumulates voxel information.
 ///
-/// \version $Id: LArVoxelReadout.h,v 1.2 2009/03/31 17:58:39 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 ///

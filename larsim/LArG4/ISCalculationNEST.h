@@ -3,7 +3,6 @@
 /// \brief Interface to algorithm class for a specific calculation of 
 ///        ionization electrons and scintillation photons using NEST
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef LARG4_ISCALCULATIONNEST_H

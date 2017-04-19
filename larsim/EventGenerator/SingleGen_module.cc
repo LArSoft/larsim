@@ -4,7 +4,6 @@
 ///
 /// Module designed to produce a set list of particles for a MC event
 ///
-/// \version $Id: SingleGen.cxx,v 1.4 2010/03/29 09:54:01 brebel Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_SINGLEGEN

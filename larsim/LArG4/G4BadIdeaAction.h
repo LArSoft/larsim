@@ -5,7 +5,6 @@
 ///        a very bad idea in general.  Please do not add to this class without
 ///        discussing with the LArSoft Conveners
 ///
-/// \version $Id: ParticleListAction.h,v 1.3 2010/04/29 15:39:33 seligman Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 

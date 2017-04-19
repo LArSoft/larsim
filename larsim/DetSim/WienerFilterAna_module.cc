@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: WienerFilterAna.cxx,
 //
 // WienerFilterAna class designed to calculate the optimum filter for an event
 //  (based strongly on CalWireAna)

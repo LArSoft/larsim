@@ -4,7 +4,6 @@
 ///
 /// Module designed to produce a set list of particles for MC to model radiological decays
 ///
-/// \version $Id: RadioGen_module.cc,v 2.0 2017/01/31 15:02:00 trj Exp $
 /// \author  trj@fnal.gov
 //           Rn222 generation feature added by gleb.sinev@duke.edu 
 //           (based on a generator by jason.stock@mines.sdsmt.edu)

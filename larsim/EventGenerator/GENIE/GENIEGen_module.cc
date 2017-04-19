@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: GENIEGen_plugin.cc,v 1.4 2010/04/27 19:48:46 brebel Exp $
 //
 //
 // GENIE neutrino event generator

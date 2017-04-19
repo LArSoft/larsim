@@ -2,7 +2,6 @@
 /// \file  LArVoxelReadoutGeometry.cxx
 /// \brief Define the "parallel" geometry that's seen by the LAr Voxels.
 ///
-/// \version $Id: LArVoxelReadoutGeometry.cxx,v 1.3 2009/03/31 17:58:39 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 

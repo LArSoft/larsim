@@ -4,7 +4,6 @@
 ///        ionization electrons and scintillation photons assuming there
 ///        is no correlation between the two
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef LARG4_ISCALCULATIONSEPARATE_H

@@ -2,7 +2,6 @@
 /// \file  LArVoxelData.cxx
 /// \brief Encapsulates the information we want store for a voxel.
 ///
-/// \version $Id: LArVoxelData.cxx,v 1.2 2009/09/01 19:53:24 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 

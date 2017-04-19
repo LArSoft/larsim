@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  LArVoxelCalculator.h
 /// \brief Encapsulates calculation of LArVoxelID and LArVoxel parameters
-/// \version $Id: ParticleHistory.cxx,v 1.1 2010/04/29 15:38:01 seligman Exp $///
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 

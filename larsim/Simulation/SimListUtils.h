@@ -4,7 +4,6 @@
 /// Utility functions for getting the various list types in the Simulation
 /// package from the Event Data Model
 ///
-/// \version $Id: SingleGen.h,v 1.2 2010/02/15 19:10:40 brebel Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef SIMLISTUTILS_H

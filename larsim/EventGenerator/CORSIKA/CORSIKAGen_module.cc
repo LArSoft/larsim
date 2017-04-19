@@ -2,7 +2,6 @@
 /// \file  CORSIKAGen_module.cc
 /// \brief Generator for cosmic-ray secondaries based on pre-generated CORSIKA shower databases.
 ///
-/// \version $Id: CORSIKAGen_module.cxx
 /// \author  Matthew.Bass@physics.ox.ac.uk
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_CORSIKAGen_H

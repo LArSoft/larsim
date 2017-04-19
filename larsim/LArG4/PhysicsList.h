@@ -2,7 +2,6 @@
 /// \file  PhysicsList.h
 /// \brief Create the physics lists to be used by Geant4.
 ///
-/// \version $Id: PhysicsList.h,v 1.2 2009/09/15 18:33:43 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 ///

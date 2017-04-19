@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: BackTracker_service.cc,v 1.3 2011/12/13 05:57:02 bckhouse Exp $
 //
 //
 // \file: BackTracker_service.cc

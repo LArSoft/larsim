@@ -2,7 +2,6 @@
 /// \file  BackTracker.h
 /// \brief back track the reconstruction to the simulation
 ///
-/// \version $Id: Geometry.h,v 1.16 2009/11/03 22:53:20 brebel Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_BACKTRACKER_H
