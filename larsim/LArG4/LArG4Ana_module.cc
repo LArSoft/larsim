@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4.cxx
+/// \file  LArG4Ana_module.cc
 /// \brief Use Geant4 to run the LArSoft detector simulation
 ///
 /// \version $Id: LArG4.cxx,v 1.22 2010/07/20 06:08:30 bjpjones Exp $

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4Ana.h
+/// \file  MuNuclearSplittingProcess.h
 /// \brief Check of Geant4 to run the LArSoft detector simulation
 ///
 /// \version $Id: LArG4.h,v 1.11 2010/06/04 21:47:27 bjpjones Exp $

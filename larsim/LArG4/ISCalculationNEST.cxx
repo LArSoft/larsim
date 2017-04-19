@@ -1,9 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalcuationNEST.cxx
+/// \file  ISCalculationNEST.cxx
 /// \brief Interface to algorithm class for calculating ionization electrons
 ///        and scintillation photons using nest
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 

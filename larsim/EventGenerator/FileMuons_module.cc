@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  FileMuons.cxx
+/// \file  FileMuons_module.cc
 /// \brief Generator for muons from a file.
 ///
 /// Module designed to produce a set list of particles for a MC event

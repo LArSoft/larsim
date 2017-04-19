@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  SingleGen_plugin.cc
+/// \file  GaisserParam_module.cc
 /// \brief Generator for cosmic-rays
 ///
 /// Module designed to produce muons for a MC event using a Gaissers

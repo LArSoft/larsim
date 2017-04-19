@@ -1,9 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalcuationSeparate.cxx
+/// \file  ISCalculationSeparate.cxx
 /// \brief Interface to algorithm class for calculating ionization electrons
 ///        and scintillation photons using separate algorithms for each
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #include "CLHEP/Vector/ThreeVector.h"

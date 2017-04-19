@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  SingleGen_plugin.cc
+/// \file  SingleGen_module.cc
 /// \brief Generator for cosmic-rays
 ///
 /// Module designed to produce a set list of particles for a MC event

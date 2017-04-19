@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4.cxx
+/// \file  FilterStoppingMuon_module.cc
 /// \brief Simple EDFilter to require muon to stop in the TPC
 ///
 /// \version $Id: 

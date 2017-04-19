@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4.cxx
+/// \file  FilterNoDirtNeutrinos_module.cc
 /// \brief Simple EDFilter to require neutrino interaction in TPC
 ///
 /// \version $Id: 

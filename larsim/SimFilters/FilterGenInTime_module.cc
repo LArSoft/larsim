@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  FilterGenInTime_module.cxx
+/// \file  FilterGenInTime_module.cc
 /// \brief EDFilter to require projected generator trajectories in volumes within a particular time window.
 ///
 /// \author  Matthew.Bass@physics.ox.ac.uk

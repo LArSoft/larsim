@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  CosmicsGen_plugin.cc
+/// \file  CosmicsGen_module.cc
 /// \brief Generator for cosmic-rays
 ///
 /// Module to produce cosmic ray MC using CRY

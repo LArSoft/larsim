@@ -1,5 +1,5 @@
 /**
- * @file    GeneratedEventTimestamp_plugin.cc
+ * @file    larsim/EventGenerator/GeneratedEventTimestamp_plugin.cc
  * @brief   Assigns an empty event a time stamp from the clock
  * @author  Gianluca Petrillo (petrillo@fnal.gov)
  * 

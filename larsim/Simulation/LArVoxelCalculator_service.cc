@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArVoxelCalculator_plugin.cc
+/// \file  LArVoxelCalculator_service.cc
 /// \brief Encapsulates calculation of LArVoxelID and LArVoxel parameters
 ///
 /// \author  brebel@fnal.gov
