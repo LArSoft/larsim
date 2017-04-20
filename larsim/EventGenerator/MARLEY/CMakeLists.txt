@@ -6,6 +6,8 @@ art_make(
                         larsim_Simulation lardataobj_Simulation
                         lardataobj_Simulation
                         nusimdata_SimulationBase
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         ${MARLEY}
                         ${MARLEY_ROOT}
@@ -18,6 +20,7 @@ art_make(
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
+                        ${ROOT_GEOM}
       MODULE_LIBRARIES 
                         larsim_EventGenerator_MARLEY
                         larsim_Simulation lardataobj_Simulation

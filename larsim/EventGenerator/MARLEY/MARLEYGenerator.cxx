@@ -3,7 +3,7 @@
 /// \brief LArSoft interface to the MARLEY (Model of Argon Reaction Low Energy
 /// Yields) supernova neutrino event generator
 ///
-/// \author sjgardiner@ucdavis.edu
+/// \author Steven Gardiner <sjgardiner@ucdavis.edu>
 //////////////////////////////////////////////////////////////////////////////
 
 // framework includes
