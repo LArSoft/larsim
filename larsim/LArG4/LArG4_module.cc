@@ -146,9 +146,16 @@ namespace larg4 {
    * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
    *     override the seed for the random generator used for electrons propagation
    *     to the wire planes (obtained from the NuRandomService by default)
-   * - <b>InputLabels</b> (vector<string>, defualt unnecessary):
+   * - <b>InputLabels</b> (vector<string>, default unnecessary):
    *     optional list of generator labels which produce MCTruth;
    *     otherwise look for anything that has made MCTruth
+   * - <b>ChargeRecoveryMargin</b> (double, default: 0): sets the maximum
+   *     distance from a plane for the wire charge recovery to occur, in
+   *     centimeters; for details on how it works, see
+   *     `larg4::LArVoxelReadout::SetOffPlaneChargeRecoveryMargin()`. A value of
+   *     `0` effectively disables this feature. All TPCs will have the same
+   *     margin applied.
+   *     
    */
   class LArG4 : public art::EDProducer{
   public:
@@ -177,6 +184,7 @@ namespace larg4 {
     bool                       fdumpSimChannels;    ///< Whether each event's sim::Channel will be displayed.
     bool                       fUseLitePhotons;
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
+    double                     fOffPlaneMargin = 0.; ///< Off-plane charge recovery margin
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
@@ -202,6 +210,7 @@ namespace larg4 {
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList",false)             )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
+    , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
 
   {
@@ -286,10 +295,13 @@ namespace larg4 {
     IonizationAndScintillation::CreateInstance(rng->getEngine("propagation"));
 
     // make a parallel world for each TPC in the detector
-    pworlds.push_back(new LArVoxelReadoutGeometry(
-      "LArVoxelReadoutGeometry",
-      rng->getEngine("propagation")
-      ));
+    LArVoxelReadoutGeometry::Setup_t readoutGeomSetupData;
+    readoutGeomSetupData.readoutSetup.offPlaneMargin = fOffPlaneMargin;
+    readoutGeomSetupData.readoutSetup.propGen
+      = &(rng->getEngine("propagation"));
+    pworlds.push_back(new LArVoxelReadoutGeometry
+      ("LArVoxelReadoutGeometry", readoutGeomSetupData)
+      );
     pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
     pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );
 

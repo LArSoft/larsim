@@ -26,6 +26,7 @@
 #ifndef LArG4_LArVoxelReadoutGeometry_h
 #define LArG4_LArVoxelReadoutGeometry_h
 
+#include "larsim/LArG4/LArVoxelReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
@@ -41,11 +42,18 @@ namespace larg4 {
   class LArVoxelReadoutGeometry : public G4VUserParallelWorld
   {
   public:
-    /// Constructor and destructor.
-    LArVoxelReadoutGeometry(
-      const G4String name,
-      CLHEP::HepRandomEngine& PropGen
-      );
+    
+    /// Collection of all it takes to set up this object.
+    struct Setup_t {
+      
+      /// Set up data for `LArVoxelReadout`.
+      larg4::LArVoxelReadout::Setup_t readoutSetup;
+      
+    }; // struct Setup_t
+    
+    
+    /// Constructor: sets up all its LArVoxelReadout instances.
+    LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
 
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the LAr voxel readout.  Required of
@@ -64,7 +72,9 @@ namespace larg4 {
     std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management, 
                                                   ///< so we have to
     
-    CLHEP::HepRandomEngine*           fPropGen  = nullptr; ///< random engine for charge propagation
+    /// Data for `LArVoxelReadout` setup.
+    larg4::LArVoxelReadout::Setup_t fReadoutSetupData;
+    
   };
 
 } // namespace larg4

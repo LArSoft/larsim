@@ -44,6 +44,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <algorithm> // std::max()
 
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4PVPlacement.hh"
@@ -116,11 +117,60 @@ namespace larg4 {
   typedef G4PVPlacementWithID<TPCID_t> G4PVPlacementInTPC;
   
   
+  /**
+   * @brief Transports energy depositions from GEANT4 to TPC channels.
+   * 
+   * This class acts on single energy depositions from GEANT4, simulating the
+   * transportation of the ensuing ionisation electrons to the readout channels:
+   * 
+   * 1. the number of ionisation electrons is read from the current
+   *   `larg4::IonizationAndScintillation` instance
+   * 2. space charge displacement is optionally applied
+   * 3. lifetime correction is applied
+   * 4. charge is split in small electron clusters
+   * 5. each cluster is subject to longitudinal and transverse diffusion
+   * 6. each cluster is assigned to one TPC channel for each wire plane
+   * 7. optionally, charge is forced to stay on the planes; otherwise charge
+   *    drifting outside the plane is lost
+   * 
+   * For each energy deposition, entries on the appropriate `sim::SimChannel`
+   * are added, with the information of the position where the energy deposit
+   * happened (in global coordinates, centimeters), the ID of the Geant4
+   * track which produced the deposition, and the quantized time of arrival to
+   * the channel (in global TDC tick units).
+   * At most one entry is added for each electron cluster, but entries from the
+   * same energy deposit can be compacted if falling on the same TDC tick.
+   * 
+   * The main entry point of this class is the method `ProcessHits()`.
+   * 
+   * Options
+   * --------
+   * 
+   * A few optional behaviours are supported:
+   * 
+   * * lead off-plane charge to the planes: regulated by
+   *   `RecoverOffPlaneDeposit()`, if charge which reaches a wire plane
+   *   is actually off it by less than the chosen margin, it's accounted for by
+   *   that plane; by default the margin is 0 and all the charge off the plane
+   *   is lost (with a warning)
+   * 
+   */
   class LArVoxelReadout : public G4VSensitiveDetector
   {
   public:
     /// Type of map channel -> sim::SimChannel
     typedef std::map<unsigned int, sim::SimChannel> ChannelMap_t;
+    
+    /// Collection of what it takes to set a `LArVoxelReadout` up.
+    struct Setup_t {
+      
+      /// Random engine for charge propagation.
+      CLHEP::HepRandomEngine* propGen = nullptr;
+      
+      /// Margin for charge recovery (see `LArVoxelReadout`).
+      double offPlaneMargin = 0.0;
+    }; // struct Setup_t
+    
     
     /// Constructor. Can detect which TPC to cover by the name
     LArVoxelReadout(std::string const& name);
@@ -131,18 +181,15 @@ namespace larg4 {
 
     // Destructor
     virtual ~LArVoxelReadout();
-
-    /// Sets the random generators to be used
-    void SetRandomEngines
-      (CLHEP::HepRandomEngine* pPropGen)
-      { fPropGen = pPropGen; }
+    
+    /// Reads all the configuration elements from `setupData`
+    void Setup(Setup_t const& setupData);
     
     /// Associates this readout to one specific TPC
     void SetSingleTPC(unsigned int cryostat, unsigned int tpc);
     
     /// Sets this readout to discover the TPC of each processed hit
     void SetDiscoverTPC();
-    
     
     // Required for classes that inherit from G4VSensitiveDetector.
     //
@@ -192,7 +239,63 @@ namespace larg4 {
 
   private:
 
+    /**
+     * @brief Sets the margin for recovery of charge drifted off-plane.
+     * @param margin the extent of the margin on each frame coordinate [cm]
+     * 
+     * This method sets the margin for the recovery of off-plane ionization
+     * charge. See `RecoverOffPlaneDeposit()` for a description of that feature.
+     * 
+     * This method is used by `LArVoxelReadout::Setup()`.
+     */
+    void SetOffPlaneChargeRecoveryMargin(double margin)
+      { fOffPlaneMargin = std::max(margin, 0.0); }
 
+    /// Sets the random generators to be used.
+    void SetRandomEngines(CLHEP::HepRandomEngine* pPropGen);
+    
+    
+    /**
+     * @brief Returns the point on the specified plane closest to position.
+     * @param pos the position to be tested (global coordinates, centimeters)
+     * @param plane the plane to test the position against
+     * @return a position on plane, unless pos is too far from it
+     * 
+     * This method considers the distance of the position `pos` from the active
+     * part of the `plane` (see `geo::Plane::DeltaFromActivePlane()`).
+     * If the position is less than a configurable margin far from the plane,
+     * the closest point on the plane to that position is returned. Otherwise,
+     * the position itself is returned.
+     * 
+     * Ionization charge may be drifted so that when it arrives to the plane, it
+     * actually does not hit the area covered by wires. This can happen for many
+     * reasons:
+     * * space charge distortion led the point outside the fiducial volume
+     *   (this may be prevented by specific code)
+     * * diffusion pushes the charge outside the instrumented region
+     * * the geometry of the wire planes is such that planes have different
+     *   coverage and what one plane can cover, the next can't
+     * 
+     * The "recovery" consists in forcing the charge to the instrumented area
+     * covered by the plane wires.
+     * The distance of the drifted charge from each plane border is computed and
+     * compared to the margin. If that distance is smaller than the margin, it
+     * is neglected and the charge is assigned a new position on that border.
+     * 
+     * This method provides the position that should be used for the charge
+     * deposition.
+     * 
+     * This is a simplistic approach to the simulation of border effects,
+     * assuming that in fact the electric field, which is continuous and
+     * pointing to the collection wires, will drive the charge to the wires even
+     * when they are "off track".
+     * No correction is applied for the additional time that such deviation
+     * would take.
+     * 
+     */
+    geo::vect::Vector_t RecoverOffPlaneDeposit
+      (geo::vect::Vector_t const& pos, geo::PlaneGeo const& plane) const;
+    
     void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
                                   const double g4time,
                                   int trackID,
@@ -217,6 +320,8 @@ namespace larg4 {
     int                                       fTriggerOffset;
     bool                                      fDontDriftThem;
     std::vector<unsigned short int>           fSkipWireSignalInTPCs;
+    /// Charge deposited within this many [cm] from the plane is lead onto it.
+    double                                    fOffPlaneMargin = 0.0;
 
     std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service

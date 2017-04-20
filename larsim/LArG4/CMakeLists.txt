@@ -29,6 +29,7 @@ art_make(
                         ${MF_UTILITIES}
                         ${FHICLCPP}
                         cetlib cetlib_except
+                        ${ROOT_GENVECTOR}
                         ${ROOT_EG}
                         ${ROOT_TREEPLAYER} 
                         ${ROOT_FFTW}
@@ -53,6 +54,7 @@ art_make(
                         ${MF_UTILITIES}
                         ${FHICLCPP}
                         cetlib cetlib_except
+                        ${ROOT_GENVECTOR}
                         ${ROOT_BASIC_LIB_LIST}
                         nutools_G4Base
                         CLHEP
