@@ -382,7 +382,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   if (Fast_Intensity && Slow_Intensity) nscnt = 2;
 
   
-  G4int Num = 0;
+  double Num = 0;
   double YieldRatio=0;
 
   
@@ -501,10 +501,10 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	
 	
 	if ( ExcitationRatio == 1.0 ) {
-	  Num = G4int (std::min(YieldRatio,1.0)*MeanNumberOfPhotons);
+	  Num = std::min(YieldRatio,1.0)*MeanNumberOfPhotons;
 	}
 	else {
-	  Num = G4int (std::min(ExcitationRatio,1.0)*MeanNumberOfPhotons);
+	  Num = std::min(ExcitationRatio,1.0)*MeanNumberOfPhotons;
 	}
 	ScintillationTime   = aMaterialPropertiesTable->
 		  GetConstProperty("FASTTIMECONSTANT");

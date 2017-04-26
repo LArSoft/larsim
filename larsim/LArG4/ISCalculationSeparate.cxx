@@ -146,7 +146,7 @@ namespace larg4{
 
       // Get the definition of the current particle
       G4ParticleDefinition *pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
-      G4MaterialPropertyVector *Scint_Yield_Vector = NULL;
+      //G4MaterialPropertyVector *Scint_Yield_Vector = NULL;
 
       // Obtain the G4MaterialPropertyVectory containing the
       // scintillation light yield as a function of the deposited
@@ -189,10 +189,12 @@ namespace larg4{
       // If the user has not specified yields for (p,d,t,a,carbon)
       // then these unspecified particles will default to the 
       // electron's scintillation yield
+      /*
       if(!Scint_Yield_Vector){{
 	  scintYield = mpt->GetConstProperty("ELECTRONSCINTILLATIONYIELD");
 	}
       }
+      */
 	   
       // Throw an exception if no scintillation yield is found
       if (!scintYield) 
