@@ -420,7 +420,7 @@ namespace evgen{
     int nShowerCntr=0; //keep track of how many showers are left to be added to mctruth
     int nShowerQry=0; //number of showers to query from db
     int shower,pdg;
-    double px,py,pz,x,z,tParticleTime,etot,showerTime=0.,showerXOffset=0.,showerZOffset=0.,t;
+    double px,py,pz,x,z,tParticleTime,etot,showerTime=0.,showerTimex=0.,showerTimez=0.,showerXOffset=0.,showerZOffset=0.,t;
     for(int i=0; i<fShowerInputs; i++){
       nShowerCntr=randpois.fire(fNShowersPerEvent[i]);
       mf::LogInfo("CORSIKAGEN") << " Shower input " << i << " with mean " << fNShowersPerEvent[i] << " generating " << nShowerCntr;
@@ -446,6 +446,8 @@ namespace evgen{
               if(shower!=lastShower){
                 //each new shower gets its own random time and position offsets
                 showerTime=1e9*(flat()*fSampleTime); //converting from s to ns
+                showerTimex=1e9*(flat()*fSampleTime); //converting from s to ns
+                showerTimez=1e9*(flat()*fSampleTime); //converting from s to ns
                 //and a random offset in both z and x controlled by the fRandomXZShift parameter
                 showerXOffset=flat()*fRandomXZShift - (fRandomXZShift/2);
                 showerZOffset=flat()*fRandomXZShift - (fRandomXZShift/2);
@@ -473,7 +475,7 @@ namespace evgen{
               //+ global offset (fcl parameter, in s)
               //- propagation time through atmosphere
               //+ boxNo{X,Z} time offset to make grid boxes have different shower times
-              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTime*boxnoX + showerTime*boxnoZ;
+              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTimex*boxnoX + showerTimez*boxnoZ;
               //wrap surface arrival so that it's in the desired time window
               t=wrapvar(t,(1e9*fToffset),1e9*(fToffset+fSampleTime));
               
