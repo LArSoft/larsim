@@ -22,12 +22,13 @@ namespace larg4{
    virtual ~ISCalculation();
 
    virtual void                 Initialize()                                            = 0;
-   virtual void                 Reset()                            		      = 0;
+   virtual void                 Reset()                            		        = 0;
    virtual void                 CalculateIonizationAndScintillation(const G4Step* step) = 0;
-   virtual double               EnergyDeposit()              const                      = 0;
-   virtual int    	      NumberIonizationElectrons()  const 		      = 0;
-   virtual int    	      NumberScintillationPhotons() const 		      = 0;
-   virtual double               StepSizeLimit()              const 		      = 0;
+   virtual double               StepSizeLimit()              const 		        = 0;
+
+   double                       EnergyDeposit()              const { return fEnergyDeposit;   }
+   double       	        NumberIonizationElectrons()  const { return fNumIonElectrons; }
+   double       	        NumberScintillationPhotons() const { return fNumScintPhotons; }
 
    //Method to get electric field
    double EFieldAtStep(double fEfield, const G4Step* step) const; //value of field with any corrections for this step  
@@ -35,8 +36,8 @@ namespace larg4{
  protected:
 
    double fEnergyDeposit;   ///< total energy deposited in the step
-   int    fNumIonElectrons; ///< number of ionization electrons for this step
-   int    fNumScintPhotons; ///< number of scintillation photons for this step   
+   double fNumIonElectrons; ///< number of ionization electrons for this step
+   double fNumScintPhotons; ///< number of scintillation photons for this step   
    
  };
 }
