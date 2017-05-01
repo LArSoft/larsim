@@ -17,6 +17,8 @@
 #include "Geant4/G4VModularPhysicsList.hh"
 #include "Geant4/G4ParallelWorldScoringProcess.hh"
 #include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh" 
+
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4ChargeExchange.hh"
 #include "Geant4/G4ChargeExchangeProcess.hh"
@@ -67,7 +69,9 @@ namespace larg4 {
     // LAr voxel parallel world.  "theParticleIterator" is defined in
     // G4VUserPhysicsList.hh.  Only photons recognise the OpDet parallel
     // world.
-
+    static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleTable::G4PTblDicIterator*  theParticleIterator;
+    theParticleIterator=fParticleTable->GetIterator();
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){
       G4ParticleDefinition* particle = theParticleIterator->value();
