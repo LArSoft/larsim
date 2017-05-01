@@ -208,7 +208,7 @@ namespace larg4{
     }
     else if(fEMSaturation){
       // The default linear scintillation process
-      fNumScintPhotons = fScintYieldFactor * scintYield * fEMSaturation->VisibleEnergyDepositionAtAStep(step);
+      fNumScintPhotons = fScintYieldFactor * scintYield * fEMSaturation->VisibleEnergyDeposition(step);
     }
     else{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
@@ -217,7 +217,7 @@ namespace larg4{
     LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
-				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)
+				       << fEMSaturation->VisibleEnergyDeposition(step)
 				       << " step length: "   << step->GetStepLength()/CLHEP::cm;
 
 
