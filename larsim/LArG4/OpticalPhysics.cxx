@@ -48,7 +48,6 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleTable.hh" 
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmProcessOptions.hh"
@@ -191,9 +190,6 @@ namespace larg4 {
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
     
     mf::LogInfo("OpticalPhysics")<<"Cerenkov light enabled : " << CerenkovLightEnabled;
-    static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
-    aParticleIterator=fParticleTable->GetIterator();
 
     aParticleIterator->reset();
     while( (*aParticleIterator)() ){
