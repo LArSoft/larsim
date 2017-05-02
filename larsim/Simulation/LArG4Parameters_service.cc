@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4Parmeters_service.cc
+/// \file  LArG4Parameters_service.cc
 /// \brief Store parameters for running LArG4
 ///
 /// \author bjpjones@mit.edu

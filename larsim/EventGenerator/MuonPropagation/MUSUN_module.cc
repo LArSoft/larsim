@@ -939,7 +939,7 @@ namespace evgen{
       ip1 = 61;
 
     xfl = flat.fire();
-    /*
+    #if 0
     loIndex = 0, hiIndex = 120;
     int j = (loIndex+hiIndex)/2;
     foundIndex = false;
@@ -961,11 +961,10 @@ namespace evgen{
       if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
 	foundIndex = true;
     }
-    //*/
-    ///*
+    #else
     int j = 0;
     while ( xfl > spmu[j][ip1][ic1] ) ++j;
-    //*/
+    #endif
 
     double En1 = 0.05 * (j-1);
     double En2 = 0.05 * (j);
