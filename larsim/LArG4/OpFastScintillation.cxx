@@ -464,7 +464,33 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
   double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
   float const* Visibilities = pvs->GetAllVisibilities(xyz);
-  
+
+  /*
+  // For Kazu to debug # photons generated using csv file, by default should be commented out 
+  // but don't remove as it's useful. Separated portion of code relevant to this block
+  // is labeled as "CASE-DEBUG DO NOT REMOVE THIS COMMENT"
+  // (2017 May 2nd ... "kazuhiro at nevis dot columbia dot edu")
+  //
+  static bool first_time=false;
+  if(!first_time) {
+    std::cout<<"LOGMEid,pdg,mass,ke,te,de,x,y,z,t,dr,mean_npe,gen_npe,det_npe"<<std::endl;
+    first_time=true;
+  }
+
+  std::cout<<"LOGME"
+           <<aStep.GetTrack()->GetTrackID()<<","
+           <<aParticle->GetDefinition()->GetPDGEncoding()<<","
+           <<aParticle->GetDefinition()->GetPDGMass()/CLHEP::MeV<<","
+           <<pPreStepPoint->GetKineticEnergy()<<","
+           <<pPreStepPoint->GetTotalEnergy()<<","
+           <<aStep.GetTotalEnergyDeposit()<<","
+           <<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<","<<t0<<","
+           <<aStep.GetDeltaPosition().mag()<<","
+           <<MeanNumberOfPhotons<<","<<std::flush;
+
+  double gen_photon_ctr=0;
+  double det_photon_ctr=0;
+  */  
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
     G4double ScintillationTime = 0.*CLHEP::ns;
@@ -530,6 +556,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
     
     if (!ScintillationIntegral) continue;
+
+    //gen_photon_ctr += Num; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
     
     // Max Scintillation Integral
     
@@ -557,6 +585,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		      DetectedNum[OpDet]=DetThisPMT;
 		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
 		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
+
+		      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
         }
       }
 	    // Now we run through each PMT figuring out num of detected photons
@@ -660,7 +690,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
   }
 
-  
+  //std::cout<<gen_photon_ctr<<","<<det_photon_ctr<<std::endl; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
   return 0;
   }
 
