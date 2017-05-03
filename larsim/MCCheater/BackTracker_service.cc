@@ -239,14 +239,14 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::vector<sim::TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
+  std::vector<sim::TrackIDE> BackTracker::HitToTrackID(recob::Hit const& hit)
   {
     std::vector<sim::TrackIDE> trackIDEs;
 
-    const double start = hit->PeakTimeMinusRMS();
-    const double end   = hit->PeakTimePlusRMS();
+    const double start = hit.PeakTimeMinusRMS();
+    const double end   = hit.PeakTimePlusRMS();
 	
-    this->ChannelToTrackIDEs(trackIDEs, hit->Channel(), start, end);
+    this->ChannelToTrackIDEs(trackIDEs, hit.Channel(), start, end);
 
     return trackIDEs;
   }
