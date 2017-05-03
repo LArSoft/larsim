@@ -34,8 +34,8 @@ namespace larg4 {
     void Reset(const G4Step* step); 
 
     double EnergyDeposit()              const { return fISCalc->EnergyDeposit();              } 
-    int    NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  } 
-    int    NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); } 
+    double NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  } 
+    double NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); } 
     double StepSizeLimit()              const { return fISCalc->StepSizeLimit();              }
 
   private:
