@@ -53,7 +53,8 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleDefinition.hh" 
+#include "Geant4/G4ParticleTable.hh" 
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4LossTableManager.hh"
@@ -108,7 +109,7 @@
 
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmSaturation.hh"
-
+#include "Geant4/G4PhysicsListHelper.hh"
 
 //Register optical physics in custom physics list
 
@@ -184,7 +185,9 @@ namespace larg4 {
     bool CerenkovEnabled = larp->CerenkovLightEnabled();
     
     mf::LogInfo("FastOpticalPhysics") << "Cerenkov enabled : " << CerenkovEnabled;
-
+    static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
+    aParticleIterator=fParticleTable->GetIterator();
     aParticleIterator->reset();
     while( (*aParticleIterator)() ){
       G4ParticleDefinition* particle = aParticleIterator->value();
