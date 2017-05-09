@@ -173,12 +173,12 @@ namespace evgen{
     fSigmaT        = p.get< std::vector<double> >("SigmaT");
     fPosDist       = p.get< int                 >("PosDist");
     fHistFileName  = p.get< std::string         >("HistogramFile","");
-    fPHist       = p.get< std::vector<std::string> >("PHist","");
+    fPHist       = p.get< std::vector<std::string> >("PHist",std::vector<std::string>());
     fP0          = p.get< std::vector<double> >("P0");
     fSigmaP      = p.get< std::vector<double> >("SigmaP");
     fAngleDist     = p.get< int                 >("AngleDist");
 //    fThetaPhiHist   = p.get< std::vector<std::string> >("ThetaPhiHist");
-    fThetaXzYzHist     = p.get< std::vector<std::string> >("ThetaXzYzHist","");
+    fThetaXzYzHist     = p.get< std::vector<std::string> >("ThetaXzYzHist",std::vector<std::string>());
     fTheta0XZ    = p.get< std::vector<double> >("Theta0XZ");
     fTheta0YZ    = p.get< std::vector<double> >("Theta0YZ");
     fSigmaThetaXZ= p.get< std::vector<double> >("SigmaThetaXZ");
@@ -238,6 +238,8 @@ namespace evgen{
     if (fHistFileName != ""){
       fHistFile = new TFile(fHistFileName.c_str());
     }
+    if (fThetaXzYzHist.size() ==0){fAngleDist=0;}
+    if (fPHist.size() ==0){fPDist=0;}
     if (fPDist==kHIST){
       hPHist.reserve(fPDG.size());
       for (unsigned int i(0); i < fPDG.size(); ++i){
