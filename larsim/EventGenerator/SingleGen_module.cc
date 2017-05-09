@@ -50,6 +50,7 @@
 #include "TMath.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TH2.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -79,6 +80,7 @@ namespace evgen {
     void printVecs(std::vector<std::string> const& list);
     bool PadVector(std::vector<double> &vec);      
     double SelectFromHist(const TH1 *h);
+    void SelectFromHist(const TH2 *h, double &x, double &y);
     
     static const int kUNIF = 0;    
     static const int kGAUS = 1;    
@@ -113,13 +115,17 @@ namespace evgen {
     int                 fAngleDist;      ///< How to distribute angles (gaus, uniform)
     std::string fHistFileName;               ///< Filename containing histogram of momenta
     std::vector<std::string> fPHist;     ///< name of histogram of momenta
-    std::vector<std::string> fThetaHist; ///< name of histogram for theta distribution
-    std::vector<std::string> fPhiHist;   ///< name of histogram for phi distribution
+//    std::vector<std::string> fThetaPhiHist; ///< name of histogram for theta/phi distribution
+    std::vector<std::string> fThetaXzYzHist;   ///< name of histogram for thetaxz/thetayz distribution
 
     TFile *fHistFile;                    /// actual TFile containing histograms
     std::vector<TH1*> hPHist ;           /// actual TH1 for momentum distributions
-    std::vector<TH1*> hThetaHist ;       /// actual TH1 for theta distributions
-    std::vector<TH1*> hPhiHist ;         /// actual TH1 for phi distributions
+//    std::vector<TH2*> hThetaPhiHist ;       /// actual TH1 for theta distributions - Theta on x axis
+    std::vector<TH2*> hThetaXzYzHist ;         /// actual TH2 for angle distributions - Xz on x axis . 
+    // FYI - thetaxz and thetayz are related to standard polar angles as follows:
+    // thetaxz = atan2(math.sin(theta) * cos(phi), cos(theta))
+    // thetayz = asin(sin(theta) * sin(phi));
+
     
   };
 }
@@ -171,8 +177,8 @@ namespace evgen{
     fP0          = p.get< std::vector<double> >("P0");
     fSigmaP      = p.get< std::vector<double> >("SigmaP");
     fAngleDist     = p.get< int                 >("AngleDist");
-    fThetaHist   = p.get< std::vector<std::string> >("ThetaHist");
-    fPhiHist     = p.get< std::vector<std::string> >("PhiHist");
+//    fThetaPhiHist   = p.get< std::vector<std::string> >("ThetaPhiHist");
+    fThetaXzYzHist     = p.get< std::vector<std::string> >("ThetaXzYzHist");
     fTheta0XZ    = p.get< std::vector<double> >("Theta0XZ");
     fTheta0YZ    = p.get< std::vector<double> >("Theta0YZ");
     fSigmaThetaXZ= p.get< std::vector<double> >("SigmaThetaXZ");
@@ -234,12 +240,16 @@ namespace evgen{
     }
     if (fPDist==kHIST){
       hPHist.reserve(fPDG.size());
-      hThetaHist.reserve(fPDG.size());
-      hPhiHist.reserve(fPDG.size());
       for (unsigned int i(0); i < fPDG.size(); ++i){
         hPHist.emplace_back( (TH1*)fHistFile->Get( fPHist[i].c_str() ) );
-        hThetaHist.emplace_back( (TH1*)fHistFile->Get( fThetaHist[i].c_str() ));
-        hPhiHist.emplace_back( (TH1*)fHistFile->Get( fPhiHist[i].c_str() ));
+      }
+    }
+    if (fAngleDist==kHIST){
+//      hThetaPhiHist.reserve(fPDG.size());
+      hThetaXzYzHist.reserve(fPDG.size());
+      for (unsigned int i(0); i < fPDG.size(); ++i){
+//        hThetaPhiHist.emplace_back( (TH2*)fHistFile->Get( fThetaPhiHist[i].c_str() ));
+        hThetaXzYzHist.emplace_back( (TH2*)fHistFile->Get( fThetaXzYzHist[i].c_str() ));
       }
     }
 
@@ -370,14 +380,12 @@ namespace evgen{
       thxz = gauss.fire(fTheta0XZ[i], fSigmaThetaXZ[i]);
       thyz = gauss.fire(fTheta0YZ[i], fSigmaThetaYZ[i]);
     }
-    else if (fAngleDist == kHIST){
-      double theta = SelectFromHist(hThetaHist[i]);
-      double phi = SelectFromHist(hPhiHist[i]);
-      // converting from theta,phi, to thetaxz, thetayz.
-      // Had to reverse engineer this coordinate system myself though
-      // So not convined by it yet. AF
-      thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
-      thyz = (180./M_PI) * std::asin(std::sin(theta) * std::sin(phi)); 
+    else if (fAngleDist == kHIST){ // Select thetaxz and thetayz from histogram
+      double thetaxz = 0;
+      double thetayz = 0;
+      SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+      thxz = (180./M_PI)*thetaxz;
+      thyz = (180./M_PI)*thetayz;
     }
     else {
       
@@ -489,13 +497,11 @@ namespace evgen{
         thyz = gauss.fire(fTheta0YZ[i], fSigmaThetaYZ[i]);
       }
       else if (fAngleDist == kHIST){
-        double theta = SelectFromHist(hThetaHist[i]);
-        double phi = SelectFromHist(hPhiHist[i]);
-        // converting from theta,phi, to thetaxz, thetayz.
-        // Had to reverse engineer this coordinate system myself though
-        // So not convined by it yet. AF
-        thxz = (180./M_PI) * std::atan2(std::sin(theta) * std::cos(phi), std::cos(theta));
-        thyz = (180./M_PI) * std::asin(std::sin(theta) * std::sin(phi)); 
+        double thetaxz = 0;
+        double thetayz = 0;
+        SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+        thxz = (180./M_PI)*thetaxz;
+        thyz = (180./M_PI)*thetayz;
       }
       else {
         
@@ -535,7 +541,6 @@ namespace evgen{
       //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
       //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
       //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl; 
-       
       mct.Add(part);
     }
   }
@@ -627,7 +632,7 @@ namespace evgen{
   
   
   //____________________________________________________________________________
-  double SingleGen::SelectFromHist(const TH1 *h)
+  double SingleGen::SelectFromHist(const TH1 *h) // select from a 1D histogram
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
@@ -643,6 +648,28 @@ namespace evgen{
     }
     return throw_value; // for some reason we've gone through all bins and failed?
   }
+  //____________________________________________________________________________
+  void SingleGen::SelectFromHist(const TH2 *h, double &x, double &y) // select from a 2D histogram
+  {
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat   flat(engine);
+    
+    double throw_value = h->Integral() * flat.fire();
+    double cum_value(0);
+    for (int i(0); i < h->GetNbinsX()+1; ++i){
+      for (int j(0); j < h->GetNbinsY()+1; ++j){
+        cum_value += h->GetBinContent(i, j);
+        if (throw_value < cum_value){
+          x = flat.fire()*h->GetXaxis()->GetBinWidth(i) + h->GetXaxis()->GetBinLowEdge(i);
+          y = flat.fire()*h->GetYaxis()->GetBinWidth(j) + h->GetYaxis()->GetBinLowEdge(j);
+          return;
+        }
+      }
+    }
+    return; // for some reason we've gone through all bins and failed?
+  }
+  //____________________________________________________________________________
 
 
 }//end namespace evgen
