@@ -286,6 +286,18 @@ namespace larg4 {
       	SetMaterialConstProperty("LAr", "ALPHASCINTILLATIONYIELD",   LarProp->AlphaScintYield(true),     1./CLHEP::MeV );
 	SetMaterialConstProperty("LAr", "ALPHAYIELDRATIO",           LarProp->AlphaScintYieldRatio(),    1.);
       }
+
+    // If we are simulating the TPB load this
+
+    if(LarProp->ExtraMatProperties())
+      {
+	SetMaterialProperty("TPB", "RINDEX",       LarProp->RIndexSpectrum(), 1 );
+	SetMaterialProperty("TPB", "WLSABSLENGTH", LarProp->TpbAbs(),         CLHEP::m );
+	SetMaterialProperty("TPB", "WLSCOMPONENT", LarProp->TpbEm(),          1 );
+
+	SetMaterialConstProperty("TPB", "WLSTIMECONSTANT", LarProp->TpbTimeConstant(), CLHEP::ns );
+      }
+
   }
 
 }
