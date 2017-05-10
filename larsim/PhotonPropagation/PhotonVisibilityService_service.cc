@@ -122,9 +122,9 @@ namespace phot{
     fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
     fLibraryFile          = p.get< std::string >("LibraryFile"         );
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
-    fStoreReflected       = p.get< bool        >("StoreReflected"    );
-    fStoreReflT0          = p.get< bool        >("StoreReflT0"    );
-    fIncludePropTime      = p.get< bool        >("IncludePropTime");
+    fStoreReflected       = p.get< bool        >("StoreReflected", false);
+    fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
+    fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
   	
