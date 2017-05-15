@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-/// \file MarleyGen_module.cc
+/// \file MARLEYGen_module.cc
 /// \brief LArSoft interface to the MARLEY (Model of Argon Reaction Low Energy
 /// Yields) supernova neutrino event generator
 ///

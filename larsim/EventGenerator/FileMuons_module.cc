@@ -1,10 +1,9 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  FileMuons.cxx
+/// \file  FileMuons_module.cc
 /// \brief Generator for muons from a file.
 ///
 /// Module designed to produce a set list of particles for a MC event
 ///
-/// \version $Id: FileMuons.cxx,v 1.4 2010/03/29 09:54:01 echurch Exp $
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 // C++ includes.

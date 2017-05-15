@@ -2,7 +2,6 @@
 /// \file  BackTracker.h
 /// \brief back track the reconstruction to the simulation
 ///
-/// \version $Id: Geometry.h,v 1.16 2009/11/03 22:53:20 brebel Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_BACKTRACKER_H
@@ -82,7 +81,8 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
+    std::vector<sim::TrackIDE> HitToTrackID(recob::Hit const& hit);
+    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit) { return HitToTrackID(*hit); }
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,

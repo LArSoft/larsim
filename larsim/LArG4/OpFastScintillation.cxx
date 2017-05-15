@@ -50,7 +50,6 @@
 // ********************************************************************
 //
 //
-// $Id: OpFastScintillation.cc,v 1.38 2010-12-15 07:39:26 gunter Exp $
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
 ////////////////////////////////////////////////////////////////////////
@@ -393,7 +392,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   if (Fast_Intensity && Slow_Intensity) nscnt = 2;
 
   
-  G4int Num = 0;
+  double Num = 0;
   double YieldRatio=0;
 
   
@@ -483,6 +482,33 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       ReflT0s = pvs->GetReflT0s(xyz); 
   }
   
+
+  /*
+  // For Kazu to debug # photons generated using csv file, by default should be commented out 
+  // but don't remove as it's useful. Separated portion of code relevant to this block
+  // is labeled as "CASE-DEBUG DO NOT REMOVE THIS COMMENT"
+  // (2017 May 2nd ... "kazuhiro at nevis dot columbia dot edu")
+  //
+  static bool first_time=false;
+  if(!first_time) {
+    std::cout<<"LOGMEid,pdg,mass,ke,te,de,x,y,z,t,dr,mean_npe,gen_npe,det_npe"<<std::endl;
+    first_time=true;
+  }
+
+  std::cout<<"LOGME"
+           <<aStep.GetTrack()->GetTrackID()<<","
+           <<aParticle->GetDefinition()->GetPDGEncoding()<<","
+           <<aParticle->GetDefinition()->GetPDGMass()/CLHEP::MeV<<","
+           <<pPreStepPoint->GetKineticEnergy()<<","
+           <<pPreStepPoint->GetTotalEnergy()<<","
+           <<aStep.GetTotalEnergyDeposit()<<","
+           <<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<","<<t0<<","
+           <<aStep.GetDeltaPosition().mag()<<","
+           <<MeanNumberOfPhotons<<","<<std::flush;
+
+  double gen_photon_ctr=0;
+  double det_photon_ctr=0;
+  */  
   for (G4int scnt = 1; scnt <= nscnt; scnt++) {
     
     G4double ScintillationTime = 0.*CLHEP::ns;
@@ -519,10 +545,10 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	
 	
 	if ( ExcitationRatio == 1.0 ) {
-	  Num = G4int (std::min(YieldRatio,1.0)*MeanNumberOfPhotons);
+	  Num = std::min(YieldRatio,1.0)*MeanNumberOfPhotons;
 	}
 	else {
-	  Num = G4int (std::min(ExcitationRatio,1.0)*MeanNumberOfPhotons);
+	  Num = std::min(ExcitationRatio,1.0)*MeanNumberOfPhotons;
 	}
 	ScintillationTime   = aMaterialPropertiesTable->
 		  GetConstProperty("FASTTIMECONSTANT");
@@ -548,6 +574,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
     
     if (!ScintillationIntegral) continue;
+
+    //gen_photon_ctr += Num; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
     
     // Max Scintillation Integral
     
@@ -577,6 +605,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		      DetectedNum[OpDet]=DetThisPMT;
 		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
 		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
+
+		      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
         }
 		if(pvs->StoreReflected()) {
 		  G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
@@ -784,7 +814,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
   }
 
-  
+  //std::cout<<gen_photon_ctr<<","<<det_photon_ctr<<std::endl; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
   return 0;
   }
 

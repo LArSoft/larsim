@@ -4,7 +4,6 @@
 ///        ionization electrons and scintillation photons assuming there
 ///        is no correlation between the two
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef LARG4_ISCALCULATIONSEPARATE_H
@@ -31,9 +30,6 @@ namespace larg4 {
    void   Initialize();
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
-   double EnergyDeposit()              const { return fEnergyDeposit;       }
-   int    NumberIonizationElectrons()  const { return fNumIonElectrons;     }
-   int    NumberScintillationPhotons() const { return fNumScintPhotons;     }
    double StepSizeLimit()              const { return fStepSize;            }
 
  private:

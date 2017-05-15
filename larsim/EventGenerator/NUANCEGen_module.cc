@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: NUANCEGen_module.cc,v 1.4 2010/04/27 19:48:46 brebel Exp $
 //
 //
 // NUANCE neutrino event generator

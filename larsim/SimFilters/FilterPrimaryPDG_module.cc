@@ -1,8 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArG4.cxx
+/// \file  FilterPrimaryPDG_module.cc
 /// \brief Simple EDFilter to require a particular pdg is present as a primary
 ///
-/// \version $Id: 
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef FILTER_FILTERPRIMARYPDG_H

@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: BackTracker_service.cc,v 1.3 2011/12/13 05:57:02 bckhouse Exp $
 //
 //
 // \file: BackTracker_service.cc
@@ -107,8 +106,13 @@ namespace cheat{
       }// end loop over particles to get MCTruthList  
     }// end if fo.isValid()
 
-    // grab the sim::SimChannels for this event
+    // grab the vector of pointers to the sim::SimChannels for this event
     evt.getView(fG4ModuleLabel, fSimChannels);
+
+    // sort them by channel number.  There's a good chance they're already sorted, so check that first. 
+
+    auto comparesclambda = [](const sim::SimChannel *a, const sim::SimChannel *b) {return(a->Channel()<b->Channel());};
+    if (!std::is_sorted(fSimChannels.begin(),fSimChannels.end(),comparesclambda)) std::sort(fSimChannels.begin(),fSimChannels.end(),comparesclambda);
 
     // grab the voxel list for this event
     //fVoxelList = sim::SimListUtils::GetLArVoxelList(evt, fG4ModuleLabel);
@@ -235,14 +239,14 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  std::vector<sim::TrackIDE> BackTracker::HitToTrackID(art::Ptr<recob::Hit> const& hit)
+  std::vector<sim::TrackIDE> BackTracker::HitToTrackID(recob::Hit const& hit)
   {
     std::vector<sim::TrackIDE> trackIDEs;
 
-    const double start = hit->PeakTimeMinusRMS();
-    const double end   = hit->PeakTimePlusRMS();
+    const double start = hit.PeakTimeMinusRMS();
+    const double end   = hit.PeakTimePlusRMS();
 	
-    this->ChannelToTrackIDEs(trackIDEs, hit->Channel(), start, end);
+    this->ChannelToTrackIDEs(trackIDEs, hit.Channel(), start, end);
 
     return trackIDEs;
   }
@@ -595,9 +599,11 @@ namespace cheat{
   {
     const sim::SimChannel* chan = 0;
 
-    for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-      if(fSimChannels[sc]->Channel() == channel) chan = fSimChannels[sc];
-    }
+    auto ilb = std::lower_bound(fSimChannels.begin(),fSimChannels.end(),channel,[](const sim::SimChannel *a, raw::ChannelID_t channel) {return(a->Channel()<channel);});
+    if (ilb != fSimChannels.end())
+      {
+	if ( (*ilb)->Channel() == channel) chan = *ilb;
+      }
 
     if(!chan)
       throw cet::exception("BackTracker") << "No sim::SimChannel corresponding "

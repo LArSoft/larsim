@@ -2,7 +2,6 @@
 /// \file  LArVoxelReadout.cxx
 /// \brief A Geant4 sensitive detector that accumulates voxel information.
 ///
-/// \version $Id: LArVoxelReadout.cxx,v 1.4 2009/08/12 20:52:14 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +30,6 @@
 #include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // CLHEP
@@ -72,6 +70,15 @@ namespace larg4 {
     : LArVoxelReadout(name)
     { SetSingleTPC(cryostat, tpc); }
 
+  
+  //---------------------------------------------------------------------------------------
+  void LArVoxelReadout::Setup(Setup_t const& setupData) {
+    
+    SetOffPlaneChargeRecoveryMargin(setupData.offPlaneMargin);
+    SetRandomEngines(setupData.propGen);
+    
+  } // LArVoxelReadout::Setup()
+  
   
   //---------------------------------------------------------------------------------------
   void LArVoxelReadout::SetSingleTPC(unsigned int cryostat, unsigned int tpc) {
@@ -264,7 +271,54 @@ namespace larg4 {
 
     return true;
   }
-
+  
+  
+  //----------------------------------------------------------------------------
+  void LArVoxelReadout::SetRandomEngines(CLHEP::HepRandomEngine* pPropGen) {
+    assert(pPropGen); // random engine must be present
+    fPropGen = pPropGen;
+  } // LArVoxelReadout::SetRandomEngines()
+  
+  
+  //----------------------------------------------------------------------------
+  geo::vect::Vector_t LArVoxelReadout::RecoverOffPlaneDeposit
+    (geo::vect::Vector_t const& pos, geo::PlaneGeo const& plane) const
+  {
+    //
+    // translate the landing position on the two frame coordinates
+    // ("width" and "depth")
+    //
+    auto const landingPos = plane.PointWidthDepthProjection(pos);
+    
+    //
+    // compute the distance of the landing position on the two frame
+    // coordinates ("width" and "depth");
+    // keep the point within 10 micrometers (0.001 cm) from the border
+    //
+    auto const offPlane = plane.DeltaFromActivePlane(landingPos, 0.001);
+    
+    //
+    // if both the distances are below the margin, move the point to
+    // the border
+    //
+    
+    // nothing to recover: landing is inside
+    if ((offPlane.X() == 0.0) && (offPlane.Y() == 0.0)) return pos;
+    
+    // won't recover: too far
+    if ((std::abs(offPlane.X()) > fOffPlaneMargin)
+      || (std::abs(offPlane.Y()) > fOffPlaneMargin))
+      return pos;
+    
+    // we didn't fully decompose because it might be unnecessary;
+    // now we need the full thing
+    auto const distance = plane.DistanceFromPlane(pos);
+    
+    return plane.ComposePoint(distance, landingPos + offPlane);
+    
+  } // LArVoxelReadout::RecoverOffPlaneDeposit()
+  
+  
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
   void LArVoxelReadout::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
@@ -419,6 +473,8 @@ namespace larg4 {
 
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
+        
+        geo::PlaneGeo const& plane = tpcg.Plane(p);
 
         double Plane0Pitch = tpcg.Plane0Pitch(p);
         
@@ -439,8 +495,23 @@ namespace larg4 {
           
           /// \todo think about effects of drift between planes
           
-          // grab the nearest channel to the xyz position
+          // grab the nearest channel to the xyz1 position
           try{
+            if (fOffPlaneMargin != 0) {
+              // get the effective position where to consider the charge landed;
+              // 
+              // Some optimisations are possible; in particular, this method
+              // could be extended to inform us if the point was too far.
+              // Currently, if that is the case the code will proceed, find the
+              // point is off plane, emit a warning and skip the deposition.
+              //
+              auto const landingPos
+                = RecoverOffPlaneDeposit({ xyz1[0], xyz1[1], xyz1[2] }, plane);
+              xyz1[0] = landingPos.X();
+              xyz1[1] = landingPos.Y();
+              xyz1[2] = landingPos.Z();
+              
+            } // if charge lands off plane
             uint32_t channel = fGeoHandle->NearestChannel(xyz1, p, tpc, cryostat);
             
             /// \todo check on what happens if we allow the tdc value to be

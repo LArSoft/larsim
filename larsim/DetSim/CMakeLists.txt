@@ -118,18 +118,6 @@ simple_plugin(WienerFilterAna "module"
               
 )
 
-simple_plugin(DumpRawDigits "module"
-                            larevt_Filters
-                            lardataobj_RawData
-                            ${ART_FRAMEWORK_CORE}
-                            ${ART_FRAMEWORK_PRINCIPAL}
-                            ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                            ${MF_MESSAGELOGGER}
-                            ${FHICLCPP}
-                            cetlib cetlib_except
-              
-)
-
 simple_plugin(RecompressRawDigits "module"
                 lardataobj_RawData
                 ${ART_FRAMEWORK_CORE}

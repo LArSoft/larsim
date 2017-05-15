@@ -3,7 +3,6 @@
 /// \brief Use Geant4's user "hooks" to determine the number of ionization
 ///        electrons and scintillation photons for each step
 ///
-/// \version $Id: $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 

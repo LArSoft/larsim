@@ -5,7 +5,6 @@
 /// Module that produces MC particles from supernova electron neutrinos
 /// interacting via charge current with Ar40
 /// 
-/// \version $Id: SingleGen_module.cc, v 1.0 2015/11/16 17:28:00 gvsinev Exp $
 /// \author  gleb.sinev@duke.edu
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_SNNUEARCCGEN

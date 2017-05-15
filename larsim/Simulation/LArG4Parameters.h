@@ -2,7 +2,6 @@
 /// \file  LArG4Parameters.h
 /// \brief Store parameters for running LArG4
 ///
-/// \version $Id: LArG4.cxx,v 1.22 2010/07/20 06:08:30 bjpjones Exp $
 /// \author bjpjones@mit.edu
 ////////////////////////////////////////////////////////////////////////
 //

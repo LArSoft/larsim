@@ -105,6 +105,9 @@ class sim::DumpMCTruth: public art::EDAnalyzer {
     std::string indent = "", std::string firstIndent = ""
     ) const;
   
+  /// Returns the name of the product in the form `"module_instance_process"`.
+  template <typename Handle>
+  static std::string productName(Handle const& handle);
   
   /// Returns a string representing the specified origin.
   static std::string TruthOriginName(simb::Origin_t origin);
@@ -117,6 +120,7 @@ class sim::DumpMCTruth: public art::EDAnalyzer {
   
   /// Returns a string with the name of particle the specified with PDG ID.
   static std::string ParticleName(int pigid);
+  
   
     private:
   
@@ -217,13 +221,10 @@ void sim::DumpMCTruth::DumpMCParticle(
   else {
     TLorentzVector const& start = particle.Position();
     TLorentzVector const& start_mom = particle.Momentum();
-    out << "\n" << indent << "created at " << start << " cm by ";
-    if (particle.Mother() == 0) out << "the gods";
-    else {
-      out << (particle.Process().empty()? "magics": particle.Process())
-        << " from ID=" << particle.Mother();
-    }
-    out << " with momentum " << start_mom << " GeV/c";
+    out << "\n" << indent << "created at " << start << " cm by "
+      << (particle.Process().empty()? "magics": particle.Process())
+      << " from ID=" << particle.Mother()
+      << " with momentum " << start_mom << " GeV/c";
     out << "\n" << indent;
     if (nPoints == 1) {
       out << "still alive!";
@@ -329,34 +330,30 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
   // prepare the data products to be dumped
   //
   struct ProductInfo_t {
-    std::vector<simb::MCTruth> const* truths;
-    art::Provenance const* info;
-    ProductInfo_t(
-      std::vector<simb::MCTruth> const* truths,
-      art::Provenance const* info
-      )
-      : truths(truths), info(info)
+    using Thruths_t = std::vector<simb::MCTruth>;
+    Thruths_t const* truths;
+    std::string name;
+    
+    ProductInfo_t(art::Handle<Thruths_t> const& handle)
+      : truths(handle.provenance()->isPresent()? handle.product(): nullptr)
+      , name(sim::DumpMCTruth::productName(handle))
       {}
+    ProductInfo_t(art::ValidHandle<Thruths_t> const& handle)
+      : truths(handle.product()), name(sim::DumpMCTruth::productName(handle))
+      {}
+    
   }; // ProductInfo_t
+  
   std::vector<ProductInfo_t> AllTruths;
   if (bAllTruth) {
     std::vector<art::Handle<std::vector<simb::MCTruth>>> handles;
     event.getManyByType(handles);
-    for (auto handle: handles) {
-      art::Provenance const* info = handle.provenance();
-      AllTruths.emplace_back(
-        (info->isPresent()? handle.product(): nullptr),
-        info
-        );
-    } // for handles
+    std::copy(handles.begin(), handles.end(), std::back_inserter(AllTruths));
   }
   else {
     for (auto const& inputTag: fInputTruth) {
-      auto handle = event.getValidHandle<std::vector<simb::MCTruth>>(inputTag);
-      AllTruths.emplace_back(
-        handle.product(),
-        handle.provenance()
-        );
+      AllTruths.emplace_back
+        (event.getValidHandle<std::vector<simb::MCTruth>>(inputTag));
     } // for
   }
   
@@ -398,11 +395,7 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
   for (ProductInfo_t const& truths_info: AllTruths) {
     
     auto const* truths = truths_info.truths;
-    auto const* info = truths_info.info;
-    std::string productName = info->moduleLabel()
-      + '_' + info->productInstanceName()
-      + '_' + info->processName()
-      ;
+    std::string productName = truths_info.name;
     
     if (!truths) {
       mf::LogVerbatim(fOutputCategory)
@@ -450,6 +443,17 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
     << " generated particles to be simulated downstream.";
   
 } // sim::DumpMCTruth::analyze()
+
+
+//------------------------------------------------------------------------------
+template <typename Handle>
+std::string sim::DumpMCTruth::productName(Handle const& handle) {
+  auto const* prov = handle.provenance();
+  return prov->moduleLabel()
+    + '_' + prov->productInstanceName()
+    + '_' + prov->processName()
+    ;
+} // sim::DumpMCTruth::productName()
 
 
 //------------------------------------------------------------------------------

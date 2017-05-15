@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  SingleGen_plugin.cc
+/// \file  GaisserParam_module.cc
 /// \brief Generator for cosmic-rays
 ///
 /// Module designed to produce muons for a MC event using a Gaissers
@@ -7,7 +7,6 @@
 /// For a description of how to use the module see DUNE DocDB 10741 
 /// It is highly reccommended that you read it before use.....
 ///
-/// \version $Id: GaisserParam.cxx,v 1.4 2015/04/20 09:54:01 brebel Exp $
 /// \author  k.warburton@sheffield.ac.uk
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_GAISSERPARAM

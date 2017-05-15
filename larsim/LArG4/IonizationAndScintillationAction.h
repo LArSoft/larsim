@@ -5,7 +5,6 @@
 ///        calculates the number of ionization electrons and scintillation
 ///        photons produced by each step
 ///
-/// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 

@@ -2,7 +2,6 @@
 /// \file  LArVoxelList.h
 /// \brief Container of LAr voxel information
 ///
-/// \version $Id: LArVoxelList.h,v 1.7 2010/02/15 20:27:06 t962cvs Exp $
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 

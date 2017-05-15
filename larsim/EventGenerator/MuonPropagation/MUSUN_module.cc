@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  SingleGen_plugin.cc
-/// \brief Generator for undergound muon propagation
+/// \file  MUSUN_module.cc
+/// \brief Generator for underground muon propagation
 ///
 /// Module designed to propagate muons underground
 ///  
 /// For a description of how to use the module see DUNE DocDB  
-/// It is highly reccommended that you read it before use.....
+/// It is highly recommended that you read it before use.....
 ///
 /// Original MUSUN code was written by Vitaly A. Kudryavtsev (University of Sheffield).
 /// Conversion from Fortran to C was done by Kareem Kazkaz (LLNL) with help from David Woodward (Sheffield)
@@ -860,7 +860,7 @@ namespace evgen{
 	    /*
 	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = " 
 	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n" 
-	      << std::endl;//*/
+	      << std::endl; */
 	    sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
 	    ++iteration;
 	    ipc = ipc + 1;
@@ -939,7 +939,7 @@ namespace evgen{
       ip1 = 61;
 
     xfl = flat.fire();
-    /*
+    #if 0
     loIndex = 0, hiIndex = 120;
     int j = (loIndex+hiIndex)/2;
     foundIndex = false;
@@ -961,11 +961,10 @@ namespace evgen{
       if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
 	foundIndex = true;
     }
-    //*/
-    ///*
+    #else
     int j = 0;
     while ( xfl > spmu[j][ip1][ic1] ) ++j;
-    //*/
+    #endif
 
     double En1 = 0.05 * (j-1);
     double En2 = 0.05 * (j);

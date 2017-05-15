@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file SimListUtils.cxx
 //
-/// \version $Id: EDMUtils.cxx,v 1.9 2010/03/03 22:13:07 brebel Exp $
 /// \author  brebel@fnal.gov
 /// 
 /// this class is designed to hold methods that access the event handle
