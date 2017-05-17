@@ -256,6 +256,13 @@ namespace evgen {
       simb::MCTruth create_MCTruth(const TLorentzVector& vtx_pos,
         marley::Event* marley_event = nullptr);
 
+      marley::Generator& get_generator() { return *fMarleyGenerator; }
+      const marley::Generator& get_generator() const
+        { return *fMarleyGenerator; }
+
+      std::string find_file(const std::string& fileName,
+        const std::string& fileType);
+
     protected:
 
       template <typename T> marley::JSON fhicl_atom_to_json(
@@ -291,9 +298,6 @@ namespace evgen {
       void add_marley_particles(simb::MCTruth& truth,
         const std::vector<marley::Particle*>& particles,
         const TLorentzVector& vtx_pos, bool track);
-
-      std::string find_file(const std::string& fileName,
-        const std::string& fileType);
 
       void load_full_paths_into_json(marley::JSON& json,
         const std::string& array_name);
