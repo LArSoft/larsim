@@ -446,7 +446,8 @@ namespace larg4 {
     for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
       if( (*pn).first > highestID ) highestID = (*pn).first;
       
-    fTrackIDOffset = highestID + 1;
+    //Only change the fTrackIDOffset if there is in fact a particle to add to the event
+    if( (fparticleList->size())!=0){ fTrackIDOffset = highestID + 1; }
 
     return fparticleList;
   }
@@ -461,8 +462,9 @@ namespace larg4 {
     int highestID = 0;
     for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
       if( (*pn).first > highestID ) highestID = (*pn).first;
-      
-    fTrackIDOffset = highestID + 1;
+    
+    //Only change the fTrackIDOffset if there is in fact a particle to add to the event
+    if( (fparticleList->size())!=0 ){ fTrackIDOffset = highestID + 1; }
 
     return std::move(*fparticleList);
   } // ParticleList&& ParticleListAction::YieldList()
