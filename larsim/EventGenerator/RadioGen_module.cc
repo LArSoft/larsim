@@ -86,7 +86,7 @@ namespace evgen {
   private:
 
     void SampleOne(unsigned int   i, 
-		   simb::MCTruth &mct);        
+       simb::MCTruth &mct);        
 
     void readfile(std::string nuclide, std::string filename);
     void samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p);  
@@ -123,6 +123,7 @@ namespace evgen {
 
     const double m_e = 0.000510998928;  // mass of electron in GeV
     const double m_alpha = 3.727379240; // mass of an alpha particle in GeV
+    const double m_neutron = 0.9395654133; // mass of a neutron in GeV
 
     std::vector<std::string> spectrumname;
     std::vector<TH1D*> alphaspectrum;
@@ -131,6 +132,8 @@ namespace evgen {
     std::vector<double> betaintegral;
     std::vector<TH1D*> gammaspectrum;
     std::vector<double> gammaintegral;
+    std::vector<TH1D*> neutronspectrum;
+    std::vector<double> neutronintegral;
 
   };
 }
@@ -255,98 +258,93 @@ namespace evgen{
     long ndecays = poisson.shoot(rate);
 
     for (unsigned int idecay=0; idecay<ndecays; idecay++)
+    {
+      // generate just one particle at a time.  Need a little recoding if a radioactive
+      // decay generates multiple daughters that need simulation
+      // uniformly distributed in position and time
+      TLorentzVector pos( fX0[i] + flat.fire()*(fX1[i] - fX0[i]),
+          fY0[i] + flat.fire()*(fY1[i] - fY0[i]),
+          fZ0[i] + flat.fire()*(fZ1[i] - fZ0[i]),
+          fT0[i] + flat.fire()*(fT1[i] - fT0[i]) );
+
+      // discard decays that are not in the proper material
+      std::string volmaterial = geomanager->FindNode(pos.X(),pos.Y(),pos.Z())->GetMedium()->GetMaterial()->GetName();
+      //mf::LogDebug("RadioGen") << "Position: " << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << pos.T() << " " << volmaterial << " " << fMaterial[i] << std::endl;
+      if ( ! std::regex_match(volmaterial, std::regex(fMaterial[i])) ) continue;
+      //mf::LogDebug("RadioGen") << "Decay accepted" << std::endl;
+      
+      int pdgid=0;  // electron=11, photon=22, alpha = 1000020040, neutron = 2112
+      double t = 0; // kinetic energy of particle GeV
+      double m = 0; // mass of daughter particle GeV
+      double p = 0; // generated momentum (GeV)
+      
+      // Treat 222Rn separately 
+      if (fNuclide[i] == "222Rn")
       {
-	// generate just one particle at a time.  Need a little recoding if a radioactive
-	// decay generates multiple daughters that need simulation
-
-	// uniformly distributed in position and time
-
-	TLorentzVector pos( fX0[i] + flat.fire()*(fX1[i] - fX0[i]),
-			    fY0[i] + flat.fire()*(fY1[i] - fY0[i]),
-			    fZ0[i] + flat.fire()*(fZ1[i] - fZ0[i]),
-			    fT0[i] + flat.fire()*(fT1[i] - fT0[i]) );
-
-	// discard decays that are not in the proper material
-
-	std::string volmaterial = geomanager->FindNode(pos.X(),pos.Y(),pos.Z())->GetMedium()->GetMaterial()->GetName();
-	//mf::LogDebug("RadioGen") << "Position: " << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << pos.T() << " " << volmaterial << " " << fMaterial[i] << std::endl;
-	if ( ! std::regex_match(volmaterial, std::regex(fMaterial[i])) ) continue;
-	//mf::LogDebug("RadioGen") << "Decay accepted" << std::endl;
-
-	int pdgid=0;  // electron=11, photon=22, alpha = 1000020040
-        double t = 0; // kinetic energy of particle GeV
-	double m = 0; // mass of daughter particle GeV
-	double p = 0; // generated momentum (GeV)
-
-        // Treat 222Rn separately 
-        if (fNuclide[i] == "222Rn")
-        {
-          pdgid = 1000020040;
-          t     = 0.00548952;
-          m     = m_alpha;
-          double energy = t + m;
-          double p2     = energy*energy - m*m;
-          if (p2 > 0) p = TMath::Sqrt(p2);
-          else        p = 0;
-        }
-        else samplespectrum(fNuclide[i],pdgid,t,m,p);
-
-	// isotropic production angle for the decay product
-
-	double costheta = (2.0*flat.fire() - 1.0);
-	if (costheta < -1.0) costheta = -1.0;
-	if (costheta > 1.0) costheta = 1.0;
-	double sintheta = sqrt(1.0-costheta*costheta);
-	double phi = 2.0*M_PI*flat.fire();
-
-	TLorentzVector pvec(p*sintheta*std::cos(phi),
-			    p*sintheta*std::sin(phi),
-			    p*costheta,
-			    std::sqrt(p*p+m*m));
-
-	// set track id to a negative serial number as these are all primary particles and have id <= 0
-	int trackid = trackidcounter;
-	trackidcounter--;
-	std::string primary("primary");
-	// alpha particles need a little help since they're not in the TDatabasePDG table
-	// so don't rely so heavily on default arguments to the MCParticle constructor
-	if (pdgid == 1000020040)
-	  {
-	    simb::MCParticle part(trackid, pdgid, primary,-1,m,1);
-	    part.AddTrajectoryPoint(pos, pvec);
-	    mct.Add(part);
-	  }
-	else
-	  {
-	    simb::MCParticle part(trackid, pdgid, primary);
-	    part.AddTrajectoryPoint(pos, pvec);
-	    mct.Add(part);
-	  }
+        pdgid = 1000020040;
+        t     = 0.00548952;
+        m     = m_alpha;
+        double energy = t + m;
+        double p2     = energy*energy - m*m;
+        if (p2 > 0) p = TMath::Sqrt(p2);
+        else        p = 0;
       }
+      else samplespectrum(fNuclide[i],pdgid,t,m,p);
+      
+      // isotropic production angle for the decay product
+      double costheta = (2.0*flat.fire() - 1.0);
+      if (costheta < -1.0) costheta = -1.0;
+      if (costheta > 1.0) costheta = 1.0;
+      double sintheta = sqrt(1.0-costheta*costheta);
+      double phi = 2.0*M_PI*flat.fire();
+      
+      TLorentzVector pvec(p*sintheta*std::cos(phi),
+          p*sintheta*std::sin(phi),
+          p*costheta,
+          std::sqrt(p*p+m*m));
+
+      // set track id to a negative serial number as these are all primary particles and have id <= 0
+      int trackid = trackidcounter;
+      trackidcounter--;
+      std::string primary("primary");
+      // alpha particles need a little help since they're not in the TDatabasePDG table
+      // so don't rely so heavily on default arguments to the MCParticle constructor
+      if (pdgid == 1000020040)
+      {
+        simb::MCParticle part(trackid, pdgid, primary,-1,m,1);
+        part.AddTrajectoryPoint(pos, pvec);
+        mct.Add(part);
+      }
+      else
+      {
+        simb::MCParticle part(trackid, pdgid, primary);
+        part.AddTrajectoryPoint(pos, pvec);
+        mct.Add(part);
+      }
+    }
   }
-
+  
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
-
+  
   void RadioGen::readfile(std::string nuclide, std::string filename)
   {
     int ifound = 0;
     for (size_t i=0; i<fNuclide.size(); i++)
+    {
+      if (fNuclide[i] == nuclide)
       {
-	if (fNuclide[i] == nuclide)
-	  {
-	    ifound = 1;
-	    break;
-	  }
+        ifound = 1;
+        break;
       }
+    }
     if (ifound == 0) return;
-
+    
     Bool_t addStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE); // cloned histograms go in memory, and aren't deleted when files are closed.
     // be sure to restore this state when we're out of the routine.
-
-
+    
+    
     spectrumname.push_back(nuclide);
-
     cet::search_path sp("FW_SEARCH_PATH");
     std::string fn2 = "Radionuclides/";
     fn2 += filename;
@@ -355,161 +353,192 @@ namespace evgen{
     struct stat sb;
     if (fullname.empty() || stat(fullname.c_str(), &sb)!=0)
       throw cet::exception("RadioGen") << "Input spectrum file "
-                                        << fn2
-                                        << " not found in FW_SEARCH_PATH!\n";
-
+        << fn2
+        << " not found in FW_SEARCH_PATH!\n";
+    
     TFile f(fullname.c_str(),"READ");
     TGraph *alphagraph = (TGraph*) f.Get("Alphas");
     TGraph *betagraph = (TGraph*) f.Get("Betas");
     TGraph *gammagraph = (TGraph*) f.Get("Gammas");
+    TGraph *neutrongraph = (TGraph*) f.Get("Neutrons");
 
     if (alphagraph)
+    {
+      int np = alphagraph->GetN();
+      double *y = alphagraph->GetY();
+      std::string name;
+      name = "RadioGen_";
+      name += nuclide;
+      name += "_Alpha";
+      TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np);
+      for (int i=0; i<np; i++)
       {
-	int np = alphagraph->GetN();
-	double *y = alphagraph->GetY();
-	std::string name;
-	name = "RadioGen_";
-	name += nuclide;
-	name += "_Alpha";
-	TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np);
-	for (int i=0; i<np; i++)
-	  {
-	    alphahist->SetBinContent(i+1,y[i]);
-	    alphahist->SetBinError(i+1,0);
-	  }
-	alphaspectrum.push_back(alphahist);
-	alphaintegral.push_back(alphahist->Integral());
+        alphahist->SetBinContent(i+1,y[i]);
+        alphahist->SetBinError(i+1,0);
       }
+      alphaspectrum.push_back(alphahist);
+      alphaintegral.push_back(alphahist->Integral());
+    }
     else
-      {
-	alphaspectrum.push_back(0);
-	alphaintegral.push_back(0);
-      }
-
-
+    {
+      alphaspectrum.push_back(0);
+      alphaintegral.push_back(0);
+    }
+    
+    
     if (betagraph)
+    {
+      int np = betagraph->GetN();
+      
+      double *y = betagraph->GetY();
+      std::string name;
+      name = "RadioGen_";
+      name += nuclide;
+      name += "_Beta";
+      TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np);
+      
+      for (int i=0; i<np; i++)
       {
-	int np = betagraph->GetN();
-
-	double *y = betagraph->GetY();
-	std::string name;
-	name = "RadioGen_";
-	name += nuclide;
-	name += "_Beta";
-	TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np);
-
-	for (int i=0; i<np; i++)
-	  {
-	    betahist->SetBinContent(i+1,y[i]);
-	    betahist->SetBinError(i+1,0);
-	  }
-	betaspectrum.push_back(betahist);
-	betaintegral.push_back(betahist->Integral());
+        betahist->SetBinContent(i+1,y[i]);
+        betahist->SetBinError(i+1,0);
       }
+      betaspectrum.push_back(betahist);
+      betaintegral.push_back(betahist->Integral());
+    }
     else
-      {
-	betaspectrum.push_back(0);
-	betaintegral.push_back(0);
-      }
-
+    {
+      betaspectrum.push_back(0);
+      betaintegral.push_back(0);
+    }
+    
     if (gammagraph)
+    {
+      int np = gammagraph->GetN();
+      double *y = gammagraph->GetY();
+      std::string name;
+      name = "RadioGen_";
+      name += nuclide;
+      name += "_Gamma";
+      TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np);
+      for (int i=0; i<np; i++)
       {
-	int np = gammagraph->GetN();
-	double *y = gammagraph->GetY();
-	std::string name;
-	name = "RadioGen_";
-	name += nuclide;
-	name += "_Gamma";
-	TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np);
-	for (int i=0; i<np; i++)
-	  {
-	    gammahist->SetBinContent(i+1,y[i]);
-	    gammahist->SetBinError(i+1,0);
-	  }
-	gammaspectrum.push_back(gammahist);
-	gammaintegral.push_back(gammahist->Integral());
+        gammahist->SetBinContent(i+1,y[i]);
+        gammahist->SetBinError(i+1,0);
       }
+      gammaspectrum.push_back(gammahist);
+      gammaintegral.push_back(gammahist->Integral());
+    }
     else
+    {
+      gammaspectrum.push_back(0);
+      gammaintegral.push_back(0);
+    }
+    
+    if (neutrongraph)
+    {
+      int np = neutrongraph->GetN();
+      double *y = neutrongraph->GetY();
+      std::string name;
+      name = "RadioGen_";
+      name += nuclide;
+      name += "_Neutron";
+      TH1D *neutronhist = (TH1D*) new TH1D(name.c_str(),"Neutron Spectrum",np,0,np);
+      for (int i=0; i<np; i++)
       {
-	gammaspectrum.push_back(0);
-	gammaintegral.push_back(0);
+        neutronhist->SetBinContent(i+1,y[i]);
+        neutronhist->SetBinError(i+1,0);
       }
-
+      neutronspectrum.push_back(neutronhist);
+      neutronintegral.push_back(neutronhist->Integral());
+    }
+    else
+    {
+      neutronspectrum.push_back(0);
+      neutronintegral.push_back(0);
+    }
+    
     f.Close();
     TH1::AddDirectory(addStatus);
-
-    double total = alphaintegral.back() + betaintegral.back() + gammaintegral.back();
+    
+    double total = alphaintegral.back() + betaintegral.back() + gammaintegral.back() + neutronintegral.back();
     if (total>0)
-      {
-	alphaintegral.back() /= total;
-	betaintegral.back() /= total;
-	gammaintegral.back() /= total;
-      }
+    {
+      alphaintegral.back() /= total;
+      betaintegral.back() /= total;
+      gammaintegral.back() /= total;
+      neutronintegral.back() /= total;
+    }
   }
-
-
+  
+  
   void RadioGen::samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p)
   {
-
+    
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat  flat(engine);
-
+    
     int inuc = -1;
     for (size_t i=0; i<spectrumname.size(); i++)
+    {
+      if (nuclide == spectrumname[i])
       {
-	if (nuclide == spectrumname[i])
-	  {
-	    inuc = i;
-	    break;
-	  }
+        inuc = i;
+        break;
       }
+    }
     if (inuc == -1)
-      {
-	t=0;  // throw an exception in the future
-	itype = 0;
-	throw cet::exception("RadioGen") << "Ununderstood nuclide:  " << nuclide << "\n";
-      }
-
+    {
+      t=0;  // throw an exception in the future
+      itype = 0;
+      throw cet::exception("RadioGen") << "Ununderstood nuclide:  " << nuclide << "\n";
+    }
+    
     double rtype = flat.fire();  
-
+    
     itype = -1;
     m = 0;
     p = 0;
     for (int itry=0;itry<10;itry++) // maybe a tiny normalization issue with a sum of 0.99999999999 or something, so try a few times.
+    {
+      if (rtype <= alphaintegral[inuc] && alphaspectrum[inuc] != 0)
       {
-	if (rtype <= alphaintegral[inuc] && alphaspectrum[inuc] != 0)
-	  {
-	    itype = 1000020040; // alpha
-	    m = m_alpha;
-	    t = samplefromth1d(alphaspectrum[inuc])/1000000.0;
-	  }
-	else if (rtype <= alphaintegral[inuc]+betaintegral[inuc] && betaspectrum[inuc] != 0)
-	  {
-	    itype = 11; // beta
-	    m = m_e;
-	    t = samplefromth1d(betaspectrum[inuc])/1000000.0;
-	  }
-	else if ( gammaspectrum[inuc] != 0)
-	  {
-	    itype = 22; // gamma
-	    m = 0;
-	    t = samplefromth1d(gammaspectrum[inuc])/1000000.0;
-	  }
-	if (itype >= 0) break;
+        itype = 1000020040; // alpha
+        m = m_alpha;
+        t = samplefromth1d(alphaspectrum[inuc])/1000000.0;
       }
+      else if (rtype <= alphaintegral[inuc]+betaintegral[inuc] && betaspectrum[inuc] != 0)
+      {
+        itype = 11; // beta
+        m = m_e;
+        t = samplefromth1d(betaspectrum[inuc])/1000000.0;
+      }
+      else if ( rtype <= alphaintegral[inuc] + betaintegral[inuc] + gammaintegral[inuc] && gammaspectrum[inuc] != 0)
+      {
+        itype = 22; // gamma
+        m = 0;
+        t = samplefromth1d(gammaspectrum[inuc])/1000000.0;
+      }
+      else if( neutronspectrum[inuc] != 0)
+      {
+        itype = 2112;
+        m     = m_neutron;
+        t     = samplefromth1d(neutronspectrum[inuc])/1000000.0;
+      }
+      if (itype >= 0) break;
+    }
     if (itype == -1)
-      {
-	throw cet::exception("RadioGen") << "Normalization problem with nuclide:  " << nuclide << "\n";
-      }
+    {
+      throw cet::exception("RadioGen") << "Normalization problem with nuclide:  " << nuclide << "\n";
+    }
     double e = t + m;
     p = e*e - m*m;
     if (p>=0) 
-      { p = TMath::Sqrt(p); }
+    { p = TMath::Sqrt(p); }
     else 
-      { p=0; }
+    { p=0; }
   }
-
+  
   // this is just a copy of TH1::GetRandom that uses the art-managed CLHEP random number generator instead of gRandom
   // and a better handling of negative bin contents
 
@@ -518,31 +547,31 @@ namespace evgen{
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat  flat(engine);
-
-   int nbinsx = hist->GetNbinsX();
-   std::vector<double> partialsum;
-   partialsum.resize(nbinsx+1);
-   partialsum[0] = 0;
-
-   for (int i=1;i<=nbinsx;i++)
-     { 
-       double hc = hist->GetBinContent(i); 
-       if ( hc < 0) throw cet::exception("RadioGen") << "Negative bin:  " << i << " " << hist->GetName() << "\n";
-       partialsum[i] = partialsum[i-1] + hc;
-     }
-   double integral = partialsum[nbinsx];
-   if (integral == 0) return 0;
-   // normalize to unit sum
-   for (int i=1;i<=nbinsx;i++) partialsum[i] /= integral;
-
-   double r1 = flat.fire();
-   int ibin = TMath::BinarySearch(nbinsx,&(partialsum[0]),r1);
-   Double_t x = hist->GetBinLowEdge(ibin+1);
-   if (r1 > partialsum[ibin]) x +=
+    
+    int nbinsx = hist->GetNbinsX();
+    std::vector<double> partialsum;
+    partialsum.resize(nbinsx+1);
+    partialsum[0] = 0;
+    
+    for (int i=1;i<=nbinsx;i++)
+    { 
+      double hc = hist->GetBinContent(i); 
+      if ( hc < 0) throw cet::exception("RadioGen") << "Negative bin:  " << i << " " << hist->GetName() << "\n";
+      partialsum[i] = partialsum[i-1] + hc;
+    }
+    double integral = partialsum[nbinsx];
+    if (integral == 0) return 0;
+    // normalize to unit sum
+    for (int i=1;i<=nbinsx;i++) partialsum[i] /= integral;
+    
+    double r1 = flat.fire();
+    int ibin = TMath::BinarySearch(nbinsx,&(partialsum[0]),r1);
+    Double_t x = hist->GetBinLowEdge(ibin+1);
+    if (r1 > partialsum[ibin]) x +=
       hist->GetBinWidth(ibin+1)*(r1-partialsum[ibin])/(partialsum[ibin+1] - partialsum[ibin]);
-   return x;
+    return x;
   }
-
+  
 
   // phase space generator for beta decay -- keep it as a comment in case we ever want to revive it
 
@@ -562,7 +591,7 @@ namespace evgen{
   //      double weight = rg.Generate();  // want to unweight these if possible
   //      TLorentzVector *e4v = rg.GetDecay(1);  // get electron four-vector
   //      p = e4v->P();
-  //	if (weight >= wmax * flat.fire()) break;
+  //  if (weight >= wmax * flat.fire()) break;
   //   }
   //return p;
   //}
