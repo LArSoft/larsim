@@ -193,12 +193,28 @@ namespace evgen{
     if (  fY1.size() != nsize ) throw cet::exception("RadioGen") << "Different size Y1 vector and Nuclide vector\n";
     if (  fZ1.size() != nsize ) throw cet::exception("RadioGen") << "Different size Z1 vector and Nuclide vector\n";
 
-    readfile("39Ar","Argon_39.root");
+    for(std::string & nuclideName : fNuclide){
+      if(nuclideName=="39Ar"      ){readfile("39Ar","Argon_39.root")    ;}
+      else if(nuclideName=="60Co" ){readfile("60Co","Cobalt_60.root")   ;}
+      else if(nuclideName=="85Kr" ){readfile("85Kr","Krypton_85.root")  ;}
+      else if(nuclideName=="40K"  ){readfile("40K","Potassium_40.root") ;}
+      else if(nuclideName=="232Th"){readfile("232Th","Thorium_232.root");}
+      else if(nuclideName=="238U" ){readfile("238U","Uranium_238.root") ;}
+      else if(nuclideName=="222Rn"){continue;} //Rn222 is handeled separately later
+      else{
+        std::string searchName = nuclideName;
+        searchName+=".root";
+        readfile(nuclideName,searchName);
+      }
+    }
+    
+    /*readfile("39Ar","Argon_39.root");
     readfile("60Co","Cobalt_60.root");
     readfile("85Kr","Krypton_85.root");
     readfile("40K","Potassium_40.root");
     readfile("232Th","Thorium_232.root");
     readfile("238U","Uranium_238.root");
+    */
 
     return;
   }
