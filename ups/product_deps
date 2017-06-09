@@ -8,10 +8,10 @@ fwdir   product_dir G4
 #
 product         version
 larevt		v06_13_04
-marley		v0_9_5c
+marley		v0_9_5d
 larsoft_data    v1_01_01
 
-cetbuildtools	v5_06_07	-	only_for_build
+cetbuildtools	v5_09_01	-	only_for_build
 end_product_list
 
   
