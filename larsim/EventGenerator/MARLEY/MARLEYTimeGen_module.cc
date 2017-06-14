@@ -19,9 +19,10 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Table.h"
-#include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
@@ -30,10 +31,12 @@
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardataobj/Simulation/SupernovaTruth.h"
 #include "larsim/EventGenerator/MARLEY/MARLEYGenerator.h"
 #include "larsim/EventGenerator/MARLEY/ActiveVolumeVertexSampler.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
 #include "TFile.h"
@@ -153,7 +156,9 @@ evgen::MarleyTimeGen::MarleyTimeGen(const Parameters& p)
   fEventTree->Branch("event_number", &fEventNumber, "event_number/i");
   fEventTree->Branch("tSN", &fTNu, "tSN/D");
 
-  produces< std::vector<simb::MCTruth>   >();
+  produces< std::vector<simb::MCTruth> >();
+  produces< std::vector<sim::SupernovaTruth> >();
+  produces< art::Assns<simb::MCTruth, sim::SupernovaTruth> >();
   produces< sumdata::RunData, art::InRun >();
 }
 
@@ -184,6 +189,12 @@ void evgen::MarleyTimeGen::produce(art::Event& e)
   std::unique_ptr< std::vector<simb::MCTruth> >
     truthcol(new std::vector<simb::MCTruth>);
 
+  std::unique_ptr< std::vector<sim::SupernovaTruth> >
+    sn_truthcol(new std::vector<sim::SupernovaTruth>);
+
+  std::unique_ptr< art::Assns<simb::MCTruth, sim::SupernovaTruth> >
+    truth_assns(new art::Assns<simb::MCTruth, sim::SupernovaTruth>);
+
   // Get the primary vertex location for this event
   art::ServiceHandle<geo::Geometry> geo;
   TLorentzVector vertex_pos = fVertexSampler->sample_vertex_pos(*geo);
@@ -193,6 +204,9 @@ void evgen::MarleyTimeGen::produce(art::Event& e)
   marley::Generator& gen = fMarleyGenerator->get_generator();
 
   simb::MCTruth truth;
+
+  // TODO: use this!
+  sim::SupernovaTruth sn_truth;
 
   if (fSamplingMode == TimeGenSamplingMode::HISTOGRAM)
   {
@@ -272,7 +286,16 @@ void evgen::MarleyTimeGen::produce(art::Event& e)
 
   truthcol->push_back(truth);
 
+  sn_truthcol->push_back(sn_truth);
+
+  util::CreateAssn(*this, e, *truthcol, *sn_truthcol, *truth_assns,
+    truthcol->size() - 1, truthcol->size()/*, sn_truthcol->size() - 1*/);
+
   e.put(std::move(truthcol));
+
+  e.put(std::move(sn_truthcol));
+
+  e.put(std::move(truth_assns));
 }
 
 //------------------------------------------------------------------------------

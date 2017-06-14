@@ -3,8 +3,9 @@
 
 art_make(
       LIB_LIBRARIES
-                        larsim_Simulation lardataobj_Simulation
+                        larsim_Simulation
                         lardataobj_Simulation
+                        lardataobj_Simulation_dict
                         nusimdata_SimulationBase
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
@@ -23,8 +24,10 @@ art_make(
                         ${ROOT_GEOM}
       MODULE_LIBRARIES 
                         larsim_EventGenerator_MARLEY
-                        larsim_Simulation lardataobj_Simulation
+                        larsim_Simulation
+                        lardata_Utilities
                         lardataobj_Simulation
+                        lardataobj_Simulation_dict
                         nusimdata_SimulationBase
                         larcoreobj_SummaryData
                         larcorealg_Geometry
