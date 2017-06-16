@@ -127,7 +127,7 @@ void ConfigurationParser::printHelp
       " GEANT4 will refuse to overwrite."
     "\n"
     "\nNOTE: the path to the GDML schema in the output may need to be fixed by"
-      " hand.
+      " hand."
     "\nTo allow validation, the GDML schema must be present as described in the"
       " header of the GDML file."
     "\nLArSoft does not necessarily distributes GDML schema, so these lines"
