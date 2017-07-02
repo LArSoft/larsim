@@ -46,6 +46,7 @@
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ProcessManager.hh"
@@ -160,6 +161,10 @@ namespace larg4 {
   //-----------------------------------------------------------  
   void OpticalPhysics::ConstructProcess()
   {
+
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+
     // Add standard EM Processes
     LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     
@@ -167,7 +172,10 @@ namespace larg4 {
     fTheScintillationProcess       = new G4Scintillation("Scintillation");
     fTheAbsorptionProcess          = new G4OpAbsorption();
     fTheRayleighScatteringProcess  = new G4OpRayleigh();
-    fTheBoundaryProcess            = new OpBoundaryProcessSimple();
+    if(detp->SimpleBoundary())
+      fTheBoundaryProcess          = new OpBoundaryProcessSimple();
+    else
+      fTheBoundaryProcess_g4       = new G4OpBoundaryProcess();
     fTheWLSProcess                 = new G4OpWLS();
     
     
@@ -184,8 +192,6 @@ namespace larg4 {
     G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
     fTheScintillationProcess->AddSaturation(emSaturation);
     
-    
-    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
     
@@ -212,7 +218,10 @@ namespace larg4 {
        mf::LogInfo("OpticalPhysics") << " AddDiscreteProcess to OpticalPhoton ";
 	pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
 	pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
-	pmanager->AddDiscreteProcess(fTheBoundaryProcess);
+	if(detp->SimpleBoundary())
+	  pmanager->AddDiscreteProcess(fTheBoundaryProcess);
+	else
+	  pmanager->AddDiscreteProcess(fTheBoundaryProcess_g4);
 	pmanager->AddDiscreteProcess(fTheWLSProcess);
       }
     }
