@@ -240,6 +240,26 @@ namespace larg4 {
   } 
   
 
+  void MaterialPropertyLoader::SetReflectances(std::map<std::string,std::map<double, double> > Reflectances)
+  {
+    std::map<double, double> ReflectanceToStore;
+
+    for(std::map<std::string,std::map<double,double> >::const_iterator itMat=Reflectances.begin();
+        itMat!=Reflectances.end();
+        ++itMat)
+      {
+        ReflectanceToStore.clear();
+        for(std::map<double,double>::const_iterator itEn=itMat->second.begin();
+            itEn!=itMat->second.end();
+            ++itEn)
+          {
+            ReflectanceToStore[itEn->first]=itEn->second;
+          }
+	SetMaterialProperty(itMat->first, "REFLECTIVITY", ReflectanceToStore,1);
+      }
+  }
+
+
   void MaterialPropertyLoader::GetPropertiesFromServices()
   {
     const detinfo::LArProperties* LarProp = lar::providerFrom<detinfo::LArPropertiesService>();
@@ -264,9 +284,10 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               CLHEP::kilovolt/CLHEP::cm);
 
     SetBirksConstant("LAr",LarProp->ScintBirksConstant(), CLHEP::cm/CLHEP::MeV);
-    
-    SetReflectances("LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
-
+    if(DetProp->SimpleBoundary())    
+      SetReflectances("LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
+    else
+      SetReflectances(LarProp->SurfaceReflectances());
 
     // If we are using scint by particle type, load these
 
