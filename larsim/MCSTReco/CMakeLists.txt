@@ -3,7 +3,7 @@ add_subdirectory(job)
 
 art_make( 
 	  
-          LIB_LIBRARIES    larcore_Geometry
+          LIB_LIBRARIES    larcorealg_Geometry
 			   larcore_Geometry_Geometry_service
 			   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			   nusimdata_SimulationBase
@@ -29,7 +29,7 @@ art_make(
 			   ${ROOT_GDML}
 			   ${ROOT_BASIC_LIB_LIST}
           MODULE_LIBRARIES larsim_MCSTReco
-			   larcore_Geometry
+			   larcorealg_Geometry
 			   larcore_Geometry_Geometry_service
 			   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			   nusimdata_SimulationBase

@@ -60,7 +60,7 @@ art_make(
                         larsim_Simulation lardataobj_Simulation
                         nusimdata_SimulationBase
                         larcoreobj_SummaryData
-                        larcore_Geometry
+                        larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         nutools_EventGeneratorBase_GENIE

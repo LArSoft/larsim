@@ -3,7 +3,7 @@ art_make(
           
           LIB_LIBRARIES larevt_Filters
 	                lardataobj_RawData
-	                larcore_Geometry
+	                larcorealg_Geometry
 	                larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -25,7 +25,7 @@ art_make(
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larevt_Filters
 	                lardataobj_RawData
-	                larcore_Geometry
+	                larcorealg_Geometry
 	                larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -44,7 +44,7 @@ art_make(
           MODULE_LIBRARIES larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
-                        larcore_Geometry
+                        larcorealg_Geometry
       	                larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

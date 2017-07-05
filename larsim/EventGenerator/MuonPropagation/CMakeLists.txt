@@ -7,7 +7,7 @@ art_make(
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larsim_Simulation lardataobj_Simulation
                         larcoreobj_SummaryData
-                        larcore_Geometry
+                        larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         ${GaisserParam}

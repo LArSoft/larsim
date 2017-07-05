@@ -3,7 +3,7 @@ simple_plugin(PhotonBackTracker "service"
 			lardata_Utilities
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         lardataobj_RecoBase
-	                larcore_Geometry
+	                larcorealg_Geometry
 	                larcore_Geometry_Geometry_service
 			nusimdata_SimulationBase
                         ${ART_FRAMEWORK_CORE}
@@ -25,7 +25,7 @@ simple_plugin(BackTracker "service"
 			lardata_Utilities
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         lardataobj_RecoBase
-	                larcore_Geometry
+	                larcorealg_Geometry
 	                larcore_Geometry_Geometry_service
 			nusimdata_SimulationBase
                         ${ART_FRAMEWORK_CORE}

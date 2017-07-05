@@ -17,7 +17,7 @@
 // LArSoft includes
 #include "larsim/MCCheater/PhotonBackTracker.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/GeometryCore.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"

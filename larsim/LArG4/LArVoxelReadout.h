@@ -52,7 +52,7 @@
 
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/TPCGeo.h"
+#include "larcorealg/Geometry/TPCGeo.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"

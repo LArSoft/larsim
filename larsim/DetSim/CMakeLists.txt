@@ -3,7 +3,7 @@ art_make( NO_PLUGINS
           
           LIB_LIBRARIES larevt_Filters
                         lardataobj_RawData
-                        larcore_Geometry
+                        larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
@@ -44,7 +44,7 @@ simple_plugin(SimWireAna "module"
 simple_plugin(SimWire "module"
                       larsim_Simulation lardataobj_Simulation
                       lardataobj_RawData
-                      larcore_Geometry
+                      larcorealg_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
                       lardata_Utilities
@@ -72,7 +72,7 @@ simple_plugin(SimWire "module"
 simple_plugin(SimWireT962 "module"
                           larsim_Simulation lardataobj_Simulation
                           lardataobj_RawData
-                          larcore_Geometry
+                          larcorealg_Geometry
                           larcore_Geometry_Geometry_service
                           lardata_Utilities_LArFFT_service
                           lardata_Utilities
@@ -99,7 +99,7 @@ simple_plugin(SimWireT962 "module"
 
 simple_plugin(WienerFilterAna "module"
                               lardataobj_RawData
-                              larcore_Geometry
+                              larcorealg_Geometry
                               larcore_Geometry_Geometry_service
                               ${ART_FRAMEWORK_CORE}
                               ${ART_FRAMEWORK_PRINCIPAL}

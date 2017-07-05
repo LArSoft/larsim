@@ -11,7 +11,7 @@ art_make(
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         lardata_Utilities
 			larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
-                        larcore_Geometry
+                        larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
                         nutools_G4Base
@@ -42,7 +42,7 @@ art_make(
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
-                        larcore_Geometry
+                        larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         nusimdata_SimulationBase

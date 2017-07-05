@@ -35,9 +35,9 @@
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nutools/EventGeneratorBase/evgenbase.h"
 #include "nutools/EventGeneratorBase/CRY/CRYHelper.h"
-#include "larcore/Geometry/geo.h"
+#include "larcorealg/Geometry/geo.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
 namespace evgen {
