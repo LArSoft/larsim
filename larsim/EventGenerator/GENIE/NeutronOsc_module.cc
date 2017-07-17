@@ -91,6 +91,9 @@ public:
 
 private:
 
+  // Additional functions
+  int SelectAnnihilationMode(int pdg_code);
+
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
   genie::NeutronOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
@@ -129,7 +132,7 @@ void evgen::NeutronOsc::produce(art::Event & e)
   // Implementation of required member function here.
   genie::EventRecord * event = new genie::EventRecord;
   int target = 1000180400;  //Only use argon target
-  int decay  = (int)gOptDecayMode;
+  int decay  = SelectAnnihilationMode(target);
   genie::Interaction * interaction = genie::Interaction::NOsc(target,decay);
   event->AttachSummary(interaction);
   
@@ -229,6 +232,69 @@ void evgen::NeutronOsc::beginRun(art::Run& run)
 void evgen::NeutronOsc::beginJob()
 {
   // Implementation of optional member function here.
+}
+
+int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)
+{
+  // if the mode is set to 'random' (the default), pick one at random!
+  if ((int)gOptDecayMode == 0) {
+    int mode;
+
+    std::string pdg_string = std::to_string(static_cast<long long>(pdg_code));
+    if (pdg_string.size() != 10) {
+      std::cout << "Expecting PDG code to be a 10-digit integer; instead, it's the following: " << pdg_string << std::endl;
+      exit(1);
+    }
+
+    // count number of protons & neutrons
+    int n_nucleons = std::stoi(pdg_string.substr(6,3)) - 1;
+    int n_protons  = std::stoi(pdg_string.substr(3,3));
+
+    // factor proton / neutron ratio into branching ratios
+    double proton_frac  = ((double)n_protons) / ((double)n_nucleons);
+    double neutron_frac = 1 - proton_frac;
+
+    // set branching ratios, taken from bubble chamber data
+    const int n_modes = 16;
+    double br [n_modes] = { 0.010, 0.080, 0.100, 0.220,
+                            0.360, 0.160, 0.070, 0.020,
+                            0.015, 0.065, 0.110, 0.280,
+                            0.070, 0.240, 0.100, 0.100 };
+
+    for (int i = 0; i < n_modes; i++) {
+      if (i < 7)
+        br[i] *= proton_frac;
+      else
+        br[i] *= neutron_frac;
+    }
+
+    // randomly generate a number between 1 and 0
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::RandFlat flat(engine);
+    double p = flat.fire();
+
+    // loop through all modes, figure out which one our random number corresponds to
+    double threshold = 0;
+    for (int i = 0; i < n_modes; i++) {
+      threshold += br[i];
+      if (p < threshold) {
+        // once we've found our mode, return it!
+        mode = i + 1;
+        return mode;
+      }
+    }
+
+    // error message, in case the random number selection fails
+    std::cout << "Random selection of final state failed!" << std::endl;
+    exit(1);
+  }
+
+  // if specific annihilation mode specified, just use that
+  else {
+    int mode = (int) gOptDecayMode;
+    return mode;
+  }
 }
 
 DEFINE_ART_MODULE(evgen::NeutronOsc)
