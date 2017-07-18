@@ -7,7 +7,7 @@ art_make(
                         lardataobj_Simulation
                         lardataobj_Simulation_dict
                         nusimdata_SimulationBase
-                        larcore_Geometry
+	                larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         ${MARLEY}
