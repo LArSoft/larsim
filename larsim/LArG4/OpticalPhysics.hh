@@ -60,7 +60,7 @@
 
 #include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/globals.hh"
-
+#include "Geant4/G4OpBoundaryProcess.hh"
 
 
 class G4Cerenkov;
@@ -89,6 +89,7 @@ namespace larg4 {
     G4OpAbsorption*          fTheAbsorptionProcess;
     G4OpRayleigh*            fTheRayleighScatteringProcess;
     OpBoundaryProcessSimple* fTheBoundaryProcess;
+    G4OpBoundaryProcess*     fTheBoundaryProcess_g4;
     G4OpWLS *                fTheWLSProcess;
   };
   
