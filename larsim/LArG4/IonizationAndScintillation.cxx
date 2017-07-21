@@ -147,10 +147,16 @@ namespace larg4 {
       fPhotonsPerStep    ->Fill(fISCalc->NumberScintillationPhotons());
       fElectronsVsPhotons->Fill(fISCalc->NumberScintillationPhotons(), 
 				fISCalc->NumberIonizationElectrons());
-      fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/(totstep.mag()/CLHEP::cm));
-      fPhotonsPerLength  ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/(totstep.mag()/CLHEP::cm));
-      fElectronsPerEDep  ->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/fISCalc->EnergyDeposit());
-      fPhotonsPerEDep    ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/fISCalc->EnergyDeposit());
+      double const stepSize = totstep.mag()/CLHEP::cm;
+      if (stepSize > 0.0) {
+        fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/stepSize);
+        fPhotonsPerLength  ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/stepSize);
+      }
+      double const energyDep = fISCalc->EnergyDeposit();
+      if (energyDep) {
+        fElectronsPerEDep  ->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/energyDep);
+        fPhotonsPerEDep    ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/energyDep);
+      }
 
     } // end if the energy deposition is non-zero
 

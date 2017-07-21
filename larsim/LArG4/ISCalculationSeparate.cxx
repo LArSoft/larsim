@@ -103,7 +103,7 @@ namespace larg4{
 
     double dx     = totstep.mag()/CLHEP::cm;
     double recomb = 0.;
-    double dEdx   = fEnergyDeposit/dx;
+    double dEdx   = (dx == 0.0)? 0.0: fEnergyDeposit/dx;
     double EFieldStep = EFieldAtStep(fEfield,step);
 
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
