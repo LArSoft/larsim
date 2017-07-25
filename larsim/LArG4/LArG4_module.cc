@@ -288,6 +288,8 @@ namespace larg4 {
 
     // Tell the detector about the parallel LAr voxel geometry.
     std::vector<G4VUserParallelWorld*> pworlds;
+    // Intialize G4 physics and primary generator action
+    fG4Help->InitPhysics();
 
     // create the ionization and scintillation calculator;
     // this is a singleton (!) so it does not make sense
@@ -307,8 +309,9 @@ namespace larg4 {
 
     fG4Help->SetParallelWorlds(pworlds);
 
+    // moved up
     // Intialize G4 physics and primary generator action
-    fG4Help->InitPhysics();
+       fG4Help->InitPhysics();
 
     // Use the UserActionManager to handle all the Geant4 user hooks.
     g4b::UserActionManager* uaManager = g4b::UserActionManager::Instance();
