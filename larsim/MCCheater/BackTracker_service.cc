@@ -29,7 +29,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   BackTracker::BackTracker(const fhicl::ParameterSet& pset,
-			   art::ActivityRegistry& reg)
+         art::ActivityRegistry& reg)
   {
     reconfigure(pset);
 
@@ -63,8 +63,8 @@ namespace cheat{
     // if that is the case, we'll take care of it later
     if(pHandle.failedToGet()){
       mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
-				    << fG4ModuleLabel
-				    << ", return";
+            << fG4ModuleLabel
+            << ", return";
       return;
     }
 
@@ -78,34 +78,32 @@ namespace cheat{
 
     if( fo.isValid() ){
       for(size_t p = 0; p < pHandle->size(); ++p){
-	
-	simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
-	fParticleList.Add(part);
-	
-	// get the simb::MCTruth associated to this sim::ParticleList
-	try{
-	  art::Ptr<simb::MCTruth> mct = fo.at(p);
-	  if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
-	  else{
-	    // check that we are not adding a simb::MCTruth twice to the collection
-	    // we know that all the particles for a given simb::MCTruth are put into the
-	    // collection of particles at the same time, so we can just check that the 
-	    // current art::Ptr has a different id than the last one put 
-	    if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
-	  }
-	  // fill the track id to mctruth index map
-	  fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
-	}
-	catch(cet::exception &ex){
-	  mf::LogWarning("BackTracker") << "unable to find MCTruth from ParticleList "
-					<< "created in " << fG4ModuleLabel << " " 
-					<< "any attempt to get the MCTruth objects from "
-					<< "the backtracker will fail\n"
-					<< "message from caught exception:\n" << ex;
-	}	
+        simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
+        fParticleList.Add(part);
+        // get the simb::MCTruth associated to this sim::ParticleList
+        try{
+          art::Ptr<simb::MCTruth> mct = fo.at(p);
+          if(fMCTruthList.size() < 1) fMCTruthList.push_back(mct);
+          else{
+            // check that we are not adding a simb::MCTruth twice to the collection
+            // we know that all the particles for a given simb::MCTruth are put into the
+            // collection of particles at the same time, so we can just check that the 
+            // current art::Ptr has a different id than the last one put 
+            if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
+          }
+          // fill the track id to mctruth index map
+          fTrackIDToMCTruthIndex[pHandle->at(p).TrackId()] = fMCTruthList.size() - 1;
+        }
+        catch(cet::exception &ex){
+          mf::LogWarning("BackTracker") << "unable to find MCTruth from ParticleList "
+            << "created in " << fG4ModuleLabel << " " 
+            << "any attempt to get the MCTruth objects from "
+            << "the backtracker will fail\n"
+            << "message from caught exception:\n" << ex;
+        }  
       }// end loop over particles to get MCTruthList  
     }// end if fo.isValid()
-
+    
     // grab the vector of pointers to the sim::SimChannels for this event
     evt.getView(fG4ModuleLabel, fSimChannels);
 
@@ -120,28 +118,28 @@ namespace cheat{
     fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
 
     LOG_DEBUG("BackTracker") << "BackTracker has " << fSimChannels.size()
-			     << " sim::SimChannels and " << GetSetOfTrackIDs().size()
-			     << " tracks.  The particles are:\n"
-			     << fParticleList
-			     << "\n the MCTruth information is\n";
+      << " sim::SimChannels and " << GetSetOfTrackIDs().size()
+      << " tracks.  The particles are:\n"
+      << fParticleList
+      << "\n the MCTruth information is\n";
     for(size_t mc = 0; mc < fMCTruthList.size(); ++mc)
       LOG_DEBUG("BackTracker") << *(fMCTruthList.at(mc).get());
     
     return;
   }
-
+  
   //----------------------------------------------------------------------
   const simb::MCParticle* BackTracker::TrackIDToParticle(int const& id) const
   {
     sim::ParticleList::const_iterator part_it = fParticleList.find(id);
-
+    
     if(part_it == fParticleList.end()){
       mf::LogWarning("BackTracker") << "can't find particle with track id "
-				    << id << " in sim::ParticleList"
-				    << " returning null pointer";
+        << id << " in sim::ParticleList"
+        << " returning null pointer";
       return 0;
     }
-
+    
     return part_it->second;
   }
 
@@ -162,9 +160,9 @@ namespace cheat{
 
     if(/* mct < 0 || */ mct > fMCTruthList.size() ) 
       throw cet::exception("BackTracker") << "attempting to find MCTruth index for "
-					  << "out of range value: " << mct
-					  << "/" << fMCTruthList.size() << "\n";
-
+        << "out of range value: " << mct
+        << "/" << fMCTruthList.size() << "\n";
+    
     return fMCTruthList[mct];
   }
 
@@ -180,16 +178,16 @@ namespace cheat{
       
       // loop over the IDEMAP      
       for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
-	
-	// loop over the vector of IDE objects.
-	const std::vector<sim::IDE>& idevec = (*mapitr).second;
-	for(size_t iv = 0; iv < idevec.size(); ++iv){ 
-	  if( abs(idevec[iv].trackID) == id) ides.push_back(idevec[iv]);
-	}
 
+        // loop over the vector of IDE objects.
+        const std::vector<sim::IDE>& idevec = (*mapitr).second;
+        for(size_t iv = 0; iv < idevec.size(); ++iv){ 
+          if( abs(idevec[iv].trackID) == id) ides.push_back(idevec[iv]);
+        }
+        
       } // end loop over map from sim::SimChannel
     } // end loop over sim::SimChannels
-      
+    
     return ides;
   }
 
@@ -202,22 +200,22 @@ namespace cheat{
     // loop over all sim::SimChannels and fill a vector
     // of sim::IDE objects for the given track id
     for(const sim::SimChannel* sc : fSimChannels){
-        if (geom->View(sc->Channel()) != view) continue;
-
-        // loop over the IDEMAP
-        for(const auto & item : sc->TDCIDEMap()){
-
-            // loop over the vector of IDE objects.
-            for(const sim::IDE & ide : item.second){
-                if (abs(ide.trackID) == id) ides.push_back(ide);
-            }
-
-        } // end loop over map from sim::SimChannel
+      if (geom->View(sc->Channel()) != view) continue;
+      
+      // loop over the IDEMAP
+      for(const auto & item : sc->TDCIDEMap()){
+        
+        // loop over the vector of IDE objects.
+        for(const sim::IDE & ide : item.second){
+          if (abs(ide.trackID) == id) ides.push_back(ide);
+        }
+        
+      } // end loop over map from sim::SimChannel
     } // end loop over sim::SimChannels
-
+    
     return ides;
   }
-
+  
   //----------------------------------------------------------------------
   const art::Ptr<simb::MCTruth>& BackTracker::ParticleToMCTruth(const simb::MCParticle* p) const
   {
@@ -234,7 +232,7 @@ namespace cheat{
       if( TrackIDToMCTruth(TrackIDpair.first) == mct )
         ret.push_back(TrackIDpair.second);
     }
-
+    
     return ret;
   }
 
@@ -242,18 +240,18 @@ namespace cheat{
   std::vector<sim::TrackIDE> BackTracker::HitToTrackID(recob::Hit const& hit)
   {
     std::vector<sim::TrackIDE> trackIDEs;
-
+    
     const double start = hit.PeakTimeMinusRMS();
     const double end   = hit.PeakTimePlusRMS();
-	
+    
     this->ChannelToTrackIDEs(trackIDEs, hit.Channel(), start, end);
-
+    
     return trackIDEs;
   }
-  
+
   //----------------------------------------------------------------------
   const std::vector<std::vector<art::Ptr<recob::Hit>>> BackTracker::TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits, 
-										   std::vector<int> const& tkIDs)
+                       std::vector<int> const& tkIDs)
   {
     // returns a subset of the hits in the allhits collection that are matched
     // to MC particles listed in tkIDs
@@ -275,7 +273,7 @@ namespace cheat{
         } // itkid 
       } // itid
     } // itr
-    
+
     // now build the truHits vector that will be returned to the caller
     std::vector<std::vector<art::Ptr<recob::Hit>>> truHits;
     // temporary vector containing hits assigned to one MC particle
@@ -346,7 +344,7 @@ namespace cheat{
     std::set<int> trackIDs;
     for (const sim::ParticleList::value_type& pl: fParticleList)
       trackIDs.insert(pl.first);
-
+    
     return trackIDs;
   }
 
@@ -363,10 +361,10 @@ namespace cheat{
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < ides.size(); ++i) eveIDs.insert(ides[i].trackID);
-
+      
       itr++;
     }
-
+    
     return eveIDs;
   }
 
@@ -388,18 +386,17 @@ namespace cheat{
       
       // loop over the ides and extract the track ids
       for(size_t i = 0; i < trackIDEs.size(); ++i) {
-	trackIDs.insert(trackIDEs[i].trackID);
+        trackIDs.insert(trackIDEs[i].trackID);
       }
-   
+      
       itr++;
     }
-
+    
     return trackIDs;
   }
 
   //----------------------------------------------------------------------
-  double BackTracker::HitCollectionPurity(std::set<int>                              trackIDs, 
-					  std::vector< art::Ptr<recob::Hit> > const& hits)
+  double BackTracker::HitCollectionPurity(std::set<int> trackIDs, std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -412,27 +409,26 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
-
+      
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
-	  desired += 1.;
-	  break;
-	}
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
+          desired += 1.;
+          break;
+        }
       }
-
+      
     }// end loop over hits
-
+    
     double purity = 0.;
     if(total > 0) purity = desired/total;
-
+    
     return purity;
   }
 
   //----------------------------------------------------------------------
-  double BackTracker::HitChargeCollectionPurity(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::Hit> > const& hits)
+  double BackTracker::HitChargeCollectionPurity(std::set<int> trackIDs, std::vector< art::Ptr<recob::Hit> > const& hits)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // if the EveID shows up in the input list of trackIDs, then it counts
@@ -445,16 +441,16 @@ namespace cheat{
     for(size_t h = 0; h < hits.size(); ++h){
       art::Ptr<recob::Hit> hit = hits[h];
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
-       
+      
       total+=hit->Integral(); // sum up the charge in the cluster
-
+      
       // don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
-	  desired += hit->Integral();
-	  break;
-	}
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end()){
+          desired += hit->Integral();
+          break;
+        }
       }
 
     }// end loop over hits
@@ -467,10 +463,10 @@ namespace cheat{
 
 
   //----------------------------------------------------------------------
-  double BackTracker::HitCollectionEfficiency(std::set<int>                              trackIDs, 
-					      std::vector< art::Ptr<recob::Hit> > const& hits,
-					      std::vector< art::Ptr<recob::Hit> > const& allhits,
-					      geo::View_t                         const& view)
+  double BackTracker::HitCollectionEfficiency(std::set<int> trackIDs, 
+      std::vector< art::Ptr<recob::Hit> > const& hits, 
+      std::vector< art::Ptr<recob::Hit> > const& allhits, 
+      geo::View_t const& view)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // and the energy associated with the desired trackID
@@ -481,7 +477,7 @@ namespace cheat{
     // those are assumed to be from the object we are testing and will
     // the correct view by definition then.
     for(size_t h = 0; h < hits.size(); ++h){
-
+      
       art::Ptr<recob::Hit> hit = hits[h];
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
@@ -490,17 +486,17 @@ namespace cheat{
       // also don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
-	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  desired += 1.;
-	  break;
-	}
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+            hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+          desired += 1.;
+          break;
+        }
       }
     }// end loop over hits
 
     // now figure out how many hits in the whole collection are associated with this id
     for(size_t h = 0; h < allhits.size(); ++h){
-
+      
       art::Ptr<recob::Hit> hit = allhits[h];
 
       // check that we are looking at the appropriate view here
@@ -510,30 +506,30 @@ namespace cheat{
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	// don't worry about hits where the energy fraction for the chosen
-	// trackID is < 0.1
-	// also don't double count if this hit has more than one of the
-	// desired track IDs associated with it
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
-	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  total += 1.;
-	  break;
-	}
+        // don't worry about hits where the energy fraction for the chosen
+        // trackID is < 0.1
+        // also don't double count if this hit has more than one of the
+        // desired track IDs associated with it
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+            hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+          total += 1.;
+          break;
+        }
       }
-
+      
     }// end loop over all hits
     
     double efficiency = 0.;
     if(total > 0.) efficiency = desired/total;
-
+    
     return efficiency;
   }
 
   //----------------------------------------------------------------------
   double BackTracker::HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						    std::vector< art::Ptr<recob::Hit> > const& hits,
-						    std::vector< art::Ptr<recob::Hit> > const& allhits,
-						    geo::View_t                         const& view)
+                std::vector< art::Ptr<recob::Hit> > const& hits,
+                std::vector< art::Ptr<recob::Hit> > const& allhits,
+                geo::View_t                         const& view)
   {
     // get the list of EveIDs that correspond to the hits in this collection
     // and the energy associated with the desired trackID
@@ -553,11 +549,11 @@ namespace cheat{
       // also don't double count if this hit has more than one of the
       // desired track IDs associated with it
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
-	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  desired += hit->Integral();
-	  break;
-	}
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+            hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+          desired += hit->Integral();
+          break;
+        }
       }
     }// end loop over hits
 
@@ -573,58 +569,58 @@ namespace cheat{
       std::vector<sim::TrackIDE> hitTrackIDs = this->HitToTrackID(hit);
 
       for(size_t e = 0; e < hitTrackIDs.size(); ++e){
-	// don't worry about hits where the energy fraction for the chosen
-	// trackID is < 0.1
-	// also don't double count if this hit has more than one of the
-	// desired track IDs associated with it
-	if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
-	   hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
-	  total += hit->Integral();
-	  break;
-	}
+        // don't worry about hits where the energy fraction for the chosen
+        // trackID is < 0.1
+        // also don't double count if this hit has more than one of the
+        // desired track IDs associated with it
+        if(trackIDs.find(hitTrackIDs[e].trackID) != trackIDs.end() &&
+            hitTrackIDs[e].energyFrac             >= fMinHitEnergyFraction){
+          total += hit->Integral();
+          break;
+        }
       }
-
+      
     }// end loop over all hits
     
     double efficiency = 0.;
     if(total > 0.) efficiency = desired/total;
-
+    
     return efficiency;
   }
-
-
+  
+  
 
   //----------------------------------------------------------------------
   const sim::SimChannel* BackTracker::FindSimChannel(raw::ChannelID_t channel) const
   {
     const sim::SimChannel* chan = 0;
-
+    
     auto ilb = std::lower_bound(fSimChannels.begin(),fSimChannels.end(),channel,[](const sim::SimChannel *a, raw::ChannelID_t channel) {return(a->Channel()<channel);});
     if (ilb != fSimChannels.end())
-      {
-	if ( (*ilb)->Channel() == channel) chan = *ilb;
-      }
-
+    {
+      if ( (*ilb)->Channel() == channel) chan = *ilb;
+    }
+    
     if(!chan)
       throw cet::exception("BackTracker") << "No sim::SimChannel corresponding "
-					  << "to channel: " << channel << "\n";
-
+        << "to channel: " << channel << "\n";
+    
     return chan;
   }
 
   //----------------------------------------------------------------------
   void BackTracker::ChannelToTrackIDEs(std::vector<sim::TrackIDE>&   trackIDEs,
-				     raw::ChannelID_t channel,
-				     const double hit_start_time,
-				     const double hit_end_time)
+             raw::ChannelID_t channel,
+             const double hit_start_time,
+             const double hit_end_time)
   {
     trackIDEs.clear();
-
+    
     double totalE = 0.;
-
+    
     try{
       const sim::SimChannel* schannel = this->FindSimChannel(channel);
-      
+
       // loop over the electrons in the channel and grab those that are in time 
       // with the identified hit start and stop times
       const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
@@ -637,7 +633,7 @@ namespace cheat{
       // first get the total energy represented by all track ids for 
       // this channel and range of tdc values
       for(size_t e = 0; e < simides.size(); ++e)
-	totalE += simides[e].energy;
+        totalE += simides[e].energy;
       
       
       // protect against a divide by zero below
@@ -646,29 +642,29 @@ namespace cheat{
       // loop over the entries in the map and fill the input vectors
       
       for(size_t e = 0; e < simides.size(); ++e){
-	
-	if(simides[e].trackID == sim::NoParticleId) continue;
-	
-	sim::TrackIDE info;
-	info.trackID    = simides[e].trackID;
-	info.energyFrac = simides[e].energy/totalE;
-	info.energy     = simides[e].energy;
-	
-	trackIDEs.push_back(info);
-	
+        
+        if(simides[e].trackID == sim::NoParticleId) continue;
+        
+        sim::TrackIDE info;
+        info.trackID    = simides[e].trackID;
+        info.energyFrac = simides[e].energy/totalE;
+        info.energy     = simides[e].energy;
+        
+        trackIDEs.push_back(info);
+        
       }
     }// end try
     catch(cet::exception e){
       mf::LogWarning("BackTracker") << "caught exception \n"
-				    << e;
+        << e;
     }
-
+    
     return;
   }
 
   //----------------------------------------------------------------------
   void BackTracker::HitToSimIDEs(recob::Hit const& hit,
-                                 std::vector<sim::IDE>&      ides) const
+      std::vector<sim::IDE>&      ides) const
   {
     // Get services.
     const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
@@ -677,7 +673,7 @@ namespace cheat{
     int end_tdc   = ts->TPCTick2TDC( hit.PeakTimePlusRMS()   );
     if(start_tdc<0) start_tdc = 0;
     if(end_tdc<0) end_tdc = 0;
-
+    
     ides = FindSimChannel(hit.Channel())->TrackIDsAndEnergies(start_tdc, end_tdc);
   }
 
@@ -685,35 +681,35 @@ namespace cheat{
   std::vector<double> BackTracker::SimIDEsToXYZ(std::vector<sim::IDE> const& ides)
   {
     std::vector<double> xyz(3, -999.);
-
+    
     double x = 0.;
     double y = 0.;
     double z = 0.;
     double w = 0.;
-
+    
     // loop over electrons.
 
     for(auto const& ide : ides) {
-
+      
       double weight = ide.numElectrons;
       
       w += weight;
       x += weight * ide.x;
       y += weight * ide.y;
       z += weight * ide.z;
-
+      
     }// end loop over sim::IDEs
-	
+  
     // if the sum of the weights is still 0, then return
     // the obviously stupid default values
     if(w < 1.e-5)
       throw cet::exception("BackTracker") << "No sim::IDEs providing non-zero number of electrons"
-					  << " can't determine originating location from truth\n";
-
+        << " can't determine originating location from truth\n";
+    
     xyz[0] = x/w;
     xyz[1] = y/w;
     xyz[2] = z/w;
-
+    
     return xyz;
   }
 
@@ -727,8 +723,8 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   std::vector<double> BackTracker::SpacePointToXYZ(art::Ptr<recob::SpacePoint>         const& spt,
-						   art::Event                          const& evt,
-						   std::string                         const& label)
+      art::Event                          const& evt,
+      std::string                         const& label)
   {
     // Get hits that make up this space point.
     art::PtrVector<recob::SpacePoint> spv;
@@ -766,14 +762,14 @@ namespace cheat{
       hitWeight[c].resize( geom->NTPC(c) );
       hitPos[c].resize( geom->NTPC(c) );
       for(size_t t = 0; t < numhits[c].size(); ++t){
-	numhits[c][t].resize( geom->Nplanes(t, c) );
-	hitWeight[c][t].resize( geom->Nplanes(t, c) );
-	hitPos[c][t].resize( geom->Nplanes(t, c) );
+        numhits[c][t].resize( geom->Nplanes(t, c) );
+        hitWeight[c][t].resize( geom->Nplanes(t, c) );
+        hitPos[c][t].resize( geom->Nplanes(t, c) );
       }
     }
-
+    
     for(art::PtrVector<recob::Hit>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
-
+      
       const recob::Hit& hit = **ihit;
 
       // use the HitToXYZ and Geometry::PositionToTPC 
@@ -783,15 +779,15 @@ namespace cheat{
       unsigned int tpc   = 0;
       const double worldLoc[3] = {hitOrigin[0], hitOrigin[1], hitOrigin[2]};
       geom->PositionToTPC(worldLoc, tpc, cstat);
-
+      
       if(hit.WireID().Cryostat == cstat && hit.WireID().TPC == tpc){
-	++numhits[cstat][tpc][hit.WireID().Plane];
-	hitWeight[cstat][tpc][hit.WireID().Plane] = hit.Integral();
-	hitPos[cstat][tpc][hit.WireID().Plane] = hitOrigin;
+        ++numhits[cstat][tpc][hit.WireID().Plane];
+        hitWeight[cstat][tpc][hit.WireID().Plane] = hit.Integral();
+        hitPos[cstat][tpc][hit.WireID().Plane] = hitOrigin;
       }
-	
+      
     }
-
+    
     // loop over the vectors we made and find the average position for the hits 
     // in the future we might take a weighted average
     int nhits = 0;
@@ -800,23 +796,23 @@ namespace cheat{
     xyz[2] = 0.;
     for(size_t c = 0; c < numhits.size(); ++c){
       for(size_t t = 0; t < numhits[c].size(); ++t){
-	for(size_t p = 0; p < numhits[c][t].size(); ++p){
-
-	  if(numhits[c][t][p] == 1) {
-	    ++nhits;
-	    xyz[0] += hitPos[c][t][p][0];
-	    xyz[1] += hitPos[c][t][p][1];
-	    xyz[2] += hitPos[c][t][p][2];
-	  }
-
-	} // end loop over planes
+        for(size_t p = 0; p < numhits[c][t].size(); ++p){
+          
+          if(numhits[c][t][p] == 1) {
+            ++nhits;
+            xyz[0] += hitPos[c][t][p][0];
+            xyz[1] += hitPos[c][t][p][1];
+            xyz[2] += hitPos[c][t][p][2];
+          }
+          
+        } // end loop over planes
       } // end loop over tpcs
     } // end loop over cryostats
-
+    
     // get the average position
     if(nhits < 1) 
       throw cet::exception("BackTracker") << "No hits to determine originating location from truth\n";
-
+    
     
     xyz[0] /= nhits;
     xyz[1] /= nhits;
