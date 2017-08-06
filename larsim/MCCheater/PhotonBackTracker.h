@@ -99,20 +99,20 @@ namespace cheat{
     //@{
     // method to return sim::SDP objects associated with a given hit
     void                 OpHitToSDPs(recob::OpHit const& hit,
-                                      std::vector<sim::SDP>&      ides) const;
+                                      std::vector<sim::SDP>&      sdps) const;
     DEPRECATED void      OpHitToSimSDPs(recob::OpHit const& hit,
-                                      std::vector<sim::SDP>&      ides) const
-                                      { OpHitToSDPs( hit, ides); }
+                                      std::vector<sim::SDP>&      sdps) const
+                                      { OpHitToSDPs( hit, sdps); }
     void                 OpHitToSDPs(art::Ptr<recob::OpHit> const& hit,
-                                      std::vector<sim::SDP>&      ides) const
-                                      { OpHitToSDPs(*hit, ides); }
+                                      std::vector<sim::SDP>&      sdps) const
+                                      { OpHitToSDPs(*hit, sdps); }
     DEPRECATED void      OpHitToSimSDPs(art::Ptr<recob::OpHit> const& hit,
-                                      std::vector<sim::SDP>&      ides) const
-                                      { OpHitToSDPs(*hit, ides); }
+                                      std::vector<sim::SDP>&      sdps) const
+                                      { OpHitToSDPs(*hit, sdps); }
     //@}
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
-    std::vector<double>  SimSDPsToXYZ(std::vector<sim::SDP> const& ides);
+    std::vector<double>  SimSDPsToXYZ(std::vector<sim::SDP> const& sdps);
     
     // method to return the XYZ position of the weighted average energy deposition for a given hit
     std::vector<double>  OpHitToXYZ(art::Ptr<recob::OpHit> const& hit);          
