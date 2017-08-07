@@ -1,0 +1,82 @@
+#
+# File:     dump_opdetbacktrackerrecords.fcl
+# Purpose:  Dump on screen OpDetBacktrackerRecords content
+# Author:   Gianluca Petrillo (petrillo@fnal.gov)
+# Date:     March 30, 2016
+# Version:  1.0
+#
+# Service dependencies:
+# - message facility
+#
+
+process_name: DumpOpDetBacktrackerRecords
+
+services: {
+  
+  message: {
+  #   debugModules: [ "*" ]
+    destinations: {
+      
+      # grab all the "DumpOpDetBacktrackerRecords" messages and put them in DumpOpDetBacktrackerRecords.log
+      DumpOpDetBacktrackerRecords: {
+        append: false
+        categories: {
+          DumpOpDetBacktrackerRecords: { limit: -1 }
+          fileAction: { limit: 0 } # RootInput
+          TimeTracker: { limit: 0 }
+          MemoryTracker: { limit: 0 }
+          default: { limit: 0 }
+        }
+        filename: "DumpOpDetBacktrackerRecords.log"
+        threshold: "INFO"
+        type: "file"
+      } # DumpOpDetBacktrackerRecords
+      
+      LogStandardOut: {
+        categories: {
+          AnaBaseDefaultCtor: { limit: 0 }
+          GeometryBadInputPoint: {
+            limit: 5
+            timespan: 1000
+          }
+          RecoBaseDefaultCtor: { limit: 0 }
+          DumpOpDetBacktrackerRecords: { limit: 0 }
+          default: {}
+        }
+        threshold: "WARNING"
+        type: "cout"
+      } # LogStandardOut
+      
+    } # destinations
+  } # message
+} # services
+
+
+source: {
+  module_type: RootInput
+} # source
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    dumpopdetbacktrackerrecords: {
+      module_label: dumpopdetbacktrackerrecords
+      module_type:  DumpOpDetBacktrackerRecords
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpOpDetBacktrackerRecords"
+      
+      # specify the label of the sim::OpDetBacktrackerRecords data product (or producer)
+     InputOpDetBacktrackerRecord: "largeant"
+      
+    } # dumpopdetbacktrackerrecords
+  } # analyzers
+  
+  dumpers: [ dumpopdetbacktrackerrecords ]
+  
+  trigger_paths: []
+  end_paths:     [ dumpers ]
+  
+} # physics
