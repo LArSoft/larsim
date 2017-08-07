@@ -103,6 +103,7 @@
 #include "Geant4/Randomize.hh"
 #include "Geant4/G4Poisson.hh"
 
+#include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
@@ -649,7 +650,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          //Iterate over Step Photon Table to add photons to OpDetBacktrackerRecords.
 
          sim::OpDetBacktrackerRecord tmpOpDetBTRecord(itdetphot->first);
-         int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
+         //int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
+         int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
          CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
          CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
          //Note the use of xO (letter O) instead of x0. This is to differentiate the positions here with the earlier declared double* x0
