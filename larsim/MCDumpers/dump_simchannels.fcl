@@ -1,6 +1,6 @@
 #
 # File:     dump_simchannels.fcl
-# Purpose:  Dump on screen SimChannel content
+# Purpose:  Dump on screen SimChannels content
 # Author:   Gianluca Petrillo (petrillo@fnal.gov)
 # Date:     March 30, 2016
 # Version:  1.0
@@ -68,7 +68,7 @@ physics: {
       # output category ("OutputCategory" by default), useful for filtering (see above)
       OutputCategory: "DumpSimChannels"
       
-      # specify the label of the sim::SimChannel data product (or producer)
+      # specify the label of the sim::SimChannels data product (or producer)
       InputSimChannels: "largeant"
       
     } # dumpsimchannels
