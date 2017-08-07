@@ -1,8 +1,8 @@
 /**
  * @file   DumpOpDetBacktrackerRecords_module.cc
- * @brief  Module dumping SimChannels information on screen
- * @date   March 30, 2016
- * @author Gianluca Petrillo (petrillo@fnal.gov)
+ * @brief  Module dumping OpDetBacktrackerRecords information on screen
+ * @date   August 8, 2016
+ * @author Lucas Mendes Santos (lmendes@ifi.unicamp.br)
  *
  */
 
