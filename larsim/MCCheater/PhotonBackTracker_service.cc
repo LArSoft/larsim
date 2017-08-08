@@ -394,7 +394,7 @@ namespace cheat{
       // get the eve ids corresponding to this opHit
       const std::vector<sim::TrackSDP> sdps = OpHitToEveID(*itr);
       
-      // loop over the ides and extract the track ids
+      // loop over the sdps and extract the track ids
       for(size_t i = 0; i < sdps.size(); ++i) eveIDs.insert(sdps[i].trackID);
 
       itr++;
@@ -424,7 +424,7 @@ namespace cheat{
 
       this->ChannelToTrackSDPs(trackSDPs, (*itr)->OpChannel(), start, end);
       
-      // loop over the ides and extract the track ids
+      // loop over the sdps and extract the track ids
       for(size_t i = 0; i < trackSDPs.size(); ++i) {
   trackIDs.insert(trackSDPs[i].trackID);
       }
