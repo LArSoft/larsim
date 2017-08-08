@@ -1,60 +1,60 @@
-////////////////////////////////////////////////////////////////////////
-// Class:       TextFileGen
-// Module Type: producer
-// File:        TextFileGen_module.cc
-//
-// Generated at Mon Apr  8 09:20:02 2013 by Brian Rebel using artmod
-// from art v1_02_06.
-//
-//
-// This module assumes that the input file has the hepevt format for
-// each event to be simulated.  See 
-//
-// http://cepa.fnal.gov/psm/simulation/mcgen/lund/pythia_manual/pythia6.3/pythia6301/node39.html
-//
-// for details on the format.  In brief each event contains at least two 
-// lines.  The first line contains two entries, the event number (which is
-// ignored in ART/LArSoft) and the number of particles in the event.  Each
-// following line containes 15 entries to describe each particle.  The entries
-// are: 
-// 
-//  1) status code (should be set to 1 for any particle to be tracked, others
-//     won't be tracked)
-//  2) the pdg code for the particle
-//  3) the entry of the first mother for this particle in the event, 
-//     0 means no mother
-//  4) the entry of the second mother for this particle in the event, 
-//     0 means no mother
-//  5) the entry of the first daughter for this particle in the event, 
-//     0 means no mother
-//  6) the entry of the second daughter for this particle in the event, 
-//     0 means no mother
-//  7) x component of the particle momentum
-//  8) y component of the particle momentum
-//  9) z component of the particle momentum
-// 10) energy of the particle
-// 11) mass of the particle
-// 12) x position of the particle initial position
-// 13) y position of the particle initial position
-// 14) z position of the particle initial position
-// 15) time of the particle production
-//
-// For example, if you want to simulate a single muon with a 5 GeV energy 
-// moving only in the z direction, the entry would be
-//
-// 0 1
-// 1 13 0 0 0 0 0. 0. 1.0 5.0011 0.105 1.0 1.0 1.0 0.0
-//
-// There are some assumptions that go into using this format that may not
-// be obvious.  The first is that only particles with status code = 1 
-// are tracked in the LArSoft/Geant4 combination making the mother daughter
-// relations somewhat irrelevant.  That also means that you should let 
-// Geant4 handle any decays.
-//
-// The units in LArSoft are cm for distances and ns for time
-// The use of TLorentzVector below does not imply space and time have the same units
-//  (do not use TLorentzVector::Boost())
-////////////////////////////////////////////////////////////////////////
+/**
+ * @file TextFileGen_module.cc
+ * @brief Producer generating Monte Carlo truth record in LArSoft format from a text file
+ * @date Mon Apr  8 09:20:02 2013
+ * @author Brian Rebel
+ */
+/**
+ * @class evgen::TextFileGen
+ * 
+ *  This module assumes that the input file has the hepevt format for
+ *  each event to be simulated.  See 
+ * 
+ *  http://cepa.fnal.gov/psm/simulation/mcgen/lund/pythia_manual/pythia6.3/pythia6301/node39.html
+ * 
+ *  for details on the format.  In brief each event contains at least two 
+ *  lines.  The first line contains two entries, the event number (which is
+ *  ignored in ART/LArSoft) and the number of particles in the event.  Each
+ *  following line containes 15 entries to describe each particle.  The entries
+ *  are: 
+ *  
+ *  1.  status code (should be set to 1 for any particle to be tracked, others
+ *      won't be tracked)
+ *  2.  the pdg code for the particle
+ *  3.  the entry of the first mother for this particle in the event, 
+ *      0 means no mother
+ *  4.  the entry of the second mother for this particle in the event, 
+ *      0 means no mother
+ *  5. the entry of the first daughter for this particle in the event, 
+ *      0 means no mother
+ *  6. the entry of the second daughter for this particle in the event, 
+ *      0 means no mother
+ *  7. x component of the particle momentum
+ *  8. y component of the particle momentum
+ *  9. z component of the particle momentum
+ *  10. energy of the particle
+ *  11. mass of the particle
+ *  12. x position of the particle initial position
+ *  13. y position of the particle initial position
+ *  14. z position of the particle initial position
+ *  15. time of the particle production
+ * 
+ *  For example, if you want to simulate a single muon with a 5 GeV energy 
+ *  moving only in the z direction, the entry would be
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ *  0 1
+ *  1 13 0 0 0 0 0. 0. 1.0 5.0011 0.105 1.0 1.0 1.0 0.0
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ *  There are some assumptions that go into using this format that may not
+ *  be obvious.  The first is that only particles with status code = 1 
+ *  are tracked in the LArSoft/Geant4 combination making the mother daughter
+ *  relations somewhat irrelevant.  That also means that you should let 
+ *  Geant4 handle any decays.
+ * 
+ *  The units in LArSoft are cm for distances and ns for time.
+ *  The use of `TLorentzVector` below does not imply space and time have the same units
+ *   (do not use `TLorentzVector::Boost()`).
+ */
 #include <string>
 #include <iostream>
 #include <fstream>
