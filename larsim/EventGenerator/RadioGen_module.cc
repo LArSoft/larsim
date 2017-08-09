@@ -430,7 +430,7 @@ namespace evgen{
         ifound = 1;
         break;
       } //End If nuclide is in our list. Next is the special case of Ar42
-      else if ( (std::regex_match(nuclide, std::regex( "Ar42*" )) ) && fNuclide[i]=="Ar42" ){ 
+      else if ( (std::regex_match(nuclide, std::regex( "42Ar.*" )) ) && fNuclide[i]=="42Ar" ){ 
         ifound = 1;
         break;
       }
