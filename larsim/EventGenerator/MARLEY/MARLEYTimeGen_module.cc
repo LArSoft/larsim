@@ -65,6 +65,10 @@ namespace {
   // before giving up
   constexpr int MAX_UNIFORM_ENERGY_ITERATIONS = 1000;
 
+  // Neutrino vertices generated using unbiased sampling are assigned
+  // unit weight
+  constexpr double ONE = 1.;
+
   // Matches comment lines and empty lines in a "fit"-format spectrum file
   const std::regex rx_comment_or_empty = std::regex("\\s*(#.*)?");
 
@@ -384,9 +388,12 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
     double t_max = t_min + t_hist->GetBinWidth(time_bin_index);
     // sample a time on [ t_min, t_max )
     fTNu = gen.uniform_random_double(t_min, t_max, false);
-    fWeight = fFluxAveragedCrossSection;
+    // Unbiased sampling was used, so assign this neutrino vertex a
+    // unit statistical weight
+    fWeight = ONE;
 
-    sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUnbiased);
+    sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+      sim::kUnbiased);
   }
 
   else if (fSamplingMode == TimeGenSamplingMode::UNIFORM_TIME)
@@ -415,9 +422,10 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
     double weight_bias = t_hist->GetBinContent(t_bin_index) * (t_max - t_min)
       / ( t_hist->Integral() * t_hist->GetBinWidth(t_bin_index) );
 
-    fWeight = fFluxAveragedCrossSection * weight_bias;
+    fWeight = weight_bias;
 
-    sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUniformTime);
+    sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+      sim::kUniformTime);
   }
 
   else if (fSamplingMode == TimeGenSamplingMode::UNIFORM_ENERGY)
@@ -475,9 +483,10 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
     // weight
     double weight_bias = (gen.E_pdf(E_nu) / E_pdf_integ) * (E_max - E_min);
 
-    fWeight = fFluxAveragedCrossSection * weight_bias;
+    fWeight = weight_bias;
 
-    sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUniformEnergy);
+    sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+      sim::kUniformEnergy);
   }
 
   else {
@@ -852,8 +861,10 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
     mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos, fEvent.get());
 
     if (fSamplingMode == TimeGenSamplingMode::HISTOGRAM) {
-      fWeight = fFluxAveragedCrossSection;
-      sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUnbiased);
+      // Unbiased sampling creates neutrino vertices with unit weight
+      fWeight = ONE;
+      sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+        sim::kUnbiased);
     }
     else {
       // fSamplingMode == TimeGenSamplingMode::UNIFORM_TIME
@@ -863,8 +874,9 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
       double weight_bias = time_dist.probabilities().at(time_bin_index)
         / (t_max - t_min) * (fTimeFits.back().time_ - fTimeFits.front().time_);
 
-      fWeight = fFluxAveragedCrossSection * weight_bias;
-      sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUniformTime);
+      fWeight = weight_bias;
+      sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+        sim::kUniformTime);
     }
   }
 
@@ -897,8 +909,9 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
     double weight_bias = (gen.E_pdf(E_nu) / E_pdf_integ)
       * (fFitEmax - fFitEmin);
 
-    fWeight = fFluxAveragedCrossSection * weight_bias;
-    sn_truth = sim::SupernovaTruth(fTNu, fWeight, sim::kUniformEnergy);
+    fWeight = weight_bias;
+    sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
+      sim::kUniformEnergy);
   }
 
   else {
