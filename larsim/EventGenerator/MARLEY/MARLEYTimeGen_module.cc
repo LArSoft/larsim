@@ -757,27 +757,36 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
 
     // Compute the flux-averaged total cross section for the fitted spectrum.
     // We will need this to compute neutrino vertex weights.
-    double total_flux_integral = 0.;
-    double total_flux_times_xs_integral = 0.;
+    std::vector< std::unique_ptr< marley::NeutrinoSource > > fit_sources;
     for (const auto& fit : fTimeFits) {
-      auto temp_source = source_from_time_fit(fit);
-
-      // Skip entries with zero luminosity, since they won't contribute
-      // anything to the overall integral. Skip negative luminosity ones as
-      // well, just in case.
-      if (fit.luminosity_ <= 0.) continue;
-
-      double flux_integ;
-      double tot_xs_integ;
-      flux_averaged_total_xs(*temp_source, gen, flux_integ, tot_xs_integ);
-
-      total_flux_integral += flux_integ * fit.luminosity_;
-      total_flux_times_xs_integral += tot_xs_integ * fit.luminosity_;
+      fit_sources.emplace_back( source_from_time_fit(fit) );
     }
+
+    auto temp_source = std::make_unique<marley::FunctionNeutrinoSource>(
+      marley_utils::ELECTRON_NEUTRINO, fFitEmin, fFitEmax,
+      [&fit_sources, this](double E_nu) -> double {
+        double flux = 0.;
+        for (size_t s = 0; s < fit_sources.size(); ++s) {
+          double lum = this->fTimeFits.at(s).luminosity_;
+
+          // Skip entries with zero luminosity, since they won't contribute
+          // anything to the overall integral. Skip negative luminosity ones as
+          // well, just in case.
+          if (lum <= 0.) continue;
+
+          flux += lum * fit_sources.at(s)->pdf(E_nu);
+        }
+        return flux;
+      }
+    );
+
+    double flux_integ = 0.;
+    double tot_xs_integ = 0.;
+    flux_averaged_total_xs(*temp_source, gen, flux_integ, tot_xs_integ);
 
     // Factor of hbar_c^2 converts from MeV^(-2) to fm^2
     fFluxAveragedCrossSection =  marley_utils::hbar_c2
-      * total_flux_times_xs_integral / total_flux_integral;
+      * tot_xs_integ / flux_integ;
 
   } // spectrum_file_format == "fit"
 
