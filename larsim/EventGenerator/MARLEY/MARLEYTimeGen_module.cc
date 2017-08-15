@@ -53,13 +53,10 @@
 // MARLEY includes
 #include "marley/marley_root.hh"
 #include "marley/marley_utils.hh"
+#include "marley/Integrator.hh"
 
 // Anonymous namespace for definitions local to this source file
 namespace {
-
-  // The number of integration subintervals to use when computing
-  // flux-averaged cross sections
-  constexpr int NUM_INTEGRATION_SUBINTERVALS = 10000;
 
   // The number of times to attempt to sample an energy uniformly
   // before giving up
@@ -68,6 +65,10 @@ namespace {
   // Neutrino vertices generated using unbiased sampling are assigned
   // unit weight
   constexpr double ONE = 1.;
+
+  // Number of sampling points to use for numerical integration
+  // (via the Clenshaw-Curtis method)
+  constexpr int NUM_INTEGRATION_SAMPLING_POINTS = 100;
 
   // Matches comment lines and empty lines in a "fit"-format spectrum file
   const std::regex rx_comment_or_empty = std::regex("\\s*(#.*)?");
@@ -83,6 +84,10 @@ namespace {
   double flux_averaged_total_xs(marley::NeutrinoSource& nu_source,
     marley::Generator& gen, double& source_integ, double& tot_xs_integ);
 
+  // Returns a numerical integral of the function f on the interval
+  // [x_min, x_max]
+  double integrate(const std::function<double(double)>& f, double x_min,
+    double x_max);
 }
 
 namespace evgen {
@@ -475,9 +480,9 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
     gen.set_source(std::move(nu_source));
     // NOTE: The marley::Generator object normalizes the E_pdf to unity
     // automatically, but just in case, we redo it here.
-    double E_pdf_integ = marley_utils::num_integrate([&gen](double E_nu)
+    double E_pdf_integ = integrate([&gen](double E_nu)
       -> double { return gen.E_pdf(E_nu); }, new_source_E_min,
-      new_source_E_max, NUM_INTEGRATION_SUBINTERVALS);
+      new_source_E_max);
 
     // Compute the likelihood ratio that we need to bias the neutrino vertex
     // weight
@@ -900,9 +905,9 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
 
     // NOTE: The marley::Generator object normalizes the E_pdf to unity
     // automatically, but just in case, we redo it here.
-    double E_pdf_integ = marley_utils::num_integrate([&gen](double E_nu)
+    double E_pdf_integ = integrate([&gen](double E_nu)
       -> double { return gen.E_pdf(E_nu); }, nu_source_E_min,
-      nu_source_E_max, NUM_INTEGRATION_SUBINTERVALS);
+      nu_source_E_max);
 
     // Compute the likelihood ratio that we need to bias the neutrino vertex
     // weight
@@ -999,11 +1004,12 @@ namespace {
     marley::Generator& gen, double& source_integ, double& tot_xs_integ)
   {
     // Get an integral of the source PDF (in case it isn't normalized to 1)
-    source_integ = marley_utils::num_integrate([&nu_source](double E_nu)
-      -> double { return nu_source.pdf(E_nu); }, nu_source.get_Emin(),
-      nu_source.get_Emax(), NUM_INTEGRATION_SUBINTERVALS);
+    source_integ = integrate(
+      [&nu_source](double E_nu) -> double { return nu_source.pdf(E_nu); },
+      nu_source.get_Emin(), nu_source.get_Emax()
+    );
 
-    tot_xs_integ = marley_utils::num_integrate(
+    tot_xs_integ = integrate(
       [&nu_source, &gen](double E_nu) -> double
       {
         double xs = 0.;
@@ -1011,8 +1017,8 @@ namespace {
           xs += react->total_xs(marley_utils::ELECTRON_NEUTRINO, E_nu);
         }
         return xs * nu_source.pdf(E_nu);
-      }, nu_source.get_Emin(), nu_source.get_Emax(),
-      NUM_INTEGRATION_SUBINTERVALS);
+      }, nu_source.get_Emin(), nu_source.get_Emax()
+    );
 
     return tot_xs_integ / source_integ;
   }
@@ -1022,6 +1028,13 @@ namespace {
   {
     double dummy1, dummy2;
     return flux_averaged_total_xs(nu_source, gen, dummy1, dummy2);
+  }
+
+  double integrate(const std::function<double(double)>& f, double x_min,
+    double x_max)
+  {
+    static marley::Integrator integrator(NUM_INTEGRATION_SAMPLING_POINTS);
+    return integrator.num_integrate(f, x_min, x_max);
   }
 
 }
