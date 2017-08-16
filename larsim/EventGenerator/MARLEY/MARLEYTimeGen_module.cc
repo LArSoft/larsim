@@ -70,6 +70,10 @@ namespace {
   // (via the Clenshaw-Curtis method)
   constexpr int NUM_INTEGRATION_SAMPLING_POINTS = 100;
 
+  // Multiply an energy in MeV by this factor to convert to erg
+  // (based on 2017 PDG "Physical Constants" article)
+  constexpr double MeV_to_erg = 1.6021766208e-6; // erg / MeV
+
   // The PDG codes that represent one of the varieties of "nu_x"
   constexpr std::array<int, 4> NU_X_PDG_CODES
   {
@@ -382,6 +386,10 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     // Makes a final dummy TimeFit object so that the final real time bin
     // can have a right edge
     void make_final_timefit(double time);
+
+    // Makes ROOT histograms showing the emitted neutrinos in each time bin
+    // when using a "fit"-format spectrum file
+    void make_nu_emission_histograms() const;
 
     // Object that provides an interface to the MARLEY event generator
     std::unique_ptr<evgen::MARLEYGenerator> fMarleyGenerator;
@@ -954,6 +962,8 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
     fFluxAveragedCrossSection =  marley_utils::hbar_c2
       * tot_xs_integ / flux_integ;
 
+    make_nu_emission_histograms();
+
   } // spectrum_file_format == "fit"
 
   else {
@@ -1190,6 +1200,71 @@ void evgen::MarleyTimeGen::make_final_timefit(double time)
   // has a right edge.
   fTimeFits.emplace_back(time, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 }
+
+//------------------------------------------------------------------------------
+void evgen::MarleyTimeGen::make_nu_emission_histograms() const
+{
+  // To make a histogram with variable size bins, ROOT needs the bin
+  // low edges to be contiguous in memory. This is not true of the
+  // stored times in fTimeFits, so we'll need to make a temporary copy
+  // of them.
+  std::vector<double> temp_times;
+  for (const auto& fit : fTimeFits) temp_times.push_back(fit.Time());
+
+  // If, for some reason, there are fewer than two time bins, just return
+  // without making the histograms.
+  // TODO: consider throwing an exception here
+  if (temp_times.size() < 2) return;
+
+  // Get the number of time bins
+  int num_bins = temp_times.size() - 1;
+
+  // Create some ROOT TH1D objects using the TFileService. These will store
+  // the number of emitted neutrinos of each type in each time bin
+  art::ServiceHandle<art::TFileService> tfs;
+  TH1D* nue_hist = tfs->make<TH1D>("NueEmission",
+    "Number of emitted #nu_{e}; time (s); number of neutrinos in time bin",
+    num_bins, temp_times.data());
+  TH1D* nuebar_hist = tfs->make<TH1D>("NuebarEmission",
+    "Number of emitted #bar{#nu}_{e}; time (s); number of neutrinos in"
+    " time bin", num_bins, temp_times.data());
+  TH1D* nux_hist = tfs->make<TH1D>("NuxEmission",
+    "Number of emitted #nu_{x}; time (s); number of neutrinos in time bin",
+    num_bins, temp_times.data());
+
+  // Load the histograms with the emitted neutrino counts
+  for (size_t b = 1; b < temp_times.size(); ++b) {
+    const TimeFit& current_fit = fTimeFits.at(b - 1);
+    const TimeFit& next_fit = fTimeFits.at(b);
+    double bin_deltaT = next_fit.Time() - current_fit.Time();
+
+    const auto& nue_params = current_fit.GetFitParameters(
+      marley_utils::ELECTRON_NEUTRINO);
+    const auto& nuebar_params = current_fit.GetFitParameters(
+      marley_utils::ELECTRON_ANTINEUTRINO);
+    const auto& nux_params = current_fit.GetFitParameters(
+      marley_utils::MUON_NEUTRINO);
+
+    // Convert from bin luminosity to number of neutrinos by
+    // multiplying by the bin time interval and dividing by the
+    // mean neutrino energy
+    double num_nue = 0.;
+    double num_nuebar = 0.;
+    double num_nux = 0.;
+    if (nue_params.Emean() != 0.) num_nue = nue_params.Luminosity()
+      * bin_deltaT / (nue_params.Emean() * MeV_to_erg);
+    if (nuebar_params.Emean() != 0.) num_nuebar = nuebar_params.Luminosity()
+      * bin_deltaT / (nuebar_params.Emean() * MeV_to_erg);
+    if (nux_params.Emean() != 0.) num_nux = nux_params.Luminosity()
+      * bin_deltaT / (nux_params.Emean() * MeV_to_erg);
+
+    nue_hist->SetBinContent(b, num_nue);
+    nuebar_hist->SetBinContent(b, num_nuebar);
+    nux_hist->SetBinContent(b, num_nux);
+  }
+
+}
+
 
 //------------------------------------------------------------------------------
 // Anonymous namespace function definitions
