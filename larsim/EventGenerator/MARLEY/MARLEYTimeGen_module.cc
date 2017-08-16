@@ -70,6 +70,20 @@ namespace {
   // (via the Clenshaw-Curtis method)
   constexpr int NUM_INTEGRATION_SAMPLING_POINTS = 100;
 
+  // The PDG codes that represent one of the varieties of "nu_x"
+  constexpr std::array<int, 4> NU_X_PDG_CODES
+  {
+    marley_utils::MUON_NEUTRINO, marley_utils::MUON_ANTINEUTRINO,
+    marley_utils::TAU_NEUTRINO, marley_utils::TAU_ANTINEUTRINO,
+  };
+
+  // Helper function that tests whether a given PDG code represents
+  // a "nu_x"
+  bool is_nux(int pdg_code) {
+    return std::find(std::begin(NU_X_PDG_CODES),
+      std::end(NU_X_PDG_CODES), pdg_code) != std::end(NU_X_PDG_CODES);
+  }
+
   // Matches comment lines and empty lines in a "fit"-format spectrum file
   const std::regex rx_comment_or_empty = std::regex("\\s*(#.*)?");
 
@@ -220,15 +234,129 @@ class evgen::MarleyTimeGen : public art::EDProducer {
 
   protected:
 
-    // Simple struct used to store parsed fit parameters from a "fit"-format
-    // spectrum file
-    struct TimeFit {
-      TimeFit(double time, double Emean, double alpha, double lum)
-        : time_(time), Emean_(Emean), alpha_(alpha), luminosity_(lum) {}
-      double time_;
-      double Emean_;
-      double alpha_;
-      double luminosity_;
+    /// @brief Stores parsed fit parameters from a single time bin and neutrino
+    /// type in a "fit"-format spectrum file
+    class FitParameters {
+      public:
+        FitParameters(double Emean, double alpha, double luminosity)
+          : fEmean(Emean), fAlpha(alpha), fLuminosity(luminosity) {}
+
+        /// @brief Mean neutrino energy (MeV)
+        double Emean() const { return fEmean; }
+        /// @brief Pinching parameter (dimensionless)
+        double Alpha() const { return fAlpha; }
+        /// @brief Luminosity (erg / s)
+        double Luminosity() const { return fLuminosity; }
+
+        /// @brief Set the mean neutrino energy (MeV)
+        void set_Emean(double Emean) { fEmean = Emean; }
+        /// @brief Set the pinching parameter
+        void set_Alpha(double alpha) { fAlpha = alpha; }
+        /// @brief Set the luminosity (erg / s)
+        void set_Luminosity(double lum) { fLuminosity = lum; }
+
+        /// @brief Converts an iterator that points to a FitParameters
+        /// object into an iterator that points to that object's
+        /// fLuminosity member.
+        /// @details This function helps us to be able to sample time bins
+        /// with a std::discrete_distribution using the bin luminosities
+        /// without redundnant storage.
+        template<typename It> static marley::IteratorToMember<It,
+          FitParameters, double> make_luminosity_iterator(It it)
+        {
+          return marley::IteratorToMember<It, FitParameters,
+            double>(it, &FitParameters::fLuminosity);
+        }
+
+      protected:
+        double fEmean; ///< Mean neutrino energy (MeV)
+        double fAlpha; ///< Pinching parameter
+        double fLuminosity; ///< Luminosity (erg / s)
+    };
+
+    /// @brief Stores fitting parameters for all neutrino types from a single
+    /// time bin in a "fit"-format spectrum file
+    class TimeFit {
+      public:
+        TimeFit(double time, double Emean_nue, double alpha_nue,
+          double lum_nue, double Emean_nuebar, double alpha_nuebar,
+          double lum_nuebar, double Emean_nux, double alpha_nux,
+          double lum_nux) : fTime(time),
+          fNueFitParams(Emean_nue, alpha_nue, lum_nue),
+          fNuebarFitParams(Emean_nuebar, alpha_nuebar, lum_nuebar),
+          fNuxFitParams(Emean_nux, alpha_nux, lum_nux) {}
+
+        /// @brief Returns the low edge (in s) of the time bin that uses
+        /// these fit parameters
+        /// @details Time zero is defined to be the core bounce
+        double Time() const { return fTime; }
+
+      protected:
+        /// @brief Helper function that returns a pointer-to-member
+        /// for the FitParameters object appropriate for a given
+        /// neutrino type
+        /// @param pdg_code PDG code for the neutrino type of interest
+        static FitParameters TimeFit::* GetFitParametersMemberPointer(
+          int pdg_code)
+        {
+          if (pdg_code == marley_utils::ELECTRON_NEUTRINO) {
+            return &TimeFit::fNueFitParams;
+          }
+          else if (pdg_code == marley_utils::ELECTRON_ANTINEUTRINO) {
+            return &TimeFit::fNuebarFitParams;
+          }
+          else if ( is_nux(pdg_code) )
+          {
+            // The PDG code represents one of the varieties of nu_x
+            return &TimeFit::fNuxFitParams;
+          }
+          else throw cet::exception("MARLEYTimeGen") << "Invalid neutrino"
+            << " PDG code " << pdg_code << " encountered in MARLEYTimeGen"
+            << "::TimeFit::GetFitParametersMemberPointer()";
+          return nullptr;
+        }
+
+      public:
+
+        /// @brief Retrieves fit parameters for a specific neutrino type
+        /// for this time bin
+        /// @param pdg_code The PDG code for the desired neutrino type
+        const FitParameters& GetFitParameters(int pdg_code) const {
+          return this->*GetFitParametersMemberPointer(pdg_code);
+        }
+
+        /// @brief Converts an iterator that points to a TimeFit
+        /// object into an iterator that points to the appropriate
+        /// (based on the neutrino PDG code) FitParameters member
+        /// owned by the TimeFit object.
+        /// @details This function helps us to be able to sample time bins
+        /// with a std::discrete_distribution using the bin luminosities
+        /// without redundnant storage.
+        /// @param pdg_code PDG code for the neutrino type of interest
+        /// @param iterator An iterator to a TimeFit object that will be
+        /// converted
+        template<typename It> static marley::IteratorToMember<It,
+          TimeFit, FitParameters> make_FitParameters_iterator(int pdg_code,
+          It iterator)
+        {
+          return marley::IteratorToMember<It, TimeFit, FitParameters>(
+            iterator, GetFitParametersMemberPointer(pdg_code) );
+        }
+
+      protected:
+        /// @brief Time bin low edge (s)
+        double fTime;
+
+        /// @brief Fitting parameters for electron neutrinos in this time bin
+        FitParameters fNueFitParams;
+
+        /// @brief Fitting parameters for electron antineutrinos in this time
+        /// bin
+        FitParameters fNuebarFitParams;
+
+        /// @brief Fitting parameters for non-electron-flavor neutrinos in this
+        /// time bin
+        FitParameters fNuxFitParams;
     };
 
     // Sample a reacting neutrino energy uniformly from the full range of
@@ -250,6 +378,10 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     // information from a set of fit parameters
     void create_truths_time_fit(simb::MCTruth& mc_truth,
       sim::SupernovaTruth& sn_truth, const TLorentzVector& vertex_pos);
+
+    // Makes a final dummy TimeFit object so that the final real time bin
+    // can have a right edge
+    void make_final_timefit(double time);
 
     // Object that provides an interface to the MARLEY event generator
     std::unique_ptr<evgen::MARLEYGenerator> fMarleyGenerator;
@@ -722,7 +854,10 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
           << full_spectrum_file_name;
       }
 
-      double time, Emean, alpha, luminosity;
+      double time;
+      double Emean_nue, alpha_nue, luminosity_nue;
+      double Emean_nuebar, alpha_nuebar, luminosity_nuebar;
+      double Emean_nux, alpha_nux, luminosity_nux;
       std::istringstream iss(line);
       bool ok_first = static_cast<bool>( iss >> time );
 
@@ -732,17 +867,21 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
         << line_num << " of the spectrum file " << full_spectrum_file_name;
       else old_time = time;
 
-      bool ok_rest = static_cast<bool>( iss >> Emean >> alpha >> luminosity );
+      bool ok_rest = static_cast<bool>( iss >> Emean_nue >> alpha_nue
+        >> luminosity_nue >> Emean_nuebar >> alpha_nuebar >> luminosity_nuebar
+        >> Emean_nux >> alpha_nux >> luminosity_nux
+      );
 
       if (ok_first) {
         // We haven't reached the final bin, so add another time bin
         // in the typical way.
-        if (ok_rest) fTimeFits.emplace_back(time, Emean, alpha, luminosity);
+        if (ok_rest) {
+          fTimeFits.emplace_back(time, Emean_nue, alpha_nue, luminosity_nue,
+            Emean_nuebar, alpha_nuebar, luminosity_nuebar, Emean_nux,
+            alpha_nux, luminosity_nux);
+        }
         else {
-          // Final time bin has zero luminosity, and therefore zero sampling
-          // weight. We need it to be present so that the last nonzero weight
-          // bin has a right edge.
-          fTimeFits.emplace_back(time, 0., 0., 0.);
+          make_final_timefit(time);
           found_end = true;
         }
       }
@@ -750,9 +889,28 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
           << line_num << " of the spectrum file " << full_spectrum_file_name;
     }
 
-    if (!found_end) throw cet::exception("MARLEYTimeGen") << "Missing right"
+    if (!found_end) {
+
+      size_t num_time_bins = fTimeFits.size();
+      if (num_time_bins < 2) throw cet::exception("MARLEYTimeGen")
+        << "Missing right edge for the final time bin in the spectrum file "
+        << full_spectrum_file_name << ". Unable to guess a bin width for the "
+        << " final bin.";
+
+      // Guess that the width of the penultimate time bin and the width of
+      // the final time bin are the same
+      double delta_t_bin = fTimeFits.back().Time()
+        - fTimeFits.at(num_time_bins - 2).Time();
+
+      double last_bin_right_edge = fTimeFits.back().Time() + delta_t_bin;
+
+      make_final_timefit(last_bin_right_edge);
+
+      LOG_WARNING("MARLEYTimeGen") << "Missing right"
       << " edge for the final time bin in the spectrum file "
-      << full_spectrum_file_name << '\n';
+      << full_spectrum_file_name << ". Assuming a width of "
+      << delta_t_bin << " s for the final bin.";
+    }
 
 
     // Compute the flux-averaged total cross section for the fitted spectrum.
@@ -762,19 +920,27 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
       fit_sources.emplace_back( source_from_time_fit(fit) );
     }
 
+    // TODO: add handling for non-nu_e neutrino types when suitable data become
+    // available in MARLEY
     auto temp_source = std::make_unique<marley::FunctionNeutrinoSource>(
       marley_utils::ELECTRON_NEUTRINO, fFitEmin, fFitEmax,
       [&fit_sources, this](double E_nu) -> double {
         double flux = 0.;
         for (size_t s = 0; s < fit_sources.size(); ++s) {
-          double lum = this->fTimeFits.at(s).luminosity_;
+
+          const TimeFit& current_fit = this->fTimeFits.at(s);
+          const auto& current_source = fit_sources.at(s);
+          const FitParameters& params = current_fit.GetFitParameters(
+            current_source->get_pid() );
+
+          double lum = params.Luminosity();
 
           // Skip entries with zero luminosity, since they won't contribute
           // anything to the overall integral. Skip negative luminosity ones as
           // well, just in case.
           if (lum <= 0.) continue;
 
-          flux += lum * fit_sources.at(s)->pdf(E_nu);
+          flux += lum * current_source->pdf(E_nu);
         }
         return flux;
       }
@@ -819,14 +985,19 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
   // This distribution will actually be used to sample a neutrino arrival time
   // unless we're using the uniform time sampling mode, in which case it will
   // be used to help calculate the neutrino vertex weight.
-  const auto begin = marley::IteratorToMember<
-    std::vector<TimeFit>::const_iterator, TimeFit,
-    const double>(fTimeFits.cbegin(), &TimeFit::luminosity_);
-  const auto end = marley::IteratorToMember<
-    std::vector<TimeFit>::const_iterator, TimeFit,
-    const double>(fTimeFits.cend(), &TimeFit::luminosity_);
+  int source_pdg_code = gen.get_source().get_pid();
 
-  std::discrete_distribution<size_t> time_dist(begin, end);
+  const auto fit_params_begin = TimeFit::make_FitParameters_iterator(
+    source_pdg_code, fTimeFits.begin() );
+  const auto fit_params_end = TimeFit::make_FitParameters_iterator(
+    source_pdg_code, fTimeFits.end() );
+
+  const auto lum_begin = FitParameters::make_luminosity_iterator(
+    fit_params_begin);
+  const auto lum_end = FitParameters::make_luminosity_iterator(
+    fit_params_end);
+
+  std::discrete_distribution<size_t> time_dist(lum_begin, lum_end);
 
   if (fSamplingMode == TimeGenSamplingMode::HISTOGRAM
     || fSamplingMode == TimeGenSamplingMode::UNIFORM_ENERGY)
@@ -852,8 +1023,8 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
   // will always have luminosity_ == 0. (zero sampling weight), so we may
   // always add one to the sampled bin index without worrying about going
   // off the edge.
-  double t_min = fTimeFits.at(time_bin_index).time_;
-  double t_max = fTimeFits.at(time_bin_index + 1).time_;
+  double t_min = fTimeFits.at(time_bin_index).Time();
+  double t_max = fTimeFits.at(time_bin_index + 1).Time();
   // sample a time on [ t_min, t_max )
   fTNu = gen.uniform_random_double(t_min, t_max, false);
 
@@ -886,7 +1057,8 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
       // Multiply by the likelihood ratio in order to correct for uniform
       // time sampling if we're using that biasing method
       double weight_bias = time_dist.probabilities().at(time_bin_index)
-        / (t_max - t_min) * (fTimeFits.back().time_ - fTimeFits.front().time_);
+        / (t_max - t_min) * ( fTimeFits.back().Time()
+        - fTimeFits.front().Time() );
 
       fWeight = weight_bias;
       sn_truth = sim::SupernovaTruth(fTNu, fWeight, fFluxAveragedCrossSection,
@@ -943,7 +1115,11 @@ std::unique_ptr<marley::NeutrinoSource>
 
   // The two common fitting schemes (alpha and beta) differ in their
   // definitions by \beta = \alpha + 1.
-  double beta = fit.alpha_;
+  // TODO: add handling for non-nu_e neutrino types
+  const FitParameters& nue_parameters
+    = fit.GetFitParameters(marley_utils::ELECTRON_NEUTRINO);
+
+  double beta = nue_parameters.Alpha();
   if (fPinchType == PinchParamType::ALPHA) beta += 1.;
   else if (fPinchType != PinchParamType::BETA) {
     throw cet::exception("MARLEYTimeGen") << "Unreognized pinching parameter"
@@ -953,7 +1129,8 @@ std::unique_ptr<marley::NeutrinoSource>
   // Create the new source
   std::unique_ptr<marley::NeutrinoSource> nu_source
     = std::make_unique<marley::BetaFitNeutrinoSource>(
-    marley_utils::ELECTRON_NEUTRINO, fFitEmin, fFitEmax, fit.Emean_, beta);
+    marley_utils::ELECTRON_NEUTRINO, fFitEmin, fFitEmax,
+    nue_parameters.Emean(), beta);
 
   return nu_source;
 }
@@ -1003,6 +1180,15 @@ simb::MCTruth evgen::MarleyTimeGen::make_uniform_energy_mctruth(double E_min,
   auto mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos, fEvent.get());
 
   return mc_truth;
+}
+
+//------------------------------------------------------------------------------
+void evgen::MarleyTimeGen::make_final_timefit(double time)
+{
+  // The final time bin has zero luminosity, and therefore zero sampling
+  // weight. We need it to be present so that the last nonzero weight bin
+  // has a right edge.
+  fTimeFits.emplace_back(time, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 }
 
 //------------------------------------------------------------------------------
