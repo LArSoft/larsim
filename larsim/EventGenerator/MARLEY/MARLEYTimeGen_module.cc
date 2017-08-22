@@ -38,7 +38,7 @@
 #include "larcoreobj/SummaryData/RunData.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/Simulation/SupernovaTruth.h"
-#include "larsim/EventGenerator/MARLEY/MARLEYGenerator.h"
+#include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 #include "larsim/EventGenerator/MARLEY/ActiveVolumeVertexSampler.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -127,7 +127,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
         Comment("Configuration for selecting the vertex location(s)")
       };
 
-      fhicl::Table<evgen::MARLEYGenerator::Config> marley_parameters_ {
+      fhicl::Table<evgen::MARLEYHelper::Config> marley_parameters_ {
         Name("marley_parameters"),
         Comment("Configuration for the MARLEY generator. Note that for"
           " MARLEYTimeGen, the source configuration given here is ignored.")
@@ -392,7 +392,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     void make_nu_emission_histograms() const;
 
     // Object that provides an interface to the MARLEY event generator
-    std::unique_ptr<evgen::MARLEYGenerator> fMarleyGenerator;
+    std::unique_ptr<evgen::MARLEYHelper> fMarleyHelper;
 
     // Algorithm that allows us to sample vertex locations within the active
     // volume(s) of the detector
@@ -506,13 +506,13 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
 {
   // Get a reference to the generator object created by MARLEY (we'll need
   // to do a few fancy things with it other than just creating events)
-  marley::Generator& gen = fMarleyGenerator->get_generator();
+  marley::Generator& gen = fMarleyHelper->get_generator();
 
   if (fSamplingMode == TimeGenSamplingMode::HISTOGRAM)
   {
     // Generate a MARLEY event using the time-integrated spectrum
     // (the generator was already configured to use it by reconfigure())
-    mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos,
+    mc_truth = fMarleyHelper->create_MCTruth(vertex_pos,
       fEvent.get());
 
     // Find the time distribution corresponding to the selected energy bin
@@ -545,7 +545,7 @@ void evgen::MarleyTimeGen::create_truths_th2d(simb::MCTruth& mc_truth,
   {
     // Generate a MARLEY event using the time-integrated spectrum
     // (the generator was already configured to use it by reconfigure())
-    mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos,
+    mc_truth = fMarleyHelper->create_MCTruth(vertex_pos,
       fEvent.get());
 
     // Sample a time uniformly
@@ -720,7 +720,7 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
     p().vertex_, *seed_service, *geom_service, "MARLEY_Vertex_Sampler");
 
   // Create a new marley::Generator object based on the current configuration
-  fMarleyGenerator = std::make_unique<MARLEYGenerator>(p().marley_parameters_,
+  fMarleyHelper = std::make_unique<MARLEYHelper>(p().marley_parameters_,
     *seed_service, "MARLEY");
 
   // Get the number of neutrino vertices per event from the FHiCL parameters
@@ -783,9 +783,9 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
 
   // Determine the full file name (including path) of the spectrum file
   std::string full_spectrum_file_name
-    = fMarleyGenerator->find_file(p().spectrum_file_(), "spectrum");
+    = fMarleyHelper->find_file(p().spectrum_file_(), "spectrum");
 
-  marley::Generator& gen = fMarleyGenerator->get_generator();
+  marley::Generator& gen = fMarleyHelper->get_generator();
 
   if (fSpectrumFileFormat == SpectrumFileFormat::RootTH2D) {
 
@@ -984,7 +984,7 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
 {
   // Get a reference to the generator object created by MARLEY (we'll need
   // to do a few fancy things with it other than just creating events)
-  marley::Generator& gen = fMarleyGenerator->get_generator();
+  marley::Generator& gen = fMarleyHelper->get_generator();
 
   // Initialize the time bin index to something absurdly large. This will help
   // us detect strange bugs that arise when it is sampled incorrectly.
@@ -1053,7 +1053,7 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
     gen.set_source(std::move(nu_source));
 
     // Generate a MARLEY event using the updated source
-    mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos, fEvent.get());
+    mc_truth = fMarleyHelper->create_MCTruth(vertex_pos, fEvent.get());
 
     if (fSamplingMode == TimeGenSamplingMode::HISTOGRAM) {
       // Unbiased sampling creates neutrino vertices with unit weight
@@ -1149,7 +1149,7 @@ std::unique_ptr<marley::NeutrinoSource>
 simb::MCTruth evgen::MarleyTimeGen::make_uniform_energy_mctruth(double E_min,
   double E_max, double& E_nu, const TLorentzVector& vertex_pos)
 {
-  marley::Generator& gen = fMarleyGenerator->get_generator();
+  marley::Generator& gen = fMarleyHelper->get_generator();
 
   // Sample an energy uniformly over the entire allowed range
   double total_xs;
@@ -1187,7 +1187,7 @@ simb::MCTruth evgen::MarleyTimeGen::make_uniform_energy_mctruth(double E_min,
   gen.set_source(std::move(nu_source));
 
   // Generate a MARLEY event using the new monoenergetic source
-  auto mc_truth = fMarleyGenerator->create_MCTruth(vertex_pos, fEvent.get());
+  auto mc_truth = fMarleyHelper->create_MCTruth(vertex_pos, fEvent.get());
 
   return mc_truth;
 }

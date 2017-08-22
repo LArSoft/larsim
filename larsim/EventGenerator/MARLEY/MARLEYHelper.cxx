@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-/// \file MARLEYGenerator.cxx
+/// \file MARLEYHelper.cxx
 /// \brief LArSoft interface to the MARLEY (Model of Argon Reaction Low Energy
 /// Yields) supernova neutrino event generator
 ///
@@ -11,7 +11,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "larsim/EventGenerator/MARLEY/MARLEYGenerator.h"
+#include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 
 // ROOT includes
 #include "TInterpreter.h"
@@ -28,10 +28,10 @@ namespace {
 }
 
 //------------------------------------------------------------------------------
-evgen::MARLEYGenerator::MARLEYGenerator(
-  const fhicl::Table<evgen::MARLEYGenerator::Config>& conf,
-  rndm::NuRandomService& rand_service, const std::string& generator_name)
-  : fGeneratorName(generator_name)
+evgen::MARLEYHelper::MARLEYHelper(
+  const fhicl::Table<evgen::MARLEYHelper::Config>& conf,
+  rndm::NuRandomService& rand_service, const std::string& helper_name)
+  : fHelperName(helper_name)
 {
   // Configure MARLEY using the FHiCL parameters
   this->reconfigure(conf);
@@ -42,7 +42,7 @@ evgen::MARLEYGenerator::MARLEYGenerator(
   // whenever necessary. The user can set an explicit seed for MARLEY in the
   // FHiCL configuration using the "seed" parameter. If you need to get the
   // seed for MARLEY from the SeedService, note that we're using use the value
-  // of the input variable generator_name as its generator instance name.
+  // of the input variable helper_name as its generator instance name.
   rndm::NuRandomService::seed_t marley_seed = rand_service.registerEngine(
     [this](rndm::NuRandomService::EngineId const& /* unused */,
       rndm::NuRandomService::seed_t lar_seed) -> void
@@ -54,7 +54,7 @@ evgen::MARLEYGenerator::MARLEYGenerator(
         this->fMarleyGenerator.get()->reseed(seed);
       }
     },
-    this->fGeneratorName, conf.get_PSet(), { "seed" }
+    this->fHelperName, conf.get_PSet(), { "seed" }
   );
 
   // Unless I'm mistaken, the call to registerEngine should seed the generator
@@ -71,7 +71,7 @@ evgen::MARLEYGenerator::MARLEYGenerator(
   }
 
   // Log initialization information from the MARLEY generator
-  LOG_INFO(fGeneratorName) << fMarleyLogStream.str();
+  LOG_INFO(fHelperName) << fMarleyLogStream.str();
   fMarleyLogStream = std::stringstream();
 
   // Do any needed setup of the MARLEY class dictionaries
@@ -79,7 +79,7 @@ evgen::MARLEYGenerator::MARLEYGenerator(
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYGenerator::add_marley_particles(simb::MCTruth& truth,
+void evgen::MARLEYHelper::add_marley_particles(simb::MCTruth& truth,
   const std::vector<marley::Particle*>& particles,
   const TLorentzVector& vtx_pos, bool track)
 {
@@ -110,7 +110,7 @@ void evgen::MARLEYGenerator::add_marley_particles(simb::MCTruth& truth,
 }
 
 //------------------------------------------------------------------------------
-simb::MCTruth evgen::MARLEYGenerator::create_MCTruth(
+simb::MCTruth evgen::MARLEYHelper::create_MCTruth(
   const TLorentzVector& vtx_pos, marley::Event* marley_event)
 {
   simb::MCTruth truth;
@@ -165,7 +165,7 @@ simb::MCTruth evgen::MARLEYGenerator::create_MCTruth(
   // stringstream and forward them to the messagefacility logger
   std::string line;
   while(std::getline(fMarleyLogStream, line)) {
-    LOG_INFO(fGeneratorName) << line;
+    LOG_INFO(fHelperName) << line;
   }
 
   // Reset the MARLEY log stream
@@ -175,7 +175,7 @@ simb::MCTruth evgen::MARLEYGenerator::create_MCTruth(
 }
 
 //------------------------------------------------------------------------------
-std::string evgen::MARLEYGenerator::find_file(const std::string& fileName,
+std::string evgen::MARLEYHelper::find_file(const std::string& fileName,
   const std::string& fileType)
 {
   cet::search_path searchPath("FW_SEARCH_PATH");
@@ -184,7 +184,7 @@ std::string evgen::MARLEYGenerator::find_file(const std::string& fileName,
   searchPath.find_file(fileName, fullName);
 
   if (fullName.empty())
-    throw cet::exception("MARLEYGenerator")
+    throw cet::exception("MARLEYHelper")
       << "Cannot find MARLEY " << fileType << " data file '"
       << fileName << '\'';
 
@@ -192,7 +192,7 @@ std::string evgen::MARLEYGenerator::find_file(const std::string& fileName,
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYGenerator::load_full_paths_into_json(
+void evgen::MARLEYHelper::load_full_paths_into_json(
   marley::JSON& json, const std::string& array_name)
 {
   if (json.has_key(array_name)) {
@@ -202,13 +202,13 @@ void evgen::MARLEYGenerator::load_full_paths_into_json(
       element = find_file(element.to_string(), array_name);
     }
   }
-  else throw cet::exception("MARLEYGenerator") << "Missing \"" << array_name
+  else throw cet::exception("MARLEYHelper") << "Missing \"" << array_name
     << "\" key in the MARLEY parameters.";
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYGenerator::reconfigure(
-  const fhicl::Table<evgen::MARLEYGenerator::Config>& conf)
+void evgen::MARLEYHelper::reconfigure(
+  const fhicl::Table<evgen::MARLEYHelper::Config>& conf)
 {
   // Convert the FHiCL parameters into a JSON object that MARLEY can understand
   marley::JSON json = fhicl_parameter_to_json(&conf);
@@ -219,7 +219,7 @@ void evgen::MARLEYGenerator::reconfigure(
   load_full_paths_into_json(json, "structure");
 
   // Create a new MARLEY configuration based on the JSON parameters
-  LOG_INFO("MARLEYGenerator " + fGeneratorName) << "MARLEY will now use"
+  LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
     " the JSON configuration\n" << json.dump_string() << '\n';
   marley::JSONConfig config(json);
 
@@ -229,7 +229,7 @@ void evgen::MARLEYGenerator::reconfigure(
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYGenerator::load_marley_dictionaries()
+void evgen::MARLEYHelper::load_marley_dictionaries()
 {
 
   static bool already_loaded_marley_dict = false;
@@ -246,18 +246,18 @@ void evgen::MARLEYGenerator::load_marley_dictionaries()
   // for the executable (src/marley.cc). If you change how this
   // code works, please sync changes with the executable as well.
   if (gROOT->GetVersionInt() >= 60000) {
-    LOG_INFO("MARLEYGenerator " + fGeneratorName) << "ROOT 6 or greater"
+    LOG_INFO("MARLEYHelper " + fHelperName) << "ROOT 6 or greater"
       << " detected. Loading class information\nfrom headers"
       << " \"marley/Particle.hh\" and \"marley/Event.hh\"";
     TInterpreter::EErrorCode* ec = new TInterpreter::EErrorCode();
     gInterpreter->ProcessLine("#include \"marley/Particle.hh\"", ec);
-    if (*ec != 0) throw cet::exception("MARLEYGenerator " + fGeneratorName)
+    if (*ec != 0) throw cet::exception("MARLEYHelper " + fHelperName)
       << "Error loading MARLEY header Particle.hh. For MARLEY headers stored"
       << " in /path/to/include/marley/, please add /path/to/include"
       << " to your ROOT_INCLUDE_PATH environment variable and"
       << " try again.";
     gInterpreter->ProcessLine("#include \"marley/Event.hh\"");
-    if (*ec != 0) throw cet::exception("MARLEYGenerator") << "Error loading"
+    if (*ec != 0) throw cet::exception("MARLEYHelper") << "Error loading"
       << " MARLEY header Event.hh. For MARLEY headers stored in"
       << " /path/to/include/marley/, please add /path/to/include"
       << " to your ROOT_INCLUDE_PATH environment variable and"
@@ -271,7 +271,7 @@ void evgen::MARLEYGenerator::load_marley_dictionaries()
 }
 
 //------------------------------------------------------------------------------
-marley::JSON evgen::MARLEYGenerator::fhicl_parameter_to_json(
+marley::JSON evgen::MARLEYHelper::fhicl_parameter_to_json(
   const fhicl::detail::ParameterBase* par)
 {
   // Don't bother with the rest of the analysis if we've been handed a

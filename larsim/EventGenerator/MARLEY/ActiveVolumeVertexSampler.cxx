@@ -43,7 +43,7 @@ evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
     fGeneratorName, conf.get_PSet(), { "seed" }
   );
 
-  // TODO: resolve the other workaround mentioned in the MARLEYGenerator
+  // TODO: resolve the other workaround mentioned in the MARLEYHelper
   // class, then fix this as well
   uint_fast64_t tpc_cast_seed = static_cast<uint_fast64_t>(tpc_seed);
   std::seed_seq tpc_seed_sequence{tpc_cast_seed};

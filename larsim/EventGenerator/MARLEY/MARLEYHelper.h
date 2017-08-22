@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-/// \file MARLEYGenerator.h
+/// \file MARLEYHelper.h
 /// \brief LArSoft interface to the MARLEY (Model of Argon Reaction Low Energy
 /// Yields) supernova neutrino event generator
 ///
@@ -45,7 +45,7 @@
 
 namespace evgen {
 
-  class MARLEYGenerator {
+  class MARLEYHelper {
 
     public:
 
@@ -239,13 +239,13 @@ namespace evgen {
       }; // struct Config
 
       // Configuration-checking constructors
-      MARLEYGenerator(const fhicl::Table<Config>& conf,
+      MARLEYHelper(const fhicl::Table<Config>& conf,
         rndm::NuRandomService& rand_service,
         const std::string& generator_name);
 
-      MARLEYGenerator(const fhicl::ParameterSet& pset,
+      MARLEYHelper(const fhicl::ParameterSet& pset,
         rndm::NuRandomService& rand_service, const std::string& generator_name)
-        : MARLEYGenerator(fhicl::Table<Config>(pset, {}),
+        : MARLEYHelper(fhicl::Table<Config>(pset, {}),
         rand_service, generator_name) {}
 
       void reconfigure(const fhicl::Table<Config>& conf);
@@ -304,8 +304,8 @@ namespace evgen {
 
       std::unique_ptr<marley::Generator> fMarleyGenerator;
 
-      // name to use for this instance of MARLEYGenerator
-      std::string fGeneratorName;
+      // name to use for this instance of MARLEYHelper
+      std::string fHelperName;
 
       // string stream used to capture logger output from MARLEY
       // and redirect it to the LArSoft logger
@@ -315,7 +315,7 @@ namespace evgen {
       // This allows a module to write the generated events to a TTree.
       void load_marley_dictionaries();
 
-  }; // class evgen::MARLEYGenerator
+  }; // class evgen::MARLEYHelper
 
 } // namespace evgen
 
