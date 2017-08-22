@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////
-/// \file MARLEYTimeGen_module.cc
-/// \brief Module that allows for sampling neutrino energies and times from
+/// @file MARLEYTimeGen_module.cc
+/// @brief Module that allows for sampling neutrino energies and times from
 /// time-dependent supernova spectra. This module uses MARLEY to help generate
 /// events.
 ///
-/// \author Steven Gardiner <sjgardiner@ucdavis.edu>
+/// @author Steven Gardiner <sjgardiner@ucdavis.edu>
 //////////////////////////////////////////////////////////////////////////////
 
 // standard library includes
@@ -226,7 +226,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     // Type to enable FHiCL parameter validation by art
     using Parameters = art::EDProducer::Table<Config>;
 
-    // Configuration-checking constructors
+    // @brief Configuration-checking constructor
     explicit MarleyTimeGen(const Parameters& p);
 
     virtual ~MarleyTimeGen();
@@ -242,6 +242,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     /// type in a "fit"-format spectrum file
     class FitParameters {
       public:
+
         FitParameters(double Emean, double alpha, double luminosity)
           : fEmean(Emean), fAlpha(alpha), fLuminosity(luminosity) {}
 
@@ -363,95 +364,166 @@ class evgen::MarleyTimeGen : public art::EDProducer {
         FitParameters fNuxFitParams;
     };
 
-    // Sample a reacting neutrino energy uniformly from the full range of
-    // energies allowed by the incident spectrum and the currently defined
-    // reactions. This function is used for the uniform energy sampling mode.
+    /// @brief Creates a simb::MCTruth object using a uniformly-sampled
+    /// neutrino energy
+    /// @details This function samples a reacting neutrino energy uniformly
+    /// from the full range of energies allowed by the incident spectrum and
+    /// the currently defined reactions.
     simb::MCTruth make_uniform_energy_mctruth(double E_min, double E_max,
       double& E_nu, const TLorentzVector& vertex_pos);
 
-    // Create a MARLEY neutrino source object using a set of fit parameters
+    /// @brief Create a MARLEY neutrino source object using a set of fit
+    /// parameters for a particular time bin
     std::unique_ptr<marley::NeutrinoSource> source_from_time_fit(
       const TimeFit& fit);
 
-    // Create simb::MCTruth and sim::SupernovaTruth objects using spectrum
-    // information from a ROOT TH2D
+    /// @brief Create simb::MCTruth and sim::SupernovaTruth objects using
+    /// spectrum information from a ROOT TH2D
     void create_truths_th2d(simb::MCTruth& mc_truth,
       sim::SupernovaTruth& sn_truth, const TLorentzVector& vertex_pos);
 
-    // Create simb::MCTruth and sim::SupernovaTruth objects using spectrum
-    // information from a set of fit parameters
+    /// @brief Create simb::MCTruth and sim::SupernovaTruth objects using a
+    /// neutrino spectrum described by a previously-parsed "fit"-format file
     void create_truths_time_fit(simb::MCTruth& mc_truth,
       sim::SupernovaTruth& sn_truth, const TLorentzVector& vertex_pos);
 
-    // Makes a final dummy TimeFit object so that the final real time bin
-    // can have a right edge
+    /// @brief Helper function that makes a final dummy TimeFit object so that
+    /// the final real time bin can have a right edge
     void make_final_timefit(double time);
 
-    // Makes ROOT histograms showing the emitted neutrinos in each time bin
-    // when using a "fit"-format spectrum file
+    /// @brief Makes ROOT histograms showing the emitted neutrinos in each time
+    /// bin when using a "fit"-format spectrum file
     void make_nu_emission_histograms() const;
 
-    // Object that provides an interface to the MARLEY event generator
+    /// @brief Object that provides an interface to the MARLEY event generator
     std::unique_ptr<evgen::MARLEYHelper> fMarleyHelper;
 
-    // Algorithm that allows us to sample vertex locations within the active
-    // volume(s) of the detector
+    /// @brief Algorithm that allows us to sample vertex locations within the
+    /// active volume(s) of the detector
     std::unique_ptr<evgen::ActiveVolumeVertexSampler> fVertexSampler;
 
-    // unique_ptr to the current event created by MARLEY
+    /// @brief unique_ptr to the current event created by MARLEY
     std::unique_ptr<marley::Event> fEvent;
 
-    // ROOT TH2D that contains the time-dependent spectrum to use when sampling
-    // neutrino times and energies. Only used when reading the spectrum from
-    // a ROOT file.
+    /// @brief ROOT TH2D that contains the time-dependent spectrum to use when
+    /// sampling neutrino times and energies.
+    /// @details This member is only used when reading the spectrum from a ROOT
+    /// file.
     std::unique_ptr<TH2D> fSpectrumHist;
 
-    // Vector that contains the fit parameter information for each time bin
-    // when using a "fit"-format spectrum file. This vector is unused when
-    // the spectrum is read from a ROOT file.
+    /// @brief Vector that contains the fit parameter information for each time
+    /// bin when using a "fit"-format spectrum file.
+    /// @details This member is unused when the spectrum is read from a ROOT
+    /// file.
     std::vector<TimeFit> fTimeFits;
 
-    // Sampling mode to use when selecting neutrino times and energies
+    /// @enum TimeGenSamplingMode
+    /// @brief Enumerated type that defines the allowed ways that a neutrino's
+    /// energy and arrival time may be sampled
+    ///
+    /// @var TimeGenSamplingMode::HISTOGRAM
+    /// @brief Sample from the input spectrum histogram directly (after cross
+    /// section weighting), without any biasing
+    ///
+    /// @var TimeGenSamplingMode::UNIFORM_TIME
+    /// @brief Sample energies without biasing, sample times uniformly
+    /// over the entire allowed range
+    ///
+    /// @var TimeGenSamplingMode::UNIFORM_ENERGY
+    /// @brief Sample energies uniformly over the entire allowed range,
+    /// sample times without biasing
     enum class TimeGenSamplingMode { HISTOGRAM, UNIFORM_TIME, UNIFORM_ENERGY };
+
+    /// @brief Represents the sampling mode to use when selecting neutrino
+    /// times and energies
     TimeGenSamplingMode fSamplingMode;
 
-    // Pinching parameter types to use when interpreting the time-dependent
-    // fits
+    /// @enum PinchParamType
+    /// @brief Enumerated type that defines the pinching parameter conventions
+    /// that are understood by this module
+    ///
+    /// @var PinchParamType::ALPHA
+    /// @brief Use the fitting convention in which the pinching parameter
+    /// is called @f$\alpha@f$
+    /// @details In the "alpha" convention, the probability density
+    /// function @f$p(E_\nu)@f$ describing the distribution of neutrino
+    /// energies @f$E_\nu@f$ is given by
+    /// @f$p(E_\nu) = @f$\left(\frac{\alpha + 1}{\left<E_\nu\right>}
+    /// \right)^{\alpha + 1}\frac{E_\nu^\alpha}{\Gamma(\alpha + 1)}
+    /// \exp\left(\frac{-[\alpha + 1]E_\nu}{\left<E_\nu\right>}\right)@f$
+    ///
+    /// @var PinchParamType::BETA
+    /// @brief Use the fitting convention in which the pinching parameter
+    /// is called @f$\beta@f$
+    /// @details In the "beta" convention, the probability density
+    /// function @f$p(E_\nu)@f$ describing the distribution of neutrino
+    /// energies @f$E_\nu@f$ is given by
+    /// @f$p(E_\nu) = @f$\left(\frac{\beta}{\left<E_\nu\right>}
+    /// \right)^{\beta}\frac{E_\nu^(\beta - 1)}{\Gamma(\beta)}
+    /// \exp\left(\frac{-\beta E_\nu}{\left<E_\nu\right>}\right)@f$
+    /// Note that this differs from the "alpha" convention via
+    /// @f$\beta = \alpha + 1@f$.
     enum class PinchParamType { ALPHA, BETA };
+
+    /// @brief The pinching parameter convention to use when interpreting the
+    /// time-dependent fits
     PinchParamType fPinchType;
 
-    // Format to assume for the neutrino spectrum input file
+    /// @enum SpectrumFileFormat
+    /// @brief Enumerated type that defines the allowed neutrino spectrum input
+    /// file formats
+    ///
+    /// @var SpectrumFileFormat::RootTH2D
+    /// @brief The incident neutrino spectrum is described by a TH2D object
+    /// stored in a ROOT file
+    /// @details The X axis of the TH2D should be the time axis (s) and the
+    /// Y axis should be the energy axis (MeV).
+    // TODO: add information about the bin value units
+    ///
+    /// @var SpectrumFileFormat::FIT
+    /// @brief The incident neutrino spectrum is described by a set of fitting
+    /// parameters for each time bin
+    // TODO: add a "fit"-format description here
     enum class SpectrumFileFormat { RootTH2D, FIT };
+
+    /// @brief Format to assume for the neutrino spectrum input file
     SpectrumFileFormat fSpectrumFileFormat;
 
-    // the MARLEY event TTree
+    /// @brief The event TTree created by MARLEY
+    /// @details This tree will be saved to the "hist" output file for
+    /// validation purposes. The tree contains the same information as the
+    /// generated simb::MCTruth objects, but in MARLEY's internal format
     TTree* fEventTree;
 
-    // Run, subrun, and event numbers from the art::Event being processed
+    /// @brief Run number from the art::Event being processed
     uint_fast32_t fRunNumber;
+    /// @brief Subrun number from the art::Event being processed
     uint_fast32_t fSubRunNumber;
+    /// @brief Event number from the art::Event being processed
     uint_fast32_t fEventNumber;
 
-    // Time since start of supernova for the current event
+    /// @brief Time since the supernova core bounce for the current MARLEY
+    /// neutrino vertex
     double fTNu;
 
-    // Weight for the current event
+    /// @brief Statistical weight for the current MARLEY neutrino vertex
     double fWeight;
 
-    // Flux-averaged total cross section (over all energies and times for
-    // all defined reactions). This will be used to assign weights to each
-    // neutrino vertex (simb::MCTruth object).
+    /// @brief Flux-averaged total cross section (fm<sup>2</sup>, average is
+    /// taken over all energies and times for all defined reactions) used by
+    /// MARLEY to generate neutrino vertices
     double fFluxAveragedCrossSection; // fm^2
 
-    // The number of neutrino vertices to generate in each art::Event
+    /// @brief The number of MARLEY neutrino vertices to generate in each
+    /// art::Event
     unsigned int fNeutrinosPerEvent;
 
-    // Minimum neutrino energy to consider when using a "fit"-format spectrum
-    // file
+    /// @brief Minimum neutrino energy to consider when using a "fit"-format
+    /// spectrum file
     double fFitEmin;
 
-    // Maximum neutrino energy to consider when using a "fit"-format spectrum
-    // file
+    /// @brief Maximum neutrino energy to consider when using a "fit"-format
+    /// spectrum file
     double fFitEmax;
 };
 
