@@ -1,6 +1,6 @@
 #
-# File:     dump_simchannels.fcl
-# Purpose:  Dump on screen SimChannels content
+# File:     dump_opdetbacktrackerrecords.fcl
+# Purpose:  Dump on screen OpDetBacktrackerRecords content
 # Author:   Gianluca Petrillo (petrillo@fnal.gov)
 # Date:     March 30, 2016
 # Version:  1.0
@@ -9,7 +9,7 @@
 # - message facility
 #
 
-process_name: DumpSimChannels
+process_name: DumpOpDetBacktrackerRecords
 
 services: {
   
@@ -17,20 +17,20 @@ services: {
   #   debugModules: [ "*" ]
     destinations: {
       
-      # grab all the "DumpSimChannels" messages and put them in DumpSimChannels.log
-      DumpSimChannels: {
+      # grab all the "DumpOpDetBacktrackerRecords" messages and put them in DumpOpDetBacktrackerRecords.log
+      DumpOpDetBacktrackerRecords: {
         append: false
         categories: {
-          DumpSimChannels: { limit: -1 }
+          DumpOpDetBacktrackerRecords: { limit: -1 }
           fileAction: { limit: 0 } # RootInput
           TimeTracker: { limit: 0 }
           MemoryTracker: { limit: 0 }
           default: { limit: 0 }
         }
-        filename: "DumpSimChannels.log"
+        filename: "DumpOpDetBacktrackerRecords.log"
         threshold: "INFO"
         type: "file"
-      } # DumpSimChannels
+      } # DumpOpDetBacktrackerRecords
       
       LogStandardOut: {
         categories: {
@@ -40,7 +40,7 @@ services: {
             timespan: 1000
           }
           RecoBaseDefaultCtor: { limit: 0 }
-          DumpSimChannels: { limit: 0 }
+          DumpOpDetBacktrackerRecords: { limit: 0 }
           default: {}
         }
         threshold: "WARNING"
@@ -61,20 +61,20 @@ physics: {
   producers:{}
   filters:  {}
   analyzers: {
-    dumpsimchannels: {
-      module_label: dumpsimchannels
-      module_type:  DumpSimChannels
+    dumpopdetbacktrackerrecords: {
+      module_label: dumpopdetbacktrackerrecords
+      module_type:  DumpOpDetBacktrackerRecords
       
       # output category ("OutputCategory" by default), useful for filtering (see above)
-      OutputCategory: "DumpSimChannels"
+      OutputCategory: "DumpOpDetBacktrackerRecords"
       
-      # specify the label of the sim::SimChannels data product (or producer)
-      InputSimChannels: "largeant"
+      # specify the label of the sim::OpDetBacktrackerRecords data product (or producer)
+     InputOpDetBacktrackerRecord: "largeant"
       
-    } # dumpsimchannels
+    } # dumpopdetbacktrackerrecords
   } # analyzers
   
-  dumpers: [ dumpsimchannels ]
+  dumpers: [ dumpopdetbacktrackerrecords ]
   
   trigger_paths: []
   end_paths:     [ dumpers ]
