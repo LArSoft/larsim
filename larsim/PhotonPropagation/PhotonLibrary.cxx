@@ -48,42 +48,43 @@ namespace phot{
     TTree *tt = tfs->make<TTree>("PhotonLibraryData","PhotonLibraryData");
  
     
-    Int_t     Voxel;
-    Int_t     OpChannel;
-    Float_t   Visibility;
-    Float_t   ReflVisibility;
-    Float_t   ReflTfirst;
+    Int_t     Voxel          = 0;
+    Int_t     OpChannel      = 0;
+    Float_t   Visibility     = 0;
+    Float_t   ReflVisibility = 0;
+    Float_t   ReflTfirst     = 0;
 
     tt->Branch("Voxel",      &Voxel,      "Voxel/I");
     tt->Branch(OpChannelBranchName.c_str(),  &OpChannel,  (OpChannelBranchName + "/I").c_str());
     tt->Branch("Visibility", &Visibility, "Visibility/F");
     if(storeReflected)
-      { tt->Branch("ReflVisibility", &ReflVisibility, "ReflVisibility/F");
-	if (fLookupTable.size() != fReflLookupTable.size())
+    {
+      tt->Branch("ReflVisibility", &ReflVisibility, "ReflVisibility/F");
+      if (fLookupTable.size() != fReflLookupTable.size())
           throw cet::exception(" Photon Library ") << "Reflected light lookup table is different size than Direct table \n"
                                                    << "this should not be happening. ";
-      }
+    }
     if(storeReflT0)
       tt->Branch("ReflTfirst", &ReflTfirst, "ReflTfirst/F");
     
     for(size_t ivox=0; ivox!= fNVoxels; ++ivox)
+    {
+      for(size_t ichan=0; ichan!= fNOpChannels; ++ichan)
       {
-	for(size_t ichan=0; ichan!= fNOpChannels; ++ichan)
-	  {
-	    Visibility = uncheckedAccess(ivox, ichan);
-	    if(storeReflected)
-	      ReflVisibility = uncheckedAccessRefl(ivox, ichan);
-	    if(storeReflT0)
-	      ReflTfirst = uncheckedAccessReflT(ivox, ichan);
-	    if (Visibility > 0 || ReflVisibility > 0)
-	      {
-		Voxel      = ivox;
-		OpChannel  = ichan;
-		// visibility(ies) is(are) already set
-		tt->Fill();
-	      }
-	  }	
-      }
+        Visibility = uncheckedAccess(ivox, ichan);
+        if(storeReflected)
+          ReflVisibility = uncheckedAccessRefl(ivox, ichan);
+        if(storeReflT0)
+          ReflTfirst = uncheckedAccessReflT(ivox, ichan);
+        if (Visibility > 0 || ReflVisibility > 0)
+        {
+          Voxel      = ivox;
+          OpChannel  = ichan;
+          // visibility(ies) is(are) already set
+          tt->Fill();
+        }
+      }	
+    }
   }
 
 
