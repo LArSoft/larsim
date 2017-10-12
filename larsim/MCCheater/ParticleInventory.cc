@@ -23,9 +23,9 @@
 
 namespace cheat{
 
-  ParticleInventory::ParticleInventory()
+  ParticleInventory::ParticleInventory( const fhicl:ParameterSet& pSet)
   {
-    //    fG4ModuleLabel = pset.get<std::string>("G4ModuleLabel", "largeant");
+        fG4ModuleLabel = pset.get<std::string>("G4ModuleLabel", "largeant");
   }
 
   //----------------------------------------------------------------------
