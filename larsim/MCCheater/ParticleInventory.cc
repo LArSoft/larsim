@@ -44,7 +44,7 @@ namespace cheat{
 
   //-----------------------------------------------------------------------
   //TrackIdToParticlePtr
-  const simb::MCParticle* ParticleInventory::TrackIdToParticleP(int const& id) {
+  const simb::MCParticle* ParticleInventory::TrackIdToParticleP(int const& id) const {
     if(!this->CanRun()){throw;}
     sim::ParticleList::const_iterator part_it = fParticleList.find(id);
     if(part_it == fParticleList.end()){
@@ -58,14 +58,14 @@ namespace cheat{
 
 
   //-----------------------------------------------------------------------
-  const simb::MCParticle* ParticleInventory::TrackIdToMotherParticleP(int const& id) 
+  const simb::MCParticle* ParticleInventory::TrackIdToMotherParticleP(int const& id) const
   {   
     if(!this->CanRun()){throw;}
     return this->TrackIdToParticleP(fParticleList.EveId(abs(id)));
   }
 
   //-----------------------------------------------------------------------
-  const art::Ptr<simb::MCTruth>& ParticleInventory::TrackIdToMCTruthP(int const& id) 
+  const art::Ptr<simb::MCTruth>& ParticleInventory::TrackIdToMCTruthP(int const& id) const
   {
     // find the entry in the MCTruth collection for this track id
     if(!this->CanRun()){throw;}
@@ -80,20 +80,20 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------
-  const art::Ptr<simb::MCTruth>& ParticleInventory::ParticleToMCTruthP(const simb::MCParticle* p)
+  const art::Ptr<simb::MCTruth>& ParticleInventory::ParticleToMCTruthP(const simb::MCParticle* p) const
   {
     if(!this->CanRun()){throw;}
     return this->TrackIdToMCTruthP(p->TrackId());
   }
 
   //-----------------------------------------------------------------------
-  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventory::MCTruthVector() {
+  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventory::MCTruthVector() const {
     if(!this->CanRun()){throw;}
     return fMCTruthList;
   }
 
   //-----------------------------------------------------------------------
-  const std::vector<const simb::MCParticle*> ParticleInventory::MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) 
+  const std::vector<const simb::MCParticle*> ParticleInventory::MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) const
   {
     if(!this->CanRun()){throw;}
     std::vector<const simb::MCParticle*> ret;
@@ -106,7 +106,7 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------
-  std::set<int> ParticleInventory::GetSetOfTrackIds(){
+  std::set<int> ParticleInventory::GetSetOfTrackIds() const{
     if(!this->CanRun()){throw;}
     std::set<int> ret;
     for( auto partItr=fParticleList.begin(); partItr!=fParticleList.end(); ++partItr){
@@ -116,7 +116,7 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------
-  std::set<int> ParticleInventory::GetSetOfEveIds(){
+  std::set<int> ParticleInventory::GetSetOfEveIds() const{
     if(!this->CanRun()){throw;}
     std::set<int> ret;
     std::set<int> tIds=this->GetSetOfTrackIds();

@@ -14,7 +14,7 @@ namespace cheat{
 
 
   template<typename Evt>
-    void ParticleInventory::PrepParticleList(const Evt& evt ){
+    void ParticleInventory::PrepParticleList(const Evt& evt ) const{
       if(!this->CanRun()){throw;}
 
       if(this->ParticleListReady( )){ //The particle list already exists. Do nothing.
@@ -38,7 +38,7 @@ namespace cheat{
     }
 
   template<typename Evt>
-    void ParticleInventory::PrepTrackIdToMCTruthIndex(Evt evt ){
+    void ParticleInventory::PrepTrackIdToMCTruthIndex(Evt evt ) const{
       if(!this->CanRun()){throw;}
       if( this->TrackIdToMCTruthReady( )){//The list already exists. Do nothing.
         return;
@@ -66,7 +66,7 @@ namespace cheat{
     }
 
   template<typename Evt>
-    void ParticleInventory::PrepMCTruthList             (Evt& evt ){
+    void ParticleInventory::PrepMCTruthList             (Evt& evt ) const{
       if(!this->CanRun()){throw;}
       if(this->MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
       PrepTrackIdToMCTruthIndex( evt); //TrackIdToMCTruthIndex and MCTruthList are prepared at the same time. The access of information makes this the most convenient way to do so. It is only somewhat more expensive for the memory, but significantly less expensive for time.
