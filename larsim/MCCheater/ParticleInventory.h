@@ -27,7 +27,7 @@ namespace cheat{
   class ParticleInventory
   {
     public:
-      ParticleInventory(fhicl::ParameterSet const& pSet);
+      ParticleInventory();
       ~ParticleInventory();
 
       template<typename Evt> //Template must be decalred and defined outside of the .cpp file.

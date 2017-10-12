@@ -14,7 +14,6 @@
 
 
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
@@ -65,10 +64,10 @@ namespace cheat{
 
 
     private:
+      std::string fG4ModuleLabel;
       cheat::ParticleInventory  fPartInv;
 
       const art::Event* fEvt;
-      std::string fG4ModuleLabel;
 
       void priv_PrepEvent        ( const art::Event& evt );
       void priv_PrepParticleList            ( );
