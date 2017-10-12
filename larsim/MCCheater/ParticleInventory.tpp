@@ -74,7 +74,6 @@ namespace cheat{
 
   template<typename Evt>
     void ParticleInventory::CheckCanRun( Evt& evt){
-      if(evt->isRealData()){ fCanRun=1;}
-      fCanRun=0;
+      fCanRun= ( !( evt->isRealData() ) ); //If the event is real data, then fCanRun should be false. BackTracking real data makes no sense.
     }
 }//end namespace
