@@ -10,15 +10,12 @@
 
 #include <vector>
 
+#include "art/Framework/Principal/Handle.h"
+
 #include "canvas/Persistency/Common/Assns.h"
 
-
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Run.h"
 #include "nutools/ParticleNavigation/EmEveIdCalculator.h"
-
-
-
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "nutools/ParticleNavigation/EveIdCalculator.h"
