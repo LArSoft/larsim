@@ -35,8 +35,8 @@ namespace cheat{
       ParticleInventoryService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
       ~ParticleInventoryService();
 
-      const sim::ParticleList& ParticleList() const { return fPartInv.ParticleList(); } //This should be replaced with a public struct so we can get away from the nutools dependency.
-      void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv.SetEveIdCalculator(ec); }
+      const sim::ParticleList& ParticleList() const { return fPartInv->ParticleList(); } //This should be replaced with a public struct so we can get away from the nutools dependency.
+      void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv->SetEveIdCalculator(ec); }
 
       //Does this make sense? A track Id to a single particle? This is not a one to one relationship.
       const simb::MCParticle* TrackIdToParticleP(int const& id);
@@ -62,10 +62,12 @@ namespace cheat{
       std::set<int> GetSetOfTrackIds();
       std::set<int> GetSetOfEveIds();
 
+      const std::shared_ptr<cheat::ParticleInventory> AccessInventory(){ return fPartInv; }
+
 
     private:
       std::string fG4ModuleLabel;
-      cheat::ParticleInventory  fPartInv;
+      std::shared_ptr<cheat::ParticleInventory>  fPartInv = std::make_shared<cheat::ParticleInventory>();
 
       const art::Event* fEvt;
 
@@ -75,9 +77,9 @@ namespace cheat{
       void priv_PrepTrackIdToMCTruthIndex   ( );
       bool priv_CanRun();
 
-      bool priv_ParticleListReady()     { return  fPartInv.ParticleListReady(); }
-      bool priv_MCTruthListReady()      { return  fPartInv.MCTruthListReady(); }
-      bool priv_TrackIdToMCTruthReady() { return  fPartInv.TrackIdToMCTruthReady();}
+      bool priv_ParticleListReady()     { return  fPartInv->ParticleListReady(); }
+      bool priv_MCTruthListReady()      { return  fPartInv->MCTruthListReady(); }
+      bool priv_TrackIdToMCTruthReady() { return  fPartInv->TrackIdToMCTruthReady();}
   };//class ParticleInventoryService
 
 }//namespace

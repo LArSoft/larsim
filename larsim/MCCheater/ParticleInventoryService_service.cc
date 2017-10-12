@@ -17,7 +17,7 @@
 //   if(!this->priv_CanRun()){throw;}
 //   if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();} //The GetTrackIds in ParticleInventory needs the ParticleList. 
 //                                                                         So, we check if it's ready, and if it isn't we ready it.
-//   return fPartInv.GetSetOfTrackIds();
+//   return fPartInv->GetSetOfTrackIds();
 // }
 //
 // If you have any questions about how to incorperate something in here, let me know. I know this is a rather odd
@@ -57,34 +57,34 @@ namespace cheat{
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
     fEvt=&evt;
-    fPartInv.ClearEvent();
-    fPartInv.CheckCanRun(fEvt);
+    fPartInv->ClearEvent();
+    fPartInv->CheckCanRun(fEvt);
   }
 
   //----------------------------------------------------------------------
   bool ParticleInventoryService::priv_CanRun(){
-    fPartInv.CheckCanRun(fEvt);
-    return fPartInv.CanRun();
+    fPartInv->CheckCanRun(fEvt);
+    return fPartInv->CanRun();
   }
 
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepParticleList(){
     if(!this->priv_CanRun()) {throw;}
     if(this->priv_ParticleListReady()){ return; }
-    fPartInv.PrepParticleList(fEvt);
+    fPartInv->PrepParticleList(fEvt);
   }
 
 
   void ParticleInventoryService::priv_PrepTrackIdToMCTruthIndex( ){
     if(!this->priv_CanRun()){throw;}
     if( this->priv_TrackIdToMCTruthReady()){ return; }
-    fPartInv.PrepTrackIdToMCTruthIndex(fEvt);
+    fPartInv->PrepTrackIdToMCTruthIndex(fEvt);
   }//End priv_PrepTrackIdToMCTruthIndexList
 
   void ParticleInventoryService::priv_PrepMCTruthList( ){
     if(!this->priv_CanRun()){throw;}
     if(this->priv_MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
-    fPartInv.PrepMCTruthList(fEvt);
+    fPartInv->PrepMCTruthList(fEvt);
   }//End PrepMCTruthList
 
 
@@ -94,7 +94,7 @@ namespace cheat{
   const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector() {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
-    return fPartInv.MCTruthVector();
+    return fPartInv->MCTruthVector();
   }
 
   //TrackIdToParticleP
@@ -102,7 +102,7 @@ namespace cheat{
   const simb::MCParticle* ParticleInventoryService::TrackIdToParticleP(int const& id) {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.TrackIdToParticleP(id);
+    return fPartInv->TrackIdToParticleP(id);
   }//End TrackIdToParticle
 
 
@@ -110,14 +110,14 @@ namespace cheat{
   {   
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.TrackIdToMotherParticleP(id);
+    return fPartInv->TrackIdToMotherParticleP(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruthP(int const& id) 
   {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
-    return fPartInv.TrackIdToMCTruthP(id);
+    return fPartInv->TrackIdToMCTruthP(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruthP(const simb::MCParticle* p)
@@ -132,19 +132,19 @@ namespace cheat{
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
     if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
-    return fPartInv.MCTruthToParticles(mct);
+    return fPartInv->MCTruthToParticles(mct);
   }
 
   std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.GetSetOfTrackIds();
+    return fPartInv->GetSetOfTrackIds();
   }
 
   std::set<int> ParticleInventoryService::GetSetOfEveIds(){
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.GetSetOfEveIds();
+    return fPartInv->GetSetOfEveIds();
   }
 
 
