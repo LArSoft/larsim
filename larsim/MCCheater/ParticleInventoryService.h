@@ -34,9 +34,9 @@ namespace cheat{
     public:
 
       //attempting to be compliant with ServiceUtil.h. Should ask LArSoft expert to review.
-      using provider_type = ParticleInventoryService;
+      using provider_type = ParticleInventory;
 
-      provider_type const* provider() const {return static_cast<provider_type const*>(this);}
+//      provider_type const* provider() const {return static_cast<provider_type const*>(fPartInv);}
 
       ParticleInventoryService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
       ~ParticleInventoryService();
