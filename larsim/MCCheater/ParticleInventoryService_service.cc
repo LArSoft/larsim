@@ -91,48 +91,48 @@ namespace cheat{
   //Loop Event and grab MCTruths. Quick and clean as possible.
 
   //deliverables
-  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector() {
+  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
-    return fPartInv->MCTruthVector();
+    return fPartInv->MCTruthVector_Ps();
   }
 
   //TrackIdToParticleP
 
-  const simb::MCParticle* ParticleInventoryService::TrackIdToParticleP(int const& id) {
+  const simb::MCParticle* ParticleInventoryService::TrackIdToParticle_P(int const& id) {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv->TrackIdToParticleP(id);
+    return fPartInv->TrackIdToParticle_P(id);
   }//End TrackIdToParticle
 
 
-  const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticleP(int const& id) 
+  const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const& id) 
   {   
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv->TrackIdToMotherParticleP(id);
+    return fPartInv->TrackIdToMotherParticle_P(id);
   }
 
-  const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruthP(int const& id) 
+  const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruth_P(int const& id) 
   {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
-    return fPartInv->TrackIdToMCTruthP(id);
+    return fPartInv->TrackIdToMCTruth_P(id);
   }
 
-  const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruthP(const simb::MCParticle* p)
+  const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p)
   {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
-    return this->TrackIdToMCTruthP(p->TrackId());
+    return this->TrackIdToMCTruth_P(p->TrackId());
   }
 
-  const std::vector<const simb::MCParticle*> ParticleInventoryService::MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) 
+  const std::vector<const simb::MCParticle*> ParticleInventoryService::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) 
   {
     if(!this->priv_CanRun()){throw;}
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
     if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
-    return fPartInv->MCTruthToParticles(mct);
+    return fPartInv->MCTruthToParticles_Ps(mct);
   }
 
   std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
