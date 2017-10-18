@@ -78,8 +78,8 @@ namespace evgen {
     void Sample(simb::MCTruth &mct);        
     void printVecs(std::vector<std::string> const& list);
     bool PadVector(std::vector<double> &vec);      
-    double SelectFromHist(const TH1 *h);
-    void SelectFromHist(const TH2 *h, double &x, double &y);
+    double SelectFromHist(const TH1& h);
+    void SelectFromHist(const TH2& h, double &x, double &y);
     
     static const int kUNIF = 0;    
     static const int kGAUS = 1;    
@@ -117,9 +117,9 @@ namespace evgen {
 //    std::vector<std::string> fThetaPhiHist; ///< name of histogram for theta/phi distribution
     std::vector<std::string> fThetaXzYzHist;   ///< name of histogram for thetaxz/thetayz distribution
 
-    std::vector<TH1*> hPHist ;           /// actual TH1 for momentum distributions
-//    std::vector<TH2*> hThetaPhiHist ;       /// actual TH1 for theta distributions - Theta on x axis
-    std::vector<TH2*> hThetaXzYzHist ;         /// actual TH2 for angle distributions - Xz on x axis . 
+    std::vector<std::unique_ptr<TH1>> hPHist ;     /// actual TH1 for momentum distributions
+//    std::vector<TH2*> hThetaPhiHist ;  /// actual TH1 for theta distributions - Theta on x axis
+    std::vector<std::unique_ptr<TH2>> hThetaXzYzHist ; /// actual TH2 for angle distributions - Xz on x axis . 
     // FYI - thetaxz and thetayz are related to standard polar angles as follows:
     // thetaxz = atan2(math.sin(theta) * cos(phi), cos(theta))
     // thetayz = asin(sin(theta) * sin(phi));
@@ -411,7 +411,7 @@ namespace evgen{
       p = gauss.fire(fP0[i], fSigmaP[i]);
     }
     else if (fPDist == kHIST){
-      p = SelectFromHist(hPHist[i]);
+      p = SelectFromHist(*(hPHist[i]));
     }
     else{// if (fPDist == kUNIF) {
       p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
@@ -460,7 +460,7 @@ namespace evgen{
     else if (fAngleDist == kHIST){ // Select thetaxz and thetayz from histogram
       double thetaxz = 0;
       double thetayz = 0;
-      SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+      SelectFromHist(*(hThetaXzYzHist[i]), thetaxz, thetayz);
       thxz = (180./M_PI)*thetaxz;
       thyz = (180./M_PI)*thetayz;
     }
@@ -550,7 +550,7 @@ namespace evgen{
         p = gauss.fire(fP0[i], fSigmaP[i]);
       }
       else if (fPDist == kHIST){
-        p = SelectFromHist(hPHist[i]);
+        p = SelectFromHist(*(hPHist[i]));
       }
       else {
         p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
@@ -576,7 +576,7 @@ namespace evgen{
       else if (fAngleDist == kHIST){
         double thetaxz = 0;
         double thetayz = 0;
-        SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+        SelectFromHist(*(hThetaXzYzHist[i]), thetaxz, thetayz);
         thxz = (180./M_PI)*thetaxz;
         thyz = (180./M_PI)*thetayz;
       }
@@ -709,37 +709,37 @@ namespace evgen{
   
   
   //____________________________________________________________________________
-  double SingleGen::SelectFromHist(const TH1 *h) // select from a 1D histogram
+  double SingleGen::SelectFromHist(const TH1& h) // select from a 1D histogram
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     
-    double throw_value = h->Integral() * flat.fire();
+    double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
-    for (int i(0); i < h->GetNbinsX()+1; ++i){
-      cum_value += h->GetBinContent(i);
+    for (int i(0); i < h.GetNbinsX()+1; ++i){
+      cum_value += h.GetBinContent(i);
       if (throw_value < cum_value){
-        return flat.fire()*h->GetBinWidth(i) + h->GetBinLowEdge(i);
+        return flat.fire()*h.GetBinWidth(i) + h.GetBinLowEdge(i);
       }
     }
     return throw_value; // for some reason we've gone through all bins and failed?
   }
   //____________________________________________________________________________
-  void SingleGen::SelectFromHist(const TH2 *h, double &x, double &y) // select from a 2D histogram
+  void SingleGen::SelectFromHist(const TH2& h, double &x, double &y) // select from a 2D histogram
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     
-    double throw_value = h->Integral() * flat.fire();
+    double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
-    for (int i(0); i < h->GetNbinsX()+1; ++i){
-      for (int j(0); j < h->GetNbinsY()+1; ++j){
-        cum_value += h->GetBinContent(i, j);
+    for (int i(0); i < h.GetNbinsX()+1; ++i){
+      for (int j(0); j < h.GetNbinsY()+1; ++j){
+        cum_value += h.GetBinContent(i, j);
         if (throw_value < cum_value){
-          x = flat.fire()*h->GetXaxis()->GetBinWidth(i) + h->GetXaxis()->GetBinLowEdge(i);
-          y = flat.fire()*h->GetYaxis()->GetBinWidth(j) + h->GetYaxis()->GetBinLowEdge(j);
+          x = flat.fire()*h.GetXaxis()->GetBinWidth(i) + h.GetXaxis()->GetBinLowEdge(i);
+          y = flat.fire()*h.GetYaxis()->GetBinWidth(j) + h.GetYaxis()->GetBinLowEdge(j);
           return;
         }
       }
