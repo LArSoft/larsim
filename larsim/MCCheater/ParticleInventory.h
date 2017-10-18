@@ -9,12 +9,6 @@
 // This is done because the returns from the ParticleInventory really should be const, and anything called from them must then also be const,
 // and finally we get to the mutables. These are cached objects to prevent repeated and costly access to objects in the event.
 ////////////////////////////////////////////////////////////////////////
-//
-//ToDo notes from Gianluca
-//
-//add provider() method. (ADD TO ParticleInventoryService)
-//Make a couple getter functions (for accessing MCTruth information form fMCTruthList or fTrackIdToMCTruthIndex
-//Correct methods to use struct MCTObjects
 #ifndef CHEAT_PARTICLEINVENTORY_H
 #define CHEAT_PARTICLEINVENTORY_H
 
@@ -67,8 +61,13 @@ namespace cheat{
       template<typename Evt>
         bool CanRun(const Evt& evt) const;
 
-      const sim::ParticleList& ParticleList() const { return fParticleList; } //This should be replaced with a public struct so we can get away from the nutools dependency.
+      const sim::ParticleList& ParticleList() const { return fParticleList; } 
       void SetEveIdCalculator(sim::EveIdCalculator *ec) { fParticleList.AdoptEveIdCalculator(ec); }
+
+      const std::vector< art::Ptr<simb::MCTruth> >& MCTruthList() const { return fMCTObj.fMCTruthList;}
+      
+        ;
+      const std::map<unsigned short, unsigned short >& TrackIdToMCTruthIndex() const { return fMCTObj.fTrackIdToMCTruthIndex; }
 
       void ClearEvent();
 
@@ -106,6 +105,7 @@ namespace cheat{
       mutable MCTObjects fMCTObj;  
       //For fhicl validation, makea config struct
       art::InputTag fG4ModuleLabel;
+
 
 
 

@@ -3,7 +3,11 @@ namespace cheat{
   //--------------------------------------------------------------------
   template<typename Evt> //DO NOT USE THIS FUNCTION FROM WITHIN ART! The ParticleInventoryService is designed to impliment these methods as cleanly as possible within the art framework.
     void ParticleInventory::PrepEvent        (const Evt& evt ){
-      if(this->CanRun(evt)){throw;}
+      if(this->CanRun(evt)){ 
+        throw cet::exception("ParticleInventory") 
+        << "Particle Inventory cannot function. "
+        << "Is this file real data?";
+      }
       fParticleList.clear();
       fMCTObj.fMCTruthList.clear();
       fMCTObj.fTrackIdToMCTruthIndex.clear();
@@ -22,7 +26,7 @@ namespace cheat{
       }
       //The particle list needs to be built
       //We use auto so that we(the compiler) can determine which type we need for either art or gallery.
-      const auto& partVecIn = *(evt.getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel));
+      const auto& partVecIn = *(evt.getValidHandle< std::vector< simb::MCParticle > > (fG4ModuleLabel));
 
 
       for(const auto& partIn : partVecIn){
