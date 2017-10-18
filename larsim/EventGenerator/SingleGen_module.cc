@@ -117,7 +117,6 @@ namespace evgen {
 //    std::vector<std::string> fThetaPhiHist; ///< name of histogram for theta/phi distribution
     std::vector<std::string> fThetaXzYzHist;   ///< name of histogram for thetaxz/thetayz distribution
 
-    TFile *fHistFile;                    /// actual TFile containing histograms
     std::vector<TH1*> hPHist ;           /// actual TH1 for momentum distributions
 //    std::vector<TH2*> hThetaPhiHist ;       /// actual TH1 for theta distributions - Theta on x axis
     std::vector<TH2*> hThetaXzYzHist ;         /// actual TH2 for angle distributions - Xz on x axis . 
@@ -160,8 +159,8 @@ namespace evgen{
     fPadOutVectors = p.get< bool                >("PadOutVectors");
     fMode          = p.get< int                 >("ParticleSelectionMode");
     fPDG           = p.get< std::vector<int>    >("PDG");
-    fPDist         = p.get< int                 >("PDist");
-    fTDist         = p.get< int                 >("TDist");
+    fPDist         = p.get< int                 >("PDist", kHIST);
+    fTDist         = p.get< int                 >("TDist", kHIST);
     fX0            = p.get< std::vector<double> >("X0");
     fY0            = p.get< std::vector<double> >("Y0");
     fZ0            = p.get< std::vector<double> >("Z0");
@@ -234,9 +233,86 @@ namespace evgen{
     if(fPDG.size() > 1 && fPadOutVectors) this->printVecs(vlist);
 
     // If needed, get histograms for momentum and angle distributions
-    if (fHistFileName != ""){
+    TFile* fHistFile = nullptr;
+    if (!fHistFileName.empty()) {
       fHistFile = new TFile(fHistFileName.c_str());
+      if (!fHistFile->IsOpen()) {
+        throw art::Exception(art::errors::NotFound)
+          << "Can't open ROOT file from 'HistogramFile': \"" << fHistFileName << "\".";
+      }
     }
+    
+    //
+    // deal with momentum distribution
+    //
+    switch (fPDist) {
+      case kHIST:
+        if (!fHistFile) {
+          throw art::Exception(art::errors::Configuration)
+            << "Momentum distribution requested from histogram, but there is no 'HistogramFile' specified.";
+        }
+        if (fPHist.empty()) {
+          throw art::Exception(art::errors::Configuration)
+            << "Momentum distribution requested from histogram, but there is no 'PHist' specified.";
+        }
+        if (fPHist.size() != fPDG.size()) {
+          throw art::Exception(art::errors::Configuration)
+            << fPHist.size() << " momentum histograms to describe " << fPDG.size() << " particle types...";
+        }
+        hPHist.reserve(fPDG.size());
+        for (auto const& histName: fPHist) {
+          TH1* pHist = dynamic_cast<TH1*>(fHistFile->Get(histName.c_str()));
+          if (!pHist) {
+            throw art::Exception(art::errors::NotFound)
+             << "Failed to read momentum histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+          }
+          pHist->SetDirectory(nullptr); // make it independent of the input file
+          hPHist.emplace_back(pHist);
+        } // for
+        break;
+      default:
+        if (!fPHist.empty()) {
+          throw art::Exception(art::errors::Configuration)
+            << "Momentum distribution histograms specified, but there is no request to use them ('PDist').";
+        }
+        break;
+    } // switch(fPDist)
+    
+    switch (fAngleDist) {
+      case kHIST:
+        if (!fHistFile) {
+          throw art::Exception(art::errors::Configuration)
+            << "Direction distribution requested from histogram, but there is no 'HistogramFile' specified.";
+        }
+        if (fThetaXzYzHist.empty()) {
+          throw art::Exception(art::errors::Configuration)
+            << "Direction distribution requested from histogram, but there is no 'ThetaXzYzHist' specified.";
+        }
+        if (fThetaXzYzHist.size() != fPDG.size()) {
+          throw art::Exception(art::errors::Configuration)
+            << fThetaXzYzHist.size() << " direction histograms to describe " << fPDG.size() << " particle types...";
+        }
+        hThetaXzYzHist.reserve(fPDG.size());
+        for (auto const& histName: fThetaXzYzHist) {
+          TH2* pHist = dynamic_cast<TH2*>(fHistFile->Get(histName.c_str()));
+          if (!pHist) {
+            throw art::Exception(art::errors::NotFound)
+             << "Failed to read direction histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+          }
+          pHist->SetDirectory(nullptr); // make it independent of the input file
+          hThetaXzYzHist.emplace_back(pHist);
+        } // for
+      default:
+        if (!fThetaXzYzHist.empty()) {
+          throw art::Exception(art::errors::Configuration)
+            << "Direction distribution histograms specified, but there is no request to use them ('AngleDist').";
+        }
+        break;
+    } // switch(fAngleDist)
+    
+    delete fHistFile;
+    
+#if 0
     if (fThetaXzYzHist.size() ==0){fAngleDist=0;}
     if (fPHist.size() ==0){fPDist=0;}
     if (fPDist==kHIST){
@@ -253,7 +329,7 @@ namespace evgen{
         hThetaXzYzHist.emplace_back( (TH2*)fHistFile->Get( fThetaXzYzHist[i].c_str() ));
       }
     }
-
+#endif // 0
     return;
   }
 
