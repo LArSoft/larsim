@@ -312,25 +312,6 @@ namespace evgen{
     
     delete fHistFile;
     
-#if 0
-    if (fThetaXzYzHist.size() ==0){fAngleDist=0;}
-    if (fPHist.size() ==0){fPDist=0;}
-    if (fPDist==kHIST){
-      hPHist.reserve(fPDG.size());
-      for (unsigned int i(0); i < fPDG.size(); ++i){
-        hPHist.emplace_back( (TH1*)fHistFile->Get( fPHist[i].c_str() ) );
-      }
-    }
-    if (fAngleDist==kHIST){
-//      hThetaPhiHist.reserve(fPDG.size());
-      hThetaXzYzHist.reserve(fPDG.size());
-      for (unsigned int i(0); i < fPDG.size(); ++i){
-//        hThetaPhiHist.emplace_back( (TH2*)fHistFile->Get( fThetaPhiHist[i].c_str() ));
-        hThetaXzYzHist.emplace_back( (TH2*)fHistFile->Get( fThetaXzYzHist[i].c_str() ));
-      }
-    }
-#endif // 0
-    return;
   }
 
   //____________________________________________________________________________
