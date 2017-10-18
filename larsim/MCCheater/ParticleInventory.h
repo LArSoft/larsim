@@ -15,9 +15,11 @@
 #include <vector>
 
 #include "art/Framework/Principal/Handle.h"
+
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Provenance/ProductToken.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/ParameterSet.h"
