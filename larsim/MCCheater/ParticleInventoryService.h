@@ -35,6 +35,8 @@ namespace cheat{
 
       //attempting to be compliant with ServiceUtil.h. Should ask LArSoft expert to review.
       using provider_type = ParticleInventory;
+      const ParticleInventory* provider() const {return &fPartInv;}
+//      const std::shared_ptr<cheat::ParticleInventory> AccessInventory(){ return fPartInv; }
 
 //      provider_type const* provider() const {return static_cast<provider_type const*>(fPartInv);}
 
@@ -68,12 +70,12 @@ namespace cheat{
       std::set<int> GetSetOfTrackIds();
       std::set<int> GetSetOfEveIds();
 
-      const std::shared_ptr<cheat::ParticleInventory> AccessInventory(){ return fPartInv; }
 
 
     private:
       std::string fG4ModuleLabel;
-      std::shared_ptr<cheat::ParticleInventory>  fPartInv = std::make_shared<cheat::ParticleInventory>();
+
+      cheat::ParticleInventory fPartInv;
 
       const art::Event* fEvt;
 
@@ -81,7 +83,7 @@ namespace cheat{
       void priv_PrepParticleList            ( );
       void priv_PrepMCTruthList             ( );
       void priv_PrepTrackIdToMCTruthIndex   ( );
-      bool priv_CanRun();
+      bool priv_CanRun(const art::Event& evt) const;
 
       bool priv_ParticleListReady()     { return  fPartInv->ParticleListReady(); }
       bool priv_MCTruthListReady()      { return  fPartInv->MCTruthListReady(); }
