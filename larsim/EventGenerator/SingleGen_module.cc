@@ -75,7 +75,7 @@ namespace evgen {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
       
-      fhicl::Atom<int> ParticleSelectionMode{
+      fhicl::Atom<std::string> ParticleSelectionMode{
         Name("ParticleSelectionMode"),
         Comment("generate one particle, or one particle per PDG ID: " + presentOptions(ParticleSelectionModeNames))
       };
@@ -90,22 +90,22 @@ namespace evgen {
         Comment("PDG ID of the particles to be generated; this is the key for the other options marked as \"per PDG ID\"")
       };
       
-      fhicl::Atom<int> PDist{
+      fhicl::Atom<std::string> PDist{
         Name("PDist"),
         Comment("momentum distribution type: " + presentOptions(DistributionNames)),
-        int(kHIST)
+        optionName(kHIST, DistributionNames)
       };
       
       fhicl::Sequence<double> P0{
         Name("P0"),
         Comment("central momentum (GeV/c) to generate"),
-        [this](){ return PDist() != kHIST; }
+        [this](){ return !fromHistogram(PDist()); }
       };
       
       fhicl::Sequence<double> SigmaP{
         Name("SigmaP"),
         Comment("variation in momenta (GeV/c)"),
-        [this](){ return PDist() != kHIST; }
+        [this](){ return !fromHistogram(PDist()); }
       };
       
       fhicl::Sequence<double> X0{
@@ -148,12 +148,12 @@ namespace evgen {
         Comment("variation (semi-interval or RMS) in time (s) [per PDG ID]")
       };
       
-      fhicl::Atom<int> PosDist{
+      fhicl::Atom<std::string> PosDist{
         Name("PosDist"),
         Comment("distribution of starting position: " + presentOptions(DistributionNames, true, { kHIST }))
       };
       
-      fhicl::Atom<int> TDist{
+      fhicl::Atom<std::string> TDist{
         Name("TDist"),
         Comment("time distribution type: " + presentOptions(DistributionNames, true, { kHIST }))
       };
@@ -184,41 +184,47 @@ namespace evgen {
         Comment("variation in angle in Y-Z plane (degrees)")
       };
       
-      fhicl::Atom<int> AngleDist{
+      fhicl::Atom<std::string> AngleDist{
         Name("AngleDist"),
         Comment("angular distribution type: " + presentOptions(DistributionNames)),
-        int(kHIST)
+        optionName(kHIST, DistributionNames)
       };
       
       fhicl::Atom<std::string> HistogramFile{
         Name("HistogramFile"),
         Comment("ROOT file containing the required distributions for the generation"),
-        [this](){ return (AngleDist() == kHIST) || (PDist() == kHIST); }
+        [this](){ return fromHistogram(AngleDist()) || fromHistogram(PDist()); }
       };
       
       fhicl::Sequence<std::string> PHist{
         Name("PHist"),
         Comment("name of the histograms of momentum distributions"),
-        [this](){ return PDist() == kHIST; }
+        [this](){ return fromHistogram(PDist()); }
       };
       
       /*
       fhicl::Sequence<std::string> ThetaPhiHist{
         Name("ThetaPhiHist"),
         Comment("name of the histograms of angular (theta/phi) distribution"),
-        [this](){ return AngleDist() == kHIST; }
+        [this](){ return fromHistogram(AngleDist()); }
       };
       */
       fhicl::Sequence<std::string> ThetaXzYzHist{
         Name("ThetaXzYzHist"),
         Comment("name of the histograms of angular (X-Z and Y-Z) distribution"),
-        [this](){ return AngleDist() == kHIST; }
+        [this](){ return fromHistogram(AngleDist()); }
       };
       
       fhicl::OptionalAtom<rndm::NuRandomService::seed_t> Seed{
         Name("Seed"),
         Comment("override the random number generator seed")
       };
+      
+      
+        private:
+      
+      /// Returns whether the specified mode is an histogram distribution.
+      bool fromHistogram(std::string const& key) const;
       
     }; // struct Config
     
@@ -402,11 +408,14 @@ namespace evgen{
   auto SingleGen::selectOption
     (std::string Option, OptionList const& allowedOptions) -> decltype(auto)
   {
+    using key_type = typename OptionList::value_type::first_type;
+    using tolower_type = int(*)(int);
     auto toLower = [](auto const& S)
       {
         std::string s;
         s.reserve(S.size());
-        std::transform(S.cbegin(), S.cend(), std::back_inserter(s), std::tolower);
+        std::transform(S.cbegin(), S.cend(), std::back_inserter(s),
+          (tolower_type) &std::tolower);
         return s;
       };
     auto option = toLower(Option);
@@ -415,7 +424,7 @@ namespace evgen{
     }
     try {
       std::size_t end;
-      int num = std::stoi(Option, &end);
+      key_type num = std::stoi(Option, &end);
       if (allowedOptions.count(num) && (end == Option.length())) return num;
     }
     catch (std::invalid_argument const&) {}
@@ -456,13 +465,18 @@ namespace evgen{
   
   
   //____________________________________________________________________________
+  bool SingleGen::Config::fromHistogram(std::string const& key) const {
+    return selectOption(PDist(), DistributionNames) == kHIST;
+  } // SingleGen::Config::fromHistogram()
+  
+  //____________________________________________________________________________
   SingleGen::SingleGen(Parameters const& config)
-    : fMode         (config().ParticleSelectionMode())
+    : fMode         (selectOption(config().ParticleSelectionMode(), ParticleSelectionModeNames))
     , fPadOutVectors(config().PadOutVectors())
     , fPDG          (config().PDG())
     , fP0           (config().P0())
     , fSigmaP       (config().SigmaP())
-    , fPDist        (config().PDist())
+    , fPDist        (selectOption(config().PDist(), DistributionNames))
     , fX0           (config().X0())
     , fY0           (config().Y0())
     , fZ0           (config().Z0())
@@ -471,13 +485,13 @@ namespace evgen{
     , fSigmaY       (config().SigmaY())
     , fSigmaZ       (config().SigmaZ())
     , fSigmaT       (config().SigmaT())
-    , fPosDist      (config().PosDist())
-    , fTDist        (config().TDist())
+    , fPosDist      (selectOption(config().PosDist(), DistributionNames))
+    , fTDist        (selectOption(config().TDist(), DistributionNames))
     , fTheta0XZ     (config().Theta0XZ())
     , fTheta0YZ     (config().Theta0YZ())
     , fSigmaThetaXZ (config().SigmaThetaXZ())
     , fSigmaThetaYZ (config().SigmaThetaYZ())
-    , fAngleDist    (config().AngleDist())
+    , fAngleDist    (selectOption(config().AngleDist(), DistributionNames))
     , fHistFileName (config().HistogramFile())
     , fPHist        (config().PHist())
 //    , fThetaPhiHist (config().ThetaPhiHist())
