@@ -3,6 +3,10 @@ BEGIN_PROLOG
 standard_genie:
 {
  module_type:      "GENIEGen"
+
+ DefinedVtxHistRange: false
+ VtxPosHistRange:  [0. , 0., 0., 0., 0., 0.] #if DefinedVtxHistRange is set to true VtxPosHistRange sets the hist range of the vertex positions: [xmin, xmax, ymin, ymax, zmin, zmax]. 
+					     #It is helpful for dual phase detector for which the range is asymmetric.
  PassEmptySpills:  false
  FluxType:         "mono"     #mono, histogram, ntuple, or simple_flux
  FluxFiles:         ["flugg_L010z185i_neutrino_mode.root"] #name of file with flux histos

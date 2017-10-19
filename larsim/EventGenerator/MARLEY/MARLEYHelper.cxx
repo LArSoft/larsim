@@ -19,7 +19,7 @@
 
 // MARLEY includes
 #include "marley/Event.hh"
-#include "marley/JSONConfig.hh"
+#include "marley/RootJSONConfig.hh"
 
 namespace {
   // We need to convert from MARLEY's energy units (MeV) to LArSoft's
@@ -193,16 +193,23 @@ std::string evgen::MARLEYHelper::find_file(const std::string& fileName,
 
 //------------------------------------------------------------------------------
 void evgen::MARLEYHelper::load_full_paths_into_json(
-  marley::JSON& json, const std::string& array_name)
+  marley::JSON& json, const std::string& key)
 {
-  if (json.has_key(array_name)) {
-    // Replace each file name (which may appear in the FHiCL configuration
-    // without a full path) with the full path found using cetlib
-    for (auto& element : json.at(array_name).array_range()) {
-      element = find_file(element.to_string(), array_name);
+  if ( json.has_key(key) ) {
+
+    marley::JSON& value = json.at(key);
+
+    if ( value.is_array() ) {
+      // Replace each file name (which may appear in the FHiCL configuration
+      // without a full path) with the full path found using cetlib
+      for (auto& element : value.array_range()) {
+        element = find_file(element.to_string(), key);
+      }
     }
+
+    else value = find_file(value.to_string(), key);
   }
-  else throw cet::exception("MARLEYHelper") << "Missing \"" << array_name
+  else throw cet::exception("MARLEYHelper") << "Missing \"" << key
     << "\" key in the MARLEY parameters.";
 }
 
@@ -218,10 +225,20 @@ void evgen::MARLEYHelper::reconfigure(
   load_full_paths_into_json(json, "reactions");
   load_full_paths_into_json(json, "structure");
 
+  // Also update the path for a neutrino source spectrum given in a ROOT
+  // TFile
+  if ( json.has_key("source") ) {
+    marley::JSON& source_object = json.at("source");
+
+    if ( source_object.has_key("tfile") ) {
+      load_full_paths_into_json(source_object, "tfile");
+    }
+  }
+
   // Create a new MARLEY configuration based on the JSON parameters
   LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
     " the JSON configuration\n" << json.dump_string() << '\n';
-  marley::JSONConfig config(json);
+  marley::RootJSONConfig config(json);
 
   // Create a new marley::Generator object based on the current configuration
   fMarleyGenerator = std::make_unique<marley::Generator>(

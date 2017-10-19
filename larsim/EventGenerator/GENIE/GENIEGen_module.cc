@@ -104,6 +104,9 @@ namespace evgen {
     void FillHistograms(simb::MCTruth mc);
 
     evgb::GENIEHelper  *fGENIEHelp;       ///< GENIEHelper object
+    bool 		fDefinedVtxHistRange;///use defined hist range; it is useful to have for asymmetric ranges like in DP FD.
+    std::vector< double > fVtxPosHistRange; 
+
     int                 fPassEmptySpills; ///< whether or not to kill evnets with no interactions
     TStopwatch          fStopwatch;       ///keep track of how long it takes to run the job
 
@@ -149,6 +152,8 @@ namespace evgen{
   //____________________________________________________________________________
   GENIEGen::GENIEGen(fhicl::ParameterSet const& pset)
     : fGENIEHelp(0)
+    , fDefinedVtxHistRange (pset.get< bool >("DefinedVtxHistRange"))
+    , fVtxPosHistRange (pset.get< std::vector<double> >("VtxPosHistRange"))
     , fPassEmptySpills (pset.get< bool   >("PassEmptySpills"))
     , fGlobalTimeOffset(pset.get< double >("GlobalTimeOffset",0))
     , fRandomTimeOffset(pset.get< double >("RandomTimeOffset",1600.)) // BNB default value
@@ -265,13 +270,26 @@ namespace evgen{
     int ydiv = TMath::Nint(2*y/5.);
     int zdiv = TMath::Nint(2*z/5.);
 
-    fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, -0.1*x, x);
-    fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, -y,     y);
-    fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.1*z, z);
+    if (fDefinedVtxHistRange == false)
+    {
+    	fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, -0.1*x, x);
+    	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, -y,     y);
+    	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.1*z, z);
     
-    fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, -0.1*x, x, ydiv,     -y, y);
-    fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -0.1*x, x);
-    fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv,     -y, y);
+    	fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, -0.1*x, x, ydiv,     -y, y);
+    	fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -0.1*x, x);
+    	fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv,     -y, y);
+    }
+    else
+    {
+        fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, fVtxPosHistRange[0], fVtxPosHistRange[1]);
+    	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, fVtxPosHistRange[2], fVtxPosHistRange[3]);
+    	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5]);
+    
+    	fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, fVtxPosHistRange[0], fVtxPosHistRange[1], ydiv,     fVtxPosHistRange[2], fVtxPosHistRange[3]);
+    	fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5], xdiv,     fVtxPosHistRange[0], fVtxPosHistRange[1]);
+    	fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5], ydiv,     fVtxPosHistRange[2], fVtxPosHistRange[3]);
+    }
 
   }
 
