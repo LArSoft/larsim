@@ -33,6 +33,19 @@ namespace cheat{
   {
     public:
 
+      struct fhiclConfigParticleInventoryPassthrough{
+        fhicl::Atom<art::InputTag> G4ModuleLabel{
+          fhicl::Name("G4ModuleLabel"), 
+          fhicl::Comment("The label of the LArG4 module used to produce the art file we will be backtracking in"), 
+          "largeant"};
+      };
+
+      struct fhiclConfig{
+        fhicl::Table<fhiclConfigParticleInventoryPassthrough> ParticleInventoryTable{
+          fhicl::Name("ParticleInventoryTable")
+          fhicl::Comment("This is the fhicl configuration for the ParticleInventory Service Provider") };
+      };
+
       //attempting to be compliant with ServiceUtil.h. Should ask LArSoft expert to review.
       using provider_type = ParticleInventory;
       const ParticleInventory* provider() const {return &fPartInv;}
