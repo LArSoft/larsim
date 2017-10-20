@@ -45,7 +45,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   ParticleInventoryService::ParticleInventoryService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg)
-  :fPartInv(pSet.get<fhicl::ParameterSet>("providerConfig"))
+  :fPartInv(pSet.get<fhicl::ParameterSet>("providerConfigParticleInventory"))
   {
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
