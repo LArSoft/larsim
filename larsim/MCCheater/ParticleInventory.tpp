@@ -3,7 +3,7 @@ namespace cheat{
   //--------------------------------------------------------------------
   template<typename Evt> //DO NOT USE THIS FUNCTION FROM WITHIN ART! The ParticleInventoryService is designed to impliment these methods as cleanly as possible within the art framework.
     void ParticleInventory::PrepEvent        (const Evt& evt ){
-      if(this->CanRun(evt)){ 
+      if(!(this->CanRun(evt))){ 
         throw cet::exception("ParticleInventory") 
         << "Particle Inventory cannot function. "
         << "Is this file real data?";
