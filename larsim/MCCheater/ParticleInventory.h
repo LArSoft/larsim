@@ -37,7 +37,10 @@ namespace cheat{
     public:
       ////////////////Types/////////////////
       struct fhiclConfig{
-        fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4 module used to produce the art file we will be backtracking in"), "largeant"};
+        fhicl::Atom<art::InputTag> G4ModuleLabel{
+          fhicl::Name("G4ModuleLabel"), 
+          fhicl::Comment("The label of the LArG4 module used to produce the art file we will be backtracking in"), 
+          "largeant"};
       };
       
       ///////////Constructor///////////////

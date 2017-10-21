@@ -33,16 +33,9 @@ namespace cheat{
   {
     public:
 
-      struct fhiclProviderConfigParticleInventory{
-        fhicl::Atom<art::InputTag> G4ModuleLabel{
-          fhicl::Name("G4ModuleLabel"), 
-          fhicl::Comment("The label of the LArG4 module used to produce the art file we will be backtracking in"), 
-          "largeant"};
-      };
-
       struct fhiclConfig{
-        fhicl::Table<fhiclProviderConfigParticleInventory> ParticleInventoryTable{
-          fhicl::Name("providerConfigParticleInventory")
+        fhicl::Table<ParticleInventory::fhiclConfig> ParticleInventoryTable{
+          fhicl::Name("providerConfigParticleInventory"),
           fhicl::Comment("This is the fhicl configuration for the ParticleInventory Service Provider") };
       };
 
@@ -54,6 +47,7 @@ namespace cheat{
 //      provider_type const* provider() const {return static_cast<provider_type const*>(fPartInv);}
 
       ParticleInventoryService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+      ParticleInventoryService(const fhiclConfig& config, art::ActivityRegistry& reg);
       ~ParticleInventoryService();
 
       const sim::ParticleList& ParticleList() const { return fPartInv.ParticleList(); } //This should be replaced with a public struct so we can get away from the nutools dependency.
