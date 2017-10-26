@@ -14,7 +14,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/BackTrackerService.h"
 #include "lardataobj/RecoBase/Hit.h"
 
 
@@ -87,7 +87,7 @@ namespace cheat{
     // loop over the hits and figure out which particle contributed to each one
     std::vector< art::Ptr<recob::Hit> >::iterator itr = hits.begin();
 
-    art::ServiceHandle<cheat::BackTracker> bt;
+    art::ServiceHandle<cheat::BackTrackerService> bt;
 
     // make a collection of the distinct eve ID values
     std::set<int> eveIDs;

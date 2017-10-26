@@ -1,179 +1,158 @@
-////////////////////////////////////////////////////////////////////////
-/// \file  BackTracker.h
-/// \brief back track the reconstruction to the simulation
-///
-/// \author  brebel@fnal.gov
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//
+// \file BackTracker.h
+// \brief Functions needed by the BackTracker service in order to connect truth information with reconstruction.
+//
+// \author jason.stock@mines.sdsmt.edu
+//
+// Based on the original BackTracker by brebel@fnal.gov
+//
+////////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_BACKTRACKER_H
 #define CHEAT_BACKTRACKER_H
 
+//Includes
 #include <vector>
 
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "ParticleInventory.h"
 
-#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
+
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/Simulation/SimChannel.h"
-#include "nutools/ParticleNavigation/EveIdCalculator.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "larsim/Simulation/LArVoxelList.h"
-#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
-
 #include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 
-namespace recob{
+/*namespace recob{
   class SpacePoint;
-}
+  }*/
 
-///code to link reconstructed objects back to the MC truth information
+
 namespace cheat{
 
-  class BackTracker
-  {
+  class BackTracker{
+    public:
+      struct fhiclConfig{
+        fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4   module used to produce the art file we will be using."), "largeant"};
+        fhicl::Atom<art::InputTag> DefaultHitModuleLabel{fhicl::Name("DefaultHitModuleLabel"), fhicl::Comment("The label  of the module used to produce the hits in the art file we will default to when no hitlist is provided."), "hitfd"};
+        fhicl::Atom<double> MinHitEnergyFraction{fhicl::Name("MinHitEnergyFraction"), fhicl::Comment("The minimum     contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
+      };
+      BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
+      BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
+      ~BackTracker();
 
-  public:
+      template<typename Evt>
+        void PrepEvent ( const Evt& evt );
 
-    BackTracker(fhicl::ParameterSet const& pset,
-		art::ActivityRegistry&     reg);
-    ~BackTracker();
+      template<typename Evt>
+        void PrepSimChannels ( const Evt& evt );
 
-    void reconfigure(fhicl::ParameterSet const& pset);
+      template<typename Evt>
+        void PrepAllHitList ( const Evt& evt);
 
-    // The Rebuild function rebuilds the various maps we need to answer backtracking queries.
-    // It is called automatically before each event is processed. For jobs involving
-    // Monte Carlo generation, this is too soon. So, we'll call rebuild after those data
-    // products are put into the event in LArG4.  This is the least bad way of ensuring the
-    // BackTracker works in jobs that combine MC production and reconstruction analysis based
-    // on MC truth.  Don't copy this design pattern without talking to brebel@fnal.gov first
-    void Rebuild(const art::Event& evt);
+      template<typename Evt>
+        bool CanRun(const Evt& evt){ return !(evt.isRealData());}
 
-    // Get a reference to the ParticleList
-    const sim::ParticleList&          ParticleList()  const { return fParticleList; }
+      template<typename Evt>
+        const std::vector< art::Ptr< recob::Hit > > SpacePointToHits_Ps(art::Ptr< recob::SpacePoint> const& spt, const Evt& evt) const;
 
-    // Set the EveIdCalculator for the owned ParticleList
-    void  SetEveIdCalculator(sim::EveIdCalculator *ec) { fParticleList.AdoptEveIdCalculator(ec); }
+      template<typename Evt>
+        const std::vector<  double > SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt, const Evt& evt) const;
 
-    // Return a pointer to the simb::MCParticle object corresponding to
-    // the given TrackID
-    const simb::MCParticle*              TrackIDToParticle(int const& id)       const;
-    const simb::MCParticle*              TrackIDToMotherParticle(int const& id) const;
 
-    /// Loop over all sim::SimChannels and fill a vector of sim::IDE objects for the given
-    /// track id. Note that this function will return sim::IDE from ALL planes and you
-    /// do not have the plane id information in sim::IDE; use the overloaded function
-    /// TrackIDToSimIDE(int const& id, const geo::View_t view) to select view.
-    std::vector<sim::IDE>                TrackIDToSimIDE(int const& id)         const;
+      void ClearEvent();
 
-    /// Loop over sim::SimChannels in which belong to selected view and fill a vector
-    /// of sim::IDE objects for the given track id.
-    std::vector<sim::IDE>                TrackIDToSimIDE(int const& id, const geo::View_t view) const;
 
-    // Get art::Ptr<> to simb::MCTruth and related information
-    const art::Ptr<simb::MCTruth>&       TrackIDToMCTruth(int const& id)                        const;
-    const art::Ptr<simb::MCTruth>&       ParticleToMCTruth(const simb::MCParticle* p)           const;
-    std::vector<const simb::MCParticle*> MCTruthToParticles(art::Ptr<simb::MCTruth> const& mct) const;
-    const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector() const { return fMCTruthList; }
+      bool SimChannelsReady() const { return !( fSimChannels.empty() ); }
+      bool AllHitListReady () const { return !( fAllHitList.empty() ); }
 
-    // this method will return the Geant4 track IDs of 
-    // the particles contributing ionization electrons to the identified hit
-    std::vector<sim::TrackIDE> HitToTrackID(recob::Hit const& hit);
-    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit) { return HitToTrackID(*hit); }
-    
-    // method to return a subset of allhits that are matched to a list of TrackIDs
-    const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,
-									std::vector<int> const& tkIDs);
-    
-    // method to return the EveIDs of particles contributing ionization
-    // electrons to the identified hit
-    std::vector<sim::TrackIDE> HitToEveID(art::Ptr<recob::Hit> const& hit);
-    
-    //@{
-    // method to return sim::IDE objects associated with a given hit
-    void                 HitToSimIDEs(recob::Hit const& hit,
-                                      std::vector<sim::IDE>&      ides) const;
-    void                 HitToSimIDEs(art::Ptr<recob::Hit> const& hit,
-                                      std::vector<sim::IDE>&      ides) const
-                                      { HitToSimIDEs(*hit, ides); }
-    //@}
-    
-    // method to return the XYZ position of the weighted average energy deposition for a given hit
-    std::vector<double>  SimIDEsToXYZ(std::vector<sim::IDE> const& ides);
-    
-    // method to return the XYZ position of the weighted average energy deposition for a given hit
-    std::vector<double>  HitToXYZ(art::Ptr<recob::Hit> const& hit);				  
-    
-    // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
-    std::vector<double> SpacePointToXYZ(art::Ptr<recob::SpacePoint> const& spt,
-					art::Event                  const& evt,
-					std::string                 const& label);
+      const std::vector<art::Ptr<sim::SimChannel>>& SimChannels() const { return fSimChannels; }
+      //All Hit List would go here. We explicitly choose not to include it, as the user should not be using backtracker to access Hits. This could change in a concievable future use case where we also allow the user to define what the "AllHitList" should be, though this would have ramifications on other functions.
 
-    // method to return the XYZ position of a space point (unweighted average XYZ of component hits).
-    std::vector<double> SpacePointHitsToXYZ(art::PtrVector<recob::Hit> const& hits);
-    
-    // method to return the fraction of hits in a collection that come from the specified Geant4 track ids 
-    double              HitCollectionPurity(std::set<int>                              trackIDs, 
-					    std::vector< art::Ptr<recob::Hit> > const& hits);
-    
-    // method to return the fraction of all hits in an event from a specific set of Geant4 track IDs that are 
-    // represented in a collection of hits
-    double              HitCollectionEfficiency(std::set<int>                              trackIDs, 
-						std::vector< art::Ptr<recob::Hit> > const& hits,
-						std::vector< art::Ptr<recob::Hit> > const& allhits,
-						geo::View_t                         const& view);
+      const std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id) const;
+      //const std::vector<const sim::IDE>    TrackIdToSimIDEs (int const& id) const; 
+      const std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const; 
+      //std::vector<const sim::IDE>    TrackIdToSimIDEs (int const& id, const geo::View_t view) const; 
 
-    // method to return the fraction of charge in a collection that come from the specified Geant4 track ids 
-    double              HitChargeCollectionPurity(std::set<int>                              trackIDs, 
-						  std::vector< art::Ptr<recob::Hit> > const& hits);
-    
-    // method to return the fraction of all charge in an event from a specific set of Geant4 track IDs that are 
-    // represented in a collection of hits
-    double              HitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
-						      std::vector< art::Ptr<recob::Hit> > const& hits,
-						      std::vector< art::Ptr<recob::Hit> > const& allhits,
-						      geo::View_t                         const& view);
-  
-    // method to return all EveIDs corresponding to the current sim::ParticleList
-    std::set<int>       GetSetOfEveIDs();
+      art::Ptr<sim::SimChannel> FindSimChannel( raw::ChannelID_t channel ) const;
 
-    // method to return all TrackIDs corresponding to the current sim::ParticleList
-    std::set<int>       GetSetOfTrackIDs();
+      const std::vector< sim::TrackIDE > ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time, const double hit_end_time) const;
 
-    // method to return all EveIDs corresponding to the given list of hits
-    std::set<int>       GetSetOfEveIDs(std::vector< art::Ptr<recob::Hit> > const& hits);
 
-    // method to return all TrackIDs corresponding to the given list of hits
-    std::set<int>       GetSetOfTrackIDs(std::vector< art::Ptr<recob::Hit> > const& hits);
+      //Track IDEs cannot be returned as pointers, as they dont exist in the data product, and we will not be storing them.
+      const std::vector< sim::TrackIDE> HitToTrackIDEs(recob::Hit const& hit) const;
+      const std::vector< sim::TrackIDE> HitToTrackIDEs(art::Ptr<recob::Hit> const& hit) const { return this->HitToTrackIDEs(*hit);}
 
-    const std::vector<const sim::SimChannel*>& SimChannels() const { return fSimChannels; } 
+      const std::vector< int > HitToTrackIds(recob::Hit const& hit) const ;
+      //   std::vector< const int> HitToTrackId(art::Ptr<recob::Hit> const& hit) { return this->HitToTrackId(*hit); }
 
-    void ChannelToTrackIDEs(std::vector<sim::TrackIDE>& trackIDEs,
-			  raw::ChannelID_t channel,
-			  const double hit_start_time,
-			  const double hit_end_time);
-    
-  private:
+      const std::vector<sim::TrackIDE> HitToEveTrackIDEs(recob::Hit const& hit) const;
+      const std::vector<sim::TrackIDE> HitToEveTrackIDEs(art::Ptr<recob::Hit> const& hit) const{ return this->HitToEveTrackIDEs(*hit);}
 
-    const sim::SimChannel* FindSimChannel(raw::ChannelID_t channel) const;
+      //I will not return these by copy, as that could get very large very quickly.
+      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const; 
+      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId ) const
+      {return this->TrackIdToHits_Ps(tkId, fAllHitList); }
 
-    sim::ParticleList                      fParticleList;          ///< ParticleList to map track ID to sim::Particle
-    sim::LArVoxelList                      fVoxelList;             ///< List to map the position of energy depostions
-                                                                   ///< in voxels to the particles depositing the 
-                                                                   ///< energy
-    std::vector< art::Ptr<simb::MCTruth> > fMCTruthList;           ///< all the MCTruths for the event
-    std::vector<const sim::SimChannel*>    fSimChannels;           ///< all the SimChannels for the event
-    std::map<int, int>                     fTrackIDToMCTruthIndex; ///< map of track ids to MCTruthList entry
-    std::string                            fG4ModuleLabel;         ///< label for geant4 module
-    double                                 fMinHitEnergyFraction;  ///< minimum fraction of energy a track id has to 
-                                                                   ///< contribute to a hit to be counted in
-                                                                   ///< purity and efficiency calculations 
-                                                                   ///< based on hit collections
-  };
-} // namespace
+      std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const;
+      std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds ) const
+      {return this->TrackIdsToHits_Ps(tkIds, fAllHitList);}
 
-DECLARE_ART_SERVICE(cheat::BackTracker, LEGACY)
-#endif // CHEAT_BACKTRACK_H
+      const std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) const;
+      const std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) const{ return this->HitToAvgSimIDEs(*hit);}
+
+      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (recob::Hit const& hit) const;
+      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) const { return this->HitToSimIDEs_Ps (*hit); }
+
+      //const std::vector< sim::IDE > HitToSimIDEs (recob::Hit const& hit);
+      //   std::vector< const sim::IDE > HitToSimIDEs (art::Ptr< recob::Hit > const& hit) { return this->HitToSimIDEsPs (*hit); }
+
+      const std::vector<double> SimIDEsToXYZ( std::vector< sim::IDE > const& ides) const;
+      const std::vector<double> SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) const;
+
+      const std::vector<double> HitToXYZ(const recob::Hit& hit) const;
+      const std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) const{ return this->HitToXYZ(*hit);}
+
+
+
+      const double HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
+      const double HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
+
+      const double HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const; 
+
+
+      const double HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> > const& hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const; 
+
+      const std::set<int> GetSetOfTrackIds() const { return fPartInv->GetSetOfTrackIds();}
+      const std::set<int> GetSetOfEveIds() const { return fPartInv->GetSetOfEveIds();}
+
+      const std::set<int> GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+      const std::set<int> GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+
+      const std::vector<  double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const;
+
+    private:
+      cheat::ParticleInventory  const* fPartInv; //The constructor needs to put something in here
+      geo::GeometryCore         const* fGeom;
+      detinfo::DetectorClocks   const* fDetClocks;
+      const art::InputTag       fG4ModuleLabel;
+      const art::InputTag       fHitLabel;
+      const double              fMinHitEnergyFraction;
+
+
+      mutable std::vector<art::Ptr<sim::SimChannel>>       fSimChannels;
+      mutable std::vector< art::Ptr<recob::Hit> >          fAllHitList;
+
+  };//end class BackTracker
+
+}//end namespace cheat
+
+#include "BackTracker.tpp"
+
+#endif //CHEAT_BACKTRACKER_H

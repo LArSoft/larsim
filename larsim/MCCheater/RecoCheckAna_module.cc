@@ -27,7 +27,7 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/Event.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/BackTrackerService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 
@@ -87,7 +87,7 @@ private:
 		  TH1D*                                                            purityEfficiency,
 		  TH2D*                                                            purityEfficiency2D);
 
-  art::ServiceHandle<cheat::BackTracker> fBT; ///< the back tracker service
+  art::ServiceHandle<cheat::BackTrackerService> fBT; ///< the back tracker service
 
   std::string fHitModuleLabel;		 ///< label for module making the hits
   std::string fClusterModuleLabel;	 ///< label for module making the clusters
@@ -312,7 +312,7 @@ void cheat::RecoCheckAna::CheckReco(int                                 const& c
     std::set<int> id;
     id.insert(*itr);
 
-    // use the cheat::BackTracker to find purity and efficiency for these hits
+    // use the cheat::BackTrackerService to find purity and efficiency for these hits
     double purity     = fBT->HitCollectionPurity(id, colHits);
     double efficiency = fBT->HitCollectionEfficiency(id, colHits, allhits, view);
     
@@ -435,7 +435,7 @@ void cheat::RecoCheckAna::CheckRecoVertices(art::Event                          
 
     for(size_t tv = 0; tv < ids.size(); ++tv){
 
-      // use the cheat::BackTracker to find purity and efficiency for these hits
+      // use the cheat::BackTrackerService to find purity and efficiency for these hits
       double purity     = fBT->HitCollectionPurity(ids[tv], hits);
       double efficiency = fBT->HitCollectionEfficiency(ids[tv], hits, allhits, geo::k3D);
 
@@ -484,7 +484,7 @@ void cheat::RecoCheckAna::CheckRecoEvents(art::Event                            
     // get the hits associated with this event
     std::vector< art::Ptr< recob::Hit > > hits = fmh.at(ev);
 
-    // use the cheat::BackTracker to find purity and efficiency for these hits
+    // use the cheat::BackTrackerService to find purity and efficiency for these hits
     double purity     = fBT->HitCollectionPurity(ids, hits);
     double efficiency = fBT->HitCollectionEfficiency(ids, hits, allhits, geo::k3D);
 
@@ -560,7 +560,7 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
   // map the g4 track id to energy deposited in a hit
   std::map<int, double> g4IDToHitEnergy;
   for(size_t h = 0; h < allhits.size(); ++h){
-    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackID(allhits[h]);
+    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackIDEs(allhits[h]);
     for(size_t e = 0; e < hitTrackIDs.size(); ++e){
       g4IDToHitEnergy[hitTrackIDs[e].trackID] += hitTrackIDs[e].energy;
     }

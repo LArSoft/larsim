@@ -24,7 +24,7 @@
 #include "cetlib/exception.h"
 
 // LArSoft Includes
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
@@ -113,11 +113,11 @@ namespace simfilter {
   {
 
     //get the list of particles from this event
-    art::ServiceHandle<cheat::BackTracker> bt;
+    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
     art::ServiceHandle<geo::Geometry> geom;
 
     // get the particles from the back tracker
-    const sim::ParticleList& Particles = bt->ParticleList();
+    const sim::ParticleList& Particles = pi_serv->ParticleList();
     std::vector<const simb::MCParticle*> pvec;
     pvec.reserve(Particles.size());
     for (const auto& PartPair: Particles) {

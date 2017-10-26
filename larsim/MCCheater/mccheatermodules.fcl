@@ -28,10 +28,6 @@ standard_cosmicraybackground:
  module_type:        "CosmicRayBackground"
 }
 
-standard_backtrackerloader:
-{
- module_type:        "BackTrackerLoader"
-}
 standard_photonbacktrackerloader:
 {
  module_type:        "PhotonBackTrackerLoader"

@@ -42,7 +42,6 @@ physics:
    generator: @local::argoneut_nuance
    largeant:  @local::dunefd_largeant	  
    daq:       @local::dunefd_simwire       
-   backtrack: @local::standard_backtrackerloader
    caldata:   @local::dunefd_calwire
    gaushit:   @local::dunefd_gaushitfinder
    hitcheat:  @local::dunefd_hitcheater
@@ -58,7 +57,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant, daq, backtrack, caldata, gaushit, hitcheat, apahit, rns ] 
+ simulate: [ generator, largeant, daq,  caldata, gaushit, hitcheat, apahit, rns ] 
  larana: [ largana ] 
 
  #define the output stream, there could be more than one if using filters 
