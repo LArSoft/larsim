@@ -587,7 +587,7 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
   // loop over them
   while( trackItr != trackIDs.end() ){
 
-    const simb::MCParticle* part = fPI->TrackIdToParticle(*trackItr);
+    const simb::MCParticle* part = fPI->TrackIdToParticle_P(*trackItr);
 
     ftrackid = std::abs(*trackItr);
     fpdg     = part->PdgCode();
