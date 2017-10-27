@@ -88,6 +88,7 @@ private:
 		  TH2D*                                                            purityEfficiency2D);
 
   art::ServiceHandle<cheat::BackTrackerService> fBT; ///< the back tracker service
+  art::ServiceHandle<cheat::ParticleInventoryService> fPI; ///< the back tracker service
 
   std::string fHitModuleLabel;		 ///< label for module making the hits
   std::string fClusterModuleLabel;	 ///< label for module making the clusters
@@ -300,7 +301,7 @@ void cheat::RecoCheckAna::CheckReco(int                                 const& c
 {
 
   // grab the set of track IDs for these hits
-  std::set<int> trackIDs = fBT->GetSetOfTrackIDs(colHits);
+  std::set<int> trackIDs = fBT->GetSetOfTrackIds(colHits);
 
   geo::View_t view = colHits[0]->View();
     
@@ -403,7 +404,7 @@ void cheat::RecoCheckAna::CheckRecoVertices(art::Event                          
 					    art::Handle< std::vector<recob::Vertex> >  const& vtxcol,
 					    std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
-  const sim::ParticleList& plist = fBT->ParticleList();
+  const sim::ParticleList& plist = fPI->ParticleList();
 
   std::vector< std::set<int> > ids(1);
   // loop over all primary particles and put their ids into the first set of the 
@@ -461,7 +462,7 @@ void cheat::RecoCheckAna::CheckRecoEvents(art::Event                            
 					  art::Handle< std::vector<recob::Event> >   const& evtcol,
 					  std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
-  const sim::ParticleList& plist = fBT->ParticleList();
+  const sim::ParticleList& plist = fPI->ParticleList();
 
   // loop over all primaries in the plist and grab them and their daughters to put into 
   // the set of track ids to pass on to the back tracker
@@ -579,22 +580,22 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
 
   // fill the tree vectors
   // get all the eveIDs from this event
-  std::set<int> trackIDs = fBT->GetSetOfTrackIDs();
+  std::set<int> trackIDs = fBT->GetSetOfTrackIds();
   std::set<int>::const_iterator trackItr = trackIDs.begin();
 
   // loop over them
   while( trackItr != trackIDs.end() ){
 
-    const simb::MCParticle* part = fBT->TrackIDToParticle(*trackItr);
+    const simb::MCParticle* part = fPI->TrackIdToParticle(*trackItr);
 
     ftrackid = std::abs(*trackItr);
     fpdg     = part->PdgCode();
     fpmom    = part->P();
 
     // figure out how much of the energy deposited from this particle is stored in hits
-    std::vector<sim::IDE> ides = fBT->TrackIDToSimIDE(*trackItr);
+    std::vector<const sim::IDE*> ides = fBT->TrackIdToSimIDEs_Ps(*trackItr);
     double totalDep = 0.;
-    for(size_t i = 0; i < ides.size(); ++i) totalDep += ides[i].energy;
+    for(size_t i = 0; i < ides.size(); ++i) totalDep += ides[i]->energy;
 
     if(totalDep > 0.)
       fhiteff  = g4IDToHitEnergy[*trackItr]/totalDep;

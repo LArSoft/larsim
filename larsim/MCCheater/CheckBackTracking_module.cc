@@ -88,7 +88,7 @@ namespace cheat{
     // loop over the hits and figure out which particle contributed to each one
     std::vector< art::Ptr<recob::Hit> >::iterator itr = hits.begin();
 
-    art::ServiceHandle<cheat::BackTrackerService> bt;
+    art::ServiceHandle<cheat::BackTrackerService> bt_serv;
     art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
 
     // make a collection of the distinct eve ID values
