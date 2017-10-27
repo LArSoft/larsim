@@ -40,8 +40,9 @@ namespace cheat{
       if( this->TrackIdToMCTruthReady() && this->MCTruthListReady( ) ){ return;} 
       this->PrepParticleList( evt); //Make sure we have built the particle list for this event
       const auto& mcpmctAssnsVecIn = *( evt.template getValidHandle<std::vector<art::Assns<simb::MCParticle,simb::MCTruth>>>(fG4ModuleLabel));
+      //std::cout<<"Size of MCParticleToTruthHandle is: "<<assnMCParticleTruthHandle->size()<<"\n";
       for( const auto& mcpmctAssnsIn : mcpmctAssnsVecIn ){ //Loop over vector elements. (should be 1?)
-        for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container of pairs. Loop over entries.
+        for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
         const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
         fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size());
