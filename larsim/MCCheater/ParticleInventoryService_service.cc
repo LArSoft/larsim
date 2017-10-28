@@ -43,13 +43,21 @@
 
 namespace cheat{
 
+  //----------------------------------------------------------------------
   ParticleInventoryService::ParticleInventoryService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg)
-  :fPartInv(pSet.get<fhicl::ParameterSet>("providerConfig"))
+  :fPartInv(pSet.get<fhicl::ParameterSet>("providerConfigParticleInventory"))
   {
-    fG4ModuleLabel = pSet.get<std::string>("G4ModuleLabel", "largeant");
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
 
+  //----------------------------------------------------------------------
+  ParticleInventoryService::ParticleInventoryService(const fhiclConfig& config, art::ActivityRegistry& reg)
+  :fPartInv(config.ParticleInventoryTable())
+  {
+    reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
+  }
+
+  //----------------------------------------------------------------------
   ParticleInventoryService::~ParticleInventoryService()
   {
   } 
