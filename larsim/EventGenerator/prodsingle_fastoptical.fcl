@@ -1,5 +1,5 @@
 #include "services_microboone.fcl"
-#include "backtrackerservice.fcl"
+#include "backtracker.fcl"
 #include "singles.fcl"
 #include "largeantmodules.fcl"
 #include "detsimmodules.fcl"
@@ -16,7 +16,7 @@ services:
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
-  BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
+  BackTracker:  @local::microboone_backtracker # defined in backtracker.fcl
 }
 services.PhotonVisibilityService: @local::standard_photonvisibilityservice
 services.OpDigiProperties:        @local::microboone_opdigiproperties
@@ -42,6 +42,7 @@ physics:
    generator: @local::microboone_singlep	  
    largeant:  @local::microboone_largeant	  
    daq:       @local::microboone_simwire  
+   backtrack: @local::standard_backtrackerloader
    opdigi:    @local::microboone_opdigi
    rns:       {module_type: "RandomNumberSaver"}
  }
@@ -55,7 +56,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant, daq,  opdigi, rns ] 
+ simulate: [ generator, largeant, daq, backtrack, opdigi, rns ] 
  analyzeIt:  [ largana, pmtresponse, opdigiana ]
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]

@@ -1,0 +1,17 @@
+BEGIN_PROLOG
+
+standard_backtracker:
+{
+ G4ModuleLabel:            "largeant" # module that produced the sim::Particle and sim::SimChannel objects
+ MinimumHitEnergyFraction: 0.1        # minimum fraction of energy a G4 trackID contributes to a hit to be 
+                                      # counted in hit based efficiency and purity calculations
+}
+
+jp250L_backtracker:     @local::standard_backtracker
+bo_backtracker:         @local::standard_backtracker
+argoneut_backtracker:   @local::standard_backtracker
+microboone_backtracker: @local::standard_backtracker
+dune35t_backtracker:    @local::standard_backtracker
+dunefd_backtracker:     @local::standard_backtracker
+
+END_PROLOG

@@ -14,8 +14,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/MCCheater/BackTrackerService.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
+#include "larsim/MCCheater/BackTracker.h"
 #include "lardataobj/RecoBase/Hit.h"
 
 
@@ -88,8 +87,7 @@ namespace cheat{
     // loop over the hits and figure out which particle contributed to each one
     std::vector< art::Ptr<recob::Hit> >::iterator itr = hits.begin();
 
-    art::ServiceHandle<cheat::BackTrackerService> bt_serv;
-    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+    art::ServiceHandle<cheat::BackTracker> bt;
 
     // make a collection of the distinct eve ID values
     std::set<int> eveIDs;
@@ -99,9 +97,9 @@ namespace cheat{
       // print the truth information for this hit
       mf::LogInfo("CheckBackTracking") << *((*itr).get()) << "\n channel is: " << (*itr)->Channel();
 
-      std::vector<sim::TrackIDE> trackides = bt_serv->HitToTrackIDEs(*itr);
-      std::vector<sim::TrackIDE> eveides   = bt_serv->HitToEveTrackIDEs(*itr);
-      std::vector<double>          xyz       = bt_serv->HitToXYZ(*itr);
+      std::vector<sim::TrackIDE> trackides = bt->HitToTrackID(*itr);
+      std::vector<sim::TrackIDE> eveides   = bt->HitToEveID(*itr);
+      std::vector<double>          xyz       = bt->HitToXYZ(*itr);
 
       mf::LogInfo("CheckBackTracking") << "hit weighted mean position is (" 
 				       << xyz[0] << "," << xyz[1] << "," << xyz[2] << ")";
@@ -109,7 +107,7 @@ namespace cheat{
       for(size_t t = 0; t < trackides.size(); ++t){
 
 	// find the Eve particle for the current trackID
-	int eveID = pi_serv->ParticleList().EveId( trackides[t].trackID );
+	int eveID = bt->ParticleList().EveId( trackides[t].trackID );
 
 	mf::LogInfo("CheckBackTracking") << "track id: " << trackides[t].trackID 
 					 << " contributed " << trackides[t].energy << "/" 
@@ -138,9 +136,9 @@ namespace cheat{
       id.insert(*setitr);
       mf::LogInfo("CheckBackTracking") << "eve ID: " << *setitr 
 				       << " purity: " 
-				       << bt_serv->HitCollectionPurity(id, hits)
+				       << bt->HitCollectionPurity(id, hits)
 				       << " efficiency: "
-				       << bt_serv->HitCollectionEfficiency(id, hits, hits, geo::k3D);
+				       << bt->HitCollectionEfficiency(id, hits, hits, geo::k3D);
 
       
       setitr++;

@@ -38,6 +38,7 @@ physics:
   generator: @local::standard_singlemu
   largeant:  @local::dunefd_largeant
   daq:       @local::dunefd_simwire
+  backtrack: @local::standard_backtrackerloader
  }
 
 # filters:{}
@@ -49,7 +50,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant, daq  ]
+ simulate: [ generator, largeant, daq, backtrack ]
  larana: [ largana ]
  
  #define the output stream, there could be more than one if using filters 
