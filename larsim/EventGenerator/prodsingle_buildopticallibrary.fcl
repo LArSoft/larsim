@@ -21,7 +21,7 @@ services:
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
-  BackTracker:  @local::microboone_backtracker # defined in backtrackerservice.fcl
+  BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
 }
 
 
