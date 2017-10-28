@@ -1,5 +1,5 @@
 #include "services_microboone.fcl"
-#include "backtracker.fcl"
+#include "backtrackerservice.fcl"
 #include "caldata.fcl"
 #include "hitfindermodules.fcl"
 #include "singles.fcl"
@@ -19,7 +19,7 @@ services:
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
-  BackTracker:  @local::microboone_backtracker # defined in backtracker.fcl
+  BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
 }
 services.PhotonVisibilityService: @local::standard_photonvisibilityservice_new
 
@@ -45,7 +45,6 @@ physics:
    daq:       @local::microboone_simwire  
    ffthit:    @local::microboone_hitfinder
    caldata:   @local::microboone_calwire	
-   backtrack: @local::standard_backtrackerloader
    opdigi:    @local::microboone_opdigi
    ophit:     @local::microboone_ophitfinder
    #ophitfinder:  @local::standard_oplowintensityhitfinder
