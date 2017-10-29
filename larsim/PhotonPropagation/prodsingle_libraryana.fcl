@@ -1,5 +1,6 @@
 #include "services_microboone.fcl"
 #include "backtrackerservice.fcl"
+#include "particleinventoryservice.fcl"
 #include "caldata.fcl"
 #include "hitfindermodules.fcl"
 #include "singles.fcl"
@@ -20,6 +21,7 @@ services:
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
   BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
+  ParticleInventoryService: @local::standard_particleinventoryservice
 }
 services.PhotonVisibilityService: @local::standard_photonvisibilityservice_new
 

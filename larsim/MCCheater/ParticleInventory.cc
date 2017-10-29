@@ -23,7 +23,7 @@
 
 namespace cheat{
 
-  ParticleInventory::ParticleInventory(const fhiclConfig& config )
+  ParticleInventory::ParticleInventory(const ParticleInventoryConfig& config )
   :fG4ModuleLabel(config.G4ModuleLabel())
   {
   }

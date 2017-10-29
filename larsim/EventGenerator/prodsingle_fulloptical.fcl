@@ -1,5 +1,6 @@
 #include "services_microboone.fcl"
 #include "backtrackerservice.fcl"
+#include "particleinventoryservice.fcl"
 #include "singles.fcl"
 #include "largeantmodules.fcl"
 #include "detsimmodules.fcl"
@@ -17,6 +18,7 @@ services:
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
   BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
+  ParticleInventoryService:  @local::standard_particleinventoryservice # defined in backtrackerservice.fcl
 }
 services.PhotonVisibilityService: @local::standard_photonvisibilityservice
 

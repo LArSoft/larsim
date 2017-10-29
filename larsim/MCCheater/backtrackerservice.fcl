@@ -1,15 +1,17 @@
+#include "particleinventoryservice.fcl"
+
 BEGIN_PROLOG
+
+providerBKConf:{
+ G4ModuleLabel:            "largeant" # module that produced the sim::Particle and sim::SimChannel objects
+ MinimumHitEnergyFraction: 0.1        # minimum fraction of energy a G4 trackID contributes to a hit to be 
+                                      # counted in hit based efficiency and purity calculations
+}
 
 standard_backtrackerservice:
 
 {
-
- G4ModuleLabel:            "largeant" # module that produced the sim::Particle and sim::SimChannel objects
-
- MinimumHitEnergyFraction: 0.1        # minimum fraction of energy a G4 trackID contributes to a hit to be 
-
-                                      # counted in hit based efficiency and purity calculations
-
+ BackTracker: @local::providerBKConf
 }
 
 jp250L_backtrackerservice:     @local::standard_backtrackerservice

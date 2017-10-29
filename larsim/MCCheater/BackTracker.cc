@@ -27,8 +27,10 @@ namespace cheat{
 
   //-----------------------------------------------------------------------
   BackTracker::BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock )
-    :fPartInv(partInv),fGeom(geom),fDetClocks(detClock),fG4ModuleLabel(config.G4ModuleLabel()),
-    fHitLabel(config.DefaultHitModuleLabel()),fMinHitEnergyFraction(config.MinHitEnergyFraction())
+    :fPartInv(partInv), fGeom(geom), fDetClocks(detClock),
+    fG4ModuleLabel(config.G4ModuleLabel()),
+    fHitLabel(config.DefaultHitModuleLabel()),
+    fMinHitEnergyFraction(config.MinHitEnergyFraction())
   {
   }
 

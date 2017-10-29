@@ -36,7 +36,7 @@ namespace cheat{
   {
     public:
       ////////////////Types/////////////////
-      struct fhiclConfig{
+      struct ParticleInventoryConfig{
         fhicl::Atom<art::InputTag> G4ModuleLabel{
           fhicl::Name("G4ModuleLabel"), 
           fhicl::Comment("The label of the LArG4 module used to produce the art file we will be backtracking in"), 
@@ -48,7 +48,10 @@ namespace cheat{
       { return static_cast<cheat::ParticleInventory const*>(this); }
       
       ///////////Constructor///////////////
-      ParticleInventory(const fhiclConfig& config );
+      ParticleInventory( )
+       :fG4ModuleLabel("largeant")
+      { }
+      ParticleInventory(const ParticleInventoryConfig& config );
       ParticleInventory(const fhicl::ParameterSet& pSet );
       ~ParticleInventory();
 

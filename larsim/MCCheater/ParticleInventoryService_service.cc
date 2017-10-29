@@ -44,16 +44,19 @@
 namespace cheat{
 
   //----------------------------------------------------------------------
-  ParticleInventoryService::ParticleInventoryService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg)
-  :fPartInv(pSet.get<fhicl::ParameterSet>("providerConfigParticleInventory"))
+  ParticleInventoryService::ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg)
+//  :fPartInv(config.ParticleInventoryTable())
   {
+    std::cout<<"Config Dump from ParticleInventoryService using fhicl Table\n";
+    config.ParticleInventoryTable.print_allowed_configuration(std::cout);
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
 
   //----------------------------------------------------------------------
-  ParticleInventoryService::ParticleInventoryService(const fhiclConfig& config, art::ActivityRegistry& reg)
-  :fPartInv(config.ParticleInventoryTable())
+  ParticleInventoryService::ParticleInventoryService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg)
+//  :fPartInv(pSet.get<fhicl::ParameterSet>("ParticleInventory"))
   {
+    std::cout<<"\n\n\n\nConfigDump from ParticleInventoryService using ParameterSet.\n"<<pSet.to_string()<<"\n\n\n\n";
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
 

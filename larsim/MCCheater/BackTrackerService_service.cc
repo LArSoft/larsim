@@ -24,7 +24,7 @@ namespace cheat{
   //---------------------------------------------------------------------
   BackTrackerService::BackTrackerService( const fhicl::ParameterSet& pSet,  art::ActivityRegistry& reg)
     :fBackTracker(
-        pSet.get<fhicl::ParameterSet>("providerBackTracker"), 
+        pSet.get<fhicl::ParameterSet>("BackTracker"), 
         lar::providerFrom<cheat::ParticleInventoryService>(), 
         lar::providerFrom<geo::Geometry>(),
         lar::providerFrom<detinfo::DetectorClocksService>())

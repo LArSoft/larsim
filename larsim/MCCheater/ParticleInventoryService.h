@@ -33,9 +33,9 @@ namespace cheat{
   {
     public:
 
-      struct fhiclConfig{
-        fhicl::Table<ParticleInventory::fhiclConfig> ParticleInventoryTable{
-          fhicl::Name("providerConfigParticleInventory"),
+      struct ParticleInventoryServiceConfig{
+        fhicl::Table<ParticleInventory::ParticleInventoryConfig> ParticleInventoryTable{
+          fhicl::Name("ParticleInventory"),
           fhicl::Comment("This is the fhicl configuration for the ParticleInventory Service Provider") };
       };
 
@@ -43,13 +43,10 @@ namespace cheat{
       using provider_type = ParticleInventory;
       provider_type const* provider() const
       { return static_cast<provider_type const*>(&fPartInv); }
-//      const ParticleInventory* provider() const {return &fPartInv;}
-//      const std::shared_ptr<cheat::ParticleInventory> AccessInventory(){ return fPartInv; }
 
-//      provider_type const* provider() const {return static_cast<provider_type const*>(fPartInv);}
 
+      ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg);
       ParticleInventoryService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-      ParticleInventoryService(const fhiclConfig& config, art::ActivityRegistry& reg);
       ~ParticleInventoryService();
 
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.

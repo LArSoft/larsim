@@ -23,9 +23,11 @@ cet_make_library(
   ) 
 
 simple_plugin(ParticleInventoryService "service"
-  lardata_Utilities
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
   larsim_MCCheater_ParticleInventory
+  larsim_Simulation 
+  lardata_Utilities
+  nutools_ParticleNavigation 
+  lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
@@ -44,7 +46,9 @@ simple_plugin(ParticleInventoryService "service"
 
 simple_plugin(PhotonBackTracker "service"
   lardata_Utilities
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+  larsim_Simulation 
+  nutools_ParticleNavigation 
+  lardataobj_Simulation
   lardataobj_RecoBase
   larcorealg_Geometry
   larcore_Geometry_Geometry_service
@@ -69,7 +73,8 @@ simple_plugin(BackTrackerService "service"
   larsim_MCCheater_ParticleInventory
   larsim_MCCheater_ParticleInventoryService_service
   lardata_Utilities
-  larsim_Simulation nutools_ParticleNavigation 
+  larsim_Simulation 
+  nutools_ParticleNavigation 
   lardataobj_Simulation
   lardataobj_RecoBase
   larcorealg_Geometry

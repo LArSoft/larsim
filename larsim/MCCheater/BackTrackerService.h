@@ -32,7 +32,7 @@ namespace cheat{
 
       struct fhiclConfig{
         fhicl::Table < BackTracker::fhiclConfig > BackTrackerTable{
-          fhicl::Name("providerBackTracker"),
+          fhicl::Name("BackTracker"),
             fhicl::Comment("This is the fhicl configuration of the BackTracker service provider.") };
       };
 

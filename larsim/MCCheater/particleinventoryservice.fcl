@@ -1,9 +1,10 @@
 BEGIN_PROLOG
 
+PIProv: {
+  G4Label: "largeant"
+}
 standard_particleinventoryservice: {
-  providerConfigParticleInventory: {
-    G4Label: "largeant"
-  }
+  ParticleInventory: @local::PIProv
 }
 
 jp250L_particleinventoryservice:     @local::standard_particleinventoryservice
@@ -14,4 +15,5 @@ dune35t_particleinventoryservice:    @local::standard_particleinventoryservice
 dunefd_particleinventoryservice:     @local::standard_particleinventoryservice
 
 END_PROLOG
+
 
