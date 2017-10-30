@@ -1,6 +1,6 @@
 cet_make_library(
   LIBRARY_NAME larsim_MCCheater_ParticleInventory
-  SOURCE ParticleInventory.cc
+  SOURCE ParticleInventory.cc ParticleInventory.tcc
   LIBRARIES
   canvas
   lardata_Utilities
@@ -11,7 +11,7 @@ cet_make_library(
   ) 
 cet_make_library(
   LIBRARY_NAME larsim_MCCheater_BackTracker
-  SOURCE BackTracker.cc
+  SOURCE BackTracker.cc BackTracker.tcc
   LIBRARIES
   canvas
   lardata_Utilities

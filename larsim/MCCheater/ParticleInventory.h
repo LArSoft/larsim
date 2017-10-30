@@ -129,7 +129,7 @@ namespace cheat{
 
 }//namespace
 
-#include "ParticleInventory.tpp"
+#include "ParticleInventory.tcc"
 
 #endif //CHEAT_PARTICLEINVENTORY_H
 
