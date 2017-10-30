@@ -48,9 +48,6 @@ namespace cheat{
       { return static_cast<cheat::ParticleInventory const*>(this); }
       
       ///////////Constructor///////////////
-      ParticleInventory( )
-       :fG4ModuleLabel("largeant")
-      { }
       ParticleInventory(const ParticleInventoryConfig& config );
       ParticleInventory(const fhicl::ParameterSet& pSet );
       ~ParticleInventory();

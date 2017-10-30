@@ -320,5 +320,7 @@ namespace cheat{
     return fBackTracker.SpacePointToXYZ(spt, *fEvt);
   }
 
+    DEFINE_ART_SERVICE(BackTrackerService)
+
 
 }//end namespace cheat
