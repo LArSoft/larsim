@@ -100,6 +100,12 @@ namespace cheat{
   //Loop Event and grab MCTruths. Quick and clean as possible.
 
   //deliverables
+  
+  const sim::ParticleList& ParticleInventoryService::ParticleList() const { 
+    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+    return fPartInv.ParticleList(); 
+  } //This should be replaced with a public struct so we can get away from the nutools dependency.
+  
   const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() {
     if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
     return fPartInv.MCTruthVector_Ps();

@@ -50,7 +50,8 @@ namespace cheat{
       ~ParticleInventoryService();
 
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.
-      const sim::ParticleList& ParticleList() const { return fPartInv.ParticleList(); } //This should be replaced with a public struct so we can get away from the nutools dependency.
+      const sim::ParticleList& ParticleList() const;
+
       void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv.SetEveIdCalculator(ec); }
 
       //Does this make sense? A track Id to a single particle? This is not a one to one relationship.
