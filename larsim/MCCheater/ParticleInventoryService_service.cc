@@ -101,7 +101,7 @@ namespace cheat{
 
   //deliverables
   
-  const sim::ParticleList& ParticleInventoryService::ParticleList() const { 
+  const sim::ParticleList& ParticleInventoryService::ParticleList() { 
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
     return fPartInv.ParticleList(); 
   } //This should be replaced with a public struct so we can get away from the nutools dependency.

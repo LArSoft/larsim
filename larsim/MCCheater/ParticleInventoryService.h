@@ -50,7 +50,7 @@ namespace cheat{
       ~ParticleInventoryService();
 
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.
-      const sim::ParticleList& ParticleList() const;
+      const sim::ParticleList& ParticleList() ;
 
       void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv.SetEveIdCalculator(ec); }
 
