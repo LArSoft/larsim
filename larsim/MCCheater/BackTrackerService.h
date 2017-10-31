@@ -45,7 +45,7 @@ namespace cheat{
       ~BackTrackerService();
 
       //Move this function into the .cpp file and give it the appropriate prep and check functions
-      const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() const { return fBackTracker.SimChannels(); }
+      const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() const;
 
       const std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id) ;
       const std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) ;

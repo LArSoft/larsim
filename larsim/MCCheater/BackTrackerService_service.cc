@@ -97,6 +97,12 @@ namespace cheat{
   ///////////////////////////////////////////////
 
   //---------------------------------------------------------------------
+  const std::vector < art::Ptr < sim::SimChannel > >& BackTrackerService::SimChannels() const{
+    if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
+    return fBackTracker.SimChannels(); 
+  }
+      
+  //---------------------------------------------------------------------
   const std::vector < const sim::IDE* > BackTrackerService::TrackIdToSimIDEs_Ps(int const& id) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
     return fBackTracker.TrackIdToSimIDEs_Ps(id);
