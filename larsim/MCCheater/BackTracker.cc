@@ -44,10 +44,6 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------
-  BackTracker::~BackTracker()
-  {
-  }
-
   void BackTracker::ClearEvent(){
     fSimChannels.clear();
     fAllHitList.clear();

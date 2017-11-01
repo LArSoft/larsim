@@ -47,7 +47,6 @@ namespace cheat{
 
       ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg);
       ParticleInventoryService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-      ~ParticleInventoryService();
 
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.
       const sim::ParticleList& ParticleList() ;
@@ -84,7 +83,7 @@ namespace cheat{
 
       cheat::ParticleInventory fPartInv;
 
-      const art::Event* fEvt;
+      const art::Event* fEvt=nullptr;
 
       void priv_PrepEvent        ( const art::Event& evt );
       void priv_PrepParticleList            ( );

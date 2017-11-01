@@ -34,11 +34,6 @@ namespace cheat{
   {
   }
 
-  //----------------------------------------------------------------------
-  ParticleInventory::~ParticleInventory()
-  {
-  } 
-
   //-----------------------------------------------------------------------
   void ParticleInventory::ClearEvent(){
     fParticleList.clear();

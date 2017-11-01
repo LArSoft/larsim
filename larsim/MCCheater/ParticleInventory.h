@@ -50,9 +50,6 @@ namespace cheat{
       ///////////Constructor///////////////
       ParticleInventory(const ParticleInventoryConfig& config );
       ParticleInventory(const fhicl::ParameterSet& pSet );
-      ~ParticleInventory();
-
-
 
       template<typename Evt> //Template must be decalred and defined outside of the .cpp file.
         void PrepEvent        ( const Evt& evt );

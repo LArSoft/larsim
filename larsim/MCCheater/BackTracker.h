@@ -45,7 +45,6 @@ namespace cheat{
           const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
       BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv,
           const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
-      ~BackTracker();
 
       template<typename Evt>
         void PrepEvent ( const Evt& evt );
