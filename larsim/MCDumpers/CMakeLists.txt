@@ -1,4 +1,7 @@
 art_make(
+  LIB_LIBRARIES
+    ${ROOT_EG}
+    ${ROOT_CORE}
   MODULE_LIBRARIES
   #  lardata_Utilities
     nusimdata_SimulationBase
