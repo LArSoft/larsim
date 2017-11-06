@@ -1,5 +1,0 @@
-service.ParticleInventoryService: {
-  providerConfig: {
-    G4Label: "largeant"
-  }
-}
