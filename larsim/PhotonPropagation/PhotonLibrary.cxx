@@ -59,14 +59,24 @@ namespace phot{
     tt->Branch("Visibility", &Visibility, "Visibility/F");
     if(storeReflected)
     {
+      if (!hasReflected()) {
+        // if this happens, you need to call CreateEmptyLibrary() with storeReflected set true
+        throw cet::exception("PhotonLibrary")
+          << "StoreLibraryToFile() requested to store reflected light, which was not simulated.";
+      }
       tt->Branch("ReflVisibility", &ReflVisibility, "ReflVisibility/F");
       if (fLookupTable.size() != fReflLookupTable.size())
           throw cet::exception(" Photon Library ") << "Reflected light lookup table is different size than Direct table \n"
                                                    << "this should not be happening. ";
     }
-    if(storeReflT0)
+    if(storeReflT0) {
+      if (!hasReflectedT0()) {
+        // if this happens, you need to call CreateEmptyLibrary() with storeReflectedT0 set true
+        throw cet::exception("PhotonLibrary")
+          << "StoreLibraryToFile() requested to store reflected light timing, which was not simulated.";
+      }
       tt->Branch("ReflTfirst", &ReflTfirst, "ReflTfirst/F");
-    
+    }
     for(size_t ivox=0; ivox!= fNVoxels; ++ivox)
     {
       for(size_t ichan=0; ichan!= fNOpChannels; ++ichan)
@@ -90,8 +100,11 @@ namespace phot{
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::CreateEmptyLibrary( size_t NVoxels, size_t NOpChannels)
-  {
+  void PhotonLibrary::CreateEmptyLibrary(
+    size_t NVoxels, size_t NOpChannels,
+    bool storeReflected /* = false */,
+    bool storeReflT0 /* = false */
+  ) {
     fLookupTable.clear();
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
@@ -100,8 +113,10 @@ namespace phot{
     fNOpChannels = NOpChannels;
 
     fLookupTable.resize(LibrarySize(), 0.);
-    fReflLookupTable.resize(LibrarySize(), 0.);
-    fReflTLookupTable.resize(LibrarySize(), 0.);
+    fHasReflected = storeReflected;
+    if (storeReflected) fReflLookupTable.resize(LibrarySize(), 0.);
+    fHasReflectedT0 = storeReflT0;
+    if (storeReflT0) fReflTLookupTable.resize(LibrarySize(), 0.);
 
   }
 
@@ -146,8 +161,10 @@ namespace phot{
     tt->SetBranchAddress("Voxel",      &Voxel);
     tt->SetBranchAddress("OpChannel",  &OpChannel);
     tt->SetBranchAddress("Visibility", &Visibility);
+    fHasReflected = getReflected;
     if(getReflected)
       tt->SetBranchAddress("ReflVisibility", &ReflVisibility);
+    fHasReflectedT0 = getReflT0;
     if(getReflT0)
       tt->SetBranchAddress("ReflTfirst", &ReflTfirst);
     
@@ -157,9 +174,9 @@ namespace phot{
 
     
     fLookupTable.resize(LibrarySize(), 0.);
-    if(getReflected)
+    if(fHasReflected)
       fReflLookupTable.resize(LibrarySize(), 0.);
-    if(getReflT0)
+    if(fHasReflectedT0)
       fReflTLookupTable.resize(LibrarySize(), 0.);
     
     size_t NEntries = tt->GetEntries();
@@ -169,9 +186,9 @@ namespace phot{
 
       // Set the visibility at this optical channel
       uncheckedAccess(Voxel, OpChannel) = Visibility;
-      if(getReflected)
+      if(fHasReflected)
 	uncheckedAccessRefl(Voxel, OpChannel) = ReflVisibility;
-      if(getReflT0)
+      if(fHasReflectedT0)
 	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
 
     } // for entries
