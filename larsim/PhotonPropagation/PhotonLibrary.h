@@ -33,11 +33,16 @@ namespace phot{
     float const* GetReflCounts(size_t Voxel) const;
     float const* GetReflT0s(size_t Voxel) const;
 
+    /// Returns whether the current library deals with reflected light count.
+    bool hasReflected() const { return fHasReflected; }
+    
+    /// Returns whether the current library deals with reflected light timing.
+    bool hasReflectedT0() const { return fHasReflectedT0; }
 
     
     void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false);
     void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool storeReflected=false, bool storeReflT0=false);
-    void CreateEmptyLibrary(size_t NVoxels, size_t NChannels);
+    void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false);
     
 
     int NOpChannels() const { return fNOpChannels; }
@@ -47,6 +52,10 @@ namespace phot{
     size_t LibrarySize() const { return fNVoxels * fNOpChannels; }
     
   private:
+    
+    bool fHasReflected   = false; ///< Whether the current library deals with reflected light counts.
+    bool fHasReflectedT0 = false; ///< Whether the current library deals with reflected light timing.
+    
     // fLookupTable[unchecked_index(Voxel, OpChannel)] = Count
     // for each voxel, all NChannels() channels are stored in sequence
     std::vector<float> fLookupTable;
