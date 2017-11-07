@@ -299,12 +299,18 @@ namespace cheat{
 
     // make a map of evd ID values and fraction of energy represented by
     // that eve id in this hit
-    std::map<int, float> eveToE;
+    struct TrackIDEinfo {
+      float E;
+      float NumElectrons;
+    };
+    std::map<int, TrackIDEinfo> eveToE;
     
     double totalE = 0.;
     for(size_t t = 0; t < trackides.size(); ++t){
-      eveToE[fParticleList.EveId( trackides[t].trackID )] += trackides[t].energy;
+      auto& info = eveToE[fParticleList.EveId( trackides[t].trackID )];
+      info.E += trackides[t].energy;
       totalE += trackides[t].energy;
+      info.NumElectrons += trackides[t].numElectrons;
     }
     
     // now fill the eveides vector from the map
@@ -313,8 +319,9 @@ namespace cheat{
     for(auto itr = eveToE.begin(); itr != eveToE.end(); itr++){
       sim::TrackIDE temp;
       temp.trackID    = (*itr).first;
-      temp.energyFrac = (*itr).second/totalE;
-      temp.energy     = (*itr).second;
+      temp.energyFrac = (*itr).second.E/totalE;
+      temp.energy     = (*itr).second.E;
+      temp.numElectrons = (*itr).second.NumElectrons;
       eveides.push_back(std::move(temp));
     }
 
@@ -649,6 +656,7 @@ namespace cheat{
         info.trackID    = simides[e].trackID;
         info.energyFrac = simides[e].energy/totalE;
         info.energy     = simides[e].energy;
+        info.numElectrons = simides[e].numElectrons;
         
         trackIDEs.push_back(info);
         
