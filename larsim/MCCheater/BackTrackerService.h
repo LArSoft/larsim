@@ -42,7 +42,6 @@ namespace cheat{
 
       BackTrackerService( const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
       BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
-      ~BackTrackerService();
 
       //Move this function into the .cpp file and give it the appropriate prep and check functions
       const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() ;
@@ -108,7 +107,7 @@ namespace cheat{
       //Configure services
       cheat::BackTracker fBackTracker;
 
-      const art::Event* fEvt;
+      const art::Event* fEvt=nullptr;
 
       //Prep functions go here.
       void priv_PrepEvent ( const art::Event& evt );

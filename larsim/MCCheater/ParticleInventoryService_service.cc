@@ -60,10 +60,6 @@ namespace cheat{
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
 
-  //----------------------------------------------------------------------
-  ParticleInventoryService::~ParticleInventoryService()
-  {
-  } 
 
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){

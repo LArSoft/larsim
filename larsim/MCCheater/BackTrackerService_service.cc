@@ -43,8 +43,6 @@ namespace cheat{
     reg.sPreProcessEvent.watch(this, &BackTrackerService::priv_PrepEvent);
   }
 
-  //---------------------------------------------------------------------
-  BackTrackerService::~BackTrackerService(){}
 
   ////////////////////////////////////////////////
   //////////Event Rebuild Implimentation//////////
