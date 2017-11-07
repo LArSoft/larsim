@@ -2,7 +2,6 @@
 /// \file  BackTracker.h
 /// \brief back track the reconstruction to the simulation
 ///
-/// \version $Id: Geometry.h,v 1.16 2009/11/03 22:53:20 brebel Exp $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_BACKTRACKER_H
@@ -64,7 +63,15 @@ namespace cheat{
     const simb::MCParticle*              TrackIDToParticle(int const& id)       const;
     const simb::MCParticle*              TrackIDToMotherParticle(int const& id) const;
 
+    /// Loop over all sim::SimChannels and fill a vector of sim::IDE objects for the given
+    /// track id. Note that this function will return sim::IDE from ALL planes and you
+    /// do not have the plane id information in sim::IDE; use the overloaded function
+    /// TrackIDToSimIDE(int const& id, const geo::View_t view) to select view.
     std::vector<sim::IDE>                TrackIDToSimIDE(int const& id)         const;
+
+    /// Loop over sim::SimChannels in which belong to selected view and fill a vector
+    /// of sim::IDE objects for the given track id.
+    std::vector<sim::IDE>                TrackIDToSimIDE(int const& id, const geo::View_t view) const;
 
     // Get art::Ptr<> to simb::MCTruth and related information
     const art::Ptr<simb::MCTruth>&       TrackIDToMCTruth(int const& id)                        const;
@@ -74,7 +81,8 @@ namespace cheat{
 
     // this method will return the Geant4 track IDs of 
     // the particles contributing ionization electrons to the identified hit
-    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit);
+    std::vector<sim::TrackIDE> HitToTrackID(recob::Hit const& hit);
+    std::vector<sim::TrackIDE> HitToTrackID(art::Ptr<recob::Hit> const& hit) { return HitToTrackID(*hit); }
     
     // method to return a subset of allhits that are matched to a list of TrackIDs
     const std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIDsToHits(std::vector<art::Ptr<recob::Hit>> const& allhits,
