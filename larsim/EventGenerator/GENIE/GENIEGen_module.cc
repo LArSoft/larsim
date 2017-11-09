@@ -43,6 +43,7 @@
 #include "nutools/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
+#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/GTruth.h"
@@ -350,6 +351,24 @@ namespace evgen{
 	  util::CreateAssn(*this, evt, *truthcol, *gtruthcol, *tgtassn, gtruthcol->size()-1, gtruthcol->size());
 	  
 	  FillHistograms(truth);
+	  
+	  // check that the process code is not unsupported by GENIE
+	  // (see issue #18025 for reference);
+	  // if it is, print all the information we can about this truth record
+	  if (truth.NeutrinoSet() && (truth.GetNeutrino().InteractionType() == simb::kNuanceOffset)) {
+	    mf::LogWarning log("GENIEmissingProcessMapping");
+	    log << "Found an interaction that is not represented by the interaction type code in GENIE:"
+	      "\nMCTruth record:"
+	      "\n"
+	      ;
+	    sim::dump::DumpMCTruth(log, truth, 2U); // 2 trajectory points per line
+	    log <<
+	      "\nGENIE truth record:"
+	      "\n"
+	      ;
+	    sim::dump::DumpGTruth(log, gTruth);
+	  } // if 
+	  
 	}// end if genie was able to make an event
 
       }// end event generation loop
