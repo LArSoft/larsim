@@ -1,0 +1,42 @@
+#include "services_dune.fcl"
+
+#include "photpropmodules.fcl"
+
+process_name: PhotonLibraryAnalyzer
+
+services:
+{
+  TFileService: { fileName: "photlib_ana_hist.root" }
+  TimeTracker: {}
+  MemoryTracker: {}
+  RandomNumberGenerator: {}
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+
+  message: @local::standard_info
+}
+services.Geometry: @local::dune10kt_1x2x6_v1_geo
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  1
+}
+
+outputs:
+{
+}
+
+physics:
+{
+ analyzers:{}
+
+ ana:  [ analyze ]
+}
+
+physics.analyzers.analyze: @local::standard_photonlibraryanalyzer
+physics.analyzers.analyze.alt_x_axis: "X"
+
+#services.PhotonVisibilityService.HybridLibrary: true
+# export FW_SEARCH_PATH=$FW_SEARCH_PATH:/home/bckhouse/dev/photon_lib/dev/srcs/dunetpc/dune/Geometry/
+#services.PhotonVisibilityService.LibraryFile: "fit.BAK.root"

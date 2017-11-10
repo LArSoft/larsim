@@ -80,8 +80,15 @@ namespace phot{
 	  throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string() << "\n";
 
 	if(!fParameterization) {
+          art::ServiceHandle<geo::Geometry> geom;
+
 	  mf::LogInfo("PhotonVisibilityService") << "PhotonVisibilityService Loading photon library from file "
 						 << LibraryFileWithPath
+                                                 << " for "
+                                                 << GetVoxelDef().GetNVoxels()
+                                                 << " voxels and "
+                                                 << geom->NOpDets()
+                                                 << " optical detectors."
 						 << std::endl;
 
           if(fHybrid){

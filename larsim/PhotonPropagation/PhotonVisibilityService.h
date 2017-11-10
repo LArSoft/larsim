@@ -59,7 +59,7 @@ namespace phot{
     bool StoreReflT0() const { return fStoreReflT0; }
     bool IncludePropTime() const { return fIncludePropTime; }
 
-    sim::PhotonVoxelDef GetVoxelDef() const {return fVoxelDef; }
+    const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
     
   private:

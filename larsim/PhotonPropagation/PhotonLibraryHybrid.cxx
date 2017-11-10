@@ -42,7 +42,7 @@ namespace phot
       fit || fatal("Didn't find "+dirname+"/fit in "+fname);
       rec.fit = FitFunc((*fit)[0], (*fit)[1]);
 
-      TTree* tr = (TTree*)f.Get("tr");
+      TTree* tr = (TTree*)dir->Get("tr");
       tr || fatal("Didn't find "+dirname+"/tr in "+fname);
       int vox;
       float vis;
@@ -65,6 +65,9 @@ namespace phot
 
     !fRecords.empty() || fatal("No opdet_*/ directories in "+fname);
 
+    art::ServiceHandle<geo::Geometry> geom;
+    geom->NOpDets() == fRecords.size() || fatal("Number of opdets mismatch");
+
     fRecords.shrink_to_fit(); // save memory
   }
 
@@ -80,17 +83,22 @@ namespace phot
   }
 
   //--------------------------------------------------------------------
-  const float* PhotonLibraryHybrid::GetCounts(size_t Voxel) const
+  const float* PhotonLibraryHybrid::GetCounts(size_t vox) const
   {
-    fatal("GetCounts() unimplemented");
-    return 0;
+    // The concept of GetCounts() conflicts fairly badly with how this library
+    // works. This is probably the best we can do.
+
+    static float* counts = 0;
+    if(!counts) counts = new float[NOpChannels()];
+    for(int od = 0; od < NOpChannels(); ++od) counts[od] = GetCount(vox, od);
+    return counts;
   }
 
   //--------------------------------------------------------------------
   float PhotonLibraryHybrid::GetCount(size_t vox, size_t opchan) const
   {
-    int(vox) < NVoxels() || fatal("Voxel out of range");
-    int(opchan) < NOpChannels() || fatal("OpChan out of range");
+    int(vox) < NVoxels() || fatal("GetCount(): Voxel out of range");
+    int(opchan) < NOpChannels() || fatal("GetCount(): OpChan out of range");
 
     const OpDetRecord& rec = fRecords[opchan];
 
@@ -109,7 +117,6 @@ namespace phot
 
     const double dist = opdet.DistanceToPoint(xyzvox);
 
-    // Additional 1/r^2 term isn't included in the stored fit
-    return rec.fit.Eval(dist)/(dist*dist);
+    return rec.fit.Eval(dist);
   }
 }
