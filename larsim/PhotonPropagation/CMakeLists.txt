@@ -5,6 +5,7 @@ art_make(
 	                lardataobj_RawData
 	                larcorealg_Geometry
 	                larcore_Geometry_Geometry_service
+                        larsim_Simulation
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
