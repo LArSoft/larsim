@@ -79,6 +79,7 @@ namespace phot{
     bool                 fLibraryBuildJob;
     bool                 fDoNotLoadLibrary;
     bool                 fParameterization;
+    bool                 fHybrid;
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;

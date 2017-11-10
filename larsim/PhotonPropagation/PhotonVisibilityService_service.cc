@@ -33,6 +33,7 @@
 #include "larcorealg/Geometry/OpDetGeo.h"
 
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
+#include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
 
 #include "TF1.h"
 
@@ -55,6 +56,7 @@ namespace phot{
     fLibraryBuildJob(false),
     fDoNotLoadLibrary(false),
     fParameterization(false),
+    fHybrid(false),
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
@@ -70,10 +72,6 @@ namespace phot{
     // Don't do anything if the library has already been loaded.
 
     if(fTheLibrary == 0) {
-      PhotonLibrary* lib = new PhotonLibrary;
-      fTheLibrary = lib;
-
-
       if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
 	std::string LibraryFileWithPath;
 	cet::search_path sp("FW_SEARCH_PATH");
@@ -85,8 +83,18 @@ namespace phot{
 	  mf::LogInfo("PhotonVisibilityService") << "PhotonVisibilityService Loading photon library from file "
 						 << LibraryFileWithPath
 						 << std::endl;
-	  size_t NVoxels = GetVoxelDef().GetNVoxels();
-	  lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
+
+          if(fHybrid){
+            fTheLibrary = new PhotonLibraryHybrid(LibraryFileWithPath,
+                                                  GetVoxelDef());
+          }
+          else{
+            PhotonLibrary* lib = new PhotonLibrary;
+            fTheLibrary = lib;
+
+            size_t NVoxels = GetVoxelDef().GetNVoxels();
+            lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
+          }
 	}
       }
       else {
@@ -96,6 +104,9 @@ namespace phot{
         size_t NVoxels = GetVoxelDef().GetNVoxels();
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
+        PhotonLibrary* lib = new PhotonLibrary;
+        fTheLibrary = lib;
+
 	lib->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0);
       }
     }
@@ -126,6 +137,7 @@ namespace phot{
     // Library details
     fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob"     );
     fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
+    fHybrid               = p.get< bool        >("HybridLibrary", false);
     fLibraryFile          = p.get< std::string >("LibraryFile"         );
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
     fStoreReflected       = p.get< bool        >("StoreReflected", false);
