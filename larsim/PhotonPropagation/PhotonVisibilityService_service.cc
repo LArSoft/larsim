@@ -32,6 +32,10 @@
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 
+#include "larsim/PhotonPropagation/PhotonLibrary.h"
+
+#include "TF1.h"
+
 namespace phot{
 
   //--------------------------------------------------------------------
@@ -66,7 +70,8 @@ namespace phot{
     // Don't do anything if the library has already been loaded.
 
     if(fTheLibrary == 0) {
-      fTheLibrary = new PhotonLibrary();
+      PhotonLibrary* lib = new PhotonLibrary;
+      fTheLibrary = lib;
 
 
       if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
@@ -81,7 +86,7 @@ namespace phot{
 						 << LibraryFileWithPath
 						 << std::endl;
 	  size_t NVoxels = GetVoxelDef().GetNVoxels();
-	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
+	  lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
 	}
       }
       else {
@@ -91,12 +96,13 @@ namespace phot{
         size_t NVoxels = GetVoxelDef().GetNVoxels();
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
-	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0);
+	lib->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0);
       }
     }
   }
 
   //--------------------------------------------------------------------
+  /*
   void PhotonVisibilityService::StoreLibrary()
   {
     if(fTheLibrary == 0)
@@ -109,7 +115,7 @@ namespace phot{
 	fTheLibrary->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0);
       }
   }
-  
+  */
 
   //--------------------------------------------------------------------
   void PhotonVisibilityService::reconfigure(fhicl::ParameterSet const& p)
@@ -318,7 +324,8 @@ namespace phot{
     N     = fCurrentValue;
     VoxID = fCurrentVoxel;
   }
-  
+
+  /*
   //------------------------------------------------------
 
   void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N, bool wantReflected)
@@ -334,6 +341,7 @@ namespace phot{
     //std::cout<< " PVS logging " << VoxID << " " << OpChannel<<std::endl;
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
+  */
 
   //------------------------------------------------------
 
@@ -383,7 +391,7 @@ namespace phot{
   }
 
   //------------------------------------------------------     
-
+  /*
   void PhotonVisibilityService::SetLibraryReflT0Entry(int VoxID, int OpChannel, float T0)
   {
 
@@ -394,7 +402,7 @@ namespace phot{
 
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
-
+  */
   //------------------------------------------------------      
 
   float PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, int Channel) const
