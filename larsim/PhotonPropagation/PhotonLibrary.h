@@ -4,13 +4,15 @@
 #ifndef PHOTONLIBRARY_H
 #define PHOTONLIBRARY_H
 
+#include "larsim/PhotonPropagation/IPhotonLibrary.h"
+
 #include "TTree.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
 
 namespace phot{
   
-  class PhotonLibrary
+  class PhotonLibrary : public IPhotonLibrary
   {
   public:
     PhotonLibrary();
@@ -19,25 +21,25 @@ namespace phot{
     TTree * ProduceTTree();
     
 
-    float GetCount(size_t Voxel, size_t OpChannel) const;    
+    virtual float GetCount(size_t Voxel, size_t OpChannel) const override;
     void SetCount(size_t Voxel, size_t OpChannel, float Count);
 
-    float GetReflCount(size_t Voxel, size_t OpChannel) const;
+    virtual float GetReflCount(size_t Voxel, size_t OpChannel) const override;
     void SetReflCount(size_t Voxel, size_t OpChannel, float Count);
 
-    float GetReflT0(size_t Voxel, size_t OpChannel) const;
+    virtual float GetReflT0(size_t Voxel, size_t OpChannel) const override;
     void SetReflT0(size_t Voxel, size_t OpChannel, float reflT0);
     
     /// Returns a pointer to NOpChannels() visibility values, one per channel
-    float const* GetCounts(size_t Voxel) const;
-    float const* GetReflCounts(size_t Voxel) const;
-    float const* GetReflT0s(size_t Voxel) const;
+    virtual float const* GetCounts(size_t Voxel) const override;
+    virtual float const* GetReflCounts(size_t Voxel) const override;
+    virtual float const* GetReflT0s(size_t Voxel) const override;
 
     /// Returns whether the current library deals with reflected light count.
-    bool hasReflected() const { return fHasReflected; }
+    virtual bool hasReflected() const override { return fHasReflected; }
     
     /// Returns whether the current library deals with reflected light timing.
-    bool hasReflectedT0() const { return fHasReflectedT0; }
+    virtual bool hasReflectedT0() const override { return fHasReflectedT0; }
 
     
     void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false);
@@ -45,12 +47,9 @@ namespace phot{
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false);
     
 
-    int NOpChannels() const { return fNOpChannels; }
-    int NVoxels() const { return fNVoxels; }
-    
-    /// Returns the number of elements in the library
-    size_t LibrarySize() const { return fNVoxels * fNOpChannels; }
-    
+    virtual int NOpChannels() const override { return fNOpChannels; }
+    virtual int NVoxels() const override { return fNVoxels; }
+
   private:
     
     bool fHasReflected   = false; ///< Whether the current library deals with reflected light counts.
