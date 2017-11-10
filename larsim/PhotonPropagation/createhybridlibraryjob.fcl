@@ -1,0 +1,34 @@
+#include "services_dune.fcl"
+
+process_name: CreateHybridLibrary
+
+services:
+{
+  TimeTracker: {}
+  MemoryTracker: {}
+  RandomNumberGenerator: {}
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+
+  message: @local::standard_info
+}
+services.Geometry: @local::dune10kt_1x2x6_v1_geo
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  1
+}
+
+outputs:
+{
+}
+
+physics:
+{
+ analyzers:{}
+
+ ana:  [ create ]
+}
+
+physics.analyzers.create: {module_type: "CreateHybridLibrary"}
