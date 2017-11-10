@@ -40,6 +40,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Persistency/Common/PtrMaker.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
@@ -65,7 +66,6 @@
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/LArG4Parameters.h"
-#include "lardata/Utilities/AssociationUtil.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
@@ -475,6 +475,8 @@ namespace larg4 {
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
     std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
+    
+    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
 
 
     // Fetch the lists of LAr voxels and particles.
@@ -532,7 +534,9 @@ namespace larg4 {
             continue;
           }
           partCol->push_back(std::move(p));
-          util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
+          
+          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1));
+          
           // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
           // is solved and adopted in LArSoft, after which moving will suffice
           // to avoid dramatic memory usage spikes;
