@@ -26,7 +26,7 @@
 
 
 namespace cheat{
-  class BackTrackerService 
+  class BackTrackerService: private BackTracker
   {
     public:
 
@@ -38,7 +38,7 @@ namespace cheat{
 
 
       using provider_type = BackTracker;
-      const BackTracker* provider() const {return &fBackTracker;}
+      const BackTracker* provider() const {return this;}
 
       BackTrackerService( const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
       BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
@@ -105,7 +105,7 @@ namespace cheat{
       //The BackTracker service has no parameters.
 
       //Configure services
-      cheat::BackTracker fBackTracker;
+//      cheat::BackTracker fBackTracker;
 
       const art::Event* fEvt=nullptr;
 
@@ -117,8 +117,8 @@ namespace cheat{
 
       bool priv_CanRun (const art::Event& evt);
 
-      bool priv_SimChannelsReady() { return fBackTracker.SimChannelsReady();}
-      bool priv_AllHitListReady() { return fBackTracker.AllHitListReady();}
+      bool priv_SimChannelsReady() { return BackTracker::SimChannelsReady();}
+      bool priv_AllHitListReady() { return BackTracker::AllHitListReady();}
 
 
 

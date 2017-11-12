@@ -23,7 +23,7 @@ namespace cheat{
 
   //---------------------------------------------------------------------
   BackTrackerService::BackTrackerService( const fhicl::ParameterSet& pSet,  art::ActivityRegistry& reg)
-    :fBackTracker(
+    :BackTracker(
         pSet.get<fhicl::ParameterSet>("BackTracker"), 
         lar::providerFrom<cheat::ParticleInventoryService>(), 
         lar::providerFrom<geo::Geometry>(),
@@ -34,7 +34,7 @@ namespace cheat{
 
   //---------------------------------------------------------------------
   BackTrackerService::BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg)
-    :fBackTracker(
+    :BackTracker(
         config.BackTrackerTable(),
         lar::providerFrom<cheat::ParticleInventoryService>(),
         lar::providerFrom<geo::Geometry>(),
@@ -54,12 +54,12 @@ namespace cheat{
   //---------------------------------------------------------------------
   void BackTrackerService::priv_PrepEvent( const art::Event& evt ){
     fEvt=&evt;
-    fBackTracker.ClearEvent();
+    BackTracker::ClearEvent();
   }
 
   //---------------------------------------------------------------------
   bool BackTrackerService::priv_CanRun(const art::Event& evt){
-    return fBackTracker.CanRun(evt);
+    return BackTracker::CanRun(evt);
   }
 
   //---------------------------------------------------------------------
@@ -73,14 +73,14 @@ namespace cheat{
   void BackTrackerService::priv_PrepSimChannels(){
     if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
     if( this->priv_SimChannelsReady()){ return; }
-    fBackTracker.PrepSimChannels(*fEvt);
+    BackTracker::PrepSimChannels(*fEvt);
   }
 
   //---------------------------------------------------------------------
   void BackTrackerService::priv_PrepAllHitList(){
     if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
     if( this->priv_AllHitListReady() ){ return; }
-    fBackTracker.PrepAllHitList(*fEvt);
+    BackTracker::PrepAllHitList(*fEvt);
   }
 
   /////////////////////////////////////////////
@@ -97,118 +97,118 @@ namespace cheat{
   //---------------------------------------------------------------------
   const std::vector < art::Ptr < sim::SimChannel > >& BackTrackerService::SimChannels() {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.SimChannels(); 
+    return BackTracker::SimChannels(); 
   }
       
   //---------------------------------------------------------------------
   const std::vector < const sim::IDE* > BackTrackerService::TrackIdToSimIDEs_Ps(int const& id) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.TrackIdToSimIDEs_Ps(id);
+    return BackTracker::TrackIdToSimIDEs_Ps(id);
   }
 
   //---------------------------------------------------------------------
   const std::vector < const sim::IDE* > BackTrackerService::TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.TrackIdToSimIDEs_Ps(id, view);
+    return BackTracker::TrackIdToSimIDEs_Ps(id, view);
   }
 
   //---------------------------------------------------------------------
   const art::Ptr < sim::SimChannel > BackTrackerService::FindSimChannel( raw::ChannelID_t channel ){
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.FindSimChannel(channel);
+    return BackTracker::FindSimChannel(channel);
   }
 
   //---------------------------------------------------------------------
   const std::vector < sim::TrackIDE > BackTrackerService::ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time,    const double hit_end_time){
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.ChannelToTrackIDEs(channel, hit_start_time, hit_end_time);
+    return BackTracker::ChannelToTrackIDEs(channel, hit_start_time, hit_end_time);
   }
 
   //---------------------------------------------------------------------
   const std::vector < sim::TrackIDE >  BackTrackerService::HitToTrackIDEs(recob::Hit const& hit){
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToTrackIDEs(hit);
+    return BackTracker::HitToTrackIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector < sim::TrackIDE >  BackTrackerService::HitToTrackIDEs(art::Ptr < recob::Hit > const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToTrackIDEs(hit);
+    return BackTracker::HitToTrackIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector < int >  BackTrackerService::HitToTrackIds(recob::Hit const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToTrackIds(hit);
+    return BackTracker::HitToTrackIds(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector < sim::TrackIDE >  BackTrackerService::HitToEveTrackIDEs(recob::Hit const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToEveTrackIDEs(hit);
+    return BackTracker::HitToEveTrackIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector < sim::TrackIDE >  BackTrackerService::HitToEveTrackIDEs(art::Ptr < recob::Hit > const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToEveTrackIDEs(hit);
+    return BackTracker::HitToEveTrackIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector < art::Ptr < recob::Hit > > BackTrackerService::TrackIdToHits_Ps( const int& tkId, std::vector < art::Ptr < recob::Hit > > const& hitsIn ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.TrackIdToHits_Ps( tkId, hitsIn);
+    return BackTracker::TrackIdToHits_Ps( tkId, hitsIn);
   }
 
   //---------------------------------------------------------------------
   const std::vector < art::Ptr < recob::Hit > > BackTrackerService::TrackIdToHits_Ps( const int& tkId ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
     if(!this->priv_AllHitListReady()){this->priv_PrepAllHitList();}
-    return fBackTracker.TrackIdToHits_Ps( tkId);
+    return BackTracker::TrackIdToHits_Ps( tkId);
   }
 
   //---------------------------------------------------------------------
   const std::vector < std::vector < art::Ptr < recob::Hit > > > BackTrackerService::TrackIdsToHits_Ps( std::vector < int > const&      tkIds, std:: vector < art::Ptr < recob::Hit > > const& hitsIn ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.TrackIdsToHits_Ps( tkIds, hitsIn);
+    return BackTracker::TrackIdsToHits_Ps( tkIds, hitsIn);
   }
 
   //---------------------------------------------------------------------
   const std::vector < std::vector < art::Ptr < recob::Hit > > > BackTrackerService::TrackIdsToHits_Ps( std::vector < int > const&      tkIds ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
     if(!this->priv_AllHitListReady()){this->priv_PrepAllHitList();}
-    return fBackTracker.TrackIdsToHits_Ps( tkIds);
+    return BackTracker::TrackIdsToHits_Ps( tkIds);
   }
 
   //---------------------------------------------------------------------
   const std::vector< sim::IDE > BackTrackerService::HitToAvgSimIDEs ( recob::Hit const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToAvgSimIDEs(hit);
+    return BackTracker::HitToAvgSimIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector< sim::IDE > BackTrackerService::HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToAvgSimIDEs(hit);
+    return BackTracker::HitToAvgSimIDEs(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector< const sim::IDE* > BackTrackerService::HitToSimIDEs_Ps (recob::Hit const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToSimIDEs_Ps(hit);
+    return BackTracker::HitToSimIDEs_Ps(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector< const sim::IDE* > BackTrackerService::HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToSimIDEs_Ps(hit);
+    return BackTracker::HitToSimIDEs_Ps(hit);
   }
 
   //---------------------------------------------------------------------
   const std::vector<double> BackTrackerService::SimIDEsToXYZ( std::vector< sim::IDE > const& ides) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.SimIDEsToXYZ(ides);
+    return BackTracker::SimIDEsToXYZ(ides);
   }
 
 
@@ -216,7 +216,7 @@ namespace cheat{
   const std::vector<double> BackTrackerService::SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.SimIDEsToXYZ(ide_Ps);
+    return BackTracker::SimIDEsToXYZ(ide_Ps);
   }
 
 
@@ -225,7 +225,7 @@ namespace cheat{
   const std::vector<double> BackTrackerService::HitToXYZ(const recob::Hit& hit) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitToXYZ(hit);
+    return BackTracker::HitToXYZ(hit);
   }
 
 
@@ -242,7 +242,7 @@ namespace cheat{
   const double BackTrackerService::HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const&      hits) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitCollectionPurity(trackIds, hits);
+    return BackTracker::HitCollectionPurity(trackIds, hits);
   }
 
 
@@ -250,7 +250,7 @@ namespace cheat{
   const double BackTrackerService::HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> >       const&     hits) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitChargeCollectionPurity(trackIds, hits);
+    return BackTracker::HitChargeCollectionPurity(trackIds, hits);
   }
 
 
@@ -259,7 +259,7 @@ namespace cheat{
   const double BackTrackerService::HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const&  hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view)
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitCollectionEfficiency(trackIds, hits, allhits, view);
+    return BackTracker::HitCollectionEfficiency(trackIds, hits, allhits, view);
   }
 
 
@@ -268,7 +268,7 @@ namespace cheat{
   const double BackTrackerService::HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> >          const&        hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.HitChargeCollectionEfficiency(trackIds, hits, allhits, view);
+    return BackTracker::HitChargeCollectionEfficiency(trackIds, hits, allhits, view);
   }
 
 
@@ -277,7 +277,7 @@ namespace cheat{
   const std::set<int> BackTrackerService::GetSetOfTrackIds() 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.GetSetOfTrackIds();
+    return BackTracker::GetSetOfTrackIds();
   }
 
 
@@ -285,7 +285,7 @@ namespace cheat{
   const std::set<int> BackTrackerService::GetSetOfEveIds() 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.GetSetOfEveIds();
+    return BackTracker::GetSetOfEveIds();
   }
 
 
@@ -294,7 +294,7 @@ namespace cheat{
   const std::set<int> BackTrackerService::GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.GetSetOfTrackIds(hits);
+    return BackTracker::GetSetOfTrackIds(hits);
   }
 
 
@@ -302,26 +302,26 @@ namespace cheat{
   const std::set<int> BackTrackerService::GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) 
   {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return fBackTracker.GetSetOfEveIds(hits);
+    return BackTracker::GetSetOfEveIds(hits);
   }
 
   //---------------------------------------------------------------------
   const std::vector< double> BackTrackerService::SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) {
     if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
-    return fBackTracker.SpacePointHitsToWeightedXYZ(hits);
+    return BackTracker::SpacePointHitsToWeightedXYZ(hits);
   }
 
   //---------------------------------------------------------------------
   const std::vector< art::Ptr< recob::Hit > > BackTrackerService::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const&   spt) {
     //Note, this function is goofy in that it doesn't use the hits prepared by the module. That should likely be changed to make things more uniform.
     if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
-    return fBackTracker.SpacePointToHits_Ps(spt, *fEvt);
+    return BackTracker::SpacePointToHits_Ps(spt, *fEvt);
   }
 
   //---------------------------------------------------------------------
   const std::vector< double > BackTrackerService::SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt) {
     if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
-    return fBackTracker.SpacePointToXYZ(spt, *fEvt);
+    return BackTracker::SpacePointToXYZ(spt, *fEvt);
   }
 
     DEFINE_ART_SERVICE(BackTrackerService)
