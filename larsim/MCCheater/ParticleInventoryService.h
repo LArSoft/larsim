@@ -29,7 +29,7 @@
 
 
 namespace cheat{
-  class ParticleInventoryService
+  class ParticleInventoryService: private ParticleInventory
   {
     public:
 
@@ -42,7 +42,9 @@ namespace cheat{
       //attempting to be compliant with ServiceUtil.h. Should ask LArSoft expert to review.
       using provider_type = ParticleInventory;
       provider_type const* provider() const
-      { return static_cast<provider_type const*>(&fPartInv); }
+      { return static_cast<provider_type const*>(this); }
+//      { return static_cast<provider_type const*>(&this); }
+////      { return static_cast<provider_type const*>(&fPartInv); }
 
 
       ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg);
@@ -51,7 +53,8 @@ namespace cheat{
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.
       const sim::ParticleList& ParticleList() ;
 
-      void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv.SetEveIdCalculator(ec); }
+      void SetEveIdCalculator(sim::EveIdCalculator *ec) { ParticleInventory::SetEveIdCalculator(ec); }
+//      void SetEveIdCalculator(sim::EveIdCalculator *ec) { fPartInv.SetEveIdCalculator(ec); }
 
       //Does this make sense? A track Id to a single particle? This is not a one to one relationship.
       const simb::MCParticle* TrackIdToParticle_P(int const& id);
@@ -81,7 +84,7 @@ namespace cheat{
 
     private:
 
-      cheat::ParticleInventory fPartInv;
+//      cheat::ParticleInventory fPartInv; //This is probably the wrong way to do this-> Making ParticleInventoryService a private derived class from the ParticleInventory would be better. Note, this should be a PRIVATE derived class, so as to not expose the ParticleInventory directly to art users.
 
       const art::Event* fEvt=nullptr;
 
@@ -91,9 +94,12 @@ namespace cheat{
       void priv_PrepTrackIdToMCTruthIndex   ( );
       bool priv_CanRun(const art::Event& evt) const;
 
-      bool priv_ParticleListReady()     { return  fPartInv.ParticleListReady(); }
-      bool priv_MCTruthListReady()      { return  fPartInv.MCTruthListReady(); }
-      bool priv_TrackIdToMCTruthReady() { return  fPartInv.TrackIdToMCTruthReady();}
+      bool priv_ParticleListReady()     { return ParticleInventory::ParticleListReady(); }
+//      bool priv_ParticleListReady()     { return  fPartInv.ParticleListReady(); }
+      bool priv_MCTruthListReady()      { return ParticleInventory::MCTruthListReady(); }
+//      bool priv_MCTruthListReady()      { return  fPartInv.MCTruthListReady(); }
+      bool priv_TrackIdToMCTruthReady() { return  ParticleInventory::TrackIdToMCTruthReady();}
+//      bool priv_TrackIdToMCTruthReady() { return  fPartInv.TrackIdToMCTruthReady();}
   };//class ParticleInventoryService
 
 }//namespace

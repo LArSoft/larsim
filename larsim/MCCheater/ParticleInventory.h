@@ -44,8 +44,8 @@ namespace cheat{
       };
 
       //using provider_type = ParticleInventory;
-      cheat::ParticleInventory const* provider() const
-      { return static_cast<cheat::ParticleInventory const*>(this); }
+      //cheat::ParticleInventory const* provider() const
+      //{ return static_cast<cheat::ParticleInventory const*>(this); }
       
       ///////////Constructor///////////////
       ParticleInventory(const ParticleInventoryConfig& config );
