@@ -16,7 +16,7 @@
 // std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
 //   if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();} //The GetTrackIds in ParticleInventory needs the ParticleList. 
 //                                                                         So, we check if it's ready, and if it isn't we ready it.
-//   return fPartInv.GetSetOfTrackIds();
+//   return ParticleInventory::GetSetOfTrackIds();
 // }
 //
 // If you have any questions about how to incorperate something in here, let me know. I know this is a rather odd
@@ -45,7 +45,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   ParticleInventoryService::ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg)
-  :fPartInv(config.ParticleInventoryTable())
+  :ParticleInventory(config.ParticleInventoryTable())
   {
 //    std::cout<<"Config Dump from ParticleInventoryService using fhicl Table\n";
 //    config.ParticleInventoryTable.print_allowed_configuration(std::cout);
@@ -54,7 +54,7 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   ParticleInventoryService::ParticleInventoryService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg)
-  :fPartInv(pSet.get<fhicl::ParameterSet>("ParticleInventory"))
+  :ParticleInventory(pSet.get<fhicl::ParameterSet>("ParticleInventory"))
   {
 //    std::cout<<"\n\n\n\nConfigDump from ParticleInventoryService using ParameterSet.\n"<<pSet.to_string()<<"\n\n\n\n";
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
@@ -64,32 +64,32 @@ namespace cheat{
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
     fEvt=&evt;
-    fPartInv.ClearEvent();
+    ParticleInventory::ClearEvent();
   }
 
   //----------------------------------------------------------------------
   bool ParticleInventoryService::priv_CanRun(const art::Event& evt) const{
-    return fPartInv.CanRun(evt);
+    return ParticleInventory::CanRun(evt);
   }
 
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepParticleList(){
     if(!this->priv_CanRun(*fEvt)) {throw;}
     if(this->priv_ParticleListReady()){ return; }
-    fPartInv.PrepParticleList(*fEvt);
+    ParticleInventory::PrepParticleList(*fEvt);
   }
 
 
   void ParticleInventoryService::priv_PrepTrackIdToMCTruthIndex( ){
     if(!this->priv_CanRun(*fEvt)){throw;}
     if( this->priv_TrackIdToMCTruthReady()){ return; }
-    fPartInv.PrepTrackIdToMCTruthIndex(*fEvt);
+    ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);
   }//End priv_PrepTrackIdToMCTruthIndexList
 
   void ParticleInventoryService::priv_PrepMCTruthList( ){
     if(!this->priv_CanRun(*fEvt)){throw;}
     if(this->priv_MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
-    fPartInv.PrepMCTruthList(*fEvt);
+    ParticleInventory::PrepMCTruthList(*fEvt);
   }//End PrepMCTruthList
 
 
@@ -99,32 +99,32 @@ namespace cheat{
   
   const sim::ParticleList& ParticleInventoryService::ParticleList() { 
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.ParticleList(); 
+    return ParticleInventory::ParticleList(); 
   } //This should be replaced with a public struct so we can get away from the nutools dependency.
   
   const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() {
     if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
-    return fPartInv.MCTruthVector_Ps();
+    return ParticleInventory::MCTruthVector_Ps();
   }
 
   //TrackIdToParticleP
 
   const simb::MCParticle* ParticleInventoryService::TrackIdToParticle_P(int const& id) {
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.TrackIdToParticle_P(id);
+    return ParticleInventory::TrackIdToParticle_P(id);
   }//End TrackIdToParticle
 
 
   const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const& id) 
   {   
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.TrackIdToMotherParticle_P(id);
+    return ParticleInventory::TrackIdToMotherParticle_P(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruth_P(int const& id) 
   {
     if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
-    return fPartInv.TrackIdToMCTruth_P(id);
+    return ParticleInventory::TrackIdToMCTruth_P(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p)
@@ -137,17 +137,17 @@ namespace cheat{
   {
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
     if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
-    return fPartInv.MCTruthToParticles_Ps(mct);
+    return ParticleInventory::MCTruthToParticles_Ps(mct);
   }
 
   std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.GetSetOfTrackIds();
+    return ParticleInventory::GetSetOfTrackIds();
   }
 
   std::set<int> ParticleInventoryService::GetSetOfEveIds(){
     if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    return fPartInv.GetSetOfEveIds();
+    return ParticleInventory::GetSetOfEveIds();
   }
 
   DEFINE_ART_SERVICE(ParticleInventoryService)
