@@ -9,7 +9,7 @@ namespace cheat{
           << "Is this file real data?";
       }
       fSimChannels.clear();
-      fAllHitList.clear();
+//      fAllHitList.clear();
       this->PrepSimChannels( evt );
       //this->PrepAllHitList ( evt ); //This line temporarily commented out until I figure out how I want PrepAllHitList to work.
 
@@ -25,13 +25,13 @@ namespace cheat{
     }
 
   //--------------------------------------------------------------------
-  template<typename Evt>
+/*  template<typename Evt>
     void BackTracker::PrepAllHitList( const Evt& evt){
       if(this->AllHitListReady()){return;}
       const auto& allHitsHandle = evt.template getValidHandle<std::vector<recob::Hit>>(fHitLabel);
       art::fill_ptr_vector(fAllHitList, allHitsHandle);
     }
-
+*/
   //--------------------------------------------------------------------
   template<typename Evt>
     const std::vector< art::Ptr< recob::Hit > > BackTracker::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const& spt, const Evt& evt) const{

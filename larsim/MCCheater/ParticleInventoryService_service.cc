@@ -60,11 +60,20 @@ namespace cheat{
     reg.sPreProcessEvent.watch(this, &ParticleInventoryService::priv_PrepEvent);
   }
 
+  //_--Temporary Rebuild function (until the service can be lazy again).
+  void ParticleInventoryService::Rebuild( const art::Event& evt){
+    this->priv_PrepEvent(evt);
+  }
 
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
     fEvt=&evt;
     ParticleInventory::ClearEvent();
+    if( ! this->priv_CanRun(); ) { return; }
+    this->priv_PrepParticleList();
+    this->priv_PrepMCTruthList();
+    this->priv_PrepTrackIdToMCTruthIndex();
+    fEvt=nullptr; //dont keep the cached pointer since it will expire right after this, and I want to make sure bad calls to prep functions fail.
   }
 
   //----------------------------------------------------------------------

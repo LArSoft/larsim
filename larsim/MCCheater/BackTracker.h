@@ -57,8 +57,8 @@ namespace cheat{
       template<typename Evt>
         void PrepSimChannels ( const Evt& evt );
 
-      template<typename Evt>
-        void PrepAllHitList ( const Evt& evt);
+//      template<typename Evt>
+//        void PrepAllHitList ( const Evt& evt);
 
       template<typename Evt>
         bool CanRun(const Evt& evt){ return !(evt.isRealData());}
@@ -74,7 +74,7 @@ namespace cheat{
 
 
       bool SimChannelsReady() const { return !( fSimChannels.empty() ); }
-      bool AllHitListReady () const { return !( fAllHitList.empty() ); }
+//      bool AllHitListReady () const { return !( fAllHitList.empty() ); }
 
       const std::vector<art::Ptr<sim::SimChannel>>& SimChannels() const { return fSimChannels; }
       //All Hit List would go here. We explicitly choose not to include it, as the user should not be using backtracker to access Hits. This could change in a concievable future use case where we also allow the user to define what the "AllHitList" should be, though this would have ramifications on other functions.
@@ -101,12 +101,13 @@ namespace cheat{
 
       //I will not return these by copy, as that could get very large very quickly.
       std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const; 
-      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId ) const
-      {return this->TrackIdToHits_Ps(tkId, fAllHitList); }
+//I am not allowing this function for now, as caching the allhitlist indiscriminately is a catastrophically bad idea.
+//      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId ) const
+//      {return this->TrackIdToHits_Ps(tkId, fAllHitList); }
 
       std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const;
-      std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds ) const
-      {return this->TrackIdsToHits_Ps(tkIds, fAllHitList);}
+//      std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds ) const
+//      {return this->TrackIdsToHits_Ps(tkIds, fAllHitList);}
 
       const std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) const;
       const std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) const{ return this->HitToAvgSimIDEs(*hit);}
@@ -151,7 +152,7 @@ namespace cheat{
 
 
       mutable std::vector<art::Ptr<sim::SimChannel>>       fSimChannels;
-      mutable std::vector< art::Ptr<recob::Hit> >          fAllHitList;
+//      mutable std::vector< art::Ptr<recob::Hit> >          fAllHitList;
 
   };//end class BackTracker
 

@@ -44,7 +44,10 @@ namespace cheat{
       BackTrackerService( const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
       BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
 
-      //Move this function into the .cpp file and give it the appropriate prep and check functions
+      //Temporrary rebuild function (until I can make this lazy again.
+
+      void Rebuild( const art::Event& evt );
+
       const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() ;
 
       const std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id) ;
@@ -113,13 +116,13 @@ namespace cheat{
       //Prep functions go here.
       void priv_PrepEvent ( const art::Event& evt );
       void priv_PrepSimChannels ();
-      void priv_PrepAllHitList ();
+//      void priv_PrepAllHitList ();
       void priv_PrepFailed ();
 
       bool priv_CanRun (const art::Event& evt);
 
       bool priv_SimChannelsReady() { return BackTracker::SimChannelsReady();}
-      bool priv_AllHitListReady() { return BackTracker::AllHitListReady();}
+//      bool priv_AllHitListReady() { return BackTracker::AllHitListReady();}
 
 
 

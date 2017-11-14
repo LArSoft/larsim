@@ -52,6 +52,8 @@ namespace cheat{
       //Move this function into the ParticleInventory.cpp file, and give it an appropriate CheckReady and Prep before the return.
       const sim::ParticleList& ParticleList() ;
 
+      void Rebuild( const art::Event& evt );
+
       void SetEveIdCalculator(sim::EveIdCalculator *ec) { ParticleInventory::SetEveIdCalculator(ec); }
 
       //Does this make sense? A track Id to a single particle? This is not a one to one relationship.

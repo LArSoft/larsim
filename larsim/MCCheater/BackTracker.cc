@@ -50,7 +50,7 @@ namespace cheat{
   //-----------------------------------------------------------------------
   void BackTracker::ClearEvent(){
     fSimChannels.clear();
-    fAllHitList.clear();
+//    fAllHitList.clear();
   }
 
   //-----------------------------------------------------------------------
