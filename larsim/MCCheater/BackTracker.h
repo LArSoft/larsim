@@ -22,6 +22,7 @@
 
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/RecoBase/Hit.h"
@@ -36,15 +37,19 @@ namespace cheat{
 
   class BackTracker{
     public:
+
+      //Structure for configuration parameters. (fhicl validation)
       struct fhiclConfig{
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4   module used to produce the art file we will be using."), "largeant"};
         fhicl::Atom<art::InputTag> DefaultHitModuleLabel{fhicl::Name("DefaultHitModuleLabel"), fhicl::Comment("The label  of the module used to produce the hits in the art file we will default to when no hitlist is provided."), "hitfd"};
         fhicl::Atom<double> MinHitEnergyFraction{fhicl::Name("MinHitEnergyFraction"), fhicl::Comment("The minimum     contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
       };
-      BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
-      BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock);
+
+
+      BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock );
+      BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock );
+      //I may need to include this to delete copy of service providers.
+      BackTracker(BackTracker const&) = delete;
 
       template<typename Evt>
         void PrepEvent ( const Evt& evt );
@@ -137,9 +142,9 @@ namespace cheat{
       const std::vector<  double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const;
 
     private:
-      cheat::ParticleInventory  const* fPartInv; //The constructor needs to put something in here
-      geo::GeometryCore         const* fGeom;
-      detinfo::DetectorClocks   const* fDetClocks;
+      const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here
+      const geo::GeometryCore* fGeom;
+      const detinfo::DetectorClocks* fDetClocks;
       const art::InputTag       fG4ModuleLabel;
       const art::InputTag       fHitLabel;
       const double              fMinHitEnergyFraction;

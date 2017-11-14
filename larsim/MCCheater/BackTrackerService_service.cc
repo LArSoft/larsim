@@ -24,10 +24,11 @@ namespace cheat{
   //---------------------------------------------------------------------
   BackTrackerService::BackTrackerService( const fhicl::ParameterSet& pSet,  art::ActivityRegistry& reg)
     :BackTracker(
-        pSet.get<fhicl::ParameterSet>("BackTracker"), 
-        lar::providerFrom<cheat::ParticleInventoryService>(), 
-        lar::providerFrom<geo::Geometry>(),
-        lar::providerFrom<detinfo::DetectorClocksService>())
+       pSet.get<fhicl::ParameterSet>("BackTracker"), 
+       lar::providerFrom<cheat::ParticleInventoryService>(),
+       lar::providerFrom<geo::Geometry>(),
+       lar::providerFrom<detinfo::DetectorClocksService>()
+      )
   {
     reg.sPreProcessEvent.watch(this, &BackTrackerService::priv_PrepEvent);
   }
@@ -35,10 +36,11 @@ namespace cheat{
   //---------------------------------------------------------------------
   BackTrackerService::BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg)
     :BackTracker(
-        config.BackTrackerTable(),
-        lar::providerFrom<cheat::ParticleInventoryService>(),
-        lar::providerFrom<geo::Geometry>(),
-        lar::providerFrom<detinfo::DetectorClocksService>())
+       config.BackTrackerTable(),
+       lar::providerFrom<cheat::ParticleInventoryService>(),
+       lar::providerFrom<geo::Geometry>(),
+       lar::providerFrom<detinfo::DetectorClocksService>()
+      )
   {
     reg.sPreProcessEvent.watch(this, &BackTrackerService::priv_PrepEvent);
   }

@@ -41,8 +41,8 @@ namespace cheat{
 
       //attempting to be compliant with ServiceUtil.h. Should ask LArSoft expert to review.
       using provider_type = ParticleInventory;
-      provider_type const* provider() const
-      { return static_cast<provider_type const*>(this); }
+      const provider_type* provider() const
+      { return static_cast<const provider_type*>(this); }
       //{ return static_cast<provider_type const*>(&fPartInv); }
 
 

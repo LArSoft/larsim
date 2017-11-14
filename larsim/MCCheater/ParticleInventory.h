@@ -44,12 +44,13 @@ namespace cheat{
       };
 
       //using provider_type = ParticleInventory;
-      cheat::ParticleInventory const* provider() const
-      { return static_cast<cheat::ParticleInventory const*>(this); }
+      //cheat::ParticleInventory const* provider() const
+      //{ return static_cast<cheat::ParticleInventory const*>(this); }
       
       ///////////Constructor///////////////
       ParticleInventory(const ParticleInventoryConfig& config );
       ParticleInventory(const fhicl::ParameterSet& pSet );
+      ParticleInventory(ParticleInventory const&) = delete;
 
       template<typename Evt> //Template must be decalred and defined outside of the .cpp file.
         void PrepEvent        ( const Evt& evt );

@@ -38,7 +38,8 @@ namespace cheat{
 
 
       using provider_type = BackTracker;
-      const BackTracker* provider() const {return this;}
+      const provider_type* provider() const 
+      {return static_cast<provider_type const*>(this); }
 
       BackTrackerService( const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
       BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
