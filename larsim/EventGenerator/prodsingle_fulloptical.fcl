@@ -43,6 +43,7 @@ physics:
    generator: @local::microboone_singlep	  
    largeant:  @local::microboone_largeant	  
    daq:       @local::microboone_simwire  
+   backtrack: @local::standard_backtrackerloader
  }
 
  analyzers:
@@ -53,7 +54,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant, daq  ] 
+ simulate: [ generator, largeant, daq, backtrack  ] 
  analyzeIt:  [ largana, pmtresponse ]
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]

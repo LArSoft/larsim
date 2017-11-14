@@ -16,7 +16,7 @@
 // std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
 //   if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();} //The GetTrackIds in ParticleInventory needs the ParticleList. 
 //                                                                         So, we check if it's ready, and if it isn't we ready it.
-//   return fPartInv.GetSetOfTrackIds();
+//   return ParticleInventory::GetSetOfTrackIds();
 // }
 //
 // If you have any questions about how to incorperate something in here, let me know. I know this is a rather odd

@@ -27,19 +27,23 @@ namespace cheat{
 
   //-----------------------------------------------------------------------
   BackTracker::BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock )
-    :fPartInv(partInv), fGeom(geom), fDetClocks(detClock),
-    fG4ModuleLabel(config.G4ModuleLabel()),
-    fHitLabel(config.DefaultHitModuleLabel()),
-    fMinHitEnergyFraction(config.MinHitEnergyFraction())
+    :fPartInv  (partInv),
+     fGeom     (geom),
+     fDetClocks(detClock),
+     fG4ModuleLabel(config.G4ModuleLabel()),
+     fHitLabel(config.DefaultHitModuleLabel()),
+     fMinHitEnergyFraction(config.MinHitEnergyFraction())
   {
   }
 
   //-----------------------------------------------------------------------
   BackTracker::BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock)
-    :fPartInv(partInv),fGeom(geom),fDetClocks(detClock),
-    fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
-    fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
-    fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010))
+    :fPartInv  (partInv),
+     fGeom     (geom),
+     fDetClocks(detClock),
+     fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
+     fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
+     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010))
   {
   }
 

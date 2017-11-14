@@ -45,6 +45,7 @@ physics:
    generator: @local::microboone_singlep	  
    largeant:  @local::microboone_largeant	  
    daq:       @local::microboone_simwire  
+   backtrack: @local::standard_backtrackerloader
    ffthit:    @local::microboone_hitfinder
    caldata:   @local::microboone_calwire	
    opdigi:    @local::microboone_opdigi
