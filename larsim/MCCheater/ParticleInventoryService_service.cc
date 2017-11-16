@@ -69,7 +69,7 @@ namespace cheat{
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
     fEvt=&evt;
     ParticleInventory::ClearEvent();
-    if( ! this->priv_CanRun(); ) { return; }
+    if( ! this->priv_CanRun(evt) ) { return; }
     this->priv_PrepParticleList();
     this->priv_PrepMCTruthList();
     this->priv_PrepTrackIdToMCTruthIndex();

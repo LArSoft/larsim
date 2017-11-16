@@ -62,7 +62,7 @@ namespace cheat{
   void BackTrackerService::priv_PrepEvent( const art::Event& evt ){
     fEvt=&evt;
     BackTracker::ClearEvent();
-    if( ! this->priv_CanRun() ){ return; }
+    if( ! this->priv_CanRun(evt) ){ return; }
     this->priv_PrepSimChannels();
     fEvt=nullptr; //don't save the pointer because it will be useless after this anyways. I want to make sure calls at the wrong time crash.
   }
@@ -171,11 +171,11 @@ namespace cheat{
   }
 
   //---------------------------------------------------------------------
-  const std::vector < art::Ptr < recob::Hit > > BackTrackerService::TrackIdToHits_Ps( const int& tkId ) {
+/*  const std::vector < art::Ptr < recob::Hit > > BackTrackerService::TrackIdToHits_Ps( const int& tkId ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
 //    if(!this->priv_AllHitListReady()){this->priv_PrepAllHitList();}
     return BackTracker::TrackIdToHits_Ps( tkId);
-  }
+  }*/ //I can't support this functino and caching all the hits without lazy implimentation
 
   //---------------------------------------------------------------------
   const std::vector < std::vector < art::Ptr < recob::Hit > > > BackTrackerService::TrackIdsToHits_Ps( std::vector < int > const&      tkIds, std:: vector < art::Ptr < recob::Hit > > const& hitsIn ) {
@@ -184,11 +184,11 @@ namespace cheat{
   }
 
   //---------------------------------------------------------------------
-  const std::vector < std::vector < art::Ptr < recob::Hit > > > BackTrackerService::TrackIdsToHits_Ps( std::vector < int > const&      tkIds ) {
+/*  const std::vector < std::vector < art::Ptr < recob::Hit > > > BackTrackerService::TrackIdsToHits_Ps( std::vector < int > const&      tkIds ) {
     if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
 //    if(!this->priv_AllHitListReady()){this->priv_PrepAllHitList();}
     return BackTracker::TrackIdsToHits_Ps( tkIds);
-  }
+  }*/
 
   //---------------------------------------------------------------------
   const std::vector< sim::IDE > BackTrackerService::HitToAvgSimIDEs ( recob::Hit const& hit) {
