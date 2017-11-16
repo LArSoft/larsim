@@ -3,10 +3,16 @@
 # Purpose:  Dump on screen MC truth content
 # Author:   Gianluca Petrillo (petrillo@fnal.gov)
 # Date:     February 22nd, 2017
-# Version:  1.0
+# Version:  1.1
 #
 # Service dependencies:
 # - message facility
+#
+# Changes
+# 20170222 (petrillo@fnal.gov) [v1.0]
+#   original version
+# 20171103 (petrillo@fnal.gov) [v1.1]
+#   added dump of GENIE truth whenever available
 #
 
 process_name: DumpMCTruth
@@ -72,9 +78,21 @@ physics: {
     #  PointsPerLine: 2
       
     } # dumpmctruth
+    
+    dumpgenietruth: {
+      module_type:  DumpGTruth
+      
+      # output category ("OutputCategory" by default), useful for filtering (see above)
+      OutputCategory: "DumpMCTruth"
+      
+      # specify the label of the simb::MCTruth data products (or producers)
+      # if not specified, will print all of them
+    #  InputTruth: [ "generator" ]
+      
+    } # dumpgenietruth
   } # analyzers
   
-  dumpers: [ dumpmctruth ]
+  dumpers: [ dumpmctruth, dumpgenietruth ]
   
   trigger_paths: []
   end_paths:     [ dumpers ]
