@@ -43,7 +43,6 @@ namespace cheat{
       using provider_type = ParticleInventory;
       const provider_type* provider() const
       { return static_cast<const provider_type*>(this); }
-      //{ return static_cast<provider_type const*>(&fPartInv); }
 
 
       ParticleInventoryService(const ParticleInventoryServiceConfig& config, art::ActivityRegistry& reg);
@@ -84,7 +83,6 @@ namespace cheat{
 
     private:
 
-//      cheat::ParticleInventory fPartInv;
 
       const art::Event* fEvt=nullptr;
 
