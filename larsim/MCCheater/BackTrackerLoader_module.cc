@@ -55,8 +55,8 @@ void cheat::BackTrackerLoader::produce(art::Event & e)
 {
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
-  pi_serv->rebuild(e);
-  bt_serv->rebuild(e);
+  pi_serv->Rebuild(e);
+  bt_serv->Rebuild(e);
 
   return;
 }

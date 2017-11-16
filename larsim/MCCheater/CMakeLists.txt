@@ -136,6 +136,11 @@ simple_plugin(RecoCheckAna "module"
 
   )
 
+simple_plugin(BackTrackerLoader "module"
+  larsim_MCCheater_BackTrackerService_service
+  larsim_MCCheater_ParticleInventoryService_service
+  ${ART_FRAMEWORK_SERVICES_REGISTRY}              
+  )
 simple_plugin(PhotonBackTrackerLoader "module"
   larsim_MCCheater_PhotonBackTracker_service
   ${ART_FRAMEWORK_SERVICES_REGISTRY}              

@@ -85,20 +85,25 @@ namespace cheat{
   void ParticleInventoryService::priv_PrepParticleList(){
     if(!this->priv_CanRun(*fEvt)) {throw;}
     if(this->priv_ParticleListReady()){ return; }
-    ParticleInventory::PrepParticleList(*fEvt);
+    try{ParticleInventory::PrepParticleList(*fEvt);}
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
   }
 
 
   void ParticleInventoryService::priv_PrepTrackIdToMCTruthIndex( ){
     if(!this->priv_CanRun(*fEvt)){throw;}
     if( this->priv_TrackIdToMCTruthReady()){ return; }
-    ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);
+    try{ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);}
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
   }//End priv_PrepTrackIdToMCTruthIndexList
 
   void ParticleInventoryService::priv_PrepMCTruthList( ){
     if(!this->priv_CanRun(*fEvt)){throw;}
     if(this->priv_MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
-    ParticleInventory::PrepMCTruthList(*fEvt);
+    try{    ParticleInventory::PrepMCTruthList(*fEvt); }
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
+    //ToDo. Find out exactly which exception is thrown and catch only that.
+                         
   }//End PrepMCTruthList
 
 

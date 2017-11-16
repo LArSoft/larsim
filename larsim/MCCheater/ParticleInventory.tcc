@@ -5,8 +5,8 @@ namespace cheat{
     void ParticleInventory::PrepEvent        (const Evt& evt ){
       if(!(this->CanRun(evt))){ 
         throw cet::exception("ParticleInventory") 
-        << "Particle Inventory cannot function. "
-        << "Is this file real data?";
+          << "Particle Inventory cannot function. "
+          << "Is this file real data?";
       }
       fParticleList.clear();
       fMCTObj.fMCTruthList.clear();
@@ -26,8 +26,16 @@ namespace cheat{
       }
       //The particle list needs to be built
       //We use auto so that we(the compiler) can determine which type we need for either art or gallery.
-      const auto& partVecIn = *(evt.template getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel)); 
+      const auto& pHandle = evt.template getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel); 
+//      const auto& partVecIn = evt.template getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel); 
+      if(pHandle.failedToGet()){
+        /*mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
+          << fG4ModuleLabel
+          << ", return";*/ //Do this silently so we don't polute the logs. It is expected to fail for all gen and g4 jobs.
+        return;
+      }
 
+      const auto& partVecIn = *pHandle;
       for(const auto& partIn : partVecIn){
         fParticleList.Add(new simb::MCParticle(partIn)); //Is this still doing a copy? If so, another method should be used.
       }
@@ -39,7 +47,9 @@ namespace cheat{
     void ParticleInventory::PrepMCTruthListAndTrackIdToMCTruthIndex(const Evt& evt ) const{
       if( this->TrackIdToMCTruthReady() && this->MCTruthListReady( ) ){ return;} 
       this->PrepParticleList( evt); //Make sure we have built the particle list for this event
-      const auto& mcpmctAssnsIn = *( evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth>>(fG4ModuleLabel));
+      //const auto& mcpmctAssnsIn = *( evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth>>(fG4ModuleLabel));
+      const auto& mcpmctAssnsHandle =  evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth>>(fG4ModuleLabel);
+      const auto& mcpmctAssnsIn = *mcpmctAssnsHandle;
       for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
         const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;

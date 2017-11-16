@@ -9,7 +9,7 @@ namespace cheat{
           << "Is this file real data?";
       }
       fSimChannels.clear();
-//      fAllHitList.clear();
+      //      fAllHitList.clear();
       this->PrepSimChannels( evt );
       //this->PrepAllHitList ( evt ); //This line temporarily commented out until I figure out how I want PrepAllHitList to work.
 
@@ -21,17 +21,23 @@ namespace cheat{
       if(this->SimChannelsReady()){ return;}
       //The SimChannels list needs to be built.
       const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fG4ModuleLabel);
+      if(simChannelsHandle.failedToGet()){
+      /*  mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
+          << fG4ModuleLabel
+          << ", return";*/ //This is now silent as it is expected to happen every generation run. It is also temporary while we wait for
+        return;
+      }
       art::fill_ptr_vector(fSimChannels, simChannelsHandle); 
     }
 
   //--------------------------------------------------------------------
-/*  template<typename Evt>
-    void BackTracker::PrepAllHitList( const Evt& evt){
+  /*  template<typename Evt>
+      void BackTracker::PrepAllHitList( const Evt& evt){
       if(this->AllHitListReady()){return;}
       const auto& allHitsHandle = evt.template getValidHandle<std::vector<recob::Hit>>(fHitLabel);
       art::fill_ptr_vector(fAllHitList, allHitsHandle);
-    }
-*/
+      }
+      */
   //--------------------------------------------------------------------
   template<typename Evt>
     const std::vector< art::Ptr< recob::Hit > > BackTracker::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const& spt, const Evt& evt) const{
