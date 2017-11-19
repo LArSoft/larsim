@@ -87,9 +87,9 @@ namespace cheat{
       const art::Event* fEvt=nullptr;
 
       void priv_PrepEvent        ( const art::Event& evt );
-      void priv_PrepParticleList            ( );
-      void priv_PrepMCTruthList             ( );
-      void priv_PrepTrackIdToMCTruthIndex   ( );
+      void priv_PrepParticleList            ( const art::Event& evt);
+      void priv_PrepMCTruthList             ( const art::Event& evt);
+      void priv_PrepTrackIdToMCTruthIndex   ( const art::Event& evt);
       bool priv_CanRun(const art::Event& evt) const;
 
       bool priv_ParticleListReady()     { return  ParticleInventory::ParticleListReady(); }

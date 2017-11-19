@@ -67,13 +67,13 @@ namespace cheat{
 
   //----------------------------------------------------------------------
   void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
-    fEvt=&evt;
+    //fEvt=&evt;
     ParticleInventory::ClearEvent();
     if( ! this->priv_CanRun(evt) ) { return; }
-    this->priv_PrepParticleList();
-    this->priv_PrepMCTruthList();
-    this->priv_PrepTrackIdToMCTruthIndex();
-    fEvt=nullptr; //dont keep the cached pointer since it will expire right after this, and I want to make sure bad calls to prep functions fail.
+    this->priv_PrepParticleList(evt);
+    this->priv_PrepMCTruthList(evt);
+    this->priv_PrepTrackIdToMCTruthIndex(evt);
+    //fEvt=nullptr; //dont keep the cached pointer since it will expire right after this, and I want to make sure bad calls to prep functions fail.
   }
 
   //----------------------------------------------------------------------
@@ -82,25 +82,31 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  void ParticleInventoryService::priv_PrepParticleList(){
-    if(!this->priv_CanRun(*fEvt)) {throw;}
+  void ParticleInventoryService::priv_PrepParticleList(const art::Event& evt){
+    if(!this->priv_CanRun(evt)) {throw;}
+    //if(!this->priv_CanRun(*fEvt)) {throw;}
     if(this->priv_ParticleListReady()){ return; }
-    try{ParticleInventory::PrepParticleList(*fEvt);}
+    //try{ParticleInventory::PrepParticleList(*fEvt);}
+    try{ParticleInventory::PrepParticleList(evt);}
     catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
   }
 
 
-  void ParticleInventoryService::priv_PrepTrackIdToMCTruthIndex( ){
-    if(!this->priv_CanRun(*fEvt)){throw;}
+  void ParticleInventoryService::priv_PrepTrackIdToMCTruthIndex(const art::Event& evt ){
+    if(!this->priv_CanRun(evt)){throw;}
+    //if(!this->priv_CanRun(*fEvt)){throw;}
     if( this->priv_TrackIdToMCTruthReady()){ return; }
-    try{ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);}
+    //try{ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);}
+    try{ParticleInventory::PrepTrackIdToMCTruthIndex(evt);}
     catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
   }//End priv_PrepTrackIdToMCTruthIndexList
 
-  void ParticleInventoryService::priv_PrepMCTruthList( ){
-    if(!this->priv_CanRun(*fEvt)){throw;}
+  void ParticleInventoryService::priv_PrepMCTruthList(const art::Event& evt ){
+//    if(!this->priv_CanRun(*fEvt)){throw;}
+    if(!this->priv_CanRun(evt)){throw;}
     if(this->priv_MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
-    try{    ParticleInventory::PrepMCTruthList(*fEvt); }
+    try{    ParticleInventory::PrepMCTruthList(evt); }
+    //try{    ParticleInventory::PrepMCTruthList(*fEvt); }
     catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
     //ToDo. Find out exactly which exception is thrown and catch only that.
                          
@@ -112,55 +118,64 @@ namespace cheat{
   //deliverables
   
   const sim::ParticleList& ParticleInventoryService::ParticleList() { 
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    Not used for non lazy functions
     return ParticleInventory::ParticleList(); 
   } //This should be replaced with a public struct so we can get away from the nutools dependency.
   
   const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() {
-    if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
+    //if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
+    // Not used for non-lazy mode
     return ParticleInventory::MCTruthVector_Ps();
   }
 
   //TrackIdToParticleP
 
   const simb::MCParticle* ParticleInventoryService::TrackIdToParticle_P(int const& id) {
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    Not used for non-lazy mode
     return ParticleInventory::TrackIdToParticle_P(id);
   }//End TrackIdToParticle
 
 
   const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const& id) 
   {   
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    Not used for non-lazy mode
     return ParticleInventory::TrackIdToMotherParticle_P(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruth_P(int const& id) 
   {
-    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
+//    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
+//    Not used for non-lazy mode
     return ParticleInventory::TrackIdToMCTruth_P(id);
   }
 
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p)
   {
-    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
+//    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
+//    Not used for non-lazy mode
     return this->TrackIdToMCTruth_P(p->TrackId());
   }
 
   const std::vector<const simb::MCParticle*> ParticleInventoryService::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) 
   {
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
-    if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
+//    Not used for non-lazy mode
     return ParticleInventory::MCTruthToParticles_Ps(mct);
   }
 
   std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    Not used for non-lazy mode
     return ParticleInventory::GetSetOfTrackIds();
   }
 
   std::set<int> ParticleInventoryService::GetSetOfEveIds(){
-    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
+//    Not used for non-lazy mode
     return ParticleInventory::GetSetOfEveIds();
   }
 
