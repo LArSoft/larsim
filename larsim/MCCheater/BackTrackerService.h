@@ -115,7 +115,7 @@ namespace cheat{
 
       //Prep functions go here.
       void priv_PrepEvent ( const art::Event& evt );
-      void priv_PrepSimChannels ();
+      void priv_PrepSimChannels (const art::Event& evt);
 //      void priv_PrepAllHitList ();
       void priv_PrepFailed ();
 
