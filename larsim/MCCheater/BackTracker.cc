@@ -277,23 +277,55 @@ namespace cheat{
     const auto start_tdc = hit.PeakTimeMinusRMS();
     const auto end_tdc = hit.PeakTimePlusRMS();
     if(start_tdc > end_tdc){throw;}
-    std::vector< std::pair<unsigned short, std::vector<sim::IDE>> > tdcIDEMap = (this->FindSimChannel(hit.Channel()))->TDCIDEMap(); //This in fact does not return a map. It returns a vector... with no guarantee that it is sorted...
+    
+/*    auto sc = this->FindSimChannel(hit.Channel());
+    auto tdcidemap = sc->TDCIDEMap();
+    auto& tdcidemapref = sc->TDCIDEMap();*/
 
+    const std::vector< std::pair<unsigned short, std::vector<sim::IDE>> >& tdcIDEMap = (this->FindSimChannel(hit.Channel()))->TDCIDEMap(); //This in fact does not return a map. It returns a vector... with no guarantee that it is sorted...
+    std::vector<const std::pair<unsigned short, std::vector<sim::IDE>>*> tdcIDEMap_SortedPointers;
+    for ( auto& pair : tdcIDEMap ){
+      tdcIDEMap_SortedPointers.push_back(&pair);
+    }
+
+    //Sort a vector of pointers to the TDCIDEs
+    /*
     auto pairSort = [](auto& a, auto& b) { return a.first < b.first ; } ;
     if( !std::is_sorted( tdcIDEMap.begin(), tdcIDEMap.end(), pairSort)) {
-      std::sort (tdcIDEMap.begin(), tdcIDEMap.end(), pairSort);
+      std::cout<<"AlreadySorted\n";
+   //   std::sort (tdcIDEMap.begin(), tdcIDEMap.end(), pairSort);
+    }else{
+      throw;
+    }*/
+
+    //This is a bunch of extra steps, due to needing a vector we can sort, and needing those items in the sorted vector to be the items from the sim channels (so a pointer to the IDEs inside the sim channels can be made). The work around is to make a vector of pointers to IDEs inside the TDCIDEMap (which is a constant reference to the fTDCIDEs in the SimChannel.)
+    auto pairSort = [](auto& a, auto& b) { return a->first < b->first ; } ;
+    if( !std::is_sorted( tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort)) {
+      std::sort (tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort);
     }
+
 
     std::vector<sim::IDE> dummyVec; //I need something to stick in a pair to compare pair<tdcVal, IDE>. This is an otherwise useless "hack".
     std::pair<double, std::vector<sim::IDE>> start_tdcPair = std::make_pair(start_tdc,dummyVec); //This pair is a "hack" to make my comparison work for lower and upper bound.
     std::pair<double, std::vector<sim::IDE>> end_tdcPair = std::make_pair(end_tdc,dummyVec);
-    std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to the first interesting IDE
-      mapFirst = std::lower_bound(tdcIDEMap.begin(), tdcIDEMap.end(), start_tdcPair, pairSort);
-    std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to just after the last interesting IDE
-      mapLast  = std::upper_bound(tdcIDEMap.begin(), tdcIDEMap.end(), end_tdcPair, pairSort);
-    for( auto mapitr = mapFirst; mapitr != mapLast; ++mapitr ){
-      for( auto ide : mapitr->second){ retVec.push_back(&ide);} //Add all interesting IDEs to the retVec
+    //const std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to the first interesting IDE
+    auto start_tdcPair_P = &start_tdcPair;
+    auto end_tdcPair_P = &end_tdcPair;
+    auto
+      mapFirst = std::lower_bound(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), start_tdcPair_P, pairSort);
+      //mapFirst = std::lower_bound(tdcIDEMap.begin(), tdcIDEMap.end(), start_tdcPair, pairSort);
+    //const std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to just after the last interesting IDE
+    auto
+      mapLast  = std::upper_bound(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), end_tdcPair_P, pairSort);
+    for( auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr ){
+      for( auto& ide : (*mapitr)->second){ 
+        retVec.push_back(&ide);
+        //std::cout<<"Dumping Selected IDEs from tdcIDEMap:\nTrackID: "<<ide.trackID<<"\nnumElectrons: "<<ide.numElectrons<<"\nenergy: "<<ide.energy<<"\nXYZ: "<<ide.x<<" "<<ide.y<<" "<<ide.z<<"\n";
+      } //Add all interesting IDEs to the retVec
     }
+/*    for( auto ide : retVec){
+        std::cout<<"Dumping Selected IDEs from retVec:\nTrackID: "<<ide->trackID<<"\nnumElectrons: "<<ide->numElectrons<<"\nenergy: "<<ide->energy<<"\nXYZ: "<<ide->x<<" "<<ide->y<<" "<<ide->z<<"\n";
+    }*/
     return retVec;
   }
 
