@@ -17,12 +17,20 @@
 #include <memory>
 #include <iterator>
 #include <vector>
+#include <map>
+#include <initializer_list>
+#include <cctype> // std::tolower()
 
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -62,28 +70,204 @@ namespace evgen {
   class SingleGen : public art::EDProducer {
 
   public:
-    explicit SingleGen(fhicl::ParameterSet const& pset);
-    virtual ~SingleGen();
+    
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      
+      fhicl::Atom<std::string> ParticleSelectionMode{
+        Name("ParticleSelectionMode"),
+        Comment("generate one particle, or one particle per PDG ID: " + presentOptions(ParticleSelectionModeNames))
+      };
+      
+      fhicl::Atom<bool> PadOutVectors{
+        Name("PadOutVectors"),
+        Comment("if true, all per-PDG-ID quantities must contain only one value, which is then used for all PDG IDs")
+      };
+      
+      fhicl::Sequence<int> PDG{
+        Name("PDG"),
+        Comment("PDG ID of the particles to be generated; this is the key for the other options marked as \"per PDG ID\"")
+      };
+      
+      fhicl::Atom<std::string> PDist{
+        Name("PDist"),
+        Comment("momentum distribution type: " + presentOptions(DistributionNames)),
+        optionName(kHIST, DistributionNames)
+      };
+      
+      fhicl::Sequence<double> P0{
+        Name("P0"),
+        Comment("central momentum (GeV/c) to generate"),
+        [this](){ return !fromHistogram(PDist()); }
+      };
+      
+      fhicl::Sequence<double> SigmaP{
+        Name("SigmaP"),
+        Comment("variation in momenta (GeV/c)"),
+        [this](){ return !fromHistogram(PDist()); }
+      };
+      
+      fhicl::Sequence<double> X0{
+        Name("X0"),
+        Comment("central x position (cm) in world coordinates [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> Y0{
+        Name("Y0"),
+        Comment("central y position (cm) in world coordinates [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> Z0{
+        Name("Z0"),
+        Comment("central z position (cm) in world coordinates [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> T0{
+        Name("T0"),
+        Comment("central time (s) [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> SigmaX{
+        Name("SigmaX"),
+        Comment("variation (radius or RMS) in x position (cm) [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> SigmaY{
+        Name("SigmaY"),
+        Comment("variation (radius or RMS) in y position (cm) [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> SigmaZ{
+        Name("SigmaZ"),
+        Comment("variation (radius or RMS) in z position (cm) [per PDG ID]")
+      };
+      
+      fhicl::Sequence<double> SigmaT{
+        Name("SigmaT"),
+        Comment("variation (semi-interval or RMS) in time (s) [per PDG ID]")
+      };
+      
+      fhicl::Atom<std::string> PosDist{
+        Name("PosDist"),
+        Comment("distribution of starting position: " + presentOptions(DistributionNames, true, { kHIST }))
+      };
+      
+      fhicl::Atom<std::string> TDist{
+        Name("TDist"),
+        Comment("time distribution type: " + presentOptions(DistributionNames, true, { kHIST }))
+      };
+      
+      fhicl::Atom<bool> SingleVertex{
+        Name("SingleVertex"),
+        Comment("if true, all particles are produced at the same location"),
+        false
+      };
+      
+      fhicl::Sequence<double> Theta0XZ{
+        Name("Theta0XZ"),
+        Comment("angle from Z axis on world X-Z plane (degrees)")
+      };
+      
+      fhicl::Sequence<double> Theta0YZ{
+        Name("Theta0YZ"),
+        Comment("angle from Z axis on world Y-Z plane (degrees)")
+      };
+      
+      fhicl::Sequence<double> SigmaThetaXZ{
+        Name("SigmaThetaXZ"),
+        Comment("variation in angle in X-Z plane (degrees)")
+      };
+      
+      fhicl::Sequence<double> SigmaThetaYZ{
+        Name("SigmaThetaYZ"),
+        Comment("variation in angle in Y-Z plane (degrees)")
+      };
+      
+      fhicl::Atom<std::string> AngleDist{
+        Name("AngleDist"),
+        Comment("angular distribution type: " + presentOptions(DistributionNames)),
+        optionName(kHIST, DistributionNames)
+      };
+      
+      fhicl::Atom<std::string> HistogramFile{
+        Name("HistogramFile"),
+        Comment("ROOT file containing the required distributions for the generation"),
+        [this](){ return fromHistogram(AngleDist()) || fromHistogram(PDist()); }
+      };
+      
+      fhicl::Sequence<std::string> PHist{
+        Name("PHist"),
+        Comment("name of the histograms of momentum distributions"),
+        [this](){ return fromHistogram(PDist()); }
+      };
+      
+      /*
+      fhicl::Sequence<std::string> ThetaPhiHist{
+        Name("ThetaPhiHist"),
+        Comment("name of the histograms of angular (theta/phi) distribution"),
+        [this](){ return fromHistogram(AngleDist()); }
+      };
+      */
+      fhicl::Sequence<std::string> ThetaXzYzHist{
+        Name("ThetaXzYzHist"),
+        Comment("name of the histograms of angular (X-Z and Y-Z) distribution"),
+        [this](){ return fromHistogram(AngleDist()); }
+      };
+      
+      fhicl::OptionalAtom<rndm::NuRandomService::seed_t> Seed{
+        Name("Seed"),
+        Comment("override the random number generator seed")
+      };
+      
+      
+        private:
+      
+      /// Returns whether the specified mode is an histogram distribution.
+      bool fromHistogram(std::string const& key) const;
+      
+    }; // struct Config
+    
+    
+    using Parameters = art::EDProducer::Table<Config>;
+    
+    
+    explicit SingleGen(Parameters const& config);
 
     // This is called for each event.
     void produce(art::Event& evt);
     void beginRun(art::Run& run);
-    void reconfigure(fhicl::ParameterSet const& p);
 
   private:
 
+    /// Names of all particle selection modes.
+    static const std::map<int, std::string> ParticleSelectionModeNames;
+    /// Names of all distribution modes.
+    static const std::map<int, std::string> DistributionNames;
+    
     void SampleOne(unsigned int   i, 
 		   simb::MCTruth &mct);        
     void SampleMany(simb::MCTruth &mct);        
     void Sample(simb::MCTruth &mct);        
     void printVecs(std::vector<std::string> const& list);
     bool PadVector(std::vector<double> &vec);      
-    double SelectFromHist(const TH1 *h);
-    void SelectFromHist(const TH2 *h, double &x, double &y);
+    double SelectFromHist(const TH1& h);
+    void SelectFromHist(const TH2& h, double &x, double &y);
     
-    static const int kUNIF = 0;    
-    static const int kGAUS = 1;    
-    static const int kHIST = 2;    // histogram for distribution
+    /// @{
+    /// @name Constants for particle type extraction mode (`ParticleSelectionMode` parameter).
+    
+    static constexpr int kSelectAllParts    = 0; ///< One particle per entry is generated
+    static constexpr int kSelectOneRandPart = 1; ///< One particle is generated, extracted from the provided options.
+    /// @}
+    
+    /// @{
+    /// @name Constants for kinematic distribution options.
+    
+    static constexpr int kUNIF = 0;    ///< Uniform distribution.
+    static constexpr int kGAUS = 1;    ///< Gaussian distribution.
+    static constexpr int kHIST = 2;    ///< Distribution from histograms.
+    /// @}
 
     int                 fMode;           ///< Particle Selection Mode 
                                          ///< 0--generate a list of all particles, 
@@ -117,72 +301,224 @@ namespace evgen {
 //    std::vector<std::string> fThetaPhiHist; ///< name of histogram for theta/phi distribution
     std::vector<std::string> fThetaXzYzHist;   ///< name of histogram for thetaxz/thetayz distribution
 
-    TFile *fHistFile;                    /// actual TFile containing histograms
-    std::vector<TH1*> hPHist ;           /// actual TH1 for momentum distributions
-//    std::vector<TH2*> hThetaPhiHist ;       /// actual TH1 for theta distributions - Theta on x axis
-    std::vector<TH2*> hThetaXzYzHist ;         /// actual TH2 for angle distributions - Xz on x axis . 
+    std::vector<std::unique_ptr<TH1>> hPHist ;     /// actual TH1 for momentum distributions
+//    std::vector<TH2*> hThetaPhiHist ;  /// actual TH1 for theta distributions - Theta on x axis
+    std::vector<std::unique_ptr<TH2>> hThetaXzYzHist ; /// actual TH2 for angle distributions - Xz on x axis . 
     // FYI - thetaxz and thetayz are related to standard polar angles as follows:
     // thetaxz = atan2(math.sin(theta) * cos(phi), cos(theta))
     // thetayz = asin(sin(theta) * sin(phi));
-
     
-  };
+    
+    /// Returns a vector with the name of particle selection mode keywords.
+    static std::map<int, std::string> makeParticleSelectionModeNames();
+    
+    /// Returns a vector with the name of distribution keywords.
+    static std::map<int, std::string> makeDistributionNames();
+    
+    
+    /// Performs checks and initialization based on the current configuration.
+    void setup();
+    
+    /**
+     * @brief Parses an option string and returns the corresponding option number.
+     * @tparam OptionList type of list of options (e.g. `std::map<int, std::string>`)
+     * @param Option the string of the option to be parsed
+     * @param allowedOptions list of valid options, as key/name pairs
+     * @return the key of the `Option` string from `allowedOptions`
+     * @throws std::runtime_error if `Option` is not in the option list
+     * 
+     * The option string `Option` represent a single one among the supported
+     * options as defined in `allowedOptions`. The option string can be either
+     * one of the option names (the matching is not case-sensitive) or the
+     * number of the option itself.
+     * 
+     * `OptionList` requirements
+     * --------------------------
+     * 
+     * `OptionList` must behave like a sequence with forward iterators.
+     * Each element must behave as a pair, whose first element is the option key
+     * and the second element is the option name, equivalent to a string in that
+     * it must be forward-iterable and its elements can be converted by
+     * `std::tolower()`. The key type has no requirements beside being copiable.
+     */
+    template <typename OptionList>
+    static auto selectOption
+      (std::string Option, OptionList const& allowedOptions) -> decltype(auto);
+    
+    /**
+     * @brief Returns a string describing all options in the list
+     * @tparam OptionList type of list of options (e.g. `std::map<int, std::string>`)
+     * @param allowedOptions the list of allowed options
+     * @param printKey whether to print the key of the option beside its name
+     * @param excludeKeys list of keys to be ignored (none by default)
+     * @return a string with all options in a line
+     * 
+     * The result string is a list of option names, separated by commas, like in
+     * `"'apple', 'orange', 'banana'"`. If `printKey` is `true`, the key of each
+     * option is also written in parentheses, like in
+     * `"'apple' (1), 'orange' (7), 'banana' (2)"`.
+     */
+    template <typename OptionList>
+    static std::string presentOptions(
+      OptionList const& allowedOptions, bool printKey,
+      std::initializer_list<typename OptionList::value_type::first_type> exclude
+      );
+    
+    template <typename OptionList>
+    static std::string presentOptions
+      (OptionList const& allowedOptions, bool printKey = true)
+      { return presentOptions(allowedOptions, printKey, {}); }
+    
+    
+    /// Returns the name of the specified option key, or `defName` if not known.
+    template <typename OptionList>
+    static std::string optionName(
+      typename OptionList::value_type::first_type optionKey,
+      OptionList const& allowedOptions,
+      std::string defName = "<unknown>"
+      );
+    
+  }; // class SingleGen
 }
 
 namespace evgen{
 
-  //____________________________________________________________________________
-  SingleGen::SingleGen(fhicl::ParameterSet const& pset)
+  std::map<int, std::string> SingleGen::makeParticleSelectionModeNames() {
+    std::map<int, std::string> names;
+    names[int(kSelectAllParts   )] = "all";
+    names[int(kSelectOneRandPart)] = "singleRandom";
+    return names;
+  } // SingleGen::makeParticleSelectionModeNames()
+  
+  std::map<int, std::string> SingleGen::makeDistributionNames() {
+    std::map<int, std::string> names;
+    names[int(kUNIF)] = "uniform";
+    names[int(kGAUS)] = "Gaussian";
+    names[int(kHIST)] = "histograms";
+    return names;
+  } // SingleGen::makeDistributionNames()
+  
+  const std::map<int, std::string> SingleGen::ParticleSelectionModeNames
+    = SingleGen::makeParticleSelectionModeNames();
+  const std::map<int, std::string> SingleGen::DistributionNames
+    = SingleGen::makeDistributionNames();
+  
+  
+  template <typename OptionList>
+  auto SingleGen::selectOption
+    (std::string Option, OptionList const& allowedOptions) -> decltype(auto)
   {
-
-    this->reconfigure(pset);
-
+    using key_type = typename OptionList::value_type::first_type;
+    using tolower_type = int(*)(int);
+    auto toLower = [](auto const& S)
+      {
+        std::string s;
+        s.reserve(S.size());
+        std::transform(S.cbegin(), S.cend(), std::back_inserter(s),
+          (tolower_type) &std::tolower);
+        return s;
+      };
+    auto option = toLower(Option);
+    for (auto const& candidate: allowedOptions) {
+      if (toLower(candidate.second) == option) return candidate.first;
+    }
+    try {
+      std::size_t end;
+      key_type num = std::stoi(Option, &end);
+      if (allowedOptions.count(num) && (end == Option.length())) return num;
+    }
+    catch (std::invalid_argument const&) {}
+    throw std::runtime_error("Option '" + Option + "' not supported.");
+  } // SingleGen::selectOption()
+  
+  
+  template <typename OptionList>
+  std::string SingleGen::presentOptions(
+    OptionList const& allowedOptions, bool printKey /* = true */,
+    std::initializer_list<typename OptionList::value_type::first_type> exclude /* = {} */
+  ) {
+    std::string msg;
+    
+    unsigned int n = 0;
+    for (auto const& option: allowedOptions) {
+      auto const& key = option.first;
+      if (std::find(exclude.begin(), exclude.end(), key) != exclude.end())
+        continue;
+      if (n++ > 0) msg += ", ";
+      msg += '\"' + std::string(option.second) + '\"';
+      if (printKey)
+        msg += " (" + std::to_string(key) + ")";
+    } // for
+    return msg;
+  } // SingleGen::presentOptions()
+  
+  
+  template <typename OptionList>
+  std::string SingleGen::optionName(
+    typename OptionList::value_type::first_type optionKey,
+    OptionList const& allowedOptions,
+    std::string defName /* = "<unknown>" */
+  ) {
+    auto iOption = allowedOptions.find(optionKey);
+    return (iOption != allowedOptions.end())? iOption->second: defName;
+  } // SingleGen::optionName()
+  
+  
+  //____________________________________________________________________________
+  bool SingleGen::Config::fromHistogram(std::string const& key) const {
+    return selectOption(PDist(), DistributionNames) == kHIST;
+  } // SingleGen::Config::fromHistogram()
+  
+  //____________________________________________________________________________
+  SingleGen::SingleGen(Parameters const& config)
+    : fMode         (selectOption(config().ParticleSelectionMode(), ParticleSelectionModeNames))
+    , fPadOutVectors(config().PadOutVectors())
+    , fPDG          (config().PDG())
+    , fP0           (config().P0())
+    , fSigmaP       (config().SigmaP())
+    , fPDist        (selectOption(config().PDist(), DistributionNames))
+    , fX0           (config().X0())
+    , fY0           (config().Y0())
+    , fZ0           (config().Z0())
+    , fT0           (config().T0())
+    , fSigmaX       (config().SigmaX())
+    , fSigmaY       (config().SigmaY())
+    , fSigmaZ       (config().SigmaZ())
+    , fSigmaT       (config().SigmaT())
+    , fPosDist      (selectOption(config().PosDist(), DistributionNames))
+    , fTDist        (selectOption(config().TDist(), DistributionNames))
+    , fTheta0XZ     (config().Theta0XZ())
+    , fTheta0YZ     (config().Theta0YZ())
+    , fSigmaThetaXZ (config().SigmaThetaXZ())
+    , fSigmaThetaYZ (config().SigmaThetaYZ())
+    , fAngleDist    (selectOption(config().AngleDist(), DistributionNames))
+    , fHistFileName (config().HistogramFile())
+    , fPHist        (config().PHist())
+//    , fThetaPhiHist (config().ThetaPhiHist())
+    , fThetaXzYzHist(config().ThetaXzYzHist())
+  {
+    setup();
+    
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, pset, "Seed");
+    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this);
+    rndm::NuRandomService::seed_t seed;
+    if (config().Seed(seed)) {
+      art::ServiceHandle<art::RandomNumberGenerator>()->getEngine().setSeed
+        (seed, 0 /* dummy? */);
+    }
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
   }
-
+  
+  
   //____________________________________________________________________________
-  SingleGen::~SingleGen()
-  {
-  }
-
-  //____________________________________________________________________________
-  void SingleGen::reconfigure(fhicl::ParameterSet const& p)
+  void SingleGen::setup()
   {
     // do not put seed in reconfigure because we don't want to reset 
     // the seed midstream
-    fPadOutVectors = p.get< bool                >("PadOutVectors");
-    fMode          = p.get< int                 >("ParticleSelectionMode");
-    fPDG           = p.get< std::vector<int>    >("PDG");
-    fPDist         = p.get< int                 >("PDist");
-    fTDist         = p.get< int                 >("TDist");
-    fX0            = p.get< std::vector<double> >("X0");
-    fY0            = p.get< std::vector<double> >("Y0");
-    fZ0            = p.get< std::vector<double> >("Z0");
-    fT0            = p.get< std::vector<double> >("T0");
-    fSigmaX        = p.get< std::vector<double> >("SigmaX");
-    fSigmaY        = p.get< std::vector<double> >("SigmaY");
-    fSigmaZ        = p.get< std::vector<double> >("SigmaZ");
-    fSigmaT        = p.get< std::vector<double> >("SigmaT");
-    fPosDist       = p.get< int                 >("PosDist");
-    fHistFileName  = p.get< std::string         >("HistogramFile","");
-    fPHist       = p.get< std::vector<std::string> >("PHist",std::vector<std::string>());
-    fP0          = p.get< std::vector<double> >("P0");
-    fSigmaP      = p.get< std::vector<double> >("SigmaP");
-    fAngleDist     = p.get< int                 >("AngleDist");
-//    fThetaPhiHist   = p.get< std::vector<std::string> >("ThetaPhiHist");
-    fThetaXzYzHist     = p.get< std::vector<std::string> >("ThetaXzYzHist",std::vector<std::string>());
-    fTheta0XZ    = p.get< std::vector<double> >("Theta0XZ");
-    fTheta0YZ    = p.get< std::vector<double> >("Theta0YZ");
-    fSigmaThetaXZ= p.get< std::vector<double> >("SigmaThetaXZ");
-    fSigmaThetaYZ= p.get< std::vector<double> >("SigmaThetaYZ");
-
     std::vector<std::string> vlist(15);
     vlist[0]  = "PDG";
     vlist[1]  = "P0";
@@ -206,8 +542,10 @@ namespace evgen{
     
     // begin tests for multiple particle error possibilities  
     std::string list;
-    if( !this->PadVector(fP0          ) ){ list.append(vlist[1].append(", \n")); }
-    if( !this->PadVector(fSigmaP      ) ){ list.append(vlist[2].append(", \n")); }
+    if (fPDist != kHIST) {
+      if( !this->PadVector(fP0          ) ){ list.append(vlist[1].append(", \n")); }
+      if( !this->PadVector(fSigmaP      ) ){ list.append(vlist[2].append(", \n")); }
+    }
     if( !this->PadVector(fX0          ) ){ list.append(vlist[3].append(", \n")); }
     if( !this->PadVector(fY0          ) ){ list.append(vlist[4].append(", \n")); }
     if( !this->PadVector(fZ0          ) ){ list.append(vlist[5].append(", \n")); }
@@ -234,27 +572,85 @@ namespace evgen{
     if(fPDG.size() > 1 && fPadOutVectors) this->printVecs(vlist);
 
     // If needed, get histograms for momentum and angle distributions
-    if (fHistFileName != ""){
+    TFile* fHistFile = nullptr;
+    if (!fHistFileName.empty()) {
       fHistFile = new TFile(fHistFileName.c_str());
-    }
-    if (fThetaXzYzHist.size() ==0){fAngleDist=0;}
-    if (fPHist.size() ==0){fPDist=0;}
-    if (fPDist==kHIST){
-      hPHist.reserve(fPDG.size());
-      for (unsigned int i(0); i < fPDG.size(); ++i){
-        hPHist.emplace_back( (TH1*)fHistFile->Get( fPHist[i].c_str() ) );
+      if (!fHistFile->IsOpen()) {
+        throw art::Exception(art::errors::NotFound)
+          << "Can't open ROOT file from 'HistogramFile': \"" << fHistFileName << "\".";
       }
     }
-    if (fAngleDist==kHIST){
-//      hThetaPhiHist.reserve(fPDG.size());
-      hThetaXzYzHist.reserve(fPDG.size());
-      for (unsigned int i(0); i < fPDG.size(); ++i){
-//        hThetaPhiHist.emplace_back( (TH2*)fHistFile->Get( fThetaPhiHist[i].c_str() ));
-        hThetaXzYzHist.emplace_back( (TH2*)fHistFile->Get( fThetaXzYzHist[i].c_str() ));
-      }
-    }
-
-    return;
+    
+    //
+    // deal with position distribution
+    //
+    switch (fPosDist) {
+      case kGAUS: case kUNIF: break; // supported, no further action needed
+      default:
+        throw art::Exception(art::errors::Configuration)
+          << "Position distribution of type '"
+          << optionName(fPosDist, DistributionNames)
+          << "' (" << std::to_string(fPosDist) << ") is not supported.";
+    } // switch(fPosDist)
+    
+    //
+    // deal with time distribution
+    //
+    switch (fTDist) {
+      case kGAUS: case kUNIF: break; // supported, no further action needed
+      default:
+        throw art::Exception(art::errors::Configuration)
+          << "Time distribution of type '"
+          << optionName(fTDist, DistributionNames)
+          << "' (" << std::to_string(fTDist) << ") is not supported.";
+    } // switch(fTDist)
+    
+    //
+    // deal with momentum distribution
+    //
+    switch (fPDist) {
+      case kHIST:
+        if (fPHist.size() != fPDG.size()) {
+          throw art::Exception(art::errors::Configuration)
+            << fPHist.size() << " momentum histograms to describe " << fPDG.size() << " particle types...";
+        }
+        hPHist.reserve(fPHist.size());
+        for (auto const& histName: fPHist) {
+          TH1* pHist = dynamic_cast<TH1*>(fHistFile->Get(histName.c_str()));
+          if (!pHist) {
+            throw art::Exception(art::errors::NotFound)
+             << "Failed to read momentum histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+          }
+          pHist->SetDirectory(nullptr); // make it independent of the input file
+          hPHist.emplace_back(pHist);
+        } // for
+        break;
+      default: // supported, no further action needed
+        break;
+    } // switch(fPDist)
+    
+    switch (fAngleDist) {
+      case kHIST:
+        if (fThetaXzYzHist.size() != fPDG.size()) {
+          throw art::Exception(art::errors::Configuration)
+            << fThetaXzYzHist.size() << " direction histograms to describe " << fPDG.size() << " particle types...";
+        }
+        hThetaXzYzHist.reserve(fThetaXzYzHist.size());
+        for (auto const& histName: fThetaXzYzHist) {
+          TH2* pHist = dynamic_cast<TH2*>(fHistFile->Get(histName.c_str()));
+          if (!pHist) {
+            throw art::Exception(art::errors::NotFound)
+             << "Failed to read direction histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+          }
+          pHist->SetDirectory(nullptr); // make it independent of the input file
+          hThetaXzYzHist.emplace_back(pHist);
+        } // for
+      default: // supported, no further action needed
+        break;
+    } // switch(fAngleDist)
+    
+    delete fHistFile;
+    
   }
 
   //____________________________________________________________________________
@@ -335,7 +731,7 @@ namespace evgen{
       p = gauss.fire(fP0[i], fSigmaP[i]);
     }
     else if (fPDist == kHIST){
-      p = SelectFromHist(hPHist[i]);
+      p = SelectFromHist(*(hPHist[i]));
     }
     else{// if (fPDist == kUNIF) {
       p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
@@ -384,7 +780,7 @@ namespace evgen{
     else if (fAngleDist == kHIST){ // Select thetaxz and thetayz from histogram
       double thetaxz = 0;
       double thetayz = 0;
-      SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+      SelectFromHist(*(hThetaXzYzHist[i]), thetaxz, thetayz);
       thxz = (180./M_PI)*thetaxz;
       thyz = (180./M_PI)*thetayz;
     }
@@ -474,7 +870,7 @@ namespace evgen{
         p = gauss.fire(fP0[i], fSigmaP[i]);
       }
       else if (fPDist == kHIST){
-        p = SelectFromHist(hPHist[i]);
+        p = SelectFromHist(*(hPHist[i]));
       }
       else {
         p = fP0[i] + fSigmaP[i]*(2.0*flat.fire()-1.0);
@@ -500,7 +896,7 @@ namespace evgen{
       else if (fAngleDist == kHIST){
         double thetaxz = 0;
         double thetayz = 0;
-        SelectFromHist(hThetaXzYzHist[i], thetaxz, thetayz);
+        SelectFromHist(*(hThetaXzYzHist[i]), thetaxz, thetayz);
         thxz = (180./M_PI)*thetaxz;
         thyz = (180./M_PI)*thetayz;
       }
@@ -633,37 +1029,37 @@ namespace evgen{
   
   
   //____________________________________________________________________________
-  double SingleGen::SelectFromHist(const TH1 *h) // select from a 1D histogram
+  double SingleGen::SelectFromHist(const TH1& h) // select from a 1D histogram
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     
-    double throw_value = h->Integral() * flat.fire();
+    double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
-    for (int i(0); i < h->GetNbinsX()+1; ++i){
-      cum_value += h->GetBinContent(i);
+    for (int i(0); i < h.GetNbinsX()+1; ++i){
+      cum_value += h.GetBinContent(i);
       if (throw_value < cum_value){
-        return flat.fire()*h->GetBinWidth(i) + h->GetBinLowEdge(i);
+        return flat.fire()*h.GetBinWidth(i) + h.GetBinLowEdge(i);
       }
     }
     return throw_value; // for some reason we've gone through all bins and failed?
   }
   //____________________________________________________________________________
-  void SingleGen::SelectFromHist(const TH2 *h, double &x, double &y) // select from a 2D histogram
+  void SingleGen::SelectFromHist(const TH2& h, double &x, double &y) // select from a 2D histogram
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     
-    double throw_value = h->Integral() * flat.fire();
+    double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
-    for (int i(0); i < h->GetNbinsX()+1; ++i){
-      for (int j(0); j < h->GetNbinsY()+1; ++j){
-        cum_value += h->GetBinContent(i, j);
+    for (int i(0); i < h.GetNbinsX()+1; ++i){
+      for (int j(0); j < h.GetNbinsY()+1; ++j){
+        cum_value += h.GetBinContent(i, j);
         if (throw_value < cum_value){
-          x = flat.fire()*h->GetXaxis()->GetBinWidth(i) + h->GetXaxis()->GetBinLowEdge(i);
-          y = flat.fire()*h->GetYaxis()->GetBinWidth(j) + h->GetYaxis()->GetBinLowEdge(j);
+          x = flat.fire()*h.GetXaxis()->GetBinWidth(i) + h.GetXaxis()->GetBinLowEdge(i);
+          y = flat.fire()*h.GetYaxis()->GetBinWidth(j) + h.GetYaxis()->GetBinLowEdge(j);
           return;
         }
       }
