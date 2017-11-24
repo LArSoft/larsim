@@ -26,9 +26,9 @@
  *  4.  the entry of the second mother for this particle in the event, 
  *      0 means no mother
  *  5. the entry of the first daughter for this particle in the event, 
- *      0 means no mother
+ *      0 means no daughter
  *  6. the entry of the second daughter for this particle in the event, 
- *      0 means no mother
+ *      0 means no daughter
  *  7. x component of the particle momentum
  *  8. y component of the particle momentum
  *  9. z component of the particle momentum
