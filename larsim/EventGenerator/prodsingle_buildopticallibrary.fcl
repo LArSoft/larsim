@@ -1,5 +1,6 @@
 #include "services_microboone.fcl"
-#include "backtracker.fcl"
+#include "backtrackerservice.fcl"
+#include "particleinventoryservice.fcl"
 #include "singles.fcl"
 #include "largeantmodules.fcl"
 #include "detsimmodules.fcl"
@@ -21,7 +22,8 @@ services:
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
                 @table::microboone_simulation_services
-  BackTracker:  @local::microboone_backtracker # defined in backtracker.fcl
+  BackTrackerService:  @local::microboone_backtrackerservice # defined in backtrackerservice.fcl
+  ParticleInventoryService:  @local::standard_particleinventoryservice # defined in backtrackerservice.fcl
 }
 
 

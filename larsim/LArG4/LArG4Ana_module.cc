@@ -24,9 +24,10 @@
 #include "cetlib/exception.h"
 
 // LArSoft Includes
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/sim.h"
+#include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
 
 // ROOT includes
@@ -218,8 +219,8 @@ namespace larg4 {
   {
 
     //get the list of particles from this event
-    art::ServiceHandle<cheat::BackTracker> bt;
-    const sim::ParticleList& plist = bt->ParticleList();
+    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+    const sim::ParticleList& plist = pi_serv->ParticleList();
     art::ServiceHandle<geo::Geometry> geom;
 
     // loop over all sim::SimChannels in the event and make sure there are no
@@ -256,7 +257,7 @@ namespace larg4 {
     fEventEnergy->Fill(totalEnergy);
 
     // get the particles from the back tracker
-    const sim::ParticleList& Particles = bt->ParticleList();
+    const sim::ParticleList& Particles = pi_serv->ParticleList();
     std::vector<const simb::MCParticle*> pvec;
     pvec.reserve(Particles.size());
     for (const auto& PartPair: Particles) {
