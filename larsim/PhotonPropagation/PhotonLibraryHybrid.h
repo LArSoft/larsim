@@ -47,7 +47,7 @@ namespace phot
     {
       FitFunc() {}
       FitFunc(float n, float d) : norm(n), decay(d) {}
-      double Eval(double x) const {return norm*exp(-decay*x)/(x*x);}
+      double Eval(double x) const {return exp(norm+decay*x)/(x*x);}
 
       float norm, decay;
     };
