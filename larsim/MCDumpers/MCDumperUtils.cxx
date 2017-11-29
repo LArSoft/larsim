@@ -1,5 +1,5 @@
 /**
- * @file   larsim/MCDumpers/MCDumpersUtils.cxx
+ * @file   larsim/MCDumpers/MCDumperUtils.cxx
  * @brief  Utility functions to print MC truth information (implementation).
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   November 2, 2017
