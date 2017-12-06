@@ -266,7 +266,7 @@ namespace cheat{
   {
     //Removed until Lazy Rebuild works
     //if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
-    return HitToXYZ(hit);
+    return HitToXYZ(*hit);
   }
 
 
