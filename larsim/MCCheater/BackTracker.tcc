@@ -30,7 +30,7 @@ namespace cheat{
 
       art::fill_ptr_vector(fSimChannels, simChannelsHandle); 
 
-      auto comparesclambda = [](const sim::SimChannel *a, const sim::SimChannel *b) {return(a->Channel()<b->Channel());};
+      auto comparesclambda = [](art::Ptr<sim::SimChannel> a, art::Ptr<sim::SimChannel> b) {return(a->Channel()<b->Channel());};
       if (!std::is_sorted(fSimChannels.begin(),fSimChannels.end(),comparesclambda)) std::sort(fSimChannels.begin(),fSimChannels.end(),comparesclambda);
 
       return;
