@@ -274,8 +274,13 @@ namespace cheat{
   //-----------------------------------------------------------------------
   const std::vector< const sim::IDE* > BackTracker::HitToSimIDEs_Ps (recob::Hit const& hit) const{
     std::vector< const sim::IDE* > retVec;
-    const auto start_tdc = hit.PeakTimeMinusRMS();
-    const auto end_tdc = hit.PeakTimePlusRMS();
+//    const auto start_tdc = hit.PeakTimeMinusRMS();
+//    const auto end_tdc = hit.PeakTimePlusRMS();
+    int start_tdc = fDetClocks->TPCTick2TDC( hit.PeakTimeMinusRMS() );
+    int end_tdc   = fDetClocks->TPCTick2TDC( hit.PeakTimePlusRMS()   );
+    if(start_tdc<0) start_tdc = 0;
+    if(end_tdc<0) end_tdc = 0;
+
     if(start_tdc > end_tdc){throw;}
     
 /*    auto sc = this->FindSimChannel(hit.Channel());
