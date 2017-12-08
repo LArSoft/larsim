@@ -172,6 +172,8 @@ namespace cheat{
                                                                    ///< contribute to a hit to be counted in
                                                                    ///< purity and efficiency calculations 
                                                                    ///< based on hit collections
+
+    bool                                   fOverrideRealData;      ///< if real data, tell it to run anyway (=0)
   };
 } // namespace
 

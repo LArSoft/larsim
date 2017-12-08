@@ -46,13 +46,14 @@ namespace cheat{
   {
     fG4ModuleLabel        = pset.get<std::string>("G4ModuleLabel",            "largeant");
     fMinHitEnergyFraction = pset.get<double     >("MinimumHitEnergyFraction", 0.1);
+    fOverrideRealData     = pset.get<bool       >("OverrideRealData", false);
   }
 
   //----------------------------------------------------------------------
   void BackTracker::Rebuild(const art::Event& evt)
   {
     // do nothing if this is data
-    if(evt.isRealData()) return;
+    if(evt.isRealData() && !fOverrideRealData) return;
 
     // get the particles from the event
     art::Handle<std::vector<simb::MCParticle>> pHandle;
