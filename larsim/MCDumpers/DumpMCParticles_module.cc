@@ -6,6 +6,8 @@
  *
  */
 
+// LArSoft libraries
+#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
 
 // nutools libraries
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -76,7 +78,7 @@ class sim::DumpMCParticles: public art::EDAnalyzer {
   
   
   /**
-   * @brief Dumps the content of the specified particle in the output stream
+   * @brief Dumps the content of the specified particle in the output stream.
    * @tparam Stream the type of output stream
    * @param out the output stream
    * @param particle the particle to be dumped
@@ -121,76 +123,17 @@ void sim::DumpMCParticles::DumpMCParticle(
   Stream&& out, simb::MCParticle const& particle,
   std::string indent /* = "" */, bool bIndentFirst /* = true */
 ) const {
-  if (bIndentFirst) out << indent;
-  out << "ID=" << particle.TrackId() << "  PDG ID " << particle.PdgCode()
-    << " mass=" << particle.Mass() << " GeV/c2 "
-    << " status=" << particle.StatusCode();
-  if (particle.Weight() != 1.0) out << " weight=" << particle.Weight();
-  if (particle.Rescatter()) out << " rescattered";
-  out
-    << " at vertex (" << particle.Gvx() << ", " << particle.Gvy()
-    << ", " << particle.Gvz() << "; " << particle.Gvt() << ")";
+  
+  sim::dump::DumpMCParticle
+    (std::forward<Stream>(out), particle, indent, bIndentFirst? indent: "");
+  
   const unsigned int nPoints = particle.NumberTrajectoryPoints();
-  if (nPoints == 0) {
-    out << " (no points!)";
-  }
-  else {
-    TLorentzVector const& start = particle.Position();
-    TLorentzVector const& start_mom = particle.Momentum();
-    out << "\n" << indent << "created at ("
-      << start.X() << ", " << start.Y() << ", " << start.Z() << "; "
-      << start.T()
-      << ") cm by ";
-    if (particle.Mother() == 0) out << "the gods";
-    else {
-      out << (particle.Process().empty()? "magics": particle.Process())
-        << " from ID=" << particle.Mother();
-    }
-    out << " with momentum ("
-      << start_mom.X() << ", " << start_mom.Y() << ", " << start_mom.Z() << "; "
-      << start_mom.T() << ") GeV/c";
-    out << "\n" << indent;
-    if (nPoints == 1) {
-      out << "still alive!";
-    }
-    else {
-      TLorentzVector const& stop = particle.EndPosition();
-      TLorentzVector const& stop_mom = particle.EndMomentum();
-      out << "stops at ("
-        << stop.X() << ", " << stop.Y() << ", " << stop.Z() << "; "
-        << stop.T() << ") cm with momentum ("
-        << stop_mom.X() << ", " << stop_mom.Y()
-        << ", " << stop_mom.Z() << "; " << stop_mom.T() << ") GeV/c by "
-        << (particle.EndProcess().empty()? "magics": particle.EndProcess())
-        << " into ";
-      const unsigned int nDaughters = particle.NumberDaughters();
-      if (nDaughters == 0) out << "nothing";
-      else if (nDaughters == 1)
-        out << "particle ID=" << particle.FirstDaughter();
-      else {
-        out << nDaughters << " particles from ID=" << particle.FirstDaughter()
-          << " to ID=" << particle.LastDaughter();
-      }
-    } // if more than one point
-    simb::MCTrajectory const& traj = particle.Trajectory();
-    
-    out << "\n" << indent << "comes with a trajectory " << traj.TotalLength()
-      << " cm long in " << nPoints << " points";
-    if (fPointsPerLine > 0) {
-      out << ":";
-      unsigned int page = 0;
-      for (auto const& pair: traj) {
-        if (page-- == 0) {
-          out << "\n" << indent << "  ";
-          page = fPointsPerLine - 1;
-        }
-        else out << " -- ";
-        
-        TLorentzVector const& pos = pair.first;
-        out << "(" << pos.X() << ", " << pos.Y() << ", " << pos.Z() << "; "
-          << pos.T() << ")";
-      } // for trajectory points
-    } // if printing points
+  if ((nPoints > 0) && (fPointsPerLine > 0)) {
+    out << ":";
+    sim::dump::DumpMCParticleTrajectory(
+      std::forward<Stream>(out), particle.Trajectory(),
+      fPointsPerLine, indent + "  "
+      );
   } // if has points
   
 } // sim::DumpMCParticles::DumpMCParticle()

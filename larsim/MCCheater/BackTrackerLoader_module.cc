@@ -12,7 +12,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/BackTrackerService.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 
 namespace cheat {
   class BackTrackerLoader;
@@ -52,8 +53,10 @@ cheat::BackTrackerLoader::~BackTrackerLoader()
 // or analyzers
 void cheat::BackTrackerLoader::produce(art::Event & e)
 {
-  art::ServiceHandle<cheat::BackTracker> bt;
-  bt->Rebuild(e);
+  art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  art::ServiceHandle<cheat::BackTrackerService> bt_serv;
+  pi_serv->Rebuild(e);
+  bt_serv->Rebuild(e);
 
   return;
 }
