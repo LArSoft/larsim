@@ -179,7 +179,7 @@ namespace larg4 {
 	std::cout<< "ALUMINUM_Al surface set "<<volume->GetName()<<std::endl;
         if(PropertyPointer) {
 	  std::cout<< "defining ALUMINUM_Al optical boundary "<<std::endl;
-          G4OpticalSurface* refl_opsurfs = new G4OpticalSurface("Surface Steel",glisur,ground,dielectric_metal);
+          G4OpticalSurface* refl_opsurfs = new G4OpticalSurface("Surface Aluminum",glisur,ground,dielectric_metal);
           refl_opsurfs->SetMaterialPropertiesTable(MaterialTables[Material]);
           refl_opsurfs->SetPolish(0.5);
           new G4LogicalSkinSurface("refl_surfaces",volume, refl_opsurfs);
