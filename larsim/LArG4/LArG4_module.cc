@@ -161,8 +161,35 @@ namespace larg4 {
    *   are stored, but minor filtering by geometry and by physics is possible.
    *   An association of them with the originating `simb::MCTruth` object is
    *   also produced.
-   *
-   *
+   * 
+   * 
+   * Notes on the conventions
+   * -------------------------
+   * 
+   * * all and the particles in the truth record (`simb::MCTruth`) which have
+   *   status code (`simb::MCParticle::StatusCode()`) equal to `1` are passed
+   *   to Geant4. These particles are called, in `LArG4` jargon, _primaries_.
+   *   The interface with Geant4 is via a helper class provided by _nutools_.
+   * * normally, information about each particle that Geant4 propagates (which
+   *   Geant4 calls _tracks_), primary or not, is saved as an individual
+   *   `simb::MCParticle` object into the output particle list. Each
+   *   `simb::MCParticle` includes a Geant4-like track ID which is also recorded
+   *   into each `sim::IDE` deposited by that particle. This information can be
+   *   used to track all the deposition from a particle, or to backtrack the
+   *   particle responsible of a deposition (but see below...).
+   *   Note that the stored track ID may be different than the one Geant4 used
+   *   (and, in particular, it's guaranteed to be unique within a `sim::LArG4`
+   *   instance output).
+   * * there are options (some set in `sim::LArG4Parameters` service) which
+   *   allow for Geant4 tracks not to be saved as `simb::MCParticle` (e.g.
+   *   `ParticleKineticEnergyCut`, `KeepEMShowerDaughters`). When these
+   *   particles have deposited energy, their `sim::IDE` will report the ID of
+   *   the first parent Geant4 track which is saved in the `simb::MCParticle`
+   *   list, but _with its sign flipped_. Therefore, when tracking or
+   *   backtracking (see above), comparisons should be performed using the
+   *   absolute value of the `sim::IDE` (e.g. `std::abs(ide.trackID)`).
+   * 
+   * 
    * Randomness
    * -----------
    *
