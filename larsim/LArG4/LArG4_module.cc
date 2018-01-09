@@ -190,6 +190,27 @@ namespace larg4 {
    *   absolute value of the `sim::IDE` (e.g. `std::abs(ide.trackID)`).
    * 
    * 
+   * Timing
+   * -------
+   * 
+   * The `LArG4` module produces `sim::SimChannel` objects from generated
+   * `simb::MCParticle`. Each particle ("primary") is assigned the time taken
+   * from its vertex (a 4-vector), which is expected to be represented in
+   * nanoseconds.
+   * The `sim::SimChannel` object is a collection of `sim::IDE` in time. The
+   * position in the `sim::IDE` is the location where some ionization occurred.
+   * The time associated to a `sim::IDE` is stored in tick units. The time it
+   * represents is the time when the ionization happened, which is the time of
+   * the primary particle plus the propagation time to the ionization location,
+   * plus the drift time, which the ionized electrons take to reach the anode
+   * wire. This time is then shifted to the frame of the electronics time
+   * via `detinfo::DetectorClocks::G4ToElecTime()`, which adds a configurable
+   * time offset. The time is converted into ticks via
+   * `detinfo::DetectorClocks::TPCClock()`, and this is the final value
+   * associated to the `sim::IDE`. For a more complete overview, see
+   * https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Simulation#Simulation-Timing
+   * 
+   * 
    * Randomness
    * -----------
    *
