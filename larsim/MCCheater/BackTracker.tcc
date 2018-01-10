@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// \file BackTracker.tcc
+// \brief Template functions needed by the BackTracker service in order to connect truth information with reconstruction. Templates are for functions that require the event (as the "event" is different for art and Gallery).
+//
+// \author jason.stock@mines.sdsmt.edu
+//
+// Based on the original BackTracker by brebel@fnal.gov
+//
+////////////////////////////////////////////////////////////////////////////
+
 namespace cheat{
 
   //--------------------------------------------------------------------
