@@ -532,6 +532,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	else {
 	  Num = std::min(ExcitationRatio,1.0)*MeanNumberOfPhotons;
 	}
+	if(lgp->MCC80Compat())
+	  Num = G4int(Num);
 	ScintillationTime   = aMaterialPropertiesTable->
 		  GetConstProperty("FASTTIMECONSTANT");
 	if (fFiniteRiseTime) {

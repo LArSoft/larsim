@@ -92,7 +92,7 @@ namespace evgen {
     double fShowerAreaExtension=0.; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [cm]
     sqlite3* fdb[5]; ///< Pointers to sqlite3 database object, max of 5
     double fRandomXZShift=0.; ///< Each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space [cm]
-
+    bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
   };
 }
 
@@ -106,7 +106,8 @@ namespace evgen{
       fToffset(p.get< double >("TimeOffset",0.)),
       fBuffBox(p.get< std::vector< double > >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0})),
       fShowerAreaExtension(p.get< double >("ShowerAreaExtension",0.)),
-      fRandomXZShift(p.get< double >("RandomXZShift",0.))
+      fRandomXZShift(p.get< double >("RandomXZShift",0.)),
+      fMCC80Compat(p.get< bool >("MCC80Compat", false))
   {
     
     if(fShowerInputFiles.size() != fShowerFluxConstants.size() || fShowerInputFiles.size()==0 || fShowerFluxConstants.size()==0)
@@ -129,7 +130,7 @@ namespace evgen{
     this->populateTOffset();
     
     produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();    
+    produces< sumdata::RunData, art::InRun >();
     
   }
   
@@ -446,8 +447,10 @@ namespace evgen{
               if(shower!=lastShower){
                 //each new shower gets its own random time and position offsets
                 showerTime=1e9*(flat()*fSampleTime); //converting from s to ns
-                showerTimex=1e9*(flat()*fSampleTime); //converting from s to ns
-                showerTimez=1e9*(flat()*fSampleTime); //converting from s to ns
+		if(!fMCC80Compat) {
+		  showerTimex=1e9*(flat()*fSampleTime); //converting from s to ns
+		  showerTimez=1e9*(flat()*fSampleTime); //converting from s to ns
+		}
                 //and a random offset in both z and x controlled by the fRandomXZShift parameter
                 showerXOffset=flat()*fRandomXZShift - (fRandomXZShift/2);
                 showerZOffset=flat()*fRandomXZShift - (fRandomXZShift/2);
@@ -475,7 +478,10 @@ namespace evgen{
               //+ global offset (fcl parameter, in s)
               //- propagation time through atmosphere
               //+ boxNo{X,Z} time offset to make grid boxes have different shower times
-              t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTimex*boxnoX + showerTimez*boxnoZ;
+	      if(fMCC80Compat)
+		t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTime*boxnoX + showerTime*boxnoZ;
+	      else
+		t=tParticleTime+showerTime+(1e9*fToffset)-fToffset_corsika + showerTimex*boxnoX + showerTimez*boxnoZ;
               //wrap surface arrival so that it's in the desired time window
               t=wrapvar(t,(1e9*fToffset),1e9*(fToffset+fSampleTime));
               
