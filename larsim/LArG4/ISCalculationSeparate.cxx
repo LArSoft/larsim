@@ -67,6 +67,10 @@ namespace larg4{
 
     fStepSize = 0.1 * maxsize;
 
+    // MCC 8.0 compatibility flag.
+
+    fMCC80Compat = lgpHandle->MCC80Compat();
+
     return;
   }
 
@@ -125,6 +129,8 @@ namespace larg4{
 
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
+    if(fMCC80Compat)
+      fNumIonElectrons = int(fNumIonElectrons);
 
     LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
 				       << " MeV deposited with "     << recomb 
@@ -189,12 +195,10 @@ namespace larg4{
       // If the user has not specified yields for (p,d,t,a,carbon)
       // then these unspecified particles will default to the 
       // electron's scintillation yield
-      /*
-      if(!Scint_Yield_Vector){{
+      if(fMCC80Compat){{
 	  scintYield = mpt->GetConstProperty("ELECTRONSCINTILLATIONYIELD");
 	}
       }
-      */
 	   
       // Throw an exception if no scintillation yield is found
       if (!scintYield) 
@@ -206,6 +210,8 @@ namespace larg4{
 						      << "set by the user\n";
 
       fNumScintPhotons =  scintYield * fEnergyDeposit;
+      if(fMCC80Compat)
+	fNumScintPhotons = int(fNumScintPhotons);
     }
     else if(fEMSaturation){
       // The default linear scintillation process

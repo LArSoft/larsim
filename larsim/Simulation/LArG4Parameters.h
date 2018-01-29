@@ -63,6 +63,7 @@ namespace sim {
     const std::vector<int>         OpticalParamOrientations() const { return fOpticalParamOrientations;}
     const std::vector<std::vector<std::vector<double>>> OpticalParamParameters() const{return fOpticalParamParameters;  }
     bool UseLitePhotons()                                     const { return fLitePhotons;            }
+    bool MCC80Compat()                                        const { return fMCC80Compat;            }
 
   private:
     int                      fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
@@ -105,6 +106,7 @@ namespace sim {
                                                                              ///< paramaterized volumes
  
     bool fLitePhotons;
+    bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
   };
 }
 
