@@ -134,9 +134,9 @@ namespace larg4 {
    * `std::vector<simb::MCTruth>`.
    * 
    * The module allows two operation modes:
-   * # process specific generators: the label of the generator modules to be
+   * -# process specific generators: the label of the generator modules to be
    *   processed is specified explicitly in `LArG4` configuration
-   * # process all truth information generated so far: no generator is specified
+   * -# process all truth information generated so far: no generator is specified
    *   in the `LArG4` module configuration, and the module will process all
    *   data products of type `std::vector<simb::MCTruth>`, in a non-specified
    *   order
