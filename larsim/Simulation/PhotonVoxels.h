@@ -76,6 +76,15 @@ namespace sim {
     int GetVoxelID(double const*)  const;
     bool IsLegalVoxelID(int) const;
 
+    struct NeiInfo
+    {
+      NeiInfo(int i, double w) : id(i), weight(w) {}
+      int id;
+      double weight;
+    };
+
+    std::vector<NeiInfo> GetNeighboringVoxelIDs(const TVector3& v) const;
+
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;
     PhotonVoxel      GetContainingVoxel(TVector3) const;

@@ -127,7 +127,7 @@ namespace phot{
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
-  	
+    fInterpolate          = p.get< bool        >("Interpolate", false);
     
     if(fUseCryoBoundary)
       {
@@ -295,8 +295,19 @@ namespace phot{
 
   float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);  
-    return GetLibraryEntry(VoxID, OpChannel, wantReflected);
+    std::vector<sim::PhotonVoxelDef::NeiInfo> neis;
+    if(fInterpolate){
+      neis = fVoxelDef.GetNeighboringVoxelIDs(xyz);
+    }
+    else{
+      neis.emplace_back(fVoxelDef.GetVoxelID(xyz), 1);
+    }
+
+    float vis = 0;
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis){
+      vis += n.weight * GetLibraryEntry(n.id, OpChannel, wantReflected);
+    }
+    return vis;
   }
 
 

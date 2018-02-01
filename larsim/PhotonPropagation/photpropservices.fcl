@@ -8,6 +8,7 @@ standard_photonvisibilityservice:
   NY: 75
   NZ: 400
   UseCryoBoundary: true
+  Interpolate: false
 
   DoNotLoadLibrary: false
 	
@@ -33,6 +34,7 @@ standard_photonvisibilityservice_buildlib:
   NY: 75
   NZ: 400
   UseCryoBoundary: true
+  Interpolate: false
 
   DoNotLoadLibrary: true
 
@@ -58,6 +60,7 @@ standard_photonvisibilityservice_par:
   NY: 1
   NZ: 1
   UseCryoBoundary: false
+  Interpolate: false
   DUNE10ktParameterization: true
   DoNotLoadLibrary: true
 
@@ -79,6 +82,7 @@ sbnd_timeparametrization_photonvisibilityservice:
   NY: 75
   NZ: 400
   UseCryoBoundary: true
+  Interpolate: false
 
   DoNotLoadLibrary: false
 

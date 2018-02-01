@@ -1,6 +1,6 @@
-
 #include "larsim/Simulation/PhotonVoxels.h"
 
+#include <iostream>
 
 namespace sim {
 
@@ -139,6 +139,60 @@ namespace sim {
       // out of bounds
       return -1;
     }
+  }
+
+  //----------------------------------------------------------------------------
+  std::vector<PhotonVoxelDef::NeiInfo> PhotonVoxelDef::
+  GetNeighboringVoxelIDs(const TVector3& v) const
+  {
+    std::vector<NeiInfo> ret;
+
+    // Deliberately keep the floating part
+    double rStepD[3];
+    for(int i = 0; i < 3; ++i){
+      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return {};
+      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] );
+    }
+
+    for(int dx = 0; dx <= 1; ++dx){
+      for(int dy = 0; dy <= 1; ++dy){
+        for(int dz = 0; dz <= 1; ++dz){
+          const int dr[3] = {dx, dy, dz};
+
+          // TODO comment about how the maths works
+          int rStepI[3];
+          for(int d = 0; d < 3; ++d){
+            rStepI[d] = int(rStepD[d]-.5);
+            rStepI[d] = std::max(0, rStepI[d]);
+            rStepI[d] = std::min(rStepI[d], int(GetSteps()[d])-2);
+            rStepI[d] += dr[d];
+          }
+
+          double w = 1;
+          for(int d = 0; d < 3; ++d) w *= 1-fabs(rStepD[d]-rStepI[d]);
+
+          const int id = (rStepI[0] +
+                          rStepI[1] * (fxSteps) +
+                          rStepI[2] * (fxSteps * fySteps));
+
+          ret.emplace_back(id, w);
+        }
+      }
+    }
+
+    // Check the weights sum to 1
+    double wSum = 0;
+    for(const NeiInfo& n: ret) wSum += n.weight;
+    if(fabs(wSum-1) > 1e-3){
+      std::cout << "PhotonVoxelDef::GetNeighboringVoxelIDs(): "
+                << "But weights, sum to " << wSum << " (should be 1)."
+                << "Weights are:";
+      for(const NeiInfo& n: ret) std::cout << " " << n.weight;
+      std::cout << " Aborting." << std::endl;
+      abort();
+    }
+
+    return ret;
   }
 
   //----------------------------------------------------------------------------
