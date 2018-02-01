@@ -112,64 +112,33 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(TVector3 Position) const
+  int PhotonVoxelDef::GetVoxelID(const TVector3& p) const
   {
-
-    // figure out how many steps this point is in the x,y,z directions
-    int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
-    int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
-    int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
-
-    int ID;
-
-    // check if point lies within the voxelized region
-    if((0 <= xStep) && (xStep < fxSteps) &&
-       (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) )
-      {
-        // if within bounds, generate the voxel ID
-        ID = xStep
-	  + yStep * (fxSteps)
-	  + zStep * (fxSteps * fySteps);
-      }
-    else
-      {
-	// if out of bounds, print warning and return -1
-        ID = -1;
-      }
-
-    return ID;
-
+    const double xyz[3] = {p.X(), p.Y(), p.Z()};
+    return GetVoxelID(xyz);
   }
 
+  //----------------------------------------------------------------------------
   int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
-
     // figure out how many steps this point is in the x,y,z directions
     int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
     int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
     int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
 
-    int ID;
-
     // check if point lies within the voxelized region
     if((0 <= xStep) && (xStep < fxSteps) &&
        (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) )
-      {
-        // if within bounds, generate the voxel ID
-        ID = xStep
-	  + yStep * (fxSteps)
-	  + zStep * (fxSteps * fySteps);
+       (0 <= zStep) && (zStep < fzSteps) ){
+      // if within bounds, generate the voxel ID
+      return (xStep
+              + yStep * (fxSteps)
+              + zStep * (fxSteps * fySteps));
       }
-    else
-      {
-	// if out of bounds, print warning and return -1
-        ID = -1;
-      }
-
-    return ID;
-
+    else{
+      // out of bounds
+      return -1;
+    }
   }
 
   //----------------------------------------------------------------------------

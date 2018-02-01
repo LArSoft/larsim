@@ -72,7 +72,7 @@ namespace sim {
 
     int GetNVoxels() const;
 
-    int GetVoxelID(TVector3) const;
+    int GetVoxelID(const TVector3&) const;
     int GetVoxelID(double const*)  const;
     bool IsLegalVoxelID(int) const;
 
