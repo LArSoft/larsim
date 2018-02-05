@@ -12,7 +12,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "larsim/MCCheater/PhotonBackTracker.h"
+#include "larsim/MCCheater/PhotonBackTrackerService.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 
 namespace cheat {
   class PhotonBackTrackerLoader;
@@ -52,8 +53,10 @@ cheat::PhotonBackTrackerLoader::~PhotonBackTrackerLoader()
 // or analyzers
 void cheat::PhotonBackTrackerLoader::produce(art::Event & e)
 {
-  art::ServiceHandle<cheat::PhotonBackTracker> pbt;
-  pbt->Rebuild(e);
+  art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  art::ServiceHandle<cheat::PhotonBackTrackerService> pbt_serv;
+  pi_serv->Rebuild(e);
+  pbt_serv->Rebuild(e);
 
   return;
 }

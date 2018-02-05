@@ -15,8 +15,8 @@ namespace cheat{
   template<typename Evt> //DO NOT USE THIS FUNCTION FROM WITHIN ART! The BackTrackerService is designed to impliment these methods as cleanly as possible within the art framework. This is intended for gallery users.
     void BackTracker::PrepEvent        (const Evt& evt ){
       if( !( this->CanRun( evt ) ) ){       
-        throw cet::exception("ParticleInventory")
-          << "Particle Inventory cannot function. "
+        throw cet::exception("BackTracker")
+          << "BackTracker cannot function. "
           << "Is this file real data?";
       }
       fSimChannels.clear();
