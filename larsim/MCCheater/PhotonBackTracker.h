@@ -29,7 +29,7 @@
 #include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
-#include "larsim/larsim/MCCheater/ParticleInventory.h"
+#include "larsim/MCCheater/ParticleInventory.h"
 
 
 
