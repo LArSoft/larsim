@@ -147,29 +147,44 @@ namespace sim {
   {
     std::vector<NeiInfo> ret;
 
-    // Deliberately keep the floating part
+    // Position in voxel coordinates including floating point part
     double rStepD[3];
     for(int i = 0; i < 3; ++i){
+      // If we're outside the cuboid we have values for, return empty vector,
+      // ie failure.
       if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return {};
-      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] );
+      // Figure out our position wrt to the centres of the voxels
+      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] ) - 0.5;
     }
 
+    // The neighbours are the 8 corners of a cube around this point
     for(int dx = 0; dx <= 1; ++dx){
       for(int dy = 0; dy <= 1; ++dy){
         for(int dz = 0; dz <= 1; ++dz){
+          // The full 3D step
           const int dr[3] = {dx, dy, dz};
 
-          // TODO comment about how the maths works
+          // The integer-only position of the current corner
           int rStepI[3];
           for(int d = 0; d < 3; ++d){
-            rStepI[d] = int(rStepD[d]-.5);
+            // Round down to get the "lower left" corner
+            rStepI[d] = int(rStepD[d]);
+            // Ensure we'll stay in-bounds
             rStepI[d] = std::max(0, rStepI[d]);
             rStepI[d] = std::min(rStepI[d], int(GetSteps()[d])-2);
+            // Adjust to the corner we're actually considering
             rStepI[d] += dr[d];
           }
 
           double w = 1;
-          for(int d = 0; d < 3; ++d) w *= 1-fabs(rStepD[d]-rStepI[d]);
+          for(int d = 0; d < 3; ++d){
+            // These expressions will interpolate when between the 8 corners,
+            // and extrapolate in the half-voxel space around the edges.
+            if(dr[d] == 0)
+              w *= 1+rStepI[d]-rStepD[d];
+            else
+              w *= 1-rStepI[d]+rStepD[d];
+          }
 
           const int id = (rStepI[0] +
                           rStepI[1] * (fxSteps) +
@@ -180,12 +195,12 @@ namespace sim {
       }
     }
 
-    // Check the weights sum to 1
+    // Sanity check the weights sum to 1
     double wSum = 0;
     for(const NeiInfo& n: ret) wSum += n.weight;
     if(fabs(wSum-1) > 1e-3){
       std::cout << "PhotonVoxelDef::GetNeighboringVoxelIDs(): "
-                << "But weights, sum to " << wSum << " (should be 1)."
+                << "Weights sum to " << wSum << " (should be 1). "
                 << "Weights are:";
       for(const NeiInfo& n: ret) std::cout << " " << n.weight;
       std::cout << " Aborting." << std::endl;
