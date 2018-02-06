@@ -15,7 +15,7 @@ services:
 
   message: @local::standard_info
 }
-services.Geometry: @local::dune10kt_1x2x6_v1_geo
+services.Geometry: @local::dune10kt_1x2x6_v1_geo 
 
 source:
 {
@@ -35,8 +35,13 @@ physics:
 }
 
 physics.analyzers.analyze: @local::standard_photonlibraryanalyzer
-physics.analyzers.analyze.alt_x_axis: "X"
+physics.analyzers.analyze.alt_x_axis: "Z"
 
-# services.PhotonVisibilityService.HybridLibrary: true
+services.PhotonVisibilityService.HybridLibrary: true
+services.PhotonVisibilityService.LibraryFile:"fit.root"   #"photonlib_hybrid.v00_01_00.root"
 ## export FW_SEARCH_PATH=$FW_SEARCH_PATH:/pnfs/dune/persistent/users/bckhouse/photonlib_hybrid
-# services.PhotonVisibilityService.LibraryFile: "photonlib_hybrid.v00_01_00.root"
+
+#with FC
+#services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
+services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"

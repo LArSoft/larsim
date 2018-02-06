@@ -64,6 +64,7 @@ namespace phot {
     : EDAnalyzer(pset)
   {
     reconfigure(pset);
+    std::cout<<"Photon library analyzer constructor "<<std::endl;
   }
 
   //----------------------------------------------------------------------------
