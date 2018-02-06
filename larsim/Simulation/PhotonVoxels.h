@@ -83,7 +83,9 @@ namespace sim {
       double weight;
     };
 
-    std::vector<NeiInfo> GetNeighboringVoxelIDs(const TVector3& v) const;
+    // Out-param allows less allocation if caller re-uses a buffer
+    void GetNeighboringVoxelIDs(const TVector3& v,
+                                std::vector<NeiInfo>& ret) const;
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;

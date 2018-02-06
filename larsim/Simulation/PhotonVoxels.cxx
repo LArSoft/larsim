@@ -142,17 +142,18 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  std::vector<PhotonVoxelDef::NeiInfo> PhotonVoxelDef::
-  GetNeighboringVoxelIDs(const TVector3& v) const
+  void PhotonVoxelDef::
+  GetNeighboringVoxelIDs(const TVector3& v, std::vector<NeiInfo>& ret) const
   {
-    std::vector<NeiInfo> ret;
+    ret.clear();
+    ret.reserve(8);
 
     // Position in voxel coordinates including floating point part
     double rStepD[3];
     for(int i = 0; i < 3; ++i){
       // If we're outside the cuboid we have values for, return empty vector,
       // ie failure.
-      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return {};
+      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return;// {};
       // Figure out our position wrt to the centres of the voxels
       rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] ) - 0.5;
     }
@@ -206,8 +207,6 @@ namespace sim {
       std::cout << " Aborting." << std::endl;
       abort();
     }
-
-    return ret;
   }
 
   //----------------------------------------------------------------------------
