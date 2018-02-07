@@ -148,7 +148,7 @@ namespace phot
           g2.SetPoint(g2.GetN(), v.dist, obs*2e-5*v.dist*v.dist);
           
 	  vox = v.vox;
-          vis = v.vis;
+          vis = v.vis; //if outside of 3 sigma take visibility from library
           dist = v.dist;
           costheta = v.costheta;
           tr_fit->Fill();

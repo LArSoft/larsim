@@ -32,6 +32,7 @@ physics:
 }
 
 physics.analyzers.create: {module_type: "CreateHybridLibrary"}
-services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
-services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
-services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+#with Field Cage
+#services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
+#services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+#services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root" 
