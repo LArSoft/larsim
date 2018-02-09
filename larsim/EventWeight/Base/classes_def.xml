@@ -1,0 +1,6 @@
+<lcgdict>
+  <class name="evwgh::MCEventWeight" classVersion="10"/>
+  <class name="std::vector<evwgh::MCEventWeight>"/>
+  <class name="art::Wrapper<evwgh::MCEventWeight>"/>
+  <class name="art::Wrapper<std::vector<evwgh::MCEventWeight> >"/>
+</lcgdict>
