@@ -1,7 +1,7 @@
 #include "services_microboone.fcl"
 #include "time_memory_tracker_microboone.fcl"
 #include "seedservice_microboone.fcl"
-#include "genie_eventweight_microboone.fcl"
+#include "genie_eventweight.fcl" 
 
 process_name: GenieEventWeight
 
@@ -37,7 +37,7 @@ source:
 physics:
 {
  producers:{
-   genieeventweight:    @local::genie_microboone_eventweight
+   genieeventweight:    @local::genie_eventweight
    rns:                 { module_type: "RandomNumberSaver" }
  }
 
@@ -59,13 +59,12 @@ physics:
 #block to define where the output goes.  if you defined a filter in the physics
 #block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
-outputs.out1.fileName: "%ifb_%tc_reco1.root"
 outputs:
 {
  out1:
  {
    module_type: RootOutput
-   fileName:    "%ifb_%tc_rewgt.root.root"    #default file name, can override from command line with -o or --output
+   fileName:    "%ifb_%tc_rewgt.root"    #default file name, can override from command line with -o or --output
    dataTier:    "reconstructed"
    compressionLevel: 1
  }
