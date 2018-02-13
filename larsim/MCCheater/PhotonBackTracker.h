@@ -28,6 +28,7 @@
 #include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
+#include "lardataobj/RecoBase/OpFlash.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/MCCheater/ParticleInventory.h"
 
@@ -41,6 +42,7 @@ namespace cheat{
       struct fhiclConfig{
         fhicl::Atom<double> Delay{fhicl::Name("Delay"), fhicl::Comment("The delay time needed to correctly account for the optical simulation and optical systems simulation. (The time between when a g4partcile was made, and when the simulation write out says a signal was recorded)."), 0};
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4 module used to produce the art file we will be using."), "largeant"};
+        fhicl::Atom<art::InputTag> OpHitLabel{fhicl::Name("OpHitLabel"), fhicl::Comment("The default label for the module to use when grabbing OpHits"), "ophit"}; //This should be removed and replaced with some way to access the OpHitLabel given by the user in their own analysis module to avoid differing definitions.
         fhicl::Atom<double> MinOpHitEnergyFraction{fhicl::Name("MinOpHitEnergyFraction"), fhicl::Comment("The minimum contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
       };
 
@@ -73,7 +75,7 @@ namespace cheat{
 
       //----------------------------------------------------- /*NEW*/
       template<typename Evt>
-        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const;
+        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, const Evt& evt) const;
 
       //----------------------------------------------------- /*NEW*/
       template<typename Evt>
@@ -111,10 +113,10 @@ namespace cheat{
       const std::vector< sim::TrackSDP> OpHitToTrackSDPs(recob::OpHit const& opHit) const ;
 
       //-----------------------------------------------------
-      const std::vector < int > OpHitToTrackIds(recob::OpHit const& opHit) ;
+      const std::vector < int > OpHitToTrackIds(recob::OpHit const& opHit) const;
 
       //-----------------------------------------------------
-      const std::vector < int > OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit);
+      const std::vector < int > OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit) const;
 
       //-----------------------------------------------------
       const std::vector < int > OpHitToEveTrackIds(recob::OpHit const& opHit) ;
@@ -153,15 +155,15 @@ namespace cheat{
       const std::vector< double > OpHitToXYZ(recob::OpHit const& opHit) ;
 
       //---------------------------------------------------------------- /*NEW*/
-      const std::vector< double> PhotonBackTracker::OpHitsToXYZ( std::vector<recob::OpHit> const& opHits);
+      const std::vector< double> OpHitsToXYZ( std::vector<recob::OpHit> const& opHits);
 
       //---------------------------------------------------------------- /*NEW*/
-      const std::vector< double> PhotonBackTracker::OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps);
+      const std::vector< double> OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps);
       //----------------------------------------------------- /*NEW*/
-      const std::vector<sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit);
+      const std::unordered_set<const sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit);
 
       //----------------------------------------------------- /*NEW*/
-      const std::vecotr<sim::SDP*> OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>& opHit_P);
+      const std::unordered_set<const sim::SDP*> OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>& opHit_P);
 
       //-----------------------------------------------------
       const std::set< int> GetSetOfEveIds() const ;
@@ -225,6 +227,7 @@ namespace cheat{
       const detinfo::DetectorClocks* fDetClocks;
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
+      const art::InputTag fOpHitLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
 

@@ -41,6 +41,7 @@ namespace cheat{
     fDetClocks (detClock),
     fDelay     (config.Delay()),
     fG4ModuleLabel(config.G4ModuleLabel()),
+    fOpHitLabel(config.OpHitLabel()),
     fMinOpHitEnergyFraction(config.MinOpHitEnergyFraction())
   {}
 
@@ -54,6 +55,7 @@ namespace cheat{
     fDetClocks(detClock),
     fDelay(pSet.get<double>("Delay")),
     fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
+    fOpHitLabel(pSet.get<art::InputTag>("OpHitLabel", "ophit")),
     fMinOpHitEnergyFraction(pSet.get<double>("MinimumOpHitEnergyFraction", 0.1))
   {}
 
@@ -180,7 +182,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector < int > PhotonBackTracker::OpHitToTrackIds(recob::OpHit const& opHit) 
+  const std::vector < int > PhotonBackTracker::OpHitToTrackIds(recob::OpHit const& opHit) const
   {
     std::vector< int > retVec;
     for( auto const trackSDP : this->OpHitToTrackSDPs(opHit) ){
@@ -190,7 +192,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector < int > PhotonBackTracker::OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit)
+  const std::vector < int > PhotonBackTracker::OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit) const
   {
     return this->OpHitToTrackIds(*opHit);
   }
@@ -410,9 +412,9 @@ namespace cheat{
   //----------------------------------------------------------------
   const std::vector< double> PhotonBackTracker::OpHitsToXYZ( std::vector<recob::OpHit> const& opHits)
   {
-    std::vector<sim::SDP*> sdps;
+    std::vector<const sim::SDP*> sdps;
     for(auto & opHit : opHits){
-      for( sim::SDP* sdp : this->OpHitToSimSDPs(opHit)){
+      for( const sim::SDP* sdp : this->OpHitToSimSDPs_Ps(opHit)){
         sdps.push_back(sdp);
       }
     }
@@ -422,9 +424,9 @@ namespace cheat{
   //----------------------------------------------------------------
   const std::vector< double> PhotonBackTracker::OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps)
   {
-    std::vector<sim::SDP*> sdps;
+    std::vector<const sim::SDP*> sdps;
     for(auto & opHit_P : opHits_Ps){
-      for( sim::SDP* sdp : this->OpHitToSimSDPs(opHit_P)){
+      for( const sim::SDP* sdp : this->OpHitToSimSDPs_Ps(opHit_P)){
         sdps.push_back(sdp);
       }
     }
@@ -432,10 +434,10 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::unordered_set<sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)
+  const std::unordered_set<const sim::SDP*> PhotonBackTracker::OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)
   { /*NEW*/ /*COMPLETE*/
     const std::vector < int > ids = this->OpHitToEveTrackIds(opHit);
-    std::vector <const sim::SDP* > sdps;
+    std::unordered_set <const sim::SDP* > sdps;
     for( auto const& id : ids ){
       std::vector<const sim::SDP* > tmp_sdps = TrackIdToSimSDPs_Ps(id);
       for( const sim::SDP* tmp_sdp : tmp_sdps ){
@@ -446,10 +448,10 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::unordered_set<sim::SDP*> OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>&  opHit)
+  const std::unordered_set<const sim::SDP*> PhotonBackTracker::OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>&  opHit)
   { /*NEW*/ /*COMPLETE*/
     const std::vector < int > ids = this->OpHitToEveTrackIds(opHit);
-    std::vector <const sim::SDP* > sdps;
+    std::unordered_set <const sim::SDP* > sdps;
     for( auto const& id : ids ){
       std::vector<const sim::SDP* > tmp_sdps = TrackIdToSimSDPs_Ps(id);
       for( const sim::SDP* tmp_sdp : tmp_sdps ){
