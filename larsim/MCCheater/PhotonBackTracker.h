@@ -63,11 +63,25 @@ namespace cheat{
       template<typename Evt>
         void PrepEvent( const Evt& evt);
 
+      //-----------------------------------------------------
       template<typename Evt>
         const bool CanRun( const Evt& evt) ;
 
+      //-----------------------------------------------------
       template<typename Evt>
         void PrepOpDetBTRs(const Evt& evt);
+
+      //----------------------------------------------------- /*NEW*/
+      template<typename Evt>
+        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const;
+
+      //----------------------------------------------------- /*NEW*/
+      template<typename Evt>
+        const std::vector<double> OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const ;
+
+      //----------------------------------------------------- /*NEW*/
+      template<typename Evt>
+      const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const;
 
       //-----------------------------------------------------
       void ClearEvent();
@@ -103,6 +117,12 @@ namespace cheat{
       const std::vector < int > OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit);
 
       //-----------------------------------------------------
+      const std::vector < int > OpHitToEveTrackIds(recob::OpHit const& opHit) ;
+
+      //-----------------------------------------------------
+      const std::vector < int > OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit);
+
+      //-----------------------------------------------------
       const std::vector< sim::TrackSDP> OpHitToEveTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P) const;
 
       //-----------------------------------------------------
@@ -132,6 +152,17 @@ namespace cheat{
       //-----------------------------------------------------
       const std::vector< double > OpHitToXYZ(recob::OpHit const& opHit) ;
 
+      //---------------------------------------------------------------- /*NEW*/
+      const std::vector< double> PhotonBackTracker::OpHitsToXYZ( std::vector<recob::OpHit> const& opHits);
+
+      //---------------------------------------------------------------- /*NEW*/
+      const std::vector< double> PhotonBackTracker::OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps);
+      //----------------------------------------------------- /*NEW*/
+      const std::vector<sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit);
+
+      //----------------------------------------------------- /*NEW*/
+      const std::vecotr<sim::SDP*> OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>& opHit_P);
+
       //-----------------------------------------------------
       const std::set< int> GetSetOfEveIds() const ;
 
@@ -141,8 +172,14 @@ namespace cheat{
       //-----------------------------------------------------
       const std::set< int> GetSetOfEveIds(std::vector< art::Ptr<recob::OpHit> > const& opHits) const ;
 
+      //----------------------------------------------------- /*NEW*/
+      const std::set< int> GetSetOfEveIds(std::vector< recob::OpHit > const& opHits) const ;
+
       //-----------------------------------------------------
       const std::set< int> GetSetOfTrackIds(std::vector< art::Ptr<recob::OpHit> > const& opHits) const;
+
+      //----------------------------------------------------- /*NEW*/
+      const std::set< int> GetSetOfTrackIds(std::vector< recob::OpHit > const& opHits) const;
 
       //-----------------------------------------------------
       const double OpHitCollectionPurity(std::set<int> const& tkIds, std::vector< art::Ptr<recob::OpHit> > const& opHits) ;
@@ -171,6 +208,16 @@ namespace cheat{
           std::vector< art::Ptr< recob::OpHit > > const& opHits, 
           std::vector< art::Ptr< recob::OpHit > > const& opHitsIn,
           geo::View_t const& view);
+
+      //----------------------------------------------------- /*NEW*/
+      //std::vector<sim::TrackSDP> OpFlashToTrackSDPs(art::Ptr<recob::OpFlash> flash_P);
+      //----------------------------------------------------- /*NEW*/
+      //std::vector<sim::TrackSDP> OpFlashToEveTrackSDPs(recob::OpFlash flash);
+      //----------------------------------------------------- /*NEW*/
+      //std::vector<sim::TrackSDP> OpFlashToEveTrackSDPs(art::Ptr<recob::OpFlash> flash_P);
+      //----------------------------------------------------- /*NEW*/
+      //std::vector<sim::SDP*> OpFlashToSimSDPs_Ps(art::Ptr<recob::OpFlash> flash_P);
+
 
     private:
       const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here

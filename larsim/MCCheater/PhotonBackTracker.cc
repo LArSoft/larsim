@@ -1,3 +1,4 @@
+//
 ////////////////////////////////////////////////////////////////////
 //
 // \file PhotonBackTracker.cc
@@ -72,6 +73,7 @@ namespace cheat{
   {
     return priv_OpDetBTRs;
   }
+
   //----------------------------------------------------------------
   const std::vector< const sim::SDP* > PhotonBackTracker::TrackIdToSimSDPs_Ps(int const& id) 
   {
@@ -191,6 +193,22 @@ namespace cheat{
   const std::vector < int > PhotonBackTracker::OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit)
   {
     return this->OpHitToTrackIds(*opHit);
+  }
+
+  //----------------------------------------------------------------
+  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(recob::OpHit const& opHit) 
+  {/*NEW*/ /*COMPLETE*/
+    std::vector< int > retVec;
+    for( auto const trackSDP : this->OpHitToEveTrackSDPs(opHit) ){
+      retVec.push_back( trackSDP.trackID);
+    }
+    return retVec;
+  }
+
+  //----------------------------------------------------------------
+  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit)
+  {/*NEW*/ /*COMPLETE*/
+    return this->OpHitToEveTrackIds(*opHit);
   }
 
   //----------------------------------------------------------------
@@ -386,6 +404,62 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
+  //OPHITSTOXYZ
+  //
+
+  //----------------------------------------------------------------
+  const std::vector< double> PhotonBackTracker::OpHitsToXYZ( std::vector<recob::OpHit> const& opHits)
+  {
+    std::vector<sim::SDP*> sdps;
+    for(auto & opHit : opHits){
+      for( sim::SDP* sdp : this->OpHitToSimSDPs(opHit)){
+        sdps.push_back(sdp);
+      }
+    }
+    return SimSDPsToXYZ(sdps);
+  }
+
+  //----------------------------------------------------------------
+  const std::vector< double> PhotonBackTracker::OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps)
+  {
+    std::vector<sim::SDP*> sdps;
+    for(auto & opHit_P : opHits_Ps){
+      for( sim::SDP* sdp : this->OpHitToSimSDPs(opHit_P)){
+        sdps.push_back(sdp);
+      }
+    }
+    return SimSDPsToXYZ(sdps);
+  }
+
+  //----------------------------------------------------------------
+  const std::unordered_set<sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)
+  { /*NEW*/ /*COMPLETE*/
+    const std::vector < int > ids = this->OpHitToEveTrackIds(opHit);
+    std::vector <const sim::SDP* > sdps;
+    for( auto const& id : ids ){
+      std::vector<const sim::SDP* > tmp_sdps = TrackIdToSimSDPs_Ps(id);
+      for( const sim::SDP* tmp_sdp : tmp_sdps ){
+        sdps.insert(tmp_sdp); //emplace not needed here.
+      }
+    }
+    return sdps;
+  }
+
+  //----------------------------------------------------------------
+  const std::unordered_set<sim::SDP*> OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>&  opHit)
+  { /*NEW*/ /*COMPLETE*/
+    const std::vector < int > ids = this->OpHitToEveTrackIds(opHit);
+    std::vector <const sim::SDP* > sdps;
+    for( auto const& id : ids ){
+      std::vector<const sim::SDP* > tmp_sdps = TrackIdToSimSDPs_Ps(id);
+      for( const sim::SDP* tmp_sdp : tmp_sdps ){
+        sdps.insert(tmp_sdp); //emplace not needed here.
+      }
+    }
+    return sdps;
+  }
+
+  //----------------------------------------------------------------
   const std::set<int> PhotonBackTracker::GetSetOfEveIds() const
   {
     //std::set<int> out = fPartInv->GetSetOfEveIds();
@@ -411,8 +485,31 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
+  const std::set<int> PhotonBackTracker::GetSetOfEveIds(std::vector< recob::OpHit> const& opHits) const
+  { /*NEW*/ /*COMPLETE*/
+    std::set<int> eveIds;
+    for(const auto& opHit : opHits){
+      const std::vector<sim::TrackSDP> sdps = this->OpHitToEveTrackSDPs(opHit);
+      for(const auto& sdp : sdps){eveIds.insert(sdp.trackID);}//end sdps
+    }//End for hits
+    return eveIds;
+  }
+
+  //----------------------------------------------------------------
   const std::set<int> PhotonBackTracker::GetSetOfTrackIds(std::vector< art::Ptr<recob::OpHit> > const& opHits) const
   {
+    std::set<int> tids;
+    for( const auto& opHit : opHits){
+      for(const auto& sdp : this->OpHitToTrackSDPs(opHit)) {
+        tids.insert(sdp.trackID);
+      }//End for TrackSDPs
+    }//End for hits
+    return tids;
+  }
+
+  //----------------------------------------------------------------
+  const std::set<int> PhotonBackTracker::GetSetOfTrackIds(std::vector< recob::OpHit > const& opHits) const
+  { /*NEW*/ /*COMPLETE*/
     std::set<int> tids;
     for( const auto& opHit : opHits){
       for(const auto& sdp : this->OpHitToTrackSDPs(opHit)) {
@@ -586,8 +683,29 @@ namespace cheat{
     return efficiency;
   }
 
+  //----------------------------------------------------- /*NEW*/
+  //----------------------------------------------------- /*NEW*/
+  //----------------------------------------------------- /*NEW*/
+  //----------------------------------------------------- /*NEW*/
+  //std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash> flash_P);
+  //----------------------------------------------------- /*NEW*/
+  //std::set<int> OpFlashToTrackIds(recob::OpFlash flash);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::TrackSDP> OpFlashToTrackSDPs(art::Ptr<recob::OpFlash> flash_P);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::TrackSDP> OpFlashToTrackSDPs(recob::OpFlash flash);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::TrackSDP> OpFlashToEveTrackSDPs(recob::OpFlash flash);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::TrackSDP> OpFlashToEveTrackSDPs(art::Ptr<recob::OpFlash> flash_P);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::SDP*> OpFlashToSimSDPs_Ps(recob::OpFlash flash);
+  //----------------------------------------------------- /*NEW*/
+  //std::vector<sim::SDP*> OpFlashToSimSDPs_Ps(art::Ptr<recob::OpFlash> flash_P);
 
 
-//----------------------------------------------------------------------
+
+
+  //----------------------------------------------------------------------
 } // namespace
 
