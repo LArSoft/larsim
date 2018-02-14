@@ -1,11 +1,10 @@
 /**
  * \file WeightManager.h
  *
- * \ingroup Base
  * 
- * \brief Class def header for a class WeightManager
+ * \brief Allows to interface to EventWeight calculators
  *
- * @author Marco Del Tutto
+ * @author Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
  */
 
 #ifndef WEIGHTMANAGER_H
@@ -50,20 +49,36 @@ namespace evwgh {
     /// Name getter
     const std::string& Name() const;
 
-    /// Configuration
-    size_t Configure(fhicl::ParameterSet const & cfg, art::EngineCreator &);
+    /** 
+      * @brief Configuration function
+      * @param cfg the input parameters for settings
+      * @param the enging creator for the random seed (usually passed with *this)
+       CONFIGURE FUNCTION: created the weights algorithms in the following way: \n
+       0) Looks at the weight_functions fcl parameter to get the name of the calculators   \n
+       1) Creates the Calculators requested in step 0, and assigne a different random seed to each one \n
+       3) The future call WeightManager::Run will run the calculators           \n
+    */
+    size_t Configure(fhicl::ParameterSet const & cfg, art::EngineCreator & ec);
 
     /**
-       CORE FUNCTION: executes algorithms to find a match of TPC object and flash provided by users. \n
+      * @brief Core function (previous call to Configure is needed)
+      * @param e the art event
+      * @param inu the index of the simulated neutrino in the event
+       CORE FUNCTION: executes algorithms to assign a weight to the event as requested users. \n
+       WeightManager::Configure needs to be called first \n
        The execution takes following steps:             \n
-       0) TPC filter algorithm if provided (optional)   \n
-       1) Flash filter algorithm if provided (optional) \n
-       3) Flash matching algorithm (required)           \n
-       4) Returns match information for created TPC object & flash pair which respects the outcome of 3)
+       0) Loos over all the previously emplaced calculators \n
+       1) For each of them calculates the weights (more weight can be requested per calculator) \n
+       3) Returns a map from "calculator name" to vector of weights calculated which is available inside MCEventWeight
      */
     MCEventWeight Run(art::Event &e, const int inu);
 
-    /// Clears locally kept TPC object (QClusterArray_t) and flash (FlashArray_t), both provided by a user
+    /**
+      * @brief Returns the map between calculator name and Weight_t product
+      */
+    std::map<std::string, Weight_t*> GetWeightCalcMap() { return fWeightCalcMap; }
+
+    /// Reset
     void Reset()
     { _configured = false; }
 
@@ -74,12 +89,9 @@ namespace evwgh {
 
     std::map<std::string, Weight_t*> fWeightCalcMap; ///< A set of custom weight calculators
 
-    /// Readiness flag
-    bool _configured = false;
+    bool _configured = false; ///< Readiness flag
 
-    /// Name
-    std::string _name;
-
+    std::string _name; ///< Name
 
   };
 }

@@ -3,6 +3,8 @@
 // Handles event weights for GENIE systematics studies
 //
 // Updated by Marco Del Tutto on Feb 18 2017
+// Ported from uboonecode to larsim on Feb 14 2017 
+//   by Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
 
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
 #include "larsim/EventWeight/Base/WeightCalc.h"
@@ -82,28 +84,29 @@ namespace evwgh {
     
     DECLARE_WEIGHTCALC(GenieWeightCalc)
   };
+
   GenieWeightCalc::GenieWeightCalc()
-  {
-  }
+  {}
 
   void GenieWeightCalc::Configure(fhicl::ParameterSet const& p)
   {
-    //global config
-    fGenieModuleLabel= p.get< std::string > ("genie_module_label");
+    // Global Config
+    fGenieModuleLabel = p.get<std::string> ("genie_module_label");
+    fhicl::ParameterSet const &pset = p.get<fhicl::ParameterSet> (GetName());
 
-    fhicl::ParameterSet const &pset=p.get<fhicl::ParameterSet> (GetName());
-    //calc config
-    std::vector<std::string> pars = pset.get< std::vector<std::string> > ("parameter_list");	
-    std::vector<float> parsigmas = pset.get< std::vector<float> > ("parameter_sigma");	
-    std::string mode             = pset.get<std::string>("mode");
+    // Calc Config
+    std::vector<std::string> pars = pset.get<std::vector<std::string>> ("parameter_list");	
+    std::vector<float> parsigmas  = pset.get<std::vector<float>> ("parameter_sigma");	
+    std::string mode              = pset.get<std::string>("mode");
 
-    if (pars.size() != parsigmas.size() )
-      throw cet::exception(__FUNCTION__) << GetName()<<"::Bad fcl configuration. parameter_list and parameter_sigma need to have same number of parameters."<<std::endl;
+    if (pars.size() != parsigmas.size())
+      throw cet::exception(__PRETTY_FUNCTION__) << GetName()
+            << "::Bad fcl configuration. parameter_list and parameter_sigma need to have same number of parameters." << std::endl;
 
-    int number_of_multisims = pset.get< int > ("number_of_multisims");
+    int number_of_multisims = pset.get<int> ("number_of_multisims");
       
     std::vector<EReweight> erwgh;
-    for( auto & s : pars){
+    for (auto & s : pars) {
       if      (s == "NCELaxial") erwgh.push_back(kNCELaxial);
       else if (s == "NCELeta") erwgh.push_back(kNCELeta);
       else if (s == "QEMA") erwgh.push_back(kQEMA);
@@ -146,7 +149,8 @@ namespace evwgh {
       else if (s == "IntraNukePIabs") erwgh.push_back(kIntraNukePIabs);
       else if (s == "IntraNukePIpi") erwgh.push_back(kIntraNukePIpi);
       else {
-	throw cet::exception(__FUNCTION__) << GetName()<<"::Physical process "<<s<<" you requested is not available to reweight." << std::endl;
+	throw cet::exception(__PRETTY_FUNCTION__) << GetName()
+              << "::Physical process " << s << " you requested is not available to reweight." << std::endl;
       }
     }
       
@@ -154,7 +158,7 @@ namespace evwgh {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     fGaussRandom = new CLHEP::RandGaussQ(rng->getEngine(GetName()));
 
-    std::vector<std::vector<float> > reweightingSigmas(erwgh.size());
+    std::vector<std::vector<float>> reweightingSigmas(erwgh.size());
 
     if (mode.find("pm1sigma") != std::string::npos ) { 
       number_of_multisims = 2; // only +-1 sigma if pm1sigma is specified
@@ -180,7 +184,7 @@ namespace evwgh {
       reweightVector[weight_point] = new rwgt::NuReweight;
       
       for (unsigned int i_reweightingKnob=0;i_reweightingKnob<erwgh.size();i_reweightingKnob++) {
-	std::cout<<GetName()<<"::Setting up rwgh "<<weight_point<<"\t"<<i_reweightingKnob<<"\t"<<erwgh[i_reweightingKnob]<<std::endl; 
+	std::cout<<GetName() << "::Setting up rwgh " <<weight_point << "\t" << i_reweightingKnob << "\t" << erwgh[i_reweightingKnob] << std::endl; 
 
 	switch (erwgh[i_reweightingKnob]){
 
@@ -337,26 +341,27 @@ namespace evwgh {
 	  break;
 	}
       }
-   
-    } //loop over nWeights
+    } // loop over nWeights
+
     // Tell all of the reweight drivers to configure themselves:
     std::cout<< GetName()<<"::Setting up "<<reweightVector.size()<<" reweightcalcs"<<std::endl;
     for(auto & driver : reweightVector){
       driver -> Configure();
     }
+
   }
 
   std::vector<std::vector<double> > GenieWeightCalc::GetWeight(art::Event & e)
   { 
-    //returns a vector of weights for each neutrino interaction in the event
+    // Returns a vector of weights for each neutrino interaction in the event
 
-    //get the MC generator information out of the event       
-    //these are all handles to mc information.
+    // Get the MC generator information out of the event       
+    // These are all handles to mc information.
     art::Handle< std::vector<simb::MCTruth> > mcTruthHandle;  
     art::Handle< std::vector<simb::MCFlux> > mcFluxHandle;
     art::Handle< std::vector<simb::GTruth> > gTruthHandle;
 
-    //actually go and get the stuff
+    // Actually go and get the stuff
     e.getByLabel(fGenieModuleLabel,mcTruthHandle);
     e.getByLabel(fGenieModuleLabel,mcFluxHandle);
     e.getByLabel(fGenieModuleLabel,gTruthHandle);
@@ -367,7 +372,7 @@ namespace evwgh {
     std::vector<art::Ptr<simb::GTruth > > glist;
     art::fill_ptr_vector(glist, gTruthHandle);
 
-    //calculate weight(s) here 
+    // Calculate weight(s) here 
     std::vector<std::vector<double> >weight(mclist.size());
     for ( unsigned int inu=0; inu<mclist.size();inu++) {
       weight[inu].resize(reweightVector.size());    
