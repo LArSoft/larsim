@@ -138,6 +138,12 @@ namespace larg4 {
   }
 
   //--------------------------------------------------------------------------------------
+  void LArVoxelReadout::ClearSimEnergyDeposits()
+  {
+    fSimEDepCol.clear();
+  }
+
+  //--------------------------------------------------------------------------------------
   void LArVoxelReadout::ClearSimChannels() {
     fChannelMaps.resize(fGeoHandle->Ncryostats());
     size_t cryo = 0;

@@ -191,6 +191,12 @@ namespace larg4 {
     ChannelMap_t& GetSimChannelMap(unsigned short cryo, unsigned short tpc);
     //@}
 
+
+    /// Accessor to the energy depositions
+    const std::vector<sim::SimEnergyDeposit>& GetSimEDepCollection()
+    { return fSimEDepCol; }
+    void ClearSimEnergyDeposits();
+
   private:
 
 
