@@ -59,12 +59,12 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
-
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
 namespace CLHEP { class HEPRandomEngine; }
+namespace sim { class SimEnergyDeposit; }
 
 namespace larg4 {
 
@@ -229,6 +229,15 @@ namespace larg4 {
     CLHEP::HepRandomEngine*                   fPropGen = nullptr;  ///< random engine for charge propagation
     
     ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
+
+    //these are the things for doing the separated EDeps
+    void ProcessStep(G4Step*);
+    
+    G4ThreeVector                             fStepStart;
+    G4ThreeVector                             fStepEnd;
+    std::vector<sim::SimEnergyDeposit>        fSimEDepCol;    
+    bool                                      fFillSimEDeps;
+
   };
 
 }

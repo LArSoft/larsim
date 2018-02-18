@@ -65,6 +65,9 @@ namespace sim {
     bool UseLitePhotons()                                     const { return fLitePhotons;            }
     bool MCC80Compat()                                        const { return fMCC80Compat;            }
 
+    bool   FillSimEnergyDeposits()                            const { return fFillSimEnergyDeposits;  }
+    size_t InitialSimEnergyDepositSize()                      const { return fInitialSimEnergyDepositSize; }
+
   private:
     int                      fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
     double                   fParticleKineticECut;   ///< Minimum energy a particle needs before asking Geant4 
@@ -107,6 +110,9 @@ namespace sim {
  
     bool fLitePhotons;
     bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
+
+    bool   fFillSimEnergyDeposits;          ///< handle to fill SimEdeps or not
+    size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4
   };
 }
 

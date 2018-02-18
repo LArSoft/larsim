@@ -39,6 +39,8 @@
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandFlat.h"
 
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+
 namespace larg4 {
   
   
@@ -115,6 +117,13 @@ namespace larg4 {
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
+
+    fFillSimEDeps = fLgpHandle->FillSimEnergyDeposits();
+    if(fFillSimEDeps){
+      fSimEDepCol.clear();
+      fSimEDepCol.reserve(fLgpHandle->InitialSimEnergyDepositSize());
+    }
+
   }
 
   //---------------------------------------------------------------------------------------
@@ -176,6 +185,33 @@ namespace larg4 {
   } // LArVoxelReadout::GetSimChannels(short, short)
   
   
+  //---------------------------------------------------------------------------------------
+  //Fill the Energy Deposits
+  void LArVoxelReadout::ProcessStep( G4Step* step)
+  {
+    if(step->GetTotalEnergyDeposit() <= 0) return;
+   
+    sim::SimEnergyDeposit 
+      edep(                   -1, //n_photons set to -1 since we don't know
+			      -1, //n_electrons set to -1 since we don't know
+			      (float)(step->GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
+			      {   
+				(float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
+				(float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
+				(float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
+			      }, //the start point, into a Point_t object
+			      {   
+				(float)(step->GetPostStepPoint()->GetPosition().x()/CLHEP::cm),
+				(float)(step->GetPostStepPoint()->GetPosition().y()/CLHEP::cm),
+				(float)(step->GetPostStepPoint()->GetPosition().z()/CLHEP::cm)
+			      }, //the end point, into a Point_t object
+			      (double)(step->GetPreStepPoint()->GetGlobalTime()),
+			      (double)(step->GetPostStepPoint()->GetGlobalTime()),
+			      ParticleListAction::GetCurrentTrackID(),
+			      ParticleListAction::GetCurrentPdgCode());
+    fSimEDepCol.emplace_back(edep);
+  }
+
   
   //---------------------------------------------------------------------------------------
   // Called for each step.
@@ -194,6 +230,13 @@ namespace larg4 {
     // because of the geometry set up in LArVoxelGeometry and the
     // transportation set up in PhysicsList.  Find the mid-point
     // of the step.
+
+
+    //Wes, 18Feb2018
+    //Hook here for doing the EnergyDesposit Filling
+    if(fFillSimEDeps)
+      ProcessStep(step);
+
 
     if ( step->GetTotalEnergyDeposit() > 0 ){
       
