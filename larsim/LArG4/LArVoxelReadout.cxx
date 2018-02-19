@@ -197,25 +197,25 @@ namespace larg4 {
   {
     if(step->GetTotalEnergyDeposit() <= 0) return;
    
-    sim::SimEnergyDeposit 
-      edep(                   -1, //n_photons set to -1 since we don't know
-			      -1, //n_electrons set to -1 since we don't know
-			      (float)(step->GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
-			      {   
-				(float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
-				(float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
-				(float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
-			      }, //the start point, into a Point_t object
-			      {   
-				(float)(step->GetPostStepPoint()->GetPosition().x()/CLHEP::cm),
-				(float)(step->GetPostStepPoint()->GetPosition().y()/CLHEP::cm),
-				(float)(step->GetPostStepPoint()->GetPosition().z()/CLHEP::cm)
-			      }, //the end point, into a Point_t object
-			      (double)(step->GetPreStepPoint()->GetGlobalTime()),
-			      (double)(step->GetPostStepPoint()->GetGlobalTime()),
-			      ParticleListAction::GetCurrentTrackID(),
-			      ParticleListAction::GetCurrentPdgCode());
-    fSimEDepCol.emplace_back(edep);
+    fSimEDepCol.emplace_back
+      ( -1, //n_photons set to -1 since we don't know
+	-1, //n_electrons set to -1 since we don't know
+	(double)(step->GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
+	sim::SimEnergyDeposit::Point_t{   
+	  (float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
+	  (float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
+	  (float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
+	}, //the start point, into a Point_t object
+	sim::SimEnergyDeposit::Point_t{   
+	    (float)(step->GetPostStepPoint()->GetPosition().x()/CLHEP::cm),
+	    (float)(step->GetPostStepPoint()->GetPosition().y()/CLHEP::cm),
+	    (float)(step->GetPostStepPoint()->GetPosition().z()/CLHEP::cm)
+	}, //the end point, into a Point_t object
+	(double)(step->GetPreStepPoint()->GetGlobalTime()),
+	(double)(step->GetPostStepPoint()->GetGlobalTime()),
+	ParticleListAction::GetCurrentTrackID(),
+	ParticleListAction::GetCurrentPdgCode()
+      );
   }
 
   
