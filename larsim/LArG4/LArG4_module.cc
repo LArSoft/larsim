@@ -581,10 +581,12 @@ namespace larg4 {
                                         << "' is not a LArVoxelReadout object\n";
         }
 
+	//fill energy depositions...
 	if(lgp->FillSimEnergyDeposits())
 	  edepCol->insert(edepCol->end(),
 			  larVoxelReadout->GetSimEDepCollection().begin(),
 			  larVoxelReadout->GetSimEDepCollection().end());
+
 
 
         LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
@@ -625,8 +627,11 @@ namespace larg4 {
             scCol->emplace_back(std::move(sc));
           } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
         } // end loop over simchannels for this TPC
+
+
         // mark it for clearing
         ReadoutList.insert(const_cast<LArVoxelReadout*>(larVoxelReadout));
+
       } // end loop over tpcs
     }// end loop over cryostats
 

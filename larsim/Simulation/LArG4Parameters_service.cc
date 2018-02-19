@@ -61,7 +61,8 @@ namespace sim {
     fMCC80Compat             = pset.get< bool                     >("MCC80Compat", false );
 
     fFillSimEnergyDeposits       = pset.get< bool                 >("FillSimEnergyDeposits",false);
-    fInitialSimEnergyDepositSize = pset.get< size_t               >("InitialSimEnergyDepositSize");
+    if(fFillSimEnergyDeposits)
+      fInitialSimEnergyDepositSize = pset.get< size_t               >("InitialSimEnergyDepositSize");
 
     
     
