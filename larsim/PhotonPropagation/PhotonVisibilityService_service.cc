@@ -127,7 +127,7 @@ namespace phot{
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
-  	
+    fInterpolate          = p.get< bool        >("Interpolate", false);
     
     if(fUseCryoBoundary)
       {
@@ -265,8 +265,16 @@ namespace phot{
 
   float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz, bool wantReflected) const
   {
-    size_t VoxID = fVoxelDef.GetVoxelID(xyz);
-    return GetLibraryEntries(VoxID, wantReflected);
+    if(fInterpolate){
+      static std::vector<float> ret;
+      if(ret.size() != NOpChannels()) ret.resize(NOpChannels());
+      for(unsigned int i = 0; i < NOpChannels(); ++i) ret[i] = GetVisibility(xyz, i, wantReflected);
+      return &ret.front();
+    }
+    else{
+      size_t VoxID = fVoxelDef.GetVoxelID(xyz);
+      return GetLibraryEntries(VoxID, wantReflected);
+    }
   }
 
 
@@ -295,8 +303,27 @@ namespace phot{
 
   float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);  
-    return GetLibraryEntry(VoxID, OpChannel, wantReflected);
+    // Static to avoid reallocating this buffer between calls
+    // (GetNeighbouringVoxelIDs makes sure to clear it).
+    static std::vector<sim::PhotonVoxelDef::NeiInfo> neis;
+
+    if(fInterpolate){
+      // In case we're outside the bounding box we'll get an empty vector here
+      // and return visibility 0, which seems OK.
+      fVoxelDef.GetNeighboringVoxelIDs(xyz, neis);
+    }
+    else{
+      // For no interpolation, use a single entry with weight 1
+      neis.clear();
+      neis.emplace_back(fVoxelDef.GetVoxelID(xyz), 1);
+    }
+
+    // Sum up all the weighted neighbours to get interpolation behaviour
+    float vis = 0;
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis){
+      vis += n.weight * GetLibraryEntry(n.id, OpChannel, wantReflected);
+    }
+    return vis;
   }
 
 
