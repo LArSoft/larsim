@@ -249,10 +249,8 @@ void phot::PhotonLibraryPropagation::PrecalculateSC(std::vector<sim::SimEnergyDe
       double y = (double)((unsigned long)edep.Y()) + 0.5 - (geo.DetHalfHeight());
       double z = (double)((unsigned long)edep.Z()) + 0.5;
       
-	fSCE->GetPosOffsets(edep.X(),edep.Y(),edep.Z(),fPosOffsets);	
-	fSCCalcMap[index].push_back(fPosOffsets);
-	fSCE->GetEfieldOffsets(edep.X(),edep.Y(),edep.Z(),fPosOffsets);	
-	fSCCalcMap[index].push_back(fPosOffsets);
+	fSCCalcMap[index].push_back(fSCE->GetPosOffsets(edep.X(),edep.Y(),edep.Z()));
+	fSCCalcMap[index].push_back(fSCE->GetEfieldOffsets(edep.X(),edep.Y(),edep.Z()));
     }
   }
   

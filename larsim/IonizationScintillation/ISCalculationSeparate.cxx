@@ -231,7 +231,7 @@ namespace larg4{
     double EField = fEfield;
     if (fSCE->EnableSimEfieldSCE())
       {
-        fSCE->GetEfieldOffsets(x,y,z,fEfieldOffsets);
+        fEfieldOffsets = fSCE->GetEfieldOffsets(x,y,z);
         EField = std::sqrt( (fEfield + fEfield*fEfieldOffsets[0])*(fEfield + fEfield*fEfieldOffsets[0]) +
 			    (fEfield*fEfieldOffsets[1]+fEfield*fEfieldOffsets[1]) +
 			    (fEfield*fEfieldOffsets[2]+fEfield*fEfieldOffsets[2]) );
