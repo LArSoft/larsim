@@ -301,7 +301,10 @@ namespace cheat{
     sim::OpDetBacktrackerRecord::timePDclock_t end_time = ((fPeakTime+ fWidth)*1000.0)-fDelay;
     if(start_time > end_time){throw;}
 
-    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap = (this->FindOpDetBTR(opHit.OpChannel()))->timePDclockSDPsMap(); //Not guranteed to be sorted.
+    //BUG!!!fGeom->OpDetFromOpChannel(channel)
+    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap 
+      = (this->FindOpDetBTR(fGeom->OpDetFromOpChannel(channel) ))->timePDclockSDPsMap(); //Not guranteed to be sorted.
+    //const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap = (this->FindOpDetBTR(opHit.OpChannel()))->timePDclockSDPsMap(); //Not guranteed to be sorted.
 
     std::vector<const std::pair<double, std::vector<sim::SDP>>*> timePDclockSDPMap_SortedPointers;
     for ( auto& pair : timeSDPMap ){ timePDclockSDPMap_SortedPointers.push_back(&pair); }
