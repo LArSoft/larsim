@@ -165,7 +165,7 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 
   for(size_t i_op=0; i_op<NOpChannels; ++i_op){
     photonCollection.emplace_back(i_op);
-    photonCollection[i_op].reserve(edeps.size()*10);
+    photonCollection[i_op].reserve(edeps.size());
   }
   
   PrecalculateSC(edeps);

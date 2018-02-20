@@ -120,16 +120,18 @@ namespace larg4 {
 
     fFillSimEDeps = fLgpHandle->FillSimEnergyDeposits();
     if(fFillSimEDeps){
-      fSimEDepCol.clear();
+    //fSimEDepCol.clear();
       fSimEDepCol.reserve(fLgpHandle->InitialSimEnergyDepositSize());
     }
-
+    fNSteps=0;
   }
 
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
+    std::cout << "Total number of steps was " << fNSteps << std::endl;
+
   } // LArVoxelReadout::EndOfEvent()
 
   //---------------------------------------------------------------------------------------
@@ -195,7 +197,7 @@ namespace larg4 {
   //Fill the Energy Deposits
   void LArVoxelReadout::ProcessStep( G4Step* step)
   {
-    if(step->GetTotalEnergyDeposit() <= 0) return;
+    //if(step->GetTotalEnergyDeposit() <= 0) return;
    
     fSimEDepCol.emplace_back
       ( -1, //n_photons set to -1 since we don't know
@@ -237,19 +239,18 @@ namespace larg4 {
     // transportation set up in PhysicsList.  Find the mid-point
     // of the step.
 
-
-    //Wes, 18Feb2018
-    //Hook here for doing the EnergyDesposit Filling
-    if(fFillSimEDeps)
-      ProcessStep(step);
-
-
     if ( step->GetTotalEnergyDeposit() > 0 ){
       
+      //Wes, 18Feb2018
+      //Hook here for doing the EnergyDesposit Filling
+      if(fFillSimEDeps)
+	ProcessStep(step);
+
+
       // Make sure we have the IonizationAndScintillation singleton
       // reset to this step
       larg4::IonizationAndScintillation::Instance()->Reset(step);
-
+      fNSteps++;
       if( !fDontDriftThem ){
 
         G4ThreeVector midPoint = 0.5*( step->GetPreStepPoint()->GetPosition()

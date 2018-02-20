@@ -582,11 +582,13 @@ namespace larg4 {
         }
 
 	//fill energy depositions...
-	if(lgp->FillSimEnergyDeposits())
+	if(lgp->FillSimEnergyDeposits()){
+	  std::cout << "\tAdding " << larVoxelReadout->GetSimEDepCollection().size() 
+		    << " edeps to collection with " << edepCol->size() << std::endl;
 	  edepCol->insert(edepCol->end(),
 			  larVoxelReadout->GetSimEDepCollection().begin(),
 			  larVoxelReadout->GetSimEDepCollection().end());
-
+	}
 
 
         LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
