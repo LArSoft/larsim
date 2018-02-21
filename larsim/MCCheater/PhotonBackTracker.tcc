@@ -18,21 +18,29 @@ namespace cheat{
         /*  mf::LogWarning("PhotonBackTracker") << "failed to get handle to     simb::MCParticle from "
          *              << fG4ModuleLabel
          *                          << ", return";*/ //This is now silent as it is expected to    happen every generation run. It is also temporary while we wait for
+        return;
       }
+
+      art::fill_ptr_vector(priv_OpDetBTRs, btrHandle);
+
+      auto compareBTRlambda = [](art::Ptr<sim::OpDetBacktrackerRecord> a, art::Ptr<sim::OpDetBacktrackerRecord> b) {return(a->OpDetNum()<b->OpDetNum());};
+      if (!std::is_sorted(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda)) std::sort(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda);
+
+      return;
     }
 
   //----------------------------------------------------------------
   template<typename Evt>
-  void PhotonBackTracker::PrepEvent( const Evt& evt)
-  {
-    if( !(this->CanRun( evt ) ) ){
-      throw cet::exception("PhotonBackTracker")
-        <<"PhotonBackTracker cannot function."
-        <<"Is this file real data?";
-    }
-    priv_OpDetBTRs.clear();
-    this->PrepOpDetBTRs(evt);
-  } 
+    void PhotonBackTracker::PrepEvent( const Evt& evt)
+    {
+      if( !(this->CanRun( evt ) ) ){
+        throw cet::exception("PhotonBackTracker")
+          <<"PhotonBackTracker cannot function."
+          <<"Is this file real data?";
+      }
+      priv_OpDetBTRs.clear();
+      this->PrepOpDetBTRs(evt);
+    } 
 
   //----------------------------------------------------- /*NEW*/
   template<typename Evt>

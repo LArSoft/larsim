@@ -108,7 +108,7 @@ namespace cheat{
     art::Ptr< sim::OpDetBacktrackerRecord > opDet;
     for(size_t sc = 0; sc < priv_OpDetBTRs.size(); ++sc){
       //This could become a bug. What if it occurs twice (shouldn't happen in correct records, but still, no error handeling included for the situation
-      if(priv_OpDetBTRs[sc]->OpDetNum() == opDetNum) opDet = priv_OpDetBTRs[sc];
+      if(priv_OpDetBTRs.at(sc)->OpDetNum() == opDetNum) opDet = priv_OpDetBTRs.at(sc);
     }
     if(!opDet)
     {
