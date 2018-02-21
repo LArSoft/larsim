@@ -68,6 +68,8 @@ namespace cheat{
       simb::MCTruth                  TrackIdToMCTruth (int const& id)//Users are encouraged to use TrackIdToMCTruthP
       { return *(this->TrackIdToMCTruth_P(id)); }
 
+      int TrackIdToEveTrackId(const int& tid) const;
+
       const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p); //Users are encouraged to use ParticleToMCTruthP
       simb::MCTruth                  ParticleToMCTruth (const simb::MCParticle* p)
       { return *(this->ParticleToMCTruth_P(p)); } 
