@@ -53,7 +53,7 @@ namespace cheat{
       for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
         const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
-        if( !(mct==fMCTObj.fMCTruthList.back()) ){ fMCTObj.fMCTruthList.push_back(mct); }
+        if( fMCTObj.fMCTruthList.empty() ||  !(mct==fMCTObj.fMCTruthList.back())  ){ fMCTObj.fMCTruthList.push_back(mct); }
           // check that we are not adding a simb::MCTruth twice to the collection
           // we know that all the particles for a given simb::MCTruth are put into the
           // collection of particles at the same time, so we can just check that the 
