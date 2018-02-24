@@ -53,12 +53,19 @@ namespace cheat{
       for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
         const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
-        if( fMCTObj.fMCTruthList.empty() ||  !(mct==fMCTObj.fMCTruthList.back())  ){ fMCTObj.fMCTruthList.push_back(mct); }
-          // check that we are not adding a simb::MCTruth twice to the collection
-          // we know that all the particles for a given simb::MCTruth are put into the
-          // collection of particles at the same time, so we can just check that the 
-          // current art::Ptr has a different id than the last one put 
-        fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size() -1 );
+        unsigned short mctruth_idx = USHRT_MAX;
+        for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
+          if (fMCTObj.fMCTruthList[i] == mct){
+             mctruth_idx = i;
+          }
+        }
+        if (mctruth_idx == USHRT_MAX){
+          fMCTObj.fMCTruthList.push_back(mct);
+          fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size() - 1);
+        }
+        else{
+          fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), mctruth_idx );
+        }
       }
     }
 
