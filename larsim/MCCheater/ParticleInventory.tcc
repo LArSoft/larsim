@@ -57,6 +57,7 @@ namespace cheat{
         for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
           if (fMCTObj.fMCTruthList[i] == mct){
              mctruth_idx = i;
+             break;
           }
         }
         if (mctruth_idx == USHRT_MAX){
