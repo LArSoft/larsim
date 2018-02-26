@@ -10,4 +10,4 @@ add_subdirectory(EventGenerator)
 add_subdirectory(DetSim)
 add_subdirectory(MCDumpers)
 add_subdirectory(GDMLUtils)
-
+add_subdirectory(EventWeight)
