@@ -154,7 +154,12 @@ void larg4::ElectronDrift::produce(art::Event & e)
     edep_XYZ[0] = edep.X(); edep_XYZ[1] = edep.Y(); edep_XYZ[2] = edep.Z();
     
     XYZ[0] = edep.X(); //we won't need to validate x position: that will show up as timing diff, that's all
-    
+
+    /*
+    std::cout << "\tDrifted electrons for edep at " 
+	      << edep.X() << "," << edep.Y() << "," << edep.Z()
+	      << " is " << fElectronDriftAlg.NElectronClusters() << std::endl;
+    */
     //loop over the electron clusters and add them to channels
     for(size_t i_cl=0; i_cl < fElectronDriftAlg.NElectronClusters(); ++i_cl){
       
@@ -214,6 +219,7 @@ void larg4::ElectronDrift::produce(art::Event & e)
   //std::cout << "\tEdep time check ... " << time << std::endl;
   
   //put sim channles onto the event
+  std::cout << "Going to put " << simChannelCol->size() << " channels on the event." << std::endl;
   e.put(std::move(simChannelCol));
 }
 

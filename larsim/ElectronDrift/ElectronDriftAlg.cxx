@@ -126,10 +126,12 @@ namespace larg4{
     //determine xdrift distance
     if(tpcgeo.DriftDirection() == geo::kNegX)
       fXDrift = edep.X() - tpcgeo.PlaneLocation(0)[0] - fPosOffsets[0];
-    else if(tpcgeo.DriftDirection() == geo::kNegX)
+    else if(tpcgeo.DriftDirection() == geo::kPosX)
       fXDrift = tpcgeo.PlaneLocation(0)[0] - edep.X() - fPosOffsets[0];
+
     if(fXDrift<0)
-      return;
+      fXDrift = 0.0;
+      //return;
 
     //get drift time
     fTDrift = fXDrift * fRecipDriftVelocityVolume;
@@ -138,6 +140,7 @@ namespace larg4{
     //get n_electrons
     fISAlg.Reset();
     fISAlg.CalculateIonizationAndScintillation(edep,fSCCalcMap[GetSCMapIndex(edep.X(),edep.Y(),edep.Z())][1]);
+    //std::cout << "\t\tFor edep with energy " << edep.Energy() << " there are " << fISAlg.NumberIonizationElectrons() << std::endl;
     fNElectrons = fISAlg.NumberIonizationElectrons() * TMath::Exp(fTDrift / fElectronLifetime);
     if(fNElectrons <= 0)
       return;
@@ -166,7 +169,7 @@ namespace larg4{
 
     //fill electron/energy arrays
     fNElDiff.resize(fNElectronClusters,fThisElectronClusterSize);
-    fNEnDiff.resize(fNElectronClusters,fISAlg.EnergyDeposit() * fThisElectronClusterSize/fNElectronClusters);
+    fNEnDiff.resize(fNElectronClusters,fISAlg.EnergyDeposit() * fThisElectronClusterSize/fNElectrons);
     fNElDiff.back() = fNElectrons - (fNElectronClusters-1)*fThisElectronClusterSize;
     fNEnDiff.back() = fISAlg.EnergyDeposit() * fNElDiff.back()/fNElectrons;
 

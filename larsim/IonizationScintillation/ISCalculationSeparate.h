@@ -30,7 +30,7 @@ namespace larg4 {
    virtual ~ISCalculationSeparate();
 
    void   Initialize(const detinfo::LArProperties* larp,   
-		     const detinfo::DetectorProperties* detp,
+ 		     const detinfo::DetectorProperties* detp,
 		     const sim::LArG4Parameters* lgp,
 		     const spacecharge::SpaceCharge* sce);
    void   Reset();
@@ -40,8 +40,8 @@ namespace larg4 {
    int    NumberIonizationElectrons()  const { return fNumIonElectrons;     }
    int    NumberScintillationPhotons() const { return fNumScintPhotons;     }
 
-   double EFieldAtStep(double fEfield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step  
-   double EFieldAtStep(double fEfield, sim::SimEnergyDeposit const& edep, std::vector<double> const&); //value of field with any corrections for this step  
+   double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step  
+   double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep, std::vector<double> const&); //value of field with any corrections for this step  
 
  private:
 
@@ -60,11 +60,13 @@ namespace larg4 {
    int    fNumScintPhotons; ///< number of scintillation photons for this step   
    
    std::vector<double> fEfieldOffsets;
-   double EFieldAtStep(double fEfield, float x, float y, float z);
-   double EFieldAtStep(double fEfield, float x, float y, float z, std::vector<double> const&);
+   double EFieldAtStep(double efield, float x, float y, float z);
+   double EFieldAtStep(double efield, float x, float y, float z, std::vector<double> const&);
 
    const detinfo::LArProperties*      fLArProp;   
    const spacecharge::SpaceCharge*    fSCE;
+   const detinfo::DetectorProperties* fDetProp;
+   const sim::LArG4Parameters*        fLArG4Prop;
    
    void CalculateIonization(float e, float ds, float x, float y, float z);
    void CalculateIonization(sim::SimEnergyDeposit const& edep);
