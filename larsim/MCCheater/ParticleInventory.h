@@ -101,6 +101,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Persistency/Provenance/ProductToken.h"
 
 #include "fhiclcpp/types/Atom.h"
@@ -157,7 +158,7 @@ namespace cheat{
       const std::vector< art::Ptr<simb::MCTruth> >& MCTruthList() const { return fMCTObj.fMCTruthList;}
       
         ;
-      const std::map<unsigned short, unsigned short >& TrackIdToMCTruthIndex() const { return fMCTObj.fTrackIdToMCTruthIndex; }
+      const std::map< int,  int >& TrackIdToMCTruthIndex() const { return fMCTObj.fTrackIdToMCTruthIndex; }
 
       void ClearEvent();
 
@@ -193,7 +194,7 @@ namespace cheat{
       mutable sim::ParticleList                       fParticleList;
       struct MCTObjects{
         std::vector< art::Ptr<simb::MCTruth> >  fMCTruthList;   //there is some optimization that can be done here.
-        std::map<unsigned short, unsigned short > fTrackIdToMCTruthIndex;
+        std::map< int,  int > fTrackIdToMCTruthIndex;
       };
       mutable MCTObjects fMCTObj;  
       //For fhicl validation, makea config struct
