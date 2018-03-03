@@ -265,6 +265,8 @@ private:
 
         G4EmSaturation* emSaturation;
 
+  void ProcessStep( const G4Step& step);
+
   //double fGlobalTimeOffset;
   
 };

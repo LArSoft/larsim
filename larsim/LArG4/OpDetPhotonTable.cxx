@@ -19,6 +19,8 @@
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;
   
@@ -27,6 +29,8 @@ namespace larg4 {
   {
     fDetectedPhotons.clear();
   }
+  OpDetPhotonTable::~OpDetPhotonTable(){}
+
 
   //--------------------------------------------------
   OpDetPhotonTable * OpDetPhotonTable::Instance(bool /*LitePhotons*/ )
@@ -144,6 +148,32 @@ namespace larg4 {
   {
     return fLitePhotons[opchannel];
   }
+  
+
+  //--------------------------------------------------
+  void OpDetPhotonTable::AddEnergyDeposit(int n_elec,int n_photon,
+					  double energy,
+					  float start_x,float start_y, float start_z,
+					  float end_x,float end_y,float end_z,
+					  double start_time,double end_time,
+					  int trackid,int pdgcode)
+  {  
+    fSimEDepCol.emplace_back(n_elec,n_photon,
+			     energy,
+			     sim::SimEnergyDeposit::Point_t{start_x,start_y,start_z},
+			     sim::SimEnergyDeposit::Point_t{end_x,end_y,end_z},
+			     start_time,end_time,
+			     trackid,pdgcode);
+  }
+
+  //--------------------------------------------------
+  void OpDetPhotonTable::ClearAndReserveEnergyDeposits(size_t reserve_size)
+  { fSimEDepCol.clear(); fSimEDepCol.reserve(reserve_size); }
+  
+  
+  //--------------------------------------------------
+  std::vector<sim::SimEnergyDeposit> & OpDetPhotonTable::GetSimEnergyDeposits()
+  { return fSimEDepCol; }
   
 
 }

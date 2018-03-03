@@ -116,6 +116,7 @@
 #include "larcore/Geometry/OpDetGeo.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -155,6 +156,7 @@ namespace larg4{
         ExcitationRatio = 1.0;
 	
 	const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+	art::ServiceHandle<sim::LArG4Parameters> lgp;
 	
         scintillationByParticleType = larp->ScintByParticleType();
 
@@ -168,6 +170,7 @@ namespace larg4{
         BuildThePhysicsTable();
 
         emSaturation = NULL;
+
 }
 
   OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
@@ -332,6 +335,28 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 //-------------------------------------------------------------
+  void OpFastScintillation::ProcessStep( const G4Step& step)
+  {
+    if(step.GetTotalEnergyDeposit() <= 0) return;
+
+    OpDetPhotonTable::Instance()->AddEnergyDeposit
+      (-1,
+       -1,
+       (double)(step.GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
+       (float)(step.GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
+       (float)(step.GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
+       (float)(step.GetPreStepPoint()->GetPosition().z()/CLHEP::cm),
+       (float)(step.GetPostStepPoint()->GetPosition().x()/CLHEP::cm),
+       (float)(step.GetPostStepPoint()->GetPosition().y()/CLHEP::cm),
+       (float)(step.GetPostStepPoint()->GetPosition().z()/CLHEP::cm),
+       (double)(step.GetPreStepPoint()->GetGlobalTime()),
+       (double)(step.GetPostStepPoint()->GetGlobalTime()),
+       step.GetTrack()->GetTrackID(),
+       step.GetTrack()->GetParticleDefinition()->GetPDGEncoding()
+       );
+  }
+  
+//-------------------------------------------------------------
 
 bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)
 {
@@ -345,6 +370,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   art::ServiceHandle<sim::LArG4Parameters> lgp;
 
   const G4Track * aTrack = aStep.GetTrack();
+
+  if(lgp->FillSimEnergyDeposits())
+    ProcessStep(aStep);
 
   G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
   G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();

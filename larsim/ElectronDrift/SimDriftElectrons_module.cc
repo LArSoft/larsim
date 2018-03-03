@@ -317,9 +317,9 @@ namespace detsim {
 	  fGeometry->PositionToCryostat(xyz, cryostat);
 	}
 	catch(cet::exception &e){
-	  mf::LogWarning("SimDriftElectrons") << "step " << energyDeposit << "\n"
-					      << "cannot be found in a cryostat\n"
-					      << e;
+	  mf::LogWarning("SimDriftElectrons") << "step "// << energyDeposit << "\n"
+	  				      << "cannot be found in a cryostat\n"
+	  				      << e;
 	  continue;
 	}
 
@@ -328,7 +328,7 @@ namespace detsim {
 	  fGeometry->PositionToTPC(xyz, tpc, cryostat);
 	}
 	catch(cet::exception &e){
-	  mf::LogWarning("SimDriftElectrons") << "step " << energyDeposit << "\n"
+	  mf::LogWarning("SimDriftElectrons") << "step "// << energyDeposit << "\n"
 					      << "cannot be found in a TPC\n"
 					      << e;
 	  continue;
@@ -388,7 +388,7 @@ namespace detsim {
 	// we are done already here
 	if (nIonizedElectrons <= 0) {
 	  LOG_DEBUG("SimDriftElectrons")
-	    << "step " << energyDeposit << "\n"
+	    << "step "// << energyDeposit << "\n"
 	    << "No electrons drifted to readout, " << energy << " MeV lost.";
 	  continue;
 	}
