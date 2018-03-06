@@ -84,7 +84,7 @@ public:
   void produce(art::Event & e)                    override;
   void beginJob()               		  override;
   void beginRun(art::Run & run) 		  override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
