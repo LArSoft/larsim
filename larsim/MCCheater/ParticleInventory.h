@@ -129,6 +129,28 @@
  *  Return a copy of an MCTruth object in the event that caused a given Track. Users are encouraged
  *  to instead use TrackIdToMCTruth_P
  */
+/** \fn int TrackIdToEveTrackId(const int& tid) const { return fParticleList.EveId(tid)
+ *  \brief Return the TrackId of the primary that ultimately created the particle that made the given TrackId.
+ */
+/** \fn const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p) const
+ *  \brief Return an art::Ptr to the simb::MCTruth object that ultimately made the given particle
+ */
+/** \fn simb::MCTruth ParticleToMCTruth (const simb::MCParticle* p) const
+ *  \brief Return a copy of the MCTruth object that ultimately resulted in the given particle
+ */
+/** \fn const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector_Ps() const
+ *  \brief Get a list of pointers to the MCTruth objects in the event
+ */
+/** \fn const std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const
+ *  \brief Get pointers to all particles that resulted from the MCTruth object in the given art::Ptr
+ */
+/** \fn std::set<int> GetSetOfTrackIds() const
+ *  \brief Get all TrackIds in the event
+ */
+/** \fn std::set<int> GetSetOfEveIds() const
+ *  \brief Get all TrackIds of Primary particles in the event
+ */
+
 #ifndef CHEAT_PARTICLEINVENTORY_H
 #define CHEAT_PARTICLEINVENTORY_H
 
