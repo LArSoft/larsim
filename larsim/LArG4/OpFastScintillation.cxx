@@ -473,7 +473,22 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }
   }
 
-  double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
+  
+  // In case of simetric LDS detectors (with two TPCs), use the library information
+  // from on half volume in the other avoiding duplicating information 
+  double x_for_visibilities;
+  bool in2ndTPC = false;
+  if(x0[0] < 0) {
+    in2ndTPC = true;
+    x_for_visibilities = -1.*x0[0]/CLHEP::cm;
+  }
+  else
+    x_for_visibilities =  x0[0]/CLHEP::cm;
+  
+  
+  double const xyz[3] = {x_for_visibilities, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
+  
+  
   float const* Visibilities = pvs->GetAllVisibilities(xyz);
   float const* ReflVisibilities = nullptr;
   float const* ReflT0s = nullptr;
@@ -599,10 +614,23 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       std::map<int, int> ReflDetectedNum;
 	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
-    		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+	// swapping opChannels in TPC2 to opchannels in TPC1 where we have defined visibilities
+	int OpDet_for_visibility =  int(OpDet);
+	
+	if(in2ndTPC) {
+	  if(OpDet%2)
+	    OpDet_for_visibility--;
+	  else
+	    OpDet_for_visibility++;
+	}
+	
+	//std::cout<<"OpDet= "<<OpDet<<"     OpDet_for_visibility= "<<OpDet_for_visibility<<std::endl;
+	
+	G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet_for_visibility] * Num));
 
-    		if(DetThisPMT>0) 
+	if(DetThisPMT>0) 
         {
+       
 		      DetectedNum[OpDet]=DetThisPMT;
 		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
 		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
@@ -610,7 +638,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
         }
 		if(pvs->StoreReflected()) {
-		  G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+		  G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet_for_visibility] * Num));
 		  if(ReflDetThisPMT>0)
 		    {
 		      ReflDetectedNum[OpDet]=ReflDetThisPMT;
@@ -681,6 +709,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 	 for(std::map<int,int>::const_iterator itdetphot = DetectedNum.begin();
 	     itdetphot!=DetectedNum.end(); ++itdetphot)
 	   {
+
 	     G4double propagation_time = 0;
 	     std::vector<double> arrival_time_dist_vuv;
 	     if(pvs->IncludePropTime()) {
@@ -733,7 +762,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             PhotToAdd.Time             = Time;
             PhotToAdd.SetInSD          = false;
 	    PhotToAdd.MotherTrackID    = tracknumber;
-
+	 
             fst->AddPhoton(itdetphot->first, std::move(PhotToAdd));
           }
         }
@@ -1052,8 +1081,8 @@ std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_
   // Parametrization data: 
 
   if(distance < 10 || distance > fd_max) {
-    G4cout<<"WARNING: Parametrization of Direct Light not fully reliable"<<G4endl;
-    G4cout<<"Too close/far to the PMT  -> set 0 VUV photons(?)!!!!!!"<<G4endl;
+    //G4cout<<"WARNING: Parametrization of Direct Light not fully reliable"<<G4endl;
+    //G4cout<<"Too close/far to the PMT  -> set 0 VUV photons(?)!!!!!!"<<G4endl;
     return arrival_time_distrb;
   }
   //signals (remember this is transportation) no longer than 1us  
@@ -1084,22 +1113,22 @@ std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_
   double t_int = fint->GetMinimumX();
   double minVal = fint->Eval(t_int);
   //the functions must intersect!!!     
-  if(minVal>0.015)
-    G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
+  //if(minVal>0.015)
+  //G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
 
-  TF1 *fVUVTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+  TF1 *fVUVTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range/3.,6);
   double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
   fVUVTiming->SetParameters(parsfinal);
   // Set the number of points used to sample the function                         
 
-  int f_sampling = 1000;
+  int f_sampling = 300;
   if(distance < 50)
     f_sampling *= ftf1_sampling_factor;
   fVUVTiming->SetNpx(f_sampling);
-
+  
   for(int i=0; i<number_photons; i++)
     arrival_time_distrb.push_back(fVUVTiming->GetRandom());
-
+  
   //deleting ...                                                                                     
   delete flandau;
   delete fexpo;
@@ -1121,8 +1150,8 @@ std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, in
   // Parametrization data:
 
   if(t0 < 8 || t0 > ft0_max) {
-    G4cout<<"WARNING: Parametrization of Cathode-Only reflected Light not fully reliable"<<G4endl;
-    G4cout<<"Too close/far to the PMT  -> set 0 Visible photons(?)!!!!!!"<<G4endl;
+    //G4cout<<"WARNING: Parametrization of Cathode-Only reflected Light not fully reliable"<<G4endl;
+    //G4cout<<"Too close/far to the PMT  -> set 0 Visible photons(?)!!!!!!"<<G4endl;
     return arrival_time_distrb;
   }
   //signals (remember this is transportation) no longer than 1us     
@@ -1150,22 +1179,22 @@ std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, in
   double t_int = fint->GetMinimumX();
   double minVal = fint->Eval(t_int);
   //the functions must intersect!!!                                             
-  if(minVal>0.015)
-    G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
+  //if(minVal>0.015)
+  //G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
 
-  TF1 *fVisTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+  TF1 *fVisTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range/3.,6);
   double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
   fVisTiming->SetParameters(parsfinal);
   // Set the number of points used to sample the function                                  
 
-  int f_sampling = 1000;
+  int f_sampling = 300;
   if(t0 < 20)
     f_sampling *= ftf1_sampling_factor;
   fVisTiming->SetNpx(f_sampling);
-
+  
   for(int i=0; i<number_photons; i++)
     arrival_time_distrb.push_back(fVisTiming->GetRandom());
-
+  
   //deleting ...                                    
 
   delete flandau;

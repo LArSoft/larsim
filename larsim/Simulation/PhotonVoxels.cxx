@@ -122,14 +122,18 @@ namespace sim {
   int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
     // figure out how many steps this point is in the x,y,z directions
-    int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
-    int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
-    int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
+    double xStep_ = (Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps;
+    double yStep_ = (Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps;
+    double zStep_ = (Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps;
+
+    int xStep = int (xStep_);
+    int yStep = int (yStep_);
+    int zStep = int (zStep_);
 
     // check if point lies within the voxelized region
-    if((0 <= xStep) && (xStep < fxSteps) &&
-       (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) ){
+    if((0 <= xStep_) && (xStep < fxSteps) &&
+       (0 <= yStep_) && (yStep < fySteps) &&
+       (0 <= zStep_) && (zStep < fzSteps) ){
       // if within bounds, generate the voxel ID
       return (xStep
               + yStep * (fxSteps)
