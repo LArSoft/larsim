@@ -37,8 +37,8 @@ namespace larg4 {
    void   CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep);
    void   CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep, std::vector<double> const&);
    double EnergyDeposit()              const { return fEnergyDeposit;       }
-   int    NumberIonizationElectrons()  const { return fNumIonElectrons;     }
-   int    NumberScintillationPhotons() const { return fNumScintPhotons;     }
+   double NumberIonizationElectrons()  const { return fNumIonElectrons;     }
+   double NumberScintillationPhotons() const { return fNumScintPhotons;     }
 
    double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step  
    double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep, std::vector<double> const&); //value of field with any corrections for this step  
@@ -56,8 +56,8 @@ namespace larg4 {
    double 	   	 fScintYieldFactor;    ///< scintillation yield factor                             
 
    double fEnergyDeposit;   ///< total energy deposited in the step
-   int    fNumIonElectrons; ///< number of ionization electrons for this step
-   int    fNumScintPhotons; ///< number of scintillation photons for this step   
+   double fNumIonElectrons; ///< number of ionization electrons for this step
+   double fNumScintPhotons; ///< number of scintillation photons for this step   
    
    std::vector<double> fEfieldOffsets;
    double EFieldAtStep(double efield, float x, float y, float z);

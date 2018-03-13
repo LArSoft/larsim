@@ -21,6 +21,7 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 // framework libraries
 #include "cetlib/exception.h"
@@ -198,7 +199,23 @@ namespace larg4 {
   void LArVoxelReadout::ProcessStep( G4Step* step)
   {
     //if(step->GetTotalEnergyDeposit() <= 0) return;
-   
+    /*
+    std::cout << "\tProcessing larvoxel step " 
+	      << fSimEDepCol.size() 
+	      << " trackID=" << ParticleListAction::GetCurrentTrackID()
+	      << " pdgCode=" << ParticleListAction::GetCurrentPdgCode()
+	      << " energy=" << (step->GetTotalEnergyDeposit()/CLHEP::MeV)
+	      << " (x,y,z)=("
+	      << (float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm) << ","
+	      << (float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm) << ","
+	      << (float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
+	      << ")"
+      //<< "\n\t In volume" << step->GetPreStepPoint()->GetPhysicalVolume()->GetName()
+	      << std::endl;
+    if(step->GetPreStepPoint()->GetPhysicalVolume())
+      std::cout << "\t In volume" << step->GetPreStepPoint()->GetPhysicalVolume()->GetName() << std::endl;
+    */
+
     fSimEDepCol.emplace_back
       ( -1, //n_photons set to -1 since we don't know
 	-1, //n_electrons set to -1 since we don't know

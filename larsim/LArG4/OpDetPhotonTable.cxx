@@ -156,23 +156,24 @@ namespace larg4 {
 					  float start_x,float start_y, float start_z,
 					  float end_x,float end_y,float end_z,
 					  double start_time,double end_time,
-					  int trackid,int pdgcode)
+					  int trackid,int pdgcode,
+					  std::string vol)
   {  
-    fSimEDepCol.emplace_back(n_elec,n_photon,
-			     energy,
-			     sim::SimEnergyDeposit::Point_t{start_x,start_y,start_z},
-			     sim::SimEnergyDeposit::Point_t{end_x,end_y,end_z},
-			     start_time,end_time,
-			     trackid,pdgcode);
+    fSimEDepCol[vol].emplace_back(n_elec,n_photon,
+				  energy,
+				  sim::SimEnergyDeposit::Point_t{start_x,start_y,start_z},
+				  sim::SimEnergyDeposit::Point_t{end_x,end_y,end_z},
+				  start_time,end_time,
+				  trackid,pdgcode);
   }
 
   //--------------------------------------------------
-  void OpDetPhotonTable::ClearAndReserveEnergyDeposits(size_t reserve_size)
-  { fSimEDepCol.clear(); fSimEDepCol.reserve(reserve_size); }
+  void OpDetPhotonTable::ClearEnergyDeposits()
+  { fSimEDepCol.clear(); }
   
   
   //--------------------------------------------------
-  std::vector<sim::SimEnergyDeposit> & OpDetPhotonTable::GetSimEnergyDeposits()
+  std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> >& OpDetPhotonTable::GetSimEnergyDeposits()
   { return fSimEDepCol; }
   
 

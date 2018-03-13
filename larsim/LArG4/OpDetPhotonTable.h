@@ -36,6 +36,8 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include <map>
+#include <unordered_map>
+#include <string>
 #include <memory>
 #include <exception>
 #ifndef OPDETPHOTONTABLE_h
@@ -72,14 +74,16 @@ namespace larg4 {
     //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords(); //Replaced by YieldOpDetBacktrackerRecords()
       std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
 
-      void ClearAndReserveEnergyDeposits(size_t reserve_size=0);
+      void ClearEnergyDeposits();
       void AddEnergyDeposit(int n_elec,int n_photon,
 			    double energy,
 			    float start_x,float start_y, float start_z,
 			    float end_x,float end_y,float end_z,
 			    double start_time,double end_time,
-			    int trackid,int pdgcode);
-      std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
+			    int trackid,int pdgcode,
+			    std::string vol="EMPTY");
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > & GetSimEnergyDeposits();
+      //std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
             
     protected:
       OpDetPhotonTable();
@@ -92,7 +96,7 @@ namespace larg4 {
       std::vector<sim::SimPhotons> fDetectedPhotons;
 
 
-      std::vector<sim::SimEnergyDeposit>        fSimEDepCol;    
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > fSimEDepCol;
 
 
     };

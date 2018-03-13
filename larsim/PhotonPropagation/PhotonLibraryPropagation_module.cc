@@ -69,7 +69,7 @@ private:
   double fRiseTimeSlow;
   bool   fDoSlowComponent;
 
-  art::InputTag fEDepTag;
+  std::vector<art::InputTag> fEDepTags;
 
   larg4::ISCalculationSeparate fISAlg;
 
@@ -82,7 +82,7 @@ private:
   unsigned long N_VOXELS_Z;
   std::unordered_map< unsigned long, std::vector< std::vector<double> > > fSCCalcMap;
   
-  void PrecalculateSC(std::vector<sim::SimEnergyDeposit> const&);
+  void PrecalculateSC(std::vector<sim::SimEnergyDeposit> const&,bool cleanmap=true);
   unsigned long GetSCMapIndex(float,float,float);
   std::vector<double> fPosOffsets;
 };
@@ -146,7 +146,9 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
   
   const size_t NOpChannels = pvs->NOpChannels();
   double yieldRatio;
-  int nphot,nphot_fast,nphot_slow;
+  double nphot,nphot_fast,nphot_slow;
+
+  auto fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
 
   sim::OnePhoton photon;
   photon.Energy = 9.7e-6;
@@ -156,52 +158,90 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 		    &(*lgpHandle),
 		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  
-  auto const& edep_handle = e.getValidHandle< std::vector<sim::SimEnergyDeposit> >(fEDepTag);
-  auto const& edeps(*edep_handle);
 
   std::unique_ptr< std::vector<sim::SimPhotons> > photCol ( new std::vector<sim::SimPhotons>);
   auto & photonCollection(*photCol);
 
+  size_t edep_reserve_size=0;
+  std::vector< std::vector<sim::SimEnergyDeposit> const*> edep_vecs;
+  for(auto label : fEDepTags){
+    auto const& edep_handle = e.getValidHandle< std::vector<sim::SimEnergyDeposit> >(label);
+    edep_vecs.push_back(edep_handle);
+    edep_reserve_size += edep_handle->size();
+  }
+
   for(size_t i_op=0; i_op<NOpChannels; ++i_op){
     photonCollection.emplace_back(i_op);
-    photonCollection[i_op].reserve(edeps.size());
+    photonCollection[i_op].reserve(edep_reserve_size);
   }
-  
-  PrecalculateSC(edeps);
-  
-  for(auto const& edep : edeps){
 
-    double const xyz[3] = { edep.X(), edep.Y(), edep.Z() };
+  //bool firsttime=true;
 
-    photon.InitialPosition = TVector3(xyz[0],xyz[1],xyz[2]);
-    
-    float const* Visibilities = pvs->GetAllVisibilities(xyz);
-    if(!Visibilities)
-      continue;
-    
-    yieldRatio = GetScintYield(edep,*larp);
-    fISAlg.CalculateIonizationAndScintillation(edep,fSCCalcMap[GetSCMapIndex(edep.X(),edep.Y(),edep.Z())][1]);
-    nphot =fISAlg.NumberScintillationPhotons();
-    nphot_fast = yieldRatio*nphot;
-    photon.Time = edep.T() + GetScintTime(larp->ScintFastTimeConst(),fRiseTimeFast,
-					   randflatscinttime(),randflatscinttime());
-    for(size_t i_op=0; i_op<NOpChannels; ++i_op)
-      photonCollection[i_op].insert(photonCollection[i_op].end(),randpoisphot.fire(nphot_fast*Visibilities[i_op]),photon);
+  for(auto const& edeps : edep_vecs){
 
-    if(fDoSlowComponent){
-      nphot_slow = nphot - nphot_fast;
+    //PrecalculateSC(*edeps,firsttime);
+    //if(firsttime) firsttime=false;
+
+    for(auto const& edep : *edeps){
+      /*
+      std::cout << "Processing edep with trackID=" 
+		<< edep.TrackID()
+		<< " pdgCode="
+		<< edep.PdgCode() 
+		<< " energy="
+		<< edep.Energy()
+		<< "(x,y,z)=("
+		<< edep.X() << "," << edep.Y() << "," << edep.Z() << ")"
+		<< std::endl;
+      */
+      double const xyz[3] = { edep.X(), edep.Y(), edep.Z() };
       
-      if(nphot_slow>0){
-	photon.Time = edep.T() - GetScintTime(larp->ScintSlowTimeConst(),fRiseTimeSlow,
-					       randflatscinttime(),randflatscinttime());
-	for(size_t i_op=0; i_op<NOpChannels; ++i_op)
-	  photonCollection[i_op].insert(photonCollection[i_op].end(),randpoisphot.fire(nphot_slow*Visibilities[i_op]),photon);
+      photon.InitialPosition = TVector3(xyz[0],xyz[1],xyz[2]);
+      
+      float const* Visibilities = pvs->GetAllVisibilities(xyz);
+      if(!Visibilities)
+	continue;
+      
+      yieldRatio = GetScintYield(edep,*larp);
+      //yieldRatio = 1.;
+      auto efieldoffsets = fSCE->GetEfieldOffsets(edep.X(),edep.Y(),edep.Z());
+      fISAlg.Reset();
+      fISAlg.CalculateIonizationAndScintillation(edep,
+						 efieldoffsets);
+      //fISAlg.CalculateIonizationAndScintillation(edep,fSCCalcMap[GetSCMapIndex(edep.X(),edep.Y(),edep.Z())][1]);
+      nphot =fISAlg.NumberScintillationPhotons();
+      nphot_fast = yieldRatio*nphot;
+      photon.Time = edep.T() + GetScintTime(larp->ScintFastTimeConst(),fRiseTimeFast,
+					    randflatscinttime(),randflatscinttime());
+      for(size_t i_op=0; i_op<NOpChannels; ++i_op){
+	auto nph = randpoisphot.fire(nphot_fast*Visibilities[i_op]);
+	/*
+	  std::cout << "\t\tHave " << nph << " fast photons ("
+	  << Visibilities[i_op] << "*" << nphot_fast << " from " << nphot << ")"
+	  << " for opdet " << i_op << std::endl;
+	  //photonCollection[i_op].insert(photonCollection[i_op].end(),randpoisphot.fire(nphot_fast*Visibilities[i_op]),photon);
+	  */
+	photonCollection[i_op].insert(photonCollection[i_op].end(),nph,photon);
       }
+      if(fDoSlowComponent){
+	nphot_slow = nphot - nphot_fast;
+	
+	if(nphot_slow>0){
+	  photon.Time = edep.T() - GetScintTime(larp->ScintSlowTimeConst(),fRiseTimeSlow,
+						randflatscinttime(),randflatscinttime());
+	  for(size_t i_op=0; i_op<NOpChannels; ++i_op){
+	    auto nph = randpoisphot.fire(nphot_slow*Visibilities[i_op]);
+	    //std::cout << "\t\tHave " << nph << " slow photons ("
+	    //	      << Visibilities[i_op] << "*" << nphot_slow << " from " << nphot << ")"
+	    //	      << " for opdet " << i_op << std::endl;
+	    photonCollection[i_op].insert(photonCollection[i_op].end(),nph,photon);
+	  }
+	}
+	
+      }//end doing slow component
       
-    }//end doing slow component
-
-  }//end loop over edeps
+    }//end loop over edeps
+  }//end loop over edep vectors
   
   e.put(std::move(photCol));
   
@@ -235,13 +275,13 @@ unsigned long phot::PhotonLibraryPropagation::GetSCMapIndex(float x, float y, fl
 }
   
 //----------------------------------------------------------------------------
-void phot::PhotonLibraryPropagation::PrecalculateSC(std::vector<sim::SimEnergyDeposit> const& edeps)
+void phot::PhotonLibraryPropagation::PrecalculateSC(std::vector<sim::SimEnergyDeposit> const& edeps, bool cleanmap)
 {
   auto fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
   art::ServiceHandle<geo::Geometry> geoHandle;
   auto const& geo = *geoHandle;
 
-  fSCCalcMap.clear();
+  if(cleanmap) fSCCalcMap.clear();
   for(auto const& edep : edeps){
     auto index = GetSCMapIndex(edep.X(),edep.Y(),edep.Z());
     if(fSCCalcMap[index].size()==0){
@@ -262,7 +302,7 @@ void phot::PhotonLibraryPropagation::reconfigure(fhicl::ParameterSet const & p)
   fRiseTimeSlow = p.get<double>("RiseTimeSlow",-1.0);
   fDoSlowComponent = p.get<bool>("DoSlowComponent");
 
-  fEDepTag = p.get<art::InputTag>("EDepModuleLabel");
+  fEDepTags = p.get< std::vector<art::InputTag> >("EDepModuleLabels");
 }
 
 void phot::PhotonLibraryPropagation::beginJob()

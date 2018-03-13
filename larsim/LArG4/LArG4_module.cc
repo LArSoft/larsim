@@ -245,7 +245,8 @@ namespace larg4 {
 
     if(lgp->FillSimEnergyDeposits()){
       produces < std::vector<sim::SimEnergyDeposit> >("larvoxel");
-      produces < std::vector<sim::SimEnergyDeposit> >("opfast");
+      produces < std::vector<sim::SimEnergyDeposit> >("TPCActive");
+      produces < std::vector<sim::SimEnergyDeposit> >("Other");
       //produces< art::Assns<simb::MCParticle,sim::SimEnergyDeposit> >()
     }
 
@@ -425,8 +426,9 @@ namespace larg4 {
     std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
 
     //for energy deposits
-    std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_larvoxel (new std::vector<sim::SimEnergyDeposit>);
-    std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_opfast   (new std::vector<sim::SimEnergyDeposit>);
+    std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_TPCActive (new std::vector<sim::SimEnergyDeposit>);
+    std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_Other     (new std::vector<sim::SimEnergyDeposit>);
+    std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_larvoxel  (new std::vector<sim::SimEnergyDeposit>);
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
@@ -435,7 +437,7 @@ namespace larg4 {
     // Clear the detected photon table
     OpDetPhotonTable::Instance()->ClearTable(geom->NOpDets());
     if(lgp->FillSimEnergyDeposits())
-      OpDetPhotonTable::Instance()->ClearAndReserveEnergyDeposits(lgp->InitialSimEnergyDepositSize());
+      OpDetPhotonTable::Instance()->ClearEnergyDeposits();
 
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
@@ -540,9 +542,20 @@ namespace larg4 {
       }
 
     if(lgp->FillSimEnergyDeposits())
-      edepCol_opfast->insert(edepCol_opfast->end(),
-			     OpDetPhotonTable::Instance()->GetSimEnergyDeposits().begin(),
-			     OpDetPhotonTable::Instance()->GetSimEnergyDeposits().end());			    
+      {
+	//edepCol_opfast->insert(edepCol_opfast->end(),
+	//		     OpDetPhotonTable::Instance()->GetSimEnergyDeposits().begin(),
+	//		     OpDetPhotonTable::Instance()->GetSimEnergyDeposits().end());			   
+	auto const& edepMap = OpDetPhotonTable::Instance()->GetSimEnergyDeposits();
+	for(auto const& edepCol : edepMap){
+	  if(boost::contains(edepCol.first,"TPCActive"))
+	    edepCol_TPCActive->insert(edepCol_TPCActive->end(),
+				      edepCol.second.begin(),edepCol.second.end());
+	  else
+	    edepCol_Other->insert(edepCol_Other->end(),
+				  edepCol.second.begin(),edepCol.second.end());
+	}
+      }
     }
       
     // only put the sim::SimChannels into the event once, not once for every
@@ -715,7 +728,9 @@ namespace larg4 {
 
     if(lgp->FillSimEnergyDeposits()){
       evt.put(std::move(edepCol_larvoxel),"larvoxel");
-      evt.put(std::move(edepCol_opfast),"opfast");
+      //evt.put(std::move(edepCol_opfast),"opfast");
+      evt.put(std::move(edepCol_TPCActive),"TPCActive");
+      evt.put(std::move(edepCol_Other),"Other");
     }
     return;
   } // LArG4::produce()
