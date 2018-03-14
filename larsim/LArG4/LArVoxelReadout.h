@@ -64,7 +64,6 @@ class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
 namespace CLHEP { class HEPRandomEngine; }
-namespace sim { class SimEnergyDeposit; }
 
 namespace larg4 {
 
