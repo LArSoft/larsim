@@ -66,7 +66,6 @@ namespace sim {
     bool MCC80Compat()                                        const { return fMCC80Compat;            }
 
     bool   FillSimEnergyDeposits()                            const { return fFillSimEnergyDeposits;  }
-    size_t InitialSimEnergyDepositSize()                      const { return fInitialSimEnergyDepositSize; }
     bool   NoElectronPropagation()                            const { return fNoElectronPropagation;  }
     bool   NoPhotonPropagation()                              const { return fNoPhotonPropagation;  }
 
@@ -114,7 +113,7 @@ namespace sim {
     bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
 
     bool   fFillSimEnergyDeposits;          ///< handle to fill SimEdeps or not
-    size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4
+    //size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4
     bool   fNoElectronPropagation;          ///< specifically prevents electron propagation
     bool   fNoPhotonPropagation;          ///< specifically prevents photon propagation in opfast
   };

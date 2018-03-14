@@ -162,17 +162,17 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
   std::unique_ptr< std::vector<sim::SimPhotons> > photCol ( new std::vector<sim::SimPhotons>);
   auto & photonCollection(*photCol);
 
-  size_t edep_reserve_size=0;
+  //size_t edep_reserve_size=0;
   std::vector< std::vector<sim::SimEnergyDeposit> const*> edep_vecs;
   for(auto label : fEDepTags){
     auto const& edep_handle = e.getValidHandle< std::vector<sim::SimEnergyDeposit> >(label);
     edep_vecs.push_back(edep_handle);
-    edep_reserve_size += edep_handle->size();
+    //edep_reserve_size += edep_handle->size();
   }
 
   for(size_t i_op=0; i_op<NOpChannels; ++i_op){
     photonCollection.emplace_back(i_op);
-    photonCollection[i_op].reserve(edep_reserve_size);
+    //photonCollection[i_op].reserve(edep_reserve_size);
   }
 
   //bool firsttime=true;

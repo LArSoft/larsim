@@ -339,6 +339,12 @@ namespace detsim {
 	// X drift distance - the drift direction can be either in
 	// the positive or negative direction, so use std::abs
 
+
+	if(tpcGeo.DriftDirection()==geo::kNegX && tpcGeo.PlaneLocation(0)[0]>xyz[0])
+	  continue;
+	if(tpcGeo.DriftDirection()==geo::kPosX && tpcGeo.PlaneLocation(0)[0]<xyz[0])
+	  continue;
+
 	/// \todo think about effects of drift between planes 
 	double XDrift = std::abs(xyz[0] - tpcGeo.PlaneLocation(0)[0]);
 	//std::cout<<tpcGeo.DriftDirection()<<std::endl;
