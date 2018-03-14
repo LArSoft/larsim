@@ -340,24 +340,6 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   void OpFastScintillation::ProcessStep( const G4Step& step)
   {
     if(step.GetTotalEnergyDeposit() <= 0) return;
-    
-    std::cout << "\tProcessing opfast step " 
-	      << OpDetPhotonTable::Instance()->GetSimEnergyDeposits().size() 
-	      << " trackID=" << step.GetTrack()->GetTrackID()
-	      << " pdgCode=" << step.GetTrack()->GetParticleDefinition()->GetPDGEncoding()
-	      << " energy=" << (step.GetTotalEnergyDeposit()/CLHEP::MeV)
-	      << " (x,y,z)=("
-	      << (float)(step.GetPreStepPoint()->GetPosition().x()/CLHEP::cm) << ","
-	      << (float)(step.GetPreStepPoint()->GetPosition().y()/CLHEP::cm) << ","
-	      << (float)(step.GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
-	      << ")"
-	      << std::endl;
-    if(step.GetPreStepPoint()->GetPhysicalVolume()){
-      std::cout << "\t In volume" << step.GetPreStepPoint()->GetPhysicalVolume()->GetName() 
-		<< " active?" << boost::contains(step.GetPreStepPoint()->GetPhysicalVolume()->GetName(),"TPCActive")
-		<< std::endl;
-    }
-    
     OpDetPhotonTable::Instance()->AddEnergyDeposit
       (-1,
        -1,
@@ -425,6 +407,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   if(lgp->FillSimEnergyDeposits())
     ProcessStep(aStep);
   
+  if(lgp->NoPhotonPropagation())
+    return 0;
+
   G4int nscnt = 1;
   if (Fast_Intensity && Slow_Intensity) nscnt = 2;
 
@@ -629,9 +614,6 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
 	{
 	  G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
-	  std::cout << "\t\tHave " << DetThisPMT << " photons (" 
-		    << Visibilities[OpDet] << "*" << Num << " from " << MeanNumberOfPhotons << ")"
-		    << " for opdet " << OpDet << std::endl;
 	  if(DetThisPMT>0) 
 	    {
 	      DetectedNum[OpDet]=DetThisPMT;

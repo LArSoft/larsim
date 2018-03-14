@@ -67,6 +67,8 @@ namespace sim {
 
     bool   FillSimEnergyDeposits()                            const { return fFillSimEnergyDeposits;  }
     size_t InitialSimEnergyDepositSize()                      const { return fInitialSimEnergyDepositSize; }
+    bool   NoElectronPropagation()                            const { return fNoElectronPropagation;  }
+    bool   NoPhotonPropagation()                              const { return fNoPhotonPropagation;  }
 
   private:
     int                      fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
@@ -113,6 +115,8 @@ namespace sim {
 
     bool   fFillSimEnergyDeposits;          ///< handle to fill SimEdeps or not
     size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4
+    bool   fNoElectronPropagation;          ///< specifically prevents electron propagation
+    bool   fNoPhotonPropagation;          ///< specifically prevents photon propagation in opfast
   };
 }
 

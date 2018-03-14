@@ -192,11 +192,6 @@ namespace larg4 {
     //@}
 
 
-    /// Accessor to the energy depositions
-    const std::vector<sim::SimEnergyDeposit>& GetSimEDepCollection()
-    { return fSimEDepCol; }
-    void ClearSimEnergyDeposits();
-
   private:
 
 
@@ -241,8 +236,6 @@ namespace larg4 {
     
     G4ThreeVector                             fStepStart;
     G4ThreeVector                             fStepEnd;
-    std::vector<sim::SimEnergyDeposit>        fSimEDepCol;    
-    bool                                      fFillSimEDeps;
     size_t fNSteps;
   };
 

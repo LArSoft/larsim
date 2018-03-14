@@ -119,11 +119,8 @@ namespace larg4 {
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
 
-    fFillSimEDeps = fLgpHandle->FillSimEnergyDeposits();
-    if(fFillSimEDeps){
-    //fSimEDepCol.clear();
-      fSimEDepCol.reserve(fLgpHandle->InitialSimEnergyDepositSize());
-    }
+    fDontDriftThem = (fDontDriftThem || fLgpHandle->NoElectronPropagation() );
+
     fNSteps=0;
   }
 
@@ -138,12 +135,6 @@ namespace larg4 {
   //---------------------------------------------------------------------------------------
   void LArVoxelReadout::clear()
   {
-  }
-
-  //--------------------------------------------------------------------------------------
-  void LArVoxelReadout::ClearSimEnergyDeposits()
-  {
-    fSimEDepCol.clear();
   }
 
   //--------------------------------------------------------------------------------------
@@ -195,50 +186,6 @@ namespace larg4 {
   
   
   //---------------------------------------------------------------------------------------
-  //Fill the Energy Deposits
-  void LArVoxelReadout::ProcessStep( G4Step* step)
-  {
-    //if(step->GetTotalEnergyDeposit() <= 0) return;
-    /*
-    std::cout << "\tProcessing larvoxel step " 
-	      << fSimEDepCol.size() 
-	      << " trackID=" << ParticleListAction::GetCurrentTrackID()
-	      << " pdgCode=" << ParticleListAction::GetCurrentPdgCode()
-	      << " energy=" << (step->GetTotalEnergyDeposit()/CLHEP::MeV)
-	      << " (x,y,z)=("
-	      << (float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm) << ","
-	      << (float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm) << ","
-	      << (float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
-	      << ")"
-      //<< "\n\t In volume" << step->GetPreStepPoint()->GetPhysicalVolume()->GetName()
-	      << std::endl;
-    if(step->GetPreStepPoint()->GetPhysicalVolume())
-      std::cout << "\t In volume" << step->GetPreStepPoint()->GetPhysicalVolume()->GetName() << std::endl;
-    */
-
-    fSimEDepCol.emplace_back
-      ( -1, //n_photons set to -1 since we don't know
-	-1, //n_electrons set to -1 since we don't know
-	(double)(step->GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
-	sim::SimEnergyDeposit::Point_t{   
-	  (float)(step->GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
-	  (float)(step->GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
-	  (float)(step->GetPreStepPoint()->GetPosition().z()/CLHEP::cm)
-	}, //the start point, into a Point_t object
-	sim::SimEnergyDeposit::Point_t{   
-	    (float)(step->GetPostStepPoint()->GetPosition().x()/CLHEP::cm),
-	    (float)(step->GetPostStepPoint()->GetPosition().y()/CLHEP::cm),
-	    (float)(step->GetPostStepPoint()->GetPosition().z()/CLHEP::cm)
-	}, //the end point, into a Point_t object
-	(double)(step->GetPreStepPoint()->GetGlobalTime()),
-	(double)(step->GetPostStepPoint()->GetGlobalTime()),
-	ParticleListAction::GetCurrentTrackID(),
-	ParticleListAction::GetCurrentPdgCode()
-      );
-  }
-
-  
-  //---------------------------------------------------------------------------------------
   // Called for each step.
   G4bool LArVoxelReadout::ProcessHits( G4Step* step, G4TouchableHistory* pHistory)
   {
@@ -258,12 +205,6 @@ namespace larg4 {
 
     if ( step->GetTotalEnergyDeposit() > 0 ){
       
-      //Wes, 18Feb2018
-      //Hook here for doing the EnergyDesposit Filling
-      if(fFillSimEDeps)
-	ProcessStep(step);
-
-
       // Make sure we have the IonizationAndScintillation singleton
       // reset to this step
       larg4::IonizationAndScintillation::Instance()->Reset(step);
