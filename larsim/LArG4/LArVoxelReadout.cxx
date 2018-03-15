@@ -40,8 +40,6 @@
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandFlat.h"
 
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-
 namespace larg4 {
   
   
