@@ -52,11 +52,11 @@ namespace larg4{
     // we report energy depositions in MeV/cm, need to divide
     // Recombk from the LArG4Parameters service by the density
     // of the argon we got above.
-    fRecombA             = lgp->RecombA();
-    fRecombk             = lgp->Recombk()/detp->Density(detp->Temperature());
-    fModBoxA             = lgp->ModBoxA();
-    fModBoxB             = lgp->ModBoxB()/detp->Density(detp->Temperature());
-    fUseModBoxRecomb     = lgp->UseModBoxRecomb();  
+    fRecombA             = (double)lgp->RecombA();
+    fRecombk             = (double)lgp->Recombk()/detp->Density(detp->Temperature());
+    fModBoxA             = (double)lgp->ModBoxA();
+    fModBoxB             = (double)lgp->ModBoxB()/detp->Density(detp->Temperature());
+    fUseModBoxRecomb     = (bool)lgp->UseModBoxRecomb();  
 
     this->Reset();
     
@@ -91,9 +91,9 @@ namespace larg4{
       }
       else 
 	recomb = 0;
-    } 
+    }
     else{
-      recomb = fRecombA/(1. + dEdx * fRecombk / EFieldStep);
+      recomb = fLArG4Prop->RecombA() / (1. + dEdx * fRecombk / EFieldStep);
     }
     
     
@@ -126,9 +126,11 @@ namespace larg4{
       }
       else 
 	recomb = 0;
-    } 
+    }
     else{
-      recomb = fRecombA/(1. + dEdx * fRecombk / EFieldStep);
+      recomb = fLArG4Prop->RecombA()/(1. + dEdx * fRecombk / EFieldStep);
+      //std::cout << "Recomb = " << fRecombA << " (not " << fLArG4Prop->RecombA() << ") / (1.+" << dEdx << " * " 
+      //	<< fRecombk << "/" << EFieldStep << ") = " << recomb << std::endl;
     }
     
     
@@ -136,11 +138,13 @@ namespace larg4{
     fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
     
     LOG_DEBUG("ISCalculationSeparate") 
-      //std::cout
+    //      std::cout
       << " Electrons produced for " << e
       << " MeV deposited with "     << fLArG4Prop->GeVToElectrons()
       << " electrons per GeV and "  << recomb 
-      << " recombination: "         << fNumIonElectrons << std::endl; 
+      << " recombination: "         << fNumIonElectrons 
+      << " (model=" << fUseModBoxRecomb << ")"
+      << std::endl; 
   }
 
   //----------------------------------------------------------------------------
