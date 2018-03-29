@@ -181,7 +181,8 @@ namespace evgen{
   
   void CORSIKAGen::openDBs(){
     //choose files based on fShowerInputFiles, copy them with ifdh, open them
-    sqlite3_stmt *statement;
+    // for c2: statement is unused
+    //sqlite3_stmt *statement;
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine("gen");

@@ -104,7 +104,8 @@ namespace larg4 {
   // Called at the start of each event.
   void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    // for c2: larp is unused
+    //auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fElectronLifetime      = detprop->ElectronLifetime();
     for (int i = 0; i<3; ++i)

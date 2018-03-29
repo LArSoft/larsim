@@ -66,7 +66,8 @@ namespace phot{
     
     int    fCurrentVoxel;
     double fCurrentValue;
-    double fCurrentReflValue;
+    // for c2: fCurrentReflValue is unused
+    //double fCurrentReflValue;
 
     float  fXmin, fXmax;
     float  fYmin, fYmax;
