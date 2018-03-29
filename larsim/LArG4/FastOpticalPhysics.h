@@ -86,7 +86,7 @@ namespace larg4 {
     virtual void ConstructProcess();
     
   private:
-    G4int  verbose;
+    //G4int  verbose; // unused
     G4Cerenkov*              fTheCerenkovProcess;
     OpFastScintillation*     fTheScintillationProcess;
     G4OpAbsorption*          fTheAbsorptionProcess;

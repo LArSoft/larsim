@@ -51,7 +51,7 @@ private:
   TF1 *fShapeMomentum;
   TF1 *fShapeTheta;
   CLHEP::RandFlat *fFlatRandom;
-  size_t fNEvents;
+  //size_t fNEvents; // unused
   double fMass;
   double fTime;
   int    fPDGCode;
