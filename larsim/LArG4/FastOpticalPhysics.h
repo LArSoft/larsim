@@ -64,7 +64,10 @@
 #include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/globals.hh"
 
-
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
 
 class G4Cerenkov;
 class G4OpAbsorption;
@@ -96,6 +99,9 @@ namespace larg4 {
   };
   
 }
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
 
 #endif
 
