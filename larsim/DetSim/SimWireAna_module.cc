@@ -9,11 +9,6 @@
 #ifndef SIMWIREANA_H
 #define SIMWIREANA_H
 
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
-
 // ROOT includes
 #include <TMath.h>
 #include <TH1F.h>
