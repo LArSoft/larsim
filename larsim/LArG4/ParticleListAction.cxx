@@ -30,7 +30,7 @@
 
 #include <algorithm>
 
-const G4bool debug = false;
+//const G4bool debug = false; // unused
 
 // Photon variables defined at each step, for use 
 // in temporary velocity bug fix. -wforeman                          

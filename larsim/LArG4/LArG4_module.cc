@@ -104,6 +104,11 @@ class G4RunManager;
 class G4UImanager;
 class G4VisExecutive;
 
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+
 ///Geant4 interface
 namespace larg4 {  
  
@@ -802,5 +807,8 @@ namespace larg4 {
   DEFINE_ART_MODULE(LArG4)
 
 } // namespace LArG4
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
 
 #endif // LARG4_LARG4_H

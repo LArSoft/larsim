@@ -14,6 +14,7 @@
 // LArSoft libraries
 #include "larsim/MCDumpers/MCDumperUtils.h"
 #include "larcorealg/CoreUtils/DumpUtils.h" // lar::dump namespace
+#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::dump
 
 // nutools libraries
 #include "nusimdata/SimulationBase/MCTrajectory.h"
@@ -214,32 +215,14 @@ namespace sim {
     // @}
     
     //--------------------------------------------------------------------------
-    template <typename Stream, typename Vector>
-    void DumpLorentzVector(Stream&& out, Vector const& v);
     
-    
-    template <typename Stream>
-    Stream& operator<< (Stream&& out, TLorentzVector const& v)
-      { DumpLorentzVector(std::forward<Stream>(out), v); return out; }
-    
-    //--------------------------------------------------------------------------
-    
-  } // namespace dumpers
+  } // namespace dump
   
 } // namespace sim
 
 
-
 //------------------------------------------------------------------------------
 //---  template implementation
-//------------------------------------------------------------------------------
-template <typename Stream, typename Vector>
-void sim::dump::DumpLorentzVector(Stream&& out, Vector const& v) {
-  out
-    << "(" << v.X() << ", " << v.Y() << ", " << v.Z() << "; " << v.T() << ")";
-} // sim::dump::DumpLorentzVector(Vector)
-
-
 //------------------------------------------------------------------------------
 template <typename Stream>
 void sim::dump::DumpMCParticle(

@@ -27,18 +27,13 @@ evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
     [this](rndm::NuRandomService::EngineId const& /* unused */,
       rndm::NuRandomService::seed_t lar_seed) -> void
     {
-      // Since we're capturing the this pointer by value, double-check that
-      // it's still good (and that the pointer to the TPC engine is still
-      // alive) before using it. This will prevent segfaults.
-      if (this) {
-        auto seed = static_cast<uint_fast64_t>(lar_seed);
-        // Use the obtained seed to prepare the random number engine.  This is
-        // an attempt to do a decent job, but optimally accomplishing this can
-        // be tricky (see, for example,
-        // http://www.pcg-random.org/posts/cpp-seeding-surprises.html)
-        std::seed_seq seed_sequence{seed};
-        this->fTPCEngine.seed(seed_sequence);
-      }
+      auto seed = static_cast<uint_fast64_t>(lar_seed);
+      // Use the obtained seed to prepare the random number engine.  This is
+      // an attempt to do a decent job, but optimally accomplishing this can
+      // be tricky (see, for example,
+      // http://www.pcg-random.org/posts/cpp-seeding-surprises.html)
+      std::seed_seq seed_sequence{seed};
+      fTPCEngine.seed(seed_sequence);
     },
     fGeneratorName, conf.get_PSet(), { "seed" }
   );

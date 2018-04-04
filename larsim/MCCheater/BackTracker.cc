@@ -63,7 +63,7 @@ namespace cheat{
         // loop over the vector of IDE objects.
         const std::vector<sim::IDE>& idevec = (*mapitr).second; //note, mapitr.second returns the actual data from the map, not a copy
         for(size_t iv = 0; iv < idevec.size(); ++iv){
-          const sim::IDE* const idep = &idevec[iv];
+          //const sim::IDE* const idep = &idevec[iv];
           //if( abs(idevec[iv].trackID) == id) continue;
           //ideps.push_back(idep);
           if( abs(idevec[iv].trackID) == id) ideps.push_back(&(idevec[iv]));
