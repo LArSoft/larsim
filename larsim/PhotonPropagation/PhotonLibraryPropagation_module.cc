@@ -211,6 +211,10 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
       //fISAlg.CalculateIonizationAndScintillation(edep,fSCCalcMap[GetSCMapIndex(edep.X(),edep.Y(),edep.Z())][1]);
       nphot =fISAlg.NumberScintillationPhotons();
       nphot_fast = yieldRatio*nphot;
+
+      if(lgpHandle->MCC80Compat())
+	nphot_fast = int(nphot_fast);
+
       photon.Time = edep.T() + GetScintTime(larp->ScintFastTimeConst(),fRiseTimeFast,
 					    randflatscinttime(),randflatscinttime());
       for(size_t i_op=0; i_op<NOpChannels; ++i_op){

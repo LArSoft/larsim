@@ -99,6 +99,10 @@ namespace larg4{
     
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
+
+    if(fLArG4Prop->MCC80Compat())
+      fNumIonElectrons = int(fNumIonElectrons);
+
     
     LOG_DEBUG("ISCalculationSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
@@ -137,6 +141,9 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
     
+    if(fLArG4Prop->MCC80Compat())
+      fNumIonElectrons = int(fNumIonElectrons);
+
     LOG_DEBUG("ISCalculationSeparate") 
     //      std::cout
       << " Electrons produced for " << e
@@ -199,11 +206,19 @@ namespace larg4{
 
       }
 
+      //override if we're in MCC8.0 Compat mode
+      if(fLArG4Prop->MCC80Compat())
+	scintYield = fLArProp->ElectronScintYield(true);
+	
+
       fNumScintPhotons =  scintYield * e;
     }
     else
       fNumScintPhotons = fScintYieldFactor * scintYield * e;
     
+    //make this an int if we're in the compatibility mode...
+    if(fLArG4Prop->MCC80Compat())
+      fNumScintPhotons = int(fNumScintPhotons);
   }
 
   //----------------------------------------------------------------------------
