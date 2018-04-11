@@ -44,6 +44,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Utilities/Exception.h"
 #include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 
@@ -65,6 +66,7 @@
 #include "larsim/LArG4/AuxDetReadoutGeometry.h"
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
@@ -72,6 +74,8 @@
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/GeneratedParticleInfo.h"
+#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 #include "nutools/G4Base/DetectorConstruction.h"
 #include "nutools/G4Base/UserActionManager.h"
@@ -351,7 +355,7 @@ namespace larg4 {
     produces< std::vector<simb::MCParticle> >();
     produces< std::vector<sim::SimChannel>  >();
     produces< std::vector<sim::AuxDetSimChannel> >();
-    produces< art::Assns<simb::MCTruth, simb::MCParticle> >();
+    produces< art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo> >();
 
     // constructor decides if initialized value is a path or an environment variable
     cet::search_path sp("FW_SEARCH_PATH");
@@ -523,7 +527,7 @@ namespace larg4 {
     // loop over the lists and put the particles and voxels into the event as collections
     std::unique_ptr< std::vector<sim::SimChannel>  >               scCol                      (new std::vector<sim::SimChannel>);
     std::unique_ptr< std::vector< sim::AuxDetSimChannel > >        adCol                      (new  std::vector<sim::AuxDetSimChannel> );
-    std::unique_ptr< art::Assns<simb::MCTruth, simb::MCParticle> > tpassn                     (new art::Assns<simb::MCTruth, simb::MCParticle>);
+    auto tpassn = std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
     std::unique_ptr< std::vector<simb::MCParticle> >               partCol                    (new std::vector<simb::MCParticle  >);
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
@@ -571,7 +575,6 @@ namespace larg4 {
         // receive the particle list
         sim::ParticleList particleList = fparticleListAction->YieldList();
         
-        
         //for(auto const& partPair: particleList) {
         //  simb::MCParticle& p = *(partPair.second);
         auto iPartPair = particleList.begin();
@@ -586,9 +589,24 @@ namespace larg4 {
             ++iPartPair;
             continue;
           }
+          sim::GeneratedParticleInfo const truthInfo{
+            fparticleListAction->GetPrimaryTruthIndex(p.TrackId())
+            };
+          if (!truthInfo.hasGeneratedParticleIndex() && (p.Mother() == 0)) {
+            // this means it's primary but with no information; logic error!!
+            art::Exception error(art::errors::LogicError);
+            error << "Failed to match primary particle:\n";
+            sim::dump::DumpMCParticle(error, p, "  ");
+            error << "\nwith particles from the truth record '"
+              << mclistHandle.provenance()->inputTag() << "':\n";
+            sim::dump::DumpMCTruth(error, *mct, 2U, "  "); // 2 points per line
+            error << "\n";
+            throw error;
+          }
+          
           partCol->push_back(std::move(p));
           
-          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1));
+          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1), truthInfo);
           
           // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
           // is solved and adopted in LArSoft, after which moving will suffice

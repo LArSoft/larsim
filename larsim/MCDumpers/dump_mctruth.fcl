@@ -89,6 +89,9 @@ physics: {
       # if not specified, will print all of them
     #  InputTruth: [ "generator" ]
       
+      # omit this when explicitly listing the generator modules by InputTruth:
+      AllowNoTruth: false
+      
     } # dumpgenietruth
   } # analyzers
   

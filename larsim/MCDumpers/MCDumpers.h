@@ -258,7 +258,7 @@ void sim::dump::DumpMCParticle(
   }
   // does this particle seem to stop? (by decay, or because of extended traj.)
   if ((nPoints > 1) || (nDaughters > 0)) {
-    out << " and " << ((nDaughters > 0)? "ends": "stops") << " by "
+    out << "\n" << indent << ((nDaughters > 0)? "ends": "stops") << " by "
       << (particle.EndProcess().empty()? "magics": particle.EndProcess());
     if (nPoints > 1) {
       TLorentzVector const& stop = particle.EndPosition();
