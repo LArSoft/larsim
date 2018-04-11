@@ -13,6 +13,7 @@
 // nutools libraries
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/simb.h" // simb::NoGeneratedParticleIndex
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -297,7 +298,9 @@ void sim::DumpMCParticles::analyze(art::Event const& event) {
     
     // fetch the index of the true particle in the truth record (if any)
     sim::GeneratedParticleInfo truthInfo = particleToTruth
-      ? particleToTruth->data(iParticle).ref(): sim::NoGeneratorIndex;
+      ? particleToTruth->data(iParticle).ref()
+      : sim::GeneratedParticleInfo::NoGeneratedParticleIndex
+      ;
     
     // a bit of a header
     log << "\n[#" << (iParticle++) << "] ";
