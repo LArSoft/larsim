@@ -3,17 +3,17 @@ namespace cheat{
 
   //----------------------------------------------------------------
   template<typename Evt>
-    const bool PhotonBackTracker::CanRun(const Evt& evt) {
+    const bool PhotonBackTracker::CanRun(Evt const& evt) {
       return ! ( evt.isRealData() ) ;
     }
 
 
   //----------------------------------------------------------------
   template<typename Evt>
-    void PhotonBackTracker::PrepOpDetBTRs(const Evt& evt)
+    void PhotonBackTracker::PrepOpDetBTRs(Evt const& evt)
     {
       if(this->BTRsReady()){ return;}
-      const auto& btrHandle = evt.template getValidHandle < std::vector < sim::OpDetBacktrackerRecord > > (fG4ModuleLabel);
+      auto const& btrHandle = evt.template getValidHandle < std::vector < sim::OpDetBacktrackerRecord > > (fG4ModuleLabel);
       if(btrHandle.failedToGet()){
         /*  mf::LogWarning("PhotonBackTracker") << "failed to get handle to     simb::MCParticle from "
          *              << fG4ModuleLabel
@@ -31,7 +31,7 @@ namespace cheat{
 
   //----------------------------------------------------------------
   template<typename Evt>
-    void PhotonBackTracker::PrepEvent( const Evt& evt)
+    void PhotonBackTracker::PrepEvent( Evt const& evt)
     {
       if( !(this->CanRun( evt ) ) ){
         throw cet::exception("PhotonBackTracker")
@@ -44,8 +44,8 @@ namespace cheat{
 
   //----------------------------------------------------- /*NEW*/
   template<typename Evt>
-    const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, const Evt& evt) const
-    {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn
+    const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
+    {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
       //std::vector<art::Ptr< recob::OpHit > > hits_Ps = FindManyP(flash_P, evt, opHitLabel);
       return FindManyP(flash_P, evt, fOpHitLabel);
 

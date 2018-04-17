@@ -21,7 +21,7 @@ namespace cheat {
 
 class cheat::PhotonBackTrackerLoader : public art::EDProducer {
 public:
-  explicit PhotonBackTrackerLoader(fhicl::ParameterSet const & p);
+  explicit PhotonBackTrackerLoader(fhicl::ParameterSet  const& p);
   virtual ~PhotonBackTrackerLoader();
 
   virtual void produce(art::Event & e);
@@ -34,7 +34,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet const & /*p*/)
+cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  const& /*p*/)
 {
   // Call appropriate Produces<>() functions here.
 }

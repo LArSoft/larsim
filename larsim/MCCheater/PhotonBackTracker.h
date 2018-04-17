@@ -47,15 +47,15 @@ namespace cheat{
       };
 
       //----------------------------------------------------------------
-      PhotonBackTracker(const fhiclConfig& config, 
-          const cheat::ParticleInventory* partInv, 
-          const geo::GeometryCore* geom, 
+      PhotonBackTracker(fhiclConfig const& config,
+          const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom,
           const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
-      PhotonBackTracker( const fhicl::ParameterSet& pSet, 
-          const cheat::ParticleInventory* partInv, 
-          const geo::GeometryCore* geom, 
+      PhotonBackTracker( fhicl::ParameterSet const& pSet,
+          const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom,
           const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
@@ -63,19 +63,19 @@ namespace cheat{
 
       //-----------------------------------------------------
       template<typename Evt>
-        void PrepEvent( const Evt& evt);
+        void PrepEvent( Evt const& evt);
 
       //-----------------------------------------------------
       template<typename Evt>
-        const bool CanRun( const Evt& evt) ;
+        const bool CanRun( Evt const& evt) ;
 
       //-----------------------------------------------------
       template<typename Evt>
-        void PrepOpDetBTRs(const Evt& evt);
+        void PrepOpDetBTRs(Evt const& evt);
 
       //----------------------------------------------------- /*NEW*/
       template<typename Evt>
-        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, const Evt& evt) const;
+        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const;
 
       //----------------------------------------------------- /*NEW*/
       template<typename Evt>
@@ -92,7 +92,7 @@ namespace cheat{
       const bool BTRsReady() ;
 
       //-----------------------------------------------------
-      const std::vector<art::Ptr<sim::OpDetBacktrackerRecord>>& OpDetBTRs() ; 
+      std::vector<art::Ptr<sim::OpDetBacktrackerRecord>> const& OpDetBTRs() ;
 
       //-----------------------------------------------------
       const std::vector< const sim::SDP* > TrackIdToSimSDPs_Ps(int const& id) ;
@@ -104,7 +104,7 @@ namespace cheat{
       const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum) const;
 
       //-----------------------------------------------------
-      const std::vector < sim::TrackSDP > OpDetToTrackSDPs(int const& OpDetNum, const double& opHit_start_time, const double& opHit_end_time) const;
+      const std::vector < sim::TrackSDP > OpDetToTrackSDPs(int const& OpDetNum, double const& opHit_start_time, double const& opHit_end_time) const;
 
       //-----------------------------------------------------
       const std::vector< sim::TrackSDP> OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P) const ;
@@ -122,7 +122,7 @@ namespace cheat{
       const std::vector < int > OpHitToEveTrackIds(recob::OpHit const& opHit) ;
 
       //-----------------------------------------------------
-      const std::vector < int > OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit);
+      const std::vector < int > OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit_P);
 
       //-----------------------------------------------------
       const std::vector< sim::TrackSDP> OpHitToEveTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P) const;
@@ -140,13 +140,13 @@ namespace cheat{
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( recob::OpHit const& opHit) ;
 
       //-----------------------------------------------------
-      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit) ;
+      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) ;
 
       //-----------------------------------------------------
-      const std::vector< double > SimSDPsToXYZ(std::vector<sim::SDP> const&) const&;
+      const std::vector< double > SimSDPsToXYZ(std::vector<sim::SDP> const& sdps) const&;
 
       //-----------------------------------------------------
-      const std::vector< double > SimSDPsToXYZ(std::vector<const sim::SDP*> const& sdps) const&;
+      const std::vector< double > SimSDPsToXYZ(std::vector<const sim::SDP*> const& sdps_Ps ) const&;
 
       //-----------------------------------------------------
       const std::vector< double > OpHitToXYZ(art::Ptr<recob::OpHit> const& opHit) ;
@@ -154,11 +154,6 @@ namespace cheat{
       //-----------------------------------------------------
       const std::vector< double > OpHitToXYZ(recob::OpHit const& opHit) ;
 
-      //---------------------------------------------------------------- /*NEW*/
-      const std::vector< double> OpHitsToXYZ( std::vector<recob::OpHit> const& opHits);
-
-      //---------------------------------------------------------------- /*NEW*/
-      const std::vector< double> OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps);
       //----------------------------------------------------- /*NEW*/
       const std::unordered_set<const sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit);
 
@@ -190,24 +185,24 @@ namespace cheat{
       const double OpHitLightCollectionPurity(std::set<int> const& tkIds, std::vector< art::Ptr<recob::OpHit> > const& opHits) ;
 
       //-----------------------------------------------------
-      const double OpHitCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr< recob::OpHit > > const& opHits, 
+      const double OpHitCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr< recob::OpHit > > const& opHits,
           std::vector< art::Ptr< recob::OpHit > > const& opHitsIn) ;
 
       //-----------------------------------------------------
-      const double OpHitCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr< recob::OpHit > > const& opHits, 
+      const double OpHitCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr< recob::OpHit > > const& opHits,
           std::vector< art::Ptr< recob::OpHit > > const& opHitsIn,
           geo::View_t const& view)  ;
 
       //-----------------------------------------------------
-      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr< recob::OpHit > > const& opHits, 
+      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr< recob::OpHit > > const& opHits,
           std::vector< art::Ptr< recob::OpHit > > const& opHitsIn) ;
 
       //-----------------------------------------------------
-      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr< recob::OpHit > > const& opHits, 
+      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr< recob::OpHit > > const& opHits,
           std::vector< art::Ptr< recob::OpHit > > const& opHitsIn,
           geo::View_t const& view);
 

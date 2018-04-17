@@ -48,12 +48,12 @@ namespace cheat{
       const provider_type* provider() const
       {return static_cast<provider_type const*>(this);}
 
-      PhotonBackTrackerService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
-      PhotonBackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
+      PhotonBackTrackerService(fhicl::ParameterSet const& pSet, art::ActivityRegistry& reg);
+      PhotonBackTrackerService(fhiclConfig const& config, art::ActivityRegistry& reg);
 
       //Temporarily include a rebuild function until the lazy rebuild works.
 
-      void Rebuild( const art::Event& evt);
+      void Rebuild( art::Event const& evt);
 
       ///////////////////////////////////////////////
       /////BackTracking Functions Implimentation/////
@@ -67,53 +67,68 @@ namespace cheat{
       const std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>& OpDetBTRs() ;
       const std::vector< const sim::SDP* > TrackIdToSimSDPs_Ps(int const& id);
       const std::vector< const sim::SDP* > TrackIdToSimSDPs_Ps(int const& id, geo::View_t const& view);
-      const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum); 
-      const std::vector < sim::TrackSDP > OpDetToTrackSDPs( int const& OpDetNum, 
+      const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum);
+      const std::vector < sim::TrackSDP > OpDetToTrackSDPs( int const& OpDetNum,
           double const& opHit_start_time, double const& opHit_end_time);
-      std::vector<sim::TrackSDP> OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit);
+      std::vector<sim::TrackSDP> OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P );
       std::vector<sim::TrackSDP> OpHitToTrackSDPs(recob::OpHit const& opHit);
       const std::vector < int > OpHitToTrackIds(recob::OpHit const& opHit);
-      std::vector<sim::TrackSDP> OpHitToEveTrackSDPs(art::Ptr<recob::OpHit> const& opHit);
+      const std::vector < int > OpHitToTrackIds(art::Ptr<recob::OpHit> const& opHit_P);
+      const std::vector < int > OpHitToEveTrackIds(recob::OpHit const& opHit);
+      const std::vector < int > OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit_P);
+      std::vector<sim::TrackSDP> OpHitToEveTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P );
       std::vector<sim::TrackSDP> OpHitToEveTrackSDPs(recob::OpHit const& opHit);
-      const std::vector<art::Ptr<recob::OpHit>> TrackIdToOpHits_Ps(const int& tkId, std::vector<art::Ptr<recob::OpHit>> const& hitsIn);
+      const std::vector<art::Ptr<recob::OpHit>> TrackIdToOpHits_Ps(int const& tkId, std::vector<art::Ptr<recob::OpHit>> const& hitsIn);
       const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIdsToOpHits_Ps(std::vector<int> const& tkIds, std::vector<art::Ptr<recob::OpHit>> const& hitsIn);
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(recob::OpHit const& opHit) ;
-      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit) ;
-      const std::vector< double> SimSDPsToXYZ(std::vector<sim::SDP> const& sdps) const& ;
-      const std::vector< double> SimSDPsToXYZ(std::vector<const sim::SDP*> const& sdps);
-      const std::vector< double> OpHitToXYZ(const recob::OpHit& opHit);
-      const std::vector< double> OpHitToXYZ(art::Ptr<recob::OpHit> const& opHit);
+      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) ;
+      const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit) ;
+      const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) ;
+      const std::vector< double> SimSDPsToXYZ(std::vector<sim::SDP> const& sdps ) const& ;
+      const std::vector< double> SimSDPsToXYZ(std::vector<const sim::SDP*> const& sdps_Ps);
+      const std::vector< double> OpHitToXYZ(recob::OpHit const& opHit);
+      const std::vector< double> OpHitToXYZ(art::Ptr<recob::OpHit> const& opHit_P);
       const std::set< int> GetSetOfEveIds();
       const std::set< int> GetSetOfTrackIds();
-      const std::set< int> GetSetOfEveIds(std::vector< art::Ptr<recob::OpHit> > const& opHits);
-      const std::set< int> GetSetOfTrackIds(std::vector< art::Ptr<recob::OpHit> > const& opHits);
-      const double OpHitCollectionPurity(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits);
-      const double OpHitLightCollectionPurity(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits);
-      const double OpHitCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits,
-          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn,
+      const std::set< int> GetSetOfEveIds(std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps);
+      const std::set< int> GetSetOfEveIds(std::vector< recob::OpHit > const& opHits) const ;
+      const std::set< int> GetSetOfTrackIds(std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps);
+      const std::set< int> GetSetOfTrackIds(std::vector< recob::OpHit > const& opHits);
+      const double OpHitCollectionPurity(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps);
+      const double OpHitLightCollectionPurity(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps);
+      const double OpHitCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
+          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps,
           geo::View_t const& view);
-      const double OpHitCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits,
-          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn);
-      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits,
-          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn,
+      const double OpHitCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
+          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps);
+      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
+          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps,
           geo::View_t const& view);
-      const double OpHitChargeCollectionEfficiency(std::set<int> const& tkIds, 
-          std::vector< art::Ptr<recob::OpHit> > const& opHits,
-          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn);
+      const double OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
+          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps);
+      const double OpHitChargeCollectionEfficiency(std::set<int> const& tkIds,
+          std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
+          std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps) { return PhotonBackTracker::OpHitLightCollectionEfficiency(tkIds, opHits_Ps, opHitsIn_Ps); }//Exists only temporarily. Is deprecated.
+const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const;
+const std::vector < art::Ptr < recob::OpHit > > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P, Evt const& evt );
+const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P, Evt& evt );
+
+
 
     private:
       //The PhotonBackTrackerService has no parameters.
 
-      void priv_PrepEvent( const art::Event& evt) ;
+      void priv_PrepEvent( art::Event const& evt) ;
       void priv_PrepFailed();
-      void priv_PrepOpDetBTRs(const art::Event& evt);
+      void priv_PrepOpDetBTRs(art::Event const& evt);
 
-      bool priv_CanRun(const art::Event& evt);
+      bool priv_CanRun(art::Event const& evt);
       bool priv_OpDetBTRsReady() {return PhotonBackTracker::BTRsReady();}
 
   }; //Class PhotonBackTrackerService

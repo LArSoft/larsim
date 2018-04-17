@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////
 //
 //TODO: Impliment alternate backtracking scheme developed by T. Usher
-//TODO: OpChanToOpDetSDPs (Clone of OpDetNumToOpDetSDPs
+//TODO: OpChanToOpDetSDPs (Expanded Clone of OpDetNumToOpDetSDPs
 //
 ///////////////////////////////////////////////////////////////////
 
@@ -32,9 +32,9 @@
 namespace cheat{
 
   //----------------------------------------------------------------
-  PhotonBackTracker::PhotonBackTracker(const fhiclConfig& config, 
-      const cheat::ParticleInventory* partInv, 
-      const geo::GeometryCore*        geom, 
+  PhotonBackTracker::PhotonBackTracker(fhiclConfig const& config,
+      const cheat::ParticleInventory* partInv,
+      const geo::GeometryCore*        geom,
       const detinfo::DetectorClocks*  detClock)
     :fPartInv  (partInv),
     fGeom      (geom),
@@ -46,9 +46,9 @@ namespace cheat{
   {}
 
   //----------------------------------------------------------------
-  PhotonBackTracker::PhotonBackTracker( const fhicl::ParameterSet& pSet, 
-      const cheat::ParticleInventory* partInv, 
-      const geo::GeometryCore* geom, 
+  PhotonBackTracker::PhotonBackTracker( fhicl::ParameterSet const& pSet,
+      const cheat::ParticleInventory* partInv,
+      const geo::GeometryCore* geom,
       const detinfo::DetectorClocks* detClock)
     :fPartInv (partInv),
     fGeom (geom),
@@ -65,25 +65,25 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const bool PhotonBackTracker::BTRsReady() 
+  const bool PhotonBackTracker::BTRsReady()
   {
     return !( priv_OpDetBTRs.empty() ) ;
   }
 
   //----------------------------------------------------------------
-  const std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>& PhotonBackTracker::OpDetBTRs() 
+  const std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>& PhotonBackTracker::OpDetBTRs()
   {
     return priv_OpDetBTRs;
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::TrackIdToSimSDPs_Ps(int const& id) 
+  const std::vector< const sim::SDP* > PhotonBackTracker::TrackIdToSimSDPs_Ps(int const& id)
   {
     std::vector< const sim::SDP* > sdp_Ps;
     for(size_t odet=0; odet<priv_OpDetBTRs.size(); ++odet){
       const auto & pdTimeSDPmap = priv_OpDetBTRs[odet]->timePDclockSDPsMap();
       for(auto mapitr = pdTimeSDPmap.begin(); mapitr != pdTimeSDPmap. end(); mapitr++){
-        const std::vector<sim::SDP>& sdpvec = (*mapitr).second;
+        std::vector<sim::SDP> const& sdpvec = (*mapitr).second;
         for(size_t iv = 0; iv < sdpvec.size(); ++iv){
           const sim::SDP* const sdp_P = &sdpvec[iv];
           if( abs(sdpvec[iv].trackID) == id) sdp_Ps.push_back(&(sdpvec[iv]));
@@ -96,7 +96,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::TrackIdToSimSDPs_Ps(int const& id, geo::View_t const& view) 
+  const std::vector< const sim::SDP* > PhotonBackTracker::TrackIdToSimSDPs_Ps(int const& id, geo::View_t const& view)
   {
     throw cet::exception("PhotonBackTracker")
       <<"PhotonBackTracker is not equiped to handle geo::Views.";
@@ -119,16 +119,16 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector < sim::TrackSDP > PhotonBackTracker::OpDetToTrackSDPs( int const& OpDetNum, 
+  const std::vector < sim::TrackSDP > PhotonBackTracker::OpDetToTrackSDPs( int const& OpDetNum,
       double const& opHit_start_time, double const& opHit_end_time)  const
   {
     std::vector< sim::TrackSDP > tSDPs;
     double totalE=0;
     try{
-      const art::Ptr< sim::OpDetBacktrackerRecord > opDetBTR = 
+      const art::Ptr< sim::OpDetBacktrackerRecord > opDetBTR =
         this->FindOpDetBTR(OpDetNum);
       // ( fGeom->OpDetFromOpChannel(channel) );
-      std::vector<sim::SDP> simSDPs = 
+      std::vector<sim::SDP> simSDPs =
         opDetBTR->TrackIDsAndEnergies(opHit_start_time, opHit_end_time);
       for(size_t e = 0; e < simSDPs.size(); ++e)
         totalE += simSDPs[e].energy;
@@ -198,7 +198,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(recob::OpHit const& opHit) 
+  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(recob::OpHit const& opHit)
   {/*NEW*/ /*COMPLETE*/
     std::vector< int > retVec;
     for( auto const trackSDP : this->OpHitToEveTrackSDPs(opHit) ){
@@ -208,9 +208,9 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit)
+  const std::vector < int > PhotonBackTracker::OpHitToEveTrackIds(art::Ptr<recob::OpHit> const& opHit_P)
   {/*NEW*/ /*COMPLETE*/
-    return this->OpHitToEveTrackIds(*opHit);
+    return this->OpHitToEveTrackIds(*opHit_P);
   }
 
   //----------------------------------------------------------------
@@ -274,7 +274,7 @@ namespace cheat{
             if(itid->energyFrac > fMinOpHitEnergyFraction)
               opHitList.push_back(std::make_pair(*itkid, opHit));
           }
-        } // itkid 
+        } // itkid
       } // itid
     } // itr
     // now build the truOpHits vector that will be returned to the caller
@@ -292,7 +292,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit) 
+  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit)
   {
     std::vector<const sim::SDP*> retVec;
     double fPeakTime = opHit.PeakTime();
@@ -302,7 +302,7 @@ namespace cheat{
     if(start_time > end_time){throw;}
 
     //BUG!!!fGeom->OpDetFromOpChannel(channel)
-    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap 
+    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap
       = (this->FindOpDetBTR(fGeom->OpDetFromOpChannel(opHit.OpChannel()) ))->timePDclockSDPsMap(); //Not guranteed to be sorted.
     //const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap = (this->FindOpDetBTR(opHit.OpChannel()))->timePDclockSDPsMap(); //Not guranteed to be sorted.
 
@@ -336,7 +336,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) 
+  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P)
   {
     return this->OpHitToSimSDPs_Ps(*opHit_P);
   }
@@ -357,7 +357,7 @@ namespace cheat{
       y += weight * sdp.y;
       z += weight * sdp.z;
     }// end loop over sim::SDPs
-    //If the sum of the weights is still zero, then fail to return a value. 
+    //If the sum of the weights is still zero, then fail to return a value.
     //A hit with no contributing photons does't make sense.
     if(w < 1.e-5)
       throw cet::exception("PhotonBackTracker") << "No sim::SDPs providing non-zero number of photons"
@@ -385,7 +385,7 @@ namespace cheat{
       y += weight * sdp.y;
       z += weight * sdp.z;
     }// end loop over sim::SDPs
-    //If the sum of the weights is still zero, then fail to return a value. 
+    //If the sum of the weights is still zero, then fail to return a value.
     //A hit with no contributing photons does't make sense.
     if(w < 1.e-5)
       throw cet::exception("PhotonBackTracker") << "No sim::SDPs providing non-zero number of photons"
@@ -409,37 +409,9 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  //OPHITSTOXYZ
-  //
-
-  //----------------------------------------------------------------
-  const std::vector< double> PhotonBackTracker::OpHitsToXYZ( std::vector<recob::OpHit> const& opHits)
-  {
-    std::vector<const sim::SDP*> sdps;
-    for(auto & opHit : opHits){
-      for( const sim::SDP* sdp : this->OpHitToSimSDPs_Ps(opHit)){
-        sdps.push_back(sdp);
-      }
-    }
-    return SimSDPsToXYZ(sdps);
-  }
-
-  //----------------------------------------------------------------
-  const std::vector< double> PhotonBackTracker::OpHitsToXYZ(std::vector<art::Ptr<recob::OpHit>> const& opHits_Ps)
-  {
-    std::vector<const sim::SDP*> sdps;
-    for(auto & opHit_P : opHits_Ps){
-      for( const sim::SDP* sdp : this->OpHitToSimSDPs_Ps(opHit_P)){
-        sdps.push_back(sdp);
-      }
-    }
-    return SimSDPsToXYZ(sdps);
-  }
-
-  //----------------------------------------------------------------
-  const std::unordered_set<const sim::SDP*> PhotonBackTracker::OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)
+  const std::unordered_set<const sim::SDP*> PhotonBackTracker::OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit_P)
   { /*NEW*/ /*COMPLETE*/
-    const std::vector < int > ids = this->OpHitToEveTrackIds(opHit);
+    const std::vector < int > ids = this->OpHitToEveTrackIds(opHit_P);
     std::unordered_set <const sim::SDP* > sdps;
     for( auto const& id : ids ){
       std::vector<const sim::SDP* > tmp_sdps = TrackIdToSimSDPs_Ps(id);
@@ -479,12 +451,12 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::set<int> PhotonBackTracker::GetSetOfEveIds(std::vector< art::Ptr<recob::OpHit> > const& opHits) const
+  const std::set<int> PhotonBackTracker::GetSetOfEveIds(std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps) const
   {
     std::set<int> eveIds;
-    for(const auto& opHit : opHits){
-      const std::vector<sim::TrackSDP> sdps = this->OpHitToEveTrackSDPs(opHit);
-      for(const auto& sdp : sdps){eveIds.insert(sdp.trackID);}//end sdps
+    for(auto const& opHit_P : opHits_Ps){
+      const std::vector<sim::TrackSDP> sdps = this->OpHitToEveTrackSDPs(opHit_P);
+      for(auto const& sdp : sdps){eveIds.insert(sdp.trackID);}//end sdps
     }//End for hits
     return eveIds;
   }
@@ -493,9 +465,9 @@ namespace cheat{
   const std::set<int> PhotonBackTracker::GetSetOfEveIds(std::vector< recob::OpHit> const& opHits) const
   { /*NEW*/ /*COMPLETE*/
     std::set<int> eveIds;
-    for(const auto& opHit : opHits){
+    for(auto const& opHit : opHits){
       const std::vector<sim::TrackSDP> sdps = this->OpHitToEveTrackSDPs(opHit);
-      for(const auto& sdp : sdps){eveIds.insert(sdp.trackID);}//end sdps
+      for(auto const& sdp : sdps){eveIds.insert(sdp.trackID);}//end sdps
     }//End for hits
     return eveIds;
   }
@@ -504,8 +476,8 @@ namespace cheat{
   const std::set<int> PhotonBackTracker::GetSetOfTrackIds(std::vector< art::Ptr<recob::OpHit> > const& opHits) const
   {
     std::set<int> tids;
-    for( const auto& opHit : opHits){
-      for(const auto& sdp : this->OpHitToTrackSDPs(opHit)) {
+    for( auto const& opHit : opHits){
+      for(auto const& sdp : this->OpHitToTrackSDPs(opHit)) {
         tids.insert(sdp.trackID);
       }//End for TrackSDPs
     }//End for hits
@@ -516,8 +488,8 @@ namespace cheat{
   const std::set<int> PhotonBackTracker::GetSetOfTrackIds(std::vector< recob::OpHit > const& opHits) const
   { /*NEW*/ /*COMPLETE*/
     std::set<int> tids;
-    for( const auto& opHit : opHits){
-      for(const auto& sdp : this->OpHitToTrackSDPs(opHit)) {
+    for( auto const& opHit : opHits){
+      for(auto const& sdp : this->OpHitToTrackSDPs(opHit)) {
         tids.insert(sdp.trackID);
       }//End for TrackSDPs
     }//End for hits
@@ -525,7 +497,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitCollectionPurity(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitCollectionPurity(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
@@ -533,7 +505,7 @@ namespace cheat{
     float total = 1.*opHits.size();;
     float desired = 0.;
     for(size_t h = 0; h < opHits.size(); ++h){
-      art::Ptr<recob::OpHit> opHit = opHits[h]; 
+      art::Ptr<recob::OpHit> opHit = opHits[h];
       std::vector<sim::TrackSDP> opHitTrackSDPs = this->OpHitToTrackSDPs(opHit);
       // don't double count if this opHit has more than one of the
       // desired track IDs associated with it
@@ -550,7 +522,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitLightCollectionPurity(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitLightCollectionPurity(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     // get the list of EveIDs that correspond to the opHits in this collection
@@ -579,7 +551,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& opHitsIn,
       geo::View_t const& view)
@@ -588,7 +560,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& opHitsIn)
   {
@@ -629,7 +601,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitLightCollectionEfficiency(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& opHitsIn,
       geo::View_t const& view)
@@ -638,7 +610,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::OpHitLightCollectionEfficiency(std::set<int> const& tkIds, 
+  const double PhotonBackTracker::OpHitLightCollectionEfficiency(std::set<int> const& tkIds,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& opHitsIn)
   {
@@ -692,9 +664,6 @@ namespace cheat{
   //----------------------------------------------------- /*NEW*/
   //----------------------------------------------------- /*NEW*/
   //----------------------------------------------------- /*NEW*/
-  //std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash> flash_P);
-  //----------------------------------------------------- /*NEW*/
-  //std::set<int> OpFlashToTrackIds(recob::OpFlash flash);
   //----------------------------------------------------- /*NEW*/
   //std::vector<sim::TrackSDP> OpFlashToTrackSDPs(art::Ptr<recob::OpFlash> flash_P);
   //----------------------------------------------------- /*NEW*/
