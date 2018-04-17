@@ -69,7 +69,7 @@
  *  but this does not work in the current setup of art.
  *  */
 /** \fn void cheat::ParticleInventory::PrepTrackIdToMCTruthIndex(const Evt& evt ) const
- *  \breif A function to prepare and cache a map of TrackIds and MCTruth object indicies from fMCTruthList.
+ *  \brief A function to prepare and cache a map of TrackIds and MCTruth object indicies from fMCTruthList.
  *  */
 /** \fn void cheat::ParticleInventory::PrepMCTruthList          (const Evt& evt ) const
  *  \brief A function to load and cache the MCTruthList of the event.
@@ -83,7 +83,7 @@
  *  If one does try to backtrack real data, this will throw and exception.
  *  */
 /** \fn const sim::ParticleList& ParticleList() const
- *  \breif Get the ParticleList from an event.
+ *  \brief Get the ParticleList from an event.
  *  */
 /** \fn  void SetEveIdCalculator(sim::EveIdCalculator *ec)
  *  \brief Set the EveIdCalculator to use for this ParticleList. 
@@ -91,6 +91,66 @@
  *  going to over-ride the default EveIdCalculator, you must do it for 
  *  EVERY event (as a new particle list is adopted for each event.
  */
+/** \fn const std::vector< art::Ptr<simb::MCTruth> >& MCTruthList() const 
+ *  \brief Return a const reference to the list of MCTruth information from the event.
+ *  This function provides a safe way for the user to access the complete MCTruth list
+ *  as retrieved from the event.
+ */
+/** \fn const std::map<unsigned short, unsigned short >& TrackIdToMCTruthIndex() const 
+ *  \brief A map of TrackIds to Their coresponding MCTruth information.
+ *  This returns the ParticleInventories internally maintained map of TrackID information to the index of the stored MCTruth information. While I toyed with using pointers or other similarly explicit references to the MCTruth information, this method won out for ease of use and low memory requirement.
+ */
+/** \fn void ClearEvent()
+ *  \brief This function clears previosly cached information from the previous event. *Note, manually calling this function can cause the ParticleInventory and services depending on the ParticleInventory to behave incorrectly.
+ */
+/** \fn const simb::MCParticle* TrackIdToParticle_P(int const& id) const
+ *  \brief Return a pointer to an MCParticle in the event that produced a given track.
+ *  Returns a pointer (not an art::Ptr) to a particle in the event.
+ */
+/** \fn simb::MCParticle        TrackIdToParticle(int const& id) const
+ * \brief Return a copy of the MCParticle that produced a given track.
+ * Return a copy of the MCParticle that produced a given track. To conserve memory
+ * users are encouraged to use TrackIdToParticle_P
+ */
+/** \fn const simb::MCParticle* TrackIdToMotherParticle_P(int const& id) const
+ *  \brief Return a pointer to the MCParticle that is mother to the particle which created a given track.
+ */
+/** \fn simb::MCParticle        TrackIdToMotherParticle(int const& id) const
+ *  \brief Returns a copy of the MCParticle that is mother to the particle which created a given track.
+ *  Returns a copy of the MCParticle that is mother to the particle which created a given track. Due to 
+ *  memory conservation, users are encouraged to use TrackIdToMotherParticle_P
+ */
+/** \fn const art::Ptr<simb::MCTruth>& TrackIdToMCTruth_P(int const& id) const
+ *  \brief Return an art::Ptr to an MCTruth object in the event that caused a given Track.
+ *
+ */
+/** \fn simb::MCTruth                  TrackIdToMCTruth (int const& id) const
+ *  \brief Return a copy of an MCTruth object in the event that caused a given Track.
+ *  Return a copy of an MCTruth object in the event that caused a given Track. Users are encouraged
+ *  to instead use TrackIdToMCTruth_P
+ */
+/** \fn int TrackIdToEveTrackId(const int& tid) const { return fParticleList.EveId(tid)
+ *  \brief Return the TrackId of the primary that ultimately created the particle that made the given TrackId.
+ */
+/** \fn const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p) const
+ *  \brief Return an art::Ptr to the simb::MCTruth object that ultimately made the given particle
+ */
+/** \fn simb::MCTruth ParticleToMCTruth (const simb::MCParticle* p) const
+ *  \brief Return a copy of the MCTruth object that ultimately resulted in the given particle
+ */
+/** \fn const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector_Ps() const
+ *  \brief Get a list of pointers to the MCTruth objects in the event
+ */
+/** \fn const std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const
+ *  \brief Get pointers to all particles that resulted from the MCTruth object in the given art::Ptr
+ */
+/** \fn std::set<int> GetSetOfTrackIds() const
+ *  \brief Get all TrackIds in the event
+ */
+/** \fn std::set<int> GetSetOfEveIds() const
+ *  \brief Get all TrackIds of Primary particles in the event
+ */
+
 #ifndef CHEAT_PARTICLEINVENTORY_H
 #define CHEAT_PARTICLEINVENTORY_H
 
@@ -157,8 +217,7 @@ namespace cheat{
 
       const std::vector< art::Ptr<simb::MCTruth> >& MCTruthList() const { return fMCTObj.fMCTruthList;}
       
-        ;
-      const std::map< int,  int >& TrackIdToMCTruthIndex() const { return fMCTObj.fTrackIdToMCTruthIndex; }
+      const std::map< int,  int >& TrackIdToMCTruthIndex() const {return fMCTObj.fTrackIdToMCTruthIndex;}
 
       void ClearEvent();
 
