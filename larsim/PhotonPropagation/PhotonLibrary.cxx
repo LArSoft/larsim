@@ -25,6 +25,9 @@ namespace phot{
     fLookupTable.clear();
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
+    fTimingT0LookupTable.clear();
+    fTimingMPVLookupTable.clear();
+    fTimingSigmaLookupTable.clear();
   }
 
   
@@ -35,11 +38,14 @@ namespace phot{
     fLookupTable.clear();
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
+    fTimingT0LookupTable.clear();
+    fTimingMPVLookupTable.clear();
+    fTimingSigmaLookupTable.clear();
   }
   
   //------------------------------------------------------------
   
-  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0)
+  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, bool storeTiming)
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -53,10 +59,29 @@ namespace phot{
     Float_t   Visibility     = 0;
     Float_t   ReflVisibility = 0;
     Float_t   ReflTfirst     = 0;
+    Float_t   timing_t0     = 0;
+    Float_t   timing_landauMPV     = 0;
+    Float_t   timing_landauSigma     = 0;
 
     tt->Branch("Voxel",      &Voxel,      "Voxel/I");
     tt->Branch(OpChannelBranchName.c_str(),  &OpChannel,  (OpChannelBranchName + "/I").c_str());
     tt->Branch("Visibility", &Visibility, "Visibility/F");
+
+    if(storeTiming)
+    {
+      if (!hasTiming()) {
+        // if this happens, you need to call CreateEmptyLibrary() with storeReflected set true
+        throw cet::exception("PhotonLibrary")
+          << "StoreLibraryToFile() requested to store the time propagation distribution parameters, which was not simulated.";
+      }
+      tt->Branch("timing_t0", &timing_t0, "timing_t0/F");
+      tt->Branch("timing_landauMPV", &timing_landauMPV, "timing_landauMPV/F");
+      tt->Branch("timing_landauSigma", &timing_landauSigma, "timing_landauSigma/F");
+      if (fLookupTable.size() != fTimingT0LookupTable.size() || fLookupTable.size() != fTimingMPVLookupTable.size() || fLookupTable.size() != fTimingSigmaLookupTable.size())
+          throw cet::exception(" Photon Library ") << "Time propagation lookup table is different size than Direct table \n"
+                                                   << "this should not be happening. ";
+    }
+
     if(storeReflected)
     {
       if (!hasReflected()) {
@@ -86,6 +111,13 @@ namespace phot{
           ReflVisibility = uncheckedAccessRefl(ivox, ichan);
         if(storeReflT0)
           ReflTfirst = uncheckedAccessReflT(ivox, ichan);
+	if(storeTiming)
+	{
+	  timing_t0 = uncheckedAccessTimingT0(ivox, ichan);
+	  timing_landauMPV = uncheckedAccessTimingMPV(ivox, ichan);
+	  timing_landauSigma = uncheckedAccessTimingSigma(ivox, ichan);
+	  
+	}
         if (Visibility > 0 || ReflVisibility > 0)
         {
           Voxel      = ivox;
@@ -103,11 +135,15 @@ namespace phot{
   void PhotonLibrary::CreateEmptyLibrary(
     size_t NVoxels, size_t NOpChannels,
     bool storeReflected /* = false */,
-    bool storeReflT0 /* = false */
+    bool storeReflT0 /* = false */, 
+    bool storeTiming /* = false */
   ) {
     fLookupTable.clear();
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
+    fTimingT0LookupTable.clear();
+    fTimingMPVLookupTable.clear();
+    fTimingSigmaLookupTable.clear();
 
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
@@ -117,17 +153,26 @@ namespace phot{
     if (storeReflected) fReflLookupTable.resize(LibrarySize(), 0.);
     fHasReflectedT0 = storeReflT0;
     if (storeReflT0) fReflTLookupTable.resize(LibrarySize(), 0.);
-
+    fHasTiming = storeTiming;
+    if (storeTiming)
+    {
+	fTimingT0LookupTable.resize(LibrarySize(), 0.);
+	fTimingMPVLookupTable.resize(LibrarySize(), 0.);
+	fTimingSigmaLookupTable.resize(LibrarySize(), 0.);
+    }	
   }
 
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool getReflected, bool getReflT0)
+  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool getReflected, bool getReflT0, bool getTiming)
   {
     fLookupTable.clear();
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
+    fTimingT0LookupTable.clear();
+    fTimingMPVLookupTable.clear();
+    fTimingSigmaLookupTable.clear();
 
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -157,10 +202,22 @@ namespace phot{
     Float_t   Visibility;
     Float_t   ReflVisibility;
     Float_t   ReflTfirst;
+    Float_t   timing_t0;
+    Float_t   timing_landauMPV;
+    Float_t   timing_landauSigma;
 
     tt->SetBranchAddress("Voxel",      &Voxel);
     tt->SetBranchAddress("OpChannel",  &OpChannel);
     tt->SetBranchAddress("Visibility", &Visibility);
+
+    fHasTiming = getTiming;
+    if(getTiming)
+    {
+       tt->SetBranchAddress("timing_t0", &timing_t0);
+       tt->SetBranchAddress("timing_landauMPV", &timing_landauMPV);
+       tt->SetBranchAddress("timing_landauSigma", &timing_landauSigma);
+    }
+
     fHasReflected = getReflected;
     if(getReflected)
       tt->SetBranchAddress("ReflVisibility", &ReflVisibility);
@@ -171,9 +228,14 @@ namespace phot{
     
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
-
     
     fLookupTable.resize(LibrarySize(), 0.);
+    if(fHasTiming)
+    {
+      fTimingT0LookupTable.resize(LibrarySize(), 0.);
+      fTimingMPVLookupTable.resize(LibrarySize(), 0.);
+      fTimingSigmaLookupTable.resize(LibrarySize(), 0.);
+    }
     if(fHasReflected)
       fReflLookupTable.resize(LibrarySize(), 0.);
     if(fHasReflectedT0)
@@ -190,7 +252,12 @@ namespace phot{
 	uncheckedAccessRefl(Voxel, OpChannel) = ReflVisibility;
       if(fHasReflectedT0)
 	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
-
+      if(fHasTiming)
+      {
+	uncheckedAccessTimingT0(Voxel, OpChannel) = timing_t0; 
+	uncheckedAccessTimingMPV(Voxel, OpChannel) = timing_landauMPV; 
+	uncheckedAccessTimingSigma(Voxel, OpChannel) = timing_landauSigma;
+      }
     } // for entries
 
     mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
@@ -216,6 +283,30 @@ namespace phot{
       return uncheckedAccess(Voxel, OpChannel); 
   }
   //----------------------------------------------------
+
+  float PhotonLibrary::GetTimingT0(size_t Voxel, size_t OpChannel) const
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      return 0;
+    else
+      return uncheckedAccessTimingT0(Voxel, OpChannel);
+  }  //----------------------------------------------------
+
+  float PhotonLibrary::GetTimingMPV(size_t Voxel, size_t OpChannel) const
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      return 0;
+    else
+      return uncheckedAccessTimingMPV(Voxel, OpChannel);
+  }  //----------------------------------------------------
+
+  float PhotonLibrary::GetTimingSigma(size_t Voxel, size_t OpChannel) const
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      return 0;
+    else
+      return uncheckedAccessTimingSigma(Voxel, OpChannel);
+  }  //----------------------------------------------------
 
   float PhotonLibrary::GetReflCount(size_t Voxel, size_t OpChannel) const
   {
@@ -245,6 +336,33 @@ namespace phot{
   }
   //----------------------------------------------------
 
+  void PhotonLibrary::SetTimingT0(size_t Voxel, size_t OpChannel, float Count) 
+  { 
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set timing t0 count in voxel " << Voxel<<" which is out of range"; 
+    else
+      uncheckedAccessTimingT0(Voxel, OpChannel) = Count; 
+  }
+  //----------------------------------------------------
+
+  void PhotonLibrary::SetTimingMPV(size_t Voxel, size_t OpChannel, float Count) 
+  { 
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set timing MPV count in voxel " << Voxel<<" which is out of range"; 
+    else
+      uncheckedAccessTimingMPV(Voxel, OpChannel) = Count; 
+  }
+  //----------------------------------------------------
+
+  void PhotonLibrary::SetTimingSigma(size_t Voxel, size_t OpChannel, float Count) 
+  { 
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set timing Sigma count in voxel " << Voxel<<" which is out of range"; 
+    else
+      uncheckedAccessTimingSigma(Voxel, OpChannel) = Count; 
+  }
+  //----------------------------------------------------
+
   void PhotonLibrary::SetReflCount(size_t Voxel, size_t OpChannel, float Count)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
@@ -268,6 +386,28 @@ namespace phot{
   { 
     if (Voxel >= fNVoxels) return nullptr;
     else return fLookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+
+  //----------------------------------------------------
+
+  float const* PhotonLibrary::GetTimingT0(size_t Voxel) const
+  { 
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fTimingT0LookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+  //----------------------------------------------------
+
+  float const* PhotonLibrary::GetTimingMPV(size_t Voxel) const
+  { 
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fTimingMPVLookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+  //----------------------------------------------------
+
+  float const* PhotonLibrary::GetTimingSigma(size_t Voxel) const
+  { 
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fTimingSigmaLookupTable.data() + uncheckedIndex(Voxel, 0);
   }
 
   //---------------------------------------------------- 
