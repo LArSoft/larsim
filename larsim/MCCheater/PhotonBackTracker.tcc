@@ -46,8 +46,10 @@ namespace cheat{
   template<typename Evt>
     const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
     {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
-      //std::vector<art::Ptr< recob::OpHit > > hits_Ps = FindManyP(flash_P, evt, opHitLabel);
-      return FindManyP(flash_P, evt, fOpHitLabel);
+      art::FindManyP< recob::OpHit > fmoh(std::vector<art::Ptr<recob::OpFlash>>({flash_P}), evt, fOpHitLabel.label());
+      std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fmoh.at(0);
+      //std::vector<art::Ptr< recob::OpHit > > hits_Ps = art::FindManyP< recob::OpHit > fmoh(flash_P, evt, fOpHitLabel);
+      return hits_Ps;// art::FindManyP< recob::OpHit >(flash_P, evt, fOpHitLabel);
 
     }
 
@@ -55,7 +57,9 @@ namespace cheat{
   template<typename Evt>
     const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const
     {
-      return this->OpHitsToXYZ( this->OpFlashToOpHits_Ps(flash_P, evt)  );
+      const std::vector< art::Ptr<recob::OpHit>> opHits_Ps = this->OpFlashToOpHits_Ps(flash_P, evt);
+      const std::vector<double> retVec = this->OpHitsToXYZ(opHits_Ps);
+      return retVec;
     }
 
   //----------------------------------------------------- /*NEW*/
@@ -64,7 +68,7 @@ namespace cheat{
       std::vector<art::Ptr<recob::OpHit> > opHits_Ps = this->OpFlashToOpHits_Ps(flash_P, evt);
       std::set<int> ids;
       for( auto& opHit_P : opHits_Ps){
-        for( int& id : this->OpHitToTrackIds(opHit_P) ){
+        for( const int& id : this->OpHitToTrackIds(opHit_P) ){
           ids.insert( id) ;
         } // end for ids
       }// end for opHits

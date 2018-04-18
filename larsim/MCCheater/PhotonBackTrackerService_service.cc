@@ -124,7 +124,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const art::Ptr< sim::OpDetBacktrackerRecord > PhotonBackTrackerService::FindOpDetBTR(int const& opDetNum)
+  art::Ptr< sim::OpDetBacktrackerRecord > PhotonBackTrackerService::FindOpDetBTR(int const& opDetNum)
   {
     return PhotonBackTracker::FindOpDetBTR(opDetNum);
   }
@@ -173,7 +173,7 @@ namespace cheat{
   //----------------------------------------------------------------------
   std::vector<sim::TrackSDP> PhotonBackTrackerService::OpHitToEveTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P )
   {
-    return PhotonBackTracker::OpHitToEveTrackSDPs(opHit);
+    return PhotonBackTracker::OpHitToEveTrackSDPs(opHit_P);
   }
 
   //----------------------------------------------------------------------
@@ -213,7 +213,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const std::unordered_set< const sim::SDP* > PhotonBackTrackerService::OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P)
+  const std::unordered_set< const sim::SDP* > PhotonBackTrackerService::OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit> & opHit_P)
   {
     return PhotonBackTracker::OpHitToEveSimSDPs_Ps(opHit_P);
   }
@@ -305,7 +305,7 @@ namespace cheat{
       std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
       std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps)
   {
-    return PhotonBackTracker::OpHitCollectionEfficiency(tkIds, opHits, opHitsIn);
+    return PhotonBackTracker::OpHitCollectionEfficiency(tkIds, opHits_Ps, opHitsIn_Ps);
   }
 
   //----------------------------------------------------------------------
@@ -326,18 +326,18 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const std::set<int> PhotonBackTrackerService::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const{
+  const std::set<int> PhotonBackTrackerService::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P, art::Event& evt) const{
     return PhotonBackTracker::OpFlashToTrackIds( flash_P,  evt);
   }
 
   //----------------------------------------------------------------------
-  const std::vector < art::Ptr < recob::OpHit > > PhotonBackTrackerService::OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P, Evt const& evt ){
+  const std::set < int > PhotonBackTrackerService::OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P, art::Event& evt ){
     return PhotonBackTracker::OpFlashToTrackIds( flash_P,  evt);
   }
 
   //----------------------------------------------------------------------
-  const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P, Evt& evt ){
-    return PhotonBackTracker::OpFlashToXYZ( flash_P,  evt);
+  const std::vector < double > PhotonBackTrackerService::OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P, art::Event& evt ){
+    return PhotonBackTracker::OpFlashToXYZ( flash_P,  evt );
   }
 
 

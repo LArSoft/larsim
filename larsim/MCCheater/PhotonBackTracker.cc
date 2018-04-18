@@ -292,7 +292,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit)
+  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit) const
   {
     std::vector<const sim::SDP*> retVec;
     double fPeakTime = opHit.PeakTime();
@@ -336,7 +336,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------
-  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P)
+  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) const
   {
     return this->OpHitToSimSDPs_Ps(*opHit_P);
   }
@@ -406,6 +406,26 @@ namespace cheat{
   const std::vector< double> PhotonBackTracker::OpHitToXYZ(art::Ptr<recob::OpHit> const& opHit)
   {
     return SimSDPsToXYZ(this->OpHitToSimSDPs_Ps(*opHit));
+  }
+
+  //----------------------------------------------------------------
+  //const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit)
+//  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps(const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps)
+      const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps( std::vector< art::Ptr < recob::OpHit > > const& opHits_Ps) const
+  {
+    std::vector < const sim::SDP* > sdps_Ps;
+    for ( auto opHit_P : opHits_Ps ){
+      std::vector < const sim::SDP* > to_add_sdps_Ps = this->OpHitToSimSDPs_Ps(opHit_P);
+      sdps_Ps.insert( sdps_Ps.end(), to_add_sdps_Ps.begin(), to_add_sdps_Ps.end() );
+    }
+    return sdps_Ps;
+  }
+
+  //----------------------------------------------------------------
+  const std::vector< double > PhotonBackTracker::OpHitsToXYZ( std::vector < art::Ptr < recob::OpHit > > const& opHits_Ps) const
+  {
+      const std::vector<const sim::SDP*> SDPs_Ps = OpHitsToSimSDPs_Ps(opHits_Ps);
+      return this->SimSDPsToXYZ(SDPs_Ps);
   }
 
   //----------------------------------------------------------------

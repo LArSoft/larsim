@@ -137,10 +137,14 @@ namespace cheat{
       const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIdsToOpHits_Ps( std::vector< int> const& tkIds, std::vector<art::Ptr<recob::OpHit>> const& hitsIn) ;
 
       //-----------------------------------------------------
-      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( recob::OpHit const& opHit) ;
+      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( recob::OpHit const& opHit) const ;
 
       //-----------------------------------------------------
-      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) ;
+      const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) const;
+//
+      //-----------------------------------------------------
+//      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
+      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( std::vector< art::Ptr < recob::OpHit  > > const& opHits_Ps) const;
 
       //-----------------------------------------------------
       const std::vector< double > SimSDPsToXYZ(std::vector<sim::SDP> const& sdps) const&;
@@ -153,6 +157,9 @@ namespace cheat{
 
       //-----------------------------------------------------
       const std::vector< double > OpHitToXYZ(recob::OpHit const& opHit) ;
+
+      //-----------------------------------------------------
+      const std::vector< double > OpHitsToXYZ( std::vector < art::Ptr < recob::OpHit > > const& opHits_Ps) const; /*NEW*/
 
       //----------------------------------------------------- /*NEW*/
       const std::unordered_set<const sim::SDP*> OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit);
