@@ -87,7 +87,7 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
   std::vector<double> stepL_vals;
 
   std::vector<double> mct_length(mctVec.size(),0);
-  int d_index = -1;
+  //int d_index = -1; // unused
   for(size_t i_p=0; i_p<mctVec.size(); i_p++){
 
 

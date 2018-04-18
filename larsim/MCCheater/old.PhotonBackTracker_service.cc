@@ -37,12 +37,12 @@ namespace cheat{
 
     reg.sPreProcessEvent.watch(this, &PhotonBackTracker::Rebuild);
   }
-  
+
   //----------------------------------------------------------------------
   PhotonBackTracker::~PhotonBackTracker()
   {
   }
-  
+
   //----------------------------------------------------------------------
   void PhotonBackTracker::reconfigure(const fhicl::ParameterSet& pset)
   {
@@ -82,10 +82,10 @@ namespace cheat{
 
     if( fo.isValid() ){
       for(size_t p = 0; p < pHandle->size(); ++p){
-  
+
         simb::MCParticle *part = new simb::MCParticle(pHandle->at(p));
         fParticleList.Add(part);
-  
+
         // get the simb::MCTruth associated to this sim::ParticleList
         try{
           art::Ptr<simb::MCTruth> mct = fo.at(p);
@@ -93,8 +93,8 @@ namespace cheat{
           else{
             // check that we are not adding a simb::MCTruth twice to the collection
             // we know that all the particles for a given simb::MCTruth are put into the
-            // collection of particles at the same time, so we can just check that the 
-            // current art::Ptr has a different id than the last one put 
+            // collection of particles at the same time, so we can just check that the
+            // current art::Ptr has a different id than the last one put
             if(!(mct == fMCTruthList.back())) fMCTruthList.push_back(mct);
           }
           // fill the track id to mctruth index map
@@ -102,16 +102,16 @@ namespace cheat{
         }
         catch(cet::exception &ex){
           mf::LogWarning("PhotonBackTracker") << "unable to find MCTruth from ParticleList "
-          << "created in " << fG4ModuleLabel << " " 
+          << "created in " << fG4ModuleLabel << " "
           << "any attempt to get the MCTruth objects from "
           << "the photon backtracker will fail\n"
           << "message from caught exception:\n" << ex;
-        }  
-      }// end loop over particles to get MCTruthList  
+        }
+      }// end loop over particles to get MCTruthList
     }// end if fo.isValid()
 
     // grab the sim::OpDetBacktrackerRecords for this event
-    
+
     /*
     try{evt.getView(fG4ModuleLabel, cOpDetBacktrackerRecords);}
     catch(art::Exception const& e){
@@ -155,7 +155,7 @@ namespace cheat{
            << "\n the MCTruth information is\n";
     for(size_t mc = 0; mc < fMCTruthList.size(); ++mc)
       LOG_DEBUG("PhotonBackTracker") << *(fMCTruthList.at(mc).get());
-    
+
     return;
   }
 
@@ -191,7 +191,7 @@ namespace cheat{
     shouldThisFail();
     // get the mother id from the particle navigator
     // the EveId was adopted in the Rebuild method
- 
+
     return this->TrackIDToParticle(fParticleList.EveId(abs(id)));
   }
 
@@ -202,7 +202,7 @@ namespace cheat{
     // find the entry in the MCTruth collection for this track id
     size_t mct = fTrackIDToMCTruthIndex.find(abs(id))->second;
 
-    if(/* mct < 0 || */ mct > fMCTruthList.size() ) 
+    if(/* mct < 0 || */ mct > fMCTruthList.size() )
       throw cet::exception("PhotonBackTracker") << "attempting to find MCTruth index for "
             << "out of range value: " << mct
             << "/" << fMCTruthList.size() << "\n";
@@ -220,19 +220,19 @@ namespace cheat{
     // of sim::SDP objects for the given track id
     for(size_t sc = 0; sc < cOpDetBacktrackerRecords.size(); ++sc){
       const auto & pdTimeSDPmap = cOpDetBacktrackerRecords[sc]->timePDclockSDPsMap();
-      
-      // loop over the SDPMAP      
+
+      // loop over the SDPMAP
       for(auto mapitr = pdTimeSDPmap.begin(); mapitr != pdTimeSDPmap.end(); mapitr++){
-  
+
   // loop over the vector of SDP objects.
   const std::vector<sim::SDP>& sdpvec = (*mapitr).second;
-  for(size_t iv = 0; iv < sdpvec.size(); ++iv){ 
+  for(size_t iv = 0; iv < sdpvec.size(); ++iv){
     if( abs(sdpvec[iv].trackID) == id) sdps.push_back(sdpvec[iv]);
   }
 
       } // end loop over map from sim::OpDetBacktrackerRecord
     } // end loop over sim::OpDetBacktrackerRecords
-      
+
     return sdps;
   }
 
@@ -248,7 +248,7 @@ namespace cheat{
   {
     shouldThisFail();
     std::vector<const simb::MCParticle*> ret;
-    
+
     // sim::ParticleList::value_type is a pair (track ID, particle pointer)
     for (const sim::ParticleList::value_type& TrackIDpair: fParticleList) {
       if( TrackIDToMCTruth(TrackIDpair.first) == mct )
@@ -272,15 +272,15 @@ namespace cheat{
 
     return trackSDPs;
   }
-  
+
   //----------------------------------------------------------------------
-  const std::vector<std::vector<art::Ptr<recob::OpHit>>> PhotonBackTracker::TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allOpHits, 
+  const std::vector<std::vector<art::Ptr<recob::OpHit>>> PhotonBackTracker::TrackIDsToOpHits(std::vector<art::Ptr<recob::OpHit>> const& allOpHits,
                        std::vector<int> const& tkIDs)
   {
     shouldThisFail();
     // returns a subset of the opHits in the allOpHits collection that are matched
     // to MC particles listed in tkIDs
-    
+
     // temporary vector of TrackIDs and Ptrs to opHits so only one
     // loop through the (possibly large) allOpHits collection is needed
     std::vector<std::pair<int, art::Ptr<recob::OpHit>>> opHitList;
@@ -294,13 +294,13 @@ namespace cheat{
       for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for(auto itkid = tkIDs.begin(); itkid != tkIDs.end(); ++itkid) {
           if(itid->trackID == *itkid) {
-            if(itid->energyFrac > fMinOpHitEnergyFraction) 
+            if(itid->energyFrac > fMinOpHitEnergyFraction)
               opHitList.push_back(std::make_pair(*itkid, opHit));
           }
-        } // itkid 
+        } // itkid
       } // itid
     } // itr
-    
+
     // now build the truOpHits vector that will be returned to the caller
     std::vector<std::vector<art::Ptr<recob::OpHit>>> truOpHits;
     // temporary vector containing opHits assigned to one MC particle
@@ -312,7 +312,7 @@ namespace cheat{
       }
       truOpHits.push_back(tmpOpHits);
     }
-    
+
     return truOpHits;
   }
 
@@ -326,13 +326,13 @@ namespace cheat{
     // make a map of evd ID values and fraction of energy represented by
     // that eve id in this opHit
     std::map<int, float> eveIDtoEfrac;
-    
+
     double totalE = 0.;
     for(size_t t = 0; t < trackSDPs.size(); ++t){
       eveIDtoEfrac[fParticleList.EveId( trackSDPs[t].trackID )] += trackSDPs[t].energy;
       totalE += trackSDPs[t].energy;
     }
-    
+
     // now fill the eveSDPs vector from the map
     std::vector<sim::TrackSDP> eveSDPs;
     eveSDPs.reserve(eveIDtoEfrac.size());
@@ -390,10 +390,10 @@ namespace cheat{
 
     std::vector< art::Ptr<recob::OpHit> >::const_iterator itr = opHits.begin();
     while(itr != opHits.end() ){
-      
+
       // get the eve ids corresponding to this opHit
       const std::vector<sim::TrackSDP> sdps = OpHitToEveID(*itr);
-      
+
       // loop over the sdps and extract the track ids
       for(size_t i = 0; i < sdps.size(); ++i) eveIDs.insert(sdps[i].trackID);
 
@@ -411,9 +411,9 @@ namespace cheat{
 
     std::vector< art::Ptr<recob::OpHit> >::const_iterator itr = opHits.begin();
     while(itr != opHits.end() ){
-      
+
       std::vector<sim::TrackSDP> trackSDPs;
-     
+
       // get the track ids corresponding to this opHit
       const double pTime = (*itr)->PeakTime();
       const double pWidth= (*itr)->Width();
@@ -423,12 +423,12 @@ namespace cheat{
      // const double end   = (*itr)->PeakTimePlusRMS();
 
       this->ChannelToTrackSDPs(trackSDPs, (*itr)->OpChannel(), start, end);
-      
+
       // loop over the sdps and extract the track ids
       for(size_t i = 0; i < trackSDPs.size(); ++i) {
   trackIDs.insert(trackSDPs[i].trackID);
       }
-   
+
       itr++;
     }
 
@@ -436,7 +436,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  double PhotonBackTracker::OpHitCollectionPurity(std::set<int>                              trackIds, 
+  double PhotonBackTracker::OpHitCollectionPurity(std::set<int>                              trackIds,
             std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     shouldThisFail();
@@ -462,7 +462,7 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  double PhotonBackTracker::OpHitChargeCollectionPurity(std::set<int>                              trackIDs, 
+  double PhotonBackTracker::OpHitChargeCollectionPurity(std::set<int>                              trackIDs,
       std::vector< art::Ptr<recob::OpHit> > const& opHits)
   {
     shouldThisFail();
@@ -493,7 +493,7 @@ namespace cheat{
 
 
   //----------------------------------------------------------------------
-  double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int>                              trackIDs, 
+  double PhotonBackTracker::OpHitCollectionEfficiency(std::set<int>                              trackIDs,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
       geo::View_t                         const& view)
@@ -541,14 +541,14 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
+  double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& allOpHits,
       geo::View_t                         const& view)
   {
     throw cet::exception("PhotonBackTracker")<<"This function is not supported. OpHits do not have type View.\n";
   }
-  double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs, 
+  double PhotonBackTracker::OpHitChargeCollectionEfficiency(std::set<int>                              trackIDs,
       std::vector< art::Ptr<recob::OpHit> > const& opHits,
       std::vector< art::Ptr<recob::OpHit> > const& allOpHits)
   {
@@ -646,16 +646,16 @@ namespace cheat{
     try{
       const art::Ptr< sim::OpDetBacktrackerRecord > schannel = this->FindOpDetBacktrackerRecord( geom->OpDetFromOpChannel(channel) );
 
-      // loop over the photons in the channel and grab those that are in time 
+      // loop over the photons in the channel and grab those that are in time
       // with the identified opHit start and stop times
-      const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+      //const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
       //int start_tdc = ts->OpticalG4Time2TDC( opHit_start_time );
       //int end_tdc   = ts->OpticalG4Time2TDC( opHit_end_time   );
       //      if(start_tdc<0) start_tdc = 0;
       //      if(end_tdc<0) end_tdc = 0;
       std::vector<sim::SDP> simSDPs = schannel->TrackIDsAndEnergies(opHit_start_time, opHit_end_time);
 
-      // first get the total energy represented by all track ids for 
+      // first get the total energy represented by all track ids for
       // this channel and range of tdc values
       for(size_t e = 0; e < simSDPs.size(); ++e)
         totalE += simSDPs[e].energy;
@@ -693,7 +693,7 @@ namespace cheat{
   {
     shouldThisFail();
     // Get services.
-    const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+    //const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
 
     double fPeakTime       = opHit.PeakTime();
     double fWidth          = opHit.Width();
@@ -728,7 +728,7 @@ namespace cheat{
 
     }// end loop over sim::SDPs
 
-    //If the sum of the weights is still zero, then fail to return a value. 
+    //If the sum of the weights is still zero, then fail to return a value.
     //A hit with no contributing photons does't make sense.
     if(w < 1.e-5)
       throw cet::exception("PhotonBackTracker") << "No sim::SDPs providing non-zero number of photons"

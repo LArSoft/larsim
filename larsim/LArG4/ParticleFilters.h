@@ -98,10 +98,10 @@ namespace larg4 {
       } // mustKeep()
     
     bool mustKeep(TVector3 const& pos) const
-      { return mustKeep(Point_t{ pos.X(), pos.Y(), pos.Z() }); }
+      { return mustKeep(Point_t{{ pos.X(), pos.Y(), pos.Z() }}); }
 
     bool mustKeep(TLorentzVector const& pos) const
-      { return mustKeep(Point_t{ pos.X(), pos.Y(), pos.Z() }); }
+      { return mustKeep(Point_t{{ pos.X(), pos.Y(), pos.Z() }}); }
 
     
       protected:

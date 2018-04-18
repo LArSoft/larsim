@@ -86,7 +86,8 @@ namespace cheat{
     private:
 
 
-      const art::Event* fEvt=nullptr;
+      // for c2: remove unused data member
+      //const art::Event* fEvt=nullptr;
 
       void priv_PrepEvent        ( const art::Event& evt );
       void priv_PrepParticleList            ( const art::Event& evt);

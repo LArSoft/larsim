@@ -133,7 +133,8 @@ namespace evgen {
 	TH2F* f2DynNew;        
 	TH2F* f2DynNewThresh;  
 	
-	TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
+        // for c2: fDeltaE is no longer used
+	//TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
 	TH1F* fECons;      ///< histogram to determine if energy is conserved in the event
 
 

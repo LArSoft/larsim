@@ -47,14 +47,12 @@ evgen::MARLEYHelper::MARLEYHelper(
     [this](rndm::NuRandomService::EngineId const& /* unused */,
       rndm::NuRandomService::seed_t lar_seed) -> void
     {
-      // Since we're capturing the this pointer by value, double-check that
-      // everything is still good. This will prevent segfaults.
-      if (this && this->fMarleyGenerator && this->fMarleyGenerator.get()) {
+      if (fMarleyGenerator && fMarleyGenerator.get()) {
         auto seed = static_cast<uint_fast64_t>(lar_seed);
-        this->fMarleyGenerator.get()->reseed(seed);
+        fMarleyGenerator.get()->reseed(seed);
       }
     },
-    this->fHelperName, conf.get_PSet(), { "seed" }
+    fHelperName, conf.get_PSet(), { "seed" }
   );
 
   // Unless I'm mistaken, the call to registerEngine should seed the generator
