@@ -1053,7 +1053,7 @@ namespace evgen {
           double gammaPy = gammaDirection.at(1)*gammaEnergyGeV;
           double gammaPz = gammaDirection.at(2)*gammaEnergyGeV;
   
-          double gammaM  = 0.0;
+          //double gammaM  = 0.0; // unused
   
           double gammaTime = (-TMath::Log(randFlat.fire())/
                               (1/(levelDelay.at(lastLevel)))) + ttime;

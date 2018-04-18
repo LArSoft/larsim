@@ -55,6 +55,12 @@ class sim::DumpGTruth: public art::EDAnalyzer {
       "DumpGTruth" /* default value */
       };
     
+    fhicl::Atom<bool> AllowNoTruth {
+      Name("AllowNoTruth"),
+      Comment("when InputTruth is empty, allow for no truth to be found"),
+      false /* default value */
+      };
+    
   }; // struct Config
   
   
@@ -84,6 +90,7 @@ class sim::DumpGTruth: public art::EDAnalyzer {
   std::vector<art::InputTag> fInputTruth; ///< Name of `GTruth` data products.
   std::string fOutputCategory; ///< Name of the stream for output.
   bool bAllTruth = false; ///< Whether to process all `GTruth` collections.
+  bool bAllowNoTruth = false; ///< Whether to forgive when no truth is present.
   
 }; // class sim::DumpGTruth
 
@@ -96,7 +103,13 @@ sim::DumpGTruth::DumpGTruth(Parameters const& config)
   , fInputTruth()
   , fOutputCategory(config().OutputCategory())
   , bAllTruth(!config().InputTruth(fInputTruth)) // true if InputTruth omitted
-  {}
+  , bAllowNoTruth(config().AllowNoTruth())
+{
+  if (!bAllTruth && bAllowNoTruth) {
+    throw art::Exception(art::errors::Configuration)
+      << "'AllowNoTruth' is only allowed if no 'InputTruth' is specified.\n";
+  }
+}
 
 
 //------------------------------------------------------------------------------
@@ -136,7 +149,7 @@ void sim::DumpGTruth::analyze(art::Event const& event) {
   //
   // sanity check
   //
-  if (AllTruths.empty()) {
+  if (AllTruths.empty() && !bAllowNoTruth) {
     throw art::Exception(art::errors::ProductNotFound)
       << "No GENIE truth found to be dumped!\n";
   }

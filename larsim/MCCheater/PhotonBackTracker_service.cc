@@ -685,7 +685,7 @@ namespace cheat{
       
       // loop over the photons in the channel and grab those that are in time 
       // with the identified opHit start and stop times
-      const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+      //const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
       //int start_tdc = ts->OpticalG4Time2TDC( opHit_start_time );
       //int end_tdc   = ts->OpticalG4Time2TDC( opHit_end_time   );
 //      if(start_tdc<0) start_tdc = 0;
@@ -730,7 +730,7 @@ namespace cheat{
   {
     shouldThisFail();
     // Get services.
-    const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+    //const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
     
     double fPeakTime       = opHit.PeakTime();
     double fWidth          = opHit.Width();

@@ -9,11 +9,6 @@
 #ifndef SIMWIREANA_H
 #define SIMWIREANA_H
 
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
-
 // ROOT includes
 #include <TMath.h>
 #include <TH1F.h>
@@ -37,7 +32,6 @@ extern "C" {
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "larcore/Geometry/Geometry.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardata/Utilities/LArFFT.h"
@@ -52,8 +46,6 @@ extern "C" {
 #include <vector>
 #include <string>
 
-
-namespace geo { class Geometry; }
 
 ///Detector simulation of raw signals on wires
 namespace detsim {

@@ -87,7 +87,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-  void beginRun(art::Run& run);
+  void beginRun(art::Run& run) override;
 
 private:
 

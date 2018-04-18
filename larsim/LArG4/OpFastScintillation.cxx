@@ -782,7 +782,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		   double OpDetCenter[3];
 		   geo->OpDetGeoFromOpDet(itdetphot->first).GetCenter(OpDetCenter);
 		   G4ThreeVector OpDetPoint(OpDetCenter[0]*CLHEP::cm,OpDetCenter[1]*CLHEP::cm,OpDetCenter[2]*CLHEP::cm);
-		   double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS!
+		   // currently unused:
+		 //  double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS!
 		   double t0_vis_lib = ReflT0s[itdetphot->first];		   
 		   arrival_time_dist_vis = GetVisibleTimeOnlyCathode(t0_vis_lib, itdetphot->second);
 		   if(!(arrival_time_dist_vis.size()>0)) {
