@@ -254,10 +254,6 @@ namespace larg4 {
       // if we are not filtering, we have a decision already
     if (!fFilter) fCurrentParticle.keep = true;
     
-    // even if we are filtering, we keep all primary particles no matter what
-    if (fCurrentParticle.isPrimary())
-      fCurrentParticle.keep = true;
-    
       // Polarization.
     const G4ThreeVector& polarization = track->GetPolarization();
     fCurrentParticle.particle->SetPolarization( TVector3( polarization.x(),
