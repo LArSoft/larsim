@@ -7,7 +7,7 @@
 
 #include "larsim/LArG4/ParticleListAction.h"
 #include "nutools/G4Base/PrimaryParticleInformation.h"
-#include "lardataobj/Simulation/sim.h"
+#include "lardataobj/Simulation/sim.h" // sim::NoParticleId
 #include "nutools/ParticleNavigation/ParticleList.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -30,7 +30,7 @@
 
 #include <algorithm>
 
-const G4bool debug = false;
+//const G4bool debug = false; // unused
 
 // Photon variables defined at each step, for use 
 // in temporary velocity bug fix. -wforeman                          
@@ -138,10 +138,13 @@ namespace larg4 {
     // have to go up a "chain" of information to find out:
     const G4DynamicParticle* dynamicParticle = track->GetDynamicParticle();
     const G4PrimaryParticle* primaryParticle = dynamicParticle->GetPrimaryParticle();
+    simb::GeneratedParticleIndex_t primaryIndex = simb::NoGeneratedParticleIndex;
     if ( primaryParticle != 0 ){
       const G4VUserPrimaryParticleInformation* gppi = primaryParticle->GetUserInformation();
       const g4b::PrimaryParticleInformation* ppi = dynamic_cast<const g4b::PrimaryParticleInformation*>(gppi);
       if ( ppi != 0 ){
+        primaryIndex = ppi->MCParticleIndex();
+        
         // If we've made it this far, a PrimaryParticleInformation
         // object exists and we are using a primary particle, set the
         // process name accordingly
@@ -246,8 +249,14 @@ namespace larg4 {
     fCurrentParticle.clear();
     fCurrentParticle.particle
     = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    fCurrentParticle.truthIndex = primaryIndex;
+    
       // if we are not filtering, we have a decision already
     if (!fFilter) fCurrentParticle.keep = true;
+    
+    // even if we are filtering, we keep all primary particles no matter what
+    if (fCurrentParticle.isPrimary())
+      fCurrentParticle.keep = true;
     
       // Polarization.
     const G4ThreeVector& polarization = track->GetPolarization();
@@ -279,6 +288,12 @@ namespace larg4 {
       fCurrentParticle.particle->SetEndProcess(process);
 
 
+    }
+    
+    // store truth record pointer, only if it is available
+    if (fCurrentParticle.isPrimary()) {
+      fPrimaryTruthMap[fCurrentParticle.particle->TrackId()]
+        = fCurrentParticle.truthInfoIndex();
     }
 
     return;
@@ -470,6 +485,16 @@ namespace larg4 {
     return fparticleList;
   }
  
+  //----------------------------------------------------------------------------
+  simb::GeneratedParticleIndex_t ParticleListAction::GetPrimaryTruthIndex
+    (int trackId) const
+  {
+    auto const iInfo = GetPrimaryTruthMap().find(trackId);
+    return (iInfo == GetPrimaryTruthMap().end())
+      ? simb::NoGeneratedParticleIndex: iInfo->second;
+  } // ParticleListAction::GetPrimaryTruthIndex()
+  
+  
   //----------------------------------------------------------------------------
   // Yields the ParticleList accumulated during the current event.
   sim::ParticleList&& ParticleListAction::YieldList()

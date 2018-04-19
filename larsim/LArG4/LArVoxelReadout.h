@@ -316,8 +316,9 @@ namespace larg4 {
     double                                    fElectronLifetime;
     double                                    fElectronClusterSize;
     int					      fMinNumberOfElCluster;
-    double                                    fSampleRate;
-    int                                       fTriggerOffset;
+    // for c2: unused private data members
+    //double                                    fSampleRate;
+    //int                                       fTriggerOffset;
     bool                                      fDontDriftThem;
     std::vector<unsigned short int>           fSkipWireSignalInTPCs;
     /// Charge deposited within this many [cm] from the plane is lead onto it.

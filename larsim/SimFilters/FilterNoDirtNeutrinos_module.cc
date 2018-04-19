@@ -184,8 +184,9 @@ namespace simfilter {
 	// This is genie
 
 	  const simb::MCParticle* part(&mcpHandle->at(i));
-	  int pdg = part->PdgCode();
-	  int trackID = part->TrackId();
+	  // for c2: pdg and trackID no longer used
+	  //int pdg = part->PdgCode();
+	  //int trackID = part->TrackId();
 
 	  //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
 	  // Now walk through trajectory and see if it enters the TPC
