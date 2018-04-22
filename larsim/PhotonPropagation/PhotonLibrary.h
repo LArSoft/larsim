@@ -22,14 +22,8 @@ namespace phot{
     float GetCount(size_t Voxel, size_t OpChannel) const;    
     void SetCount(size_t Voxel, size_t OpChannel, float Count);
 
-    float GetTimingT0(size_t Voxel, size_t OpChannel) const;    
-    void SetTimingT0(size_t Voxel, size_t OpChannel, float Count);
-
-    float GetTimingMPV(size_t Voxel, size_t OpChannel) const;    
-    void SetTimingMPV(size_t Voxel, size_t OpChannel, float Count);
-
-    float GetTimingSigma(size_t Voxel, size_t OpChannel) const;    
-    void SetTimingSigma(size_t Voxel, size_t OpChannel, float Count);
+    float GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const;    
+    void SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum);
 
     float GetReflCount(size_t Voxel, size_t OpChannel) const;
     void SetReflCount(size_t Voxel, size_t OpChannel, float Count);
@@ -39,14 +33,12 @@ namespace phot{
     
     /// Returns a pointer to NOpChannels() visibility values, one per channel
     float const* GetCounts(size_t Voxel) const;
-    float const* GetTimingT0(size_t Voxel) const;
-    float const* GetTimingMPV(size_t Voxel) const;
-    float const* GetTimingSigma(size_t Voxel) const;
+    const std::vector<float>* GetTimingPars(size_t Voxel) const;
     float const* GetReflCounts(size_t Voxel) const;
     float const* GetReflT0s(size_t Voxel) const;
 
     ///Returns whether the current library deals with time propagation distributions.
-    bool hasTiming() const { return fHasTiming; }
+    int hasTiming() const { return fHasTiming; }
 
     /// Returns whether the current library deals with reflected light count.
     bool hasReflected() const { return fHasReflected; }
@@ -55,9 +47,9 @@ namespace phot{
     bool hasReflectedT0() const { return fHasReflectedT0; }
 
     
-    void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, bool storeTiming=false);
-    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool storeReflected=false, bool storeReflT0=false, bool storeTiming=false);
-    void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false, bool storeTiming=false);
+    void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
+    void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
+    void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
     
 
     int NOpChannels() const { return fNOpChannels; }
@@ -70,7 +62,8 @@ namespace phot{
     
     bool fHasReflected   = false; ///< Whether the current library deals with reflected light counts.
     bool fHasReflectedT0 = false; ///< Whether the current library deals with reflected light timing.
-    bool fHasTiming = false; ///< Whether the current library deals with time propagation distribution.
+
+    size_t fHasTiming = 0; ///< Whether the current library deals with time propagation distribution.
 
     
     // fLookupTable[unchecked_index(Voxel, OpChannel)] = Count
@@ -79,9 +72,8 @@ namespace phot{
     std::vector<float> fReflLookupTable;
     std::vector<float> fReflTLookupTable;
 
-    std::vector<float> fTimingT0LookupTable;
-    std::vector<float> fTimingMPVLookupTable;
-    std::vector<float> fTimingSigmaLookupTable;
+    std::vector<std::vector<float>> fTimingParLookupTable;
+
     size_t fNOpChannels;
     size_t fNVoxels;
     
@@ -113,36 +105,24 @@ namespace phot{
     float& uncheckedAccessReflT(size_t Voxel, size_t OpChannel)
     { return fReflTLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
-    /// Unchecked access to a t0 landau parameter of the time distribution
-    float const& uncheckedAccessTimingT0 (size_t Voxel, size_t OpChannel) const
-    { return fTimingT0LookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
-    /// Unchecked access to a t0 landau parameter of the time distribution                                                                        
-    float& uncheckedAccessTimingT0(size_t Voxel, size_t OpChannel)
-    { return fTimingT0LookupTable[uncheckedIndex(Voxel, OpChannel)]; }
+    /// Unchecked access to a parameter the time distribution
+    float const& uncheckedAccessTimingPar (size_t Voxel, size_t OpChannel, size_t parnum) const
+    { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum];}
 
-    /// Unchecked access to a MPV landau parameter of the time distribution
-    float const& uncheckedAccessTimingMPV (size_t Voxel, size_t OpChannel) const
-    { return fTimingMPVLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
-
-    /// Unchecked access to a MPV landau parameter of the time distribution                                                                      
-    float& uncheckedAccessTimingMPV(size_t Voxel, size_t OpChannel)
-    { return fTimingMPVLookupTable[uncheckedIndex(Voxel, OpChannel)]; } 
-
-    /// Unchecked access to a sigma landau parameter of the time distribution
-    float const& uncheckedAccessTimingSigma (size_t Voxel, size_t OpChannel) const
-    { return fTimingSigmaLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
-
-    /// Unchecked access to a sigma landau parameter of the time distribution                                                                                        
-    float& uncheckedAccessTimingSigma(size_t Voxel, size_t OpChannel)
-    { return fTimingSigmaLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
+    /// Unchecked access to a parameter of the time distribution                                                                        
+    float& uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
+    { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum]; }
 
     /// Name of the optical channel number in the input tree
     static std::string const OpChannelBranchName;
     
     /// Returns the number of optical channels in the specified tree
     static size_t ExtractNOpChannels(TTree* tree);
-    
+
+    /// Converts size_t into integer
+    int size_t2int(size_t val) {
+    return (val <= INT_MAX) ? (int)((ssize_t)val) : -1; }
   };
 
 }

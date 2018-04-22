@@ -478,20 +478,14 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   float const* ReflVisibilities = nullptr;
   float const* ReflT0s = nullptr;
 
-  float const* landauparT0 = nullptr;
-  float const* landauparMPV = nullptr;
-  float const* landauparSigma = nullptr;
+  const std::vector<float>* PropParameters = nullptr;
 
   if(pvs->StoreReflected()) {
     ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
     if(pvs->StoreReflT0())
       ReflT0s = pvs->GetReflT0s(xyz); 
   }
-  if(pvs->IncludeLandauTime()) {
-    landauparT0 = pvs->GetTimingT0(xyz);
-    landauparMPV = pvs->GetTimingMPV(xyz);
-    landauparSigma = pvs->GetTimingSigma(xyz);
-  }
+  if(pvs->IncludeParPropTime()) PropParameters = pvs->GetTimingPar(xyz);
   
 
   /*
@@ -607,9 +601,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     }else{
       std::map<int, int> DetectedNum;
       std::map<int, int> ReflDetectedNum;
-      std::map<int, TF1> PropTimeLandau;
+      std::map<int, TF1> PropTimeFunction;
 
-	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+      for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
     		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 
@@ -629,18 +623,17 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		    }
                 }
 
-	    	if(pvs->IncludeLandauTime()) {
-            
-		  TF1 flandauu("flandauu","TMath::Landau(x-[0],[1],[2])",0,10*landauparT0[OpDet]+40*landauparMPV[OpDet]+40*landauparSigma[OpDet]); 
+	    	if(pvs->IncludeParPropTime()) {
+            	  double range=0;
+	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=20*PropParameters[OpDet][i];
+		  TF1 AuxFunction("timingfunc",Form("%s",pvs->ParPropTimeFormula().c_str()),0,range); 
 		  //std::cout << "PMT " << OpDet << " pos("<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<")" << std::endl;   
 		  //std::cout << "par0 " << landauparT0[OpDet] << std::endl;  
 		  //std::cout << "par1 " << landauparMPV[OpDet] << std::endl; 
 		  //std::cout << "par2 " << landauparSigma[OpDet] << std::endl;
-		  flandauu.SetParameter(0,landauparT0[OpDet]);
-		  flandauu.SetParameter(1,landauparMPV[OpDet]); 
-		  flandauu.SetParameter(2,landauparSigma[OpDet]);
+		  for(size_t i=0; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i, PropParameters[OpDet][i]);
 
-		  PropTimeLandau[OpDet]=flandauu;
+		  PropTimeFunction[OpDet]=AuxFunction;
 		  //std::cout << "getrandom " << flandauu->GetRandom() << std::endl;
   		}
 
@@ -669,8 +662,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
                     sample_time(ScintillationRiseTime, ScintillationTime);
             }
 
-	    if(pvs->IncludeLandauTime()) {
-               	deltaTime += PropTimeLandau[itdetphot->first].GetRandom(); 
+	    if(pvs->IncludeParPropTime()) {
+               	deltaTime += PropTimeFunction[itdetphot->first].GetRandom(); 
 	    }
 
             G4double aSecondaryTime = t0 + deltaTime;
