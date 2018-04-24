@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////
 // \file ParticleInventoryService.h
-// \a service for managing the ParticleInventory when run in art.
+// \brief A service for managing the ParticleInventory when run in art.
 //
 // \author jason.stock@mines.sdsmt.edu
-// \Based on the original BackTracker by Brian Rebel (brebel@fnal.gov)
+// Based on the original BackTracker by Brian Rebel (brebel@fnal.gov)
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
 #define CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
