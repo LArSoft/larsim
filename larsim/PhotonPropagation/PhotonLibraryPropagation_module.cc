@@ -217,6 +217,7 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 
       photon.Time = edep.T() + GetScintTime(larp->ScintFastTimeConst(),fRiseTimeFast,
 					    randflatscinttime(),randflatscinttime());
+      //std::cout << "\t\tPhoton fast time is " << photon.Time << " (" << edep.T() << " orig)" << std::endl;
       for(size_t i_op=0; i_op<NOpChannels; ++i_op){
 	auto nph = randpoisphot.fire(nphot_fast*Visibilities[i_op]);
 	/*
@@ -231,8 +232,9 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 	nphot_slow = nphot - nphot_fast;
 	
 	if(nphot_slow>0){
-	  photon.Time = edep.T() - GetScintTime(larp->ScintSlowTimeConst(),fRiseTimeSlow,
+	  photon.Time = edep.T() + GetScintTime(larp->ScintSlowTimeConst(),fRiseTimeSlow,
 						randflatscinttime(),randflatscinttime());
+	  //std::cout << "\t\tPhoton slow time is " << photon.Time << " (" << edep.T() << " orig)" << std::endl;
 	  for(size_t i_op=0; i_op<NOpChannels; ++i_op){
 	    auto nph = randpoisphot.fire(nphot_slow*Visibilities[i_op]);
 	    //std::cout << "\t\tHave " << nph << " slow photons ("
