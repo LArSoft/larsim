@@ -42,6 +42,7 @@ namespace cheat{
         lar::providerFrom<detinfo::DetectorClocksService>()
         )
   {
+    //This line is only to be included until art/LArSoft discussion about lazy rebuild can be completed.
     reg.sPreProcessEvent.watch(this, &BackTrackerService::priv_PrepEvent);
   }
 

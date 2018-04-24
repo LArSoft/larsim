@@ -221,7 +221,6 @@ namespace cheat{
 
       void ClearEvent();
 
-      //Does this make sense? A track Id to a single particle? This is not a one to one relationship.
       const simb::MCParticle* TrackIdToParticle_P(int const& id) const;
       simb::MCParticle        TrackIdToParticle(int const& id) const
       { return *(this->TrackIdToParticle_P(id)); }//Users are encouraged to use TrackIdToParticleP
