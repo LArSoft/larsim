@@ -43,6 +43,7 @@ namespace cheat{
         fhicl::Atom<double> Delay{fhicl::Name("Delay"), fhicl::Comment("The delay time needed to correctly account for the optical simulation and optical systems simulation. (The time between when a g4partcile was made, and when the simulation write out says a signal was recorded)."), 0};
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4 module used to produce the art file we will be using."), "largeant"};
         fhicl::Atom<art::InputTag> OpHitLabel{fhicl::Name("OpHitLabel"), fhicl::Comment("The default label for the module to use when grabbing OpHits"), "ophit"}; //This should be removed and replaced with some way to access the OpHitLabel given by the user in their own analysis module to avoid differing definitions.
+        fhicl::Atom<art::InputTag> OpFlashLabel{fhicl::Name("OpFlashLabel"), fhicl::Comment("The default label for the module to use when grabbing OpFlash"), "opflash"}; //This should be removed and replaced with some way to access the OpFlashLabel given by the user in their own analysis module to avoid differing definitions.
         fhicl::Atom<double> MinOpHitEnergyFraction{fhicl::Name("MinOpHitEnergyFraction"), fhicl::Comment("The minimum contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
       };
 
@@ -73,23 +74,27 @@ namespace cheat{
       template<typename Evt>
         void PrepOpDetBTRs(Evt const& evt);
 
-      //----------------------------------------------------- /*NEW*/
+      //-----------------------------------------------------
       template<typename Evt>
-        const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const;
+        void PrepOpFlashToOpHits(Evt const& evt);
 
       //----------------------------------------------------- /*NEW*/
-      template<typename Evt>
-        const std::vector<double> OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const ;
+      const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const;
 
       //----------------------------------------------------- /*NEW*/
-      template<typename Evt>
-      const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P, Evt& evt) const;
+      const std::vector<double> OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const ;
+
+      //----------------------------------------------------- /*NEW*/
+      const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
 
       //-----------------------------------------------------
       void ClearEvent();
 
       //-----------------------------------------------------
       const bool BTRsReady() ;
+
+      //-----------------------------------------------------
+      const bool OpFlashToOpHitsReady();
 
       //-----------------------------------------------------
       std::vector<art::Ptr<sim::OpDetBacktrackerRecord>> const& OpDetBTRs() ;
@@ -141,9 +146,9 @@ namespace cheat{
 
       //-----------------------------------------------------
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) const;
-//
+      //
       //-----------------------------------------------------
-//      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
+      //      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
       const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( std::vector< art::Ptr < recob::OpHit  > > const& opHits_Ps) const;
 
       //-----------------------------------------------------
@@ -230,8 +235,10 @@ namespace cheat{
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
       const art::InputTag fOpHitLabel;
+      const art::InputTag fOpFlashLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
+      std::map< art::Ptr < recob::OpFlash >, std::vector < art::Ptr < recob::OpHit > > > fOpFlashToOpHits;
 
 
   };//Class

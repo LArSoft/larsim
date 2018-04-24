@@ -115,9 +115,9 @@ namespace cheat{
       const double OpHitChargeCollectionEfficiency(std::set<int> const& tkIds,
           std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
           std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps) { return PhotonBackTracker::OpHitLightCollectionEfficiency(tkIds, opHits_Ps, opHitsIn_Ps); }//Exists only temporarily. Is deprecated.
-      const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P,  art::Event& evt) const;
-      const std::set < int > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P, art::Event& evt );
-      const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P,  art::Event& evt );
+      const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
+      const std::set < int > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P );
+      const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P );
 
 
 
@@ -127,9 +127,11 @@ namespace cheat{
       void priv_PrepEvent( art::Event const& evt) ;
       void priv_PrepFailed();
       void priv_PrepOpDetBTRs(art::Event const& evt);
+      void priv_PrepOpFlashToOpHits(art::Event const& evt);
 
       bool priv_CanRun(art::Event const& evt);
       bool priv_OpDetBTRsReady() {return PhotonBackTracker::BTRsReady();}
+      bool priv_OpFlashToOpHitsReady() {return PhotonBackTracker::OpFlashToOpHitsReady();}
 
   }; //Class PhotonBackTrackerService
 

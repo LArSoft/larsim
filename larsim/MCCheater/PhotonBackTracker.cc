@@ -42,6 +42,7 @@ namespace cheat{
     fDelay     (config.Delay()),
     fG4ModuleLabel(config.G4ModuleLabel()),
     fOpHitLabel(config.OpHitLabel()),
+    fOpFlashLabel(config.OpFlashLabel()),
     fMinOpHitEnergyFraction(config.MinOpHitEnergyFraction())
   {}
 
@@ -56,6 +57,7 @@ namespace cheat{
     fDelay(pSet.get<double>("Delay")),
     fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
     fOpHitLabel(pSet.get<art::InputTag>("OpHitLabel", "ophit")),
+    fOpFlashLabel(pSet.get<art::InputTag>("OpFlashLabel", "opflash")),
     fMinOpHitEnergyFraction(pSet.get<double>("MinimumOpHitEnergyFraction", 0.1))
   {}
 
@@ -68,6 +70,12 @@ namespace cheat{
   const bool PhotonBackTracker::BTRsReady()
   {
     return !( priv_OpDetBTRs.empty() ) ;
+  }
+
+  //----------------------------------------------------------------
+  const bool PhotonBackTracker::OpFlashToOpHitsReady()
+  {
+    return !( fOpFlashToOpHits.empty() ) ;
   }
 
   //----------------------------------------------------------------
@@ -679,6 +687,37 @@ namespace cheat{
     if(total > 0.) efficiency = desired/total;
     return efficiency;
   }
+  //--------------------------------------------------
+  const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const
+    //const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
+  {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
+
+    //      art::FindManyP< recob::OpHit > fmoh(std::vector<art::Ptr<recob::OpFlash>>({flash_P}), evt, fOpHitLabel.label());
+    //      std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fmoh.at(0);
+    std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
+    return hits_Ps;
+
+  }
+
+  //--------------------------------------------------
+  const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const
+  {
+    const std::vector< art::Ptr<recob::OpHit>> opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
+    const std::vector<double> retVec = this->OpHitsToXYZ(opHits_Ps);
+    return retVec;
+  }
+
+  //--------------------------------------------------
+  const std::set<int> PhotonBackTracker::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const{
+    std::vector<art::Ptr<recob::OpHit> > opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
+    std::set<int> ids;
+    for( auto& opHit_P : opHits_Ps){
+      for( const int& id : this->OpHitToTrackIds(opHit_P) ){
+        ids.insert( id) ;
+      } // end for ids
+    }// end for opHits
+    return ids;
+  }// end OpFlashToTrackIds
 
   //----------------------------------------------------- /*NEW*/
   //----------------------------------------------------- /*NEW*/
