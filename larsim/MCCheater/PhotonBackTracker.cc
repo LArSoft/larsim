@@ -34,11 +34,11 @@ namespace cheat{
   //----------------------------------------------------------------
   PhotonBackTracker::PhotonBackTracker(fhiclConfig const& config,
       const cheat::ParticleInventory* partInv,
-      const geo::GeometryCore*        geom,
-      const detinfo::DetectorClocks*  detClock)
+      const geo::GeometryCore*        geom)//,
+//      const detinfo::DetectorClocks*  detClock)
     :fPartInv  (partInv),
     fGeom      (geom),
-    fDetClocks (detClock),
+//    fDetClocks (detClock),
     fDelay     (config.Delay()),
     fG4ModuleLabel(config.G4ModuleLabel()),
     fOpHitLabel(config.OpHitLabel()),
@@ -49,11 +49,11 @@ namespace cheat{
   //----------------------------------------------------------------
   PhotonBackTracker::PhotonBackTracker( fhicl::ParameterSet const& pSet,
       const cheat::ParticleInventory* partInv,
-      const geo::GeometryCore* geom,
-      const detinfo::DetectorClocks* detClock)
+      const geo::GeometryCore* geom)//,
+//      const detinfo::DetectorClocks* detClock)
     :fPartInv (partInv),
     fGeom (geom),
-    fDetClocks(detClock),
+//    fDetClocks(detClock),
     fDelay(pSet.get<double>("Delay")),
     fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
     fOpHitLabel(pSet.get<art::InputTag>("OpHitLabel", "ophit")),
@@ -93,7 +93,7 @@ namespace cheat{
       for(auto mapitr = pdTimeSDPmap.begin(); mapitr != pdTimeSDPmap. end(); mapitr++){
         std::vector<sim::SDP> const& sdpvec = (*mapitr).second;
         for(size_t iv = 0; iv < sdpvec.size(); ++iv){
-          const sim::SDP* const sdp_P = &sdpvec[iv];
+      //    const sim::SDP* const sdp_P = &sdpvec[iv];
           if( abs(sdpvec[iv].trackID) == id) sdp_Ps.push_back(&(sdpvec[iv]));
         }
       } // end loop over map from sim::OpDetBacktrackerRecord

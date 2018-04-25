@@ -50,14 +50,14 @@ namespace cheat{
       //----------------------------------------------------------------
       PhotonBackTracker(fhiclConfig const& config,
           const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom,
-          const detinfo::DetectorClocks* detClock);
+          const geo::GeometryCore* geom);//,
+//          const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
       PhotonBackTracker( fhicl::ParameterSet const& pSet,
           const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom,
-          const detinfo::DetectorClocks* detClock);
+          const geo::GeometryCore* geom);//,
+//          const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
       PhotonBackTracker(PhotonBackTracker const&) = delete;
@@ -231,7 +231,7 @@ namespace cheat{
     private:
       const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here
       const geo::GeometryCore* fGeom;
-      const detinfo::DetectorClocks* fDetClocks;
+//      const detinfo::DetectorClocks* fDetClocks;
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
       const art::InputTag fOpHitLabel;

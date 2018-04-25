@@ -29,8 +29,8 @@ namespace cheat{
     :PhotonBackTracker(
         pSet.get<fhicl::ParameterSet>("PhotonBackTracker"),
         lar::providerFrom<cheat::ParticleInventoryService>(),
-        lar::providerFrom<geo::Geometry>(),
-        lar::providerFrom<detinfo::DetectorClocksService>()
+        lar::providerFrom<geo::Geometry>()//,
+//        lar::providerFrom<detinfo::DetectorClocksService>()
         )
   {
     reg.sPreProcessEvent.watch(this, &PhotonBackTrackerService::priv_PrepEvent);
@@ -41,8 +41,8 @@ namespace cheat{
     :PhotonBackTracker(
         config.PhotonBackTrackerTable(),
         lar::providerFrom<cheat::ParticleInventoryService>(),
-        lar::providerFrom<geo::Geometry>(),
-        lar::providerFrom<detinfo::DetectorClocksService>()
+        lar::providerFrom<geo::Geometry>()//,
+//        lar::providerFrom<detinfo::DetectorClocksService>()
         )
   {
     reg.sPreProcessEvent.watch(this, &PhotonBackTrackerService::priv_PrepEvent);
