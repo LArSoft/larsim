@@ -50,13 +50,13 @@ namespace cheat{
       //----------------------------------------------------------------
       PhotonBackTracker(fhiclConfig const& config,
           const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom)//,
+          const geo::GeometryCore* geom);//,
 //          const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
       PhotonBackTracker( fhicl::ParameterSet const& pSet,
           const cheat::ParticleInventory* partInv,
-          const geo::GeometryCore* geom)//,
+          const geo::GeometryCore* geom);//,
 //          const detinfo::DetectorClocks* detClock);
 
       //----------------------------------------------------------------
