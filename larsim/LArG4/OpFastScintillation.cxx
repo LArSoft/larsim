@@ -105,6 +105,7 @@
 #include "Geant4/G4Poisson.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 
+#include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
@@ -340,6 +341,7 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   void OpFastScintillation::ProcessStep( const G4Step& step)
   {
     if(step.GetTotalEnergyDeposit() <= 0) return;
+
     OpDetPhotonTable::Instance()->AddEnergyDeposit
       (-1,
        -1,
@@ -352,7 +354,8 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
        (float)(step.GetPostStepPoint()->GetPosition().z()/CLHEP::cm),
        (double)(step.GetPreStepPoint()->GetGlobalTime()),
        (double)(step.GetPostStepPoint()->GetGlobalTime()),
-       step.GetTrack()->GetTrackID(),
+       //step.GetTrack()->GetTrackID(),
+       ParticleListAction::GetCurrentTrackID(),
        step.GetTrack()->GetParticleDefinition()->GetPDGEncoding(),
        step.GetPreStepPoint()->GetPhysicalVolume()->GetName()
        );
