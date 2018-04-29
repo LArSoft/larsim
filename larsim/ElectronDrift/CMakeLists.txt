@@ -6,19 +6,18 @@ art_make(
 			lardataobj_Simulation
 			lardata_DetectorInfo
 			larevt_SpaceCharge
-			larcore_Geometry
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
                         ${FHICLCPP}
                         ${CETLIB}
                         ${CLHEP}
                         ${ROOT_BASIC_LIB_LIST}
-           MODULE_LIBRARIES larsim_ElectronDrift
+           MODULE_LIBRARIES #larsim_ElectronDrift
                       larsim_Simulation lardataobj_Simulation larsim_LArG4
 		      larsim_IonizationScintillation
                       lardataobj_RawData
 		      larevt_SpaceCharge
-                      larcore_Geometry
+                      larcorealg_Geometry
                       larcore_Geometry_Geometry_service
                       lardata_Utilities
                       nutools_RandomUtils_NuRandomService_service
@@ -31,9 +30,9 @@ art_make(
                       art_Persistency_Common
                       art_Persistency_Provenance
                       art_Utilities
-                      canvas_Utilities
-                      canvas_Persistency_Common
-                      canvas_Persistency_Provenance
+#                      canvas_Utilities
+                      canvas
+#                      canvas_Persistency_Provenance
                       ${MF_MESSAGELOGGER}
                       ${MF_UTILITIES}
                       ${FHICLCPP}

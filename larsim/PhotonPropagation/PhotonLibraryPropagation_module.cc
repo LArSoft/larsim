@@ -60,7 +60,7 @@ public:
   void produce(art::Event & e) override;
 
   // Selected optional functions.
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
   void beginJob() override;
 
 private:
@@ -76,15 +76,6 @@ private:
   double GetScintYield(sim::SimEnergyDeposit const&, detinfo::LArProperties const&);
 
   double GetScintTime(double scint_time, double rise_time, double, double);
-  
-  unsigned long N_VOXELS_X;
-  unsigned long N_VOXELS_Y;
-  unsigned long N_VOXELS_Z;
-  std::unordered_map< unsigned long, std::vector< std::vector<double> > > fSCCalcMap;
-  
-  void PrecalculateSC(std::vector<sim::SimEnergyDeposit> const&,bool cleanmap=true);
-  unsigned long GetSCMapIndex(float,float,float);
-  std::vector<double> fPosOffsets;
 };
 
 
@@ -172,15 +163,9 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 
   for(size_t i_op=0; i_op<NOpChannels; ++i_op){
     photonCollection.emplace_back(i_op);
-    //photonCollection[i_op].reserve(edep_reserve_size);
   }
 
-  //bool firsttime=true;
-
   for(auto const& edeps : edep_vecs){
-
-    //PrecalculateSC(*edeps,firsttime);
-    //if(firsttime) firsttime=false;
 
     for(auto const& edep : *edeps){
       /*
@@ -203,12 +188,8 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
 	continue;
       
       yieldRatio = GetScintYield(edep,*larp);
-      //yieldRatio = 1.;
-      auto efieldoffsets = fSCE->GetEfieldOffsets(edep.X(),edep.Y(),edep.Z());
       fISAlg.Reset();
-      fISAlg.CalculateIonizationAndScintillation(edep,
-						 efieldoffsets);
-      //fISAlg.CalculateIonizationAndScintillation(edep,fSCCalcMap[GetSCMapIndex(edep.X(),edep.Y(),edep.Z())][1]);
+      fISAlg.CalculateIonizationAndScintillation(edep);
       nphot =fISAlg.NumberScintillationPhotons();
       nphot_fast = yieldRatio*nphot;
 
@@ -271,37 +252,6 @@ double phot::PhotonLibraryPropagation::GetScintTime(double scint_time, double ri
   
 }
 
-//----------------------------------------------------------------------------
-unsigned long phot::PhotonLibraryPropagation::GetSCMapIndex(float x, float y, float z){
-  unsigned long index = (unsigned long)x +
-    N_VOXELS_X*((unsigned long)y) +
-    N_VOXELS_X*N_VOXELS_Y*( (unsigned long)z );
-  
-  return index;
-}
-  
-//----------------------------------------------------------------------------
-void phot::PhotonLibraryPropagation::PrecalculateSC(std::vector<sim::SimEnergyDeposit> const& edeps, bool cleanmap)
-{
-  auto fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-  art::ServiceHandle<geo::Geometry> geoHandle;
-  auto const& geo = *geoHandle;
-
-  if(cleanmap) fSCCalcMap.clear();
-  for(auto const& edep : edeps){
-    auto index = GetSCMapIndex(edep.X(),edep.Y(),edep.Z());
-    if(fSCCalcMap[index].size()==0){
-      double x = (double)((unsigned long)edep.X()) + 0.5;
-      double y = (double)((unsigned long)edep.Y()) + 0.5 - (geo.DetHalfHeight());
-      double z = (double)((unsigned long)edep.Z()) + 0.5;
-      
-	fSCCalcMap[index].push_back(fSCE->GetPosOffsets(edep.X(),edep.Y(),edep.Z()));
-	fSCCalcMap[index].push_back(fSCE->GetEfieldOffsets(edep.X(),edep.Y(),edep.Z()));
-    }
-  }
-  
-}
-
 void phot::PhotonLibraryPropagation::reconfigure(fhicl::ParameterSet const & p)
 {
   fRiseTimeFast = p.get<double>("RiseTimeFast",-1.0);
@@ -314,14 +264,6 @@ void phot::PhotonLibraryPropagation::reconfigure(fhicl::ParameterSet const & p)
 void phot::PhotonLibraryPropagation::beginJob()
 {
 
-  art::ServiceHandle<geo::Geometry> geoHandle;
-  auto const& geo = *geoHandle;
-
-  N_VOXELS_X = (unsigned long)(geo.DetHalfWidth()*2) + 1;
-  N_VOXELS_Y = (unsigned long)(geo.DetHalfHeight()*2) + 1;
-  N_VOXELS_Z = (unsigned long)(geo.DetLength()) + 1;
-
-  
 }
 
 DEFINE_ART_MODULE(phot::PhotonLibraryPropagation)

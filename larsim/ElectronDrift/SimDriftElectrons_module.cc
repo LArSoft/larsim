@@ -53,7 +53,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimChannel.h"
-#include "larcore/Geometry/GeometryCore.h"
+//#include "larcore/Geometry/GeometryCore.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -357,14 +357,13 @@ namespace detsim {
 
 	// Space-charge effect (SCE): Get SCE {x,y,z} offsets for
 	// particular location in TPC
-	std::vector<double> posOffsets{0.0,0.0,0.0};
+	geo::Vector_t posOffsets{0.0,0.0,0.0};
 	auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
 	if (SCE->EnableSimSpatialSCE() == true)
 	  {
-	    posOffsets = SCE->GetPosOffsets(mp.X(),mp.Y(),mp.Z());
+	    posOffsets = SCE->GetPosOffsets(mp);
 	  }
-	posOffsets[0] = (-1*posOffsets[0]);
-	XDrift += posOffsets[0];
+	XDrift += -1.*posOffsets.X();
 	  
 	// Space charge distortion could push the energy deposit beyond the wire
 	// plane (see issue #15131). Given that we don't have any subtlety in the
@@ -379,11 +378,8 @@ namespace detsim {
 		    + tpcGeo.PlanePitch(0,1) * fRecipDriftVel[1]);
 	}
           
-	auto efieldoffsets = SCE->GetEfieldOffsets(mp.X(),mp.Y(),mp.Z());
 	fISAlg.Reset();
-	fISAlg.CalculateIonizationAndScintillation(energyDeposit,
-						   efieldoffsets);
-
+	fISAlg.CalculateIonizationAndScintillation(energyDeposit);
 	//std::cout << "Got " << fISAlg.NumberIonizationElectrons() << "." << std::endl;
 
 	const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
@@ -444,9 +440,9 @@ namespace detsim {
 	//std::cout << "Split into, " << nClus << " clusters." << std::endl;
 	  
 	double const avegageYtransversePos
-	  = xyz[1] + posOffsets[1];
+	  = xyz[1] + posOffsets.Y();
 	double const avegageZtransversePos
-	  = xyz[2] + posOffsets[2];
+	  = xyz[2] + posOffsets.Z();
 
 	// Smear drift times by x position and drift time
 	if (LDiffSig > 0.0)

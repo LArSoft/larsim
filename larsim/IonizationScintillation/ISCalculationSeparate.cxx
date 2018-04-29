@@ -100,59 +100,12 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
 
-    if(fLArG4Prop->MCC80Compat())
-      fNumIonElectrons = int(fNumIonElectrons);
-
-    
     LOG_DEBUG("ISCalculationSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
       << " MeV deposited with "     << recomb 
       << " recombination: "         << fNumIonElectrons << std::endl; 
   }
 
-  //----------------------------------------------------------------------------
-  // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationSeparate::CalculateIonization(float e, float ds,
-						  float x, float y, float z,
-						  std::vector<double> const& efieldOffsets){
-    double recomb = 0.;
-    double dEdx   = e/ds;
-
-    double EFieldStep = EFieldAtStep(fDetProp->Efield(),x,y,z,efieldOffsets);
-    
-    // Guard against spurious values of dE/dx. Note: assumes density of LAr
-    if(dEdx < 1.) dEdx = 1.;
-    
-    if(fUseModBoxRecomb) {
-      if(ds){
-	double Xi = fModBoxB * dEdx / EFieldStep;
-	recomb = log(fModBoxA + Xi) / Xi;
-      }
-      else 
-	recomb = 0;
-    }
-    else{
-      recomb = fLArG4Prop->RecombA()/(1. + dEdx * fRecombk / EFieldStep);
-      //std::cout << "Recomb = " << fRecombA << " (not " << fLArG4Prop->RecombA() << ") / (1.+" << dEdx << " * " 
-      //	<< fRecombk << "/" << EFieldStep << ") = " << recomb << std::endl;
-    }
-    
-    
-    // 1.e-3 converts fEnergyDeposit to GeV
-    fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
-    
-    if(fLArG4Prop->MCC80Compat())
-      fNumIonElectrons = int(fNumIonElectrons);
-
-    LOG_DEBUG("ISCalculationSeparate") 
-    //      std::cout
-      << " Electrons produced for " << e
-      << " MeV deposited with "     << fLArG4Prop->GeVToElectrons()
-      << " electrons per GeV and "  << recomb 
-      << " recombination: "         << fNumIonElectrons 
-      << " (model=" << fUseModBoxRecomb << ")"
-      << std::endl; 
-  }
 
   //----------------------------------------------------------------------------
   void ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep){
@@ -160,14 +113,6 @@ namespace larg4{
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
   
-  //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep,
-						  std::vector<double> const& efieldOffsets){
-    CalculateIonization(edep.Energy(),edep.StepLength(),
-			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ(),
-			efieldOffsets);
-  }
-
   //----------------------------------------------------------------------------
   void ISCalculationSeparate::CalculateScintillation(float e, int pdg)
   {
@@ -235,14 +180,6 @@ namespace larg4{
     CalculateScintillation(edep);
   }
 
-  //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep, std::vector<double> const& efieldOffsets)
-  {
-    fEnergyDeposit = edep.Energy();
-    CalculateIonization(edep,efieldOffsets);
-    CalculateScintillation(edep);
-  }
-
   double ISCalculationSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     return EFieldAtStep(efield,
@@ -254,36 +191,12 @@ namespace larg4{
     double EField = efield;
     if (fSCE->EnableSimEfieldSCE())
       {
-        fEfieldOffsets = fSCE->GetEfieldOffsets(x,y,z);
-        EField = std::sqrt( (efield + efield*fEfieldOffsets[0])*(efield + efield*fEfieldOffsets[0]) +
-			    (efield*fEfieldOffsets[1]+efield*fEfieldOffsets[1]) +
-			    (efield*fEfieldOffsets[2]+efield*fEfieldOffsets[2]) );
+        fEfieldOffsets = fSCE->GetEfieldOffsets(geo::Point_t{x,y,z});
+        EField = std::sqrt( (efield + efield*fEfieldOffsets.X())*(efield + efield*fEfieldOffsets.X()) +
+			    (efield*fEfieldOffsets.Y()+efield*fEfieldOffsets.Y()) +
+			    (efield*fEfieldOffsets.Z()+efield*fEfieldOffsets.Z()) );
       }
     return EField;
-  }
-
-  //----------------------------------------------------------
-  //If offsets have been pre-calculated
-  double ISCalculationSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep, std::vector<double> const& efieldOffsets)
-  {
-    return EFieldAtStep(efield,
-			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ(),
-			efieldOffsets);
-  }
-
-  double ISCalculationSeparate::EFieldAtStep(double efield, float x, float y, float z, std::vector<double> const& efieldOffsets)
-  {
-
-    /*    std::cout << "\t\tCalculating efield at step "
-	      << x << "," << y << "," << z
-	      << "  base is " << efield
-	      << " and offsets are "
-	      << efieldOffsets[0] << "," << efieldOffsets[1] << "," << efieldOffsets[2]
-	      << std::endl;
-    */
-    return std::sqrt( (efield + efield*efieldOffsets[0])*(efield + efield*efieldOffsets[0]) +
-		      (efield*efieldOffsets[1]+efield*efieldOffsets[1]) +
-		      (efield*efieldOffsets[2]+efield*efieldOffsets[2]) );
   }
 
 }// namespace
