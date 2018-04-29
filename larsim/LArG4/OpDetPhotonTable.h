@@ -36,23 +36,28 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include <map>
+#include <unordered_map>
+#include <string>
 #include <memory>
 #include <exception>
 #ifndef OPDETPHOTONTABLE_h
 #define OPDETPHOTONTABLE_h 1
+
+//#include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 namespace sim
 {
   class OnePhoton; 
   class SimPhotons;
   class SimPhotonsLite;
+  class SimEnergyDeposit;
 }
 
 namespace larg4 {
   class OpDetPhotonTable
     {
     public:
-      ~OpDetPhotonTable(){}
+      ~OpDetPhotonTable();
       static OpDetPhotonTable * Instance(bool LitePhotons = false);
    
       void AddPhoton( size_t opchannel, sim::OnePhoton&& photon);
@@ -68,7 +73,18 @@ namespace larg4 {
       void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
     //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords(); //Replaced by YieldOpDetBacktrackerRecords()
       std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
-      
+
+      void ClearEnergyDeposits();
+      void AddEnergyDeposit(int n_elec,int n_photon,
+			    double energy,
+			    float start_x,float start_y, float start_z,
+			    float end_x,float end_y,float end_z,
+			    double start_time,double end_time,
+			    int trackid,int pdgcode,
+			    std::string vol="EMPTY");
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > & GetSimEnergyDeposits();
+      //std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
+            
     protected:
       OpDetPhotonTable();
 
@@ -78,6 +94,10 @@ namespace larg4 {
       std::vector< sim::OpDetBacktrackerRecord >      cOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
       std::map<int, int>  cOpChannelToSOCMap; //Where each OpChan is.
       std::vector<sim::SimPhotons> fDetectedPhotons;
+
+
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > fSimEDepCol;
+
 
     };
 

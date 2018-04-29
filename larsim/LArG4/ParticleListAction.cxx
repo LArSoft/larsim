@@ -41,6 +41,7 @@ namespace larg4 {
   
   // Initialize static members.
   int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
+  int ParticleListAction::fCurrentPdgCode = 0;
   int ParticleListAction::fTrackIDOffset = 0;
   
   //----------------------------------------------------------------------------
@@ -84,7 +85,7 @@ namespace larg4 {
     fparticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
-    
+    fCurrentPdgCode = 0;
   }
 
   //-------------------------------------------------------------
@@ -128,6 +129,7 @@ namespace larg4 {
     // runs (if any)
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
+    fCurrentPdgCode = pdgCode;
 
     // And the particle's parent (same offset as above):
     G4int parentID = track->GetParentID() + fTrackIDOffset;

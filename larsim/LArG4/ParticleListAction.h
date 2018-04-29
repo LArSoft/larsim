@@ -93,6 +93,7 @@ namespace larg4 {
 
     // TrackID of the current particle, EveID if the particle is from an EM shower
     static int               GetCurrentTrackID() { return fCurrentTrackID; }
+    static int               GetCurrentPdgCode() { return fCurrentPdgCode; }
 			                                                     
     void                     ResetTrackIDOffset() { fTrackIDOffset = 0;     }
 
@@ -129,6 +130,7 @@ namespace larg4 {
     std::map<int, int>       fParentIDMap;           ///< key is current track ID, value is parent ID		  
     static int               fCurrentTrackID;        ///< track ID of the current particle, set to eve ID 
                                                      ///< for EM shower particles		
+    static int               fCurrentPdgCode;        ///< pdg code of current particle  
     static int               fTrackIDOffset;         ///< offset added to track ids when running over		  
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
