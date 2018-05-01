@@ -299,6 +299,8 @@ namespace larg4 {
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
     
+    bool fSparsifyTrajectories; ///< Sparsify MCParticle Trajectories
+
     /// Configures and returns a particle filter
     std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
       (std::set<std::string> const& vol_names) const;
@@ -322,6 +324,7 @@ namespace larg4 {
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
+    , fSparsifyTrajectories  (pset.get< bool        >("SparsifyTrajectories",false)         )
 
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
@@ -614,6 +617,8 @@ namespace larg4 {
             error << "\n";
             throw error;
           }
+
+	  if(fSparsifyTrajectories) p.SparsifyTrajectory();
           
           partCol->push_back(std::move(p));
           

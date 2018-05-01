@@ -91,7 +91,6 @@ namespace evgen {
     double fShowerAreaExtension=0.; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [cm]
     sqlite3* fdb[5]; ///< Pointers to sqlite3 database object, max of 5
     double fRandomXZShift=0.; ///< Each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space [cm]
-    bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
   };
 }
 
@@ -105,8 +104,7 @@ namespace evgen{
       fToffset(p.get< double >("TimeOffset",0.)),
       fBuffBox(p.get< std::vector< double > >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0})),
       fShowerAreaExtension(p.get< double >("ShowerAreaExtension",0.)),
-      fRandomXZShift(p.get< double >("RandomXZShift",0.)),
-      fMCC80Compat(p.get< bool >("MCC80Compat", false))
+      fRandomXZShift(p.get< double >("RandomXZShift",0.))
   {
     
     if(fShowerInputFiles.size() != fShowerFluxConstants.size() || fShowerInputFiles.size()==0 || fShowerFluxConstants.size()==0)

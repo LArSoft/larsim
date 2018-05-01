@@ -62,7 +62,6 @@ namespace sim {
     const std::vector<int>         OpticalParamOrientations() const { return fOpticalParamOrientations;}
     const std::vector<std::vector<std::vector<double>>> OpticalParamParameters() const{return fOpticalParamParameters;  }
     bool UseLitePhotons()                                     const { return fLitePhotons;            }
-    bool MCC80Compat()                                        const { return fMCC80Compat;            }
 
     bool   FillSimEnergyDeposits()                            const { return fFillSimEnergyDeposits;  }
     bool   NoElectronPropagation()                            const { return fNoElectronPropagation;  }
@@ -109,7 +108,6 @@ namespace sim {
                                                                              ///< paramaterized volumes
  
     bool fLitePhotons;
-    bool fMCC80Compat;   ///< MCC 8.0 compatibility flag.
 
     bool   fFillSimEnergyDeposits;          ///< handle to fill SimEdeps or not
     //size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4

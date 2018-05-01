@@ -193,9 +193,6 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
       nphot =fISAlg.NumberScintillationPhotons();
       nphot_fast = yieldRatio*nphot;
 
-      if(lgpHandle->MCC80Compat())
-	nphot_fast = int(nphot_fast);
-
       photon.Time = edep.T() + GetScintTime(larp->ScintFastTimeConst(),fRiseTimeFast,
 					    randflatscinttime(),randflatscinttime());
       //std::cout << "\t\tPhoton fast time is " << photon.Time << " (" << edep.T() << " orig)" << std::endl;
