@@ -38,7 +38,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -309,7 +309,9 @@ namespace evgen{
     
     Sample(truth);
 
-    LOG_DEBUG("GaisserParam") << truth;
+// workaround for #19851
+//    LOG_DEBUG("GaisserParam") << truth;
+    mf::LogDebug("GaisserParam") << truth;
 
     truthcol->push_back(truth);
 

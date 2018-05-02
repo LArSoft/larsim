@@ -171,7 +171,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -533,7 +533,9 @@ namespace evgen{
     ++NEvents;
     SampleOne(NEvents,truth);
 
-    LOG_DEBUG("MUSUN") << truth;
+// workaround for #19851
+//    LOG_DEBUG("MUSUN") << truth;
+    mf::LogDebug("MUSUN") << truth;
 
     truthcol->push_back(truth);
 

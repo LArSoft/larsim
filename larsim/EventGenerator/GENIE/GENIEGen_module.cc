@@ -375,7 +375,9 @@ namespace evgen{
       
       // check to see if we are to pass empty spills
       if(truthcol->size() < 1 && fPassEmptySpills){
-	LOG_DEBUG("GENIEGen") << "no events made for this spill but "
+// workaround for #19851
+//	LOG_DEBUG("GENIEGen") << "no events made for this spill but "
+	mf::LogDebug("GENIEGen") << "no events made for this spill but "
 			      << "passing it on and ending the event anyway";
 	break;
       }

@@ -22,7 +22,7 @@
 #include "Geant4/G4ThreeVector.hh"
 
 // framework libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -93,7 +93,9 @@ namespace larg4 {
     bSingleTPC = false;
     fCstat = 0;
     fTPC = 0;
-    LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
+// workaround for #19851
+//    LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
+    mf::LogDebug("LArVoxelReadout") << GetName() << " autodetects TPC";
   } // LArVoxelReadout::SetDiscoverTPC()
   
   
@@ -119,7 +121,9 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
     fSkipWireSignalInTPCs  = fLgpHandle->SkipWireSignalInTPCs();
 
-    LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
+// workaround for #19851
+//    LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
+    mf::LogDebug("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
@@ -260,7 +264,9 @@ namespace larg4 {
             throw cet::exception
               ("LArG4") << "No TPC ID found in LArVoxelReadout::ProcessHits()";
           } // if
-          LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
+// workaround for #19851
+//          LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
+          mf::LogDebug("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
         } // if more than one TPC
         
         // Note that if there is no particle ID for this energy deposit, the

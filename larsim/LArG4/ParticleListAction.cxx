@@ -109,7 +109,9 @@ namespace larg4 {
       parentid = (*itr).second;
       itr = fParentIDMap.find(parentid);
     }
-    LOG_DEBUG("ParticleListAction") << "final parent ID " << parentid; 
+// workaround for #19851
+//    LOG_DEBUG("ParticleListAction") << "final parent ID " << parentid; 
+    mf::LogDebug("ParticleListAction") << "final parent ID " << parentid; 
 
     return parentid;
   }

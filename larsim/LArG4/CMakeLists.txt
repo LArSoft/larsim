@@ -26,7 +26,7 @@ art_make(
                         art_Utilities
                         canvas
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${ROOT_GENVECTOR}
@@ -53,7 +53,7 @@ art_make(
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
 			canvas
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${ROOT_GENVECTOR}

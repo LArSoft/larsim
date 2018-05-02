@@ -273,7 +273,9 @@ namespace evgen{
 	    }
 	  countFile++;
 	  
-	  LOG_DEBUG("FileMuons: countFile is ") << countFile <<std::endl;
+// workaround for #19851
+//	  LOG_DEBUG("FileMuons: countFile is ") << countFile <<std::endl;
+	  mf::LogDebug("FileMuons: countFile is ") << countFile <<std::endl;
 	  char * cstr, *ptok;
 	  
       // Split this line into tokens

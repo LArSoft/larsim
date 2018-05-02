@@ -50,7 +50,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 
 // art extensions
@@ -274,7 +274,9 @@ namespace evgen{
       SampleOne(i,truth);
     }//end loop over nuclides
 
-    LOG_DEBUG("RadioGen") << truth;
+// workaround for #19851
+//    LOG_DEBUG("RadioGen") << truth;
+    mf::LogDebug("RadioGen") << truth;
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
     return;

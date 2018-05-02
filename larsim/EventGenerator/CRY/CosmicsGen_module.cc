@@ -333,7 +333,9 @@ namespace evgen{
 	      else if (std::abs(particle.PdgCode())==11) ++tpcElectrons;
 	    }
 	    catch(cet::exception &e){
-	      LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
+// workaround for #19851
+//	      LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
+	      mf::LogDebug("CosmicsGen") << "current particle does not go through any tpc";
 	    }*///
 
 	    if (hCosQ!=0) {

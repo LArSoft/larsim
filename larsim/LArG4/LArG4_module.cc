@@ -320,7 +320,9 @@ namespace larg4 {
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
 
   {
-    LOG_DEBUG("LArG4") << "Debug: LArG4()";
+// workaround for #19851
+//    LOG_DEBUG("LArG4") << "Debug: LArG4()";
+    mf::LogDebug("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
 
     if (pset.has_key("Seed")) {
@@ -522,7 +524,9 @@ namespace larg4 {
 
   void LArG4::produce(art::Event& evt)
   {
-    LOG_DEBUG("LArG4") << "produce()";
+// workaround for #19851
+//    LOG_DEBUG("LArG4") << "produce()";
+    mf::LogDebug("LArG4") << "produce()";
 
     // loop over the lists and put the particles and voxels into the event as collections
     std::unique_ptr< std::vector<sim::SimChannel>  >               scCol                      (new std::vector<sim::SimChannel>);
@@ -567,7 +571,9 @@ namespace larg4 {
       for(size_t m = 0; m < mclistHandle->size(); ++m){
         art::Ptr<simb::MCTruth> mct(mclistHandle, m);
 
-        LOG_DEBUG("LArG4") << *(mct.get());
+// workaround for #19851
+//        LOG_DEBUG("LArG4") << *(mct.get());
+        mf::LogDebug("LArG4") << *(mct.get());
 
         // The following tells Geant4 to track the particles in this interaction.
         fG4Help->G4Run(mct);
@@ -628,14 +634,18 @@ namespace larg4 {
     //
     if(theOpDetDet){
       if(!fUseLitePhotons){      
-        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+// workaround for #19851
+//        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+        mf::LogDebug("Optical") << "Storing OpDet Hit Collection in Event";
        	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
       	PhotonCol->reserve(ThePhotons.size());
       	for(auto& it : ThePhotons)
       	  PhotonCol->push_back(std::move(it));
       }
       else{
-        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+// workaround for #19851
+//        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+        mf::LogDebug("Optical") << "Storing OpDet Hit Collection in Event";
         
         std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons();
         
@@ -698,7 +708,9 @@ namespace larg4 {
 
         LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
         if (!channels.empty()) {
-          LOG_DEBUG("LArG4") << "now put " << channels.size() << " SimChannels"
+// workaround for #19851
+//          LOG_DEBUG("LArG4") << "now put " << channels.size() << " SimChannels"
+          mf::LogDebug("LArG4") << "now put " << channels.size() << " SimChannels"
             " from C=" << c << " T=" << t << " into the event";
         }
 
@@ -768,7 +780,9 @@ namespace larg4 {
           // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
         larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
         
-        LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
+// workaround for #19851
+//        LOG_DEBUG("LArG4") << "now put the AuxDetSimTracks in the event";
+        mf::LogDebug("LArG4") << "now put the AuxDetSimTracks in the event";
         
         const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
         adCol->push_back(adsc);

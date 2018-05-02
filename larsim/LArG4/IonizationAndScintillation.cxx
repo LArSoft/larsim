@@ -13,7 +13,7 @@
 // ROOT includes
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -132,7 +132,9 @@ namespace larg4 {
  
       fISCalc->CalculateIonizationAndScintillation(fStep);
     
-      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
+// workaround for #19851
+//      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
+      mf::LogDebug("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
 					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
 					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
 					      << "\nPhotons: "   << fISCalc->NumberScintillationPhotons();

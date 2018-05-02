@@ -18,7 +18,7 @@
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace larg4{
 
@@ -125,7 +125,9 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
 
-    LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
+// workaround for #19851
+//    LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
+    mf::LogDebug("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
 				       << " MeV deposited with "     << recomb 
 				       << " recombination: "         << fNumIonElectrons;
 
@@ -141,7 +143,9 @@ namespace larg4{
 
     if(fScintByParticleType){
 
-      LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
+// workaround for #19851
+//      LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
+      mf::LogDebug("ISCalculationSeparate") << "scintillating by particle type";
 
       // Get the definition of the current particle
       G4ParticleDefinition *pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
@@ -214,7 +218,9 @@ namespace larg4{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
     }
 
-    LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
+// workaround for #19851
+//    LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
+    mf::LogDebug("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)
