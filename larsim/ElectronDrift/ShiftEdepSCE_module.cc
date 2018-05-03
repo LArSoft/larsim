@@ -72,7 +72,7 @@ void spacecharge::ShiftEdepSCE::beginJob()
 {
   if(fMakeAnaTree){
     art::ServiceHandle<art::TFileService> tfs;
-    fNtEdepAna = tfs->make<TNtuple>("nt_edep_ana","Edep PosDiff Ana Ntuple","orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
+    fNtEdepAna = tfs->make<TNtuple>("nt_edep_ana","Edep PosDiff Ana Ntuple","energy:orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
   }
 
   art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
@@ -120,7 +120,8 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 			    edep.TrackID(),
 			    edep.PdgCode());
     if(fMakeAnaTree)
-      fNtEdepAna->Fill(edep.X(),edep.Y(),edep.Z(),edep.NumElectrons(),edep.NumPhotons(),
+      fNtEdepAna->Fill(edep.Energy(),
+		       edep.X(),edep.Y(),edep.Z(),edep.NumElectrons(),edep.NumPhotons(),
 		       outEdepVec.back().X(),outEdepVec.back().Y(),outEdepVec.back().Z(),
 		       outEdepVec.back().NumElectrons(),outEdepVec.back().NumPhotons());
   }
