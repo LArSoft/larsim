@@ -139,7 +139,7 @@ void phot::PhotonLibraryPropagation::produce(art::Event & e)
   double yieldRatio;
   double nphot,nphot_fast,nphot_slow;
 
-  auto fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+  //auto fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
 
   sim::OnePhoton photon;
   photon.Energy = 9.7e-6;
@@ -240,7 +240,7 @@ double phot::PhotonLibraryPropagation::GetScintTime(double scint_time, double ri
 
   while(1){
     double t = -1.0*scint_time*std::log(1-r1);
-    double g = (scint_time+rise_time)/scint_time * std::exp(-1.0*t/scint_time)/scint_time;
+    //double g = (scint_time+rise_time)/scint_time * std::exp(-1.0*t/scint_time)/scint_time;
     if ( r2 <= (std::exp(-1.0*t/rise_time)*(1-std::exp(-1.0*t/rise_time))/scint_time/scint_time*(scint_time+rise_time)) )
       return -1 * t;
   }
