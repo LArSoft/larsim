@@ -117,8 +117,8 @@ namespace detsim {
     double fElectronLifetime;
     double fElectronClusterSize;
     int    fMinNumberOfElCluster;
-    double fSampleRate;
-    int    fTriggerOffset;
+    //double fSampleRate; // unused
+    //int    fTriggerOffset; // unused
     double fLongitudinalDiffusion;
     double fTransverseDiffusion;
 
@@ -467,7 +467,7 @@ namespace detsim {
 	  
 	  //std::cout << "Doing plane " << p << std::endl;
 
-	  geo::PlaneGeo const& plane = tpcGeo.Plane(p);
+	  //geo::PlaneGeo const& plane = tpcGeo.Plane(p); // unused
 
 	  double Plane0Pitch = tpcGeo.Plane0Pitch(p);
         
