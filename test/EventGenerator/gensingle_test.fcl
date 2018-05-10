@@ -17,6 +17,7 @@
 #include "simulationservices_lartpcdetector.fcl"
 #include "channelstatus.fcl"
 #include "singles.fcl"
+#include "particleinventoryservice.fcl"
 
 process_name: SinglesGen
 

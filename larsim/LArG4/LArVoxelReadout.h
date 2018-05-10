@@ -293,11 +293,11 @@ namespace larg4 {
      * would take.
      * 
      */
-    geo::vect::Vector_t RecoverOffPlaneDeposit
-      (geo::vect::Vector_t const& pos, geo::PlaneGeo const& plane) const;
+    geo::Point_t RecoverOffPlaneDeposit
+      (geo::Point_t const& pos, geo::PlaneGeo const& plane) const;
     
     void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
-                                  const double g4time,
+                                  const double simTime,
                                   int trackID,
                                   unsigned short int cryostat, unsigned short int tpc);
 

@@ -40,6 +40,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Persistency/Common/PtrMaker.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
@@ -65,7 +66,6 @@
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/LArG4Parameters.h"
-#include "lardata/Utilities/AssociationUtil.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
@@ -114,7 +114,103 @@ namespace larg4 {
   /**
    * @brief Runs Geant4 simulation and propagation of electrons and photons to readout
    *
-   *
+   * This module collects generated particles from one or more generators and
+   * processes them through Geant4.
+   * 
+   * Input
+   * ------
+   * 
+   * The module reads the particles to process from `simb::MCTruth` records.
+   * Each particle generator is required to produce a vector of such records:
+   * `std::vector<simb::MCTruth>`.
+   * 
+   * The module allows two operation modes:
+   * # process specific generators: the label of the generator modules to be
+   *   processed is specified explicitly in `LArG4` configuration
+   * # process all truth information generated so far: no generator is specified
+   *   in the `LArG4` module configuration, and the module will process all
+   *   data products of type `std::vector<simb::MCTruth>`, in a non-specified
+   *   order
+   * 
+   * For each `simb::MCTruth`, a Geant4 run is started.
+   * The interface with Geant4 is via a helper class provided by _nutools_.
+   * Only the particles in the truth record which have status code
+   * (`simb::MCParticle::StatusCode()`) equal to `1` are processed.
+   * These particles are called, in `LArG4` jargon, _primaries_.
+   * 
+   * 
+   * Output
+   * -------
+   * 
+   * The `LArG4` module produces:
+   * * a collection of `sim::SimChannel`: each `sim::SimChannel` represents the
+   *   set of energy depositions in liquid argon which drifted and were observed
+   *   on a certain channel; it includes physics effects like attenuation,
+   *   diffusion, electric field distortion, etc. Information of the generating
+   *   Geant4 "track" is retained;
+   * * a collection of `sim::SimPhotons` or `sim::SimPhotonsLite`: each
+   *   `sim::SimPhotons` represents the set of individual photons reaching a
+   *   channel of the optical detector; it includes physics effects as well as
+   *   quantum efficiency of the detector (to reduce data size early in the
+   *   process); `sim::SimPhotonsLite` drops the information of the single
+   *   photons and stores only collective information (e.g. their number).
+   * * a collection of `sim::OpDetBacktrackerRecord` (to be documented)
+   * * a collection of `sim::AuxDetSimChannel` (to be documented)
+   * * a collection of `simb::MCParticle`: the particles generated in the
+   *   interaction of the primary particles with the material in the world
+   *   are stored, but minor filtering by geometry and by physics is possible.
+   *   An association of them with the originating `simb::MCTruth` object is
+   *   also produced.
+   * 
+   * 
+   * Notes on the conventions
+   * -------------------------
+   * 
+   * * all and the particles in the truth record (`simb::MCTruth`) which have
+   *   status code (`simb::MCParticle::StatusCode()`) equal to `1` are passed
+   *   to Geant4. These particles are called, in `LArG4` jargon, _primaries_.
+   *   The interface with Geant4 is via a helper class provided by _nutools_.
+   * * normally, information about each particle that Geant4 propagates (which
+   *   Geant4 calls _tracks_), primary or not, is saved as an individual
+   *   `simb::MCParticle` object into the output particle list. Each
+   *   `simb::MCParticle` includes a Geant4-like track ID which is also recorded
+   *   into each `sim::IDE` deposited by that particle. This information can be
+   *   used to track all the deposition from a particle, or to backtrack the
+   *   particle responsible of a deposition (but see below...).
+   *   Note that the stored track ID may be different than the one Geant4 used
+   *   (and, in particular, it's guaranteed to be unique within a `sim::LArG4`
+   *   instance output).
+   * * there are options (some set in `sim::LArG4Parameters` service) which
+   *   allow for Geant4 tracks not to be saved as `simb::MCParticle` (e.g.
+   *   `ParticleKineticEnergyCut`, `KeepEMShowerDaughters`). When these
+   *   particles have deposited energy, their `sim::IDE` will report the ID of
+   *   the first parent Geant4 track which is saved in the `simb::MCParticle`
+   *   list, but _with its sign flipped_. Therefore, when tracking or
+   *   backtracking (see above), comparisons should be performed using the
+   *   absolute value of the `sim::IDE` (e.g. `std::abs(ide.trackID)`).
+   * 
+   * 
+   * Timing
+   * -------
+   * 
+   * The `LArG4` module produces `sim::SimChannel` objects from generated
+   * `simb::MCParticle`. Each particle ("primary") is assigned the time taken
+   * from its vertex (a 4-vector), which is expected to be represented in
+   * nanoseconds.
+   * The `sim::SimChannel` object is a collection of `sim::IDE` in time. The
+   * position in the `sim::IDE` is the location where some ionization occurred.
+   * The time associated to a `sim::IDE` is stored in tick units. The time it
+   * represents is the time when the ionization happened, which is the time of
+   * the primary particle plus the propagation time to the ionization location,
+   * plus the drift time, which the ionized electrons take to reach the anode
+   * wire. This time is then shifted to the frame of the electronics time
+   * via `detinfo::DetectorClocks::G4ToElecTime()`, which adds a configurable
+   * time offset. The time is converted into ticks via
+   * `detinfo::DetectorClocks::TPCClock()`, and this is the final value
+   * associated to the `sim::IDE`. For a more complete overview, see
+   * https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Simulation#Simulation-Timing
+   * 
+   * 
    * Randomness
    * -----------
    *
@@ -126,30 +222,31 @@ namespace larg4 {
    * Configuration parameters
    * -------------------------
    *
-   * - <b>G4PhysListName</b> (string, default "larg4::PhysicsList"):
+   * - *G4PhysListName* (string, default: `"larg4::PhysicsList"`):
    *     whether to use the G4 overlap checker, which catches different issues than ROOT
-   * - <b>CheckOverlaps</b> (bool, default false):
+   * - *CheckOverlaps* (bool, default: `false`):
    *     whether to use the G4 overlap checker
-   * - <b>DumpParticleList</b> (bool, default false):
+   * - *DumpParticleList* (bool, default: `false`):
    *     whether to print all MCParticles tracked
-   * - <b>DumpSimChannels</b> (bool, default false):
+   * - *DumpSimChannels* (bool, default: `false`):
    *     whether to print all depositions on each SimChannel
-   * - <b>SmartStacking</b> (int, default 0):
+   * - *SmartStacking* (int, default: `0`):
    *     whether to use class to dictate how tracks are put on stack (nonzero is on)
-   * - <b>KeepParticlesInVolumes</b> (vector<string>, default empty):
-   *     list of volumes in which to keep MCParticles (empty keeps all)
-   * - <b>GeantCommandFile</b> (string, required):
-   *     G4 macro file to pass to G4Helper for setting G4 command
-   * - <b>Seed</b> (pset key, not defined by default): if defined, override the seed for
+   * - *KeepParticlesInVolumes* (list of strings, default: _empty_):
+   *     list of volumes in which to keep `simb::MCParticle` objects (empty keeps all)
+   * - *GeantCommandFile* (string, _required_):
+   *     G4 macro file to pass to `G4Helper` for setting G4 command
+   * - *Seed* (integer, not defined by default): if defined, override the seed for
    *     random number generator used in Geant4 simulation (which is obtained from
-   *     NuRandomService by default)
-   * - <b>PropagationSeed</b> (pset key, not defined by default): if defined,
+   *     `NuRandomService` by default)
+   * - *PropagationSeed* (integer, not defined by default): if defined,
    *     override the seed for the random generator used for electrons propagation
-   *     to the wire planes (obtained from the NuRandomService by default)
-   * - <b>InputLabels</b> (vector<string>, default unnecessary):
-   *     optional list of generator labels which produce MCTruth;
-   *     otherwise look for anything that has made MCTruth
-   * - <b>ChargeRecoveryMargin</b> (double, default: 0): sets the maximum
+   *     to the wire planes (obtained from the `NuRandomService` by default)
+   * - *InputLabels* (list of strings, default: process all truth):
+   *     optional list of generator labels whose produced `simb::MCTruth` will
+   *     be simulated; if not specified, all `simb::MCTruth` vector data
+   *     products are simulated
+   * - *ChargeRecoveryMargin* (double, default: `0`): sets the maximum
    *     distance from a plane for the wire charge recovery to occur, in
    *     centimeters; for details on how it works, see
    *     `larg4::LArVoxelReadout::SetOffPlaneChargeRecoveryMargin()`. A value of
@@ -426,6 +523,8 @@ namespace larg4 {
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
     std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
+    
+    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
 
 
     // Fetch the lists of LAr voxels and particles.
@@ -446,7 +545,7 @@ namespace larg4 {
     else{
       mclists.resize(fInputLabels.size());
       for(size_t i=0; i<fInputLabels.size(); i++)
-	evt.getByLabel(fInputLabels[i],mclists[i]);
+        evt.getByLabel(fInputLabels[i],mclists[i]);
     }
     
     unsigned int nGeneratedParticles = 0;
@@ -483,7 +582,9 @@ namespace larg4 {
             continue;
           }
           partCol->push_back(std::move(p));
-          util::CreateAssn(*this, evt, *partCol, mct, *tpassn);
+          
+          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1));
+          
           // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
           // is solved and adopted in LArSoft, after which moving will suffice
           // to avoid dramatic memory usage spikes;

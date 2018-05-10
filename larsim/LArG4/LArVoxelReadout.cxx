@@ -281,8 +281,8 @@ namespace larg4 {
   
   
   //----------------------------------------------------------------------------
-  geo::vect::Vector_t LArVoxelReadout::RecoverOffPlaneDeposit
-    (geo::vect::Vector_t const& pos, geo::PlaneGeo const& plane) const
+  geo::Point_t LArVoxelReadout::RecoverOffPlaneDeposit
+    (geo::Point_t const& pos, geo::PlaneGeo const& plane) const
   {
     //
     // translate the landing position on the two frame coordinates
@@ -314,7 +314,7 @@ namespace larg4 {
     // now we need the full thing
     auto const distance = plane.DistanceFromPlane(pos);
     
-    return plane.ComposePoint(distance, landingPos + offPlane);
+    return plane.ComposePoint<geo::Point_t>(distance, landingPos + offPlane);
     
   } // LArVoxelReadout::RecoverOffPlaneDeposit()
   

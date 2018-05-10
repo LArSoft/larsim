@@ -888,7 +888,7 @@ namespace evgen{
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
-    /*
+    #if 0 // this code is disabled for good
     double xfl = flat.fire();
     int loIndex = 0, hiIndex = 32400;
     int i = (loIndex+hiIndex)/2;
@@ -911,12 +911,11 @@ namespace evgen{
       if( xfl > fnmu[i-1] && xfl <= fnmu[i] )
 	foundIndex = true;
     }
-    //*/
-    ///*
+    #else
     double xfl = flat.fire();
     int i = 0;
     while ( xfl > fnmu[i] ) ++i;
-    //*/
+    #endif
     int ic = (i-2)/360;
     int ip = i-2-ic*360;
         

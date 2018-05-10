@@ -24,7 +24,7 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH $ENV{CANVAS_DIR}/Modules
+set(CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules
 		      $ENV{CETBUILDTOOLS_DIR}/Modules
 		      ${CMAKE_MODULE_PATH})
 
@@ -43,17 +43,18 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product( larcoreobj )
-find_ups_product( larcore v1_00_00 )
+find_ups_product( larcorealg )
+find_ups_product( larcore )
 find_ups_product( lardataobj )
-find_ups_product( lardata v1_00_00 )
-find_ups_product( larevt v1_00_00 )
+find_ups_product( lardata )
+find_ups_product( larevt )
 find_ups_product( marley )
 find_ups_product( nutools )
 find_ups_product( nusimdata )
-find_ups_product( art v1_09_00 )
-find_ups_product( cetbuildtools v4_09_00 )
-find_ups_geant4( geant4 v4_9_6 )
-find_ups_product( postgresql v9_1_5 )
+find_ups_product( art )
+find_ups_product( cetbuildtools )
+find_ups_geant4( geant4 )
+find_ups_product( postgresql )
 find_ups_product( ifdhc )
 
 #  Find all the libraries needed by our dependent CMakeList.txt files

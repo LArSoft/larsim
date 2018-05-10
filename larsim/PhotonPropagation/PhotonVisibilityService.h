@@ -83,6 +83,9 @@ namespace phot{
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
+
+    bool                 fInterpolate;
+
     TF1 *fparslogNorm;
     TF1 *fparslogNorm_far;
     TF1 *fparsMPV;
