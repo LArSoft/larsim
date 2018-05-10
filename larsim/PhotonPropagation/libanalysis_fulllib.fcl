@@ -1,0 +1,69 @@
+#include "services_dune.fcl"
+#include "singles.fcl"
+#include "largeantmodules.fcl"
+#include "detsimmodules.fcl"
+#include "opticaldetectormodules.fcl"
+#include "photpropservices_dune.fcl"
+#include "photpropmodules_dune.fcl"
+#include "lightsource.fcl"
+
+
+process_name: LibraryTest
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  #TFileService: { fileName: "libanalysis_dune10kt_v1_1x2x6_20170412_hists.root" }
+  TFileService: { fileName: "libanalysis_dune_dualphase_hists.root" }
+  TimeTracker:       {}
+  message:       @local::standard_info
+  #BEA @table::dunefd_simulation_services  # defined in services.fcl
+  #BEA PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+  @table::protodunedphase_simulation_services
+  PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
+}
+
+physics:
+{
+
+ producers:
+ {
+ }
+
+ analyzers:
+ {
+   libana: @local::dunefd_photonlibraryanalyzer
+ }
+
+ analyzeIt:  [ libana ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [] 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [analyzeIt]  
+}
+
+#services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"                                                                  
+#services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"             
+#services.Geometry.SortingParameters.DetectorVersion: "dune10kt_v2"
+
+#services.Geometry.GDML: "protodunedphase_nowires.gdml"                                                                  
+#services.Geometry.ROOT: "protodunedphase_nowires.gdml"             
+#services.Geometry.SortingParameters.DetectorVersion: "dune10kt_v2"
+
+# ProtoDUNE-DP geometry
+services.Geometry:                @local::protodunedphase_geo
+
+
+services.LArPropertiesService.ScintPreScale: 1
+services.OpDetResponseInterface.QuantumEfficiency: 0.2
+
+#services.PhotonVisibilityService.LibraryFile: "lib_dune10kt_v1_1x2x6_20170412.root"
+#services.PhotonVisibilityService.LibraryFile: "lib_without_att.root"
+#services.PhotonVisibilityService.LibraryFile: "lib_protodunedp_lightsim_nonuni_20171213.root"
+#services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_protodunedp_lightsim_nonuni_20171213.root"
+

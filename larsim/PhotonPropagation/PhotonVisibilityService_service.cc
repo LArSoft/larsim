@@ -41,6 +41,7 @@ namespace phot{
 
   //--------------------------------------------------------------------
   PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &/*reg*/) :
+    
     fCurrentVoxel(0),
     fCurrentValue(0.),
     fXmin(0.),
@@ -61,6 +62,7 @@ namespace phot{
     fStoreReflT0(false),
     fIncludePropTime(false),
     fTheLibrary(0)
+    
   {
     this->reconfigure(pset);
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;

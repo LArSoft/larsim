@@ -146,6 +146,7 @@ namespace larg4{
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
   : G4VRestDiscreteProcess(processName, type)
   {
+        G4cout<<"BEA1 timing distribution"<<G4endl;
         SetProcessSubType(25);
 
         fTrackSecondariesFirst = false;
@@ -1105,7 +1106,7 @@ std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_
   delete fexpo;
   delete fint;
   delete fVUVTiming;
-
+  G4cout<<"BEAMAUS timing distribution hecha"<<G4endl;
   return arrival_time_distrb;
 }
 
@@ -1172,7 +1173,7 @@ std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, in
   delete fexpo;
   delete fint;
   delete fVisTiming;
-
+  G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
   return arrival_time_distrb;
 }
 

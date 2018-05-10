@@ -1,3 +1,4 @@
+
 ////////////////////////////////////////////////////////////////////////
 // Chris Backhouse, UCL, Nov 2017
 ////////////////////////////////////////////////////////////////////////
@@ -8,6 +9,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/OpDetGeo.h"
 
 #include <iostream>
 
@@ -69,10 +72,12 @@ namespace phot
 
       d_full->cd();
       TTree* tr_full = new TTree("tr", "tr");
-      float vis, dist;
+      int vox;
+      float dist, vis;
+      tr_full->Branch("vox", &vis);
       tr_full->Branch("dist", &dist);
-      //tr_full->Branch("costheta", &costheta);
       tr_full->Branch("vis", &vis);
+      
 
       const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opdetIdx);
       double xyzopdet[3];
@@ -83,7 +88,6 @@ namespace phot
         Visibility(int vx, float d, float v) : vox(vx), dist(d), vis(v) {}
         int vox;
         float dist;
-        //float costheta;
         float vis;
       };
       TCanvas *c1=new TCanvas("c1", "c1");
@@ -97,15 +101,29 @@ namespace phot
       viss.reserve(voxdef.GetNVoxels());
 
       for(int voxIdx = 0; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
-	//std::cout << voxIdx << " / " << voxdef.GetNVoxels() << std::endl;
+	std::cout << voxIdx << " / " << voxdef.GetNVoxels() << std::endl;
         const TVector3 voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
         const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};
-        dist = opdet.DistanceToPoint(xyzvox);
+        //const double fc_y = 600; //624cm is below the center of the first voxel outside the field cage 
+	//const double fc_z = 1394;
+	//const double fc_x = 350;
+	//int taken = 0;
+	dist = opdet.DistanceToPoint(xyzvox);
         vis = pvs->GetVisibility(xyzvox, opdetIdx);
-        if(dist>120){
-	  g.SetPoint(g.GetN(), dist, vis*dist*dist); //pinta el grafico
-	}
-        tr_full->Fill();
+	//if (dist>125){
+	//if(xyzvox[0]<fc_x && xyzvox[0]>-fc_x){
+	//if (xyzvox[1]<fc_y && xyzvox[1]>-fc_y){
+	//if (xyzvox[2]> -9 && xyzvox[2]<fc_z){
+	 g.SetPoint(g.GetN(), dist, vis*dist*dist); //pinta el grafico
+	 //taken = 1;
+	      //std::cout << "Visibility from library = " << vis << " at vox_y = "<< xyzvox[1] << " at vox_z = "<< xyzvox[2]<<" voxIdx " << voxIdx <<std::endl;
+	      //std::cout << "TAKEN " << taken <<std::endl;
+	      //}
+	      //}
+	      //}
+	  //std::cout << "Visibility from library = " << vis << " at vox_y = "<< xyzvox[1] << " at vox_z = "<< xyzvox[2]<<" voxIdx " << voxIdx <<std::endl;
+	  //std::cout << "TAKEN " << taken <<std::endl;
+	tr_full->Fill();
 	viss.emplace_back(voxIdx, dist, vis);
       } // end for voxIdx
 
@@ -133,10 +151,10 @@ namespace phot
             
       d_fit->cd();
       TTree* tr_fit = new TTree("tr", "tr");
-      int vox;
       tr_fit->Branch("vox", &vox);
-      tr_fit->Branch("vis", &vis);
       tr_fit->Branch("dist", &dist);
+      tr_fit->Branch("vis", &vis);
+      
       
    
       for(const Visibility& v: viss){
@@ -145,24 +163,29 @@ namespace phot
         // way to communicate it or derive it.
         const double obs = v.vis / 2e-5;
         const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 2e-5; //calculated with parametrisation
-
+	
         // Log-likelihood ratio for poisson statistics
         double chisq = 2*(pred-obs);
-        if(obs) chisq += 2*obs*log(obs/pred);
-	vis = pred *2e-5;  //what gets filled v.vis or vis?
+        if(obs) chisq += 2*obs*log(obs/pred); //BEA
+	/*if(obs==0 || obs==1){
+	  chisq = 2; 
+	  }*/
+	vox = v.vox;
 	dist = v.dist;
+	vis = pred *2e-5;  
 	
+	//if (v.taken==1){
 	h.Fill(chisq);
-	tr_fit->Fill();
-       
-        if(chisq > 9){ //equivalent to more than 9 chisquare = 3 sigma    //maybe play around with this cutoff
-	  g2.SetPoint(g2.GetN(), v.dist, obs*2e-5*v.dist*v.dist);
-	  vox = v.vox;
-	  vis = pred*2e-5;
-	  vis = v.vis;
-          dist = v.dist;
-          tr_fit->Fill();
-        }
+	//}
+	
+	
+	if(chisq > 9){ //equivalent to more than 9 chisquare = 3 sigma    //maybe play around with this cutoff
+	      g2.SetPoint(g2.GetN(), v.dist, v.vis*v.dist*v.dist);
+	      vis = obs *2e-5;
+	      tr_fit->Fill();
+	      //std::cout << "V in lib = " << vis << " at vox_y = "<< xyzvox[1] << " at vox_z = "<< xyzvox[2]<<" voxIdx " << voxIdx <<std::endl;
+    	}
+	
       }
 
       d_fit->cd();
@@ -177,7 +200,7 @@ namespace phot
       c1->cd();
       g2.Draw("p same"); 
       //gPad->Print(TString::Format("plots/vis_vs_dist_%d.png", opdetIdx).Data());
-      c1->SaveAs(TString::Format("plots/Chris_vis_vs_dist_%d.png", opdetIdx).Data());
+      //c1->SaveAs(TString::Format("plots/Chris_vis_vs_dist_%d.png", opdetIdx).Data());
       
 
       h.GetXaxis()->SetTitle("#chi^{2}");
@@ -189,7 +212,7 @@ namespace phot
       std::cout <<"*****************************" << std::endl;
       totExceptions += h.Integral(90, -1);
       totPts += h.Integral(0, -1);
-      gPad->Print(TString::Format("plots/chisq_opdet_%d.eps", opdetIdx).Data());
+      //gPad->Print(TString::Format("plots/chisq_opdet_%d.eps", opdetIdx).Data());
             
       delete c1;
       //delete c2;
