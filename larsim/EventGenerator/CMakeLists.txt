@@ -6,7 +6,7 @@ art_make(
                         canvas
                         ${ART_FRAMEWORK_CORE}
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                         ${FHICLCPP}
@@ -34,7 +34,7 @@ art_make(
                            art_Utilities
                            canvas
                            ${MF_MESSAGELOGGER}
-                           ${MF_UTILITIES}
+                           
                            ${FHICLCPP}
                            cetlib cetlib_except
                            ${CLHEP}

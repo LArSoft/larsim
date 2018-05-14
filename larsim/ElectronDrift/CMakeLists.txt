@@ -7,7 +7,7 @@ art_make(
 			lardata_DetectorInfo
 			larevt_SpaceCharge
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         ${CETLIB}
                         ${CLHEP}
@@ -34,7 +34,7 @@ art_make(
                       canvas
 #                      canvas_Persistency_Provenance
                       ${MF_MESSAGELOGGER}
-                      ${MF_UTILITIES}
+                      
                       ${FHICLCPP}
 		      ${CETLIB}
                       ${CLHEP}
