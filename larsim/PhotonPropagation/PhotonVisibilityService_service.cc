@@ -54,6 +54,7 @@ namespace phot{
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
+    fParPropTime(false),
     fTheLibrary(0)
   {
     this->reconfigure(pset);
@@ -81,7 +82,7 @@ namespace phot{
 						 << LibraryFileWithPath
 						 << std::endl;
 	  size_t NVoxels = GetVoxelDef().GetNVoxels();
-	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0);
+	  fTheLibrary->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar);
 	}
       }
       else {
@@ -91,8 +92,9 @@ namespace phot{
         size_t NVoxels = GetVoxelDef().GetNVoxels();
 	mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure " 
 					       << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
-	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0);
+	fTheLibrary->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0, fParPropTime_npar);
       }
+
     }
   }
 
@@ -106,7 +108,7 @@ namespace phot{
       {
 	mf::LogInfo("PhotonVisibilityService") << " Vis service "
 					       << " Storing Library entries to file..." <<std::endl;
-	fTheLibrary->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0);
+	fTheLibrary->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0, fParPropTime_npar);
       }
   }
   
@@ -128,6 +130,10 @@ namespace phot{
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
     fInterpolate          = p.get< bool        >("Interpolate", false);
+
+    fParPropTime          = p.get< bool        >("ParametrisedTimePropagation", false);
+    fParPropTime_npar     = p.get< size_t      >("ParametrisedTimePropagationNParameters", 0);
+    fParPropTime_formula  = p.get< std::string >("ParametrisedTimePropagationFittedFormula","");
     
     if(fUseCryoBoundary)
       {
@@ -433,6 +439,51 @@ namespace phot{
   }
 
   //------------------------------------------------------
+
+
+/////////////****////////////
+
+  const std::vector<float>* PhotonVisibilityService::GetTimingPar(double const* xyz) const
+  {
+    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    return GetLibraryTimingParEntries(VoxID);
+  }
+
+  //------------------------------------------------------
+
+  const std::vector<float>* PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
+  {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    return fTheLibrary->GetTimingPars(VoxID);
+  }
+
+  //------------------------------------------------------     
+
+  void PhotonVisibilityService::SetLibraryTimingParEntry(int VoxID, int OpChannel, float par, size_t parnum)
+  {
+
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    fTheLibrary->SetTimingPar(VoxID,OpChannel,par, parnum);
+
+    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+  }
+
+  //------------------------------------------------------      
+
+  float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID, int Channel, size_t npar) const
+  {
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    return fTheLibrary->GetTimingPar(VoxID, Channel,npar);
+  }
+
+  //------------------------------------------------------
+
   size_t PhotonVisibilityService::NOpChannels() const
   {
     if(fTheLibrary == 0)
