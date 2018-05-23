@@ -4,7 +4,7 @@ standard_photonlibraryanalyzer:
 {
   module_type: "PhotonLibraryAnalyzer"
   alt_x_axis:  "Y"
-  opdet: -1      
+  opdet: 15 
   #50 #-1 #= all op dets
 }
 

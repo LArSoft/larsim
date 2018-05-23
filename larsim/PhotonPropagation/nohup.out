@@ -1,0 +1,2382 @@
+%MSG-i MF_INIT_OK:  Early 15-May-2018 12:15:03 CDT JobSetup
+Messagelogger initialization complete.
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::Import() 15-May-2018 12:15:06 CDT  JobSetup
+Reading geometry from file: /cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6.gdml
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::TGeoManager()  15-May-2018 12:15:06 CDT JobSetup
+Geometry GDMLImport, Geometry imported from GDML created
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::SetTopVolume()  15-May-2018 12:15:06 CDT JobSetup
+Top volume is volWorld. Master volume is volWorld
+%MSG
+%MSG-i Root_Information:  Early TGeoNavigator::BuildCache()  15-May-2018 12:15:06 CDT JobSetup
+--- Maximum geometry depth set to 100
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CheckGeometry()  15-May-2018 12:15:06 CDT JobSetup
+Fixing runtime shapes...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CheckGeometry()  15-May-2018 12:15:06 CDT JobSetup
+...Nothing to fix
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 12:15:06 CDT JobSetup
+Counting nodes...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::Voxelize()  15-May-2018 12:15:06 CDT JobSetup
+Voxelizing...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 12:15:06 CDT JobSetup
+Building cache...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CountLevels()  15-May-2018 12:15:06 CDT JobSetup
+max level = 5, max placements = 1149
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 12:15:06 CDT JobSetup
+67064 nodes/ 3350 volume UID's in Geometry imported from GDML
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 12:15:06 CDT JobSetup
+----------------modeler ready----------------
+%MSG
+%MSG-i GeometryCore:  Early 15-May-2018 12:15:06 CDT JobSetup
+New detector geometry loaded from 
+	/cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6.gdml
+	/cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6_nowires.gdml
+
+%MSG
+%MSG-i GeometryCore:  Early 15-May-2018 12:15:06 CDT JobSetup
+Sorting volumes...
+%MSG
+%MSG-i DuneApaChannelMapAlg:  Early 15-May-2018 12:15:06 CDT JobSetup
+Initializing channel map...
+%MSG
+Cryostat 0:
+  30720 total channels
+  12 APAs
+  For all identical APA:
+    Number of channels per APA = 2560
+    U channels per APA = 800
+    V channels per APA = 800
+    Z channels per APA = 960
+    Pitch in U Plane = 0.4667
+    Pitch in V Plane = 0.4667
+    Pitch in Z Plane = 0.479
+GeoApaChannelGroupService::ctor: Group 0 (apa00) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 1 (apa01) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 2 (apa02) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 3 (apa03) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 4 (apa04) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 5 (apa05) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 6 (apa06) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 7 (apa07) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 8 (apa08) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 9 (apa09) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 10 (apa10) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 11 (apa11) has 2560 channels from 4/4 readout planes.
+%MSG-i SimpleChannelStatusService:  Early 15-May-2018 12:15:06 CDT JobSetup
+Loaded from configuration:
+  - 0 bad channels
+  - 0 noisy channels
+  - largest channel ID: 30719, largest present: 30719
+%MSG
+%MSG-i setupProvider<DetectorPropertiesStandard>:  Early  15-May-2018 12:15:06 CDT JobSetup
+Asked to ignore 1 keys: 'InheritNumberTimeSamples'
+%MSG
+%MSG-i PhotonVisibilityService:  Early 15-May-2018 12:15:06 CDT JobSetup
+PhotonVisbilityService initializing
+%MSG
+%MSG-i SignalShapingServiceDUNE:  Early 15-May-2018 12:15:06 CDT JobSetup
+Getting Filter from .fcl file
+%MSG
+%MSG-i SignalShapingServiceDUNE:  Early 15-May-2018 12:15:06 CDT JobSetup
+ using the field response provided from a .root file 
+%MSG
+Photon library analyzer constructor 
+%MSG-i PhotonLibraryAnalyzer:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:15:06 CDT ModuleBeginJob
+Analyzing photon library - begin
+%MSG
+%MSG-i PhotonVisibilityService:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:15:06 CDT ModuleBeginJob
+PhotonVisibilityService Loading photon library from file ./fit.root for 3000000 voxels and 120 optical detectors.
+%MSG
+%MSG-i PhotonLibraryAnalyzer:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:15:13 CDT ModuleBeginJob
+UpperCorner: 379.662 699.599 1443.53
+LowerCorner: -379.662 -658.099 -302.946
+%MSG
+%MSG-i PhotonLibraryAnalyzer:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:15:13 CDT ModuleBeginJob
+Analyzing photon library - making historams
+%MSG
+%MSG-i PhotonLibraryAnalyzer:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:15:13 CDT ModuleBeginJob
+Analyzing photon library - running through voxels 
+%MSG
+Photon library analyzer at voxel 0
+Photon library analyzer at voxel 10000
+Photon library analyzer at voxel 20000
+Photon library analyzer at voxel 30000
+Photon library analyzer at voxel 40000
+Photon library analyzer at voxel 50000
+Photon library analyzer at voxel 60000
+Photon library analyzer at voxel 70000
+Photon library analyzer at voxel 80000
+Photon library analyzer at voxel 90000
+Photon library analyzer at voxel 100000
+Photon library analyzer at voxel 110000
+Photon library analyzer at voxel 120000
+Photon library analyzer at voxel 130000
+Photon library analyzer at voxel 140000
+Photon library analyzer at voxel 150000
+Photon library analyzer at voxel 160000
+Photon library analyzer at voxel 170000
+Photon library analyzer at voxel 180000
+Photon library analyzer at voxel 190000
+Photon library analyzer at voxel 200000
+Photon library analyzer at voxel 210000
+Photon library analyzer at voxel 220000
+Photon library analyzer at voxel 230000
+Photon library analyzer at voxel 240000
+Photon library analyzer at voxel 250000
+Photon library analyzer at voxel 260000
+Photon library analyzer at voxel 270000
+Photon library analyzer at voxel 280000
+Photon library analyzer at voxel 290000
+Photon library analyzer at voxel 300000
+Photon library analyzer at voxel 310000
+Photon library analyzer at voxel 320000
+Photon library analyzer at voxel 330000
+Photon library analyzer at voxel 340000
+Photon library analyzer at voxel 350000
+Photon library analyzer at voxel 360000
+Photon library analyzer at voxel 370000
+Photon library analyzer at voxel 380000
+Photon library analyzer at voxel 390000
+Photon library analyzer at voxel 400000
+Photon library analyzer at voxel 410000
+Photon library analyzer at voxel 420000
+Photon library analyzer at voxel 430000
+Photon library analyzer at voxel 440000
+Photon library analyzer at voxel 450000
+Photon library analyzer at voxel 460000
+Photon library analyzer at voxel 470000
+Photon library analyzer at voxel 480000
+Photon library analyzer at voxel 490000
+Photon library analyzer at voxel 500000
+Photon library analyzer at voxel 510000
+Photon library analyzer at voxel 520000
+Photon library analyzer at voxel 530000
+Photon library analyzer at voxel 540000
+Photon library analyzer at voxel 550000
+Photon library analyzer at voxel 560000
+Photon library analyzer at voxel 570000
+Photon library analyzer at voxel 580000
+Photon library analyzer at voxel 590000
+Photon library analyzer at voxel 600000
+Photon library analyzer at voxel 610000
+Photon library analyzer at voxel 620000
+Photon library analyzer at voxel 630000
+Photon library analyzer at voxel 640000
+Photon library analyzer at voxel 650000
+Photon library analyzer at voxel 660000
+Photon library analyzer at voxel 670000
+Photon library analyzer at voxel 680000
+Photon library analyzer at voxel 690000
+Photon library analyzer at voxel 700000
+Photon library analyzer at voxel 710000
+Photon library analyzer at voxel 720000
+Photon library analyzer at voxel 730000
+Photon library analyzer at voxel 740000
+Photon library analyzer at voxel 750000
+Photon library analyzer at voxel 760000
+Photon library analyzer at voxel 770000
+Photon library analyzer at voxel 780000
+Photon library analyzer at voxel 790000
+Photon library analyzer at voxel 800000
+Photon library analyzer at voxel 810000
+Photon library analyzer at voxel 820000
+Photon library analyzer at voxel 830000
+Photon library analyzer at voxel 840000
+Photon library analyzer at voxel 850000
+Photon library analyzer at voxel 860000
+Photon library analyzer at voxel 870000
+Photon library analyzer at voxel 880000
+Photon library analyzer at voxel 890000
+Photon library analyzer at voxel 900000
+Photon library analyzer at voxel 910000
+Photon library analyzer at voxel 920000
+Photon library analyzer at voxel 930000
+Photon library analyzer at voxel 940000
+Photon library analyzer at voxel 950000
+Photon library analyzer at voxel 960000
+Photon library analyzer at voxel 970000
+Photon library analyzer at voxel 980000
+Photon library analyzer at voxel 990000
+Photon library analyzer at voxel 1000000
+Photon library analyzer at voxel 1010000
+Photon library analyzer at voxel 1020000
+Photon library analyzer at voxel 1030000
+Photon library analyzer at voxel 1040000
+Photon library analyzer at voxel 1050000
+Photon library analyzer at voxel 1060000
+Photon library analyzer at voxel 1070000
+Photon library analyzer at voxel 1080000
+Photon library analyzer at voxel 1090000
+Photon library analyzer at voxel 1100000
+Photon library analyzer at voxel 1110000
+Photon library analyzer at voxel 1120000
+Photon library analyzer at voxel 1130000
+Photon library analyzer at voxel 1140000
+Photon library analyzer at voxel 1150000
+Photon library analyzer at voxel 1160000
+Photon library analyzer at voxel 1170000
+Photon library analyzer at voxel 1180000
+Photon library analyzer at voxel 1190000
+Photon library analyzer at voxel 1200000
+Photon library analyzer at voxel 1210000
+Photon library analyzer at voxel 1220000
+Photon library analyzer at voxel 1230000
+Photon library analyzer at voxel 1240000
+Photon library analyzer at voxel 1250000
+Photon library analyzer at voxel 1260000
+Photon library analyzer at voxel 1270000
+Photon library analyzer at voxel 1280000
+Photon library analyzer at voxel 1290000
+Photon library analyzer at voxel 1300000
+Photon library analyzer at voxel 1310000
+Photon library analyzer at voxel 1320000
+Photon library analyzer at voxel 1330000
+Photon library analyzer at voxel 1340000
+Photon library analyzer at voxel 1350000
+Photon library analyzer at voxel 1360000
+Photon library analyzer at voxel 1370000
+Photon library analyzer at voxel 1380000
+Photon library analyzer at voxel 1390000
+Photon library analyzer at voxel 1400000
+Photon library analyzer at voxel 1410000
+Photon library analyzer at voxel 1420000
+Photon library analyzer at voxel 1430000
+Photon library analyzer at voxel 1440000
+Photon library analyzer at voxel 1450000
+Photon library analyzer at voxel 1460000
+Photon library analyzer at voxel 1470000
+Photon library analyzer at voxel 1480000
+Photon library analyzer at voxel 1490000
+Photon library analyzer at voxel 1500000
+Photon library analyzer at voxel 1510000
+Photon library analyzer at voxel 1520000
+Photon library analyzer at voxel 1530000
+Photon library analyzer at voxel 1540000
+Photon library analyzer at voxel 1550000
+Photon library analyzer at voxel 1560000
+Photon library analyzer at voxel 1570000
+Photon library analyzer at voxel 1580000
+Photon library analyzer at voxel 1590000
+Photon library analyzer at voxel 1600000
+Photon library analyzer at voxel 1610000
+Photon library analyzer at voxel 1620000
+Photon library analyzer at voxel 1630000
+Photon library analyzer at voxel 1640000
+Photon library analyzer at voxel 1650000
+Photon library analyzer at voxel 1660000
+Photon library analyzer at voxel 1670000
+Photon library analyzer at voxel 1680000
+Photon library analyzer at voxel 1690000
+Photon library analyzer at voxel 1700000
+Photon library analyzer at voxel 1710000
+Photon library analyzer at voxel 1720000
+Photon library analyzer at voxel 1730000
+Photon library analyzer at voxel 1740000
+Photon library analyzer at voxel 1750000
+Photon library analyzer at voxel 1760000
+Photon library analyzer at voxel 1770000
+Photon library analyzer at voxel 1780000
+Photon library analyzer at voxel 1790000
+Photon library analyzer at voxel 1800000
+Photon library analyzer at voxel 1810000
+Photon library analyzer at voxel 1820000
+Photon library analyzer at voxel 1830000
+Photon library analyzer at voxel 1840000
+Photon library analyzer at voxel 1850000
+Photon library analyzer at voxel 1860000
+Photon library analyzer at voxel 1870000
+Photon library analyzer at voxel 1880000
+Photon library analyzer at voxel 1890000
+Photon library analyzer at voxel 1900000
+Photon library analyzer at voxel 1910000
+Photon library analyzer at voxel 1920000
+Photon library analyzer at voxel 1930000
+Photon library analyzer at voxel 1940000
+Photon library analyzer at voxel 1950000
+Photon library analyzer at voxel 1960000
+Photon library analyzer at voxel 1970000
+Photon library analyzer at voxel 1980000
+Photon library analyzer at voxel 1990000
+Photon library analyzer at voxel 2000000
+Photon library analyzer at voxel 2010000
+Photon library analyzer at voxel 2020000
+Photon library analyzer at voxel 2030000
+Photon library analyzer at voxel 2040000
+Photon library analyzer at voxel 2050000
+Photon library analyzer at voxel 2060000
+Photon library analyzer at voxel 2070000
+Photon library analyzer at voxel 2080000
+Photon library analyzer at voxel 2090000
+Photon library analyzer at voxel 2100000
+Photon library analyzer at voxel 2110000
+Photon library analyzer at voxel 2120000
+Photon library analyzer at voxel 2130000
+Photon library analyzer at voxel 2140000
+Photon library analyzer at voxel 2150000
+Photon library analyzer at voxel 2160000
+Photon library analyzer at voxel 2170000
+Photon library analyzer at voxel 2180000
+Photon library analyzer at voxel 2190000
+Photon library analyzer at voxel 2200000
+Photon library analyzer at voxel 2210000
+Photon library analyzer at voxel 2220000
+Photon library analyzer at voxel 2230000
+Photon library analyzer at voxel 2240000
+Photon library analyzer at voxel 2250000
+Photon library analyzer at voxel 2260000
+Photon library analyzer at voxel 2270000
+Photon library analyzer at voxel 2280000
+Photon library analyzer at voxel 2290000
+Photon library analyzer at voxel 2300000
+Photon library analyzer at voxel 2310000
+Photon library analyzer at voxel 2320000
+Photon library analyzer at voxel 2330000
+Photon library analyzer at voxel 2340000
+Photon library analyzer at voxel 2350000
+Photon library analyzer at voxel 2360000
+Photon library analyzer at voxel 2370000
+Photon library analyzer at voxel 2380000
+Photon library analyzer at voxel 2390000
+Photon library analyzer at voxel 2400000
+Photon library analyzer at voxel 2410000
+Photon library analyzer at voxel 2420000
+Photon library analyzer at voxel 2430000
+Photon library analyzer at voxel 2440000
+Photon library analyzer at voxel 2450000
+Photon library analyzer at voxel 2460000
+Photon library analyzer at voxel 2470000
+Photon library analyzer at voxel 2480000
+Photon library analyzer at voxel 2490000
+Photon library analyzer at voxel 2500000
+Photon library analyzer at voxel 2510000
+Photon library analyzer at voxel 2520000
+Photon library analyzer at voxel 2530000
+Photon library analyzer at voxel 2540000
+Photon library analyzer at voxel 2550000
+Photon library analyzer at voxel 2560000
+Photon library analyzer at voxel 2570000
+Photon library analyzer at voxel 2580000
+Photon library analyzer at voxel 2590000
+Photon library analyzer at voxel 2600000
+Photon library analyzer at voxel 2610000
+Photon library analyzer at voxel 2620000
+Photon library analyzer at voxel 2630000
+Photon library analyzer at voxel 2640000
+Photon library analyzer at voxel 2650000
+Photon library analyzer at voxel 2660000
+Photon library analyzer at voxel 2670000
+Photon library analyzer at voxel 2680000
+Photon library analyzer at voxel 2690000
+Photon library analyzer at voxel 2700000
+Photon library analyzer at voxel 2710000
+Photon library analyzer at voxel 2720000
+Photon library analyzer at voxel 2730000
+Photon library analyzer at voxel 2740000
+Photon library analyzer at voxel 2750000
+Photon library analyzer at voxel 2760000
+Photon library analyzer at voxel 2770000
+Photon library analyzer at voxel 2780000
+Photon library analyzer at voxel 2790000
+Photon library analyzer at voxel 2800000
+Photon library analyzer at voxel 2810000
+Photon library analyzer at voxel 2820000
+Photon library analyzer at voxel 2830000
+Photon library analyzer at voxel 2840000
+Photon library analyzer at voxel 2850000
+Photon library analyzer at voxel 2860000
+Photon library analyzer at voxel 2870000
+Photon library analyzer at voxel 2880000
+Photon library analyzer at voxel 2890000
+Photon library analyzer at voxel 2900000
+Photon library analyzer at voxel 2910000
+Photon library analyzer at voxel 2920000
+Photon library analyzer at voxel 2930000
+Photon library analyzer at voxel 2940000
+Photon library analyzer at voxel 2950000
+Photon library analyzer at voxel 2960000
+Photon library analyzer at voxel 2970000
+Photon library analyzer at voxel 2980000
+Photon library analyzer at voxel 2990000
+%MSG-i PhotonLibraryAnalyzer:  PhotonLibraryAnalyzer:analyze@BeginJob  15-May-2018 12:16:36 CDT ModuleBeginJob
+Analyzing photon library - end
+%MSG
+%MSG-w Geometry:  BeginRun 15-May-2018 12:16:36 CDT run: 1
+cannot find sumdata::RunData object to grab detector name
+this is expected if generating MC files
+using default geometry from configuration file
+
+%MSG
+Begin processing the 1st record. run: 1 subRun: 0 event: 1 at 15-May-2018 12:16:36 CDT
+
+============================================================================================================================
+TimeTracker printout (sec)                    Min           Avg           Max         Median          RMS         nEvts   
+============================================================================================================================
+Full event                                0.000243222   0.000243222   0.000243222   0.000243222        0            1     
+----------------------------------------------------------------------------------------------------------------------------
+source:EmptyEvent(read)                   0.000132992   0.000132992   0.000132992   0.000132992        0            1     
+end_path:analyze:PhotonLibraryAnalyzer    3.9516e-05    3.9516e-05    3.9516e-05    3.9516e-05         0            1     
+============================================================================================================================
+%MSG-i NuRandomService:  PhotonLibraryAnalyzer:analyze@EndJob  15-May-2018 12:16:36 CDT ModuleEndJob
+
+Summary of seeds computed by the NuRandomService
+Random policy: 'random'
+  master seed: 488529263
+  seed within: [ 1 ; 900000000 ]
+
+%MSG
+
+====================================================================================================
+MemoryTracker summary (base-10 MB units used)
+
+  Peak virtual memory usage (VmPeak)  : 5103.67 MB
+  Peak resident set size usage (VmHWM): 1166 MB
+====================================================================================================
+
+TrigReport ---------- Event  Summary ------------
+TrigReport Events total = 1 passed = 1 failed = 0
+
+TrigReport ------ Modules in End-Path: end_path ------------
+TrigReport  Trig Bit#        Run    Success      Error Name
+TrigReport     0    0          1          1          0 analyze
+
+TimeReport ---------- Time  Summary ---[sec]----
+TimeReport CPU = 89.309422 Real = 89.435692
+
+MemReport  ---------- Memory  Summary ---[base-10 MB]----
+MemReport  VmPeak = 5103.67 VmHWM = 1166
+
+Art has completed and will exit with status 0.
+%MSG-i MF_INIT_OK:  Early 15-May-2018 14:16:43 CDT JobSetup
+Messagelogger initialization complete.
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::Import() 15-May-2018 14:16:46 CDT  JobSetup
+Reading geometry from file: /cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6.gdml
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::TGeoManager()  15-May-2018 14:16:46 CDT JobSetup
+Geometry GDMLImport, Geometry imported from GDML created
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::SetTopVolume()  15-May-2018 14:16:46 CDT JobSetup
+Top volume is volWorld. Master volume is volWorld
+%MSG
+%MSG-i Root_Information:  Early TGeoNavigator::BuildCache()  15-May-2018 14:16:46 CDT JobSetup
+--- Maximum geometry depth set to 100
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CheckGeometry()  15-May-2018 14:16:46 CDT JobSetup
+Fixing runtime shapes...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CheckGeometry()  15-May-2018 14:16:46 CDT JobSetup
+...Nothing to fix
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 14:16:46 CDT JobSetup
+Counting nodes...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::Voxelize()  15-May-2018 14:16:46 CDT JobSetup
+Voxelizing...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 14:16:46 CDT JobSetup
+Building cache...
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CountLevels()  15-May-2018 14:16:46 CDT JobSetup
+max level = 5, max placements = 1149
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 14:16:46 CDT JobSetup
+67064 nodes/ 3350 volume UID's in Geometry imported from GDML
+%MSG
+%MSG-i Root_Information:  Early TGeoManager::CloseGeometry()  15-May-2018 14:16:46 CDT JobSetup
+----------------modeler ready----------------
+%MSG
+%MSG-i GeometryCore:  Early 15-May-2018 14:16:46 CDT JobSetup
+New detector geometry loaded from 
+	/cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6.gdml
+	/cvmfs/dune.opensciencegrid.org/products/dune/dunetpc/v06_70_01/gdml/dune10kt_v2_1x2x6_nowires.gdml
+
+%MSG
+%MSG-i GeometryCore:  Early 15-May-2018 14:16:46 CDT JobSetup
+Sorting volumes...
+%MSG
+%MSG-i DuneApaChannelMapAlg:  Early 15-May-2018 14:16:46 CDT JobSetup
+Initializing channel map...
+%MSG
+Cryostat 0:
+  30720 total channels
+  12 APAs
+  For all identical APA:
+    Number of channels per APA = 2560
+    U channels per APA = 800
+    V channels per APA = 800
+    Z channels per APA = 960
+    Pitch in U Plane = 0.4667
+    Pitch in V Plane = 0.4667
+    Pitch in Z Plane = 0.479
+GeoApaChannelGroupService::ctor: Group 0 (apa00) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 1 (apa01) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 2 (apa02) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 3 (apa03) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 4 (apa04) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 5 (apa05) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 6 (apa06) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 7 (apa07) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 8 (apa08) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 9 (apa09) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 10 (apa10) has 2560 channels from 4/4 readout planes.
+GeoApaChannelGroupService::ctor: Group 11 (apa11) has 2560 channels from 4/4 readout planes.
+%MSG-i SimpleChannelStatusService:  Early 15-May-2018 14:16:46 CDT JobSetup
+Loaded from configuration:
+  - 0 bad channels
+  - 0 noisy channels
+  - largest channel ID: 30719, largest present: 30719
+%MSG
+%MSG-i setupProvider<DetectorPropertiesStandard>:  Early  15-May-2018 14:16:46 CDT JobSetup
+Asked to ignore 1 keys: 'InheritNumberTimeSamples'
+%MSG
+%MSG-i PhotonVisibilityService:  Early 15-May-2018 14:16:46 CDT JobSetup
+PhotonVisbilityService initializing
+%MSG
+%MSG-i SignalShapingServiceDUNE:  Early 15-May-2018 14:16:46 CDT JobSetup
+Getting Filter from .fcl file
+%MSG
+%MSG-i SignalShapingServiceDUNE:  Early 15-May-2018 14:16:46 CDT JobSetup
+ using the field response provided from a .root file 
+%MSG
+3000000 voxels for each of 120 OpDets
+
+0 / 120
+%MSG-i PhotonVisibilityService:  CreateHybridLibrary:create@Construction  15-May-2018 14:16:46 CDT ModuleConstruction
+PhotonVisibilityService Loading photon library from file ./lib_without_att.root for 3000000 voxels and 120 optical detectors.
+%MSG
+%MSG-i PhotonLibrary:  CreateHybridLibrary:create@Construction  15-May-2018 14:16:46 CDT ModuleConstruction
+Reading photon library from input file: ./lib_without_att.root
+%MSG
+%MSG-i PhotonLibrary:  CreateHybridLibrary:create@Construction  15-May-2018 14:17:12 CDT ModuleConstruction
+Photon lookup table size : 3000000 voxels,  120 channels
+%MSG
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  3.12059e+08
+NDf                       =      1973306
+Edm                       =  9.91976e-06
+NCalls                    =          128
+Constant                  =      5.44622   +/-   0.000705938 
+Slope                     =  -0.00433157   +/-   2.19388e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:28 CDT ModuleConstruction
+png file plots/vis_vs_dist_0.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0149024
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:28 CDT ModuleConstruction
+eps file plots/chisq_opdet_0.eps has been created
+%MSG
+1 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  6.16109e+08
+NDf                       =      1973306
+Edm                       =  3.50153e-09
+NCalls                    =          113
+Constant                  =      5.72329   +/-   0.000570669 
+Slope                     =  -0.00395243   +/-   1.71654e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:43 CDT ModuleConstruction
+png file plots/vis_vs_dist_1.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0281527
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:43 CDT ModuleConstruction
+eps file plots/chisq_opdet_1.eps has been created
+%MSG
+2 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  7.70077e+08
+NDf                       =      1973306
+Edm                       =  1.12301e-07
+NCalls                    =          111
+Constant                  =      5.79218   +/-   0.000516116 
+Slope                     =  -0.00377669   +/-   1.59886e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:56 CDT ModuleConstruction
+png file plots/vis_vs_dist_2.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0391657
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:17:57 CDT ModuleConstruction
+eps file plots/chisq_opdet_2.eps has been created
+%MSG
+3 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  9.18799e+08
+NDf                       =      1973306
+Edm                       =  9.02932e-06
+NCalls                    =          113
+Constant                  =      5.82495   +/-   0.000529861 
+Slope                     =  -0.00369954   +/-   1.55742e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:11 CDT ModuleConstruction
+png file plots/vis_vs_dist_3.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.047503
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:11 CDT ModuleConstruction
+eps file plots/chisq_opdet_3.eps has been created
+%MSG
+4 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  9.98187e+08
+NDf                       =      1973306
+Edm                       =  4.62924e-10
+NCalls                    =          104
+Constant                  =      5.84222   +/-   0.000529511 
+Slope                     =  -0.00366224   +/-   1.54292e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:25 CDT ModuleConstruction
+png file plots/vis_vs_dist_4.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0529188
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:25 CDT ModuleConstruction
+eps file plots/chisq_opdet_4.eps has been created
+%MSG
+5 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.04485e+09
+NDf                       =      1973306
+Edm                       =  9.44351e-06
+NCalls                    =          100
+Constant                  =      5.84947   +/-   0.000534664 
+Slope                     =  -0.00364213   +/-   1.54003e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:39 CDT ModuleConstruction
+png file plots/vis_vs_dist_5.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0561499
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:39 CDT ModuleConstruction
+eps file plots/chisq_opdet_5.eps has been created
+%MSG
+6 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.10166e+09
+NDf                       =      1973306
+Edm                       =  9.66958e-06
+NCalls                    =          112
+Constant                  =      5.84869   +/-   0.000547164 
+Slope                     =  -0.00362822   +/-   1.55961e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:54 CDT ModuleConstruction
+png file plots/vis_vs_dist_6.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0576281
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:18:54 CDT ModuleConstruction
+eps file plots/chisq_opdet_6.eps has been created
+%MSG
+7 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.08864e+09
+NDf                       =      1973306
+Edm                       =  2.55687e-06
+NCalls                    =           93
+Constant                  =      5.84251   +/-   0.000545148 
+Slope                     =  -0.00362035   +/-   1.54045e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:08 CDT ModuleConstruction
+png file plots/vis_vs_dist_7.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0579722
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:08 CDT ModuleConstruction
+eps file plots/chisq_opdet_7.eps has been created
+%MSG
+8 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.0976e+09
+NDf                       =      1973306
+Edm                       =  9.35577e-06
+NCalls                    =          115
+Constant                  =      5.82526   +/-   0.00055679  
+Slope                     =  -0.00361279   +/-   1.56278e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:24 CDT ModuleConstruction
+png file plots/vis_vs_dist_8.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0566865
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:24 CDT ModuleConstruction
+eps file plots/chisq_opdet_8.eps has been created
+%MSG
+9 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.00071e+09
+NDf                       =      1973306
+Edm                       =  1.02626e-07
+NCalls                    =          105
+Constant                  =      5.76881   +/-   0.00057875  
+Slope                     =  -0.00360404   +/-   1.64607e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:39 CDT ModuleConstruction
+png file plots/vis_vs_dist_9.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.053162
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:39 CDT ModuleConstruction
+eps file plots/chisq_opdet_9.eps has been created
+%MSG
+10 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  9.95784e+08
+NDf                       =      1973306
+Edm                       =  3.16078e-06
+NCalls                    =          109
+Constant                  =      5.76798   +/-   0.000559607 
+Slope                     =  -0.00360114   +/-   1.56301e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:55 CDT ModuleConstruction
+png file plots/vis_vs_dist_10.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0531149
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:19:55 CDT ModuleConstruction
+eps file plots/chisq_opdet_10.eps has been created
+%MSG
+11 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.10083e+09
+NDf                       =      1973306
+Edm                       =  7.08374e-06
+NCalls                    =          109
+Constant                  =      5.82514   +/-   0.0005577   
+Slope                     =  -0.00361267   +/-   1.56542e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:09 CDT ModuleConstruction
+png file plots/vis_vs_dist_11.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0565107
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:09 CDT ModuleConstruction
+eps file plots/chisq_opdet_11.eps has been created
+%MSG
+12 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.08553e+09
+NDf                       =      1973306
+Edm                       =  9.15478e-06
+NCalls                    =          115
+Constant                  =      5.84201   +/-   0.000545442 
+Slope                     =   -0.0036189   +/-   1.541e-06   
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:25 CDT ModuleConstruction
+png file plots/vis_vs_dist_12.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0578186
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:25 CDT ModuleConstruction
+eps file plots/chisq_opdet_12.eps has been created
+%MSG
+13 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.10021e+09
+NDf                       =      1973306
+Edm                       =  9.56518e-06
+NCalls                    =          112
+Constant                  =      5.84904   +/-   0.000546484 
+Slope                     =  -0.00362833   +/-   1.55771e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:40 CDT ModuleConstruction
+png file plots/vis_vs_dist_13.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0576418
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:40 CDT ModuleConstruction
+eps file plots/chisq_opdet_13.eps has been created
+%MSG
+14 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.04916e+09
+NDf                       =      1973306
+Edm                       =  9.32948e-06
+NCalls                    =          114
+Constant                  =      5.84977   +/-   0.000535562 
+Slope                     =  -0.00364222   +/-   1.54272e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:55 CDT ModuleConstruction
+png file plots/vis_vs_dist_14.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0559152
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:20:55 CDT ModuleConstruction
+eps file plots/chisq_opdet_14.eps has been created
+%MSG
+15 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  9.92363e+08
+NDf                       =      1973306
+Edm                       =  3.86971e-06
+NCalls                    =          114
+Constant                  =      5.84225   +/-   0.000529347 
+Slope                     =  -0.00366116   +/-   1.54062e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:10 CDT ModuleConstruction
+png file plots/vis_vs_dist_15.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0527981
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:10 CDT ModuleConstruction
+eps file plots/chisq_opdet_15.eps has been created
+%MSG
+16 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  9.22436e+08
+NDf                       =      1973306
+Edm                       =  8.79714e-06
+NCalls                    =           98
+Constant                  =      5.82538   +/-   0.000530655 
+Slope                     =  -0.00369886   +/-   1.55947e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:24 CDT ModuleConstruction
+png file plots/vis_vs_dist_16.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0472729
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:24 CDT ModuleConstruction
+eps file plots/chisq_opdet_16.eps has been created
+%MSG
+17 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  7.68247e+08
+NDf                       =      1973306
+Edm                       =  7.07751e-06
+NCalls                    =          128
+Constant                  =      5.79335   +/-   0.000527134 
+Slope                     =  -0.00377773   +/-   1.56354e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:39 CDT ModuleConstruction
+png file plots/vis_vs_dist_17.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0389924
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:39 CDT ModuleConstruction
+eps file plots/chisq_opdet_17.eps has been created
+%MSG
+18 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  6.13159e+08
+NDf                       =      1973306
+Edm                       =  2.27748e-06
+NCalls                    =          109
+Constant                  =      5.72467   +/-   0.000570769 
+Slope                     =   -0.0039558   +/-   1.71924e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:52 CDT ModuleConstruction
+png file plots/vis_vs_dist_18.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0277595
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:21:52 CDT ModuleConstruction
+eps file plots/chisq_opdet_18.eps has been created
+%MSG
+19 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  3.14433e+08
+NDf                       =      1973306
+Edm                       =  3.34114e-08
+NCalls                    =          114
+Constant                  =      5.44824   +/-   0.000707208 
+Slope                     =  -0.00433318   +/-   2.19583e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:06 CDT ModuleConstruction
+png file plots/vis_vs_dist_19.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0147346
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:06 CDT ModuleConstruction
+eps file plots/chisq_opdet_19.eps has been created
+%MSG
+20 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.15115e+08
+NDf                       =      1973306
+Edm                       =  4.97722e-06
+NCalls                    =          103
+Constant                  =      5.51806   +/-   0.000654507 
+Slope                     =   -0.0040822   +/-   1.90884e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:21 CDT ModuleConstruction
+png file plots/vis_vs_dist_20.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0196523
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:21 CDT ModuleConstruction
+eps file plots/chisq_opdet_20.eps has been created
+%MSG
+21 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.16529e+08
+NDf                       =      1973306
+Edm                       =  6.58647e-06
+NCalls                    =          106
+Constant                  =       5.8486   +/-   0.000518911 
+Slope                     =  -0.00381124   +/-   1.50408e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:36 CDT ModuleConstruction
+png file plots/vis_vs_dist_21.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0323563
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:36 CDT ModuleConstruction
+eps file plots/chisq_opdet_21.eps has been created
+%MSG
+22 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.02489e+09
+NDf                       =      1973306
+Edm                       =  7.09768e-06
+NCalls                    =          124
+Constant                  =      5.94549   +/-   0.000475284 
+Slope                     =   -0.0036937   +/-   1.37917e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:52 CDT ModuleConstruction
+png file plots/vis_vs_dist_22.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.042336
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:22:52 CDT ModuleConstruction
+eps file plots/chisq_opdet_22.eps has been created
+%MSG
+23 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.18762e+09
+NDf                       =      1973306
+Edm                       =  4.46902e-05
+NCalls                    =          106
+Constant                  =      5.99722   +/-   0.000467601 
+Slope                     =  -0.00366148   +/-   1.36019e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:07 CDT ModuleConstruction
+png file plots/vis_vs_dist_23.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0483163
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:07 CDT ModuleConstruction
+eps file plots/chisq_opdet_23.eps has been created
+%MSG
+24 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =    1.266e+09
+NDf                       =      1973306
+Edm                       =   5.8635e-07
+NCalls                    =           90
+Constant                  =      6.02876   +/-   0.000461283 
+Slope                     =  -0.00365589   +/-   1.33909e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:21 CDT ModuleConstruction
+png file plots/vis_vs_dist_24.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0505339
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:21 CDT ModuleConstruction
+eps file plots/chisq_opdet_24.eps has been created
+%MSG
+25 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.30924e+09
+NDf                       =      1973306
+Edm                       =  2.94121e-06
+NCalls                    =          104
+Constant                  =      6.04551   +/-   0.00046166  
+Slope                     =  -0.00365389   +/-   1.33016e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:36 CDT ModuleConstruction
+png file plots/vis_vs_dist_25.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0505466
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:36 CDT ModuleConstruction
+eps file plots/chisq_opdet_25.eps has been created
+%MSG
+26 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.36438e+09
+NDf                       =      1973306
+Edm                       =  7.10744e-06
+NCalls                    =          106
+Constant                  =      6.05068   +/-   0.00046754  
+Slope                     =  -0.00364821   +/-   1.33485e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:52 CDT ModuleConstruction
+png file plots/vis_vs_dist_26.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0495919
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:23:52 CDT ModuleConstruction
+eps file plots/chisq_opdet_26.eps has been created
+%MSG
+27 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.35061e+09
+NDf                       =      1973306
+Edm                       =  3.67637e-06
+NCalls                    =          118
+Constant                  =      6.04569   +/-   0.000465    
+Slope                     =  -0.00363789   +/-   1.31821e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:11 CDT ModuleConstruction
+png file plots/vis_vs_dist_27.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0489087
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:11 CDT ModuleConstruction
+eps file plots/chisq_opdet_27.eps has been created
+%MSG
+28 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.3605e+09
+NDf                       =      1973306
+Edm                       =  6.52526e-06
+NCalls                    =           98
+Constant                  =      6.02778   +/-   0.000473436 
+Slope                     =   -0.0036245   +/-   1.32922e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:27 CDT ModuleConstruction
+png file plots/vis_vs_dist_28.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0477969
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:27 CDT ModuleConstruction
+eps file plots/chisq_opdet_28.eps has been created
+%MSG
+29 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.24801e+09
+NDf                       =      1973306
+Edm                       =  1.01298e-08
+NCalls                    =           88
+Constant                  =      5.96778   +/-   0.000477488 
+Slope                     =    -0.003606   +/-   1.33366e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:43 CDT ModuleConstruction
+png file plots/vis_vs_dist_29.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0451653
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:43 CDT ModuleConstruction
+eps file plots/chisq_opdet_29.eps has been created
+%MSG
+30 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.24161e+09
+NDf                       =      1973306
+Edm                       =  4.01444e-06
+NCalls                    =           94
+Constant                  =       5.9675   +/-   0.000477489 
+Slope                     =  -0.00360545   +/-   1.33302e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:59 CDT ModuleConstruction
+png file plots/vis_vs_dist_30.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0449899
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:24:59 CDT ModuleConstruction
+eps file plots/chisq_opdet_30.eps has been created
+%MSG
+31 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.36274e+09
+NDf                       =      1973306
+Edm                       =   7.8662e-06
+NCalls                    =           96
+Constant                  =       6.0277   +/-   0.000473845 
+Slope                     =  -0.00362397   +/-   1.33038e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:14 CDT ModuleConstruction
+png file plots/vis_vs_dist_31.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0476879
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:14 CDT ModuleConstruction
+eps file plots/chisq_opdet_31.eps has been created
+%MSG
+32 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.35017e+09
+NDf                       =      1973306
+Edm                       =  6.53025e-06
+NCalls                    =           93
+Constant                  =      6.04615   +/-   0.000465502 
+Slope                     =  -0.00363911   +/-   1.31728e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:30 CDT ModuleConstruction
+png file plots/vis_vs_dist_32.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0487496
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:31 CDT ModuleConstruction
+eps file plots/chisq_opdet_32.eps has been created
+%MSG
+33 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.36062e+09
+NDf                       =      1973306
+Edm                       =  6.61904e-06
+NCalls                    =          100
+Constant                  =      6.05067   +/-   0.000466768 
+Slope                     =  -0.00364744   +/-   1.33261e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:48 CDT ModuleConstruction
+png file plots/vis_vs_dist_33.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0497363
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:25:48 CDT ModuleConstruction
+eps file plots/chisq_opdet_33.eps has been created
+%MSG
+34 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.31092e+09
+NDf                       =      1973306
+Edm                       =  1.42583e-09
+NCalls                    =           91
+Constant                  =      6.04542   +/-   0.000461068 
+Slope                     =  -0.00365315   +/-   1.32696e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:04 CDT ModuleConstruction
+png file plots/vis_vs_dist_34.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.050275
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:04 CDT ModuleConstruction
+eps file plots/chisq_opdet_34.eps has been created
+%MSG
+35 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.2582e+09
+NDf                       =      1973306
+Edm                       =  5.37604e-06
+NCalls                    =          115
+Constant                  =      6.02874   +/-   0.000461655 
+Slope                     =  -0.00365518   +/-   1.33935e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:21 CDT ModuleConstruction
+png file plots/vis_vs_dist_35.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0504082
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:21 CDT ModuleConstruction
+eps file plots/chisq_opdet_35.eps has been created
+%MSG
+36 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.18918e+09
+NDf                       =      1973306
+Edm                       =  5.92805e-06
+NCalls                    =          104
+Constant                  =      5.99783   +/-   0.000468118 
+Slope                     =  -0.00366126   +/-   1.36146e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:37 CDT ModuleConstruction
+png file plots/vis_vs_dist_36.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0480391
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:37 CDT ModuleConstruction
+eps file plots/chisq_opdet_36.eps has been created
+%MSG
+37 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.01858e+09
+NDf                       =      1973306
+Edm                       =  6.85485e-06
+NCalls                    =          113
+Constant                  =      5.94634   +/-   0.000473585 
+Slope                     =  -0.00369389   +/-   1.37393e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:53 CDT ModuleConstruction
+png file plots/vis_vs_dist_37.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0417705
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:26:53 CDT ModuleConstruction
+eps file plots/chisq_opdet_37.eps has been created
+%MSG
+38 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.12247e+08
+NDf                       =      1973306
+Edm                       =  6.22851e-06
+NCalls                    =          111
+Constant                  =      5.85027   +/-   0.000517638 
+Slope                     =  -0.00381311   +/-   1.50032e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:09 CDT ModuleConstruction
+png file plots/vis_vs_dist_38.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0320122
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:09 CDT ModuleConstruction
+eps file plots/chisq_opdet_38.eps has been created
+%MSG
+39 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.16987e+08
+NDf                       =      1973306
+Edm                       =  4.76404e-06
+NCalls                    =          101
+Constant                  =      5.52036   +/-   0.000657234 
+Slope                     =  -0.00408746   +/-   1.91711e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:24 CDT ModuleConstruction
+png file plots/vis_vs_dist_39.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0193573
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:24 CDT ModuleConstruction
+eps file plots/chisq_opdet_39.eps has been created
+%MSG
+40 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.55924e+08
+NDf                       =      1973306
+Edm                       =  3.35151e-06
+NCalls                    =          103
+Constant                  =      5.52094   +/-   0.000670966 
+Slope                     =  -0.00406286   +/-   1.88766e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:38 CDT ModuleConstruction
+png file plots/vis_vs_dist_40.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0207717
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:38 CDT ModuleConstruction
+eps file plots/chisq_opdet_40.eps has been created
+%MSG
+41 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.92859e+08
+NDf                       =      1973306
+Edm                       =  8.22426e-06
+NCalls                    =          109
+Constant                  =      5.85576   +/-   0.000529245 
+Slope                     =  -0.00378835   +/-   1.4782e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:54 CDT ModuleConstruction
+png file plots/vis_vs_dist_41.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0339445
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:27:54 CDT ModuleConstruction
+eps file plots/chisq_opdet_41.eps has been created
+%MSG
+42 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.11985e+09
+NDf                       =      1973306
+Edm                       =  4.00235e-05
+NCalls                    =          102
+Constant                  =      5.95565   +/-   0.000481551 
+Slope                     =  -0.00366664   +/-   1.34514e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:10 CDT ModuleConstruction
+png file plots/vis_vs_dist_42.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.043459
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:10 CDT ModuleConstruction
+eps file plots/chisq_opdet_42.eps has been created
+%MSG
+43 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.29557e+09
+NDf                       =      1973306
+Edm                       =   2.2365e-06
+NCalls                    =          108
+Constant                  =      6.00995   +/-   0.000471281 
+Slope                     =  -0.00363055   +/-   1.3179e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:26 CDT ModuleConstruction
+png file plots/vis_vs_dist_43.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0489913
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:26 CDT ModuleConstruction
+eps file plots/chisq_opdet_43.eps has been created
+%MSG
+44 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.38032e+09
+NDf                       =      1973306
+Edm                       =  8.75229e-06
+NCalls                    =           98
+Constant                  =      6.04349   +/-   0.000465557 
+Slope                     =  -0.00362456   +/-   1.30007e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:44 CDT ModuleConstruction
+png file plots/vis_vs_dist_44.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0506363
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:44 CDT ModuleConstruction
+eps file plots/chisq_opdet_44.eps has been created
+%MSG
+45 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.42447e+09
+NDf                       =      1973306
+Edm                       =  8.08444e-06
+NCalls                    =           97
+Constant                  =      6.06231   +/-   0.000462619 
+Slope                     =  -0.00362507   +/-   1.28402e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:59 CDT ModuleConstruction
+png file plots/vis_vs_dist_45.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0498711
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:28:59 CDT ModuleConstruction
+eps file plots/chisq_opdet_45.eps has been created
+%MSG
+46 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.47938e+09
+NDf                       =      1973306
+Edm                       =    6.903e-06
+NCalls                    =           88
+Constant                  =      6.06925   +/-   0.000466186 
+Slope                     =  -0.00362117   +/-   1.28335e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:15 CDT ModuleConstruction
+png file plots/vis_vs_dist_46.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0484471
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:15 CDT ModuleConstruction
+eps file plots/chisq_opdet_46.eps has been created
+%MSG
+47 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.46525e+09
+NDf                       =      1973306
+Edm                       =   6.3583e-06
+NCalls                    =          106
+Constant                  =      6.06508   +/-   0.000465255 
+Slope                     =  -0.00361272   +/-   1.2699e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:35 CDT ModuleConstruction
+png file plots/vis_vs_dist_47.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0471513
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:35 CDT ModuleConstruction
+eps file plots/chisq_opdet_47.eps has been created
+%MSG
+48 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.4713e+09
+NDf                       =      1973306
+Edm                       =  5.12363e-06
+NCalls                    =          109
+Constant                  =      6.04721   +/-   0.000472553 
+Slope                     =  -0.00359934   +/-   1.2806e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:52 CDT ModuleConstruction
+png file plots/vis_vs_dist_48.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0457045
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:29:52 CDT ModuleConstruction
+eps file plots/chisq_opdet_48.eps has been created
+%MSG
+49 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.34504e+09
+NDf                       =      1973306
+Edm                       =  6.63841e-06
+NCalls                    =           82
+Constant                  =      5.98754   +/-   0.000477259 
+Slope                     =  -0.00358294   +/-   1.28687e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:07 CDT ModuleConstruction
+png file plots/vis_vs_dist_49.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0426355
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:07 CDT ModuleConstruction
+eps file plots/chisq_opdet_49.eps has been created
+%MSG
+50 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.34158e+09
+NDf                       =      1973306
+Edm                       =  5.60177e-06
+NCalls                    =          102
+Constant                  =      5.98751   +/-   0.000476605 
+Slope                     =  -0.00358237   +/-   1.28504e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:27 CDT ModuleConstruction
+png file plots/vis_vs_dist_50.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0426157
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:27 CDT ModuleConstruction
+eps file plots/chisq_opdet_50.eps has been created
+%MSG
+51 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.47392e+09
+NDf                       =      1973306
+Edm                       =  6.57077e-06
+NCalls                    =           84
+Constant                  =      6.04734   +/-   0.000472911 
+Slope                     =  -0.00359923   +/-   1.28162e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:42 CDT ModuleConstruction
+png file plots/vis_vs_dist_51.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0457009
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:42 CDT ModuleConstruction
+eps file plots/chisq_opdet_51.eps has been created
+%MSG
+52 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.46395e+09
+NDf                       =      1973306
+Edm                       =    6.815e-06
+NCalls                    =          105
+Constant                  =      6.06475   +/-   0.000464929 
+Slope                     =  -0.00361052   +/-   1.26873e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:59 CDT ModuleConstruction
+png file plots/vis_vs_dist_52.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.047168
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:30:59 CDT ModuleConstruction
+eps file plots/chisq_opdet_52.eps has been created
+%MSG
+53 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.4759e+09
+NDf                       =      1973306
+Edm                       =  6.30822e-06
+NCalls                    =           99
+Constant                  =      6.06921   +/-   0.000466347 
+Slope                     =  -0.00361997   +/-   1.28348e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:16 CDT ModuleConstruction
+png file plots/vis_vs_dist_53.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0484298
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:16 CDT ModuleConstruction
+eps file plots/chisq_opdet_53.eps has been created
+%MSG
+54 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.42771e+09
+NDf                       =      1973306
+Edm                       =  3.21431e-06
+NCalls                    =           93
+Constant                  =      6.06236   +/-   0.000461323 
+Slope                     =    -0.003623   +/-   1.28022e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:32 CDT ModuleConstruction
+png file plots/vis_vs_dist_54.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0496375
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:32 CDT ModuleConstruction
+eps file plots/chisq_opdet_54.eps has been created
+%MSG
+55 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.37201e+09
+NDf                       =      1973306
+Edm                       =  6.70267e-11
+NCalls                    =           92
+Constant                  =      6.04342   +/-   0.000462664 
+Slope                     =  -0.00362313   +/-   1.29498e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:50 CDT ModuleConstruction
+png file plots/vis_vs_dist_55.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0503941
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:31:51 CDT ModuleConstruction
+eps file plots/chisq_opdet_55.eps has been created
+%MSG
+56 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.29613e+09
+NDf                       =      1973306
+Edm                       =  4.42126e-12
+NCalls                    =           96
+Constant                  =      6.01007   +/-   0.000470871 
+Slope                     =  -0.00362919   +/-   1.31769e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:07 CDT ModuleConstruction
+png file plots/vis_vs_dist_56.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0484628
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:07 CDT ModuleConstruction
+eps file plots/chisq_opdet_56.eps has been created
+%MSG
+57 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.11631e+09
+NDf                       =      1973306
+Edm                       =  1.36474e-07
+NCalls                    =          111
+Constant                  =       5.9566   +/-   0.000477009 
+Slope                     =  -0.00366738   +/-   1.36169e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:25 CDT ModuleConstruction
+png file plots/vis_vs_dist_57.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0431266
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:25 CDT ModuleConstruction
+eps file plots/chisq_opdet_57.eps has been created
+%MSG
+58 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.87934e+08
+NDf                       =      1973306
+Edm                       =  6.89019e-06
+NCalls                    =          115
+Constant                  =      5.85751   +/-   0.000527831 
+Slope                     =  -0.00379112   +/-   1.47429e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:42 CDT ModuleConstruction
+png file plots/vis_vs_dist_58.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.033756
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:42 CDT ModuleConstruction
+eps file plots/chisq_opdet_58.eps has been created
+%MSG
+59 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.57219e+08
+NDf                       =      1973306
+Edm                       =  4.77939e-06
+NCalls                    =          110
+Constant                  =      5.52403   +/-   0.000672213 
+Slope                     =  -0.00406774   +/-   1.8911e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:58 CDT ModuleConstruction
+png file plots/vis_vs_dist_59.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0204621
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:32:58 CDT ModuleConstruction
+eps file plots/chisq_opdet_59.eps has been created
+%MSG
+60 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.57918e+08
+NDf                       =      1973306
+Edm                       =  3.19905e-06
+NCalls                    =          110
+Constant                  =      5.52345   +/-   0.000665485 
+Slope                     =  -0.00407339   +/-   1.81989e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:13 CDT ModuleConstruction
+png file plots/vis_vs_dist_60.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0209683
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:13 CDT ModuleConstruction
+eps file plots/chisq_opdet_60.eps has been created
+%MSG
+61 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.98172e+08
+NDf                       =      1973306
+Edm                       =  7.13844e-06
+NCalls                    =          115
+Constant                  =      5.85778   +/-   0.000530986 
+Slope                     =  -0.00379867   +/-   1.48419e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:30 CDT ModuleConstruction
+png file plots/vis_vs_dist_61.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.034878
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:30 CDT ModuleConstruction
+eps file plots/chisq_opdet_61.eps has been created
+%MSG
+62 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.13036e+09
+NDf                       =      1973306
+Edm                       =  5.19509e-06
+NCalls                    =          101
+Constant                  =      5.95744   +/-   0.000484596 
+Slope                     =  -0.00367529   +/-   1.3544e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:46 CDT ModuleConstruction
+png file plots/vis_vs_dist_62.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0452651
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:33:46 CDT ModuleConstruction
+eps file plots/chisq_opdet_62.eps has been created
+%MSG
+63 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.30586e+09
+NDf                       =      1973306
+Edm                       =  6.56002e-06
+NCalls                    =          102
+Constant                  =      6.01184   +/-   0.000474234 
+Slope                     =  -0.00364013   +/-   1.32794e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:02 CDT ModuleConstruction
+png file plots/vis_vs_dist_63.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0509626
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:02 CDT ModuleConstruction
+eps file plots/chisq_opdet_63.eps has been created
+%MSG
+64 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.3943e+09
+NDf                       =      1973306
+Edm                       =  7.62277e-06
+NCalls                    =           94
+Constant                  =      6.04539   +/-   0.000466515 
+Slope                     =  -0.00363458   +/-   1.3043e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:19 CDT ModuleConstruction
+png file plots/vis_vs_dist_64.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0531488
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:19 CDT ModuleConstruction
+eps file plots/chisq_opdet_64.eps has been created
+%MSG
+65 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.43878e+09
+NDf                       =      1973306
+Edm                       =  9.47175e-06
+NCalls                    =           97
+Constant                  =      6.06413   +/-   0.000464912 
+Slope                     =  -0.00363352   +/-   1.29061e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:37 CDT ModuleConstruction
+png file plots/vis_vs_dist_65.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0525088
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:37 CDT ModuleConstruction
+eps file plots/chisq_opdet_65.eps has been created
+%MSG
+66 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.49619e+09
+NDf                       =      1973306
+Edm                       =  7.11223e-06
+NCalls                    =          101
+Constant                  =      6.07126   +/-   0.000469773 
+Slope                     =  -0.00363095   +/-   1.29348e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:59 CDT ModuleConstruction
+png file plots/vis_vs_dist_66.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0512601
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:34:59 CDT ModuleConstruction
+eps file plots/chisq_opdet_66.eps has been created
+%MSG
+67 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.4816e+09
+NDf                       =      1973306
+Edm                       =  1.11847e-10
+NCalls                    =          102
+Constant                  =      6.06724   +/-   0.000466845 
+Slope                     =  -0.00362201   +/-   1.27441e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:19 CDT ModuleConstruction
+png file plots/vis_vs_dist_67.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0499968
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:19 CDT ModuleConstruction
+eps file plots/chisq_opdet_67.eps has been created
+%MSG
+68 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.48654e+09
+NDf                       =      1973306
+Edm                       =  2.65784e-05
+NCalls                    =           81
+Constant                  =       6.0496   +/-   0.000474842 
+Slope                     =  -0.00360938   +/-   1.28721e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:33 CDT ModuleConstruction
+png file plots/vis_vs_dist_68.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0483396
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:33 CDT ModuleConstruction
+eps file plots/chisq_opdet_68.eps has been created
+%MSG
+69 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.36164e+09
+NDf                       =      1973306
+Edm                       =  1.75109e-05
+NCalls                    =           80
+Constant                  =      5.98951   +/-   0.000480227 
+Slope                     =  -0.00359242   +/-   1.29521e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:49 CDT ModuleConstruction
+png file plots/vis_vs_dist_69.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0450761
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:35:49 CDT ModuleConstruction
+eps file plots/chisq_opdet_69.eps has been created
+%MSG
+70 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.35644e+09
+NDf                       =      1973306
+Edm                       =  6.49863e-06
+NCalls                    =           95
+Constant                  =      5.98968   +/-   0.000479236 
+Slope                     =   -0.0035927   +/-   1.2926e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:05 CDT ModuleConstruction
+png file plots/vis_vs_dist_70.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0451866
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:05 CDT ModuleConstruction
+eps file plots/chisq_opdet_70.eps has been created
+%MSG
+71 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.49207e+09
+NDf                       =      1973306
+Edm                       =  1.58977e-05
+NCalls                    =           76
+Constant                  =      6.04969   +/-   0.000475733 
+Slope                     =  -0.00360961   +/-   1.28974e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:20 CDT ModuleConstruction
+png file plots/vis_vs_dist_71.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0484374
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:20 CDT ModuleConstruction
+eps file plots/chisq_opdet_71.eps has been created
+%MSG
+72 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.47902e+09
+NDf                       =      1973306
+Edm                       =   2.5328e-09
+NCalls                    =           92
+Constant                  =      6.06737   +/-   0.000464741 
+Slope                     =  -0.00362217   +/-   1.2672e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:38 CDT ModuleConstruction
+png file plots/vis_vs_dist_72.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0499755
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:38 CDT ModuleConstruction
+eps file plots/chisq_opdet_72.eps has been created
+%MSG
+73 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.49382e+09
+NDf                       =      1973306
+Edm                       =  7.09988e-06
+NCalls                    =           99
+Constant                  =      6.07118   +/-   0.000469213 
+Slope                     =   -0.0036294   +/-   1.29175e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:55 CDT ModuleConstruction
+png file plots/vis_vs_dist_73.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0511111
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:36:55 CDT ModuleConstruction
+eps file plots/chisq_opdet_73.eps has been created
+%MSG
+74 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.43999e+09
+NDf                       =      1973306
+Edm                       =  7.47882e-06
+NCalls                    =          101
+Constant                  =      6.06433   +/-   0.000464956 
+Slope                     =  -0.00363314   +/-   1.29076e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:13 CDT ModuleConstruction
+png file plots/vis_vs_dist_74.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0523932
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:13 CDT ModuleConstruction
+eps file plots/chisq_opdet_74.eps has been created
+%MSG
+75 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.38622e+09
+NDf                       =      1973306
+Edm                       =  1.90134e-05
+NCalls                    =           94
+Constant                  =      6.04599   +/-   0.000465804 
+Slope                     =  -0.00363519   +/-   1.30143e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:31 CDT ModuleConstruction
+png file plots/vis_vs_dist_75.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0528655
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:31 CDT ModuleConstruction
+eps file plots/chisq_opdet_75.eps has been created
+%MSG
+76 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.30689e+09
+NDf                       =      1973306
+Edm                       =  6.17317e-05
+NCalls                    =           94
+Constant                  =      6.01226   +/-   0.000473322 
+Slope                     =  -0.00364015   +/-   1.32526e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:46 CDT ModuleConstruction
+png file plots/vis_vs_dist_76.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.050536
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:37:46 CDT ModuleConstruction
+eps file plots/chisq_opdet_76.eps has been created
+%MSG
+77 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.12324e+09
+NDf                       =      1973306
+Edm                       =  2.68417e-06
+NCalls                    =          103
+Constant                  =       5.9587   +/-   0.000482963 
+Slope                     =  -0.00367717   +/-   1.35002e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:02 CDT ModuleConstruction
+png file plots/vis_vs_dist_77.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0447447
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:02 CDT ModuleConstruction
+eps file plots/chisq_opdet_77.eps has been created
+%MSG
+78 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.92187e+08
+NDf                       =      1973306
+Edm                       =  5.57686e-12
+NCalls                    =          101
+Constant                  =       5.8595   +/-   0.000527106 
+Slope                     =  -0.00380069   +/-   1.474e-06   
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:18 CDT ModuleConstruction
+png file plots/vis_vs_dist_78.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0346256
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:18 CDT ModuleConstruction
+eps file plots/chisq_opdet_78.eps has been created
+%MSG
+79 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.59087e+08
+NDf                       =      1973306
+Edm                       =  6.21348e-06
+NCalls                    =           97
+Constant                  =      5.52511   +/-   0.000670192 
+Slope                     =  -0.00407384   +/-   1.88611e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:35 CDT ModuleConstruction
+png file plots/vis_vs_dist_79.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0203308
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:35 CDT ModuleConstruction
+eps file plots/chisq_opdet_79.eps has been created
+%MSG
+80 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.26165e+08
+NDf                       =      1973306
+Edm                       =  4.68757e-06
+NCalls                    =           82
+Constant                  =      5.52208   +/-   0.000667235 
+Slope                     =  -0.00411409   +/-   1.95283e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:49 CDT ModuleConstruction
+png file plots/vis_vs_dist_80.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0222312
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:38:49 CDT ModuleConstruction
+eps file plots/chisq_opdet_80.eps has been created
+%MSG
+81 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.47073e+08
+NDf                       =      1973306
+Edm                       =  6.24492e-06
+NCalls                    =          119
+Constant                  =      5.85104   +/-   0.000531926 
+Slope                     =  -0.00383897   +/-   1.54684e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:06 CDT ModuleConstruction
+png file plots/vis_vs_dist_81.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0364226
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:06 CDT ModuleConstruction
+eps file plots/chisq_opdet_81.eps has been created
+%MSG
+82 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.07117e+09
+NDf                       =      1973306
+Edm                       =  7.66488e-06
+NCalls                    =           99
+Constant                  =      5.94761   +/-   0.000489263 
+Slope                     =  -0.00372106   +/-   1.42431e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:23 CDT ModuleConstruction
+png file plots/vis_vs_dist_82.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0472531
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:23 CDT ModuleConstruction
+eps file plots/chisq_opdet_82.eps has been created
+%MSG
+83 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =   1.2459e+09
+NDf                       =      1973306
+Edm                       =  5.09379e-06
+NCalls                    =           92
+Constant                  =      5.99985   +/-   0.000482673 
+Slope                     =  -0.00368924   +/-   1.40826e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:41 CDT ModuleConstruction
+png file plots/vis_vs_dist_83.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0540215
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:41 CDT ModuleConstruction
+eps file plots/chisq_opdet_83.eps has been created
+%MSG
+84 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.33339e+09
+NDf                       =      1973306
+Edm                       =  7.48522e-07
+NCalls                    =           91
+Constant                  =      6.03152   +/-   0.000477104 
+Slope                     =  -0.00368518   +/-   1.38907e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:57 CDT ModuleConstruction
+png file plots/vis_vs_dist_84.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0568629
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:39:57 CDT ModuleConstruction
+eps file plots/chisq_opdet_84.eps has been created
+%MSG
+85 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.38255e+09
+NDf                       =      1973306
+Edm                       =  7.31603e-06
+NCalls                    =          105
+Constant                  =      6.04883   +/-   0.00047763  
+Slope                     =  -0.00368438   +/-   1.3803e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:15 CDT ModuleConstruction
+png file plots/vis_vs_dist_85.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0572592
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:15 CDT ModuleConstruction
+eps file plots/chisq_opdet_85.eps has been created
+%MSG
+86 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.44238e+09
+NDf                       =      1973306
+Edm                       =  4.00458e-06
+NCalls                    =           96
+Constant                  =      6.05393   +/-   0.000483816 
+Slope                     =  -0.00367777   +/-   1.38505e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:31 CDT ModuleConstruction
+png file plots/vis_vs_dist_86.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0570453
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:31 CDT ModuleConstruction
+eps file plots/chisq_opdet_86.eps has been created
+%MSG
+87 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.42973e+09
+NDf                       =      1973306
+Edm                       =   8.2561e-05
+NCalls                    =           93
+Constant                  =      6.04933   +/-   0.000480943 
+Slope                     =   -0.0036686   +/-   1.36543e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:47 CDT ModuleConstruction
+png file plots/vis_vs_dist_87.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0565082
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:40:47 CDT ModuleConstruction
+eps file plots/chisq_opdet_87.eps has been created
+%MSG
+88 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.43954e+09
+NDf                       =      1973306
+Edm                       =  5.38071e-06
+NCalls                    =           97
+Constant                  =      6.03083   +/-   0.000490115 
+Slope                     =  -0.00365366   +/-   1.37955e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:03 CDT ModuleConstruction
+png file plots/vis_vs_dist_88.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0557049
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:03 CDT ModuleConstruction
+eps file plots/chisq_opdet_88.eps has been created
+%MSG
+89 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.31783e+09
+NDf                       =      1973306
+Edm                       =  6.61488e-06
+NCalls                    =           96
+Constant                  =       5.9709   +/-   0.0004949   
+Slope                     =   -0.0036354   +/-   1.38519e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:19 CDT ModuleConstruction
+png file plots/vis_vs_dist_89.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0525189
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:19 CDT ModuleConstruction
+eps file plots/chisq_opdet_89.eps has been created
+%MSG
+90 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.31361e+09
+NDf                       =      1973306
+Edm                       =  1.07193e-11
+NCalls                    =          104
+Constant                  =       5.9707   +/-   0.000492905 
+Slope                     =  -0.00363496   +/-   1.3795e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:35 CDT ModuleConstruction
+png file plots/vis_vs_dist_90.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0524865
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:35 CDT ModuleConstruction
+eps file plots/chisq_opdet_90.eps has been created
+%MSG
+91 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.44073e+09
+NDf                       =      1973306
+Edm                       =  7.50786e-06
+NCalls                    =           98
+Constant                  =      6.03071   +/-   0.000490204 
+Slope                     =  -0.00365258   +/-   1.37965e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:52 CDT ModuleConstruction
+png file plots/vis_vs_dist_91.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0555281
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:41:52 CDT ModuleConstruction
+eps file plots/chisq_opdet_91.eps has been created
+%MSG
+92 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.42937e+09
+NDf                       =      1973306
+Edm                       =  3.14654e-10
+NCalls                    =           95
+Constant                  =       6.0487   +/-   0.000481437 
+Slope                     =   -0.0036672   +/-   1.36573e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:09 CDT ModuleConstruction
+png file plots/vis_vs_dist_92.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0565244
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:09 CDT ModuleConstruction
+eps file plots/chisq_opdet_92.eps has been created
+%MSG
+93 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.43979e+09
+NDf                       =      1973306
+Edm                       =  1.83321e-08
+NCalls                    =           89
+Constant                  =      6.05437   +/-   0.000482114 
+Slope                     =  -0.00367858   +/-   1.38041e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:26 CDT ModuleConstruction
+png file plots/vis_vs_dist_93.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0568107
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:26 CDT ModuleConstruction
+eps file plots/chisq_opdet_93.eps has been created
+%MSG
+94 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.38388e+09
+NDf                       =      1973306
+Edm                       =   5.9389e-12
+NCalls                    =           95
+Constant                  =      6.04849   +/-   0.000477001 
+Slope                     =  -0.00368275   +/-   1.37793e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:42 CDT ModuleConstruction
+png file plots/vis_vs_dist_94.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0569207
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:43 CDT ModuleConstruction
+eps file plots/chisq_opdet_94.eps has been created
+%MSG
+95 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.32707e+09
+NDf                       =      1973306
+Edm                       =  8.28473e-06
+NCalls                    =           98
+Constant                  =      6.03142   +/-   0.000477439 
+Slope                     =  -0.00368356   +/-   1.3892e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:58 CDT ModuleConstruction
+png file plots/vis_vs_dist_95.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.056496
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:42:58 CDT ModuleConstruction
+eps file plots/chisq_opdet_95.eps has been created
+%MSG
+96 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.24733e+09
+NDf                       =      1973306
+Edm                       =  7.94741e-06
+NCalls                    =          103
+Constant                  =      6.00011   +/-   0.0004827   
+Slope                     =  -0.00368811   +/-   1.40798e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:14 CDT ModuleConstruction
+png file plots/vis_vs_dist_96.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0536313
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:14 CDT ModuleConstruction
+eps file plots/chisq_opdet_96.eps has been created
+%MSG
+97 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  1.06751e+09
+NDf                       =      1973306
+Edm                       =  7.53078e-06
+NCalls                    =          103
+Constant                  =      5.94877   +/-   0.000487966 
+Slope                     =  -0.00372098   +/-   1.42011e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:31 CDT ModuleConstruction
+png file plots/vis_vs_dist_97.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0468401
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:31 CDT ModuleConstruction
+eps file plots/chisq_opdet_97.eps has been created
+%MSG
+98 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  8.43562e+08
+NDf                       =      1973306
+Edm                       =  4.62806e-06
+NCalls                    =          111
+Constant                  =      5.85287   +/-   0.000530854 
+Slope                     =  -0.00384121   +/-   1.54372e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:48 CDT ModuleConstruction
+png file plots/vis_vs_dist_98.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0360309
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:43:48 CDT ModuleConstruction
+eps file plots/chisq_opdet_98.eps has been created
+%MSG
+99 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  4.28051e+08
+NDf                       =      1973306
+Edm                       =   4.6157e-06
+NCalls                    =          101
+Constant                  =      5.52354   +/-   0.000669578 
+Slope                     =  -0.00411513   +/-   1.95846e-06 
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:44:02 CDT ModuleConstruction
+png file plots/vis_vs_dist_99.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0219966
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:44:03 CDT ModuleConstruction
+eps file plots/chisq_opdet_99.eps has been created
+%MSG
+100 / 120
+
+****************************************
+Minimizer is Minuit / Migrad
+Chi2                      =  3.40606e+08
+NDf                       =      1973306
+Edm                       =  8.12405e-06
+NCalls                    =           94
+Constant                  =      5.41682   +/-   0.000744705 
+Slope                     =    -0.004319   +/-   2.3497e-06  
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:44:17 CDT ModuleConstruction
+png file plots/vis_vs_dist_100.png has been created
+%MSG
+Integral(90,-1)/Integral(all) = 0.0185572
+*****************************
+%MSG-i Root_Information:  CreateHybridLibrary:create@Construction  TCanvas::Print() 15-May-2018 14:44:17 CDT ModuleConstruction
+eps file plots/chisq_opdet_100.eps has been created
+%MSG
+101 / 120
+User signal SIGINT terminating the process
+terminate called without an active exception
