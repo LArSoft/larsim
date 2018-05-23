@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////
 // \file ParticleInventoryService.h
-// \a service for managing the ParticleInventory when run in art.
+// \brief A service for managing the ParticleInventory when run in art.
 //
 // \author jason.stock@mines.sdsmt.edu
-// \Based on the original BackTracker by Brian Rebel (brebel@fnal.gov)
+// Based on the original BackTracker by Brian Rebel (brebel@fnal.gov)
 ////////////////////////////////////////////////////////////////////////
 #ifndef CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
 #define CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
@@ -68,6 +68,8 @@ namespace cheat{
       simb::MCTruth                  TrackIdToMCTruth (int const& id)//Users are encouraged to use TrackIdToMCTruthP
       { return *(this->TrackIdToMCTruth_P(id)); }
 
+      int TrackIdToEveTrackId(const int& tid) const;
+
       const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p); //Users are encouraged to use ParticleToMCTruthP
       simb::MCTruth                  ParticleToMCTruth (const simb::MCParticle* p)
       { return *(this->ParticleToMCTruth_P(p)); } 
@@ -84,7 +86,8 @@ namespace cheat{
     private:
 
 
-      const art::Event* fEvt=nullptr;
+      // for c2: remove unused data member
+      //const art::Event* fEvt=nullptr;
 
       void priv_PrepEvent        ( const art::Event& evt );
       void priv_PrepParticleList            ( const art::Event& evt);

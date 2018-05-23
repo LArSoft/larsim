@@ -102,7 +102,8 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   bool FilterStoppingMuon::filter(art::Event& evt) 
   {
-    bool interactionDesired(false);
+    // for c2: interactionDesired is unused
+    //bool interactionDesired(false);
     //get the list of particles from this event
     art::ServiceHandle<geo::Geometry> geom;
 

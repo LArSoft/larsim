@@ -1,17 +1,17 @@
 # The parent line must be the first non-comment line in the file 
 # This line defines the product name and version
-parent	larsim	v06_42_01
+parent	larsim	v06_47_00
 defaultqual	e15
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt		v06_19_01
-marley		v1_0_0c
+larevt		v06_20_05
+marley		v1_0_0d
 larsoft_data    v1_02_01
 
-cetbuildtools	v7_00_03	-	only_for_build
+cetbuildtools	v7_03_02	-	only_for_build
 end_product_list
 
   
@@ -20,9 +20,9 @@ qualifier	larevt	 	marley		larsoft_data	notes
 e15:debug	e15:debug	e15:debug	-nq-	
 e15:opt		e15:opt		e15:opt		-nq-	
 e15:prof	e15:prof	e15:prof	-nq-	
-e14:debug	e14:debug	e14:debug	-nq-	
-e14:opt		e14:opt		e14:opt		-nq-	
-e14:prof	e14:prof	e14:prof	-nq-	
+c2:debug	c2:debug	c2:debug	-nq-	
+c2:opt		c2:opt		c2:opt		-nq-	
+c2:prof		c2:prof		c2:prof		-nq-	
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

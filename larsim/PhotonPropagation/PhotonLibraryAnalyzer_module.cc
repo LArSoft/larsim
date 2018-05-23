@@ -105,7 +105,9 @@ namespace phot {
     int YSteps = int(Steps[1]);
     int ZSteps = int(Steps[2]);
 
-    TH3D *FullVolume = tfs->make<TH3D>("FullVolume","FullVolume", 
+    // for c2: FullVolume is unused, just call tfs->make
+    // TH3D *FullVolume = tfs->make<TH3D>("FullVolume","FullVolume", 
+    tfs->make<TH3D>("FullVolume","FullVolume", 
                                        XSteps,LowerCorner[0],UpperCorner[0],
                                        YSteps,LowerCorner[1],UpperCorner[1],
                                        ZSteps,LowerCorner[2],UpperCorner[2]);

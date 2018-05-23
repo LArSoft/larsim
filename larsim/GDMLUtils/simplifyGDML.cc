@@ -375,7 +375,9 @@ int main(int argc, char** argv) {
   std::cout << std::string(80, '-')
     << "\nFetching the world volume for setup '" << params.setupName << "'..."
     << std::endl;
-  decltype(auto) worldVolume = parser.GetWorldVolume(params.setupName);
+  // for c2: worldVolume is unused here
+  //decltype(auto) worldVolume = parser.GetWorldVolume(params.setupName);
+  parser.GetWorldVolume(params.setupName);
   
   if (params.dontWrite) {
     if (!params.destPath.empty()) {

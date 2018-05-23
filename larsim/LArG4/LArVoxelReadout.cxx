@@ -20,6 +20,7 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 // framework libraries
 #include "cetlib/exception.h"
@@ -104,7 +105,8 @@ namespace larg4 {
   // Called at the start of each event.
   void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    // for c2: larp is unused
+    //auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fElectronLifetime      = detprop->ElectronLifetime();
     for (int i = 0; i<3; ++i)
@@ -122,12 +124,18 @@ namespace larg4 {
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
+
+    fDontDriftThem = (fDontDriftThem || fLgpHandle->NoElectronPropagation() );
+
+    fNSteps=0;
   }
 
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
+    std::cout << "Total number of steps was " << fNSteps << std::endl;
+
   } // LArVoxelReadout::EndOfEvent()
 
   //---------------------------------------------------------------------------------------
@@ -183,7 +191,6 @@ namespace larg4 {
   } // LArVoxelReadout::GetSimChannels(short, short)
   
   
-  
   //---------------------------------------------------------------------------------------
   // Called for each step.
   G4bool LArVoxelReadout::ProcessHits( G4Step* step, G4TouchableHistory* pHistory)
@@ -207,7 +214,7 @@ namespace larg4 {
       // Make sure we have the IonizationAndScintillation singleton
       // reset to this step
       larg4::IonizationAndScintillation::Instance()->Reset(step);
-
+      fNSteps++;
       if( !fDontDriftThem ){
 
         G4ThreeVector midPoint = 0.5*( step->GetPreStepPoint()->GetPosition()

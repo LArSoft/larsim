@@ -216,7 +216,8 @@ namespace evgen {
           Name("direction"),
           Comment("3-vector that points in the direction of motion of the"
             " incident neutrinos"),
-          std::array<double, 3> { 0., 0., 1. } // default value
+	  // for c2: need double braces
+          std::array<double, 3> {{ 0., 0., 1. }} // default value
         };
 
         fhicl::Sequence<std::string> reactions_ {

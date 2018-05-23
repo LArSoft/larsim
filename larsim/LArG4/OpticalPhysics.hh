@@ -69,6 +69,11 @@ class G4OpAbsorption;
 class G4OpWLS;
 class G4OpRayleigh;
 
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+
 namespace larg4 {  
 
   class OpBoundaryProcessSimple;
@@ -94,6 +99,9 @@ namespace larg4 {
   };
   
 }
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
 
 #endif
 

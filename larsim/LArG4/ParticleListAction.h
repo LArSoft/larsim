@@ -17,13 +17,17 @@
 #define LArG4_ParticleListAction_h
 
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "lardataobj/Simulation/sim.h" // sim::GeneratorIndex_t, ...
 #include "nutools/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
 
 #include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
 #include "nutools/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>
+#include <limits> // std::numeric_limits<>
+#include <cstddef> // std::size_t
 
 // Forward declarations.
 class G4Event;
@@ -35,23 +39,38 @@ namespace sim {
 }
 
 namespace larg4 {
-
+  
   class ParticleListAction : public g4b::UserAction
   {
   public:
+    using GeneratedParticleIndex_t = simb::GeneratedParticleIndex_t;
+    
     struct ParticleInfo_t {
       
       simb::MCParticle* particle = nullptr;  ///< simple structure representing particle
       bool              keep = false;        ///< if there was decision to keep
+      /// Index of the particle in the original generator truth record.
+      GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
       
       /// Resets the information (does not release memory it does not own)
-      void clear() { particle = nullptr; keep = false; }
+      void clear()
+        {
+          particle = nullptr;
+          keep = false;
+          truthIndex = simb::NoGeneratedParticleIndex;
+        }
       
       /// Returns whether there is a particle
       bool hasParticle() const { return particle; }
       
+      /// Returns whether there is a particle
+      bool isPrimary() const { return simb::isGeneratedParticleIndex(truthIndex); }
+      
       /// Rerturns whether there is a particle known to be kept
       bool keepParticle() const { return hasParticle() && keep; }
+      
+      /// Returns the index of the particle in the generator truth record.
+      GeneratedParticleIndex_t truthInfoIndex() const { return truthIndex; }
       
     }; // ParticleInfo_t
 
@@ -74,11 +93,20 @@ namespace larg4 {
 
     // TrackID of the current particle, EveID if the particle is from an EM shower
     static int               GetCurrentTrackID() { return fCurrentTrackID; }
+    static int               GetCurrentPdgCode() { return fCurrentPdgCode; }
 			                                                     
     void                     ResetTrackIDOffset() { fTrackIDOffset = 0;     }
 
     // Returns the ParticleList accumulated during the current event.
     const sim::ParticleList* GetList() const;
+    
+    /// Returns a map of truth record information index for each of the primary
+    /// particles (by track ID).
+    std::map<int, GeneratedParticleIndex_t> const& GetPrimaryTruthMap() const
+      { return fPrimaryTruthMap; }
+    
+    /// Returns the index of primary truth (`sim::NoGeneratorIndex` if none).
+    GeneratedParticleIndex_t GetPrimaryTruthIndex(int trackId) const;
     
     // Yields the ParticleList accumulated during the current event.
     sim::ParticleList&& YieldList();
@@ -102,11 +130,15 @@ namespace larg4 {
     std::map<int, int>       fParentIDMap;           ///< key is current track ID, value is parent ID		  
     static int               fCurrentTrackID;        ///< track ID of the current particle, set to eve ID 
                                                      ///< for EM shower particles		
+    static int               fCurrentPdgCode;        ///< pdg code of current particle  
     static int               fTrackIDOffset;         ///< offset added to track ids when running over		  
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
     
     std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
+    
+    /// Map: particle track ID -> index of primary information in MC truth.
+    std::map<int, GeneratedParticleIndex_t> fPrimaryTruthMap;
     
     /// Adds a trajectory point to the current particle, and runs the filter
     void AddPointToCurrentParticle(TLorentzVector const& pos,

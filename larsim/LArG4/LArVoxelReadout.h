@@ -59,7 +59,6 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
-
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
@@ -237,6 +236,7 @@ namespace larg4 {
     ChannelMap_t& GetSimChannelMap(unsigned short cryo, unsigned short tpc);
     //@}
 
+
   private:
 
     /**
@@ -316,8 +316,9 @@ namespace larg4 {
     double                                    fElectronLifetime;
     double                                    fElectronClusterSize;
     int					      fMinNumberOfElCluster;
-    double                                    fSampleRate;
-    int                                       fTriggerOffset;
+    // for c2: unused private data members
+    //double                                    fSampleRate;
+    //int                                       fTriggerOffset;
     bool                                      fDontDriftThem;
     std::vector<unsigned short int>           fSkipWireSignalInTPCs;
     /// Charge deposited within this many [cm] from the plane is lead onto it.
@@ -333,6 +334,13 @@ namespace larg4 {
     CLHEP::HepRandomEngine*                   fPropGen = nullptr;  ///< random engine for charge propagation
     
     ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
+
+    //these are the things for doing the separated EDeps
+    void ProcessStep(G4Step*);
+    
+    G4ThreeVector                             fStepStart;
+    G4ThreeVector                             fStepEnd;
+    size_t fNSteps;
   };
 
 }

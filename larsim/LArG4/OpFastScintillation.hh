@@ -277,7 +277,10 @@ private:
         double fd_max;
         double ftf1_sampling_factor;
         double ft0_max, ft0_break_point; 
-  //double fGlobalTimeOffset;  
+        //double fGlobalTimeOffset;  
+
+        void ProcessStep( const G4Step& step);
+
 };
 
   double finter_d(double*, double*);

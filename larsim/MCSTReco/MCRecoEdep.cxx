@@ -76,7 +76,8 @@ namespace sim {
       UInt_t ch = sch.Channel();
       // Loop over ticks
       for(auto tdc_iter = sch_map.begin(); tdc_iter!=sch_map.end(); ++tdc_iter) {
-	unsigned short hit_time = (*tdc_iter).first;
+        // for c2: hit_time is unused
+	//unsigned short hit_time = (*tdc_iter).first;
 	// Loop over IDEs
 	for(auto const &ide : (*tdc_iter).second) {
 
@@ -116,11 +117,12 @@ namespace sim {
 
     if(_debug_mode) {
       std::cout<< Form("  Collected %zu particles' energy depositions...",_mc_edeps.size()) << std::endl;
-      for(auto const& track_id_index : _track_index ) {
-	auto track_id   = track_id_index.first;
-	auto edep_index = track_id_index.second;
+      // for c2: disable the entire loop instead of just the print statement
+      //for(auto const& track_id_index : _track_index ) {
+	//auto track_id   = track_id_index.first;
+	//auto edep_index = track_id_index.second;
 	//	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
-      }
+      //}
       std::cout<<std::endl;
     }
   }

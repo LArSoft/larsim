@@ -1091,7 +1091,8 @@ void evgen::MarleyTimeGen::create_truths_time_fit(simb::MCTruth& mc_truth,
     int last_time_index = 0;
     if (fTimeFits.size() > 0) last_time_index = fTimeFits.size() - 1;
     std::uniform_int_distribution<size_t> uid(0, last_time_index);
-    size_t time_bin_index = gen.sample_from_distribution(uid);
+    // for c2: time_bin_index has already been declared
+    time_bin_index = gen.sample_from_distribution(uid);
   }
 
   else {

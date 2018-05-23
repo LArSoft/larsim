@@ -45,7 +45,6 @@ namespace larg4 {
    bool   	   	 fScintByParticleType; ///< from LArProperties service			  
    double 	   	 fScintYieldFactor;    ///< scintillation yield factor                             
    G4EmSaturation* 	 fEMSaturation;        ///< pointer to EM saturation                            
-
  };
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H
