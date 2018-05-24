@@ -12,8 +12,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "larsim/IonizationScintillation/ISCalculationSeparate.h"
-#include "lardata/DetectorInfo/LArProperties.h"
-#include "lardata/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/LArProperties.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
 

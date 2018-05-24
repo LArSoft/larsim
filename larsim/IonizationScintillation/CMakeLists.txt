@@ -3,7 +3,7 @@ art_make(
           LIB_LIBRARIES 
 			larsim_Simulation
 			lardataobj_Simulation
-			lardata_DetectorInfo
+			lardataalg_DetectorInfo
 			larevt_SpaceCharge
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}

@@ -4,7 +4,7 @@ art_make(
 			larsim_Simulation
 			larsim_IonizationScintillation
 			lardataobj_Simulation
-			lardata_DetectorInfo
+			lardataalg_DetectorInfo
 			larevt_SpaceCharge
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
