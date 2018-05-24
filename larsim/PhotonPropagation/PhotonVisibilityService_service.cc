@@ -75,8 +75,6 @@ namespace phot{
     // Don't do anything if the library has already been loaded.
 
     if(fTheLibrary == 0) {
-      fTheLibrary = new PhotonLibrary();
-
 
       if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
 	std::string LibraryFileWithPath;
@@ -134,9 +132,14 @@ namespace phot{
 
     if(fLibraryBuildJob )
       {
-	mf::LogInfo("PhotonVisibilityService") << " Vis service "
+          
+          if(fHybrid){
+              std::cout<< "This is would be building a Hybrid Library. Not defined. "<<std::endl;
+          }
+          mf::LogInfo("PhotonVisibilityService") << " Vis service "
 					       << " Storing Library entries to file..." <<std::endl;
-	fTheLibrary->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0, fParPropTime_npar);
+          PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
+          lib->StoreLibraryToFile(fLibraryFile, fStoreReflected, fStoreReflT0, fParPropTime_npar);
       }
   }
   
@@ -385,13 +388,16 @@ namespace phot{
 
   void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N, bool wantReflected)
   {
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
+      
     if(fTheLibrary == 0)
       LoadLibrary();
     
-    if(!wantReflected) 
-      fTheLibrary->SetCount(VoxID,OpChannel, N);
-    else 
-      fTheLibrary->SetReflCount(VoxID,OpChannel, N);
+    if(!wantReflected)
+    lib->SetCount(VoxID,OpChannel, N);
+    
+    else
+    lib->SetReflCount(VoxID,OpChannel, N);
     
     //std::cout<< " PVS logging " << VoxID << " " << OpChannel<<std::endl;
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
@@ -448,11 +454,11 @@ namespace phot{
 
   void PhotonVisibilityService::SetLibraryReflT0Entry(int VoxID, int OpChannel, float T0)
   {
-
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    fTheLibrary->SetReflT0(VoxID,OpChannel,T0);
+    lib->SetReflT0(VoxID,OpChannel,T0);
 
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
@@ -482,21 +488,22 @@ namespace phot{
 
   const std::vector<float>* PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
   {
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return fTheLibrary->GetTimingPars(VoxID);
+    return lib->GetTimingPars(VoxID);
   }
 
   //------------------------------------------------------     
 
   void PhotonVisibilityService::SetLibraryTimingParEntry(int VoxID, int OpChannel, float par, size_t parnum)
   {
-
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    fTheLibrary->SetTimingPar(VoxID,OpChannel,par, parnum);
+    lib->SetTimingPar(VoxID,OpChannel,par, parnum);
 
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
@@ -505,10 +512,11 @@ namespace phot{
 
   float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID, int Channel, size_t npar) const
   {
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return fTheLibrary->GetTimingPar(VoxID, Channel,npar);
+    return lib->GetTimingPar(VoxID, Channel,npar);
   }
 
   //------------------------------------------------------

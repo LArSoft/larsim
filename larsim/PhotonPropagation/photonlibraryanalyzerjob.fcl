@@ -10,15 +10,15 @@ services:
   TimeTracker: {}
   MemoryTracker: {}
   RandomNumberGenerator: {}
-  #@table::dunefd_services
-  #PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
-
-  @table::protodunedphase_simulation_services
-  PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+  #ProtoDUNE DP
+  #@table::protodunedphase_simulation_services
+  #PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
   message: @local::standard_info
 }
-#services.Geometry: @local::dune10kt_1x2x6_v1_geo 
-services.Geometry:                @local::protodunedphase_geo
+services.Geometry: @local::dune10kt_1x2x6_v1_geo 
+#services.Geometry:                @local::protodunedphase_geo
 
 source:
 {
@@ -42,12 +42,12 @@ physics.analyzers.analyze.alt_x_axis: "Z"
 
 services.PhotonVisibilityService.HybridLibrary: true
 services.PhotonVisibilityService.LibraryFile:"fit.root" 
-#fit_d140.root  #"photonlib_hybrid.v00_01_00.root"
-## export FW_SEARCH_PATH=$FW_SEARCH_PATH:/pnfs/dune/persistent/users/bckhouse/photonlib_hybrid
+
 
 #with FC
 #services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
 #services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
 #services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+
 #services.PhotonVisibilityService.LibraryFile: "lib_protodunedp_lightsim_nonuni_20171213.root"
 #services.PhotonVisibilityService.LibraryFile: "lib_without_att.root"

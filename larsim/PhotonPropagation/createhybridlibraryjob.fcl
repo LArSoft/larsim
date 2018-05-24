@@ -7,14 +7,15 @@ services:
   TimeTracker: {}
   MemoryTracker: {}
   RandomNumberGenerator: {}
-  #@table::dunefd_services
-  #PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
-  @table::protodunedphase_simulation_services
-  PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+  #ProtoDUNE DP parameters
+  #@table::protodunedphase_simulation_services
+  #PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
   message: @local::standard_info
 }
-#services.Geometry: @local::dune10kt_1x2x6_v1_geo
-services.Geometry:                @local::protodunedphase_geo
+services.Geometry: @local::dune10kt_1x2x6_v1_geo
+#services.Geometry:                @local::protodunedphase_geo
 
 source:
 {
@@ -36,13 +37,19 @@ physics:
 #services.LArPropertiesService.ScintPreScale: 1
 #services.OpDetResponseInterface.QuantumEfficiency: 0.2
 physics.analyzers.create: {module_type: "CreateHybridLibrary"}
+services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
+services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+
+
 #with Field Cage
-#services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
-#services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
-#services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+
+#SP Photon Library without attenuation of the optical detector bars
 #services.PhotonVisibilityService.LibraryFile: "/srcs/larsim/larsim/PhotonPropagation/lib_without_att.root" 
 #services.PhotonVisibilityService.LibraryFile: "lib_without_att.root" 
-services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_protodunedp_lightsim_nonuni_20171213.root"
+
+#DP Photon Library created in LightSim
+#services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_protodunedp_lightsim_nonuni_20171213.root"
 
 
 

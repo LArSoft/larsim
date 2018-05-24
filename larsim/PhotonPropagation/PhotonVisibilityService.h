@@ -75,7 +75,6 @@ namespace phot{
     size_t NOpChannels() const;
     
   private:
-    void LoadLibrary() const;
     
     int    fCurrentVoxel;
     double fCurrentValue;

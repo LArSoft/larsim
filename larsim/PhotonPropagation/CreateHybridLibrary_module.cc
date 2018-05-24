@@ -51,7 +51,7 @@ namespace phot
 	CreateHybridLibrary::CreateHybridLibrary(const fhicl::ParameterSet& p)
 		: EDAnalyzer(p)
 	{ 
-		// std::cout<<"BEA::Photon library analyzer constructor "<<std::endl;
+		
 		art::ServiceHandle<geo::Geometry> geom;
 
 		art::ServiceHandle<phot::PhotonVisibilityService> pvs;
@@ -62,8 +62,9 @@ namespace phot
 
 		std::cout << voxdef.GetNVoxels() << " voxels for each of " << geom->NOpDets() << " OpDets" << std::endl;
 		std::cout << std::endl;
-
-		long totExceptions = 0;
+		
+		//EP = Exception points: the parameterization is not a good description of the visibility and the value of the Photon Library is kept.
+		long totExceptions = 0; 
 		long totPts = 0;
 
 		for(unsigned int opdetIdx =0; opdetIdx < geom->NOpDets(); ++opdetIdx){
@@ -75,13 +76,14 @@ namespace phot
 			d_full->cd();
 			TTree* tr_full = new TTree("tr", "tr");
 			int vox, taken;
-			float dist, vis, psi, theta;
+			float dist, vis, psi, theta, xpos;
 			tr_full->Branch("vox", &vox);
 			tr_full->Branch("dist", &dist);
 			tr_full->Branch("vis", &vis);
 			tr_full->Branch("taken", &taken);
-			tr_full->Branch("psi", &psi);
-			tr_full->Branch("theta", &theta);
+			tr_full->Branch("psi", &psi); //not needed to parameterize the visibilities, useful for tests in SP
+			tr_full->Branch("theta", &theta); //not needed to parameterize the visibilities, useful for tests in SP
+			tr_full->Branch("xpos", &xpos); //not needed to parameterize the visibilities, useful for tests in SP
 
 			const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opdetIdx);
 			double xyzopdet[3];
@@ -90,13 +92,14 @@ namespace phot
 			const TVector3 opdetvec(xyzopdet);
 
 			struct Visibility{
-			  Visibility(int vx, int t, float d, float v, float p, float th) : vox(vx), taken(t), dist(d), vis(v), psi(p), theta(th) {}
+			  Visibility(int vx, int t, float d, float v, float p, float th, float xp) : vox(vx), taken(t), dist(d), vis(v), psi(p), theta(th), xpos(xp) {}
 				int vox;
 				int taken;
 			        float dist;
 				float vis;
 			        float psi;
 			        float theta;
+			        float xpos;
 			};
 			TCanvas *c1=new TCanvas("c1", "c1");
 			//c1->SetCanvasSize(1500, 1500);
@@ -110,45 +113,38 @@ namespace phot
 
 			for(int voxIdx = 0; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
 			     
-			  //std::cout << voxIdx << " / " << voxdef.GetNVoxels() << std::endl;
-				const TVector3 voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
+       				const TVector3 voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
 				const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};
-				//SP const double fc_y = 600; //624cm is below the center of the first voxel outside the field cage 
-				//SP const double fc_z = 1394;
-				//SP const double fc_x = 350;
-				//SP taken = 0;
-				//DP does not need taken because all voxels are inside the Field Cage
-				taken = 1;
+				const double fc_y = 600; //624cm is below the center of the first voxel outside the Field Cage
+				const double fc_z = 1394;
+				const double fc_x = 350;
+				taken = 0;
+				//DP does not need variable "taken" because all voxels are inside the Field Cage for the Photon Library created in LightSim.
+				//DP taken = 1;
 				dist = opdet.DistanceToPoint(xyzvox);
 				vis = pvs->GetVisibility(xyzvox, opdetIdx);
-				//SP psi = 100;
-				//SP theta = 200;
-				psi = 0;
-				theta = 0;
+				// all voxels outside the Field Cage would be assigned these values of psi and theta
+				psi = 100; 
+				theta = 200;
+      				xpos = xyzvox[0];
 
-				/*SP if((xyzvox[0] - xyzopdet[0])<0){
+				if((xyzvox[0] - xyzopdet[0])<0){
 				  psi = atan((xyzvox[1] - xyzopdet[1])/(-xyzvox[0] +xyzopdet[0]));
-				  }*/
-				//Test angles std::cout << "                        "<<std::endl;
-				//std::cout << " Theta = " << theta * 180.0/PI<< " Psi = " << psi * 180.0/PI << " z_vox = "<< xyzvox[2] <<" z_opdet = "<< xyzopdet[2]<<" dist = "<< dist << " x_vox = "<< xyzvox[0] <<" x_opdet = "<< xyzopdet[0]<< "y_vox = "<< xyzvox[1] <<" y_opdet = "<< xyzopdet[1]<<std::endl;
-				//if (dist>125){
-				//SP if(xyzvox[0]<fc_x && xyzvox[0]>-fc_x){
-				//if (xyzvox[1]<fc_y && xyzvox[1]>-fc_y){
-				//if (xyzvox[2]> -9 && xyzvox[2]<fc_z){
-				  g.SetPoint(g.GetN(), dist, vis*dist*dist); //pinta el grafico
-				  //SP taken = 1;
-				  //SP psi = atan((xyzvox[1] - xyzopdet[1])/(xyzvox[0] - xyzopdet[0]))* 180.0/PI ; // (-PI/2, PI/2)
-				  //SP theta = acos((xyzvox[2] - xyzopdet[2])/dist) * 180.0/PI;  // (0 (beam direction := delta z = distance), PI (beam direction := delta z = -distance))          
-				  /*SP
+				}
+			      
+				if(xyzvox[0]<fc_x && xyzvox[0]>-fc_x && xyzvox[1]<fc_y && xyzvox[1]>-fc_y && xyzvox[2]> -9 && xyzvox[2]<fc_z){
+				  g.SetPoint(g.GetN(), dist, vis*dist*dist); 
+				  taken = 1;
+				  psi = atan((xyzvox[1] - xyzopdet[1])/(xyzvox[0] - xyzopdet[0]))* 180.0/PI ; // psi takes values within (-PI/2, PI/2)
+				  theta = acos((xyzvox[2] - xyzopdet[2])/dist) * 180.0/PI;  // theta takes values within (0 (beam direction, z), PI (-beam direction, -z))          
+				  
 				  if((xyzvox[0] - xyzopdet[0])<0){
 				  psi = atan((xyzvox[1] - xyzopdet[1])/(-xyzvox[0] +xyzopdet[0]));
-				  }*/
+				  }
 			
-				  //}
-				  //}
-				  //}
+				}
       				tr_full->Fill();
-				viss.emplace_back(voxIdx, taken, dist, vis, psi, theta);
+				viss.emplace_back(voxIdx, taken, dist, vis, psi, theta, xpos);
 			} // end for voxIdx
 
 			d_full->cd();
@@ -171,7 +167,7 @@ namespace phot
 
 			gPad->SetLogy();
 
-			TH1F h("", "", 200, 0, 20); //20 the last digit
+			TH1F h("", "", 200, 0, 20); 
 
 			d_fit->cd();
 			TTree* tr_fit = new TTree("tr", "tr");
@@ -181,33 +177,34 @@ namespace phot
 			tr_fit->Branch("taken", &taken);
 			tr_fit->Branch("psi", &psi);
 			tr_fit->Branch("theta", &theta);
+			tr_fit->Branch("xpos", &xpos);
 			
-
+	   
 			for(const Visibility& v: viss){
 				// 2e-5 is the magic scaling factor to get back to integer photon
 				// counts. TODO this will differ for new libraries, should work out a
 				// way to communicate it or derive it.
-				//const double obs = v.vis / 2e-5;
-				//const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 2e-5; //calculated with parametrisation
+			        const double obs = v.vis / 2e-5; //taken from the Photon Library
+				const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 2e-5; //calculated with parameterization
 				
-				const double obs = v.vis / 1e-7;
-				const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 1e-7; //calculated with parametrisation
+				//DP const double obs = v.vis / 1e-7; //magic scaling factor for DP library created in LightSim
+				//Minimal amount of detected photons is 50, bc of Landau dustribution
+				//Those voxels with detected photons < 50 were set to 0
+				//DP const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 1e-7; //calculated with parametrisation
 				//std::cout << "observed = "<<obs<<" predicted (by parametrization) = "<<pred <<std::endl;
-				//Minimal amount of detected photons is set to 50, bc of Landau dustribution
-				//Those voxels with detected photons < 50 where set to 0
+				
 
 				// Log-likelihood ratio for poisson statistics
 				double chisq = 2*(pred-obs);
-				if(obs) chisq += 2*obs*log(obs/pred); //BEA
-				/*if(obs==0 || obs==1){
-				  chisq = 2; 
-				  }*/
+				if(obs) chisq += 2*obs*log(obs/pred); 
+				
 				vox = v.vox;
 				dist = v.dist;
-				//SP vis = pred *2e-5;
+				vis = pred *2e-5;
 				psi = v.psi;
 				theta = v.theta;
-				vis = pred *1e-7;  
+				xpos = v.xpos;
+				//DP vis = pred *1e-7;  
 				
 
 				if (v.taken==1){
@@ -215,16 +212,14 @@ namespace phot
 				}
 
 
-				//if(chisq > 9 && dist < 140){ //equivalent to more than 9 chisquare = 3 sigma    //maybe play around with this cutoff
 				if(chisq > 9){ //equivalent to more than 9 chisquare = 3 sigma    //maybe play around with this cutoff
 					g2.SetPoint(g2.GetN(), v.dist, v.vis*v.dist*v.dist);
-					//SP vis = obs *2e-5;
-					vis = obs *1e-7;
+					vis = obs *2e-5;
+					//DP vis = obs *1e-7;
     					tr_fit->Fill();
-					//std::cout << "V in lib = " << vis << " at vox_y = "<< xyzvox[1] << " at vox_z = "<< xyzvox[2]<<" voxIdx " << voxIdx <<std::endl;
-				}
+      				}
 
-			}
+			}// end for opdetIdx
 
 			d_fit->cd();
 			tr_fit->Write();
@@ -237,7 +232,6 @@ namespace phot
 			gStyle->SetTitleSize(.04,"XY");
 			c1->cd();
 			g2.Draw("p same"); 
-			gPad->Print(TString::Format("plots/vis_vs_dist_%d.png", opdetIdx).Data());
 			c1->SaveAs(TString::Format("plots/Chris_vis_vs_dist_%d.png", opdetIdx).Data());
 
 
@@ -253,11 +247,7 @@ namespace phot
 			gPad->Print(TString::Format("plots/chisq_opdet_%d.eps", opdetIdx).Data());
 
 			delete c1;
-			//delete c2;
-			//delete c3;
-			//delete c4;
-			//std::cout << "Plots for voxels with coordinates (x, y, z) " << x_vox <<"  y  " << z_vox << std::endl;
-			} // end for opdetIdx
+      			} // end for opdetIdx
 
 			std::cout << totExceptions << " exceptions from " << totPts << " points = " << (100.*totExceptions)/totPts << "%" << std::endl;
 
