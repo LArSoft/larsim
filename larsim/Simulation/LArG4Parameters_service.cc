@@ -58,6 +58,11 @@ namespace sim {
     fOpticalParamParameters  = pset.get< std::vector<std::vector<std::vector<double> > > >("OpticalParamParameters");
     fLitePhotons             = pset.get< bool                     >("UseLitePhotons"       );
 
+    fFillSimEnergyDeposits       = pset.get< bool                 >("FillSimEnergyDeposits",false);
+    fNoElectronPropagation   = pset.get< bool                     >("NoElectronPropagation",false);
+    fNoPhotonPropagation     = pset.get< bool                     >("NoPhotonPropagation",false);
+    
+    
     return;
   }
 

@@ -91,7 +91,6 @@ namespace evgen {
     double fShowerAreaExtension=0.; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [cm]
     sqlite3* fdb[5]; ///< Pointers to sqlite3 database object, max of 5
     double fRandomXZShift=0.; ///< Each shower will be shifted by a random amount in xz so that showers won't repeatedly sample the same space [cm]
-
   };
 }
 
@@ -128,7 +127,7 @@ namespace evgen{
     this->populateTOffset();
     
     produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();    
+    produces< sumdata::RunData, art::InRun >();
     
   }
   
@@ -181,7 +180,8 @@ namespace evgen{
   
   void CORSIKAGen::openDBs(){
     //choose files based on fShowerInputFiles, copy them with ifdh, open them
-    sqlite3_stmt *statement;
+    // for c2: statement is unused
+    //sqlite3_stmt *statement;
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine("gen");

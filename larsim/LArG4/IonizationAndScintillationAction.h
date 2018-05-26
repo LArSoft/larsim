@@ -8,7 +8,7 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef LARG4_IONIZATIONANDSCINTILLAITONACTION_H
+#ifndef LARG4_IONIZATIONANDSCINTILLATIONACTION_H
 #define LARG4_IONIZATIONANDSCINTILLATIONACTION_H
 
 #include "nutools/G4Base/UserAction.h"
@@ -38,4 +38,4 @@ namespace larg4 {
 
 } // namespace LArG4
 
-#endif // LArG4_G4BADIDEAACTION_H
+#endif // LARG4_IONIZATIONANDSCINTILLATIONACTION_H

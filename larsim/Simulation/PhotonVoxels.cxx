@@ -1,6 +1,6 @@
-
 #include "larsim/Simulation/PhotonVoxels.h"
 
+#include <iostream>
 
 namespace sim {
 
@@ -112,64 +112,101 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(TVector3 Position) const
+  int PhotonVoxelDef::GetVoxelID(const TVector3& p) const
   {
-
-    // figure out how many steps this point is in the x,y,z directions
-    int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
-    int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
-    int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
-
-    int ID;
-
-    // check if point lies within the voxelized region
-    if((0 <= xStep) && (xStep < fxSteps) &&
-       (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) )
-      {
-        // if within bounds, generate the voxel ID
-        ID = xStep
-	  + yStep * (fxSteps)
-	  + zStep * (fxSteps * fySteps);
-      }
-    else
-      {
-	// if out of bounds, print warning and return -1
-        ID = -1;
-      }
-
-    return ID;
-
+    const double xyz[3] = {p.X(), p.Y(), p.Z()};
+    return GetVoxelID(xyz);
   }
 
+  //----------------------------------------------------------------------------
   int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
-
     // figure out how many steps this point is in the x,y,z directions
     int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
     int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
     int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
 
-    int ID;
-
     // check if point lies within the voxelized region
     if((0 <= xStep) && (xStep < fxSteps) &&
        (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) )
-      {
-        // if within bounds, generate the voxel ID
-        ID = xStep
-	  + yStep * (fxSteps)
-	  + zStep * (fxSteps * fySteps);
+       (0 <= zStep) && (zStep < fzSteps) ){
+      // if within bounds, generate the voxel ID
+      return (xStep
+              + yStep * (fxSteps)
+              + zStep * (fxSteps * fySteps));
       }
-    else
-      {
-	// if out of bounds, print warning and return -1
-        ID = -1;
+    else{
+      // out of bounds
+      return -1;
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  void PhotonVoxelDef::
+  GetNeighboringVoxelIDs(const TVector3& v, std::vector<NeiInfo>& ret) const
+  {
+    ret.clear();
+    ret.reserve(8);
+
+    // Position in voxel coordinates including floating point part
+    double rStepD[3];
+    for(int i = 0; i < 3; ++i){
+      // If we're outside the cuboid we have values for, return empty vector,
+      // ie failure.
+      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return;// {};
+      // Figure out our position wrt to the centres of the voxels
+      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] ) - 0.5;
+    }
+
+    // The neighbours are the 8 corners of a cube around this point
+    for(int dx = 0; dx <= 1; ++dx){
+      for(int dy = 0; dy <= 1; ++dy){
+        for(int dz = 0; dz <= 1; ++dz){
+          // The full 3D step
+          const int dr[3] = {dx, dy, dz};
+
+          // The integer-only position of the current corner
+          int rStepI[3];
+          for(int d = 0; d < 3; ++d){
+            // Round down to get the "lower left" corner
+            rStepI[d] = int(rStepD[d]);
+            // Ensure we'll stay in-bounds
+            rStepI[d] = std::max(0, rStepI[d]);
+            rStepI[d] = std::min(rStepI[d], int(GetSteps()[d])-2);
+            // Adjust to the corner we're actually considering
+            rStepI[d] += dr[d];
+          }
+
+          double w = 1;
+          for(int d = 0; d < 3; ++d){
+            // These expressions will interpolate when between the 8 corners,
+            // and extrapolate in the half-voxel space around the edges.
+            if(dr[d] == 0)
+              w *= 1+rStepI[d]-rStepD[d];
+            else
+              w *= 1-rStepI[d]+rStepD[d];
+          }
+
+          const int id = (rStepI[0] +
+                          rStepI[1] * (fxSteps) +
+                          rStepI[2] * (fxSteps * fySteps));
+
+          ret.emplace_back(id, w);
+        }
       }
+    }
 
-    return ID;
-
+    // Sanity check the weights sum to 1
+    double wSum = 0;
+    for(const NeiInfo& n: ret) wSum += n.weight;
+    if(fabs(wSum-1) > 1e-3){
+      std::cout << "PhotonVoxelDef::GetNeighboringVoxelIDs(): "
+                << "Weights sum to " << wSum << " (should be 1). "
+                << "Weights are:";
+      for(const NeiInfo& n: ret) std::cout << " " << n.weight;
+      std::cout << " Aborting." << std::endl;
+      abort();
+    }
   }
 
   //----------------------------------------------------------------------------

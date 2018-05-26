@@ -222,9 +222,10 @@ namespace evgen{
       int allPhotons   = 0;
       int allElectrons = 0;
       int allMuons     = 0;
-      int tpcPhotons   = 0;
-      int tpcElectrons = 0;
-      int tpcMuons     = 0;
+      // for c2: remove unused variables
+      //int tpcPhotons   = 0;
+      //int tpcElectrons = 0;
+      //int tpcMuons     = 0;
       
       // loop over particles in the truth object
       for(int i = 0; i < pretruth.NParticles(); ++i){

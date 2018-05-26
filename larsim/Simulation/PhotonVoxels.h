@@ -72,9 +72,20 @@ namespace sim {
 
     int GetNVoxels() const;
 
-    int GetVoxelID(TVector3) const;
+    int GetVoxelID(const TVector3&) const;
     int GetVoxelID(double const*)  const;
     bool IsLegalVoxelID(int) const;
+
+    struct NeiInfo
+    {
+      NeiInfo(int i, double w) : id(i), weight(w) {}
+      int id;
+      double weight;
+    };
+
+    // Out-param allows less allocation if caller re-uses a buffer
+    void GetNeighboringVoxelIDs(const TVector3& v,
+                                std::vector<NeiInfo>& ret) const;
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;

@@ -66,7 +66,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-  void beginRun(art::Run& run);
+  void beginRun(art::Run& run) override;
 
 private:
 
@@ -186,6 +186,7 @@ void evgen::NucleonDecay::produce(art::Event & e)
       part->GetPolarization(polz);
       tpart.SetPolarization(polz);
     }
+    tpart.SetRescatter(part->RescatterCode());
     truth.Add(tpart);
     
     ++trackid;        

@@ -46,8 +46,14 @@ namespace cheat{
       };
 
 
-      BackTracker(const fhiclConfig& config, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock );
-      BackTracker(const fhicl::ParameterSet& pSet, const cheat::ParticleInventory* partInv, const geo::GeometryCore* geom, const detinfo::DetectorClocks* detClock );
+      BackTracker(const fhiclConfig& config, 
+          const cheat::ParticleInventory* partInv, 
+          const geo::GeometryCore* geom, 
+          const detinfo::DetectorClocks* detClock );
+      BackTracker(const fhicl::ParameterSet& pSet, 
+          const cheat::ParticleInventory* partInv, 
+          const geo::GeometryCore* geom, 
+          const detinfo::DetectorClocks* detClock );
       //I may need to include this to delete copy of service providers.
       BackTracker(BackTracker const&) = delete;
 
@@ -60,16 +66,20 @@ namespace cheat{
 //      template<typename Evt>
 //        void PrepAllHitList ( const Evt& evt);
 
+      //-----------------------------------------------------
       template<typename Evt>
         bool CanRun(const Evt& evt){ return !(evt.isRealData());}
 
+      //-----------------------------------------------------
       template<typename Evt>
         const std::vector< art::Ptr< recob::Hit > > SpacePointToHits_Ps(art::Ptr< recob::SpacePoint> const& spt, const Evt& evt) const;
 
+      //-----------------------------------------------------
       template<typename Evt>
         const std::vector<  double > SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt, const Evt& evt) const;
 
 
+      //-----------------------------------------------------
       void ClearEvent();
 
 

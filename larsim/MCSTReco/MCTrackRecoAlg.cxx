@@ -96,7 +96,7 @@ namespace sim {
       if(edep_index < 0 ) continue;
       auto const& edeps = edep_v.GetEdepArrayAt(edep_index);      
 
-      int n = 0;
+      //int n = 0; // unused
       
       for(auto const& step_trk : mini_track){
 	

@@ -152,6 +152,11 @@ namespace cheat{
     return ParticleInventory::TrackIdToMCTruth_P(id);
   }
 
+  int ParticleInventoryService::TrackIdToEveTrackId(const int& tid) const 
+  { 
+    return ParticleInventory::TrackIdToEveTrackId(tid);
+  }
+
   const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p)
   {
 //    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}

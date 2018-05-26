@@ -1,11 +1,18 @@
+#include "particleinventoryservice.fcl"
 BEGIN_PROLOG
 
-standard_photonbacktracker:
-{
+providerPBKConf:{
  G4ModuleLabel:            "largeant" # module that produced the sim::Particle and sim::SimChannel objects
  MinimumHitEnergyFraction: 0.1        # minimum fraction of energy a G4 trackID contributes to a hit to be 
                                       # counted in hit based efficiency and purity calculations
  Delay:                    0          #This number is the difference between when light arrives at the detector, and the time recorded in OpHits. This number is experiment specific and should be set by each experiment. 
 }
 
+standard_photonbacktrackerservice:
+{
+ PhotonBackTracker: @local::providerPBKConf
+}
+
 END_PROLOG
+
+

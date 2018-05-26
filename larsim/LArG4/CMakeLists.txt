@@ -14,6 +14,7 @@ art_make(
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
+			nutools_RandomUtils_NuRandomService_service
                         nutools_G4Base
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
@@ -42,6 +43,7 @@ art_make(
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
                         larsim_MCCheater_ParticleInventoryService_service
+                        larsim_MCDumpers
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service

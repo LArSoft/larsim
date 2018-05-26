@@ -239,9 +239,10 @@ namespace sim {
       std::vector<double> mom(3,0);
       for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
 	
-	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
+	//auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
 	
-	auto const& daughter_part = part_v[daughter_part_index];
+	// for c2: daughter_part is unused
+	//auto const& daughter_part = part_v[daughter_part_index];
 	
 	auto const daughter_edep_index = edep_v.TrackToEdepIndex(daughter_trk_id);
 
@@ -251,7 +252,7 @@ namespace sim {
 	
 	if(!(daughter_edep.size())) continue;
 
-	bool first=true;
+	//bool first=true;  // unused
 	for(auto const& edep : daughter_edep) {
 
 	  // Compute unit vector to this energy deposition
@@ -310,9 +311,10 @@ namespace sim {
       
       for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
 	
-	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
+	//auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
 	
-	auto const& daughter_part = part_v[daughter_part_index];
+	// for c2: daughter_part is unused
+	//auto const& daughter_part = part_v[daughter_part_index];
 	
 	auto const daughter_edep_index = edep_v.TrackToEdepIndex(daughter_trk_id);
 

@@ -198,7 +198,8 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-const int NTPCs = 300;
+// for c2: NTPCs is no longer used
+//const int NTPCs = 300;
 
 
 namespace simb { class MCTruth; }
@@ -298,7 +299,9 @@ namespace evgen {
     double fnmu[32401];
     double depth[360][91];
     double fmu[360][91];
-    double e1, e2, the1, the2, ph1, ph2;
+    // for c2: e1 and e2 are unused
+    //double e1, e2, the1, the2, ph1, ph2;
+    double the1, the2, ph1, ph2;
     double se = 0.;
     double st = 0.;
     double sp = 0.;
@@ -799,11 +802,13 @@ namespace evgen{
     
     the1 = theta1;
     the2 = theta2;
-    double c1 = cos(M_PI/180.*theta1);
-    double c2 = cos(M_PI/180.*theta2);
+    // for c2: c1 and c2 are unused
+    //double c1 = cos(M_PI/180.*theta1);
+    //double c2 = cos(M_PI/180.*theta2);
     ph1 = M_PI/180.*phi1;
     ph2 = M_PI/180.*phi2;
-    double dph = ph2-ph1;
+    // for c2: dph is unused
+    //double dph = ph2-ph1;
     
     int ipc = 1;
     double theta = theta1;

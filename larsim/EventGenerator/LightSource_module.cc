@@ -105,7 +105,8 @@ namespace evgen {
 
     void Sample(simb::MCTruth &truth);
          
-    int               fSeed;              //random number seed
+    // for c2: fSeed is unused
+    //int               fSeed;              //random number seed
     std::string       fVersion;           //version of the configuration
 
     // Flags to mark module modes 

@@ -53,8 +53,20 @@ namespace cheat{
       for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
         const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
-        fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size());
-        fMCTObj.fMCTruthList.push_back(mct);
+        unsigned short mctruth_idx = USHRT_MAX;
+        for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
+          if (fMCTObj.fMCTruthList[i] == mct){
+             mctruth_idx = i;
+             break;
+          }
+        }
+        if (mctruth_idx == USHRT_MAX){
+          fMCTObj.fMCTruthList.push_back(mct);
+          fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size() - 1);
+        }
+        else{
+          fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), mctruth_idx );
+        }
       }
     }
 

@@ -10,6 +10,7 @@ art_make(
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
 			art_Persistency_Common
 			art_Persistency_Provenance
 			art_Utilities
@@ -17,6 +18,7 @@ art_make(
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
+                        ${CLHEP}
 			cetlib cetlib_except
 			${Boost_SYSTEM_LIBRARY}
 			${ROOT_BASIC_LIB_LIST}
@@ -32,6 +34,7 @@ art_make(
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
 			art_Persistency_Common
 			art_Persistency_Provenance
 			art_Utilities
@@ -39,10 +42,13 @@ art_make(
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${FHICLCPP}
+                        ${CLHEP}
 			cetlib cetlib_except
 			${ROOT_BASIC_LIB_LIST}
           MODULE_LIBRARIES larsim_PhotonPropagation
-                        larsim_PhotonPropagation_PhotonVisibilityService_service
+                       larsim_PhotonPropagation_PhotonVisibilityService_service
+                        larsim_IonizationScintillation
+                        lardataobj_Simulation                   
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
       	                larcore_Geometry_Geometry_service
@@ -51,6 +57,8 @@ art_make(
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+			nutools_RandomUtils_NuRandomService_service
 			art_Persistency_Common
 			art_Persistency_Provenance
 			art_Utilities
@@ -59,6 +67,7 @@ art_make(
 			${MF_UTILITIES}
 			${FHICLCPP}
 			cetlib cetlib_except
+                        ${CLHEP}
                   	${ROOT_BASIC_LIB_LIST}
 	 )
 
