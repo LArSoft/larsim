@@ -657,18 +657,13 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		    }
                 }
 
-	    	if(pvs->IncludeParPropTime()) {
+	    	if(pvs->IncludeParPropTime() && PropParameters) {
             	  double range=0;
-	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=20*PropParameters[OpDet][i];
+	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=100*TMath::Abs(PropParameters[OpDet][i]);
 		  TF1 AuxFunction("timingfunc",Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],range); 
-		  //std::cout << "PMT " << OpDet << " pos("<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<")" << std::endl;   
-		  //std::cout << "par0 " << landauparT0[OpDet] << std::endl;  
-		  //std::cout << "par1 " << landauparMPV[OpDet] << std::endl; 
-		  //std::cout << "par2 " << landauparSigma[OpDet] << std::endl;
 		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i, PropParameters[OpDet][i]);
 
 		  PropTimeFunction[OpDet]=AuxFunction;
-		  //std::cout << "getrandom " << flandauu->GetRandom() << std::endl;
   		}
 
       }
