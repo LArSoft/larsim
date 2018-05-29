@@ -8,8 +8,9 @@
 // for LAr and other optical components
 //
 
+// TODO convert tabs into spaces
 
-
+// TODO verify the inclusion list
 #include "larsim/LArG4/MaterialPropertyLoader.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -35,6 +36,7 @@ namespace larg4 {
 	PropVectorWithUnit[it->first*CLHEP::eV]=it->second*Unit;
       }
     fPropertyList[Material][Property]=PropVectorWithUnit;
+    // replace with MF_LOGDEBUG()
     mf::LogInfo("MaterialPropertyLoader")<<"Added property " 
 					 << Material<< "  " 
 					 << Property;
@@ -47,6 +49,7 @@ namespace larg4 {
 							double Unit)
   {
     fConstPropertyList[Material][Property]=PropertyValue*Unit;
+    // replace with MF_LOGDEBUG()
     mf::LogInfo("MaterialPropertyLoader") << "Added const property " 
 					  << Material << "  " 
 					  << Property << " = " << PropertyValue;
@@ -58,6 +61,7 @@ namespace larg4 {
 						double Unit)
   {
     fBirksConstants[Material]=PropertyValue*Unit;	
+    // replace with MF_LOGDEBUG()
     mf::LogInfo("MaterialPropertyLoader") << "Set Birks constant " 
 					  << Material;
   }
@@ -68,6 +72,7 @@ namespace larg4 {
     std::map<std::string,G4MaterialPropertiesTable*> MaterialTables;
     std::map<std::string,bool> MaterialsSet;
     
+    // TODO replace console output with messagefacility output
     mf::LogInfo("MaterialPropertyLoader") << "UPDATING GEOMETRY";
     
     // Loop over each material with a property vector and create a new material table for it
@@ -104,6 +109,7 @@ namespace larg4 {
 	}
 	int NoOfElements=g4MomentumVector.size();
 	MaterialTables[Material]->AddProperty(Property.c_str(),&g4MomentumVector[0], &g4PropertyVector[0],NoOfElements); 
+        // replace with mf::LogVerbatim()
 	mf::LogInfo("MaterialPropertyLoader") << "Added property "
 					      <<Property
 					      <<" to material table " 
@@ -131,6 +137,11 @@ namespace larg4 {
       G4Material* TheMaterial = volume->GetMaterial();
       std::string Material = TheMaterial->GetName();
 
+      //
+      // create reflective surfaces corresponding to the volumes made of some
+      // selected materials
+      //
+      
       //--------------------------> FIXME <-----------------(parameters from fcl files(?))
       G4MaterialPropertyVector* PropertyPointer = 0;
       if(MaterialTables[Material])
@@ -201,6 +212,9 @@ namespace larg4 {
       }
       //-----------------------------------------------------------------------------
 
+      //
+      // apply the remaining material properties
+      //
       for(std::map<std::string,G4MaterialPropertiesTable*>::const_iterator j=MaterialTables.begin(); j!=MaterialTables.end(); j++){
 	if(Material==j->first){
 	  TheMaterial->SetMaterialPropertiesTable(j->second);

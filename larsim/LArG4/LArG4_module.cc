@@ -266,6 +266,32 @@ namespace larg4 {
    *     `0` effectively disables this feature. All TPCs will have the same
    *     margin applied.
    *     
+   * 
+   * Simulation details
+   * ===================
+   * 
+   * Reflectivity to optical photons
+   * --------------------------------
+   * 
+   * Two models are supported for the simulation of (scintillation) light
+   * crossing detector surfaces:
+   * -# the standard one from GEANT4, implemented in `G4OpBoundaryProcess`
+   * -# a simplified one, implemented in `larg4::OpBoundaryProcessSimple`
+   * 
+   * The model is chosen according to the value of
+   * `detinfo::DetectorProperties::SimpleBoundary()`, and the choice is
+   * currently exerted by `larg4::OpticalPhysics`.
+   * 
+   * The simplified model is faster and simpler: it only deals with absorption
+   * and reflection (both specular and diffues).
+   * This is the "default" model used in most contexts.
+   *
+   * GEANT4 model is more complete and slower. It may take some art to fully
+   * configure all the properties of the materials at the sides of the surfaces.
+   * The price is a detailed simulation that includes among others refraction
+   * and wavelength shifting.
+   * 
+   * 
    */
   class LArG4 : public art::EDProducer{
   public:

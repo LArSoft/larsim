@@ -1,25 +1,9 @@
-// Adapted for LArSoft by Ben Jones, MIT, March 2010
-//
-// This class invokes a simplified model of optical reflections at
-// boundaries between different materials.  The relevant reflectivities
-// are read in by an implementation of the MaterialPropertiesLoader.
-//
-// The required parameters are total reflectance and ratio of diffuse
-// to specular reflectance.  Each photon crossing a boundary with a
-// defined reflectance is randomly either reflected or absorbed and killed
-// according to the supplied probability.
-//
-// Every reflected photon with a defined diffuse reflection fraction
-// is then randomly either diffusely or specularly reflected according
-// to the supplied probability.  All materials with no defined
-// reflectance are assumed to be black and
-//  absorb all incident photons.
-//
-// This physics process is loaded in the OpticalPhysics physics constructor.
-//
-//
-// This class is based on the G4OpBoundaryProcess class in Geant4
-//
+/**
+ * @file   larsim/LArG4/OpBoundaryProcessSimple.hh
+ * @author Ben Jones (bjpjones@mit.edu)
+ * @date   March 2010
+ * @see    larsim/LArG4/OpBoundaryProcessSimple.cxx
+ */
 
 
 // ********************************************************************
@@ -83,10 +67,6 @@
 #include "TTree.h"
 
 
-// Class Description:
-// Discrete Process -- reflection/refraction at optical interfaces.
-// Class inherits publicly from G4VDiscreteProcess.
-// Class Description - End:
 
 /////////////////////
 // Class Definition
@@ -97,8 +77,35 @@ namespace larg4 {
   // Possible statuses of a particle after each step.
   enum OpBoundaryProcessSimpleStatus {  Undefined, NotAtBoundary, SimpleAbsorbedNoRefl,
           SimpleAbsorbed, SimpleDiffuse, SimpleSpecular, StepTooSmall, NoRINDEX };
-
-  class OpBoundaryProcessSimple : public G4VDiscreteProcess
+  
+  /**
+   * @brief Discrete process for reflection and diffusion at optical interfaces.
+   * @see `G4VDiscreteProcess`
+   * 
+   * This class invokes a simplified model of optical reflections at
+   * boundaries between different materials.  The relevant reflectivities
+   * are ultimately read from `detinfo::LArProperties` via
+   * `larg4::MaterialPropertiesLoader`.
+   * 
+   * The required parameters are total reflectance
+   * (`detinfo::LArProperties::SurfaceReflectances()`)
+   * and ratio of diffuse to specular reflectance
+   * (`detinfo::LArProperties::SurfaceReflectanceDiffuseFractions()`). Each
+   * photon crossing a boundary with a defined reflectance is randomly either
+   * reflected or absorbed and killed according to the supplied probability.
+   * 
+   * Every reflected photon with a defined diffuse reflection fraction
+   * is then randomly either diffusely or specularly reflected according
+   * to the supplied probability.  All materials with no defined
+   * reflectance are assumed to be black and absorb all incident photons.
+   * 
+   * This physics process is loaded in `larg4::OpticalPhysics` physics
+   * constructor.
+   *
+   * This class is based on the `G4OpBoundaryProcess` class in Geant4 and was
+   * adapted for LArSoft by Ben Jones, MIT, March 2010.
+   */
+class OpBoundaryProcessSimple : public G4VDiscreteProcess
   {
 
 
