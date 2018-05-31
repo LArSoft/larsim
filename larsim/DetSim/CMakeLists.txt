@@ -15,7 +15,7 @@ art_make( NO_PLUGINS
                         art_Utilities
                         canvas
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -34,7 +34,7 @@ simple_plugin(SimWireAna "module"
                          art_Utilities
                          canvas
                          ${MF_MESSAGELOGGER}
-                         ${MF_UTILITIES}
+                         
                          ${FHICLCPP}
                          cetlib cetlib_except
                          ${ROOT_BASIC_LIB_LIST}
@@ -60,7 +60,7 @@ simple_plugin(SimWire "module"
                       art_Utilities
                       canvas
                       ${MF_MESSAGELOGGER}
-                      ${MF_UTILITIES}
+                      
                       ${FHICLCPP}
                       cetlib cetlib_except
                       ${CLHEP}
@@ -88,7 +88,7 @@ simple_plugin(SimWireT962 "module"
                           art_Utilities
                           canvas
                           ${MF_MESSAGELOGGER}
-                          ${MF_UTILITIES}
+                          
                           ${FHICLCPP}
                           cetlib cetlib_except
                           ${CLHEP}
@@ -111,7 +111,7 @@ simple_plugin(WienerFilterAna "module"
                               art_Utilities
                               canvas
                               ${MF_MESSAGELOGGER}
-                              ${MF_UTILITIES}
+                              
                               ${FHICLCPP}
                               cetlib cetlib_except
                               ${ROOT_BASIC_LIB_LIST}

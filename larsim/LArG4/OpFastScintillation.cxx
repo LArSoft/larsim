@@ -123,7 +123,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // support libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TRandom3.h"
 #include "TMath.h"

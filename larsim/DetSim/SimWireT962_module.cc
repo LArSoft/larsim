@@ -56,7 +56,7 @@ extern "C" {
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/search_path.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"

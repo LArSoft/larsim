@@ -35,7 +35,7 @@
 #include "Geant4/G4KaonZeroLong.hh"
 #include "Geant4/G4ios.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <TMath.h>
 

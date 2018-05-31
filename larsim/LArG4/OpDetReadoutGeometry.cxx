@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////
 #include "nutools/G4Base/DetectorConstruction.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/LArG4/OpDetReadoutGeometry.h"

@@ -14,7 +14,7 @@
 
 #include "larsim/LArG4/OpParamSD.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "larsim/LArG4/OpDetLookup.h"
