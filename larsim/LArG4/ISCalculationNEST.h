@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  ISCalculationNEST.h
-/// \brief Interface to algorithm class for a specific calculation of 
+/// \brief Interface to algorithm class for a specific calculation of
 ///        ionization electrons and scintillation photons using NEST
 ///
 /// \author  brebel@fnal.gov
@@ -12,7 +12,7 @@
 #include "larsim/LArG4/NestAlg.h"
 
 // forward declaration
-namespace CLHEP { class HepRandomEngine; } 
+namespace CLHEP { class HepRandomEngine; }
 
 namespace larg4 {
 
@@ -27,7 +27,7 @@ namespace larg4 {
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
    double StepSizeLimit()              const { return fStepSize;        }
-   
+
  private:
 
    NestAlg* fNest;     ///< the fast optical simulation process
