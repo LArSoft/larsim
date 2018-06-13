@@ -20,7 +20,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
-#include <iostream>
 
 namespace larg4{
 
