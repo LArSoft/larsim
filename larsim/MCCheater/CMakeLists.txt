@@ -54,7 +54,7 @@ simple_plugin(ParticleInventoryService "service"
   art_Utilities
   canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
@@ -81,7 +81,7 @@ simple_plugin(PhotonBackTrackerService "service"
   art_Utilities
   canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
@@ -108,7 +108,7 @@ simple_plugin(BackTrackerService "service"
   art_Utilities
   canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
@@ -125,7 +125,7 @@ simple_plugin(CheckBackTracking "module"
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
   ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
 
@@ -148,7 +148,7 @@ simple_plugin(RecoCheckAna "module"
   art_Utilities
   canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}

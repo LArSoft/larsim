@@ -38,7 +38,9 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
+#include "cetlib/filesystem.h"
+#include "cetlib/search_path.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -572,12 +574,48 @@ namespace evgen{
     if(fPDG.size() > 1 && fPadOutVectors) this->printVecs(vlist);
 
     // If needed, get histograms for momentum and angle distributions
-    TFile* fHistFile = nullptr;
+    TFile* histFile = nullptr;
     if (!fHistFileName.empty()) {
-      fHistFile = new TFile(fHistFileName.c_str());
-      if (!fHistFile->IsOpen()) {
-        throw art::Exception(art::errors::NotFound)
-          << "Can't open ROOT file from 'HistogramFile': \"" << fHistFileName << "\".";
+      if (fHistFileName[0] == '/') {
+        // We have an absolute path, use given name exactly.
+        if (cet::file_exists(fHistFileName)) {
+          histFile = new TFile(fHistFileName.c_str());
+          if (!histFile || histFile->IsZombie() || !histFile->IsOpen()) {
+            delete histFile;
+            histFile = nullptr;
+            throw art::Exception(art::errors::NotFound) << "Cannot open ROOT file specified in parameter HistogramFile: \"" << fHistFileName << "\"";
+          }
+        }
+        else {
+          throw art::Exception(art::errors::NotFound) << "ROOT file specified in parameter HistogramFile: \"" << fHistFileName << "\" does not exist!";
+        }
+      }
+      else {
+        // We have a relative path, search starting from current directory.
+        std::string relative_filename{"./"};
+        relative_filename += fHistFileName;
+        if (cet::file_exists(relative_filename)) {
+          histFile = new TFile(relative_filename.c_str());
+          if (!histFile || histFile->IsZombie() || !histFile->IsOpen()) {
+            delete histFile;
+            histFile = nullptr;
+            throw art::Exception(art::errors::NotFound) << "Cannot open ROOT file found using relative path and originally specified in parameter HistogramFile: \"" << relative_filename << '"';
+          }
+        }
+        else {
+          cet::search_path sp{"FW_SEARCH_PATH"};
+          std::string found_filename;
+          auto found = sp.find_file(fHistFileName, found_filename);
+          if (!found) {
+            throw art::Exception(art::errors::NotFound) << "Cannot find ROOT file in current directory nor on FW_SEARCH_PATH specified in parameter HistogramFile: \"" << fHistFileName << '"';
+          }
+          histFile = new TFile(found_filename.c_str());
+          if (!histFile || histFile->IsZombie() || !histFile->IsOpen()) {
+            delete histFile;
+            histFile = nullptr;
+            throw art::Exception(art::errors::NotFound) << "Cannot open ROOT file found on FW_SEARCH_PATH and originally specified in parameter HistogramFile: \"" << found_filename << '"';
+          }
+        }
       }
     }
     
@@ -616,10 +654,10 @@ namespace evgen{
         }
         hPHist.reserve(fPHist.size());
         for (auto const& histName: fPHist) {
-          TH1* pHist = dynamic_cast<TH1*>(fHistFile->Get(histName.c_str()));
+          TH1* pHist = dynamic_cast<TH1*>(histFile->Get(histName.c_str()));
           if (!pHist) {
             throw art::Exception(art::errors::NotFound)
-             << "Failed to read momentum histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+             << "Failed to read momentum histogram '" << histName << "' from '" << histFile->GetPath() << "\'";
           }
           pHist->SetDirectory(nullptr); // make it independent of the input file
           hPHist.emplace_back(pHist);
@@ -637,10 +675,10 @@ namespace evgen{
         }
         hThetaXzYzHist.reserve(fThetaXzYzHist.size());
         for (auto const& histName: fThetaXzYzHist) {
-          TH2* pHist = dynamic_cast<TH2*>(fHistFile->Get(histName.c_str()));
+          TH2* pHist = dynamic_cast<TH2*>(histFile->Get(histName.c_str()));
           if (!pHist) {
             throw art::Exception(art::errors::NotFound)
-             << "Failed to read direction histogram '" << histName << "' from '" << fHistFile->GetPath() << "\'";
+             << "Failed to read direction histogram '" << histName << "' from '" << histFile->GetPath() << "\'";
           }
           pHist->SetDirectory(nullptr); // make it independent of the input file
           hThetaXzYzHist.emplace_back(pHist);
@@ -649,7 +687,7 @@ namespace evgen{
         break;
     } // switch(fAngleDist)
     
-    delete fHistFile;
+    delete histFile;
     
   }
 

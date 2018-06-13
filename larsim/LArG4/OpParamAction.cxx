@@ -5,7 +5,7 @@
 
 #include "larsim/LArG4/OpParamAction.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "Geant4/G4Material.hh"
 #include <cmath>

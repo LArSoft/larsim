@@ -63,7 +63,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TLorentzVector.h"
 

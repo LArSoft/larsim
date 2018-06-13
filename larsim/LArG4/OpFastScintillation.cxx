@@ -104,6 +104,7 @@
 #include "Geant4/G4Poisson.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 
+
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
@@ -123,7 +124,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // support libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TRandom3.h"
 #include "TMath.h"
@@ -511,11 +512,15 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
   float const* ReflVisibilities = nullptr;
   float const* ReflT0s = nullptr;
+
+  const std::vector<float>* PropParameters = nullptr;
+
   if(pvs->StoreReflected()) {
     ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
     if(pvs->StoreReflT0())
       ReflT0s = pvs->GetReflT0s(xyz); 
   }
+  if(pvs->IncludeParPropTime()) PropParameters = pvs->GetTimingPar(xyz);
   
   /*
   // For Kazu to debug # photons generated using csv file, by default should be commented out 
@@ -631,7 +636,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       std::map<int, int> DetectedNum;
 
       std::map<int, int> ReflDetectedNum;
-	    for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+      std::map<int, TF1> PropTimeFunction;
+
+      for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
     		G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 
@@ -649,7 +656,17 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		    {
 		      ReflDetectedNum[OpDet]=ReflDetThisPMT;
 		    }
-                }	
+                }
+
+	    	if(pvs->IncludeParPropTime() && PropParameters) {
+            	  double range=0;
+	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=100*TMath::Abs(PropParameters[OpDet][i]);
+		  TF1 AuxFunction("timingfunc",Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],range); 
+		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i, PropParameters[OpDet][i]);
+
+		  PropTimeFunction[OpDet]=AuxFunction;
+  		}
+
       }
 	    // Now we run through each PMT figuring out num of detected photons
 	
@@ -675,6 +692,10 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
                     sample_time(ScintillationRiseTime, ScintillationTime);
             }
 
+	    if(pvs->IncludeParPropTime()) {
+               	deltaTime += PropTimeFunction[itdetphot->first].GetRandom(); 
+	    }
+
             G4double aSecondaryTime = t0 + deltaTime;
             float Time = aSecondaryTime;
             int ticks = static_cast<int>(Time);
@@ -693,8 +714,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
          double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
          double const xyzPos[3] = {xO,yO,zO};
-         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
-
+//         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::MeV );
+         //double energy  = ( aStep.GetNonIonizingEnergyDeposit() / CLHEP::MeV );
+         double energy  = VisibleEnergyDeposit(aStep)/CLHEP::MeV;
          //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
          for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
          {
@@ -1233,6 +1255,8 @@ double LandauPlusExpoFinal(double *x, double *par)
 
   return (y1 + y2);
 }
+
+
 double finter_r(double *x, double *par) {
 
   double y1 = par[2]*TMath::Landau(x[0],par[0],par[1]);
