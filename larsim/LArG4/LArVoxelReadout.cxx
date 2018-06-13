@@ -23,7 +23,7 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 
 // framework libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

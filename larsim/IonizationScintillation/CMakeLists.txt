@@ -3,10 +3,10 @@ art_make(
           LIB_LIBRARIES 
 			larsim_Simulation
 			lardataobj_Simulation
-			lardata_DetectorInfo
+			lardataalg_DetectorInfo
 			larevt_SpaceCharge
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         ${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
@@ -19,7 +19,7 @@ art_make(
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         ${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
