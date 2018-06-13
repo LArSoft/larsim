@@ -20,6 +20,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 
+
 namespace larg4{
 
   //----------------------------------------------------------------------------
@@ -202,10 +203,21 @@ namespace larg4{
     }
     else if(fEMSaturation){
       // The default linear scintillation process
-      fNumScintPhotons = fScintYieldFactor * scintYield * fEMSaturation->VisibleEnergyDepositionAtAStep(step);
+      //fEMSaturation->SetVerbose(1);
+      fVisibleEnergyDeposition = fEMSaturation->VisibleEnergyDepositionAtAStep(step);
+      fNumScintPhotons = fScintYieldFactor * scintYield * fVisibleEnergyDeposition;
+      //fNumScintPhotons = fScintYieldFactor * scintYield * fEMSaturation->VisibleEnergyDepositionAtAStep(step);
+      //I need a dump here
+      //mf::LogInfo("EMSaturation") <<"\n\nfEMSaturation VisibleEnergyDepositionAtAStep(step): "<<fEMSaturation->VisibleEnergyDepositionAtAStep(step)<<"\n" <<"BirksCoefs: \n";
+     // fEMSaturation->DumpBirksCoefficients();
+      //mf::LogInfo("EMSaturation")<<"\n" <<"G4Birks: \n";
+      //fEMSaturation->DumpG4BirksCoefficients();
+      //mf::LogInfo("EMSaturation")<<"fScintYieldFactor: "<<fScintYieldFactor <<"\nscintYield: "<<scintYield<<"\nfEMVisAtStep: "<<fEMSaturation->VisibleEnergyDepositionAtAStep(step)<<"\nfNumScintPhotons: "<<fNumScintPhotons<<"\n";
+      //mf::LogInfo("EMSaturation")<<"fTotalEnergyDeposit: "<< step->GetTotalEnergyDeposit()/CLHEP::MeV<<"\nfNumIonElectrons: "<<fNumIonElectrons<<"\n";
     }
     else{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
+      fVisibleEnergyDeposition = 0.0; //This is set to zero because I have not made a correct implimentation of this value for anything but EMSaturation.
     }
 
     LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 

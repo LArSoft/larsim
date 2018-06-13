@@ -52,6 +52,7 @@ namespace larg4{
     fEnergyDeposit   = 0.;
     fNumIonElectrons = 0.;
     fNumScintPhotons = 0.;
+    fVisibleEnergyDeposition = 0.;
 
     return;
   }
@@ -74,6 +75,7 @@ namespace larg4{
     fEnergyDeposit   = fNest->EnergyDeposition()/CLHEP::MeV;
     fNumIonElectrons = fNest->NumberIonizationElectrons();
     fNumScintPhotons = fNest->NumberScintillationPhotons();
+    fVisibleEnergyDeposition = 0.; //Not implimented for NEST.
 
     return;
   }

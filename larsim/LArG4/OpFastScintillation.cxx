@@ -104,6 +104,7 @@
 #include "Geant4/G4Poisson.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 
+
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
@@ -713,8 +714,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
          double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
          double const xyzPos[3] = {xO,yO,zO};
-         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
-
+//         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::MeV );
+         //double energy  = ( aStep.GetNonIonizingEnergyDeposit() / CLHEP::MeV );
+         double energy  = VisibleEnergyDeposit(aStep)/CLHEP::MeV;
          //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
          for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
          {
