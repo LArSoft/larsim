@@ -335,7 +335,8 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	// singleton
 	larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
 	double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
-        RecordPhotonsProduced(aStep, MeanNumberOfPhotons);
+//  double stepEnergy          = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
+        RecordPhotonsProduced(aStep, MeanNumberOfPhotons);//, stepEnergy);
 	
 	if (verboseLevel>0) {
 	  G4cout << "\n Exiting from OpFastScintillation::DoIt -- NumberOfSecondaries = " 
@@ -373,7 +374,7 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   
 //-------------------------------------------------------------
 
-bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)
+bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)//, double stepEnergy)
 {
 
   // Get the pointer to the fast scintillation table
@@ -715,8 +716,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
          double const xyzPos[3] = {xO,yO,zO};
 //         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::MeV );
-         //double energy  = ( aStep.GetNonIonizingEnergyDeposit() / CLHEP::MeV );
-         double energy  = VisibleEnergyDeposit(aStep)/CLHEP::MeV;
+         double energy  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
          //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
          for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
          {
