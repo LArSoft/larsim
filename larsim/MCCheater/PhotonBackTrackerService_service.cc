@@ -99,8 +99,9 @@ namespace cheat{
     if( this->priv_OpFlashToOpHitsReady()){ return; }
     try{PhotonBackTracker::PrepOpFlashToOpHits(evt);}
     catch(...){
-      mf::LogWarning("PhotonBackTrackerService")
-        <<"Rebuild failed to get the OpFlashToOpHits. This is bad.";
+      //This is silent for now.
+/*      mf::LogWarning("PhotonBackTrackerService")
+        <<"Rebuild failed to get the OpFlashToOpHits. This is bad.";*/
     }
   }
 
