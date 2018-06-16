@@ -661,9 +661,9 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
 	    	if(pvs->IncludeParPropTime() && PropParameters) {
             	  double range=0;
-	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=100*TMath::Abs(PropParameters[OpDet][i]);
-		  TF1 AuxFunction("timingfunc",Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],range); 
-		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i, PropParameters[OpDet][i]);
+	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=300*TMath::Abs(PropParameters[OpDet][i]);
+		  TF1 AuxFunction(Form("timingfunc%i",(int)((size_t)OpDet)),Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],PropParameters[OpDet][0]+range); 
+		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i-1, PropParameters[OpDet][i]);
 
 		  PropTimeFunction[OpDet]=AuxFunction;
   		}
