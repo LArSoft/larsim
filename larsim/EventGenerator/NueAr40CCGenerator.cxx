@@ -8,7 +8,7 @@
 
 // Framework includes
 #include "cetlib/search_path.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // nutools includes
 #include "nusimdata/SimulationBase/MCParticle.h"

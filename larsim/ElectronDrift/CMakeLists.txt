@@ -4,10 +4,10 @@ art_make(
 			larsim_Simulation
 			larsim_IonizationScintillation
 			lardataobj_Simulation
-			lardata_DetectorInfo
+			lardataalg_DetectorInfo
 			larevt_SpaceCharge
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         ${FHICLCPP}
                         ${CETLIB}
                         ${CLHEP}
@@ -34,7 +34,7 @@ art_make(
                       canvas
 #                      canvas_Persistency_Provenance
                       ${MF_MESSAGELOGGER}
-                      ${MF_UTILITIES}
+                      
                       ${FHICLCPP}
 		      ${CETLIB}
                       ${CLHEP}

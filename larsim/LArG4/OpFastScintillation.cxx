@@ -104,6 +104,7 @@
 #include "Geant4/G4Poisson.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 
+
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
@@ -123,7 +124,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // support libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TRandom3.h"
 #include "TMath.h"
@@ -335,7 +336,8 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	// singleton
 	larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
 	double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
-        RecordPhotonsProduced(aStep, MeanNumberOfPhotons);
+//  double stepEnergy          = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
+        RecordPhotonsProduced(aStep, MeanNumberOfPhotons);//, stepEnergy);
 	
 	if (verboseLevel>0) {
 	  G4cout << "\n Exiting from OpFastScintillation::DoIt -- NumberOfSecondaries = " 
@@ -373,7 +375,7 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   
 //-------------------------------------------------------------
 
-bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)
+bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)//, double stepEnergy)
 {
 
   // Get the pointer to the fast scintillation table
@@ -658,18 +660,13 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		    }
                 }
 
-	    	if(pvs->IncludeParPropTime()) {
+	    	if(pvs->IncludeParPropTime() && PropParameters) {
             	  double range=0;
-	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=20*PropParameters[OpDet][i];
-		  TF1 AuxFunction("timingfunc",Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],range); 
-		  //std::cout << "PMT " << OpDet << " pos("<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<")" << std::endl;   
-		  //std::cout << "par0 " << landauparT0[OpDet] << std::endl;  
-		  //std::cout << "par1 " << landauparMPV[OpDet] << std::endl; 
-		  //std::cout << "par2 " << landauparSigma[OpDet] << std::endl;
-		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i, PropParameters[OpDet][i]);
+	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=300*TMath::Abs(PropParameters[OpDet][i]);
+		  TF1 AuxFunction(Form("timingfunc%i",(int)((size_t)OpDet)),Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],PropParameters[OpDet][0]+range); 
+		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i-1, PropParameters[OpDet][i]);
 
 		  PropTimeFunction[OpDet]=AuxFunction;
-		  //std::cout << "getrandom " << flandauu->GetRandom() << std::endl;
   		}
 
       }
@@ -719,8 +716,8 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
          double yO = ( ( (prePoint.getY() + postPoint.getY() ) / 2.0) / CLHEP::cm );
          double zO = ( ( (prePoint.getZ() + postPoint.getZ() ) / 2.0) / CLHEP::cm );
          double const xyzPos[3] = {xO,yO,zO};
-         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::GeV );
-
+//         double energy  = ( aStep.GetTotalEnergyDeposit() / CLHEP::MeV );
+         double energy  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
          //Loop over StepPhotons to get number of photons detected at each time for this channel and G4Step.
          for(std::map<int,int>::iterator stepPhotonsIt = StepPhotons.begin(); stepPhotonsIt != StepPhotons.end(); ++stepPhotonsIt)
          {

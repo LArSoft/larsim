@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  IonizationAndScintillation.h
-/// \brief Singleton to access a unified treatment of ionization and 
+/// \brief Singleton to access a unified treatment of ionization and
 ///        scintillation in LAr
 ///
 /// \author  brebel@fnal.gov
@@ -31,11 +31,12 @@ namespace larg4 {
 
     // Method to reset the internal variables held in the ISCalculation
     // This method should be called at the start of any G4Step
-    void Reset(const G4Step* step); 
+    void Reset(const G4Step* step);
 
-    double EnergyDeposit()              const { return fISCalc->EnergyDeposit();              } 
-    double NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  } 
-    double NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); } 
+    double EnergyDeposit()              const { return fISCalc->EnergyDeposit();              }
+    double VisibleEnergyDeposit()       const { return fISCalc->VisibleEnergyDeposit();       }
+    double NumberIonizationElectrons()  const { return fISCalc->NumberIonizationElectrons();  }
+    double NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); }
     double StepSizeLimit()              const { return fISCalc->StepSizeLimit();              }
 
   private:
@@ -58,7 +59,7 @@ namespace larg4 {
     TH1F*                 fPhotonsPerLength;   ///< histogram of photons per cm
     TH1F*                 fElectronsPerEDep;   ///< histogram of electrons per MeV deposited
     TH1F*                 fPhotonsPerEDep;     ///< histogram of photons per MeV deposited
-    TH2F*                 fElectronsVsPhotons; ///< histogram of electrons vs photons per step 
+    TH2F*                 fElectronsVsPhotons; ///< histogram of electrons vs photons per step
     CLHEP::HepRandomEngine& fEngine;           ///< random engine
   };
 

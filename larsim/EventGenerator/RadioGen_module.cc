@@ -21,6 +21,12 @@
 //             require a significant redesign of the module 
 //             and possibly of the .root files data structure 
 //             for each radiological.
+//
+//           Dec 01, 2017 JStock
+//             Adding the ability to make 8.997 MeV Gammas for 
+//             Ni59 Calibration sources. This is another "hacky" 
+//             fix to something that really deserves a more 
+//             elegant and comprehensive solution.
 ////////////////////////////////////////////////////////////////////////
 #ifndef EVGEN_RADIOLOGICAL
 #define EVGEN_RADIOLOGICAL
@@ -50,7 +56,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 
 // art extensions
@@ -228,6 +234,7 @@ namespace evgen{
       else if(nuclideName=="232Th"){readfile("232Th","Thorium_232.root");}
       else if(nuclideName=="238U" ){readfile("238U","Uranium_238.root") ;}
       else if(nuclideName=="222Rn"){continue;} //Rn222 is handeled separately later
+      else if(nuclideName=="59Ni"){continue;} //Rn222 is handeled separately later
       else if(nuclideName=="42Ar" ){
         readfile("42Ar_1", "Argon_42_1.root"); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
         readfile("42Ar_2", "Argon_42_2.root"); //This allows us to know which decay chain to follow for the dexcitation gammas.
@@ -335,6 +342,11 @@ namespace evgen{
         std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
         v_prods.push_back(partMassMom);
       }//End special case RN222
+      else if(fNuclide[i] == "59Ni"){ //Treat 59Ni Calibration Source separately (as I haven't made a spectrum for it, and ultimately it should be handeled with multiple particle outputs.
+        double p=0.008997; td_Mass m=0; ti_PDGID pdgid=22; // td_Mas=double. ti_PDFID=int. Assigning p directly, as t=p for gammas.
+        std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
+        v_prods.push_back(partMassMom);
+      }//end special case Ni59 calibration source
       else if(fNuclide[i] == "42Ar"){   // Spot for special treatment of Ar42. 
         double p=0; double t=0; td_Mass m = 0; ti_PDGID pdgid=0; //td_Mass = double. ti_PDGID = int;
         double bSelect = flat.fire();   //Make this a random number from 0 to 1.
