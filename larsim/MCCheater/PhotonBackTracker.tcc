@@ -25,15 +25,15 @@ namespace cheat{
 
       auto compareBTRlambda = [](art::Ptr<sim::OpDetBacktrackerRecord> a, art::Ptr<sim::OpDetBacktrackerRecord> b) {return(a->OpDetNum()<b->OpDetNum());};
       if (!std::is_sorted(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda)) std::sort(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda);
-      FindOneP<raw::OpDetWaveform, sim::OpDetDivRec>(priv_OpDetBTRs, evt, fWavLabel) fp;
+      art::FindOneP<raw::OpDetWaveform, sim::OpDetDivRec> fp(priv_OpDetBTRs, evt, fWavLabel);// fp;
       //They come in sorted by BTR. Now make an index matched vector of data_t sorted by BTR. No. I need easy, not efficient. Map of DetNum to data_t. data_t is then channel mapped.
       if (fp.isValid()){
-        for( auto& btr : priv_OpDetBTRs){
-          //BTRs are now sorted, but I want a map anyway. I can do better, but this is quick and robust.
-          auto check = od_to_chanDiv.emplace(std::make_pair(btr.OpDetNum(), fp.data(btr)));
-          if(! check.second){
-            throw cet::exception("PhotonBackTracker")<<"Trying to add a ChannelDivRec by BTR for an already existing entry.";
-          }
+        for( size_t btr_iter=0; btr_iter<priv_OpDetBTRs.size(); ++btr_iter){
+          auto btr=priv_OpDetBTRs.at(btr_iter);
+          auto od = btr->OpDetNum();
+          auto const& dr = fp.data(btr_iter);
+          if(!dr) continue;
+          priv_od_to_chanDiv.at(od)=dr.ref();
 
         }
       }else{throw cet::exception("PhotonBackTracker")<<"find Waveforms and DivRecs from BTRs failed.";}

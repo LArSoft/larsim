@@ -348,50 +348,80 @@ namespace cheat{
   //----------------------------------------------------------------
   //This function weights each of the returned sdps by the correct fractional number of detected photons. This make nPEs and Energy in the SDP make sense. Because these are constructed in place as weighted copies of the actual SDPs, they do not exist in the principle, cannot be returned as pointers, and are not comparable between calls.
   //This function is largely copied from OpHitToSimSDPs_Ps
-//  const std::vector< const sim::SDP > PhotonBackTracker::OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P) const
-//  {
-//    std::vector<const sim::SDP> retVec;
-//    double fPeakTime = opHit.PeakTime();
-//    double fWidth = opHit.Width();
-//    UInt_t fChan = opHit.OpChannel();
-//    //I should use the timing service for these time conversions.
-//    sim::OpDetBacktrackerRecord::timePDclock_t start_time = ((fPeakTime- fWidth)*1000.0)-fDelay;
-//    sim::OpDetBacktrackerRecord::timePDclock_t end_time = ((fPeakTime+ fWidth)*1000.0)-fDelay;
-//    if(start_time > end_time){throw;}//This is bad. Give a reasonable error message here, and use cet::except
-//
-//    //BUG!!!fGeom->OpDetFromOpChannel(channel)
-//    art::Ptr<sim::OpDetBacktrackerRecord> fBTR = this->FindOpDetBTR(fGeom->OpDetFromOpChannel(fChan));
-//    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap
-//      = fBTR->timePDclockSDPsMap(); //Not guranteed to be sorted.
-//    //const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap = (this->FindOpDetBTR(opHit.OpChannel()))->timePDclockSDPsMap(); //Not guranteed to be sorted.
-//
-//    //COME BACK HERE
-//    //Find DivRecs from BTR. Sort both. Compare lengths. They should match.
-//
-//    std::vector<const std::pair<double, std::vector<sim::SDP>>*> timePDclockSDPMap_SortedPointers;
-//    for ( auto& pair : timeSDPMap ){ timePDclockSDPMap_SortedPointers.push_back(&pair); }
-//    auto pairSort = [](auto& a, auto& b) { return a->first < b->first ; } ;
-//    if( !std::is_sorted( timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort)){
-//      std::sort(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort);
-//    }
-//
-//    //This section is a hack to make comparisons work right.
-//    std::vector<sim::SDP> dummyVec;
-//    std::pair<double, std::vector<sim::SDP>> start_timePair = std::make_pair(start_time, dummyVec);
-//    std::pair<double, std::vector<sim::SDP>> end_timePair = std::make_pair(end_time, dummyVec);
-//    auto start_timePair_P = &start_timePair;
-//    auto end_timePair_P = &end_timePair;
-//    //First interesting iterator.
-//    auto mapFirst = std::lower_bound(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), start_timePair_P, pairSort);
-//    //Last interesting iterator.
-//    auto mapLast = std::upper_bound(mapFirst, timePDclockSDPMap_SortedPointers.end(), end_timePair_P, pairSort);
-//
-//    for( auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr )
-//      for( auto& sdp : (*mapitr)->second)
-//        retVec.push_back(&sdp);
-//
-//    return retVec;
-//  }
+  const std::vector< sim::SDP > PhotonBackTracker::OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P) const
+  {
+    std::vector< sim::SDP > retVec;
+    double fPeakTime = opHit_P->PeakTime();
+    double fWidth = opHit_P->Width();
+    UInt_t fChan = opHit_P->OpChannel();
+    UInt_t fDet  = fGeom->OpDetFromOpChannel(fChan);
+    //I should use the timing service for these time conversions.
+    sim::OpDetBacktrackerRecord::timePDclock_t start_time = ((fPeakTime- fWidth)*1000.0)-fDelay;
+    sim::OpDetBacktrackerRecord::timePDclock_t end_time = ((fPeakTime+ fWidth)*1000.0)-fDelay;
+    if(start_time > end_time){throw;}//This is bad. Give a reasonable error message here, and use cet::except
+
+    //BUG!!!fGeom->OpDetFromOpChannel(channel)
+    art::Ptr<sim::OpDetBacktrackerRecord> fBTR = this->FindOpDetBTR(fDet);
+    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap
+      = fBTR->timePDclockSDPsMap(); //Not guranteed to be sorted.
+    const sim::OpDetDivRec div_rec = priv_od_to_chanDiv.at(fDet); //This is an OpDetDivRec collected from this BTR.
+
+
+    std::vector<const std::pair<double, std::vector<sim::SDP>>*> timePDclockSDPMap_SortedPointers;
+    std::vector<const sim::OpDetTimeAndChans*> div_rec_SortedPointers;
+    for ( auto& pair : timeSDPMap ){ timePDclockSDPMap_SortedPointers.push_back(&pair); }
+    auto pairSort = [](auto& a, auto& b) { return a->first < b->first ; } ;
+    if( !std::is_sorted( timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort)){
+      std::sort(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort);
+    }
+
+    for ( auto& dr :  div_rec.tick_chans ) { div_rec_SortedPointers.push_back(&dr) ; }
+//    auto dr_sort  = [](auto& a, auto& b) { return a->time < b->time; } ;
+    auto dr_sort  = [](auto& a, auto& b) { return a->time < b->time; } ;
+//    auto dr_double_sort = [&start_time = start_time](const sim::OpDetTimeAndChans* &a, const sim::OpDetTimeAndChans* &b){return a->time < start_time ; } ;
+//    auto dr_doubleH_sort = [&end_time = end_time](const sim::OpDetTimeAndChans* &a){return a->time > end_time; } ;
+    if( ! std::is_sorted( div_rec_SortedPointers.begin(), div_rec_SortedPointers.end(), dr_sort)){
+      std::sort(div_rec_SortedPointers.begin(), div_rec_SortedPointers.end(), dr_sort);
+    }
+
+    //This section is a hack to make comparisons work right.
+    std::vector<sim::SDP> dummyVec;
+    std::pair<double, std::vector<sim::SDP>> start_timePair = std::make_pair(start_time, dummyVec);
+    std::pair<double, std::vector<sim::SDP>> end_timePair = std::make_pair(end_time, dummyVec);
+    sim::OpDetTimeAndChans div_rec_SortedPointers_begin_time;
+    sim::OpDetTimeAndChans div_rec_SortedPointers_end_time;
+    div_rec_SortedPointers_begin_time.time=start_time;
+    div_rec_SortedPointers_end_time.time=end_time;
+    auto start_timePair_P = &start_timePair;
+    auto end_timePair_P = &end_timePair;
+    auto start_timeODTAC_p = &div_rec_SortedPointers_begin_time;
+    auto end_timeODTAC_p = &div_rec_SortedPointers_begin_time;
+
+    //First interesting iterator.
+    auto map_pdsdp_itr = std::lower_bound(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), start_timePair_P, pairSort);
+    //Last interesting iterator.
+    auto map_pdsdp_last = std::upper_bound(map_pdsdp_itr, timePDclockSDPMap_SortedPointers.end(), end_timePair_P, pairSort);
+    //DivRec iterators. Lower and upper bound don't make sense here.
+    auto map_divrec_itr = std::lower_bound(div_rec_SortedPointers.begin(), div_rec_SortedPointers.end(), start_timeODTAC_p, dr_sort);
+    auto map_divrec_last = std::upper_bound(div_rec_SortedPointers.begin(), div_rec_SortedPointers.end(), end_time_ODTAC_p, dr_sort);
+
+    //retvec.push_back(map_pdsdp_first.second[0]);
+    if(std::distance(map_pdsdp_itr, map_pdsdp_last) == std::distance(map_divrec_itr, map_divrec_last)){ //They should be perfectly matched in length. If not, something has gone wrong.
+      //This code screams fragile. Really. If you read this, feel free to clean up the methods.
+      while( map_pdsdp_itr != map_pdsdp_last && map_divrec_itr != map_divrec_last){ //Stepping through.
+        for(auto const& sdp :  (*map_pdsdp_itr)->second){
+          sim::SDP tmp = sdp;
+          tmp.energy = ((*map_divrec_itr)->DivChans.eScaleFrac(fChan))*tmp.energy;
+//              second[fChan].tick_photons_frac)*tmp.energy;
+          retVec.emplace_back(tmp);
+        }
+        ++map_pdsdp_itr;
+        ++map_divrec_itr;
+      }
+    }
+
+    return retVec;
+  }
 
   //----------------------------------------------------------------
   const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) const
@@ -468,8 +498,8 @@ namespace cheat{
 
   //----------------------------------------------------------------
   //const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(recob::OpHit const& opHit)
-//  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps(const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps)
-      const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps( std::vector< art::Ptr < recob::OpHit > > const& opHits_Ps) const
+  //  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps(const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps)
+  const std::vector< const sim::SDP* > PhotonBackTracker::OpHitsToSimSDPs_Ps( std::vector< art::Ptr < recob::OpHit > > const& opHits_Ps) const
   {
     std::vector < const sim::SDP* > sdps_Ps;
     for ( auto opHit_P : opHits_Ps ){
@@ -482,8 +512,8 @@ namespace cheat{
   //----------------------------------------------------------------
   const std::vector< double > PhotonBackTracker::OpHitsToXYZ( std::vector < art::Ptr < recob::OpHit > > const& opHits_Ps) const
   {
-      const std::vector<const sim::SDP*> SDPs_Ps = OpHitsToSimSDPs_Ps(opHits_Ps);
-      return this->SimSDPsToXYZ(SDPs_Ps);
+    const std::vector<const sim::SDP*> SDPs_Ps = OpHitsToSimSDPs_Ps(opHits_Ps);
+    return this->SimSDPsToXYZ(SDPs_Ps);
   }
 
   //----------------------------------------------------------------

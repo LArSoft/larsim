@@ -24,13 +24,18 @@
 
 //LArSoft
 #include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/FindOneP.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/FindOne.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/OpFlash.h"
+#include "lardataobj/RawData/OpDetWaveform.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/MCCheater/ParticleInventory.h"
+#include "dune/DuneObjBase/OpDetDivRec.h"
 
 
 
@@ -147,6 +152,8 @@ namespace cheat{
 
       //-----------------------------------------------------
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) const;
+      //-----------------------------------------------------
+      const std::vector< sim::SDP > OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P) const;
       //
       //-----------------------------------------------------
       //      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
@@ -232,7 +239,7 @@ namespace cheat{
     private:
       const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here
       const geo::GeometryCore* fGeom;
-//      const detinfo::DetectorClocks* fDetClocks;
+      //      const detinfo::DetectorClocks* fDetClocks;
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
       const art::InputTag fOpHitLabel;
@@ -240,7 +247,7 @@ namespace cheat{
       const art::InputTag fWavLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
-      std::map<UInt_t, sim::OpDetDivRec> od_to_chanDiv;
+      std::map<UInt_t, sim::OpDetDivRec> priv_od_to_chanDiv;
       std::map< art::Ptr < recob::OpFlash >, std::vector < art::Ptr < recob::OpHit > > > fOpFlashToOpHits;
 
 
