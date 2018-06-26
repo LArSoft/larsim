@@ -64,6 +64,7 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "canvas/Utilities/Exception.h"
 #include "cetlib_except/exception.h"
 
 // art extensions
@@ -401,10 +402,18 @@ namespace evgen{
 
     //     std::cout << "add vector to the event " << truthcol->size() << std::endl;
     evt.put(std::move(truthcol));
- 
-    art::ServiceHandle<phot::PhotonVisibilityService> vis;
+    
+    phot::PhotonVisibilityService* vis = nullptr;
+    try {
+      vis = art::ServiceHandle<phot::PhotonVisibilityService>().get();
+    }
+    catch (art::Exception const& e) {
+      // if the service is not configured, then this is not a build job
+      // (it is a simple generation job instead)
+      if (e.categoryCode() != art::errors::ServiceNotFound) throw;
+    }
 
-    if(vis->IsBuildJob())
+    if(vis && vis->IsBuildJob())
       {
 	mf::LogVerbatim("LightSource") << "Light source : Stowing voxel params ";
 	vis->StoreLightProd(fCurrentVoxel,fN);
