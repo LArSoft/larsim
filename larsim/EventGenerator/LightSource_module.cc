@@ -94,7 +94,6 @@
 #include "larsim/Simulation/PhotonVoxels.h"
 
 #include "TVector3.h"
-#include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TTree.h"
 
@@ -102,14 +101,12 @@
 #include "CLHEP/Random/RandGaussQ.h"
 
 namespace evgen {
-  class SingleParticle;
 
   /// A module for optical MC testing and library building
   class LightSource : public art::EDProducer {
   public:
     explicit LightSource(fhicl::ParameterSet const& pset);
-    virtual ~LightSource();                        
-  
+    
     void produce(art::Event & evt);
     void beginRun(art::Run& run);
 
@@ -308,11 +305,6 @@ namespace evgen{
       }
   }
 
-
-  //----------------------------------------------------------------
-  LightSource::~LightSource()
-  {
-  }
 
   //____________________________________________________________________________
   void LightSource::beginRun(art::Run& run)
