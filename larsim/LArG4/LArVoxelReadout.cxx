@@ -134,7 +134,7 @@ namespace larg4 {
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
-    std::cout << "Total number of steps was " << fNSteps << std::endl;
+    mf::LogWarning("LArVoxelReadout") << "Total number of steps was " << fNSteps << std::endl;
 
   } // LArVoxelReadout::EndOfEvent()
 
