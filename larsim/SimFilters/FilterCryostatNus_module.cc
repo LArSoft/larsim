@@ -61,21 +61,21 @@ namespace simfilter {
     evt.getManyByType(allmclists);
 
     bool inCryostatNu=false;
-    for(size_t mcl = 0; mcl < allmclists.size(); ++mcl){
-      art::Handle< std::vector<simb::MCTruth> > mclistHandle = allmclists[mcl];
-      for(size_t m = 0; m < mclistHandle->size(); ++m){
-        art::Ptr<simb::MCTruth> mct(mclistHandle, m);
+    for (auto const& mclistHandle: allmclists) {
+      for (simb::MCTruth const& mct: *mclistHandle) {
 
         //get nu, does it end in cyrostat?
-        for(int ipart=0;ipart<mct->NParticles();ipart++){
-          if(abs(mct->GetParticle(ipart).PdgCode())==12||
-             abs(mct->GetParticle(ipart).PdgCode())==14||
-             abs(mct->GetParticle(ipart).PdgCode())==16){
              const TLorentzVector& end4 = mct->GetParticle(ipart).EndPosition();
              double endpointa[]={end4[0],end4[1],end4[2]};
              unsigned int cstat;
              try{
               geom->PositionToCryostat(endpointa,cstat);
+        for(int ipart=0;ipart<mct.NParticles();ipart++){
+          auto const& part = mct.GetParticle(ipart);
+          auto const absPDGID = std::abs(part.PdgCode());
+          if(absPDGID==12||
+             absPDGID==14||
+             absPDGID==16){
               inCryostatNu=true;
              }catch(...){
              }
