@@ -102,7 +102,7 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   bool FilterNoMCParticles::filter(art::Event& evt)
   {
-    bool interactionDesired(false);
+  //  bool interactionDesired(false);
 
     art::Handle<std::vector<simb::MCParticle> > mcpHandle;
     evt.getByLabel(fLArG4ModuleLabel,mcpHandle);

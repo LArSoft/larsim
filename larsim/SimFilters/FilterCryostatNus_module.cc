@@ -73,7 +73,7 @@ namespace simfilter {
   FilterCryostatNus::~FilterCryostatNus() {}
 
   void FilterCryostatNus::beginJob(){
-    auto const& geom = *art::ServiceHandle<geo::Geometry>();
+    // auto const& geom = *art::ServiceHandle<geo::Geometry>();
   }
 
 
