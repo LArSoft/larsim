@@ -15,31 +15,19 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/FindOneP.h"
 
 // LArSoft Includes
-#include "nutools/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 //#include "larcore/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcorealg/Geometry/GeometryCore.h"
 
 // C++ Includes
-#include <iostream>
-#include <cstring>
-#include <sys/stat.h>
+#include <cmath> // std::abs()
+#include <vector>
 
-// Root includes
-#include <TMath.h>
 
 namespace simfilter {
 
@@ -48,16 +36,11 @@ namespace simfilter {
   public:
 
     explicit FilterCryostatNus(fhicl::ParameterSet const &pset);
-    virtual ~FilterCryostatNus();
 
-    bool filter(art::Event&) ;
+    virtual bool filter(art::Event&) override;
     //virtual void reconfigure(fhicl::ParameterSet const&)  ;
 
-    virtual void beginJob();
-
-
   private:
-    bool KeepParticle(simb::MCParticle const& part) const;
 
     bool   fKeepNusInCryostat; // true: keep cryostat nuint; false: filter them
   };
@@ -69,13 +52,6 @@ namespace simfilter {
   FilterCryostatNus::FilterCryostatNus(fhicl::ParameterSet const& pset) :
     fKeepNusInCryostat    (pset.get<bool>("KeepNusInCryostat",false))
   {}
-
-  FilterCryostatNus::~FilterCryostatNus() {}
-
-  void FilterCryostatNus::beginJob(){
-    // auto const& geom = *art::ServiceHandle<geo::Geometry>();
-  }
-
 
   bool FilterCryostatNus::filter(art::Event& evt){
     //get the list of particles from this event
