@@ -34,7 +34,7 @@ namespace cheat{
     void PhotonBackTracker::PrepOpFlashToOpHits( Evt const& evt)
     {
       if(this->OpFlashToOpHitsReady()){ return;}
-      auto const& flashHandle = evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel.label());
+      auto const& flashHandle = evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
       std::vector<art::Ptr<recob::OpFlash>> tmpVec;
       art::fill_ptr_vector(tmpVec, flashHandle);
 

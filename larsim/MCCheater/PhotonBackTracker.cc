@@ -161,6 +161,7 @@ namespace cheat{
   const std::vector< sim::TrackSDP> PhotonBackTracker::OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P)  const
   {
     //auto opHit = *opHit_P;
+    auto OpDetNum =  fGeom->OpDetFromOpChannel(opHit_P->OpChannel()) ;
     std::vector<sim::TrackSDP> trackSDPs;
     const double pTime = opHit_P->PeakTime();
     const double pWidth= opHit_P->Width();
@@ -171,13 +172,15 @@ namespace cheat{
 
 
     //return trackSDPs;
-    return this->OpDetToTrackSDPs( opHit_P->OpChannel(), start, end);
+    //return this->OpDetToTrackSDPs( opHit_P->OpChannel(), start, end);
+    return this->OpDetToTrackSDPs( OpDetNum, start, end);
 
   }
 
   //----------------------------------------------------------------
   const std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToTrackSDPs(recob::OpHit const& opHit) const
   {
+    auto OpDetNum =  fGeom->OpDetFromOpChannel(opHit.OpChannel()) ;
     std::vector<sim::TrackSDP> trackSDPs;
     const double pTime = opHit.PeakTime();
     const double pWidth= opHit.Width();
@@ -185,7 +188,7 @@ namespace cheat{
     const double end = (pTime+pWidth)*1000-fDelay;
 
 
-    return this->OpDetToTrackSDPs( opHit.OpChannel(), start, end);
+    return this->OpDetToTrackSDPs( OpDetNum, start, end);
 
   }
 
@@ -273,9 +276,11 @@ namespace cheat{
     std::vector<std::pair<int, art::Ptr<recob::OpHit>>> opHitList;
     for(auto itr = hitsIn.begin(); itr != hitsIn.end(); ++itr) {
       art::Ptr<recob::OpHit> const& opHit = *itr;
+      auto OpDetNum = fGeom->OpDetFromOpChannel(opHit->OpChannel());
       const double pTime = opHit->PeakTime(), pWidth= opHit->Width();
       const double start = (pTime-pWidth)*1000.0-fDelay, end = (pTime+ pWidth)*1000.0-fDelay;
-      std::vector<sim::TrackSDP> tids = this->OpDetToTrackSDPs( opHit->OpChannel(), start, end);
+      std::vector<sim::TrackSDP> tids = this->OpDetToTrackSDPs( OpDetNum, start, end);
+      //std::vector<sim::TrackSDP> tids = this->OpDetToTrackSDPs( opHit->OpChannel(), start, end);
       for(auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for(auto itkid = tkIds.begin(); itkid != tkIds.end(); ++itkid) {
           if(itid->trackID == *itkid) {
