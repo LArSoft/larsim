@@ -55,7 +55,7 @@ namespace simfilter {
 
   bool FilterCryostatNus::filter(art::Event& evt){
     //get the list of particles from this event
-    art::ServiceHandle<geo::Geometry> geom;
+    auto const& geom = *(lar::providerFrom<geo::Geometry>());
 
     std::vector< art::Handle< std::vector<simb::MCTruth> > > allmclists;
     evt.getManyByType(allmclists);
@@ -65,22 +65,18 @@ namespace simfilter {
       for (simb::MCTruth const& mct: *mclistHandle) {
 
         //get nu, does it end in cyrostat?
-             const TLorentzVector& end4 = mct->GetParticle(ipart).EndPosition();
-             double endpointa[]={end4[0],end4[1],end4[2]};
-             unsigned int cstat;
-             try{
-              geom->PositionToCryostat(endpointa,cstat);
         for(int ipart=0;ipart<mct.NParticles();ipart++){
           auto const& part = mct.GetParticle(ipart);
           auto const absPDGID = std::abs(part.PdgCode());
           if(absPDGID==12||
              absPDGID==14||
              absPDGID==16){
+            const TLorentzVector& end4 = part.EndPosition();
+            if (geom.PositionToCryostatPtr({ end4.X(), end4.Y(), end4.Z() }) != nullptr) {
               inCryostatNu=true;
-             }catch(...){
-             }
-           }
-        }
+            }
+          } // if neutrino
+        } // for particles
 
        }//end loop over mctruth col
 
