@@ -15,33 +15,14 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-#include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/FindOneP.h"
 
 // LArSoft Includes
-#include "nutools/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/sim.h"
-#include "larcore/Geometry/Geometry.h"
 
-// C++ Includes
-#include <iostream>
-#include <cstring>
-#include <sys/stat.h>
 
 namespace simb{
   class MCTruth;
-}
-
-namespace sim{
-  class ParticleList;
 }
 
 ///Geant4 interface
@@ -49,16 +30,12 @@ namespace simfilter {
 
   class FilterNoMCParticles : public art::EDFilter
   {
-  // explicit EDFilter(ParameterSet const&)
   public:
 
     explicit FilterNoMCParticles(fhicl::ParameterSet const &pset);
-    virtual ~FilterNoMCParticles();
 
     bool filter(art::Event&) ;
-    virtual void reconfigure(fhicl::ParameterSet const&)  ;
-
-    virtual void beginJob()  ;
+    void reconfigure(fhicl::ParameterSet const&)  ;
 
   private:
 
@@ -79,20 +56,6 @@ namespace simfilter {
   }
 
   //-----------------------------------------------------------------------
-  // Destructor
-  FilterNoMCParticles::~FilterNoMCParticles()
-  {
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterNoMCParticles::beginJob()
-  {
-    //    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<geo::Geometry> geo;
-
-  }
-
-  //-----------------------------------------------------------------------
   void FilterNoMCParticles::reconfigure(fhicl::ParameterSet const& p)
   {
 
@@ -102,7 +65,7 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   bool FilterNoMCParticles::filter(art::Event& evt)
   {
-    bool interactionDesired(false);
+  //  bool interactionDesired(false);
 
     art::Handle<std::vector<simb::MCParticle> > mcpHandle;
     evt.getByLabel(fLArG4ModuleLabel,mcpHandle);

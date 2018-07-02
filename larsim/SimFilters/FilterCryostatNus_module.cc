@@ -15,31 +15,19 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/FindOneP.h"
 
 // LArSoft Includes
-#include "nutools/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 //#include "larcore/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcorealg/Geometry/GeometryCore.h"
 
 // C++ Includes
-#include <iostream>
-#include <cstring>
-#include <sys/stat.h>
+#include <cmath> // std::abs()
+#include <vector>
 
-// Root includes
-#include <TMath.h>
 
 namespace simfilter {
 
@@ -48,16 +36,11 @@ namespace simfilter {
   public:
 
     explicit FilterCryostatNus(fhicl::ParameterSet const &pset);
-    virtual ~FilterCryostatNus();
 
-    bool filter(art::Event&) ;
+    virtual bool filter(art::Event&) override;
     //virtual void reconfigure(fhicl::ParameterSet const&)  ;
 
-    virtual void beginJob();
-
-
   private:
-    bool KeepParticle(simb::MCParticle const& part) const;
 
     bool   fKeepNusInCryostat; // true: keep cryostat nuint; false: filter them
   };
@@ -70,41 +53,30 @@ namespace simfilter {
     fKeepNusInCryostat    (pset.get<bool>("KeepNusInCryostat",false))
   {}
 
-  FilterCryostatNus::~FilterCryostatNus() {}
-
-  void FilterCryostatNus::beginJob(){
-    auto const& geom = *art::ServiceHandle<geo::Geometry>();
-  }
-
-
   bool FilterCryostatNus::filter(art::Event& evt){
     //get the list of particles from this event
-    art::ServiceHandle<geo::Geometry> geom;
+    auto const& geom = *(lar::providerFrom<geo::Geometry>());
 
     std::vector< art::Handle< std::vector<simb::MCTruth> > > allmclists;
     evt.getManyByType(allmclists);
 
     bool inCryostatNu=false;
-    for(size_t mcl = 0; mcl < allmclists.size(); ++mcl){
-      art::Handle< std::vector<simb::MCTruth> > mclistHandle = allmclists[mcl];
-      for(size_t m = 0; m < mclistHandle->size(); ++m){
-        art::Ptr<simb::MCTruth> mct(mclistHandle, m);
+    for (auto const& mclistHandle: allmclists) {
+      for (simb::MCTruth const& mct: *mclistHandle) {
 
         //get nu, does it end in cyrostat?
-        for(int ipart=0;ipart<mct->NParticles();ipart++){
-          if(abs(mct->GetParticle(ipart).PdgCode())==12||
-             abs(mct->GetParticle(ipart).PdgCode())==14||
-             abs(mct->GetParticle(ipart).PdgCode())==16){
-             const TLorentzVector& end4 = mct->GetParticle(ipart).EndPosition();
-             double endpointa[]={end4[0],end4[1],end4[2]};
-             unsigned int cstat;
-             try{
-              geom->PositionToCryostat(endpointa,cstat);
+        for(int ipart=0;ipart<mct.NParticles();ipart++){
+          auto const& part = mct.GetParticle(ipart);
+          auto const absPDGID = std::abs(part.PdgCode());
+          if(absPDGID==12||
+             absPDGID==14||
+             absPDGID==16){
+            const TLorentzVector& end4 = part.EndPosition();
+            if (geom.PositionToCryostatPtr({ end4.X(), end4.Y(), end4.Z() }) != nullptr) {
               inCryostatNu=true;
-             }catch(...){
-             }
-           }
-        }
+            }
+          } // if neutrino
+        } // for particles
 
        }//end loop over mctruth col
 
