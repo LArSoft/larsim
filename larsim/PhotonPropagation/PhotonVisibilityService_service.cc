@@ -387,12 +387,12 @@ namespace phot{
   //------------------------------------------------------
 
   void PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N, bool wantReflected)
-  {
-    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
-      
+  {   
     if(fTheLibrary == 0)
       LoadLibrary();
     
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
+
     if(!wantReflected)
     lib->SetCount(VoxID,OpChannel, N);
     
