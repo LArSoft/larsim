@@ -219,7 +219,7 @@ namespace phot
     					tr_fit->Fill();
       				}
 
-			}// end for opdetIdx
+			}
 
 			d_fit->cd();
 			tr_fit->Write();
