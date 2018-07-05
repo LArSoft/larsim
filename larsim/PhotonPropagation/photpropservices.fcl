@@ -74,7 +74,7 @@ standard_photonvisibilityservice_buildlib:
   YMax: 100
   ZMin: 500
   ZMax: 600
-  
+
 }
 
 
