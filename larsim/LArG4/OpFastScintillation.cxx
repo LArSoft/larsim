@@ -177,7 +177,6 @@ namespace larg4{
 
         emSaturation = NULL;
 
-        gRandom->SetSeed(0);
         if (bPropagate) {
           art::ServiceHandle<phot::PhotonVisibilityService> pvs;
           if(pvs->IncludePropTime()) {
