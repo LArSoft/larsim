@@ -1,0 +1,51 @@
+#include "services_dune.fcl"
+
+process_name: CreateHybridLibrary
+
+services:
+{
+  TimeTracker: {}
+  MemoryTracker: {}
+  RandomNumberGenerator: {}
+  #DUNE FD 1x2x6 parameters
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+  message: @local::standard_info
+}
+services.Geometry: @local::dune10kt_1x2x6_v1_geo
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  1
+}
+
+outputs:
+{
+}
+
+physics:
+{
+ analyzers:{}
+
+ ana:  [ create ]
+}
+
+#services.LArPropertiesService.ScintPreScale: 1
+#services.OpDetResponse.QuantumEfficiency: 0.2
+
+physics.analyzers.create: {module_type: "CreateHybridLibrary"}
+services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
+services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+
+
+#with Field Cage
+services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+
+#SP Photon Library without attenuation of the optical detector bars
+#services.PhotonVisibilityService.LibraryFile: "/srcs/larsim/larsim/PhotonPropagation/lib_without_att.root" 
+#services.PhotonVisibilityService.LibraryFile: "lib_without_att.root" 
+
+
+
+

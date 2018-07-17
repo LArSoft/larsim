@@ -7,6 +7,7 @@ services:
   TimeTracker: {}
   MemoryTracker: {}
   RandomNumberGenerator: {}
+  #DUNE FD 1x2x6 parameters
   #@table::dunefd_services
   #PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
   #ProtoDUNE DP parameters
@@ -35,10 +36,13 @@ physics:
 }
 
 services.LArPropertiesService.ScintPreScale: 1
-services.OpDetResponseInterface.QuantumEfficiency: 0.2
+#services.OpDetResponse.QuantumEfficiency: 0.2
+
 physics.analyzers.create: {module_type: "CreateHybridLibrary"}
 #services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
 #services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+services.Geometry.GDML: "protodunedphase.gdml"
+services.Geometry.ROOT: "protodunedphase.gdml"
 
 
 #with Field Cage
@@ -48,8 +52,10 @@ physics.analyzers.create: {module_type: "CreateHybridLibrary"}
 #services.PhotonVisibilityService.LibraryFile: "/srcs/larsim/larsim/PhotonPropagation/lib_without_att.root" 
 #services.PhotonVisibilityService.LibraryFile: "lib_without_att.root" 
 
-#DP Photon Library created in LightSim
-services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_protodunedp_lightsim_nonuni_20171213.root"
-
+#DP Photon Library created in LArSoft
+#services.PhotonVisibilityService.LibraryFile: "../v01_28_00/PhotonPropagation/LibraryData/lib_protodunedp_lightsim_nonuni_20171213.root"
+services.PhotonVisibilityService.LibraryFile: "lib_protoDuneDP.root"
+services.PhotonVisibilityService.ParametrisedTimePropagation: false
+services.PhotonVisibilityService.ParametrisedTimePropagationNParameters: 0
 
 
