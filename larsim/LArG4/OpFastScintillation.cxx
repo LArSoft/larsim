@@ -150,6 +150,7 @@ namespace larg4{
   
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
   : G4VRestDiscreteProcess(processName, type)
+  , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters>()->NoPhotonPropagation()))
   {
         G4cout<<"BEA1 timing distribution"<<G4endl;
         SetProcessSubType(25);
@@ -162,7 +163,6 @@ namespace larg4{
         ExcitationRatio = 1.0;
 	
 	const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-	art::ServiceHandle<sim::LArG4Parameters> lgp;
 	
         scintillationByParticleType = larp->ScintByParticleType();
 
@@ -178,11 +178,13 @@ namespace larg4{
         emSaturation = NULL;
 
         gRandom->SetSeed(0);
-	art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-	if(pvs->IncludePropTime()) {
-	  pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-	  pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
-	}
+        if (bPropagate) {
+          art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+          if(pvs->IncludePropTime()) {
+            pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+            pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+          }
+        }
 }
 
   OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
@@ -377,19 +379,20 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)//, double stepEnergy)
 {
-
+  // make sure that whatever happens afterwards, the energy deposition is stored
+  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  if(lgp->FillSimEnergyDeposits())
+    ProcessStep(aStep);
+  
+  
   // Get the pointer to the fast scintillation table
   OpDetPhotonTable * fst = OpDetPhotonTable::Instance();
   OpDetPhotonTable* litefst = OpDetPhotonTable::Instance();
 
-  // Get the pointer to the visibility service
-  art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-  art::ServiceHandle<sim::LArG4Parameters> lgp;
-
   const G4Track * aTrack = aStep.GetTrack();
 
-  G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
-  G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();
+  G4StepPoint const* pPreStepPoint  = aStep.GetPreStepPoint();
+  G4StepPoint const* pPostStepPoint = aStep.GetPostStepPoint();
   
   const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
   const G4Material* aMaterial = aTrack->GetMaterial();
@@ -406,11 +409,6 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   G4MaterialPropertiesTable* aMaterialPropertiesTable =
     aMaterial->GetMaterialPropertiesTable();
 
-  // Get the visibility vector for this point
-  size_t NOpChannels = 0;
-  NOpChannels = pvs->NOpChannels();
-
-
   G4MaterialPropertyVector* Fast_Intensity = 
     aMaterialPropertiesTable->GetProperty("FASTCOMPONENT"); 
   G4MaterialPropertyVector* Slow_Intensity =
@@ -419,11 +417,13 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   if (!Fast_Intensity && !Slow_Intensity )
     return 1;
   
-  if(lgp->FillSimEnergyDeposits())
-    ProcessStep(aStep);
-  
-  if(lgp->NoPhotonPropagation())
+  if(!bPropagate)
     return 0;
+
+  // Get the visibility vector for this point
+  art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+  size_t const NOpChannels = pvs->NOpChannels();
+
 
   G4int nscnt = 1;
   if (Fast_Intensity && Slow_Intensity) nscnt = 2;

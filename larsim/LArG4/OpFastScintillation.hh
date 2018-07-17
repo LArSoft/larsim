@@ -280,6 +280,8 @@ private:
         //double fGlobalTimeOffset;  
 
         void ProcessStep( const G4Step& step);
+        
+        bool bPropagate; ///< Whether propagation of photons is enabled.
 
 };
 
