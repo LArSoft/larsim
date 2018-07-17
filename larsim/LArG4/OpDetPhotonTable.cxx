@@ -157,7 +157,7 @@ namespace larg4 {
 					  float end_x,float end_y,float end_z,
 					  double start_time,double end_time,
 					  int trackid,int pdgcode,
-					  std::string vol)
+					  std::string const& vol)
   {  
     fSimEDepCol[vol].emplace_back(n_elec,n_photon,
 				  energy,
@@ -173,7 +173,7 @@ namespace larg4 {
   
   
   //--------------------------------------------------
-  std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> >& OpDetPhotonTable::GetSimEnergyDeposits()
+  std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> > const& OpDetPhotonTable::GetSimEnergyDeposits() const
   { return fSimEDepCol; }
   
 
