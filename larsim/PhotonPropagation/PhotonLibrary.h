@@ -9,6 +9,7 @@
 #include "TTree.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
+class TF1;
 
 namespace phot{
   
@@ -26,6 +27,11 @@ namespace phot{
 
     float GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const;
     void SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum);
+
+//    TF1& GetTimingTF1(size_t Voxel, size_t OpChannel) const;
+    void SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func);
+
+
     virtual float GetReflCount(size_t Voxel, size_t OpChannel) const override;
     void SetReflCount(size_t Voxel, size_t OpChannel, float Count);
 
@@ -35,11 +41,13 @@ namespace phot{
     /// Returns a pointer to NOpChannels() visibility values, one per channel
     virtual float const* GetCounts(size_t Voxel) const override;
     const std::vector<float>* GetTimingPars(size_t Voxel) const;
+    TF1* const GetTimingTF1s(size_t Voxel);
+
     virtual float const* GetReflCounts(size_t Voxel) const override;
     virtual float const* GetReflT0s(size_t Voxel) const override;
 
     ///Returns whether the current library deals with time propagation distributions.
-    int hasTiming() const { return fHasTiming; }
+    bool hasTiming() const { return fHasTiming; }
 
     /// Returns whether the current library deals with reflected light count.
     virtual bool hasReflected() const override { return fHasReflected; }
@@ -71,6 +79,9 @@ namespace phot{
     std::vector<float> fReflTLookupTable;
 
     std::vector<std::vector<float>> fTimingParLookupTable;
+    std::vector<TF1> fTimingParTF1LookupTable;
+    std::string fTimingParFormula;
+    size_t fTimingParNParameters;
 
     size_t fNOpChannels;
     size_t fNVoxels;
@@ -111,6 +122,14 @@ namespace phot{
     /// Unchecked access to a parameter of the time distribution                                                                        
     float& uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
     { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum]; }
+
+    /// Unchecked access to a parameter of the time distribution
+    TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel)
+    { return fTimingParTF1LookupTable[uncheckedIndex(Voxel, OpChannel)]; }
+
+    /// Unchecked access to a parameter of the time distribution
+    const TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel) const
+    { return fTimingParTF1LookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
     /// Name of the optical channel number in the input tree
     static std::string const OpChannelBranchName;
