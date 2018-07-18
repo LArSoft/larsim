@@ -12,7 +12,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TKey.h"
-
+#include "TF1.h"
 
 namespace phot{
   
@@ -26,6 +26,7 @@ namespace phot{
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
+    fTimingParTF1LookupTable.clear();
   }
 
   
@@ -37,6 +38,7 @@ namespace phot{
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
+    fTimingParTF1LookupTable.clear();
   }
   
   //------------------------------------------------------------
@@ -132,6 +134,7 @@ namespace phot{
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
+    fTimingParTF1LookupTable.clear();
 
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
@@ -145,6 +148,7 @@ namespace phot{
     if (storeTiming!=0)
     {
 	fTimingParLookupTable.resize(LibrarySize());
+	fTimingParTF1LookupTable.resize(LibrarySize());
     }	
   }
 
@@ -157,6 +161,7 @@ namespace phot{
     fReflLookupTable.clear();
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
+    fTimingParTF1LookupTable.clear();
 
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -187,7 +192,7 @@ namespace phot{
     Float_t   Visibility;
     Float_t   ReflVisibility;
     Float_t   ReflTfirst;
-    Double_t   *timing_par = nullptr;
+    std::vector<Float_t>   timing_par;
 
     tt->SetBranchAddress("Voxel",      &Voxel);
     tt->SetBranchAddress("OpChannel",  &OpChannel);
@@ -202,16 +207,23 @@ namespace phot{
     if(getReflT0)
       tt->SetBranchAddress("ReflTfirst", &ReflTfirst);
     
-    
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
-    
-    fLookupTable.resize(LibrarySize(), 0.);
+
     if(fHasTiming!=0)
     {
-      fTimingParLookupTable.resize(LibrarySize());
-      for(size_t k=0;k<LibrarySize();k++) fTimingParLookupTable[k].resize(getTiming,0);
+      timing_par.resize(getTiming);
+      tt->SetBranchAddress("timing_par", timing_par.data());
+      fTimingParNParameters=fHasTiming;
+      TNamed *n = (TNamed*)f->Get("fTimingParFormula");
+      if(!n) mf::LogError("PhotonLibrary") <<"Error reading the photon propagation formula. Please check the photon library." << std::endl;
+      fTimingParFormula = n->GetTitle();
+      fTimingParTF1LookupTable.resize(LibrarySize());
+      mf::LogInfo("PhotonLibrary") <<"Time parametrization is activated. Using the formula: "<<  fTimingParFormula << " with " << fTimingParNParameters << " parameters."<< std::endl;
     }
+
+    fLookupTable.resize(LibrarySize(), 0.);
+
     if(fHasReflected)
       fReflLookupTable.resize(LibrarySize(), 0.);
     if(fHasReflectedT0)
@@ -233,9 +245,14 @@ namespace phot{
 	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
       if(fHasTiming!=0)
       {
-	tt->Draw("timing_par","","goff",1,i);
-	timing_par=tt->GetV1();
-	for (size_t k=0;k<fHasTiming;k++) uncheckedAccessTimingPar(Voxel, OpChannel,k) = timing_par[k]; 
+	TF1 timingfunction(Form("timing_%i_%i",Voxel,OpChannel),fTimingParFormula.c_str(),0,200);
+
+	for (size_t k=0;k<fTimingParNParameters;k++)
+        {
+	  timingfunction.SetParameter(k,timing_par[k]);
+        }
+
+	uncheckedAccessTimingTF1(Voxel,OpChannel) = timingfunction;
       }
     } // for entries
     
@@ -308,6 +325,16 @@ namespace phot{
   }
   //----------------------------------------------------
 
+  void PhotonLibrary::SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func)
+  {
+    if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set a propagation function in voxel " << Voxel<<" which is out of range";
+    else
+      uncheckedAccessTimingTF1(Voxel, OpChannel) = func;
+  }
+  //----------------------------------------------------
+
+
   void PhotonLibrary::SetReflCount(size_t Voxel, size_t OpChannel, float Count)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
@@ -340,6 +367,15 @@ namespace phot{
     if (Voxel >= fNVoxels) return nullptr;
     else return fTimingParLookupTable.data() + uncheckedIndex(Voxel, 0);
   }
+
+  //----------------------------------------------------
+
+  TF1* const PhotonLibrary::GetTimingTF1s(size_t Voxel)
+  {
+    if (Voxel >= fNVoxels) return nullptr;
+    else return fTimingParTF1LookupTable.data() + uncheckedIndex(Voxel, 0);
+  }
+
   //----------------------------------------------------
 
   float const* PhotonLibrary::GetReflCounts(size_t Voxel) const

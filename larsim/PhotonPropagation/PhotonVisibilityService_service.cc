@@ -167,6 +167,11 @@ namespace phot{
     fParPropTime_npar     = p.get< size_t      >("ParametrisedTimePropagationNParameters", 0);
     fParPropTime_formula  = p.get< std::string >("ParametrisedTimePropagationFittedFormula","");
     
+    if (!fParPropTime)
+    {
+      fParPropTime_npar=0;
+    }
+
     if(fUseCryoBoundary)
       {
 	double CryoBounds[6];
@@ -484,6 +489,13 @@ namespace phot{
     return GetLibraryTimingParEntries(VoxID);
   }
 
+  TF1* const PhotonVisibilityService::GetTimingTF1(double const* xyz)
+  {
+    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    return GetLibraryTimingTF1Entries(VoxID);
+  }
+
+
   //------------------------------------------------------
 
   const std::vector<float>* PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
@@ -493,6 +505,17 @@ namespace phot{
       LoadLibrary();
 
     return lib->GetTimingPars(VoxID);
+  }
+
+  //------------------------------------------------------
+
+  TF1* const PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID)
+  {
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    return lib->GetTimingTF1s(VoxID);
   }
 
   //------------------------------------------------------     
@@ -508,7 +531,21 @@ namespace phot{
     mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
-  //------------------------------------------------------      
+  //------------------------------------------------------
+
+  void PhotonVisibilityService::SetLibraryTimingTF1Entry(int VoxID, int OpChannel, TF1 func)
+  {
+    PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
+    if(fTheLibrary == 0)
+      LoadLibrary();
+
+    lib->SetTimingTF1(VoxID,OpChannel,func);
+
+    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+  }
+
+
+  //------------------------------------------------------
 
   float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID, int Channel, size_t npar) const
   {

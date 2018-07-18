@@ -57,6 +57,10 @@ namespace phot{
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
     const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
     float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
+
+    TF1* const GetTimingTF1( double const* xyz );
+    void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
+    TF1* const GetLibraryTimingTF1Entries( int VoxID );
  
    void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
