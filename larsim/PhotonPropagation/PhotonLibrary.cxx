@@ -41,7 +41,7 @@ namespace phot{
   
   //------------------------------------------------------------
   
-  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming)
+  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming) const
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -136,11 +136,11 @@ namespace phot{
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
 
-    fLookupTable.resize(LibrarySize(), 0.);
+    fLookupTable.resize(LibrarySize());
     fHasReflected = storeReflected;
-    if (storeReflected) fReflLookupTable.resize(LibrarySize(), 0.);
+    if (storeReflected) fReflLookupTable.resize(LibrarySize());
     fHasReflectedT0 = storeReflT0;
-    if (storeReflT0) fReflTLookupTable.resize(LibrarySize(), 0.);
+    if (storeReflT0) fReflTLookupTable.resize(LibrarySize());
     fHasTiming = storeTiming;
     if (storeTiming!=0)
     {
@@ -206,16 +206,25 @@ namespace phot{
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
     
-    fLookupTable.resize(LibrarySize(), 0.);
+    // with STL vectors, where `resize()` directly controls the allocation of
+    // memory, reserving the space is redundant; not so with `util::LazyVector`,
+    // where `resize()` never increases the memory
+    fLookupTable.reserve(LibrarySize());
+    fLookupTable.resize(LibrarySize());
     if(fHasTiming!=0)
     {
+      fTimingParLookupTable.reserve(LibrarySize());
       fTimingParLookupTable.resize(LibrarySize());
       for(size_t k=0;k<LibrarySize();k++) fTimingParLookupTable[k].resize(getTiming,0);
     }
-    if(fHasReflected)
-      fReflLookupTable.resize(LibrarySize(), 0.);
-    if(fHasReflectedT0)
-      fReflTLookupTable.resize(LibrarySize(), 0.);
+    if(fHasReflected) {
+      fReflLookupTable.reserve(LibrarySize());
+      fReflLookupTable.resize(LibrarySize());
+    }
+    if(fHasReflectedT0) {
+      fReflTLookupTable.resize(LibrarySize());
+      fReflTLookupTable.reserve(LibrarySize());
+    }
     
     size_t NEntries = tt->GetEntries();
 
@@ -330,7 +339,7 @@ namespace phot{
   float const* PhotonLibrary::GetCounts(size_t Voxel) const
   { 
     if (Voxel >= fNVoxels) return nullptr;
-    else return fLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -338,14 +347,14 @@ namespace phot{
   const std::vector<float>* PhotonLibrary::GetTimingPars(size_t Voxel) const
   { 
     if (Voxel >= fNVoxels) return nullptr;
-    else return fTimingParLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fTimingParLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
   //----------------------------------------------------
 
   float const* PhotonLibrary::GetReflCounts(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
-    else return fReflLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fReflLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -353,7 +362,7 @@ namespace phot{
   float const* PhotonLibrary::GetReflT0s(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
-    else return fReflTLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fReflTLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -389,5 +398,6 @@ namespace phot{
   } // PhotonLibrary::ExtractNOpChannels()
 
 
+  //----------------------------------------------------
 
 }

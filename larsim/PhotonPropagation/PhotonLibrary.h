@@ -7,6 +7,8 @@
 #include "TTree.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
+#include "lardataobj/Utilities/LazyVector.h"
+
 
 namespace phot{
   
@@ -47,7 +49,7 @@ namespace phot{
     bool hasReflectedT0() const { return fHasReflectedT0; }
 
     
-    void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
+    void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0) const;
     void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
     
@@ -68,11 +70,11 @@ namespace phot{
     
     // fLookupTable[unchecked_index(Voxel, OpChannel)] = Count
     // for each voxel, all NChannels() channels are stored in sequence
-    std::vector<float> fLookupTable;
-    std::vector<float> fReflLookupTable;
-    std::vector<float> fReflTLookupTable;
+    util::LazyVector<float> fLookupTable;
+    util::LazyVector<float> fReflLookupTable;
+    util::LazyVector<float> fReflTLookupTable;
 
-    std::vector<std::vector<float>> fTimingParLookupTable;
+    util::LazyVector<std::vector<float>> fTimingParLookupTable;
 
     size_t fNOpChannels;
     size_t fNVoxels;
@@ -82,7 +84,7 @@ namespace phot{
       { return Voxel * fNOpChannels + OpChannel; }
     
     /// Unchecked access to a visibility datum
-    float const& uncheckedAccess (size_t Voxel, size_t OpChannel) const
+    float uncheckedAccess (size_t Voxel, size_t OpChannel) const
       { return fLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
     
     /// Unchecked access to a visibility datum
@@ -90,7 +92,7 @@ namespace phot{
       { return fLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
     /// Unchecked access to a reflected visibility datum
-    float const& uncheckedAccessRefl (size_t Voxel, size_t OpChannel) const
+    float uncheckedAccessRefl (size_t Voxel, size_t OpChannel) const
     { return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
     /// Unchecked access to a reflected visibility datum                                                                                         
@@ -98,7 +100,7 @@ namespace phot{
     { return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
     
     /// Unchecked access to a reflected T0 visibility datum
-    float const& uncheckedAccessReflT (size_t Voxel, size_t OpChannel) const
+    float uncheckedAccessReflT (size_t Voxel, size_t OpChannel) const
     { return fReflTLookupTable[uncheckedIndex(Voxel, OpChannel)]; }
 
     /// Unchecked access to a reflected T0 visibility datum                                                                                        
@@ -107,12 +109,13 @@ namespace phot{
 
 
     /// Unchecked access to a parameter the time distribution
-    float const& uncheckedAccessTimingPar (size_t Voxel, size_t OpChannel, size_t parnum) const
+    float uncheckedAccessTimingPar (size_t Voxel, size_t OpChannel, size_t parnum) const
     { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum];}
 
     /// Unchecked access to a parameter of the time distribution                                                                        
     float& uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
     { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum]; }
+    
 
     /// Name of the optical channel number in the input tree
     static std::string const OpChannelBranchName;
@@ -121,7 +124,7 @@ namespace phot{
     static size_t ExtractNOpChannels(TTree* tree);
 
     /// Converts size_t into integer
-    int size_t2int(size_t val) {
+    static int size_t2int(size_t val) {
     return (val <= INT_MAX) ? (int)((ssize_t)val) : -1; }
   };
 
