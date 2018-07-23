@@ -151,6 +151,7 @@ namespace larg4{
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
   : G4VRestDiscreteProcess(processName, type)
   {
+        G4cout<<"BEA1 timing distribution"<<G4endl;
         SetProcessSubType(25);
 
         fTrackSecondariesFirst = false;
@@ -514,15 +515,17 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
   float const* ReflVisibilities = nullptr;
   float const* ReflT0s = nullptr;
 
-  const std::vector<float>* PropParameters = nullptr;
+  TF1* ParPropTimeTF1 = nullptr;
 
   if(pvs->StoreReflected()) {
     ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
     if(pvs->StoreReflT0())
       ReflT0s = pvs->GetReflT0s(xyz); 
   }
-  if(pvs->IncludeParPropTime()) PropParameters = pvs->GetTimingPar(xyz);
-  
+  if(pvs->IncludeParPropTime())
+  {
+    ParPropTimeTF1 = pvs->GetTimingTF1(xyz);
+  }
   /*
   // For Kazu to debug # photons generated using csv file, by default should be commented out 
   // but don't remove as it's useful. Separated portion of code relevant to this block
@@ -637,7 +640,6 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
       std::map<int, int> DetectedNum;
 
       std::map<int, int> ReflDetectedNum;
-      std::map<int, TF1> PropTimeFunction;
 
       for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
       {
@@ -658,15 +660,6 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 		      ReflDetectedNum[OpDet]=ReflDetThisPMT;
 		    }
                 }
-
-	    	if(pvs->IncludeParPropTime() && PropParameters) {
-            	  double range=0;
-	          for(size_t i=0; i<pvs->ParPropTimeNpar();i++) range+=300*TMath::Abs(PropParameters[OpDet][i]);
-		  TF1 AuxFunction(Form("timingfunc%i",(int)((size_t)OpDet)),Form("%s",pvs->ParPropTimeFormula().c_str()),PropParameters[OpDet][0],PropParameters[OpDet][0]+range); 
-		  for(size_t i=1; i<pvs->ParPropTimeNpar();i++) AuxFunction.SetParameter(i-1, PropParameters[OpDet][i]);
-
-		  PropTimeFunction[OpDet]=AuxFunction;
-  		}
 
       }
 	    // Now we run through each PMT figuring out num of detected photons
@@ -694,7 +687,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             }
 
 	    if(pvs->IncludeParPropTime()) {
-               	deltaTime += PropTimeFunction[itdetphot->first].GetRandom(); 
+              deltaTime += ParPropTimeTF1[itdetphot->first].GetRandom();
 	    }
 
             G4double aSecondaryTime = t0 + deltaTime;
@@ -1162,7 +1155,7 @@ std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_
   delete fexpo;
   delete fint;
   delete fVUVTiming;
-
+  G4cout<<"BEAMAUS timing distribution hecha"<<G4endl;
   return arrival_time_distrb;
 }
 
@@ -1229,7 +1222,7 @@ std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, in
   delete fexpo;
   delete fint;
   delete fVisTiming;
-
+  G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
   return arrival_time_distrb;
 }
 

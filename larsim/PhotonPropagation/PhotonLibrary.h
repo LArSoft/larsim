@@ -4,7 +4,10 @@
 #ifndef PHOTONLIBRARY_H
 #define PHOTONLIBRARY_H
 
+#include "larsim/PhotonPropagation/IPhotonLibrary.h"
+
 #include "TTree.h"
+#include "TF1.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
 #include "lardataobj/Utilities/LazyVector.h"
@@ -12,41 +15,46 @@
 
 namespace phot{
   
-  class PhotonLibrary
+  class PhotonLibrary : public IPhotonLibrary
   {
   public:
-    PhotonLibrary();
-    ~PhotonLibrary();
+    PhotonLibrary() = default;
 
-    TTree * ProduceTTree();
+    TTree * ProduceTTree() const;
     
 
-    float GetCount(size_t Voxel, size_t OpChannel) const;    
+    virtual float GetCount(size_t Voxel, size_t OpChannel) const override;
     void SetCount(size_t Voxel, size_t OpChannel, float Count);
 
-    float GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const;    
+    float GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const;
     void SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum);
 
-    float GetReflCount(size_t Voxel, size_t OpChannel) const;
+//    TF1& GetTimingTF1(size_t Voxel, size_t OpChannel) const;
+    void SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func);
+
+
+    virtual float GetReflCount(size_t Voxel, size_t OpChannel) const override;
     void SetReflCount(size_t Voxel, size_t OpChannel, float Count);
 
-    float GetReflT0(size_t Voxel, size_t OpChannel) const;
+    virtual float GetReflT0(size_t Voxel, size_t OpChannel) const override;
     void SetReflT0(size_t Voxel, size_t OpChannel, float reflT0);
     
     /// Returns a pointer to NOpChannels() visibility values, one per channel
-    float const* GetCounts(size_t Voxel) const;
+    virtual float const* GetCounts(size_t Voxel) const override;
     const std::vector<float>* GetTimingPars(size_t Voxel) const;
-    float const* GetReflCounts(size_t Voxel) const;
-    float const* GetReflT0s(size_t Voxel) const;
+    TF1* GetTimingTF1s(size_t Voxel) const;
+
+    virtual float const* GetReflCounts(size_t Voxel) const override;
+    virtual float const* GetReflT0s(size_t Voxel) const override;
 
     ///Returns whether the current library deals with time propagation distributions.
-    int hasTiming() const { return fHasTiming; }
+    bool hasTiming() const { return fHasTiming; }
 
     /// Returns whether the current library deals with reflected light count.
-    bool hasReflected() const { return fHasReflected; }
+    virtual bool hasReflected() const override { return fHasReflected; }
     
     /// Returns whether the current library deals with reflected light timing.
-    bool hasReflectedT0() const { return fHasReflectedT0; }
+    virtual bool hasReflectedT0() const override { return fHasReflectedT0; }
 
     
     void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0) const;
@@ -54,12 +62,9 @@ namespace phot{
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
     
 
-    int NOpChannels() const { return fNOpChannels; }
-    int NVoxels() const { return fNVoxels; }
-    
-    /// Returns the number of elements in the library
-    size_t LibrarySize() const { return fNVoxels * fNOpChannels; }
-    
+    virtual int NOpChannels() const override { return fNOpChannels; }
+    virtual int NVoxels() const override { return fNVoxels; }
+
   private:
     
     bool fHasReflected   = false; ///< Whether the current library deals with reflected light counts.
@@ -73,8 +78,10 @@ namespace phot{
     util::LazyVector<float> fLookupTable;
     util::LazyVector<float> fReflLookupTable;
     util::LazyVector<float> fReflTLookupTable;
-
     util::LazyVector<std::vector<float>> fTimingParLookupTable;
+    util::LazyVector<TF1> fTimingParTF1LookupTable;
+    std::string fTimingParFormula;
+    size_t fTimingParNParameters;
 
     size_t fNOpChannels;
     size_t fNVoxels;
@@ -116,6 +123,17 @@ namespace phot{
     float& uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
     { return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum]; }
     
+
+    /// Unchecked access to a parameter of the time distribution
+    TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel)
+    { return fTimingParTF1LookupTable[uncheckedIndex(Voxel, OpChannel)]; }
+
+    /// Unchecked access to a parameter of the time distribution
+    const TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel) const
+    {
+      // note that this will produce a segmentation fault if the formula is not there
+      return *(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, OpChannel)));
+    }
 
     /// Name of the optical channel number in the input tree
     static std::string const OpChannelBranchName;

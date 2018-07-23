@@ -1,0 +1,53 @@
+#include "services_dune.fcl"
+
+#include "photpropmodules.fcl"
+
+process_name: PhotonLibraryAnalyzer
+
+services:
+{
+  TFileService: { fileName: "photlib_ana_DP_HL_15_hist.root" }
+  TimeTracker: {}
+  MemoryTracker: {}
+  RandomNumberGenerator: {}
+  @table::dunefd_services
+  PhotonVisibilityService: @local::dune10kt_1x2x6_photonvisibilityservice
+  #ProtoDUNE DP
+  #@table::protodunedphase_simulation_services
+  #PhotonVisibilityService: @local::protodunedp_photonvisibilityservice
+  message: @local::standard_info
+}
+services.Geometry: @local::dune10kt_1x2x6_v1_geo 
+#services.Geometry:                @local::protodunedphase_geo
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  1
+}
+
+outputs:
+{
+}
+
+physics:
+{
+ analyzers:{}
+
+ ana:  [ analyze ]
+}
+
+physics.analyzers.analyze: @local::standard_photonlibraryanalyzer
+physics.analyzers.analyze.alt_x_axis: "Z"
+
+services.PhotonVisibilityService.HybridLibrary: true
+services.PhotonVisibilityService.LibraryFile:"fit.root" 
+
+
+#with FC
+#services.PhotonVisibilityService.LibraryFile: "../v01_26_00/PhotonPropagation/LibraryData/lib_dune10kt_v2_1x2x6_20171113.root"
+#services.Geometry.GDML: "dune10kt_v2_1x2x6.gdml"
+#services.Geometry.ROOT: "dune10kt_v2_1x2x6.gdml"
+
+#services.PhotonVisibilityService.LibraryFile: "lib_protodunedp_lightsim_nonuni_20171213.root"
+#services.PhotonVisibilityService.LibraryFile: "lib_without_att.root"
