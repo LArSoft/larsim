@@ -197,7 +197,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   G4double ElectricField(0.), FieldSign(0.); //for field quenching of S1
   G4bool GlobalFields = false;
   
-  if ( !WIN && !TOP && !ANE && !SRF && !GAT && !CTH && !BOT && !PMT ) {
+  if ( (WIN == 0) && !TOP && !ANE && !SRF && !GAT && !CTH && !BOT && !PMT ) {
     ElectricField = aMaterialPropertiesTable->GetConstProperty("ELECTRICFIELD"); 
     GlobalFields = true; 
   }
