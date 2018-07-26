@@ -1,13 +1,13 @@
 # The parent line must be the first non-comment line in the file 
 # This line defines the product name and version
-parent	larsim	v06_52_00
+parent	larsim	v06_53_00
 defaultqual	e15
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt		v06_22_03
+larevt		v06_22_04
 marley		v1_0_0e
 larsoft_data    v1_02_01
 
@@ -17,11 +17,11 @@ end_product_list
   
 # e15  - with gcc 6.4.0 and -std=c++14
 qualifier	larevt	 	marley		larsoft_data	notes
+e17:debug	e17:debug	e17:debug	-nq-	
+e17:prof	e17:prof	e17:prof	-nq-	
 e15:debug	e15:debug	e15:debug	-nq-	
-e15:opt		e15:opt		e15:opt		-nq-	
 e15:prof	e15:prof	e15:prof	-nq-	
 c2:debug	c2:debug	c2:debug	-nq-	
-c2:opt		c2:opt		c2:opt		-nq-	
 c2:prof		c2:prof		c2:prof		-nq-	
 end_qualifier_list
 

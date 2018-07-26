@@ -20,30 +20,7 @@ namespace phot{
   
   //------------------------------------------------------------
 
-  PhotonLibrary::PhotonLibrary()
-  {
-    fLookupTable.clear();
-    fReflLookupTable.clear();
-    fReflTLookupTable.clear();
-    fTimingParLookupTable.clear();
-    fTimingParTF1LookupTable.clear();
-  }
-
-  
-  //------------------------------------------------------------  
-
-  PhotonLibrary::~PhotonLibrary()
-  {
-    fLookupTable.clear();
-    fReflLookupTable.clear();
-    fReflTLookupTable.clear();
-    fTimingParLookupTable.clear();
-    fTimingParTF1LookupTable.clear();
-  }
-  
-  //------------------------------------------------------------
-  
-  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming)
+  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming) const
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
 
@@ -139,16 +116,16 @@ namespace phot{
     fNVoxels     = NVoxels;
     fNOpChannels = NOpChannels;
 
-    fLookupTable.resize(LibrarySize(), 0.);
+    fLookupTable.resize(LibrarySize());
     fHasReflected = storeReflected;
-    if (storeReflected) fReflLookupTable.resize(LibrarySize(), 0.);
+    if (storeReflected) fReflLookupTable.resize(LibrarySize());
     fHasReflectedT0 = storeReflT0;
-    if (storeReflT0) fReflTLookupTable.resize(LibrarySize(), 0.);
+    if (storeReflT0) fReflTLookupTable.resize(LibrarySize());
     fHasTiming = storeTiming;
     if (storeTiming!=0)
     {
-	fTimingParLookupTable.resize(LibrarySize());
-	fTimingParTF1LookupTable.resize(LibrarySize());
+      fTimingParLookupTable.resize(LibrarySize());
+      fTimingParTF1LookupTable.resize(LibrarySize());
     }	
   }
 
@@ -183,7 +160,7 @@ namespace phot{
       }
     catch(...)
       {
-	mf::LogError("PhotonLibrary") << "Error in ttree load, reading photon library: " << LibraryFile.c_str()<<std::endl;
+        throw cet::exception("PhotonLibrary") << "Error in ttree load, reading photon library: " << LibraryFile << "\n";
       }
 
     
@@ -209,9 +186,16 @@ namespace phot{
     
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
+    
+    // with STL vectors, where `resize()` directly controls the allocation of
+    // memory, reserving the space is redundant; not so with `util::LazyVector`,
+    // where `resize()` never increases the memory
+    fLookupTable.reserve(LibrarySize());
+    fLookupTable.resize(LibrarySize());
 
     if(fHasTiming!=0)
     {
+      timing_par.reserve(getTiming);
       timing_par.resize(getTiming);
       tt->SetBranchAddress("timing_par", timing_par.data());
       fTimingParNParameters=fHasTiming;
@@ -221,13 +205,14 @@ namespace phot{
       fTimingParTF1LookupTable.resize(LibrarySize());
       mf::LogInfo("PhotonLibrary") <<"Time parametrization is activated. Using the formula: "<<  fTimingParFormula << " with " << fTimingParNParameters << " parameters."<< std::endl;
     }
-
-    fLookupTable.resize(LibrarySize(), 0.);
-
-    if(fHasReflected)
-      fReflLookupTable.resize(LibrarySize(), 0.);
-    if(fHasReflectedT0)
-      fReflTLookupTable.resize(LibrarySize(), 0.);
+    if(fHasReflected) {
+      fReflLookupTable.reserve(LibrarySize());
+      fReflLookupTable.resize(LibrarySize());
+    }
+    if(fHasReflectedT0) {
+      fReflTLookupTable.resize(LibrarySize());
+      fReflTLookupTable.reserve(LibrarySize());
+    }
     
     size_t NEntries = tt->GetEntries();
 
@@ -245,6 +230,7 @@ namespace phot{
 	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
       if(fHasTiming!=0)
       {
+        // TODO: use TF1::Copy
 	TF1 timingfunction(Form("timing_%i_%i",Voxel,OpChannel),fTimingParFormula.c_str(),0,200);
 
 	for (size_t k=0;k<fTimingParNParameters;k++)
@@ -264,7 +250,7 @@ namespace phot{
       }
     catch(...)
       {
-	mf::LogError("PhotonLibrary") << "Error in closing file : " << LibraryFile.c_str()<<std::endl;
+	mf::LogError("PhotonLibrary") << "Error in closing file : " << LibraryFile;
       }
 
   }
@@ -357,7 +343,7 @@ namespace phot{
   float const* PhotonLibrary::GetCounts(size_t Voxel) const
   { 
     if (Voxel >= fNVoxels) return nullptr;
-    else return fLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -365,15 +351,34 @@ namespace phot{
   const std::vector<float>* PhotonLibrary::GetTimingPars(size_t Voxel) const
   { 
     if (Voxel >= fNVoxels) return nullptr;
-    else return fTimingParLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fTimingParLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
 
-  TF1* const PhotonLibrary::GetTimingTF1s(size_t Voxel)
+  TF1* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
-    else return fTimingParTF1LookupTable.data() + uncheckedIndex(Voxel, 0);
+    /*
+     * Sorry, Universe, but we can't undergo ROOT's bad design hell.
+     * TF1::GetRandom() is non-const member, because it uses some internal
+     * integral information which can be produced on the spot instead than
+     * always be present. That's called caching, it's Good, but it must not
+     * interfere with constantness of the interface (in fact, this is one of
+     * the few acceptable uses of `mutable` members).
+     * Because of this, this method can't return a constant `TF1`, therefore
+     * it can't be constant, therefore the underlying access returning a
+     * constant object is not acceptable.
+     * So I do the Bad thing.
+     * Plus I opened JIRA ROOT-9549
+     * (https://sft.its.cern.ch/jira/browse/ROOT-9549).
+     * After that is solved, this method should become:
+     * 
+     * TF1 const* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
+     * 
+     * and the users should update their code accordingly.
+     */
+    else return const_cast<TF1*>(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, 0)));
   }
 
   //----------------------------------------------------
@@ -381,7 +386,7 @@ namespace phot{
   float const* PhotonLibrary::GetReflCounts(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
-    else return fReflLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fReflLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -389,7 +394,7 @@ namespace phot{
   float const* PhotonLibrary::GetReflT0s(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
-    else return fReflTLookupTable.data() + uncheckedIndex(Voxel, 0);
+    else return fReflTLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
   //----------------------------------------------------
@@ -425,5 +430,6 @@ namespace phot{
   } // PhotonLibrary::ExtractNOpChannels()
 
 
+  //----------------------------------------------------
 
 }
