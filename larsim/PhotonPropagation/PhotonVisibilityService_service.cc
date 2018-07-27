@@ -405,7 +405,7 @@ namespace phot{
     lib->SetReflCount(VoxID,OpChannel, N);
     
     //std::cout<< " PVS logging " << VoxID << " " << OpChannel<<std::endl;
-    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------
@@ -465,7 +465,7 @@ namespace phot{
 
     lib->SetReflT0(VoxID,OpChannel,T0);
 
-    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------      
@@ -489,7 +489,7 @@ namespace phot{
     return GetLibraryTimingParEntries(VoxID);
   }
 
-  TF1* const PhotonVisibilityService::GetTimingTF1(double const* xyz)
+  TF1* PhotonVisibilityService::GetTimingTF1(double const* xyz) const
   {
     int VoxID = fVoxelDef.GetVoxelID(xyz);
     return GetLibraryTimingTF1Entries(VoxID);
@@ -509,7 +509,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  TF1* const PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID)
+  TF1* PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
@@ -528,7 +528,7 @@ namespace phot{
 
     lib->SetTimingPar(VoxID,OpChannel,par, parnum);
 
-    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------
@@ -541,7 +541,7 @@ namespace phot{
 
     lib->SetTimingTF1(VoxID,OpChannel,func);
 
-    mf::LogDebug("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
 

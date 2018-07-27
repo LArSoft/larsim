@@ -142,6 +142,7 @@ namespace cheat{
         info.trackID    = simides[e].trackID;
         info.energyFrac = simides[e].energy/totalE;
         info.energy     = simides[e].energy;
+        info.numElectrons = simides[e].numElectrons;
 
         trackIDEs.push_back(info);
 
