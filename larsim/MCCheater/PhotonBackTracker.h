@@ -26,6 +26,7 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/CoreUtils/ProviderPack.h"
+#include "lardata/Utilities/AssociationUtil.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/OpFlash.h"
@@ -79,7 +80,7 @@ namespace cheat{
         void PrepOpFlashToOpHits(Evt const& evt);
 
       //----------------------------------------------------- /*NEW*/
-      const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const;
+      const std::vector<const recob::OpHit*> OpFlashToOpHits_Ps(art::Ptr< recob::OpFlash >& flash_P) const;
 
       //----------------------------------------------------- /*NEW*/
       const std::vector<double> OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const ;
@@ -238,7 +239,7 @@ namespace cheat{
       const art::InputTag fOpFlashLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
-      std::map< art::Ptr < recob::OpFlash >, std::vector < art::Ptr < recob::OpHit > > > fOpFlashToOpHits;
+      std::map< art::Ptr < recob::OpFlash >, std::vector < const recob::OpHit*  > > fOpFlashToOpHits;
 
 
   };//Class

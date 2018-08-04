@@ -34,17 +34,29 @@ namespace cheat{
     void PhotonBackTracker::PrepOpFlashToOpHits( Evt const& evt)
     {
       if(this->OpFlashToOpHitsReady()){ return;}
-      auto const& flashHandle = evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
+      //auto const& flashHandle = evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
+      art::Handle< std::vector<recob::OpFlash> > flashHandle;
+      //= evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
+      evt.template getByLabel(fOpFlashLabel, flashHandle);
       std::vector<art::Ptr<recob::OpFlash>> tmpVec;
       art::fill_ptr_vector(tmpVec, flashHandle);
+      art::Handle< art::Assns<recob::OpFlash,recob::OpHit> > assnFlashToOpHit;
+      evt.getByLabel(fOpFlashLabel,assnFlashToOpHit);
 
-      if(flashHandle.failedToGet()){
+      //if(assnFlashToOpHit.failedToGet()){
+/*      if(flashHandle.failedToGet()){
         mf::LogWarning("PhotonBackTracker")<<" failed to get handle to recob::OpFlash. Has reco run yet?";
         return;
+      }*/
+
+//      std::vector< const std::< art::Ptr<recob::OpHit> > 
+      auto tmp = util::GetAssociatedVectorManyP(assnFlashToOpHit, flashHandle);
+
+      for ( size_t i=0; i<flashHandle->size(); i++){
+        //auto shape1= tmpVec.at(i);
+        auto check = fOpFlashToOpHits.emplace(tmpVec.at(i),tmp.at(i)); //.[tmpVec.at(i)] = fmp.at(i);
+        if(check.second==false){mf::LogWarning("PhotonBackTracker")<<"Failed to insert Flash,vec<OpHit> record. Do they exist?";}
       }
-      auto const& fmp = art::FindManyP<recob::OpHit>(flashHandle, evt, fOpHitLabel.label());
-      for ( size_t i=0; i<flashHandle->size(); i++)
-        fOpFlashToOpHits[tmpVec.at(i)] = fmp.at(i);
     }
 
   //----------------------------------------------------------------
