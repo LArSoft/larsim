@@ -189,13 +189,14 @@ namespace phot{
     
     // with STL vectors, where `resize()` directly controls the allocation of
     // memory, reserving the space is redundant; not so with `util::LazyVector`,
-    // where `resize()` never increases the memory
-    fLookupTable.reserve(LibrarySize());
+    // where `resize()` never increases the memory; `data_init()` allocates
+    // all the storage we need at once, effectively suppressing the laziness
+    // of the vector (by design, that was only relevant in `CreateEmptyLibrary()`)
     fLookupTable.resize(LibrarySize());
+    fLookupTable.data_init(LibrarySize());
 
     if(fHasTiming!=0)
     {
-      timing_par.reserve(getTiming);
       timing_par.resize(getTiming);
       tt->SetBranchAddress("timing_par", timing_par.data());
       fTimingParNParameters=fHasTiming;
@@ -203,15 +204,16 @@ namespace phot{
       if(!n) mf::LogError("PhotonLibrary") <<"Error reading the photon propagation formula. Please check the photon library." << std::endl;
       fTimingParFormula = n->GetTitle();
       fTimingParTF1LookupTable.resize(LibrarySize());
+      fTimingParTF1LookupTable.data_init(LibrarySize());
       mf::LogInfo("PhotonLibrary") <<"Time parametrization is activated. Using the formula: "<<  fTimingParFormula << " with " << fTimingParNParameters << " parameters."<< std::endl;
     }
     if(fHasReflected) {
-      fReflLookupTable.reserve(LibrarySize());
       fReflLookupTable.resize(LibrarySize());
+      fReflLookupTable.data_init(LibrarySize());
     }
     if(fHasReflectedT0) {
       fReflTLookupTable.resize(LibrarySize());
-      fReflTLookupTable.reserve(LibrarySize());
+      fReflTLookupTable.data_init(LibrarySize());
     }
     
     size_t NEntries = tt->GetEntries();
