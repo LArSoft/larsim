@@ -87,7 +87,7 @@ simple_plugin(PhotonBackTrackerService "service"
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
-  dune_DuneObjBase
+  dune_DuneObj
   )
 
 simple_plugin(BackTrackerService "service"
