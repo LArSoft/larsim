@@ -35,7 +35,7 @@
 #include "lardataobj/RawData/OpDetWaveform.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "dune/DuneObjBase/OpDetDivRec.h"
+#include "dune/DuneObj/OpDetDivRec.h"
 
 
 

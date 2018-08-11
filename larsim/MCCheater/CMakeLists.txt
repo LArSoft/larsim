@@ -23,7 +23,7 @@ cet_make_library(
   lardataobj_Simulation
   lardataobj_RawData
   nusimdata_SimulationBase
-  dune_DuneObjBase
+  dune_DuneObj
   ) 
 
 cet_make_library(
