@@ -82,6 +82,7 @@ namespace cheat{
       const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIdsToOpHits_Ps(std::vector<int> const& tkIds, std::vector<art::Ptr<recob::OpHit>> const& hitsIn);
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(recob::OpHit const& opHit) ;
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) ;
+      const std::vector< sim::SDP > OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P);
       const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit) ;
       const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>& opHit_P) ;
       const std::vector< double> SimSDPsToXYZ(std::vector<sim::SDP> const& sdps ) const& ;
