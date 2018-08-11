@@ -14,9 +14,10 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "larsim/PhotonPropagation/PhotonLibrary.h"
+#include "larsim/PhotonPropagation/IPhotonLibrary.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
-#include "TF1.h"
+class TF1;
 
 ///General LArSoft Utilities
 namespace phot{
@@ -32,10 +33,9 @@ namespace phot{
     
     static double DistanceToOpDet(          double const* xyz, unsigned int OpDet );
     static double SolidAngleFactor(         double const* xyz, unsigned int OpDet );
-    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const;               
+    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const;         
 
-
-    float const* GetAllVisibilities( double const* xyz, bool wantReflected=false) const;
+    float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const;
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -57,6 +57,10 @@ namespace phot{
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
     const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
     float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
+
+    TF1* GetTimingTF1( double const* xyz ) const;
+    void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
+    TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
    void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
@@ -71,7 +75,7 @@ namespace phot{
 
     bool IncludePropTime() const { return fIncludePropTime; }
 
-    sim::PhotonVoxelDef GetVoxelDef() const {return fVoxelDef; }
+    const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
     
   private:
@@ -91,6 +95,7 @@ namespace phot{
     bool                 fLibraryBuildJob;
     bool                 fDoNotLoadLibrary;
     bool                 fParameterization;
+    bool                 fHybrid;
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
@@ -118,7 +123,7 @@ namespace phot{
     double fT0_max, fT0_break_point;
    
     std::string          fLibraryFile;      
-    mutable PhotonLibrary* fTheLibrary;
+    mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
     
     

@@ -49,8 +49,10 @@ namespace phot {
     
 
   private:
-      std::string fAltXAxis;
-      int         fOpDet;
+    std::string fAltXAxis;
+    int         fOpDet;
+    bool        fEachSlice;
+    bool        fEachDetector;
   };
   
 }
@@ -64,6 +66,7 @@ namespace phot {
     : EDAnalyzer(pset)
   {
     reconfigure(pset);
+    std::cout<<"Photon library analyzer constructor "<<std::endl;
   }
 
   //----------------------------------------------------------------------------
@@ -74,16 +77,17 @@ namespace phot {
   //----------------------------------------------------------------------------
   void PhotonLibraryAnalyzer::reconfigure(fhicl::ParameterSet const& pset)
   {
-      fAltXAxis = pset.get<std::string>("alt_x_axis");
-      fOpDet    = pset.get<int>("opdet");
+    fAltXAxis     = pset.get<std::string>("alt_x_axis");
+    fOpDet        = pset.get<int>("opdet");
+    fEachSlice    = pset.get<bool>("each_slice");
+    fEachDetector = pset.get<bool>("each_detector");
   }
 
   //----------------------------------------------------------------------------
   void PhotonLibraryAnalyzer::beginJob()
   
   {
-    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - begin"<<
-      std::endl;
+    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - begin"<< std::endl;
 
     
     art::ServiceHandle<art::TFileService> tfs;
@@ -107,13 +111,26 @@ namespace phot {
     // for c2: FullVolume is unused, just call tfs->make
     // TH3D *FullVolume = tfs->make<TH3D>("FullVolume","FullVolume", 
     tfs->make<TH3D>("FullVolume","FullVolume", 
-                                       XSteps,LowerCorner[0],UpperCorner[0],
-                                       YSteps,LowerCorner[1],UpperCorner[1],
-                                       ZSteps,LowerCorner[2],UpperCorner[2]);
+                    XSteps,LowerCorner[0],UpperCorner[0],
+                    YSteps,LowerCorner[1],UpperCorner[1],
+                    ZSteps,LowerCorner[2],UpperCorner[2]);
+
+    
+    int reportnum=10000;
+
+    int newX, newY;
+    if (fAltXAxis == "Z") { 
+      newX = 2; // Z
+      newY = 1; // Y
+    }
+    else {
+      newX = 1; // Y
+      newY = 2; // Z
+    }
+
  
     
-    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - making historams"<<
-      std::endl;
+    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - making historams"<< std::endl;
 
     TH2D* XProjection;
     if (fAltXAxis == "Z") XProjection = tfs->make<TH2D>("XProjection","XProjection",ZSteps,0,ZSteps,YSteps,0,YSteps);
@@ -131,60 +148,80 @@ namespace phot {
     TH2D* YInvisibles = tfs->make<TH2D>("YInvisibles","YInvisibles",XSteps,0,XSteps,ZSteps,0,ZSteps);
     TH2D* ZInvisibles = tfs->make<TH2D>("ZInvisibles","ZInvisibles",XSteps,0,XSteps,YSteps,0,YSteps);
 
+    
 
-  
+    
+
     std::vector<TH2D*> TheXCrossSections;
     std::vector<TH2D*> TheYCrossSections;
     std::vector<TH2D*> TheZCrossSections;
+    if (fEachSlice) {
 
     
-    for(int i=0; i!=XSteps; ++i)
+      for(int i=0; i!=XSteps; ++i)
       {
-	std::stringstream ss("");
-	ss.flush();
-	ss<<"projX"<<i;
+        std::stringstream ss("");
+        ss.flush();
+        ss<<"projX"<<i;
         if (fAltXAxis == "Z") 	
-            TheXCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), ZSteps, 0,ZSteps, YSteps, 0,YSteps));
+          TheXCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), ZSteps, 0,ZSteps, YSteps, 0,YSteps));
         else	
-            TheXCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), YSteps, 0,YSteps, ZSteps, 0,ZSteps));                  
+          TheXCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), YSteps, 0,YSteps, ZSteps, 0,ZSteps));                  
 
 
       }
 
-  for(int i=0; i!=YSteps; ++i)
+      for(int i=0; i!=YSteps; ++i)
       {
-	std::stringstream ss("");
-	ss.flush();
-	ss<<"projY"<<i;
-	TheYCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), XSteps, 0,XSteps, ZSteps, 0, ZSteps));
+        std::stringstream ss("");
+        ss.flush();
+        ss<<"projY"<<i;
+        TheYCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), XSteps, 0,XSteps, ZSteps, 0, ZSteps));
 
       }
 
-  for(int i=0; i!=ZSteps; ++i)
+      for(int i=0; i!=ZSteps; ++i)
       {
-	std::stringstream ss("");
-	ss.flush();
-	ss<<"projZ"<<i;
-	TheZCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), XSteps, 0,XSteps, YSteps, 0,YSteps));
+        std::stringstream ss("");
+        ss.flush();
+        ss<<"projZ"<<i;
+        TheZCrossSections.push_back(tfs->make<TH2D>(ss.str().c_str(),ss.str().c_str(), XSteps, 0,XSteps, YSteps, 0,YSteps));
 
       }
+    }
+
+
+    std::vector<TH2D*> TheXProjections;
+    std::vector<TH2D*> TheYProjections;
+    std::vector<TH2D*> TheZProjections;
+
+    if (fEachDetector) {
+
+      mf::LogInfo("PhotonLibraryAnalyzer")<<"Making projections for each of " << NOpDet << " photon detectors" << std::endl;
     
-  mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - running through voxels "<<
-    std::endl;
+      for(int i=0; i<NOpDet; ++i)
+      {
+        char ss[99];
 
-  int reportnum=10000;
+        sprintf(ss, "ProjXOpDet%d", i);
+        if (fAltXAxis == "Z")
+          TheXProjections.push_back(tfs->make<TH2D>(ss, ss, ZSteps, 0,ZSteps, YSteps, 0,YSteps));
+        else
+          TheXProjections.push_back(tfs->make<TH2D>(ss, ss, YSteps, 0,YSteps, ZSteps, 0,ZSteps));
 
-  int newX, newY;
-  if (fAltXAxis == "Z") { 
-      newX = 2; // Z
-      newY = 1; // Y
-  }
-  else {
-      newX = 1; // Y
-      newY = 2; // Z
-  }
+        sprintf(ss, "ProjYOpDet%d", i);
+        TheYProjections.push_back(tfs->make<TH2D>(ss, ss, XSteps, 0,XSteps, ZSteps, 0, ZSteps));
 
-  for(int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
+        sprintf(ss, "ProjZOpDet%d", i);
+        TheZProjections.push_back(tfs->make<TH2D>(ss, ss, XSteps, 0,XSteps, YSteps, 0,YSteps));
+      }
+    }
+
+    
+    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - running through voxels "<< std::endl;
+
+
+    for(int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
     {
       if(i%reportnum==0) std::cout<<"Photon library analyzer at voxel " << i<<std::endl;
     
@@ -207,23 +244,34 @@ namespace phot {
       VisByN->Fill(NOpChannels);
       
       if(TotalVis==0)
-	{
-	  XInvisibles->Fill(Coords[newX],Coords[newY]);
-	  YInvisibles->Fill(Coords[0],Coords[2]);
-	  ZInvisibles->Fill(Coords[0],Coords[1]);
-	}
+      {
+        XInvisibles->Fill(Coords[newX],Coords[newY]);
+        YInvisibles->Fill(Coords[0],Coords[2]);
+        ZInvisibles->Fill(Coords[0],Coords[1]);
+      }
 
-      TheXCrossSections.at(Coords.at(0))->Fill(Coords[newX],Coords[newY],TotalVis);
-      TheYCrossSections.at(Coords.at(1))->Fill(Coords[0],Coords[2],TotalVis);
-      TheZCrossSections.at(Coords.at(2))->Fill(Coords[0],Coords[1],TotalVis);
+      if (fEachSlice) {
+        TheXCrossSections.at(Coords.at(0))->Fill(Coords[newX],Coords[newY],TotalVis);
+        TheYCrossSections.at(Coords.at(1))->Fill(Coords[0],Coords[2],TotalVis);
+        TheZCrossSections.at(Coords.at(2))->Fill(Coords[0],Coords[1],TotalVis);
+      }
+
+      if (fEachDetector) {
+        for(size_t ichan=0; ichan!=NOpChannels; ++ichan) {
+          TheXProjections.at(ichan)->Fill(Coords[newX],Coords[newY],Visibilities[ichan]);
+          TheYProjections.at(ichan)->Fill(Coords[0],Coords[2],Visibilities[ichan]);
+          TheZProjections.at(ichan)->Fill(Coords[0],Coords[1],Visibilities[ichan]);
+        }
+      }
+
+      // Always make the summed projections
       XProjection->Fill(Coords[newX], Coords[newY], TotalVis);
       YProjection->Fill(Coords[0], Coords[2], TotalVis);
       ZProjection->Fill(Coords[0], Coords[1], TotalVis);
      
     }
   
-  mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - end"<<
-    std::endl;
+    mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - end"<< std::endl;
   }
 
   //----------------------------------------------------------------------------

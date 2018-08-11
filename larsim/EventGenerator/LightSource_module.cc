@@ -1,49 +1,60 @@
-// \file LightSource_module.cxx  - Ben Jones, MIT 2010
-//
-// Light source event generator which simulate an extended isotropic photon source
-//
-// The light source can be run in two modes, file mode or scan mode.  Each requires
-// the specification of a different set of parameters.
-//
-// FILE MODE :
-// Light source position, intensity and shape are supplied on an event by event basis
-// in a text file.  See the example provided for the format. Pararmeters required:
-//
-//  int32   SourceMode = 0      - sets light source to file mode
-//  string  FileName            - file of per event light source specifications
-//  int32   PosDist             - how to distribute production points sampled in momentum, position
-//  int32   PDist                   and time ranges specified.  For all of these :
-//  int32   TDist                   0 = uniform and 1 = gauss
-//  bool    FillTree            - whether to write a tree of photon production points to fileservice
-//
-// Upon reaching the end of the file, the light source will loop back to the first point.
-// hence a one line text file will give a constant light source size, position and intensity.
-//
-// SCAN MODE:
-// Divide volume into cuboidal regions and produce an isotropic light source in each,
-// using one region per event.  User can specify either to use the full detector volume
-// or some custom specified volume.
-//
-// This mode is used when building a fast photon sim library, and performing volume
-// scan sensitivity studies.
-//
-//  int32   SourceMode = 1      - sets light source to scan mode
-//  int32   N                   - number of photons to shoot from each point
-//  double  P                   - peak photon momentum (or energy) in eV
-//  double  SigmaP              - momentum distribution width
-//  double  XSteps              - Number of regions to divide volume into in each direction 
-//  double  YSteps
-//  double  ZSteps
-//  double  T0                  - Peak time of photon production
-//  double  SigmaT              - time distribution width
-//  int32   PosDist             - how to distribute production points sampled in momentum, position
-//  int32   PDist                 and time ranges specified.  For all of these :
-//  int32   TDist                   0 = uniform and 1 = gaussian
-//  bool    FillTree            - whether to write a tree of photon production points to fileservice
-///  bool    UseCustomRegion     - supply our own volme specification or use the full detector volume?
-//  vdouble[3]  RegionMin       - bounding corners of the custom volume specification 
-//  vdouble[3]  RegionMax           (only used if UseCustomRegion=true)
-//
+/**
+ * @file   larsim/EventGenerator/LightSource_module.cc
+ * @author Ben Jones, MIT 2010
+ */
+
+/**
+ * @class evgen::LightSource
+ * @brief Light source event generator which simulate an extended isotropic photon source
+ * 
+ * The light source can be run in two modes, file mode or scan mode.  Each requires
+ * the specification of a different set of parameters.
+ * 
+ * File mode
+ * ----------
+ *
+ * Light source position, intensity and shape are supplied on an event by event basis
+ * in a text file.  See the example provided for the format. Pararmeters required:
+ *     
+ *     int32   SourceMode = 0      - sets light source to file mode
+ *     string  FileName            - file of per event light source specifications
+ *     int32   PosDist             - how to distribute production points sampled in momentum, position
+ *     int32   PDist                   and time ranges specified.  For all of these :
+ *     int32   TDist                   0 = uniform and 1 = gauss
+ *     bool    FillTree            - whether to write a tree of photon production points to fileservice
+ *     
+ * Upon reaching the end of the file, the light source will loop back to the first point.
+ * hence a one line text file will give a constant light source size, position and intensity.
+ * 
+ * Scan mode
+ * ----------
+ *
+ * Divide volume into cuboidal regions and produce an isotropic light source in each,
+ * using one region per event.  User can specify either to use the full detector volume
+ * or some custom specified volume.
+ * 
+ * This mode is used when building a fast photon sim library, and performing volume
+ * scan sensitivity studies.
+ *     
+ *     int32   SourceMode = 1      - sets light source to scan mode
+ *     int32   N                   - number of photons to shoot from each point
+ *     double  P                   - peak photon momentum (or energy) in eV
+ *     double  SigmaP              - momentum distribution width
+ *     double  XSteps              - Number of regions to divide volume into in each direction 
+ *     double  YSteps
+ *     double  ZSteps
+ *     double  T0                  - Peak time of photon production
+ *     double  SigmaT              - time distribution width
+ *     int32   PosDist             - how to distribute production points sampled in momentum, position
+ *     int32   PDist                 and time ranges specified.  For all of these :
+ *     int32   TDist                   0 = uniform and 1 = gaussian
+ *     bool    FillTree            - whether to write a tree of photon production points to fileservice
+ *     bool    UseCustomRegion     - supply our own volme specification or use the full detector volume?
+ *     vdouble[3]  RegionMin       - bounding corners of the custom volume specification 
+ *     vdouble[3]  RegionMax           (only used if UseCustomRegion=true)
+ *     
+ */
+
 #ifndef EVGEN_LIGHTSOURCE_H
 #define EVGEN_LIGHTSOURCE_H
 
@@ -64,6 +75,7 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "canvas/Utilities/Exception.h"
 #include "cetlib_except/exception.h"
 
 // art extensions
@@ -82,7 +94,6 @@
 #include "larsim/Simulation/PhotonVoxels.h"
 
 #include "TVector3.h"
-#include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TTree.h"
 
@@ -90,14 +101,12 @@
 #include "CLHEP/Random/RandGaussQ.h"
 
 namespace evgen {
-  class SingleParticle;
 
   /// A module for optical MC testing and library building
   class LightSource : public art::EDProducer {
   public:
     explicit LightSource(fhicl::ParameterSet const& pset);
-    virtual ~LightSource();                        
-  
+    
     void produce(art::Event & evt);
     void beginRun(art::Run& run);
 
@@ -297,11 +306,6 @@ namespace evgen{
   }
 
 
-  //----------------------------------------------------------------
-  LightSource::~LightSource()
-  {
-  }
-
   //____________________________________________________________________________
   void LightSource::beginRun(art::Run& run)
   {
@@ -401,10 +405,18 @@ namespace evgen{
 
     //     std::cout << "add vector to the event " << truthcol->size() << std::endl;
     evt.put(std::move(truthcol));
- 
-    art::ServiceHandle<phot::PhotonVisibilityService> vis;
+    
+    phot::PhotonVisibilityService* vis = nullptr;
+    try {
+      vis = art::ServiceHandle<phot::PhotonVisibilityService>().get();
+    }
+    catch (art::Exception const& e) {
+      // if the service is not configured, then this is not a build job
+      // (it is a simple generation job instead)
+      if (e.categoryCode() != art::errors::ServiceNotFound) throw;
+    }
 
-    if(vis->IsBuildJob())
+    if(vis && vis->IsBuildJob())
       {
 	mf::LogVerbatim("LightSource") << "Light source : Stowing voxel params ";
 	vis->StoreLightProd(fCurrentVoxel,fN);

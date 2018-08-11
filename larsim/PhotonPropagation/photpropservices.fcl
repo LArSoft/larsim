@@ -27,6 +27,30 @@ standard_photonvisibilityservice:
 }
 
 
+protodunedp_photonvisibilityservice_buildlib:
+{
+
+  NX: 29
+  NY: 24
+  NZ: 24
+  UseCryoBoundary: false
+
+  DoNotLoadLibrary: true
+
+  LibraryBuildJob: true
+
+  LibraryFile: "PhotonPropagation/LibraryData/Not_A_Library.root"
+
+ #These are not used when usecryoboundary=true
+  XMin: -420.5
+  XMax: 304.5
+  YMin: -300
+  YMax: 300
+  ZMin: 0
+  ZMax: 600
+} 
+#Bea
+
 standard_photonvisibilityservice_buildlib:
 {
 

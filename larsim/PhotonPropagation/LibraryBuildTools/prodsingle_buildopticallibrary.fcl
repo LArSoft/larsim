@@ -102,10 +102,10 @@ services.LArG4Parameters.UseCustomPhysics: true
 # do not allow lightsource to write output into root file
 physics.producers.generator.FillTree: false
 
-physics.analyzers.pmtresponse.MakeAllPhotonsTree: false
-physics.analyzers.pmtresponse.MakeDetectedPhotonsTree: false
-physics.analyzers.pmtresponse.MakeOpDetsTree: false
-physics.analyzers.pmtresponse.MakeOpDetEventsTree: false
+physics.analyzers.pmtresponse.MakeAllPhotonsTree: true
+physics.analyzers.pmtresponse.MakeDetectedPhotonsTree: true
+physics.analyzers.pmtresponse.MakeOpDetsTree: true
+physics.analyzers.pmtresponse.MakeOpDetEventsTree: true
 
 #services.Geometry.GDML: "TempGeometry/gdml/microboone.gdml"
 
