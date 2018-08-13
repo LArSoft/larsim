@@ -39,6 +39,24 @@
 
 namespace phot{
 
+  PhotonVisibilityService::~PhotonVisibilityService()
+  {
+    delete fparslogNorm;
+    delete fparslogNorm_far;
+    delete fparsMPV;
+    delete fparsMPV_far;
+    delete fparsWidth;
+    delete fparsCte;
+    delete fparsCte_far;
+    delete fparsSlope;
+    delete fparslogNorm_refl;
+    delete fparsMPV_refl;
+    delete fparsWidth_refl;
+    delete fparsCte_refl;
+    delete fparsSlope_refl;
+    delete fTheLibrary;
+  }
+
   //--------------------------------------------------------------------
   PhotonVisibilityService::PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry &/*reg*/) :
     
