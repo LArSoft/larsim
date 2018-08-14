@@ -80,8 +80,30 @@ namespace phot{
     fStoreReflT0(false),
     fIncludePropTime(false),
     fParPropTime(false),
-    fTheLibrary(0)
-    
+    fParPropTime_npar(0),
+    fParPropTime_formula(),
+    fInterpolate(false),
+    fparslogNorm(nullptr),
+    fparslogNorm_far(nullptr),
+    fparsMPV(nullptr),
+    fparsMPV_far(nullptr),
+    fparsWidth(nullptr),
+    fparsCte(nullptr),
+    fparsCte_far(nullptr),
+    fparsSlope(nullptr),
+    fD_break(0.0),
+    fD_max(0.0),
+    fTF1_sampling_factor(0.0),
+    fparslogNorm_refl(nullptr),
+    fparsMPV_refl(nullptr),
+    fparsWidth_refl(nullptr),
+    fparsCte_refl(nullptr),
+    fparsSlope_refl(nullptr),
+    fT0_max(0.0),
+    fT0_break_point(0.0),
+    fLibraryFile(),
+    fTheLibrary(nullptr),
+    fVoxelDef()
   {
     this->reconfigure(pset);
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
