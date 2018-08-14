@@ -25,7 +25,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larsim/IonizationScintillation/ISCalculationSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "TNtuple.h"
 
 namespace spacecharge {
@@ -57,7 +57,7 @@ private:
   TNtuple*      fNtEdepAna;
 
     //IS calculationg
-    larg4::ISCalculationSeparate fISAlg;
+    larg4::ISCalcSeparate fISAlg;
 };
 
 
@@ -85,6 +85,18 @@ void spacecharge::ShiftEdepSCE::beginJob()
 
 void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 {
+  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+		    &(*lg4paramHandle),
+		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  /*
+  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+		    lg4paramHandle,
+		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  */
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
   std::unique_ptr< std::vector<sim::SimEnergyDeposit> > 

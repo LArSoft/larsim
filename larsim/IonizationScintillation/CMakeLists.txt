@@ -5,6 +5,7 @@ art_make(
 			lardataobj_Simulation
 			lardataalg_DetectorInfo
 			larevt_SpaceCharge
+	                nusimdata_SimulationBase
                         ${MF_MESSAGELOGGER}
                         
                         ${FHICLCPP}

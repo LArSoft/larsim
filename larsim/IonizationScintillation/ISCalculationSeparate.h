@@ -10,8 +10,8 @@
 /// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef IS_ISCALCULATIONSEPARATE_H
-#define IS_ISCALCULATIONSEPARATE_H
+#ifndef IS_ISCALCSEPARATE_H
+#define IS_ISCALCSEPARATE_H
 
 #include <vector>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
@@ -23,12 +23,12 @@ namespace spacecharge { class SpaceCharge; }
 
 namespace larg4 {
 
- class ISCalculationSeparate{
+ class ISCalcSeparate{
 
  public:
 
-   ISCalculationSeparate();
-   virtual ~ISCalculationSeparate();
+   ISCalcSeparate();
+   virtual ~ISCalcSeparate();
 
    void   Initialize(const detinfo::LArProperties* larp,   
  		     const detinfo::DetectorProperties* detp,
@@ -44,14 +44,11 @@ namespace larg4 {
 
  private:
 
-   //unused double                fEfield;              ///< value of electric field from LArProperties service
-   //unused double 	   	 fGeVToElectrons;      ///< conversion factor from LArProperties service	  
    double 	   	 fRecombA;             ///< from LArG4Parameters service			  
    double 	   	 fRecombk;             ///< from LArG4Parameters service			  
    double 	   	 fModBoxA;             ///< from LArG4Parameters service			  
    double 	   	 fModBoxB;             ///< from LArG4Parameters service			  
    bool   	   	 fUseModBoxRecomb;     ///< from LArG4Parameters service			  
-   //unused bool   	   	 fScintByParticleType; ///< from LArProperties service			  
    double 	   	 fScintYieldFactor;    ///< scintillation yield factor                             
 
    double fEnergyDeposit;   ///< total energy deposited in the step

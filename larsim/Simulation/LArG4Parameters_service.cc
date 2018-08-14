@@ -51,6 +51,10 @@ namespace sim {
     fIonAndScintCalculator   = pset.get< std::string              >("IonAndScintCalculator", "Separate");
     fDisableWireplanes       = pset.get< bool                     >("DisableWireplanes"       );
     fSkipWireSignalInTPCs    = pset.get< std::vector<unsigned short int> >("SkipWireSignalInTPCs"      );
+    fRecombA                 = pset.get< double                   >("RecombA",util::kRecombA);
+    fRecombk                 = pset.get< double                   >("Recombk",util::kRecombk);
+    fModBoxA                 = pset.get< double                   >("ModBoxA",util::kModBoxA);
+    fModBoxB                 = pset.get< double                   >("ModBoxB",util::kModBoxB);
     fUseModBoxRecomb         = pset.get< bool                     >("UseModBoxRecomb"         );
     fOpticalParamVolumes     = pset.get< std::vector<std::string> >("OpticalParamVolumes"     );
     fOpticalParamModels      = pset.get< std::vector<std::string> >("OpticalParamModels"      );
@@ -62,10 +66,8 @@ namespace sim {
     fNoElectronPropagation   = pset.get< bool                     >("NoElectronPropagation",false);
     fNoPhotonPropagation     = pset.get< bool                     >("NoPhotonPropagation",false);
     
-    
     return;
   }
-
 }
 
 
