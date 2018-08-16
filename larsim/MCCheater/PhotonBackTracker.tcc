@@ -14,12 +14,12 @@ namespace cheat{
     {
       if(this->BTRsReady()){ return;}
       auto const& btrHandle = evt.template getValidHandle < std::vector < sim::OpDetBacktrackerRecord > > (fG4ModuleLabel);
-      if(btrHandle.failedToGet()){
+//      if(btrHandle.failedToGet()){
         /*  mf::LogWarning("PhotonBackTracker") << "failed to get handle to     simb::MCParticle from "
          *              << fG4ModuleLabel
          *                          << ", return";*/ //This is now silent as it is expected to    happen every generation run. It is also temporary while we wait for
-        return;
-      }
+//        return;
+//      }
 
       art::fill_ptr_vector(priv_OpDetBTRs, btrHandle);
 

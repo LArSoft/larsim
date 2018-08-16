@@ -28,12 +28,12 @@ namespace cheat{
       //We use auto so that we(the compiler) can determine which type we need for either art or gallery.
       const auto& pHandle = evt.template getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel); 
 //      const auto& partVecIn = evt.template getValidHandle<std::vector<simb::MCParticle>>(fG4ModuleLabel); 
-      if(pHandle.failedToGet()){
-        /*mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
-          << fG4ModuleLabel
-          << ", return";*/ //Do this silently so we don't polute the logs. It is expected to fail for all gen and g4 jobs.
-        return;
-      }
+//      if(pHandle.failedToGet()){
+//        /*mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
+//          << fG4ModuleLabel
+//          << ", return";*/ //Do this silently so we don't polute the logs. It is expected to fail for all gen and g4 jobs.
+//        return;
+//      }
 
       const auto& partVecIn = *pHandle;
       for(const auto& partIn : partVecIn){

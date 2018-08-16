@@ -32,12 +32,13 @@ namespace cheat{
       if(this->SimChannelsReady()){ return;}
       //The SimChannels list needs to be built.
       const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fG4ModuleLabel);
-      if(simChannelsHandle.failedToGet()){
-        /*  mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
-            << fG4ModuleLabel
-            << ", return";*/ //This is now silent as it is expected to happen every generation run. It is also temporary while we wait for
-        return;
-      }
+      //failedToGet for a valid handle will always be false.
+//      if(simChannelsHandle.failedToGet()){
+//        /*  mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "
+//            << fG4ModuleLabel
+//            << ", return";*/ //This is now silent as it is expected to happen every generation run. It is also temporary while we wait for
+//        return;
+//      }
 
       art::fill_ptr_vector(fSimChannels, simChannelsHandle); 
 
