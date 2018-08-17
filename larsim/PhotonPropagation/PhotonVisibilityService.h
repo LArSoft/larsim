@@ -107,20 +107,20 @@ namespace phot{
 
     bool                 fInterpolate;
 
-    TF1 *fparslogNorm;
-    TF1 *fparslogNorm_far;
-    TF1 *fparsMPV;
-    TF1 *fparsMPV_far;
-    TF1 *fparsWidth;
-    TF1 *fparsCte;
-    TF1 *fparsCte_far;
-    TF1 *fparsSlope;
+    TF1 *fparslogNorm = nullptr;
+    TF1 *fparslogNorm_far = nullptr;
+    TF1 *fparsMPV = nullptr;
+    TF1 *fparsMPV_far = nullptr;
+    TF1 *fparsWidth = nullptr;
+    TF1 *fparsCte = nullptr;
+    TF1 *fparsCte_far = nullptr;
+    TF1 *fparsSlope = nullptr;
     double fD_break, fD_max, fTF1_sampling_factor;
-    TF1 *fparslogNorm_refl;
-    TF1 *fparsMPV_refl;
-    TF1 *fparsWidth_refl;
-    TF1 *fparsCte_refl;
-    TF1 *fparsSlope_refl;
+    TF1 *fparslogNorm_refl = nullptr;
+    TF1 *fparsMPV_refl = nullptr;
+    TF1 *fparsWidth_refl = nullptr;
+    TF1 *fparsCte_refl = nullptr;
+    TF1 *fparsSlope_refl = nullptr;
     double fT0_max, fT0_break_point;
    
     std::string          fLibraryFile;      
