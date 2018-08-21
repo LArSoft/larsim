@@ -20,7 +20,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "TNtuple.h"
 
-#include "ISCalculationSeparate.h"
+#include "ISCalcSeparate.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -54,7 +54,7 @@ public:
 
 private:
 
-  ISCalculationSeparate fISAlg;
+  ISCalcSeparate fISAlg;
   art::InputTag         fEDepTag;
 
   TNtuple* fNtuple;

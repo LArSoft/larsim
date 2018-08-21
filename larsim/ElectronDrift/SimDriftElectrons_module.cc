@@ -86,7 +86,7 @@
 #include <cmath>
 
 //stuff from wes
-#include "larsim/IonizationScintillation/ISCalculationSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
 
 
 namespace detsim {
@@ -171,7 +171,7 @@ namespace detsim {
 
 
     //IS calculationg
-    larg4::ISCalculationSeparate fISAlg;
+    larg4::ISCalcSeparate fISAlg;
 
   }; // class SimDriftElectrons
 

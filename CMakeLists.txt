@@ -58,6 +58,9 @@ find_ups_geant4( geant4 )
 find_ups_product( postgresql )
 find_ups_product( ifdhc )
 
+# Wes put this here to use TRACE for debugging...
+#find_ups_product( TRACE )
+
 #  Find all the libraries needed by our dependent CMakeList.txt files
 cet_find_library( BOOST_SERIALIZATION NAMES boost_serialization PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
 cet_find_library( BOOST_DATE_TIME     NAMES boost_date_time     PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
