@@ -213,8 +213,8 @@ namespace larg4{
       {
         fEfieldOffsets = fSCE->GetEfieldOffsets(geo::Point_t{x,y,z});
         EField = std::sqrt( (efield + efield*fEfieldOffsets.X())*(efield + efield*fEfieldOffsets.X()) +
-			    (efield*fEfieldOffsets.Y()+efield*fEfieldOffsets.Y()) +
-			    (efield*fEfieldOffsets.Z()+efield*fEfieldOffsets.Z()) );
+			    (efield*fEfieldOffsets.Y()*efield*fEfieldOffsets.Y()) +
+			    (efield*fEfieldOffsets.Z()*efield*fEfieldOffsets.Z()) );
       }
     return EField;
   }
