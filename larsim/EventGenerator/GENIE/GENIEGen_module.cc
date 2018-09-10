@@ -43,7 +43,7 @@
 #include "nutools/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
-#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
+#include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/GTruth.h"
