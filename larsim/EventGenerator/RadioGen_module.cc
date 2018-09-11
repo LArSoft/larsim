@@ -147,7 +147,7 @@ namespace evgen {
     std::vector<double> fX1;             ///< Top corner x position (cm) in world coordinates
     std::vector<double> fY1;             ///< Top corner y position (cm) in world coordinates
     std::vector<double> fZ1;             ///< Top corner z position (cm) in world coordinates
-    std::bool           fIsSignal;
+    std::bool           fIsFirstSignalSpecial;
     int trackidcounter;                  ///< Serial number for the MC track ID
 
 
@@ -212,7 +212,7 @@ namespace evgen{
     fX1            = p.get< std::vector<double> >("X1");
     fY1            = p.get< std::vector<double> >("Y1");
     fZ1            = p.get< std::vector<double> >("Z1");
-    fIsSignal      = p.get< std::bool >(false);
+    fIsFirstSignalSpecial      = p.get< std::bool >(false);
 
     // check for consistency of vector sizes
 
@@ -319,7 +319,7 @@ namespace evgen{
       TLorentzVector pos( fX0[i] + flat.fire()*(fX1[i] - fX0[i]),
           fY0[i] + flat.fire()*(fY1[i] - fY0[i]),
           fZ0[i] + flat.fire()*(fZ1[i] - fZ0[i]),
-          (idecay==0 && fIsSignal) ? 0 : ( fT0[i] + flat.fire()*(fT1[i] - fT0[i]) ) );
+          (idecay==0 && fIsFirstSignalSpecial) ? 0 : ( fT0[i] + flat.fire()*(fT1[i] - fT0[i]) ) );
           //fT0[i] + flat.fire()*(fT1[i] - fT0[i]) );
 
       // discard decays that are not in the proper material
