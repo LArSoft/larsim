@@ -792,29 +792,30 @@ namespace cheat{
     return efficiency;
   }
   //--------------------------------------------------
-  const std::vector< const recob::OpHit* > PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const
+//  const std::vector< const recob::OpHit* > PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const
     //const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
-  {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
-
+//  {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
+//
     //      art::FindManyP< recob::OpHit > fmoh(std::vector<art::Ptr<recob::OpFlash>>({flash_P}), evt, fOpHitLabel.label());
     //      std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fmoh.at(0);
-    std::vector<const recob::OpHit*> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
-    return hits_Ps;
-
-  }
+//    std::vector<const recob::OpHit*> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
+//    std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
+//    return hits_Ps;
+//
+//  }
 
   //--------------------------------------------------
-  const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const
-  {
+//  const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const
+//  {
 //    const std::vector< const recob::OpHit *> opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
 //    const std::vector<double> retVec = this->OpHitsToXYZ(opHits_Ps);
-    const std::vector<double> retVec(0.0,3);
-    //This feature temporarily disabled.
-    return retVec;
-  }
+//    const std::vector<double> retVec(0.0,3);
+//    //This feature temporarily disabled.
+//    return retVec;
+//  }
 
   //--------------------------------------------------
-  const std::set<int> PhotonBackTracker::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const{
+//  const std::set<int> PhotonBackTracker::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const{
     /* Temporarily disabled.
     std::vector<art::Ptr<recob::OpHit> > opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
     std::set<int> ids;
@@ -824,9 +825,9 @@ namespace cheat{
       } // end for ids
     }// end for opHits
     */
-    std::set<int> ids;
-    return ids;
-  }// end OpFlashToTrackIds
+//    std::set<int> ids;
+//    return ids;
+//  }// end OpFlashToTrackIds
 
   //----------------------------------------------------- /*NEW*/
   //----------------------------------------------------- /*NEW*/
