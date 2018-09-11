@@ -31,7 +31,7 @@
 
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "larsim/IonizationScintillation/ISCalculationSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -71,7 +71,7 @@ private:
 
   std::vector<art::InputTag> fEDepTags;
 
-  larg4::ISCalculationSeparate fISAlg;
+  larg4::ISCalcSeparate fISAlg;
 
   double GetScintYield(sim::SimEnergyDeposit const&, detinfo::LArProperties const&);
 

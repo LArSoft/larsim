@@ -25,7 +25,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larsim/IonizationScintillation/ISCalculationSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "TNtuple.h"
 
 namespace spacecharge {
@@ -57,7 +57,7 @@ private:
   TNtuple*      fNtEdepAna;
 
     //IS calculationg
-    larg4::ISCalculationSeparate fISAlg;
+    larg4::ISCalcSeparate fISAlg;
 };
 
 
@@ -85,6 +85,18 @@ void spacecharge::ShiftEdepSCE::beginJob()
 
 void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 {
+  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+		    &(*lg4paramHandle),
+		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  /*
+  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+		    lg4paramHandle,
+		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  */
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
   std::unique_ptr< std::vector<sim::SimEnergyDeposit> > 
@@ -109,10 +121,10 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
     outEdepVec.emplace_back(fISAlg.NumberScintillationPhotons(),
 			    fISAlg.NumberIonizationElectrons(),
 			    edep.Energy(),
-			    sim::SimEnergyDeposit::Point_t{(float)(edep.StartX()+posOffsetsStart.X()),
+			    geo::Point_t{(float)(edep.StartX()+posOffsetsStart.X()),
 				(float)(edep.StartY()+posOffsetsStart.Y()),
 				(float)(edep.StartZ()+posOffsetsStart.Z())},
-			    sim::SimEnergyDeposit::Point_t{(float)(edep.EndX()+posOffsetsEnd.X()),
+			    geo::Point_t{(float)(edep.EndX()+posOffsetsEnd.X()),
 				(float)(edep.EndY()+posOffsetsEnd.Y()),
 				(float)(edep.EndZ()+posOffsetsEnd.Z())},
 			    edep.StartT(),

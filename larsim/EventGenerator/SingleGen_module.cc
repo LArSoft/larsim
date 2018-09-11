@@ -51,8 +51,8 @@
 #include "nutools/EventGeneratorBase/evgenbase.h"
 
 // lar includes
-#include "larcore/Geometry/Geometry.h"
-#include "larcoreobj/SummaryData/RunData.h"
+//#include "larcore/Geometry/Geometry.h"
+//#include "larcoreobj/SummaryData/RunData.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
@@ -511,7 +511,7 @@ namespace evgen{
     }
 
     produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();
+    //    produces< sumdata::RunData, art::InRun >();
 
   }
   
@@ -723,10 +723,10 @@ namespace evgen{
   {
 
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+    //    art::ServiceHandle<geo::Geometry> geo;
+    // std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
 
-    run.put(std::move(runcol));
+    //run.put(std::move(runcol));
 
     return;
   }

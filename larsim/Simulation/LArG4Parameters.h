@@ -13,6 +13,7 @@
 
 
 #include <string>
+#include <iostream>
 
 #ifndef LArG4Parameters_h
 #define LArG4Parameters_h 1
@@ -39,10 +40,10 @@ namespace sim {
     bool   DrawNeutrals()                                     const { return fDrawNeutrals;           }
     double VisualizationEnergyCut()                           const { return fVisualizationEnergyCut; }
     bool   UseCustomPhysics()                                 const { return fUseCustomPhysics;       }
-    double RecombA()                                          const { return util::kRecombA;          }
-    double Recombk()                                          const { return util::kRecombk;          }
-    double ModBoxA()                                          const { return util::kModBoxA;          }
-    double ModBoxB()                                          const { return util::kModBoxB;          }
+    double RecombA()                                          const { return fRecombA;                }
+    double Recombk()                                          const { return fRecombk;                }
+    double ModBoxA()                                          const { return fModBoxA;                }
+    double ModBoxB()                                          const { return fModBoxB;                }
     bool   UseModBoxRecomb()                                  const { return fUseModBoxRecomb;        }
     double GeVToElectrons()                                   const { return util::kGeVToElectrons;   }
     double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
@@ -93,6 +94,10 @@ namespace sim {
     bool                     fDisableWireplanes;     ///< Turn of LAr sensitivity and remove charge 
                                                      ///< drift simulation - use for running pure optical sims 
     std::vector<unsigned short int> fSkipWireSignalInTPCs;  ///< selective disabling of drift simulation 
+    double                   fRecombA;               ///< Possibly override the RecombA parameter
+    double                   fRecombk;               ///< Possibly override the Recombk parameter
+    double                   fModBoxA;               ///< Possibly override the ModBoxA parameter
+    double                   fModBoxB;               ///< Possibly override the ModBoxB parameter
     bool                     fUseModBoxRecomb;       ///< Use Modified Box model recombination instead of Birks
     std::string              fIonAndScintCalculator; ///< Name of algorithm to use to calculate the number of 
                                                      ///< ionization electrons and scintillation photons

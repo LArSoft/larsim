@@ -46,6 +46,7 @@ find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
 find_ups_product( lardataobj )
+find_ups_product( lardataalg )
 find_ups_product( lardata )
 find_ups_product( larevt )
 find_ups_product( marley )
@@ -56,6 +57,9 @@ find_ups_product( cetbuildtools )
 find_ups_geant4( geant4 )
 find_ups_product( postgresql )
 find_ups_product( ifdhc )
+
+# Wes put this here to use TRACE for debugging...
+#find_ups_product( TRACE )
 
 #  Find all the libraries needed by our dependent CMakeList.txt files
 cet_find_library( BOOST_SERIALIZATION NAMES boost_serialization PATHS ENV BOOST_LIB NO_DEFAULT_PATH )

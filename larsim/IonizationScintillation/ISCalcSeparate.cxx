@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "larsim/IonizationScintillation/ISCalculationSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -21,25 +21,34 @@
 #include "cetlib_except/exception.h"
 
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
+
+/*
+// Wes did this for TRACE debugging
+#include "trace.h"
+#define TNAME "ISCalcSeparate"
+*/
 
 namespace larg4{
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::ISCalculationSeparate()
+  ISCalcSeparate::ISCalcSeparate()
   {
   }
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::~ISCalculationSeparate()
+  ISCalcSeparate::~ISCalcSeparate()
   {
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::Initialize(const detinfo::LArProperties* larp,   
+  void ISCalcSeparate::Initialize(const detinfo::LArProperties* larp,   
 					 const detinfo::DetectorProperties* detp,
 					 const sim::LArG4Parameters* lgp,
 					 const spacecharge::SpaceCharge* sce)
   {
+    //TRACEN(TNAME,3,"Initializing called.");
+
     fLArProp = larp;
     fSCE = sce;
     fDetProp = detp;
@@ -52,19 +61,22 @@ namespace larg4{
     // we report energy depositions in MeV/cm, need to divide
     // Recombk from the LArG4Parameters service by the density
     // of the argon we got above.
-    fRecombA             = (double)lgp->RecombA();
-    fRecombk             = (double)lgp->Recombk()/detp->Density(detp->Temperature());
-    fModBoxA             = (double)lgp->ModBoxA();
-    fModBoxB             = (double)lgp->ModBoxB()/detp->Density(detp->Temperature());
+    fRecombA             = lgp->RecombA();
+    fRecombk             = lgp->Recombk()/detp->Density(detp->Temperature());
+    fModBoxA             = lgp->ModBoxA();
+    fModBoxB             = lgp->ModBoxB()/detp->Density(detp->Temperature());
     fUseModBoxRecomb     = (bool)lgp->UseModBoxRecomb();  
 
     this->Reset();
+    
+    //TRACEN(TNAME,3,"Initialize: RecombA=%f, Recombk=%f, ModBoxA=%f, ModBoxB=%f, UseModBoxRecomb=%d",
+    //	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
     
     return;
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::Reset()
+  void ISCalcSeparate::Reset()
   {
     fEnergyDeposit   = 0.;
     fNumScintPhotons = 0.;
@@ -75,19 +87,31 @@ namespace larg4{
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationSeparate::CalculateIonization(float e, float ds,
+  void ISCalcSeparate::CalculateIonization(float e, float ds,
 						  float x, float y, float z){
+
+    //TRACEN(TNAME,3,"Calculate ionization called with e=%f, ds=%f, (x,y,z)=(%f,%f,%f)",
+    //   e,ds,x,y,z);
+    //TRACEN(TNAME,3,"Initialized values: RecombA=%lf, Recombk=%lf, ModBoxA=%lf, ModBoxB=%lf, UseModBoxRecomb=%d",
+    //	   fLArG4Prop->RecombA(), fRecombk, fLArG4Prop->ModBoxA(), fModBoxB, fUseModBoxRecomb);
+
+    //std::cout << "ModBoxA: " << fLArG4Prop->ModBoxA() << " " << util::kModBoxA << " " << fModBoxA << std::endl;
+    //std::cout << "ModBoxB: " << fLArG4Prop->ModBoxB() << " " << util::kModBoxB << " " << fModBoxB << std::endl;
+
+
     double recomb = 0.;
-    double dEdx   = e/ds;
+    double dEdx   = (ds>0)? 0.0: e/ds;
     double EFieldStep = EFieldAtStep(fDetProp->Efield(),x,y,z);
     
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if(dEdx < 1.) dEdx = 1.;
+
+    //TRACEN(TNAME,3,"dEdx=%f, EFieldStep=%f",dEdx,EFieldStep);
     
     if(fUseModBoxRecomb) {
-      if(ds){
+      if(ds>0){
 	double Xi = fModBoxB * dEdx / EFieldStep;
-	recomb = log(fModBoxA + Xi) / Xi;
+	recomb = log(fLArG4Prop->ModBoxA() + Xi) / Xi;
       }
       else 
 	recomb = 0;
@@ -96,11 +120,15 @@ namespace larg4{
       recomb = fLArG4Prop->RecombA() / (1. + dEdx * fRecombk / EFieldStep);
     }
     
+    //TRACEN(TNAME,3,"recomb=%f",recomb);
     
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
 
-    LOG_DEBUG("ISCalculationSeparate") 
+    //TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
+    //if(fNumIonElectrons<0) //TRACEN(TNAME,0,"n_electrons (%f) < 0",fNumIonElectrons);
+
+    LOG_DEBUG("ISCalcSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
       << " MeV deposited with "     << recomb 
       << " recombination: "         << fNumIonElectrons << std::endl; 
@@ -108,18 +136,18 @@ namespace larg4{
 
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep){
+  void ISCalcSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep){
     CalculateIonization(edep.Energy(),edep.StepLength(),
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
   
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateScintillation(float e, int pdg)
+  void ISCalcSeparate::CalculateScintillation(float e, int pdg)
   {
     double scintYield = fLArProp->ScintYield(true);
     if(fLArProp->ScintByParticleType()){
 
-      LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
+      LOG_DEBUG("ISCalcSeparate") << "scintillating by particle type";
 
       switch(pdg) {
 
@@ -159,34 +187,34 @@ namespace larg4{
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep)
+  void ISCalcSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep)
   {
     CalculateScintillation(edep.Energy(),edep.PdgCode());
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep)
+  void ISCalcSeparate::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep)
   {
     fEnergyDeposit = edep.Energy();
     CalculateIonization(edep);
     CalculateScintillation(edep);
   }
 
-  double ISCalculationSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  double ISCalcSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     return EFieldAtStep(efield,
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
   
-  double ISCalculationSeparate::EFieldAtStep(double efield, float x, float y, float z)
+  double ISCalcSeparate::EFieldAtStep(double efield, float x, float y, float z)
   {
     double EField = efield;
     if (fSCE->EnableSimEfieldSCE())
       {
         fEfieldOffsets = fSCE->GetEfieldOffsets(geo::Point_t{x,y,z});
         EField = std::sqrt( (efield + efield*fEfieldOffsets.X())*(efield + efield*fEfieldOffsets.X()) +
-			    (efield*fEfieldOffsets.Y()+efield*fEfieldOffsets.Y()) +
-			    (efield*fEfieldOffsets.Z()+efield*fEfieldOffsets.Z()) );
+			    (efield*fEfieldOffsets.Y()*efield*fEfieldOffsets.Y()) +
+			    (efield*fEfieldOffsets.Z()*efield*fEfieldOffsets.Z()) );
       }
     return EField;
   }

@@ -81,8 +81,8 @@ namespace larg4 {
 			    float end_x,float end_y,float end_z,
 			    double start_time,double end_time,
 			    int trackid,int pdgcode,
-			    std::string vol="EMPTY");
-      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > & GetSimEnergyDeposits();
+			    std::string const& vol="EMPTY");
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > const& GetSimEnergyDeposits() const;
       //std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
             
     protected:

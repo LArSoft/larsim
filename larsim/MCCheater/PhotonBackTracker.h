@@ -29,6 +29,7 @@
 #include "canvas/Persistency/Common/FindOne.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/CoreUtils/ProviderPack.h"
+#include "lardata/Utilities/AssociationUtil.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/OpFlash.h"
@@ -85,7 +86,7 @@ namespace cheat{
         void PrepOpFlashToOpHits(Evt const& evt);
 
       //----------------------------------------------------- /*NEW*/
-      const std::vector<art::Ptr<recob::OpHit>> OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const;
+      const std::vector<const recob::OpHit*> OpFlashToOpHits_Ps(art::Ptr< recob::OpFlash >& flash_P) const;
 
       //----------------------------------------------------- /*NEW*/
       const std::vector<double> OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const ;
