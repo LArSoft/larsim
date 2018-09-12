@@ -47,6 +47,9 @@
  *   that plane; by default the margin is 0 and all the charge off the plane
  *   is lost (with a warning)
  *
+ * Update:
+ * Christoph Alt, September 2018 (christoph.alt@cern.ch)
+ * Break hardcoded charge drift in x to support charge drift in y and z.
  */
 
 // LArSoft includes
@@ -155,9 +158,9 @@ namespace detsim {
     std::vector<size_t> fNTPCs;
 
     // Per-cluster information.
-    std::vector< double > fXDiff;
-    std::vector< double > fYDiff;
-    std::vector< double > fZDiff;
+    std::vector< double > fLongDiff;
+    std::vector< double > fTransDiff1;
+    std::vector< double > fTransDiff2;
     std::vector< double > fnElDiff;
     std::vector< double > fnEnDiff;
 
@@ -349,25 +352,54 @@ namespace detsim {
 
 	const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpc, cryostat);
 
-	// X drift distance - the drift direction can be either in
-	// the positive or negative direction, so use std::abs
+	// The drift direction can be either in the positive
+	// or negative direction in any coordinate x, y or z.
+	// Charge drift in ...
+	// +x: tpcGeo.DetectDriftDirection()==1
+	// -x: tpcGeo.DetectDriftDirection()==-1
+	// +y: tpcGeo.DetectDriftDirection()==2
+	// -y tpcGeo.DetectDriftDirection()==-2
+	// +z: tpcGeo.DetectDriftDirection()==3
+	// -z: tpcGeo.DetectDriftDirection()==-3
+
+	//Check for charge deposits behind charge readout planes
+	if(tpcGeo.DetectDriftDirection()==-1 && tpcGeo.PlaneLocation(0)[0]>xyz[0])
+	  continue;
+	if(tpcGeo.DetectDriftDirection()==1 && tpcGeo.PlaneLocation(0)[0]<xyz[0])
+	  continue;
+	if(tpcGeo.DetectDriftDirection()==-2 && tpcGeo.PlaneLocation(0)[1]>xyz[1])
+	  continue;
+	if(tpcGeo.DetectDriftDirection()==2 && tpcGeo.PlaneLocation(0)[1]<xyz[1])
+	  continue;
+	if(tpcGeo.DetectDriftDirection()==-3 && tpcGeo.PlaneLocation(0)[2]>xyz[2])
+	  continue;
+	if(tpcGeo.DetectDriftDirection()==3 && tpcGeo.PlaneLocation(0)[2]<xyz[2])
+	  continue;
 
 
-	if(tpcGeo.DriftDirection()==geo::kNegX && tpcGeo.PlaneLocation(0)[0]>xyz[0])
-	  continue;
-	if(tpcGeo.DriftDirection()==geo::kPosX && tpcGeo.PlaneLocation(0)[0]<xyz[0])
-	  continue;
+
+
+
 
 	/// \todo think about effects of drift between planes.
 	// Center of plane is also returned in cm units
-	double XDrift = std::abs(xyz[0] - tpcGeo.PlaneLocation(0)[0]);
-	//std::cout<<tpcGeo.DriftDirection()<<std::endl;
-	if (tpcGeo.DriftDirection() == geo::kNegX)
-	  XDrift = xyz[0] - tpcGeo.PlaneLocation(0)[0];
-	else if (tpcGeo.DriftDirection() == geo::kPosX)
-	  XDrift = tpcGeo.PlaneLocation(0)[0] - xyz[0];
 
-	if(XDrift < 0.) continue;
+	double DriftDistance = -1.;
+
+	if (tpcGeo.DetectDriftDirection()==-1)
+	  DriftDistance = xyz[0] - tpcGeo.PlaneLocation(0)[0];
+	else if (tpcGeo.DetectDriftDirection()==1)
+	  DriftDistance = tpcGeo.PlaneLocation(0)[0] - xyz[0];
+	else if (tpcGeo.DetectDriftDirection()==-2)
+	  DriftDistance = xyz[1] - tpcGeo.PlaneLocation(0)[1];
+	else if (tpcGeo.DetectDriftDirection()==2)
+	  DriftDistance = tpcGeo.PlaneLocation(0)[1] - xyz[1];
+	else if (tpcGeo.DetectDriftDirection()==-3)
+	  DriftDistance = xyz[2] - tpcGeo.PlaneLocation(0)[2];
+	else if (tpcGeo.DetectDriftDirection()==3)
+	  DriftDistance = tpcGeo.PlaneLocation(0)[2] - xyz[2];
+
+	if(DriftDistance < 0.) continue;
 
 	// Space-charge effect (SCE): Get SCE {x,y,z} offsets for
 	// particular location in TPC
@@ -377,18 +409,40 @@ namespace detsim {
 	  {
 	    posOffsets = SCE->GetPosOffsets(mp);
 	  }
-	XDrift += -1.*posOffsets.X();
+
+	double avegagetransversePos1 = 0.;
+	double avegagetransversePos2 = 0.;
+
+	if (std::abs(tpcGeo.DetectDriftDirection())==1)
+	{
+	  DriftDistance += -1.*posOffsets.X();
+	  avegagetransversePos1 = xyz[1] + posOffsets.Y();
+	  avegagetransversePos2 = xyz[2] + posOffsets.Z();
+	}
+	else if (std::abs(tpcGeo.DetectDriftDirection())==2)
+	{
+	  DriftDistance += -1.*posOffsets.Y();
+	  avegagetransversePos1 = xyz[0] + posOffsets.X();
+	  avegagetransversePos2 = xyz[2] + posOffsets.Z();
+	}
+	else if (std::abs(tpcGeo.DetectDriftDirection())==3)
+	{
+	  DriftDistance += -1.*posOffsets.Z();
+	  avegagetransversePos1 = xyz[0] + posOffsets.X();
+	  avegagetransversePos2 = xyz[1] + posOffsets.Y();
+	}
 	
 	// Space charge distortion could push the energy deposit beyond the wire
 	// plane (see issue #15131). Given that we don't have any subtlety in the
 	// simulation of this region, bringing the deposit exactly on the plane
 	// should be enough for the time being.
-	if (XDrift < 0.) XDrift = 0.;
+	if (DriftDistance < 0.) DriftDistance = 0.;
 
 	// Drift time in ns
-	double TDrift = XDrift * fRecipDriftVel[0];
+	double TDrift = DriftDistance * fRecipDriftVel[0];
+
 	if (tpcGeo.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
-	  TDrift = ((XDrift - tpcGeo.PlanePitch(0,1)) * fRecipDriftVel[0]
+	  TDrift = ((DriftDistance - tpcGeo.PlanePitch(0,1)) * fRecipDriftVel[0]
 		    + tpcGeo.PlanePitch(0,1) * fRecipDriftVel[1]);
 	}
 
@@ -432,14 +486,14 @@ namespace detsim {
 	  }
       	
 	// Empty and resize the electron-cluster vectors.
-	fXDiff.clear();
-	fYDiff.clear();
-	fZDiff.clear();
+	fLongDiff.clear();
+	fTransDiff1.clear();
+	fTransDiff2.clear();
 	fnElDiff.clear();
 	fnEnDiff.clear();
-	fXDiff.resize(nClus);
-	fYDiff.resize(nClus);
-	fZDiff.resize(nClus);
+	fLongDiff.resize(nClus);
+	fTransDiff1.resize(nClus);
+	fTransDiff2.resize(nClus);
 	fnElDiff.resize(nClus, electronclsize);
 	fnEnDiff.resize(nClus);
 
@@ -453,25 +507,20 @@ namespace detsim {
 
 	//std::cout << "Split into, " << nClus << " clusters." << std::endl;
 	
-	double const avegageYtransversePos
-	  = xyz[1] + posOffsets.Y();
-	double const avegageZtransversePos
-	  = xyz[2] + posOffsets.Z();
-
-	// Smear drift times by x position and drift time
+	// Smear drift times by longitudinal diffusion
 	if (LDiffSig > 0.0)
-	  fRandGauss->fireArray( nClus, &fXDiff[0], 0., LDiffSig);
+	  fRandGauss->fireArray( nClus, &fLongDiff[0], 0., LDiffSig);
 	else
-	  fXDiff.assign(nClus, 0.0);
+	  fLongDiff.assign(nClus, 0.0);
 
 	if (TDiffSig > 0.0) {
-	  // Smear the Y,Z position by the transverse diffusion
-	  fRandGauss->fireArray( nClus, &fYDiff[0], avegageYtransversePos, TDiffSig);
-	  fRandGauss->fireArray( nClus, &fZDiff[0], avegageZtransversePos, TDiffSig);
+	  // Smear the coordinates in plane perpendicular to drift direction by the transverse diffusion
+	  fRandGauss->fireArray( nClus, &fTransDiff1[0], avegagetransversePos1, TDiffSig);
+	  fRandGauss->fireArray( nClus, &fTransDiff2[0], avegagetransversePos2, TDiffSig);
 	}
 	else {
-	  fYDiff.assign(nClus, avegageYtransversePos);
-	  fZDiff.assign(nClus, avegageZtransversePos);
+	  fTransDiff1.assign(nClus, avegagetransversePos1);
+	  fTransDiff2.assign(nClus, avegagetransversePos2);
 	}
 
 	//std::cout << "Smeared the " << nClus << " clusters." << std::endl;
@@ -479,31 +528,68 @@ namespace detsim {
 	// make a collection of electrons for each plane
 	for(size_t p = 0; p < tpcGeo.Nplanes(); ++p){
 	
-	  //std::cout << "Doing plane " << p << std::endl;
+//	  std::cout << "Doing plane " << p << std::endl;
 
 	  //geo::PlaneGeo const& plane = tpcGeo.Plane(p); // unused
 
-	  double Plane0Pitch = tpcGeo.Plane0Pitch(p);
+//	  For charge drift in Y and Z: the function tpcGeo.Plane0Pitch doesn't support readout planes that aren't in the y-z plane. Workaround: see below commented lines. (Christoph Alt)
 
-	  // "-" sign is because Plane0Pitch output is positive. Andrzej
-	  fDriftClusterPos[0] = tpcGeo.PlaneLocation(0)[0] - Plane0Pitch;
+//	  double Plane0Pitch = tpcGeo.Plane0Pitch(p);
+//	  "-" sign is because Plane0Pitch output is positive. Andrzej
+//	  fDriftClusterPos[0] = tpcGeo.PlaneLocation(0)[0] - Plane0Pitch;
+
+	  double Plane0Pitch = 0.;
+
+	  if(p>0)
+	  {
+	    if (std::abs(tpcGeo.DetectDriftDirection())==1)
+	    {
+	      Plane0Pitch = tpcGeo.PlaneLocation(p)[0] - tpcGeo.PlaneLocation(0)[0];
+	      fDriftClusterPos[0] = tpcGeo.PlaneLocation(0)[0] - Plane0Pitch;
+	    }
+	    else if (std::abs(tpcGeo.DetectDriftDirection())==2)
+	    {
+	      Plane0Pitch = tpcGeo.PlaneLocation(p)[1] - tpcGeo.PlaneLocation(0)[1];
+	      fDriftClusterPos[1] = tpcGeo.PlaneLocation(0)[1] - Plane0Pitch;
+	    }
+	    else if (std::abs(tpcGeo.DetectDriftDirection())==3)
+	    {
+	      Plane0Pitch = tpcGeo.PlaneLocation(p)[2] - tpcGeo.PlaneLocation(0)[2];
+	      fDriftClusterPos[2] = tpcGeo.PlaneLocation(0)[2] - Plane0Pitch;
+	    }
+	  }
 
 	  // Drift nClus electron clusters to the induction plane
 	  for(int k = 0; k < nClus; ++k){
 
 	    //std::cout << "\tCluster " << k << " diffs are "
-	    //	      << fXDiff[k] << " " << fYDiff[k] << " " << fZDiff[k]
+	    //	      << fLongDiff[k] << " " << fTransDiff1[k] << " " << fTransDiff2[k]
 	   // 	      << std::endl;
 
 	    // Correct drift time for longitudinal diffusion and plane
-	    double TDiff = TDrift + fXDiff[k] * fRecipDriftVel[0];
+	    double TDiff = TDrift + fLongDiff[k] * fRecipDriftVel[0];
 	    // Take into account different Efields between planes
 	    // Also take into account special case for ArgoNeuT where Nplanes = 2.
 	    for (size_t ip = 0; ip<p; ++ip){
 	      TDiff += tpcGeo.PlanePitch(ip,ip+1) * fRecipDriftVel[tpcGeo.Nplanes()==3?ip+1:ip+2];
 	    }
-	    fDriftClusterPos[1] = fYDiff[k];
-	    fDriftClusterPos[2] = fZDiff[k];
+
+	    if (std::abs(tpcGeo.DetectDriftDirection())==1)
+	    {
+	      fDriftClusterPos[1] = fTransDiff1[k];
+	      fDriftClusterPos[2] = fTransDiff2[k];
+	    }
+	    else if (std::abs(tpcGeo.DetectDriftDirection())==2)
+	    {
+	      fDriftClusterPos[0] = fTransDiff1[k];
+	      fDriftClusterPos[2] = fTransDiff2[k];
+	    }
+	    else if (std::abs(tpcGeo.DetectDriftDirection())==3)
+	    {
+	      fDriftClusterPos[0] = fTransDiff1[k];
+	      fDriftClusterPos[1] = fTransDiff2[k];
+	    }
+
 
 	    /// \todo think about effects of drift between planes
 
@@ -527,6 +613,9 @@ namespace detsim {
 	      } // if charge lands off plane
 	      */
 	      raw::ChannelID_t channel = fGeometry->NearestChannel(fDriftClusterPos, p, tpc, cryostat);
+
+//	      std::cout << "fDriftClusterPos[0]: " << fDriftClusterPos[0] << "\t fDriftClusterPos[1]: " << fDriftClusterPos[1] << "\t fDriftClusterPos[2]: " << fDriftClusterPos[2] << std::endl;
+//	      std::cout << "channel: " << channel << std::endl;
 
 	      //std::cout << "\tgot channel " << channel << " for cluster " << k << std::endl;
 
@@ -591,6 +680,7 @@ namespace detsim {
 		  stepList.push_back( edIndex );
 		}
 	      }
+
 	      sim::SimChannel* channelPtr = &(channels->at(channelIndex));
 
 	      //std::cout << "\tAdding electrons to SimChannel" << std::endl;
