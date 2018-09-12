@@ -147,7 +147,7 @@ namespace evgen {
     std::vector<double> fX1;             ///< Top corner x position (cm) in world coordinates
     std::vector<double> fY1;             ///< Top corner y position (cm) in world coordinates
     std::vector<double> fZ1;             ///< Top corner z position (cm) in world coordinates
-    std::bool           fIsFirstSignalSpecial;
+    bool                fIsFirstSignalSpecial;
     int trackidcounter;                  ///< Serial number for the MC track ID
 
 
@@ -212,7 +212,7 @@ namespace evgen{
     fX1            = p.get< std::vector<double> >("X1");
     fY1            = p.get< std::vector<double> >("Y1");
     fZ1            = p.get< std::vector<double> >("Z1");
-    fIsFirstSignalSpecial      = p.get< std::bool >(false);
+    fIsFirstSignalSpecial      = p.get< bool >("IsFirstSignalSpecial", false);
 
     // check for consistency of vector sizes
 
