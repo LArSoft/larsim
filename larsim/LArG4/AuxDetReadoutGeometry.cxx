@@ -100,6 +100,7 @@ namespace larg4 {
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
       LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
+      ++fNumSensitiveVol;
       return;
     }
 
@@ -154,6 +155,7 @@ namespace larg4 {
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
       LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
+      ++fNumSensitiveVol;
       return;
     }
 
