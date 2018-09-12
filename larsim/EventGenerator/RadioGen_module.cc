@@ -686,11 +686,12 @@ namespace evgen{
   }
 
 
-        //beta channel 1. No Gamma. beta Q value 3525.22 keV
-        //beta channel 2. 1 Gamma (1524.6 keV). beta Q value 2000.62
-        //beta channel 3. 1 Gamma Channel. 312.6 keV + gamma 2. beta Q value 1688.02 keV
-        //beta channel 4. 2 Gamma Channels. Either 899.7 keV (i 0.052) + gamma 2 or 2424.3 keV (i 0.020). beta Q value 1100.92 keV
-        //beta channel 5. 3 gamma channels. 692.0 keV + 1228.0 keV + Gamma 2 (i 0.0033) ||OR|| 1021.2 keV + gamma 4 (i 0.0201) ||OR|| 1920.8 keV + gamma 2 (i 0.041). beta Q value 79.82 keV
+  //Ar42 uses BNL tables for K-42 from Aug 2017
+  //beta channel 1. No Gamma. beta Q value 3525.22 keV
+  //beta channel 2. 1 Gamma (1524.6 keV). beta Q value 2000.62
+  //beta channel 3. 1 Gamma Channel. 312.6 keV + gamma 2. beta Q value 1688.02 keV
+  //beta channel 4. 2 Gamma Channels. Either 899.7 keV (i 0.052) + gamma 2 or 2424.3 keV (i 0.020). beta Q value 1100.92 keV
+  //beta channel 5. 3 gamma channels. 692.0 keV + 1228.0 keV + Gamma 2 (i 0.0033) ||OR|| 1021.2 keV + gamma 4 (i 0.0201) ||OR|| 1920.8 keV + gamma 2 (i 0.041). beta Q value 79.82 keV
   //No Ar42Gamma1 as beta channel 1 does not produce a dexcitation gamma.
   void RadioGen::Ar42Gamma2(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
