@@ -7,7 +7,7 @@
  */
 
 // LArSoft libraries
-#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
+#include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 
 // nutools libraries
