@@ -165,6 +165,7 @@ namespace evgen {
     double              fX;              // central x position of source
     double              fY;              // central y position of source
     double              fZ;              // central z position of source
+    bool                fPointSource;    // Point-like light source in fX, fY, fZ
     double              fT;              // central t position of source
     double              fSigmaX;         // x width
     double              fSigmaY;         // y width
@@ -225,6 +226,7 @@ namespace evgen{
 	fSigmaP = pset.get<double>("SigmaP");
 
 	fUseCustomRegion = pset.get<bool>("UseCustomRegion");
+	fPointSource = pset.get<bool>("PointSource",false);
 
 	if(fUseCustomRegion)
 	  {	
@@ -461,15 +463,23 @@ namespace evgen{
       
       // Choose position
       TVector3 x;
-      if (fPosDist == kGAUS) {
-	x[0] = gauss.fire(fX, fSigmaX);
-	x[1] = gauss.fire(fY, fSigmaY);
-	x[2] = gauss.fire(fZ, fSigmaZ);
+      if(fPointSource) {
+	x[0] = fX;
+	x[1] = fY;
+	x[2] = fZ;
       }
       else {
-	x[0] = fX + fSigmaX*(2.0*flat.fire()-1.0);
-	x[1] = fY + fSigmaY*(2.0*flat.fire()-1.0);
-	x[2] = fZ + fSigmaZ*(2.0*flat.fire()-1.0);
+        if (fPosDist == kGAUS) {
+	  x[0] = gauss.fire(fX, fSigmaX);
+	  x[1] = gauss.fire(fY, fSigmaY);
+	  x[2] = gauss.fire(fZ, fSigmaZ);
+        }
+        else {
+	  x[0] = fX + fSigmaX*(2.0*flat.fire()-1.0);
+  	  x[1] = fY + fSigmaY*(2.0*flat.fire()-1.0);
+  	  x[2] = fZ + fSigmaZ*(2.0*flat.fire()-1.0);
+        }
+
       }
       
       // Choose time
