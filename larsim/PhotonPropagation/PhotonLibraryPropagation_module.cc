@@ -217,7 +217,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   }
   for (auto const& edeps : edep_vecs) { //loop over modules
     for (auto const& edep : *edeps) { //loop over energy deposits: one per step
-      int count_onePhot =0;
+      //int count_onePhot =0; // unused
       double const xyz[3] = {edep.X(), edep.Y(), edep.Z()};
       float const* Visibilities = pvs->GetAllVisibilities(xyz);
       if (Visibilities == nullptr) {
