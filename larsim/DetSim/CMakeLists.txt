@@ -19,6 +19,7 @@ art_make( NO_PLUGINS
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
+                        T962Utilities_SignalShapingServiceT962_service
          )
 
 
@@ -66,6 +67,7 @@ simple_plugin(SimWire "module"
                       ${CLHEP}
                       ${ROOT_GEOM}
                       ${ROOT_BASIC_LIB_LIST}
+                      T962Utilities_SignalShapingServiceT962_service
               
 )
 
@@ -94,6 +96,7 @@ simple_plugin(SimWireT962 "module"
                           ${CLHEP}
                           ${ROOT_GEOM}
                           ${ROOT_BASIC_LIB_LIST}
+                          T962Utilities_SignalShapingServiceT962_service
               
 )
 
