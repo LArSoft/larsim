@@ -46,7 +46,7 @@
 #include "Framework/Algorithm/AlgFactory.h"
 #include "Framework/EventGen/EventRecordVisitorI.h"
 #include "Framework/EventGen/EventRecord.h"
-#include "Physics/NNBarOscillation/NeutronOscMode.h"
+#include "Physics/NNBarOscillation/NNBarOscMode.h"
 #include "Framework/ParticleData/PDGLibrary.h"
 #include "Framework/GHEP/GHepParticle.h"
 #include "Framework/Utils/AppInit.h"
@@ -96,7 +96,7 @@ private:
 
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
-  genie::NeutronOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
+  genie::NNBarOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
 };
 
 
@@ -114,7 +114,7 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
     throw cet::exception("NeutronOsc") << "Couldn't instantiate the neutron-antineutron oscillation generator"; 
   }
   int fDecayMode = p.get<int>("DecayMode");
-  gOptDecayMode = (genie::NeutronOscMode_t) fDecayMode;
+  gOptDecayMode = (genie::NNBarOscMode_t) fDecayMode;
 
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
