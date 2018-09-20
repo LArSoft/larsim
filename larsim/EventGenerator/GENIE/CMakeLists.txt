@@ -1,4 +1,6 @@
 
+cet_add_compiler_flags( CXX -DHIDE_GENIE_LOG_XXX )
+
 include_directories ( $ENV{GENIE_INC}/GENIE $ENV{LOG4CPP_INC} )
 
 art_make( 
@@ -72,6 +74,7 @@ art_make(
                         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
                         ${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
+                        ${LOG4CPP}
         )
 
 install_headers()
