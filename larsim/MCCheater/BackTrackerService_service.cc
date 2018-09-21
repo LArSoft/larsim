@@ -357,12 +357,20 @@ namespace cheat{
   const std::vector< art::Ptr< recob::Hit > > BackTrackerService::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const&   spt) {
     //Note, this function is goofy in that it doesn't use the hits prepared by the module. That should likely be changed to make things more uniform.
     //if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
+    if( ! fEvt ){
+      throw cet::exception("BackTrackerService")
+        <<"This function is not yet implimented pending the implimentation of backtracker lazy loading.";
+    }
     return BackTracker::SpacePointToHits_Ps(spt, *fEvt);
   }
 
   //---------------------------------------------------------------------
   const std::vector< double > BackTrackerService::SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt) {
     //if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
+    if( ! fEvt ){
+      throw cet::exception("BackTrackerService")
+        <<"This function is not yet implimented pending the implimentation of backtracker lazy loading.";
+    }
     return BackTracker::SpacePointToXYZ(spt, *fEvt);
   }
 
