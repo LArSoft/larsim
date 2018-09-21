@@ -362,75 +362,66 @@ namespace detsim {
 	// +z: tpcGeo.DetectDriftDirection()==3
 	// -z: tpcGeo.DetectDriftDirection()==-3
 
+
+	//Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
+	int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection())-1;  //x:0, y:1, z:2
+
+	int transversecoordinate1 = 0;
+	int transversecoordinate2 = 0;
+	if(driftcoordinate == 0)
+	{
+	  transversecoordinate1 = 1;
+	  transversecoordinate2 = 2;
+	}
+	else if(driftcoordinate == 1)
+	{
+	  transversecoordinate1 = 0;
+	  transversecoordinate2 = 2;
+	}
+	else if(driftcoordinate == 2)
+	{
+	  transversecoordinate1 = 0;
+	  transversecoordinate2 = 1;
+	}
+
+	if(transversecoordinate1 == transversecoordinate2) continue; //this is the case when driftcoordinate != 0, 1 or 2
+
+	int driftsign = 0; //1: +x, +y or +z, -1: -x, -y or -z
+	if(tpcGeo.DetectDriftDirection() > 0) driftsign = 1;
+	else driftsign = -1;
+
 	//Check for charge deposits behind charge readout planes
-	if(tpcGeo.DetectDriftDirection()==-1 && tpcGeo.PlaneLocation(0)[0]>xyz[0])
+	if(driftsign == 1 && tpcGeo.PlaneLocation(0)[driftcoordinate] < xyz[driftcoordinate] )
 	  continue;
-	if(tpcGeo.DetectDriftDirection()==1 && tpcGeo.PlaneLocation(0)[0]<xyz[0])
+	if(driftsign == -1 && tpcGeo.PlaneLocation(0)[driftcoordinate] > xyz[driftcoordinate] )
 	  continue;
-	if(tpcGeo.DetectDriftDirection()==-2 && tpcGeo.PlaneLocation(0)[1]>xyz[1])
-	  continue;
-	if(tpcGeo.DetectDriftDirection()==2 && tpcGeo.PlaneLocation(0)[1]<xyz[1])
-	  continue;
-	if(tpcGeo.DetectDriftDirection()==-3 && tpcGeo.PlaneLocation(0)[2]>xyz[2])
-	  continue;
-	if(tpcGeo.DetectDriftDirection()==3 && tpcGeo.PlaneLocation(0)[2]<xyz[2])
-	  continue;
-
-
-
 
 
 
 	/// \todo think about effects of drift between planes.
 	// Center of plane is also returned in cm units
-
-	double DriftDistance = -1.;
-
-	if (tpcGeo.DetectDriftDirection()==-1)
-	  DriftDistance = xyz[0] - tpcGeo.PlaneLocation(0)[0];
-	else if (tpcGeo.DetectDriftDirection()==1)
-	  DriftDistance = tpcGeo.PlaneLocation(0)[0] - xyz[0];
-	else if (tpcGeo.DetectDriftDirection()==-2)
-	  DriftDistance = xyz[1] - tpcGeo.PlaneLocation(0)[1];
-	else if (tpcGeo.DetectDriftDirection()==2)
-	  DriftDistance = tpcGeo.PlaneLocation(0)[1] - xyz[1];
-	else if (tpcGeo.DetectDriftDirection()==-3)
-	  DriftDistance = xyz[2] - tpcGeo.PlaneLocation(0)[2];
-	else if (tpcGeo.DetectDriftDirection()==3)
-	  DriftDistance = tpcGeo.PlaneLocation(0)[2] - xyz[2];
-
-	if(DriftDistance < 0.) continue;
+	double DriftDistance = std::abs(xyz[driftcoordinate] - tpcGeo.PlaneLocation(0)[driftcoordinate]);
 
 	// Space-charge effect (SCE): Get SCE {x,y,z} offsets for
 	// particular location in TPC
 	geo::Vector_t posOffsets{0.0,0.0,0.0};
+	double posOffsetxyz[3] = {0.0,0.0,0.0}; //need this array for the driftcoordinate and transversecoordinates
 	auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
 	if (SCE->EnableSimSpatialSCE() == true)
-	  {
-	    posOffsets = SCE->GetPosOffsets(mp);
-	  }
+	{
+	  posOffsets = SCE->GetPosOffsets(mp);
+	  posOffsetxyz[0] = posOffsets.X();
+	  posOffsetxyz[1] = posOffsets.Y();
+	  posOffsetxyz[2] = posOffsets.Z();
+	}
 
 	double avegagetransversePos1 = 0.;
 	double avegagetransversePos2 = 0.;
 
-	if (std::abs(tpcGeo.DetectDriftDirection())==1)
-	{
-	  DriftDistance += -1.*posOffsets.X();
-	  avegagetransversePos1 = xyz[1] + posOffsets.Y();
-	  avegagetransversePos2 = xyz[2] + posOffsets.Z();
-	}
-	else if (std::abs(tpcGeo.DetectDriftDirection())==2)
-	{
-	  DriftDistance += -1.*posOffsets.Y();
-	  avegagetransversePos1 = xyz[0] + posOffsets.X();
-	  avegagetransversePos2 = xyz[2] + posOffsets.Z();
-	}
-	else if (std::abs(tpcGeo.DetectDriftDirection())==3)
-	{
-	  DriftDistance += -1.*posOffsets.Z();
-	  avegagetransversePos1 = xyz[0] + posOffsets.X();
-	  avegagetransversePos2 = xyz[1] + posOffsets.Y();
-	}
+	DriftDistance += -1.*posOffsetxyz[driftcoordinate];
+	avegagetransversePos1 = xyz[transversecoordinate1] + posOffsetxyz[transversecoordinate1];
+	avegagetransversePos2 = xyz[transversecoordinate2] + posOffsetxyz[transversecoordinate2];
+
 	
 	// Space charge distortion could push the energy deposit beyond the wire
 	// plane (see issue #15131). Given that we don't have any subtlety in the
@@ -441,7 +432,7 @@ namespace detsim {
 	// Drift time in ns
 	double TDrift = DriftDistance * fRecipDriftVel[0];
 
-	if (tpcGeo.Nplanes() == 2){// special case for ArgoNeuT (plane 0 is the second wire plane)
+	if (tpcGeo.Nplanes() == 2 && driftcoordinate == 0){// special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
 	  TDrift = ((DriftDistance - tpcGeo.PlanePitch(0,1)) * fRecipDriftVel[0]
 		    + tpcGeo.PlanePitch(0,1) * fRecipDriftVel[1]);
 	}
@@ -528,36 +519,7 @@ namespace detsim {
 	// make a collection of electrons for each plane
 	for(size_t p = 0; p < tpcGeo.Nplanes(); ++p){
 	
-//	  std::cout << "Doing plane " << p << std::endl;
-
-	  //geo::PlaneGeo const& plane = tpcGeo.Plane(p); // unused
-
-//	  For charge drift in Y and Z: the function tpcGeo.Plane0Pitch doesn't support readout planes that aren't in the y-z plane. Workaround: see below commented lines. (Christoph Alt)
-
-//	  double Plane0Pitch = tpcGeo.Plane0Pitch(p);
-//	  "-" sign is because Plane0Pitch output is positive. Andrzej
-//	  fDriftClusterPos[0] = tpcGeo.PlaneLocation(0)[0] - Plane0Pitch;
-
-	  double Plane0Pitch = 0.;
-
-	  if(p>0)
-	  {
-	    if (std::abs(tpcGeo.DetectDriftDirection())==1)
-	    {
-	      Plane0Pitch = tpcGeo.PlaneLocation(p)[0] - tpcGeo.PlaneLocation(0)[0];
-	      fDriftClusterPos[0] = tpcGeo.PlaneLocation(0)[0] - Plane0Pitch;
-	    }
-	    else if (std::abs(tpcGeo.DetectDriftDirection())==2)
-	    {
-	      Plane0Pitch = tpcGeo.PlaneLocation(p)[1] - tpcGeo.PlaneLocation(0)[1];
-	      fDriftClusterPos[1] = tpcGeo.PlaneLocation(0)[1] - Plane0Pitch;
-	    }
-	    else if (std::abs(tpcGeo.DetectDriftDirection())==3)
-	    {
-	      Plane0Pitch = tpcGeo.PlaneLocation(p)[2] - tpcGeo.PlaneLocation(0)[2];
-	      fDriftClusterPos[2] = tpcGeo.PlaneLocation(0)[2] - Plane0Pitch;
-	    }
-	  }
+	  fDriftClusterPos[driftcoordinate] = tpcGeo.PlaneLocation(p)[driftcoordinate];
 
 	  // Drift nClus electron clusters to the induction plane
 	  for(int k = 0; k < nClus; ++k){
@@ -566,30 +528,18 @@ namespace detsim {
 	    //	      << fLongDiff[k] << " " << fTransDiff1[k] << " " << fTransDiff2[k]
 	   // 	      << std::endl;
 
+
 	    // Correct drift time for longitudinal diffusion and plane
 	    double TDiff = TDrift + fLongDiff[k] * fRecipDriftVel[0];
+
 	    // Take into account different Efields between planes
-	    // Also take into account special case for ArgoNeuT where Nplanes = 2.
+	    // Also take into account special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
 	    for (size_t ip = 0; ip<p; ++ip){
-	      TDiff += tpcGeo.PlanePitch(ip,ip+1) * fRecipDriftVel[tpcGeo.Nplanes()==3?ip+1:ip+2];
+	      TDiff += (tpcGeo.PlaneLocation(ip+1)[driftcoordinate] - tpcGeo.PlaneLocation(ip)[driftcoordinate]) * fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0)?ip+2:ip+1];
 	    }
 
-	    if (std::abs(tpcGeo.DetectDriftDirection())==1)
-	    {
-	      fDriftClusterPos[1] = fTransDiff1[k];
-	      fDriftClusterPos[2] = fTransDiff2[k];
-	    }
-	    else if (std::abs(tpcGeo.DetectDriftDirection())==2)
-	    {
-	      fDriftClusterPos[0] = fTransDiff1[k];
-	      fDriftClusterPos[2] = fTransDiff2[k];
-	    }
-	    else if (std::abs(tpcGeo.DetectDriftDirection())==3)
-	    {
-	      fDriftClusterPos[0] = fTransDiff1[k];
-	      fDriftClusterPos[1] = fTransDiff2[k];
-	    }
-
+	    fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
+	    fDriftClusterPos[transversecoordinate2] = fTransDiff2[k];  
 
 	    /// \todo think about effects of drift between planes
 
