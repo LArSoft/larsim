@@ -23,7 +23,6 @@ cet_make_library(
   lardataobj_Simulation
   lardataobj_RawData
   nusimdata_SimulationBase
-  dune_DuneObj
   ) 
 
 cet_make_library(
@@ -87,7 +86,6 @@ simple_plugin(PhotonBackTrackerService "service"
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
-  dune_DuneObj
   )
 
 simple_plugin(BackTrackerService "service"
