@@ -43,7 +43,7 @@ namespace cheat{
     fG4ModuleLabel(config.G4ModuleLabel()),
     fOpHitLabel(config.OpHitLabel()),
     fOpFlashLabel(config.OpFlashLabel()),
-    fWavLabel(config.WavLabel()),
+    //fWavLabel(config.WavLabel()),
     fMinOpHitEnergyFraction(config.MinOpHitEnergyFraction())
   {}
 
@@ -59,14 +59,16 @@ namespace cheat{
     fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
     fOpHitLabel(pSet.get<art::InputTag>("OpHitLabel", "ophit")),
     fOpFlashLabel(pSet.get<art::InputTag>("OpFlashLabel", "opflash")),
-    fWavLabel(pSet.get<art::InputTag>("WavLabel", "opdigi")),
     fMinOpHitEnergyFraction(pSet.get<double>("MinimumOpHitEnergyFraction", 0.1))
   {}
+
+
+  //----------------------------------------------------------------
+  const double PhotonBackTracker::GetDelay(){ return this->fDelay;}
 
   //----------------------------------------------------------------
   void PhotonBackTracker::ClearEvent(){
     priv_OpDetBTRs.clear();
-    priv_DivRecs.clear();
   }
 
   //----------------------------------------------------------------
@@ -120,22 +122,6 @@ namespace cheat{
     for(size_t sc = 0; sc < priv_OpDetBTRs.size(); ++sc){
       //This could become a bug. What if it occurs twice (shouldn't happen in correct records, but still, no error handeling included for the situation
       if(priv_OpDetBTRs.at(sc)->OpDetNum() == opDetNum) opDet = priv_OpDetBTRs.at(sc);
-    }
-    if(!opDet)
-    {
-      throw cet::exception("PhotonBackTracker2") << "No sim:: OpDetBacktrackerRecord corresponding "
-        << "to opDetNum: " << opDetNum << "\n";
-    }
-    return opDet;
-  }
-
-  //----------------------------------------------------------------
-  const art::Ptr< sim::OpDetDivRec > PhotonBackTracker::FindDivRec(int const& opDetNum) const
-  {
-    art::Ptr< sim::OpDetDivRec > opDet;
-    for(size_t detnum = 0; detnum < priv_DivRecs.size(); ++detnum){
-      if(priv_DivRecs.at(detnum)->OpDetNum() == opDetNum)
-        opDet = priv_DivRecs.at(detnum);
     }
     if(!opDet)
     {
@@ -367,85 +353,6 @@ namespace cheat{
 
   }
 
-  //----------------------------------------------------------------
-  //This function weights each of the returned sdps by the correct fractional number of detected photons. This make nPEs and Energy in the SDP make sense. Because these are constructed in place as weighted copies of the actual SDPs, they do not exist in the principle, cannot be returned as pointers, and are not comparable between calls.
-  //This function is largely copied from OpHitToSimSDPs_Ps
-  const std::vector< sim::SDP > PhotonBackTracker::OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P) const
-  {
-    std::vector< sim::SDP > retVec;
-    double fPeakTime = opHit_P->PeakTime();
-    double fWidth = opHit_P->Width();
-    UInt_t fChan = opHit_P->OpChannel();
-    int fDet  = fGeom->OpDetFromOpChannel(fChan);
-    //I should use the timing service for these time conversions.
-    sim::OpDetBacktrackerRecord::timePDclock_t start_time = ((fPeakTime- fWidth)*1000.0)-fDelay;
-    sim::OpDetBacktrackerRecord::timePDclock_t end_time = ((fPeakTime+ fWidth)*1000.0)-fDelay;
-    if(start_time > end_time){throw;}//This is bad. Give a reasonable error message here, and use cet::except
-
-    //BUG!!!fGeom->OpDetFromOpChannel(channel)
-    art::Ptr<sim::OpDetBacktrackerRecord> fBTR = this->FindOpDetBTR(fDet);
-    const std::vector<std::pair<double, std::vector<sim::SDP>> >& timeSDPMap
-      = fBTR->timePDclockSDPsMap(); //Not guranteed to be sorted.
-    art::Ptr<sim::OpDetDivRec> div_rec = this->FindDivRec(fDet);//This is an OpDetDivRec collected from this BTR.
-
-
-    std::vector<const std::pair<double, std::vector<sim::SDP>>*> timePDclockSDPMap_SortedPointers;
-    std::vector<const sim::OpDet_Time_Chans*> div_rec_SortedPointers;
-    for ( auto& pair : timeSDPMap ){ timePDclockSDPMap_SortedPointers.push_back(&pair); }
-    auto pairSort = [](auto& a, auto& b) { return a->first < b->first ; } ;
-    if( !std::is_sorted( timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort)){
-      std::sort(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort);
-    }
-
-    //This section is a hack to make comparisons work right.
-    std::vector<sim::SDP> dummyVec;
-    std::pair<double, std::vector<sim::SDP>> start_timePair = std::make_pair(start_time, dummyVec);
-    std::pair<double, std::vector<sim::SDP>> end_timePair = std::make_pair(end_time, dummyVec);
-    auto start_timePair_P = &start_timePair;
-    auto end_timePair_P = &end_timePair;
-
-    //First interesting iterator.
-    auto map_pdsdp_itr = std::lower_bound(timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), start_timePair_P, pairSort);
-    //Last interesting iterator.
-    auto map_pdsdp_last = std::upper_bound(map_pdsdp_itr, timePDclockSDPMap_SortedPointers.end(), end_timePair_P, pairSort);
-
-    //retvec.push_back(map_pdsdp_first.second[0]);
-    //This code screams fragile. Really. If you read this, feel free to clean up the methods.
-    for(auto& sdp_time_pair =  map_pdsdp_itr; sdp_time_pair != map_pdsdp_last; ++sdp_time_pair){
-      //cut div_rec by time
-      auto time=(*sdp_time_pair)->first;
-      for(auto& sdp : (*sdp_time_pair)->second){
-        //      auto sdp = (*sdp_time_pair)->second; //This is a vector
-        //auto slice = div_rec->GetSlice(start_time, end_time);
-        auto time_divr_pair = div_rec->FindClosestTimeChan(time);
-        auto time_divr=time_divr_pair.first;
-        auto time_divr_found=time_divr_pair.second;
-        sim::SDP tmp = sdp;
-        if( time_divr_found && time_divr->time == time){ //This will break if time_divr is the end value of the vector
-          tmp.energy = time_divr->GetFrac(fChan) * tmp.energy;
-          // ((*map_divrec_itr)->DivChans.eScaleFrac(fChan))*tmp.energy;
-        }else{
-          //          std::cout<<"I am having trouble reconciling "<<time<<" and "<<time_divr->time<<"\n";
-          tmp.energy = 0; //This does not corespond to an energy detected. A photon may or may not have been incident on  the detector, but it didn't get picked up.
-        }
-        retVec.emplace_back(tmp);
-
-      }
-    }
-
-    //while( map_pdsdp_itr != map_pdsdp_last /*&& map_divrec_itr != map_divrec_last*/){ //Stepping through.
-    /*for(auto const& sdp :  (*map_pdsdp_itr)->second){
-      sim::SDP tmp = sdp;
-      tmp.energy = ((*map_divrec_itr)->DivChans.eScaleFrac(fChan))*tmp.energy;
-    //              second[fChan].tick_photons_frac)*tmp.energy;
-    retVec.emplace_back(tmp);
-    }
-    ++map_pdsdp_itr;
-    ++map_divrec_itr;
-    }*/
-
-    return retVec;
-  }
 
   //----------------------------------------------------------------
   const std::vector< const sim::SDP* > PhotonBackTracker::OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) const

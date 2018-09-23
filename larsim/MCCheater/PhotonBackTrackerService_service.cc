@@ -124,6 +124,9 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
+  const double PhotonBackTrackerService::GetDelay(){ return PhotonBackTracker::GetDelay();}
+
+  //----------------------------------------------------------------------
   const std::vector< const sim::SDP* > PhotonBackTrackerService::TrackIdToSimSDPs_Ps(int const& id)
   {
     return PhotonBackTracker::TrackIdToSimSDPs_Ps(id);
@@ -219,10 +222,11 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
+  /*
   const std::vector< sim::SDP > PhotonBackTrackerService::OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P)
   {
     return PhotonBackTracker::OpHitToChannelWeightedSimSDPs(opHit_P);
-  }
+  }*/
 
   //----------------------------------------------------------------------
   const std::unordered_set< const sim::SDP* > PhotonBackTrackerService::OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)

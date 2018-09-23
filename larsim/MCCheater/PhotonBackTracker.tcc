@@ -18,21 +18,21 @@ namespace cheat{
       /*  mf::LogWarning("PhotonBackTracker") << "failed to get handle to     simb::MCParticle from "
        *              << fG4ModuleLabel
        *                          << ", return";*/ //This is now silent as it is expected to    happen every generation run. It is also temporary while we wait for
-      if( 0 ){ return;} //Insert check for DivRecs here, or don't use validHandle below.
+      /*if( 0 ){ return;} //Insert check for DivRecs here, or don't use validHandle below.
       auto const& divrecHandle = evt.template getValidHandle <std::vector<sim::OpDetDivRec>>(fWavLabel);
       if(divrecHandle.failedToGet()){
         return;
-      }
+      }*/
 
       art::fill_ptr_vector(priv_OpDetBTRs, btrHandle);
-      art::fill_ptr_vector(priv_DivRecs, divrecHandle);
+      //art::fill_ptr_vector(priv_DivRecs, divrecHandle);
 
       auto compareBTRlambda = [](art::Ptr<sim::OpDetBacktrackerRecord> a, art::Ptr<sim::OpDetBacktrackerRecord> b) {return(a->OpDetNum()<b->OpDetNum());};
       if (!std::is_sorted(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda)) 
         std::sort(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda);
-      auto compareDivReclambda = [](art::Ptr<sim::OpDetDivRec> a, art::Ptr<sim::OpDetDivRec> b) {return(a->OpDetNum() < b->OpDetNum());};
-      if (!std::is_sorted(priv_DivRecs.begin(), priv_DivRecs.end(), compareDivReclambda)) 
-        std::sort(priv_DivRecs.begin(), priv_DivRecs.end(), compareDivReclambda);
+      //auto compareDivReclambda = [](art::Ptr<sim::OpDetDivRec> a, art::Ptr<sim::OpDetDivRec> b) {return(a->OpDetNum() < b->OpDetNum());};
+      /*if (!std::is_sorted(priv_DivRecs.begin(), priv_DivRecs.end(), compareDivReclambda)) 
+        std::sort(priv_DivRecs.begin(), priv_DivRecs.end(), compareDivReclambda);*/
       //art::FindManyP<raw::OpDetWaveform, sim::OpDetDivRec> fp(priv_OpDetBTRs, evt, fWavLabel);// fp;
       //art::FindOneP<raw::OpDetWaveform, sim::OpDetDivRec> fp(priv_OpDetBTRs, evt, fWavLabel);// fp;
       //They come in sorted by BTR. Now make an index matched vector of data_t sorted by BTR. No. I need easy, not efficient. Map of DetNum to data_t. data_t is then channel mapped.

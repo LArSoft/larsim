@@ -36,7 +36,6 @@
 #include "lardataobj/RawData/OpDetWaveform.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "dune/DuneObj/OpDetDivRec.h"
 
 
 
@@ -50,7 +49,6 @@ namespace cheat{
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4 module used to produce the art file we will be using."), "largeant"};
         fhicl::Atom<art::InputTag> OpHitLabel{fhicl::Name("OpHitLabel"), fhicl::Comment("The default label for the module to use when grabbing OpHits"), "ophit"}; //This should be removed and replaced with some way to access the OpHitLabel given by the user in their own analysis module to avoid differing definitions.
         fhicl::Atom<art::InputTag> OpFlashLabel{fhicl::Name("OpFlashLabel"), fhicl::Comment("The default label for the module to use when grabbing OpFlash"), "opflash"}; //This should be removed and replaced with some way to access the OpFlashLabel given by the user in their own analysis module to avoid differing definitions.
-        fhicl::Atom<art::InputTag> WavLabel{fhicl::Name("WavLabel"), fhicl::Comment("The default label for the module to use when DivRecs "), "opdigi"};
         fhicl::Atom<double> MinOpHitEnergyFraction{fhicl::Name("MinOpHitEnergyFraction"), fhicl::Comment("The minimum contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
       };
 
@@ -95,6 +93,9 @@ namespace cheat{
       const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
 
       //-----------------------------------------------------
+      const double GetDelay();
+
+      //-----------------------------------------------------
       void ClearEvent();
 
       //-----------------------------------------------------
@@ -116,7 +117,6 @@ namespace cheat{
       const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum) const;
 
       //-----------------------------------------------------
-      const art::Ptr< sim::OpDetDivRec > FindDivRec(int const& opDetNum) const;
 
       //-----------------------------------------------------
       const std::vector < sim::TrackSDP > OpDetToTrackSDPs(int const& OpDetNum, double const& opHit_start_time, double const& opHit_end_time) const;
@@ -157,7 +157,6 @@ namespace cheat{
       //-----------------------------------------------------
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) const;
       //-----------------------------------------------------
-      const std::vector< sim::SDP > OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P) const;
       //
       //-----------------------------------------------------
       //      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
@@ -248,11 +247,8 @@ namespace cheat{
       const art::InputTag fG4ModuleLabel;
       const art::InputTag fOpHitLabel;
       const art::InputTag fOpFlashLabel;
-      const art::InputTag fWavLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
-      mutable std::vector<art::Ptr<sim::OpDetDivRec>> priv_DivRecs;
-      //std::map<UInt_t, sim::OpDetDivRec> priv_od_to_chanDiv;
       std::map< art::Ptr < recob::OpFlash >, std::vector < art::Ptr < recob::OpHit > > > fOpFlashToOpHits;
 
 
