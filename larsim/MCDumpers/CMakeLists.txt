@@ -3,7 +3,7 @@ art_make(
     ${ROOT_EG}
     ${ROOT_CORE}
   MODULE_LIBRARIES
-    larsim_MCDumpers
+    lardataalg_MCDumpers
     nusimdata_SimulationBase
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}

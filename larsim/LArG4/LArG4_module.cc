@@ -66,7 +66,7 @@
 #include "larsim/LArG4/AuxDetReadoutGeometry.h"
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
-#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
+#include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nutools/ParticleNavigation/ParticleList.h"

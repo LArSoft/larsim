@@ -76,7 +76,7 @@ namespace cheat{
 
   //-----------------------------------------------------------------------
   const std::vector<const sim::IDE* >   BackTracker::TrackIdToSimIDEs_Ps (int const& id, const geo::View_t view) const
-  {  
+  {
     std::vector<const sim::IDE*> ide_Ps;
     for(const art::Ptr<sim::SimChannel> sc : fSimChannels){
       if (fGeom->View(sc->Channel()) != view) continue;
@@ -283,7 +283,7 @@ namespace cheat{
     if(end_tdc<0) end_tdc = 0;
 
     if(start_tdc > end_tdc){throw;}
-    
+
 /*    auto sc = this->FindSimChannel(hit.Channel());
     auto tdcidemap = sc->TDCIDEMap();
     auto& tdcidemapref = sc->TDCIDEMap();*/
@@ -324,7 +324,7 @@ namespace cheat{
     auto
       mapLast  = std::upper_bound(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), end_tdcPair_P, pairSort);
     for( auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr ){
-      for( auto& ide : (*mapitr)->second){ 
+      for( auto& ide : (*mapitr)->second){
         retVec.push_back(&ide);
         //std::cout<<"Dumping Selected IDEs from tdcIDEMap:\nTrackID: "<<ide.trackID<<"\nnumElectrons: "<<ide.numElectrons<<"\nenergy: "<<ide.energy<<"\nXYZ: "<<ide.x<<" "<<ide.y<<" "<<ide.z<<"\n";
       } //Add all interesting IDEs to the retVec
@@ -376,7 +376,7 @@ namespace cheat{
     for( const auto& hit : hits ){
       std::vector<sim::TrackIDE> hitTrackIDEs=this->HitToTrackIDEs(hit);
       for(const auto& tIDE : hitTrackIDEs){
-        if(trackIds.find(tIDE.trackID)!=trackIds.end()){ 
+        if(trackIds.find(tIDE.trackID)!=trackIds.end()){
           ++desired;
           break;
         }//End if TID Found
@@ -404,9 +404,9 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------------------
-  const double BackTracker::HitCollectionEfficiency( std::set<int> const& trackIds, 
-      std::vector< art::Ptr<recob::Hit> > const& hits, 
-      std::vector< art::Ptr<recob::Hit> > const& allHits, 
+  const double BackTracker::HitCollectionEfficiency( std::set<int> const& trackIds,
+      std::vector< art::Ptr<recob::Hit> > const& hits,
+      std::vector< art::Ptr<recob::Hit> > const& allHits,
       geo::View_t const& view) const {
 
     int desired=0,total=0;
@@ -422,7 +422,7 @@ namespace cheat{
     }//end for hit in hits
 
     for( const auto& hit : allHits){
-      if(hit->View()!=view && view != geo::k3D) {continue;}//End if hit.view = view or view = geo::k3D 
+      if(hit->View()!=view && view != geo::k3D) {continue;}//End if hit.view = view or view = geo::k3D
       std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
       for( const auto& hitIDE : hitTrackIDEs){
         if(trackIds.find(hitIDE.trackID)!=trackIds.end() && hitIDE.energyFrac>=fMinHitEnergyFraction){
@@ -438,7 +438,7 @@ namespace cheat{
   //-----------------------------------------------------------------------------------
   const double BackTracker::HitChargeCollectionEfficiency(std::set<int> trackIds,
       std::vector< art::Ptr<recob::Hit> > const& hits,
-      std::vector< art::Ptr<recob::Hit> > const& allHits, 
+      std::vector< art::Ptr<recob::Hit> > const& allHits,
       geo::View_t const& view) const{
     double desired=0.,total=0.;
     for( const auto& hit : hits){
@@ -493,7 +493,7 @@ namespace cheat{
   }
 
 
-  //This function definitely needs a new implimentation. There must be abetter way that so many loops.
+  //This function definitely needs a new implimentation. There must be abetter way than so many loops.
   const std::vector< double> BackTracker::SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const {
     std::vector<double> xyz(3,-99999.9);
     std::vector< std::vector<std::vector<int>>> numHits (fGeom->Ncryostats());
@@ -511,7 +511,7 @@ namespace cheat{
       }
     }
 
-       for(art::PtrVector<recob::Hit>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
+    for(art::PtrVector<recob::Hit>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
 
       const recob::Hit& hit = **ihit;
 

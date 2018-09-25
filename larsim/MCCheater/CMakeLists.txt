@@ -21,6 +21,7 @@ cet_make_library(
   larcorealg_Geometry
   nutools_ParticleNavigation 
   lardataobj_Simulation
+  lardataobj_RawData
   nusimdata_SimulationBase
   ) 
 
@@ -69,6 +70,7 @@ simple_plugin(PhotonBackTrackerService "service"
   nutools_ParticleNavigation 
   lardataobj_Simulation
   lardataobj_RecoBase
+  lardataobj_RawData
   larcorealg_Geometry
   larcore_Geometry_Geometry_service
   nusimdata_SimulationBase
@@ -81,7 +83,6 @@ simple_plugin(PhotonBackTrackerService "service"
   art_Utilities
   canvas
   ${MF_MESSAGELOGGER}
-  
   ${FHICLCPP}
   cetlib cetlib_except
   ${ROOT_BASIC_LIB_LIST}
