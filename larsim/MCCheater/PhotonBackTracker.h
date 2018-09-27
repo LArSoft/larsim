@@ -24,12 +24,16 @@
 
 //LArSoft
 #include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/FindOneP.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/FindOne.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/OpFlash.h"
+#include "lardataobj/RawData/OpDetWaveform.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/MCCheater/ParticleInventory.h"
 
@@ -89,6 +93,9 @@ namespace cheat{
       const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
 
       //-----------------------------------------------------
+      const double GetDelay();
+
+      //-----------------------------------------------------
       void ClearEvent();
 
       //-----------------------------------------------------
@@ -108,6 +115,8 @@ namespace cheat{
 
       //-----------------------------------------------------
       const art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum) const;
+
+      //-----------------------------------------------------
 
       //-----------------------------------------------------
       const std::vector < sim::TrackSDP > OpDetToTrackSDPs(int const& OpDetNum, double const& opHit_start_time, double const& opHit_end_time) const;
@@ -147,6 +156,7 @@ namespace cheat{
 
       //-----------------------------------------------------
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps( art::Ptr<recob::OpHit> const& opHit_P) const;
+      //-----------------------------------------------------
       //
       //-----------------------------------------------------
       //      const std::vector< const sim::SDP* > OpHitsToSimSDPs_Ps( const std::vector< art::Ptr < recob::OpHit > >& opHits_Ps) ;
@@ -232,14 +242,14 @@ namespace cheat{
     private:
       const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here
       const geo::GeometryCore* fGeom;
-//      const detinfo::DetectorClocks* fDetClocks;
+      //      const detinfo::DetectorClocks* fDetClocks;
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
       const art::InputTag fOpHitLabel;
       const art::InputTag fOpFlashLabel;
       const double fMinOpHitEnergyFraction;
       mutable std::vector<art::Ptr<sim::OpDetBacktrackerRecord> > priv_OpDetBTRs;
-      std::map< art::Ptr < recob::OpFlash >, std::vector < const recob::OpHit*  > > fOpFlashToOpHits;
+      std::map< art::Ptr < recob::OpFlash >, std::vector < art::Ptr < recob::OpHit > > > fOpFlashToOpHits;
 
 
   };//Class
