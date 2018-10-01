@@ -19,7 +19,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "art/Framework/Core/EngineCreator.h"
+#include "art/Framework/Core/detail/EngineCreator.h"
 #include "canvas/Utilities/InputTag.h"
 #include "nutools/RandomUtils/NuRandomService.h"
 #include "lardataobj/Simulation/sim.h"
