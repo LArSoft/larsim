@@ -67,8 +67,9 @@ void TestGeneratedEventTimestamp::analyze(art::Event const& event) {
   mf::LogInfo log("TestGeneratedEventTimestamp");
   
   art::ServiceHandle<art::RandomNumberGenerator> rng;
-  CLHEP::HepRandomEngine const& MainEngine = rng->getEngine();
-  CLHEP::HepRandomEngine const& AuxEngine = rng->getEngine("aux");
+  auto const& module_label = moduleDescription().moduleLabel();
+  CLHEP::HepRandomEngine const& MainEngine = rng->getEngine(art::ScheduleID::first(), module_label);
+  CLHEP::HepRandomEngine const& AuxEngine = rng->getEngine(art::ScheduleID::first(), module_label, "aux");
   
   rndm::NuRandomService::seed_t seed = MainEngine.getSeed(),
     aux_seed = AuxEngine.getSeed();

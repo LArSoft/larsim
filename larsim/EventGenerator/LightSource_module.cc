@@ -186,6 +186,7 @@ namespace evgen{
   
   //----------------------------------------------------------------
   LightSource::LightSource(fhicl::ParameterSet const& pset) 
+    : art::EDProducer{pset}
   {
 
     // get the random number seed, use a random default if not specified    
@@ -446,7 +447,8 @@ namespace evgen{
     
     // get the random number generator service and make some CLHEP generators
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
@@ -538,5 +540,3 @@ namespace evgen{
 
 #endif // EVGEN_LIGHTSOURCE_H
 ////////////////////////////////////////////////////////////////////////
-
-

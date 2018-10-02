@@ -156,7 +156,10 @@ namespace evwgh {
       
     //Prepare sigmas
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    fGaussRandom = new CLHEP::RandGaussQ(rng->getEngine(GetName()));
+    auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                  fGenieModuleLabel,
+                                  GetName());
+    fGaussRandom = new CLHEP::RandGaussQ(engine);
 
     std::vector<std::vector<float>> reweightingSigmas(erwgh.size());
 
@@ -167,7 +170,7 @@ namespace evwgh {
       reweightingSigmas[i].resize(number_of_multisims);
       for (int j = 0; j < number_of_multisims; j ++) {
 	if (mode.find("multisim") != std::string::npos )
-	  reweightingSigmas[i][j] = parsigmas[i]*fGaussRandom->shoot(&rng->getEngine(GetName()),0.,1.);
+          reweightingSigmas[i][j] = parsigmas[i]*fGaussRandom->shoot(&engine,0.,1.);
         else if (mode.find("pm1sigma") != std::string::npos )
           reweightingSigmas[i][j] = (j == 0 ? 1.: -1.); // j==0 => 1; j==1 => -1 if pm1sigma is specified
 	else

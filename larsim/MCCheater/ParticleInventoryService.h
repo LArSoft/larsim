@@ -19,6 +19,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h" //Needed for Legacy support
+#include "art/Persistency/Provenance/ScheduleContext.h"
 
 
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -85,11 +86,7 @@ namespace cheat{
 
     private:
 
-
-      // for c2: remove unused data member
-      //const art::Event* fEvt=nullptr;
-
-      void priv_PrepEvent        ( const art::Event& evt );
+      void priv_PrepEvent        ( const art::Event& evt, art::ScheduleContext);
       void priv_PrepParticleList            ( const art::Event& evt);
       void priv_PrepMCTruthList             ( const art::Event& evt);
       void priv_PrepTrackIdToMCTruthIndex   ( const art::Event& evt);
@@ -106,4 +103,3 @@ DECLARE_ART_SERVICE(cheat::ParticleInventoryService, LEGACY)
 
 
 #endif //CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
-

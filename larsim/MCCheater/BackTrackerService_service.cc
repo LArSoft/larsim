@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "BackTrackerService.h"
+#include "larsim/MCCheater/BackTrackerService.h"
 
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -56,11 +56,11 @@ namespace cheat{
 
   //-----Temp rebuild function.
   void BackTrackerService::Rebuild( const art::Event& evt ){
-    this->priv_PrepEvent(evt);
+    this->priv_PrepEvent(evt, art::ScheduleContext::invalid());
   }
 
   //---------------------------------------------------------------------
-  void BackTrackerService::priv_PrepEvent( const art::Event& evt ){
+  void BackTrackerService::priv_PrepEvent( const art::Event& evt, art::ScheduleContext ){
     fEvt=&evt;
     BackTracker::ClearEvent();
     if( ! this->priv_CanRun(evt) ){ return; }

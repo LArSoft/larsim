@@ -59,11 +59,11 @@ namespace cheat{
   //----------------------------------------------------------------------
   void PhotonBackTrackerService::Rebuild(art::Event const& evt)
   {
-    this->priv_PrepEvent(evt);
+    this->priv_PrepEvent(evt, art::ScheduleContext::invalid());
   }
 
   //----------------------------------------------------------------------
-  void PhotonBackTrackerService::priv_PrepEvent( art::Event const& evt)
+  void PhotonBackTrackerService::priv_PrepEvent( art::Event const& evt, art::ScheduleContext)
   {
     PhotonBackTracker::ClearEvent();
     if( ! this->priv_CanRun(evt) ){ return; }
@@ -366,4 +366,3 @@ namespace cheat{
   DEFINE_ART_SERVICE(PhotonBackTrackerService)
     //-------------------------------------------------------------------
 } // namespace
-

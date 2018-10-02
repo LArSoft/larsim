@@ -83,11 +83,10 @@ namespace detsim {
     virtual ~SimWireT962();
     
     // read/write access to event
-    void produce (art::Event& evt);
-    void beginJob();
-    void endJob();
+    void produce (art::Event& evt) override;
+    void beginJob() override;
     void reconfigure(fhicl::ParameterSet const& p);
-    void beginRun(art::Run& run); 
+    void beginRun(art::Run& run) override;
     
   private:
 
@@ -96,7 +95,7 @@ namespace detsim {
     void         SetFieldResponse();           ///< response of wires to field
     void         SetElectResponse();           ///< response of electronics
     
-    void         GenNoise(std::vector<float>& array);
+    void         GenNoise(std::vector<float>& array, CLHEP::HepRandomEngine& engine);
 
     bool                   fResponseSet;      ///< flag of whether to set the response functions or not
     std::string            fDriftEModuleLabel;///< module making the ionization electrons
@@ -142,6 +141,7 @@ namespace detsim{
 
   //-------------------------------------------------
   SimWireT962::SimWireT962(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
     this->reconfigure(pset);
 
@@ -218,9 +218,11 @@ namespace detsim{
     // GenNoise() will further resize each channel's 
     // fNoise vector to fNTicks long.
 
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
     for(unsigned int p = 0; p < geo->Nchannels(); ++p){
-
-      GenNoise(fNoise[p]);
+      GenNoise(fNoise[p], engine);
       for(int i = 0; i < fNTicks; ++i){
 	fNoiseDist->Fill(fNoise[p][i]);
       }
@@ -244,11 +246,6 @@ namespace detsim{
     
   }
   
-  //-------------------------------------------------
-  void SimWireT962::endJob() 
-  {
-  }
-
   //-------------------------------------------------
   void SimWireT962::produce(art::Event& evt)
   {
@@ -285,7 +282,8 @@ namespace detsim{
 
     // Add all channels  
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
     CLHEP::RandFlat flat(engine);
 
     std::map<int,double>::iterator mapIter;      
@@ -403,10 +401,8 @@ namespace detsim{
   }
 
   //-------------------------------------------------
-  void SimWireT962::GenNoise(std::vector<float>& noise)
+  void SimWireT962::GenNoise(std::vector<float>& noise, CLHEP::HepRandomEngine& engine)
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat flat(engine);
 
     noise.clear();

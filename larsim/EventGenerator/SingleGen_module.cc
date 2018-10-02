@@ -39,6 +39,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "cetlib/exempt_ptr.h"
 #include "cetlib/filesystem.h"
 #include "cetlib/search_path.h"
 
@@ -310,6 +311,8 @@ namespace evgen {
     // thetaxz = atan2(math.sin(theta) * cos(phi), cos(theta))
     // thetayz = asin(sin(theta) * sin(phi));
     
+    cet::exempt_ptr<CLHEP::HepRandomEngine> fEngine; // FIXME: This should be a reference.
+
     
     /// Returns a vector with the name of particle selection mode keywords.
     static std::map<int, std::string> makeParticleSelectionModeNames();
@@ -473,7 +476,8 @@ namespace evgen{
   
   //____________________________________________________________________________
   SingleGen::SingleGen(Parameters const& config)
-    : fMode         (selectOption(config().ParticleSelectionMode(), ParticleSelectionModeNames))
+    : EDProducer{config}
+    , fMode         (selectOption(config().ParticleSelectionMode(), ParticleSelectionModeNames))
     , fPadOutVectors(config().PadOutVectors())
     , fPDG          (config().PDG())
     , fP0           (config().P0())
@@ -504,10 +508,13 @@ namespace evgen{
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
     art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this);
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                  config.get_PSet().get<std::string>("module_label"));
+    fEngine = cet::make_exempt_ptr(&engine);
     rndm::NuRandomService::seed_t seed;
     if (config().Seed(seed)) {
-      art::ServiceHandle<art::RandomNumberGenerator>()->getEngine().setSeed
-        (seed, 0 /* dummy? */);
+      fEngine->setSeed(seed, 0 /* dummy? */);
     }
 
     produces< std::vector<simb::MCTruth> >();
@@ -756,11 +763,8 @@ namespace evgen{
   // FCIHL description
   void SingleGen::SampleOne(unsigned int i, simb::MCTruth &mct){
 
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat   flat(engine);
-    CLHEP::RandGaussQ gauss(engine);
+    CLHEP::RandFlat   flat(*fEngine);
+    CLHEP::RandGaussQ gauss(*fEngine);
 
     // Choose momentum
     double p = 0.0;
@@ -870,11 +874,8 @@ namespace evgen{
   // distributions defined in the fhicls
   void SingleGen::SampleMany(simb::MCTruth &mct){
 
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat   flat(engine);
-    CLHEP::RandGaussQ gauss(engine);
+    CLHEP::RandFlat   flat(*fEngine);
+    CLHEP::RandGaussQ gauss(*fEngine);
 
     // Choose position
     TVector3 x;
@@ -1000,9 +1001,7 @@ namespace evgen{
     case 1: // Random selection mode: every event will exactly one particle
             // selected randomly from the fPDG array
       {
-	art::ServiceHandle<art::RandomNumberGenerator> rng;
-	CLHEP::HepRandomEngine &engine = rng->getEngine();
-	CLHEP::RandFlat flat(engine);
+        CLHEP::RandFlat flat(*fEngine);
 
 	unsigned int i=flat.fireInt(fPDG.size());
 	SampleOne(i,mct);
@@ -1069,9 +1068,7 @@ namespace evgen{
   //____________________________________________________________________________
   double SingleGen::SelectFromHist(const TH1& h) // select from a 1D histogram
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandFlat   flat(*fEngine);
     
     double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
@@ -1086,9 +1083,7 @@ namespace evgen{
   //____________________________________________________________________________
   void SingleGen::SelectFromHist(const TH2& h, double &x, double &y) // select from a 2D histogram
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandFlat   flat(*fEngine);
     
     double throw_value = h.Integral() * flat.fire();
     double cum_value(0);

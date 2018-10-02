@@ -103,7 +103,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   CosmicsGen::CosmicsGen(fhicl::ParameterSet const& pset)
-    : fCRYHelp(0)
+    : art::EDProducer{pset}, fCRYHelp(0)
   {
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
@@ -135,7 +135,8 @@ namespace evgen{
 
     // get the random number generator service and make some CLHEP generators
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine& engine = rng->getEngine();
+    CLHEP::HepRandomEngine& engine = rng->getEngine(art::ScheduleID::first(),
+                                                    p.get<std::string>("module_label"));
 
     art::ServiceHandle<geo::Geometry> geo;
 

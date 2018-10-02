@@ -11,11 +11,12 @@
 
 #include <vector>
 
-#include "BackTracker.h"
+#include "larsim/MCCheater/BackTracker.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/View.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
 
 //Included Services
 #include "larcore/Geometry/Geometry.h"
@@ -105,16 +106,10 @@ namespace cheat{
 
 
     private:
-      //FHICL parameters.
-      //The BackTracker service has no parameters.
-
-      //Configure services
-//      cheat::BackTracker fBackTracker;
-
       const art::Event* fEvt=nullptr;
 
       //Prep functions go here.
-      void priv_PrepEvent ( const art::Event& evt );
+      void priv_PrepEvent ( const art::Event& evt, art::ScheduleContext );
       void priv_PrepSimChannels (const art::Event& evt);
 //      void priv_PrepAllHitList ();
       void priv_PrepFailed ();

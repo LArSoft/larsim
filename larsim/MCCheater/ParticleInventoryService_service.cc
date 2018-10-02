@@ -62,11 +62,11 @@ namespace cheat{
 
   //_--Temporary Rebuild function (until the service can be lazy again).
   void ParticleInventoryService::Rebuild( const art::Event& evt){
-    this->priv_PrepEvent(evt);
+    this->priv_PrepEvent(evt, art::ScheduleContext::invalid());
   }
 
   //----------------------------------------------------------------------
-  void ParticleInventoryService::priv_PrepEvent( const art::Event& evt){
+  void ParticleInventoryService::priv_PrepEvent(const art::Event& evt, art::ScheduleContext){
     //fEvt=&evt;
     ParticleInventory::ClearEvent();
     if( ! this->priv_CanRun(evt) ) { return; }
@@ -187,6 +187,3 @@ namespace cheat{
   DEFINE_ART_SERVICE(ParticleInventoryService)
 
 } //namespace
-
-
-

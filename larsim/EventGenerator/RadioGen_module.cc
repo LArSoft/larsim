@@ -58,6 +58,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
+#include "cetlib/exempt_ptr.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -168,7 +169,7 @@ namespace evgen {
     std::vector<double> gammaintegral;
     std::vector<TH1D*> neutronspectrum;
     std::vector<double> neutronintegral;
-
+    cet::exempt_ptr<CLHEP::HepRandomEngine> fEngine{nullptr};
   };
 }
 
@@ -176,6 +177,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   RadioGen::RadioGen(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
 
     this->reconfigure(pset);
@@ -184,6 +186,10 @@ namespace evgen{
     // unless overridden in configuration with key "Seed"
     art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, pset, "Seed");
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                  pset.get<std::string>("module_label"));
+    fEngine = cet::make_exempt_ptr(&engine);
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
@@ -299,9 +305,8 @@ namespace evgen{
 
     // get the random number generator service and make some CLHEP generators
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat     flat(engine);
-    CLHEP::RandPoisson  poisson(engine);
+    CLHEP::RandFlat     flat(*fEngine);
+    CLHEP::RandPoisson  poisson(*fEngine);
 
     // figure out how many decays to generate, assuming that the entire prism consists of the radioactive material.
     // we will skip over decays in other materials later.
@@ -417,9 +422,7 @@ namespace evgen{
 
   //Calculate an arbitrary direction with a given magnitude p
   TLorentzVector RadioGen::dirCalc(double p, double m){
-      art::ServiceHandle<art::RandomNumberGenerator> rng;
-      CLHEP::HepRandomEngine &engine = rng->getEngine();
-      CLHEP::RandFlat  flat(engine);
+      CLHEP::RandFlat  flat(*fEngine);
       // isotropic production angle for the decay product
       double costheta = (2.0*flat.fire() - 1.0);
       if (costheta < -1.0) costheta = -1.0;
@@ -586,10 +589,7 @@ namespace evgen{
 
   void RadioGen::samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p)
   {
-
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat  flat(engine);
+    CLHEP::RandFlat  flat(*fEngine);
 
     int inuc = -1;
     for (size_t i=0; i<spectrumname.size(); i++)
@@ -657,9 +657,7 @@ namespace evgen{
 
   double RadioGen::samplefromth1d(TH1D *hist)
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat  flat(engine);
+    CLHEP::RandFlat  flat(*fEngine);
 
     int nbinsx = hist->GetNbinsX();
     std::vector<double> partialsum;
@@ -711,9 +709,7 @@ namespace evgen{
     Ar42Gamma2(v_prods);
   }
   void RadioGen::Ar42Gamma4(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat     flat(engine);
+    CLHEP::RandFlat     flat(*fEngine);
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     double chan1 = (0.052 / (0.052+0.020) );
     if(flat.fire()<chan1){
@@ -732,9 +728,7 @@ namespace evgen{
     }
   }
   void RadioGen::Ar42Gamma5(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat     flat(engine);
+    CLHEP::RandFlat     flat(*fEngine);
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     double chan1 = ( 0.0033 / (0.0033 + 0.0201 + 0.041) ); double chan2 = ( 0.0201 / (0.0033 + 0.0201 + 0.041) );
     double chanPick = flat.fire();

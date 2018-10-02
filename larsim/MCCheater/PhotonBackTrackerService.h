@@ -17,6 +17,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/View.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
@@ -126,7 +127,7 @@ namespace cheat{
     private:
       //The PhotonBackTrackerService has no parameters.
 
-      void priv_PrepEvent( art::Event const& evt) ;
+    void priv_PrepEvent(art::Event const& evt, art::ScheduleContext) ;
       void priv_PrepFailed();
       void priv_PrepOpDetBTRs(art::Event const& evt);
       void priv_PrepOpFlashToOpHits(art::Event const& evt);

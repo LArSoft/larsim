@@ -78,6 +78,7 @@ private:
 
 
 evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
+  : art::EDProducer{p}
 {
   genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
@@ -136,7 +137,8 @@ void evgen::NucleonDecay::produce(art::Event & e)
   
   art::ServiceHandle<geo::Geometry> geo;
   art::ServiceHandle<art::RandomNumberGenerator> rng;
-  CLHEP::HepRandomEngine &engine = rng->getEngine();
+  CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                  moduleDescription().moduleLabel());
   CLHEP::RandFlat flat(engine);
 
   // Find boundary of active volume
