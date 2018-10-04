@@ -82,6 +82,7 @@ namespace phot{
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
+    fParPropTime_MaxRange(),
     fInterpolate(false),
     fparslogNorm(nullptr),
     fparslogNorm_far(nullptr),
@@ -144,7 +145,7 @@ namespace phot{
             fTheLibrary = lib;
 
             size_t NVoxels = GetVoxelDef().GetNVoxels();
-            lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar);
+            lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar, fParPropTime_MaxRange);
           }
 	}
       }
@@ -206,6 +207,7 @@ namespace phot{
     fParPropTime          = p.get< bool        >("ParametrisedTimePropagation", false);
     fParPropTime_npar     = p.get< size_t      >("ParametrisedTimePropagationNParameters", 0);
     fParPropTime_formula  = p.get< std::string >("ParametrisedTimePropagationFittedFormula","");
+    fParPropTime_MaxRange = p.get< int         >("ParametrisedTimePropagationMaxRange", 200);
     
     if (!fParPropTime)
     {

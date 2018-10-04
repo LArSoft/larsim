@@ -104,7 +104,7 @@ namespace phot{
     bool                 fParPropTime;
     size_t               fParPropTime_npar;
     std::string		 fParPropTime_formula;
-
+    int                  fParPropTime_MaxRange;
     bool                 fInterpolate;
 
     TF1 *fparslogNorm = nullptr;
