@@ -34,7 +34,7 @@ namespace phot{
     
     static double DistanceToOpDet(          double const* xyz, unsigned int OpDet );
     static double SolidAngleFactor(         double const* xyz, unsigned int OpDet );
-    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const;         
+    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const;
 
     float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const;
     
@@ -80,7 +80,9 @@ namespace phot{
     size_t NOpChannels() const;
     
   private:
-    
+
+    const TVector3 LibLocation(const double * xyz) const;
+
     int    fCurrentVoxel;
     double fCurrentValue;
     // for c2: fCurrentReflValue is unused
@@ -106,6 +108,7 @@ namespace phot{
     std::string		 fParPropTime_formula;
     int                  fParPropTime_MaxRange;
     bool                 fInterpolate;
+    bool                 fReflectOverZeroX;
 
     TF1 *fparslogNorm = nullptr;
     TF1 *fparslogNorm_far = nullptr;
