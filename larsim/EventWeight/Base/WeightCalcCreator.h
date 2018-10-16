@@ -8,7 +8,7 @@ namespace evwgh {
   {
   public:
     WeightCalcCreator(const std::string& classname);
-    virtual ~WeightCalcCreator() {};
+    virtual ~WeightCalcCreator() = default;
 
     virtual WeightCalc* Create() = 0;
   };
