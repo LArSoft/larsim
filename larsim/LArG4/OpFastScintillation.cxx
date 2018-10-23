@@ -686,7 +686,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
             }
             //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or it is the default one.
             //This will fix a segfault when using timing and interpolation.
-	    if(pvs->IncludeParPropTime()&&ParPropTimeTF1[itdetphot->first].GetNdim()==1) {
+	    if(pvs->IncludeParPropTime()&&ParPropTimeTF1&&ParPropTimeTF1[itdetphot->first].GetNdim()==1) {
               deltaTime += ParPropTimeTF1[itdetphot->first].GetRandom();
 	    }
 
