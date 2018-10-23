@@ -981,15 +981,16 @@ namespace larg4{
       throw cet::exception("OpFastScintillation") << "Cannot have both propagation time models simultaneously.";
     }
 
-    else if(pvs->IncludeParPropTime()) {
-      if (Reflected)
-        throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
-
+    else if (pvs->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
+    {
       //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or it is the default one.
       //This will fix a segfault when using timing and interpolation.
-      if (! (ParPropTimeTF1[OpChannel].GetNdim()==1) )  {
-        G4cout << "WARNING: Requested parameterized timing, but no function found." << G4endl;
-      }
+      G4cout << "WARNING: Requested parameterized timing, but no function found. Not applying propagation time." << G4endl;
+    }
+    
+    else if (pvs->IncludeParPropTime()) {
+      if (Reflected)
+        throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
         
       for (int i = 0; i < NPhotons; i++) {
         arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
