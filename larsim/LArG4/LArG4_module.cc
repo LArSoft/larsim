@@ -379,12 +379,12 @@ namespace larg4 {
     if(!useInputLabels) fInputLabels.resize(0);
     
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-    art::ServiceHandle<phot::PhotonVisibilityService> pvs;
 
     fUseLitePhotons = lgp->UseLitePhotons();
-    fStoreReflected = pvs->StoreReflected();
     
     if(!lgp->NoPhotonPropagation()){
+      art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+      fStoreReflected = pvs->StoreReflected();
       if(!fUseLitePhotons) {
         produces< std::vector<sim::SimPhotons> >();
         if(fStoreReflected) {
