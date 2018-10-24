@@ -349,11 +349,11 @@ namespace larg4 {
     , fCheckOverlaps         (pset.get< bool        >("CheckOverlaps",false)                )
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList",false)             )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
+    , fStoreReflected        (false)
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
     , fSparsifyTrajectories  (pset.get< bool        >("SparsifyTrajectories",false)         )
-
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
@@ -379,12 +379,20 @@ namespace larg4 {
     if(!useInputLabels) fInputLabels.resize(0);
     
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-
     fUseLitePhotons = lgp->UseLitePhotons();
     
     if(!lgp->NoPhotonPropagation()){
-      art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-      fStoreReflected = pvs->StoreReflected();
+      try {
+        art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+        fStoreReflected = pvs->StoreReflected();
+      }
+      catch (art::Exception const& e) {
+        // If the service is not configured, then just keep the default
+        // false for reflected light. If reflected photons are simulated
+        // without PVS they will show up in the regular SimPhotons collection
+        if (e.categoryCode() != art::errors::ServiceNotFound) throw;
+      }
+      
       if(!fUseLitePhotons) {
         produces< std::vector<sim::SimPhotons> >();
         if(fStoreReflected) {
