@@ -66,6 +66,7 @@
 #include "larsim/LArG4/AuxDetReadoutGeometry.h"
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -319,6 +320,7 @@ namespace larg4 {
     bool                       fdumpParticleList;   ///< Whether each event's sim::ParticleList will be displayed.
     bool                       fdumpSimChannels;    ///< Whether each event's sim::Channel will be displayed.
     bool                       fUseLitePhotons;
+    bool                       fStoreReflected;
     int                        fSmartStacking;      ///< Whether to instantiate and use class to 
     double                     fOffPlaneMargin = 0.; ///< Off-plane charge recovery margin
                                                     ///< dictate how tracks are put on stack.        
@@ -347,11 +349,11 @@ namespace larg4 {
     , fCheckOverlaps         (pset.get< bool        >("CheckOverlaps",false)                )
     , fdumpParticleList      (pset.get< bool        >("DumpParticleList",false)             )
     , fdumpSimChannels       (pset.get< bool        >("DumpSimChannels", false)             )
+    , fStoreReflected        (false)
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
     , fSparsifyTrajectories  (pset.get< bool        >("SparsifyTrajectories",false)         )
-
   {
     LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
@@ -377,13 +379,33 @@ namespace larg4 {
     if(!useInputLabels) fInputLabels.resize(0);
     
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-
     fUseLitePhotons = lgp->UseLitePhotons();
+    
     if(!lgp->NoPhotonPropagation()){
-      if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
+      try {
+        art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+        fStoreReflected = pvs->StoreReflected();
+      }
+      catch (art::Exception const& e) {
+        // If the service is not configured, then just keep the default
+        // false for reflected light. If reflected photons are simulated
+        // without PVS they will show up in the regular SimPhotons collection
+        if (e.categoryCode() != art::errors::ServiceNotFound) throw;
+      }
+      
+      if(!fUseLitePhotons) {
+        produces< std::vector<sim::SimPhotons> >();
+        if(fStoreReflected) {
+          produces< std::vector<sim::SimPhotons> >("Reflected");
+        }
+      }
       else{
 	produces< std::vector<sim::SimPhotonsLite> >();
-	produces< std::vector<sim::OpDetBacktrackerRecord>   >();
+	produces< std::vector<sim::OpDetBacktrackerRecord> >();
+        if(fStoreReflected) {
+          produces< std::vector<sim::SimPhotonsLite> >("Reflected");
+          produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");
+        }
       }
     }
 
@@ -570,8 +592,12 @@ namespace larg4 {
     auto tpassn = std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
     std::unique_ptr< std::vector<simb::MCParticle> >               partCol                    (new std::vector<simb::MCParticle  >);
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
+    std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonColRefl              (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
-    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
+    std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonColRefl          (new std::vector<sim::SimPhotonsLite>);
+    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol     (new std::vector<sim::OpDetBacktrackerRecord>);
+    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordColRefl (new std::vector<sim::OpDetBacktrackerRecord>);
+
     
     art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
 
@@ -677,31 +703,43 @@ namespace larg4 {
       
       if(!lgp->NoPhotonPropagation()){
 
-	if(!fUseLitePhotons){      
-	  LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
-	  std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
-	  PhotonCol->reserve(ThePhotons.size());
-	  for(auto& it : ThePhotons)
-	    PhotonCol->push_back(std::move(it));
-	}
-	else{
-	  LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+        for (int Reflected = 0; Reflected <= 1; Reflected++) {
+          if (Reflected && ! fStoreReflected)
+            continue;
+          
+          if(!fUseLitePhotons){      
+            LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+            std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons(Reflected);
+            if (Reflected) PhotonColRefl->reserve(ThePhotons.size());
+            else           PhotonCol->reserve(ThePhotons.size());
+            for(auto& it : ThePhotons) {
+              if (Reflected) PhotonColRefl->push_back(std::move(it));
+              else           PhotonCol->push_back(std::move(it));
+            }
+          }
+          else{
+            LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
 	  
-	  std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons();
+            std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons(Reflected);
 	  
-	  if(ThePhotons.size() > 0){
-	    LitePhotonCol->reserve(ThePhotons.size());
-	    for(auto const& it : ThePhotons){
-	      sim::SimPhotonsLite ph;
-	      ph.OpChannel = it.first;
-	      ph.DetectedPhotons = it.second;
-	      LitePhotonCol->push_back(ph);
-	    }
-	  }
-	  *cOpDetBacktrackerRecordCol = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
-	}
-      }//end if no photon propagation
-
+            if(ThePhotons.size() > 0){
+              LitePhotonCol->reserve(ThePhotons.size());
+              for(auto const& it : ThePhotons){
+                sim::SimPhotonsLite ph;
+                ph.OpChannel = it.first;
+                ph.DetectedPhotons = it.second;
+                if (Reflected) LitePhotonColRefl->push_back(ph);
+                else           LitePhotonCol->push_back(ph);
+              }
+            }
+          }
+          if (Reflected)
+            *cOpDetBacktrackerRecordColRefl = OpDetPhotonTable::Instance()->YieldReflectedOpDetBacktrackerRecords();
+          else
+            *cOpDetBacktrackerRecordCol     = OpDetPhotonTable::Instance()->YieldOpDetBacktrackerRecords();
+        }
+      } //end if no photon propagation
+      
       if(lgp->FillSimEnergyDeposits())
 	{
 	  auto const& edepMap = OpDetPhotonTable::Instance()->GetSimEnergyDeposits();
@@ -872,10 +910,18 @@ namespace larg4 {
     evt.put(std::move(adCol));
     evt.put(std::move(partCol));
     if(!lgp->NoPhotonPropagation()){
-      if(!fUseLitePhotons) evt.put(std::move(PhotonCol));
+      if(!fUseLitePhotons){
+        evt.put(std::move(PhotonCol));
+        if (fStoreReflected)
+          evt.put(std::move(PhotonColRefl));
+      }
       else{
 	evt.put(std::move(LitePhotonCol));
 	evt.put(std::move(cOpDetBacktrackerRecordCol));
+        if (fStoreReflected) {
+          evt.put(std::move(LitePhotonColRefl),"Reflected");
+          evt.put(std::move(cOpDetBacktrackerRecordColRefl),"Reflected");
+        }
       }
     }
     evt.put(std::move(tpassn));
