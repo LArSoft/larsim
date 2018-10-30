@@ -403,7 +403,7 @@ namespace larg4{
     const G4Track * aTrack = aStep.GetTrack();
 
     G4StepPoint const* pPreStepPoint  = aStep.GetPreStepPoint();
-    G4StepPoint const* pPostStepPoint = aStep.GetPostStepPoint();
+    // unused G4StepPoint const* pPostStepPoint = aStep.GetPostStepPoint();
   
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
     const G4Material* aMaterial = aTrack->GetMaterial();
