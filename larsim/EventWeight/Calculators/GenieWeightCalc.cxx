@@ -23,7 +23,7 @@ namespace evwgh {
   public:
     GenieWeightCalc();
     void Configure(fhicl::ParameterSet const& pset,
-                   CLHEP::HepRandomEngine& engine);
+                   CLHEP::HepRandomEngine& engine) override;
     std::vector<std::vector<double> > GetWeight(art::Event & e) override;
     
   private:
