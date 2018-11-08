@@ -19,10 +19,10 @@ namespace cheat{
        *              << fG4ModuleLabel
        *                          << ", return";*/ //This is now silent as it is expected to    happen every generation run. It is also temporary while we wait for
       /*if( 0 ){ return;} //Insert check for DivRecs here, or don't use validHandle below.
-      auto const& divrecHandle = evt.template getValidHandle <std::vector<sim::OpDetDivRec>>(fWavLabel);
-      if(divrecHandle.failedToGet()){
+        auto const& divrecHandle = evt.template getValidHandle <std::vector<sim::OpDetDivRec>>(fWavLabel);
+        if(divrecHandle.failedToGet()){
         return;
-      }*/
+        }*/
 
       art::fill_ptr_vector(priv_OpDetBTRs, btrHandle);
       //art::fill_ptr_vector(priv_DivRecs, divrecHandle);
@@ -61,46 +61,50 @@ namespace cheat{
       void PhotonBackTracker::PrepOpFlashToOpHits( Evt const& evt)
       {
         if(this->OpFlashToOpHitsReady()){ return;}
-        //auto const& flashHandle = evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
-        art::Handle< std::vector<recob::OpFlash> > flashHandle;
-        //= evt.template getValidHandle < std::vector < recob::OpFlash > > (fOpFlashLabel);
-        evt.template getByLabel(fOpFlashLabel, flashHandle);
-        std::vector<art::Ptr<recob::OpFlash>> tmpVec;
-        art::fill_ptr_vector(tmpVec, flashHandle);
-        art::Handle< art::Assns<recob::OpFlash,recob::OpHit> > assnFlashToOpHit;
-        evt.getByLabel(fOpFlashLabel,assnFlashToOpHit);
-
-        //if(assnFlashToOpHit.failedToGet()){
-        /*      if(flashHandle.failedToGet()){
-                mf::LogWarning("PhotonBackTracker")<<" failed to get handle to recob::OpFlash. Has reco run yet?";
-                return;
-                }*/
-
-        //      std::vector< const std::< art::Ptr<recob::OpHit> > 
-        auto tmp = util::GetAssociatedVectorManyP(assnFlashToOpHit, flashHandle);
-
-        for ( size_t i=0; i<flashHandle->size(); i++){
-          //auto shape1= tmpVec.at(i);
-          auto check = fOpFlashToOpHits.emplace(tmpVec.at(i),tmp.at(i)); //.[tmpVec.at(i)] = fmp.at(i);
-          if(check.second==false){mf::LogWarning("PhotonBackTracker")<<"Failed to insert Flash,vec<OpHit> record. Do they exist?";}
+        std::vector< art::Handle< std::vector < recob::OpFlash >>> flashHandles;
+        evt.getManyByType(flashHandles);
+        for( const auto& handle : flashHandles)
+        {
+          std::vector< art::Ptr < recob::OpFlash > > flash_vec;
+          if(handle.failedToGet())
+          {
+            mf::LogWarning("PhotonBackTracker")<<" failed to get handle to recob::OpFlash. Has reco run yet?";
+            return;
+          }
+          art::fill_ptr_vector(flash_vec, handle);
+          auto tag = art::InputTag( handle.provenance()->moduleLabel() );
+          art::FindManyP<recob::OpHit>  flash_hit_assn(flash_vec, evt, tag);
+          //          std::cout<<"flash_hit_assn.size: "<<flash_hit_assn.size()<<"\n";
+          for ( size_t i = 0; i < flash_vec.size(); ++i)
+          {
+            art::Ptr< recob::OpFlash > flashp = flash_vec.at(i);
+            std::vector< art::Ptr< recob::OpHit > > ophits = flash_hit_assn.at(i);
+            auto check = priv_OpFlashToOpHits.emplace(flashp, ophits);
+            if ( check.second == false )
+            {
+              // loop ophit_ps
+              // push_back to vector.
+              for ( auto& ophitp : ophits )
+              {
+                check.first->second.push_back(ophitp);
+              }
+            }
+          }
         }
       }
 
-      //----------------------------------------------------------------
-      template<typename Evt>
-        void PhotonBackTracker::PrepEvent( Evt const& evt)
-        {
-          if( !(this->CanRun( evt ) ) ){
-            throw cet::exception("PhotonBackTracker")
-              <<"PhotonBackTracker cannot function."
-              <<"Is this file real data?";
-          }
-          priv_OpDetBTRs.clear();
-          this->PrepOpDetBTRs(evt);
-          this->PrepOpFlashToOpHits(evt);
-        } 
-
-
-
-      }
+    //----------------------------------------------------------------
+    template<typename Evt>
+      void PhotonBackTracker::PrepEvent( Evt const& evt)
+      {
+        if( !(this->CanRun( evt ) ) ){
+          throw cet::exception("PhotonBackTracker")
+            <<"PhotonBackTracker cannot function."
+            <<"Is this file real data?";
+        }
+        priv_OpDetBTRs.clear();
+        this->PrepOpDetBTRs(evt);
+        this->PrepOpFlashToOpHits(evt);
+      } 
+    }
 

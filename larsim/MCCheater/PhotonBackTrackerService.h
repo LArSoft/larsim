@@ -118,7 +118,7 @@ namespace cheat{
           std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
           std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps) { return PhotonBackTracker::OpHitLightCollectionEfficiency(tkIds, opHits_Ps, opHitsIn_Ps); }//Exists only temporarily. Is deprecated.
       const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
-      const std::set < int > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P );
+      const std::vector < art::Ptr< recob::OpHit> > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P );
       const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P );
 
 
