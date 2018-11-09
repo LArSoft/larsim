@@ -25,8 +25,8 @@
 
 
 // Wes did this for TRACE debugging
-#include "trace.h"
-#define TNAME "ISCalcSeparate"
+//#include "trace.h"
+//#define TNAME "ISCalcSeparate"
 
 
 namespace larg4{
@@ -47,7 +47,7 @@ namespace larg4{
 					 const sim::LArG4Parameters* lgp,
 					 const spacecharge::SpaceCharge* sce)
   {
-    TRACEN(TNAME,3,"Initializing called.");
+    //TRACEN(TNAME,3,"Initializing called.");
 
     fLArProp = larp;
     fSCE = sce;
@@ -70,8 +70,8 @@ namespace larg4{
 
     this->Reset();
     
-    TRACEN(TNAME,3,"Initialize: RecombA=%f, Recombk=%f, ModBoxA=%f, ModBoxB=%f, UseModBoxRecomb=%d",
-    	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
+    //TRACEN(TNAME,3,"Initialize: RecombA=%f, Recombk=%f, ModBoxA=%f, ModBoxB=%f, UseModBoxRecomb=%d",
+    //	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
     
     return;
   }
@@ -91,10 +91,10 @@ namespace larg4{
   void ISCalcSeparate::CalculateIonization(float e, float ds,
 					   float x, float y, float z){
 
-    TRACEN(TNAME,3,"Calculate ionization called with e=%f, ds=%f, (x,y,z)=(%f,%f,%f)",
-           e,ds,x,y,z);
-    TRACEN(TNAME,3,"Initialized values: RecombA=%lf, Recombk=%lf, ModBoxA=%lf, ModBoxB=%lf, UseModBoxRecomb=%d",
-    	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
+    //TRACEN(TNAME,3,"Calculate ionization called with e=%f, ds=%f, (x,y,z)=(%f,%f,%f)",
+    //       e,ds,x,y,z);
+    //TRACEN(TNAME,3,"Initialized values: RecombA=%lf, Recombk=%lf, ModBoxA=%lf, ModBoxB=%lf, UseModBoxRecomb=%d",
+    //	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
 
     double recomb = 0.;
     double dEdx   = (ds<=0.0)? 0.0: e/ds;
@@ -103,7 +103,7 @@ namespace larg4{
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if(dEdx < 1.) dEdx = 1.;
     
-    TRACEN(TNAME,3,"dEdx=%f, EFieldStep=%f",dEdx,EFieldStep);
+    //TRACEN(TNAME,3,"dEdx=%f, EFieldStep=%f",dEdx,EFieldStep);
     
     if(fUseModBoxRecomb) {
       if(ds>0){
@@ -117,12 +117,12 @@ namespace larg4{
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
     
-    TRACEN(TNAME,3,"recomb=%f",recomb);
+    //TRACEN(TNAME,3,"recomb=%f",recomb);
     
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
     
-    TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
+    //TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
     
     LOG_DEBUG("ISCalcSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
