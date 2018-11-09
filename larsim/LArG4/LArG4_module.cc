@@ -65,7 +65,7 @@
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "larsim/LArG4/AuxDetReadoutGeometry.h"
 #include "larsim/LArG4/AuxDetReadout.h"
-#include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -330,7 +330,7 @@ namespace larg4 {
     bool fSparsifyTrajectories; ///< Sparsify MCParticle Trajectories
 
     /// Configures and returns a particle filter
-    std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
+    std::unique_ptr<util::PositionInVolumeFilter> CreateParticleVolumeFilter
       (std::set<std::string> const& vol_names) const;
     
   };
@@ -531,7 +531,7 @@ namespace larg4 {
     
   }
   
-  std::unique_ptr<PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter
+  std::unique_ptr<util::PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter
     (std::set<std::string> const& vol_names) const
   {
     
@@ -544,7 +544,7 @@ namespace larg4 {
       = geom.FindAllVolumePaths(vol_names);
     
     // collection of interesting volumes
-    PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
+    util::PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
     GeoVolumePairs.reserve(node_paths.size()); // because we are obsessed
   
     //for each interesting volume, follow the node path and collect
@@ -577,7 +577,7 @@ namespace larg4 {
 
     }
     
-    return std::make_unique<PositionInVolumeFilter>(std::move(GeoVolumePairs));
+    return std::make_unique<util::PositionInVolumeFilter>(std::move(GeoVolumePairs));
     
   } // CreateParticleVolumeFilter()
     

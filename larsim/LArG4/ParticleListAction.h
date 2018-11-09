@@ -16,9 +16,9 @@
 #ifndef LArG4_ParticleListAction_h
 #define LArG4_ParticleListAction_h
 
-#include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "lardataobj/Simulation/sim.h" // sim::GeneratorIndex_t, ...
-#include "nutools/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
+#include "nutools/ParticleNavigation/ParticleList.h"
 
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
@@ -87,7 +87,7 @@ namespace larg4 {
     virtual void     	     SteppingAction    (const G4Step* );
 
     /// Grabs a particle filter
-    void ParticleFilter(std::unique_ptr<PositionInVolumeFilter>&& filter)
+    void ParticleFilter(std::unique_ptr<util::PositionInVolumeFilter>&& filter)
       { fFilter = std::move(filter); }
   
 
@@ -135,7 +135,7 @@ namespace larg4 {
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
     
-    std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
+    std::unique_ptr<util::PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
     
     /// Map: particle track ID -> index of primary information in MC truth.
     std::map<int, GeneratedParticleIndex_t> fPrimaryTruthMap;
