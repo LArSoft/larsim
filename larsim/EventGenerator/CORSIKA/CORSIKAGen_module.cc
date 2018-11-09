@@ -58,7 +58,7 @@ namespace evgen {
 
    
   private:
-    void openDBs();
+    void openDBs(std::string const& module_label);
     void populateNShowers();
     void populateTOffset();
     void GetSample(simb::MCTruth&);
@@ -123,7 +123,7 @@ namespace evgen{
 
     this->reconfigure(p);
     
-    this->openDBs();
+    this->openDBs(p.get<std::string>("module_label"));
     this->populateNShowers();
     this->populateTOffset();
     
@@ -179,14 +179,14 @@ namespace evgen{
     
   }
   
-  void CORSIKAGen::openDBs(){
+  void CORSIKAGen::openDBs(std::string const& module_label){
     //choose files based on fShowerInputFiles, copy them with ifdh, open them
     // for c2: statement is unused
     //sqlite3_stmt *statement;
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-                                                    moduleDescription().moduleLabel(),
+                                                    module_label,
                                                     "gen");
     CLHEP::RandFlat flat(engine);
     
