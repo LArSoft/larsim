@@ -35,7 +35,9 @@ public:
 private:
 
   // Declare member data here.
-  std::string fG4Module;
+  art::InputTag fMCParticleLabel;
+  art::InputTag fSimChannelLabel;
+
   ::sim::MCRecoPart fPart;
   ::sim::MCRecoEdep fEdep;
   ::sim::MCShowerRecoAlg fMCSAlg;
@@ -48,7 +50,18 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
   , fMCSAlg (pset.get< fhicl::ParameterSet >("MCShowerRecoAlg"))
   , fMCTAlg (pset.get< fhicl::ParameterSet >("MCTrackRecoAlg"))
 {
-  fG4Module = pset.get<std::string>("G4ModName","largeant");
+
+  //for backwards compatibility to using the "G4ModName" label...
+  if(!(pset.get_if_present<art::InputTag>("MCParticleLabel",fMCParticleLabel) &&
+       pset.get_if_present<art::InputTag>("SimChannelLabel",fSimChannelLabel)) ){
+
+    mf::LogWarning("MCReco_module") << "USING DEPRECATED G4ModName CONFIG IN MCRECO_MODULE"
+				    << "\nUse 'MCParticleLabel' and 'SimChannelLabel' instead.";
+
+    fMCParticleLabel = pset.get<art::InputTag>("G4ModName","largeant");
+    fSimChannelLabel = pset.get<art::InputTag>("G4ModName","largeant");
+  }
+
   produces< std::vector< sim::MCShower> >();
   produces< std::vector< sim::MCTrack>  >();
   // Call appropriate produces<>() functions here.
@@ -65,11 +78,11 @@ void MCReco::produce(art::Event & evt)
 
   // Retrieve mcparticles
   art::Handle<std::vector<simb::MCParticle> > mcpHandle;
-  evt.getByLabel(fG4Module.c_str(),mcpHandle);
+  evt.getByLabel(fMCParticleLabel,mcpHandle);
   if(!mcpHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve simb::MCParticle";;
 
   // Find associations
-  art::FindOneP<simb::MCTruth> ass(mcpHandle, evt, fG4Module.c_str());
+  art::FindOneP<simb::MCTruth> ass(mcpHandle, evt, fMCParticleLabel);
   std::vector<simb::Origin_t> orig_array;
   orig_array.reserve(mcpHandle->size());
   for(size_t i=0; i<mcpHandle->size(); ++i) {
@@ -79,7 +92,7 @@ void MCReco::produce(art::Event & evt)
 
   // Retrieve SimChannel
   art::Handle<std::vector<sim::SimChannel> > schHandle;
-  evt.getByLabel(fG4Module.c_str(),schHandle);
+  evt.getByLabel(fSimChannelLabel,schHandle);
   if(!schHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimChannel";
 
   const std::vector<simb::MCParticle>& mcp_array(*mcpHandle);
