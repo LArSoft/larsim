@@ -1,4 +1,7 @@
 *~
+.depend
+*Dict.cxx
+*Dict.o
 *.bak
 *.log
 *.root
