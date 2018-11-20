@@ -43,6 +43,7 @@ namespace cheat{
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4   module used to produce the art file we will be using."), "largeant"};
         fhicl::Atom<art::InputTag> DefaultHitModuleLabel{fhicl::Name("DefaultHitModuleLabel"), fhicl::Comment("The label  of the module used to produce the hits in the art file we will default to when no hitlist is provided."), "hitfd"};
         fhicl::Atom<double> MinHitEnergyFraction{fhicl::Name("MinHitEnergyFraction"), fhicl::Comment("The minimum     contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
+	fhicl::Atom<bool> OverrideRealData{fhicl::Name("OverrideRealData"),fhicl::Comment("Option when overlaying simulation on real data, to tell the backtracker to continue even if event looks like data."),false};
       };
 
 
@@ -68,7 +69,7 @@ namespace cheat{
 
       //-----------------------------------------------------
       template<typename Evt>
-        bool CanRun(const Evt& evt){ return !(evt.isRealData());}
+        bool CanRun(const Evt& evt){ return ( !(evt.isRealData()) || fOverrideRealData);}
 
       //-----------------------------------------------------
       template<typename Evt>
@@ -159,7 +160,7 @@ namespace cheat{
       const art::InputTag       fG4ModuleLabel;
       const art::InputTag       fHitLabel;
       const double              fMinHitEnergyFraction;
-
+      const bool                fOverrideRealData;
 
       mutable std::vector<art::Ptr<sim::SimChannel>>       fSimChannels;
 //      mutable std::vector< art::Ptr<recob::Hit> >          fAllHitList;
