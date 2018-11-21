@@ -32,7 +32,8 @@ namespace cheat{
      fDetClocks(detClock),
      fG4ModuleLabel(config.G4ModuleLabel()),
      fHitLabel(config.DefaultHitModuleLabel()),
-     fMinHitEnergyFraction(config.MinHitEnergyFraction())
+     fMinHitEnergyFraction(config.MinHitEnergyFraction()),
+     fOverrideRealData(config.OverrideRealData())
   {
   }
 
@@ -43,7 +44,8 @@ namespace cheat{
      fDetClocks(detClock),
      fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
      fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
-     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010))
+     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010)),
+     fOverrideRealData    (pSet.get<bool>         ("OverrideRealData"))
   {
   }
 
