@@ -45,7 +45,7 @@ namespace cheat{
      fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
      fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
      fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010)),
-     fOverrideRealData    (pSet.get<bool>         ("OverrideRealData"))
+     fOverrideRealData    (pSet.get<bool>         ("OverrideRealData",false))
   {
   }
 
