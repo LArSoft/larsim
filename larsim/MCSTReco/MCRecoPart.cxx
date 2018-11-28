@@ -23,13 +23,12 @@ namespace sim {
       _pdg_list.insert(id);
 
     art::ServiceHandle<geo::Geometry> geo;
-    _y_max = geo->DetHalfHeight();
-    _y_min = (-1.) * _y_max;
-    _z_min = 0;
-    _z_max = geo->DetLength();
-    _x_min = 0;
-    _x_max = 2.*(geo->DetHalfWidth());
-
+    _x_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinX() < rhs.BoundingBox().MinX();})->MinX();
+    _y_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinY() < rhs.BoundingBox().MinY();})->MinY();
+    _z_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinZ() < rhs.BoundingBox().MinZ();})->MinZ();
+    _x_max = std::max_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MaxX() < rhs.BoundingBox().MaxX();})->MaxX();
+    _y_max = std::max_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MaxY() < rhs.BoundingBox().MaxY();})->MaxY();
+    _z_max = std::max_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MaxZ() < rhs.BoundingBox().MaxZ();})->MaxZ();
   }
 
   //--------------------------------------------------------------------------------------------
