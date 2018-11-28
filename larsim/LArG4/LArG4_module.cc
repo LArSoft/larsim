@@ -913,7 +913,7 @@ namespace larg4 {
       if(!fUseLitePhotons){
         evt.put(std::move(PhotonCol));
         if (fStoreReflected)
-          evt.put(std::move(PhotonColRefl));
+          evt.put(std::move(PhotonColRefl),"Reflected");
       }
       else{
 	evt.put(std::move(LitePhotonCol));
