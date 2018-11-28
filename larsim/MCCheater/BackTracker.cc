@@ -193,8 +193,8 @@ namespace cheat{
           std::make_pair(trackIDE.energy,trackIDE.numElectrons));
       if(check.second==false)
       {
-        check.first->first  +=trackIDE.energy;
-        check.first->second +=trackIDE.numElectrons;
+        check.first->second.first +=trackIDE.energy;
+        check.first->second.second +=trackIDE.numElectrons;
       }
       //      eveToEMap[fPartInv->TrackIdToEveTrackId(trackIDE.trackID)].first
       //      += trackIDE.energy;
