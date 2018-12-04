@@ -121,10 +121,10 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
     outEdepVec.emplace_back(fISAlg.NumberScintillationPhotons(),
 			    fISAlg.NumberIonizationElectrons(),
 			    edep.Energy(),
-			    geo::Point_t{(float)(edep.StartX()+posOffsetsStart.X()),
+			    geo::Point_t{(float)(edep.StartX()-posOffsetsStart.X()), //x should be subtracted
 				(float)(edep.StartY()+posOffsetsStart.Y()),
 				(float)(edep.StartZ()+posOffsetsStart.Z())},
-			    geo::Point_t{(float)(edep.EndX()+posOffsetsEnd.X()),
+			    geo::Point_t{(float)(edep.EndX()-posOffsetsEnd.X()), //x should be subtracted
 				(float)(edep.EndY()+posOffsetsEnd.Y()),
 				(float)(edep.EndZ()+posOffsetsEnd.Z())},
 			    edep.StartT(),
@@ -136,7 +136,10 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 		       edep.X(),edep.Y(),edep.Z(),edep.NumElectrons(),edep.NumPhotons(),
 		       outEdepVec.back().X(),outEdepVec.back().Y(),outEdepVec.back().Z(),
 		       outEdepVec.back().NumElectrons(),outEdepVec.back().NumPhotons());
+		      
+	//std::cout << "space charge position: (" << edep.X() << ", " << edep.Y() << ", " << edep.Z() << ") --> (" << outEdepVec.back().X() << ", " << outEdepVec.back().Y() << ", " << outEdepVec.back().Z() << ")" << std::endl;
   }
+
 
   e.put(std::move(outEdepVecPtr));
 }
