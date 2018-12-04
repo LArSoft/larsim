@@ -23,9 +23,9 @@ namespace sim {
       _pdg_list.insert(id);
 
     art::ServiceHandle<geo::Geometry> geo;
-    // Build Fiducial Volume Definition:
+    // Build "Fiducial" Volume Definition:
     //
-    // Iterate over all TPC's to get boundig box that covers volumes of each individual TPC in the detector
+    // Iterate over all TPC's to get bounding box that covers volumes of each individual TPC in the detector
     _x_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinX() < rhs.BoundingBox().MinX();})->MinX();
     _y_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinY() < rhs.BoundingBox().MinY();})->MinY();
     _z_min = std::min_element(geo->begin_TPC(), geo->end_TPC(), [](auto const &lhs, auto const &rhs){ return lhs.BoundingBox().MinZ() < rhs.BoundingBox().MinZ();})->MinZ();
