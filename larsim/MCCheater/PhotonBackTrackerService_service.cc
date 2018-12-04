@@ -89,8 +89,10 @@ namespace cheat{
     if( !this->priv_CanRun(evt) ) {this->priv_PrepFailed(); }
     if( this->priv_OpDetBTRsReady()){ return; }
     try{PhotonBackTracker::PrepOpDetBTRs(evt);}
-    catch(...){ mf::LogWarning("PhotonBackTrackerService")
-      <<"Rebuild failed to get the OpDetBTRs. This is expected when "
+    //catch(...){ mf::LogWarning("PhotonBackTrackerService")//This needs to go. Catch all should not be used.
+    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
+      mf::LogWarning("PhotonBackTrackerService")
+        <<"Rebuild failed to get the OpDetBTRs. This is expected when "
         <<"running on a generation or simulation step.";}
   }
 
@@ -98,7 +100,8 @@ namespace cheat{
     if( !this->priv_CanRun(evt) ) {this->priv_PrepFailed();}
     if( this->priv_OpFlashToOpHitsReady()){ return; }
     try{PhotonBackTracker::PrepOpFlashToOpHits(evt);}
-    catch(...){
+    //catch(...){ //This needs to go. Catch all should not be used.
+    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
       mf::LogWarning("PhotonBackTrackerService")
         <<"Rebuild failed to get the OpFlashToOpHits. This is expected when "
         <<"running on a generation or simulation stage.";
@@ -122,6 +125,9 @@ namespace cheat{
   {
     return PhotonBackTracker::OpDetBTRs();
   }
+
+  //----------------------------------------------------------------------
+  const double PhotonBackTrackerService::GetDelay(){ return PhotonBackTracker::GetDelay();}
 
   //----------------------------------------------------------------------
   const std::vector< const sim::SDP* > PhotonBackTrackerService::TrackIdToSimSDPs_Ps(int const& id)
@@ -217,6 +223,13 @@ namespace cheat{
   {
     return PhotonBackTracker::OpHitToSimSDPs_Ps(opHit_P);
   }
+
+  //----------------------------------------------------------------------
+  /*
+     const std::vector< sim::SDP > PhotonBackTrackerService::OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P)
+     {
+     return PhotonBackTracker::OpHitToChannelWeightedSimSDPs(opHit_P);
+     }*/
 
   //----------------------------------------------------------------------
   const std::unordered_set< const sim::SDP* > PhotonBackTrackerService::OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit)
@@ -343,8 +356,8 @@ namespace cheat{
   }
 
   //----------------------------------------------------------------------
-  const std::set < int > PhotonBackTrackerService::OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P ){
-    return PhotonBackTracker::OpFlashToTrackIds( flash_P);
+  const std::vector < art::Ptr< recob::OpHit > > PhotonBackTrackerService::OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P ){
+    return PhotonBackTracker::OpFlashToOpHits_Ps( flash_P);
   }
 
   //----------------------------------------------------------------------
@@ -355,5 +368,5 @@ namespace cheat{
 
   DEFINE_ART_SERVICE(PhotonBackTrackerService)
     //-------------------------------------------------------------------
-} // namespace
+  } // namespace
 

@@ -227,8 +227,8 @@ public: // With description
         void DumpPhysicsTable() const;
         // Prints the fast and slow scintillation integral tables.
 
-        std::vector<double> GetVUVTime(double, int);
-        std::vector<double> GetVisibleTimeOnlyCathode(double, int);
+        std::vector<double> GetVUVTime(double, int) const;
+        std::vector<double> GetVisibleTimeOnlyCathode(double, int) const;
        // Update configuration parameters.
 
        //void reconfigure(const fhicl::ParameterSet& pset);
@@ -263,14 +263,29 @@ protected:
 
 private:
 
-        G4double single_exp(G4double t, G4double tau2);
-        G4double bi_exp(G4double t, G4double tau1, G4double tau2);
+        G4double single_exp(G4double t, G4double tau2) const;
+        G4double bi_exp(G4double t, G4double tau1, G4double tau2) const;
 
+        G4double scint_time(const G4Step& aStep,
+                            G4double ScintillationTime,
+                            G4double ScintillationRiseTime) const;
+        std::vector<double> propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected=false) const;
+   
         // emission time distribution when there is a finite rise time
-        G4double sample_time(G4double tau1, G4double tau2);
+        G4double sample_time(G4double tau1, G4double tau2) const;
 
+        // Facility for TPB emission energies
+        double reemission_energy() const;
+        std::map<double,double> tpbemission;
+        CLHEP::RandGeneral *rgen0;
+
+        void average_position(G4Step const& aStep, double *xzyPos) const;
+  
         G4EmSaturation* emSaturation;
         // functions and parameters for the propagation time parametrization
+        TF1* ParPropTimeTF1;
+        float const* ReflT0s;
+
         TF1 const* functions_vuv[8];
         TF1 const* functions_vis[5];                     
         double fd_break;
@@ -388,13 +403,13 @@ void OpFastScintillation::DumpPhysicsTable() const
 }
 
 inline
-G4double OpFastScintillation::single_exp(G4double t, G4double tau2)
+G4double OpFastScintillation::single_exp(G4double t, G4double tau2) const
 {
          return std::exp(-1.0*t/tau2)/tau2;
 }
 
 inline
-G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2)
+G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
 {
          return std::exp(-1.0*t/tau2)*(1-std::exp(-1.0*t/tau1))/tau2/tau2*(tau1+tau2);
 }

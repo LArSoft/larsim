@@ -42,8 +42,9 @@ namespace larg4 {
   }
 
 
+
   //--------------------------------------------------
-  void OpDetPhotonTable::AddPhoton(size_t opchannel, sim::OnePhoton&& photon)
+  void OpDetPhotonTable::AddPhoton(size_t opchannel, sim::OnePhoton&& photon, bool Reflected)
   {
     if( opchannel >= fDetectedPhotons.size() ) {
 
@@ -54,36 +55,62 @@ namespace larg4 {
 		<< std::endl;
       throw std::exception();
     }
-    fDetectedPhotons.at(opchannel).push_back(photon);
+    if (!Reflected) 
+      fDetectedPhotons.at(opchannel).push_back(photon);
+    else
+      fReflectedDetectedPhotons.at(opchannel).push_back(photon);
   }
 
-  void OpDetPhotonTable::AddPhoton(std::map<int, std::map<int, int>>* StepPhotonTable)
+  //--------------------------------------------------
+  void OpDetPhotonTable::AddLitePhoton( int opchannel, int time, int nphotons, bool Reflected)
+  {
+    if (!Reflected)
+      fLitePhotons[opchannel][time] += nphotons;
+    else
+      fReflectedLitePhotons[opchannel][time] += nphotons;
+  }
+  
+  //--------------------------------------------------
+  void OpDetPhotonTable::AddPhoton(std::map<int, std::map<int, int>>* StepPhotonTable, bool Reflected)
   {
     for(auto it = StepPhotonTable->begin(); it!=StepPhotonTable->end(); it++)
     {
       for(auto in_it = it->second.begin(); in_it!=it->second.end(); in_it++)
       {
-        fLitePhotons[it->first][in_it->first]+= in_it->second;
+        if (!Reflected)
+          fLitePhotons[it->first][in_it->first]+= in_it->second;
+        else
+          fReflectedLitePhotons[it->first][in_it->first]+= in_it->second;
       }
     }
   }
 
   //--------------------------------------------------- cOpDetBacktrackerRecord population
   //J Stock. 11 Oct 2016
-  void OpDetPhotonTable::AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc){
+  void OpDetPhotonTable::AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc, bool Reflected){
+//    std::cout << "DEBUG: Adding to " << (Reflected?"Reflected":"Direct") << " cOpDetBTR" << std::endl;
+    if (!Reflected)
+      AddOpDetBacktrackerRecord(cOpDetBacktrackerRecordsCol, cOpChannelToSOCMap, soc);
+    else
+      AddOpDetBacktrackerRecord(cReflectedOpDetBacktrackerRecordsCol, cReflectedOpChannelToSOCMap, soc);
+  }
+  
+  //--------------------------------------------------- cOpDetBacktrackerRecord population
+  void OpDetPhotonTable::AddOpDetBacktrackerRecord(std::vector< sim::OpDetBacktrackerRecord > & RecordsCol,
+                                                   std::map<int, int> & ChannelMap,
+                                                   sim::OpDetBacktrackerRecord soc) {
     int iChan = soc.OpDetNum();
-    //std::map<int,int> cOpChannelToSOCMap;
-    std::map<int, int>::iterator channelPosition = cOpChannelToSOCMap.find(iChan);
-    if (channelPosition == cOpChannelToSOCMap.end() ){
-      cOpChannelToSOCMap[iChan] = cOpDetBacktrackerRecordsCol.size();
-      cOpDetBacktrackerRecordsCol.emplace_back(std::move(soc));
+    std::map<int, int>::iterator channelPosition = ChannelMap.find(iChan);
+    if (channelPosition == ChannelMap.end() ){
+      ChannelMap[iChan] = RecordsCol.size();
+      RecordsCol.emplace_back(std::move(soc));
     }else{
       unsigned int idtest = channelPosition->second;
       auto const& timePDclockSDPsMap = soc.timePDclockSDPsMap();
       for(auto const& timePDclockSDP : timePDclockSDPsMap){
         for(auto const& sdp : timePDclockSDP.second){
           double xyz[3] = {sdp.x, sdp.y, sdp.z};
-          cOpDetBacktrackerRecordsCol.at(idtest).AddScintillationPhotons(
+          RecordsCol.at(idtest).AddScintillationPhotons(
               sdp.trackID,
               timePDclockSDP.first,
               sdp.numPhotons,
@@ -94,20 +121,39 @@ namespace larg4 {
     }// if chanPos == cOpChan else
     
     
-    
+//    std::cout << "DEBUG: Add to " << iChan << " to cOpDetBTR. Now " << RecordsCol.size() << " in size " << std::endl;
   }//END void OpDetPhotonTable::AdOpDetBacktrackerRecords
 
+
+  //--------------------------------------------------
   // cOpDetBacktrackerRecord return.
   std::vector<sim::OpDetBacktrackerRecord> OpDetPhotonTable::YieldOpDetBacktrackerRecords() {
     // we give the result to the caller, and don't retain it
     std::vector<sim::OpDetBacktrackerRecord> result;
+//    std::cout << "DEBUG: result.size()       = " << result.size() << std::endl;
+//    std::cout << "DEBUG: cOpDetBTRCol.size() = " << cOpDetBacktrackerRecordsCol.size() << std::endl;
     std::swap(result, cOpDetBacktrackerRecordsCol);
+//    std::cout << "DEBUG: std::swap(result, cOpDetBacktrackerRecordsCol);" << std::endl;
+//    std::cout << "DEBUG: result.size()       = " << result.size() << std::endl;
+//    std::cout << "DEBUG: cOpDetBTRCol.size() = " << cOpDetBacktrackerRecordsCol.size() << std::endl;
     cOpChannelToSOCMap.clear();
     return result;
   } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
   
-
-
+  //--------------------------------------------------
+  // cReflectedOpDetBacktrackerRecord return.
+  std::vector<sim::OpDetBacktrackerRecord> OpDetPhotonTable::YieldReflectedOpDetBacktrackerRecords() {
+    // we give the result to the caller, and don't retain it
+    std::vector<sim::OpDetBacktrackerRecord> result;
+//    std::cout << "DEBUG: result.size()           = " << result.size() << std::endl;
+//    std::cout << "DEBUG: cReflOpDetBTRCol.size() = " << cReflectedOpDetBacktrackerRecordsCol.size() << std::endl;
+    std::swap(result, cReflectedOpDetBacktrackerRecordsCol);
+//    std::cout << "DEBUG: result.size()           = " << result.size() << std::endl;
+//    std::cout << "DEBUG: cReflOpDetBTRCol.size() = " << cReflectedOpDetBacktrackerRecordsCol.size() << std::endl;
+    cReflectedOpChannelToSOCMap.clear();
+    return result;
+  } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
+  
 
   //--------------------------------------------------
   void OpDetPhotonTable::ClearTable(const size_t nch)
@@ -118,20 +164,19 @@ namespace larg4 {
       fDetectedPhotons.at(i).SetChannel(i);
       //fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
     }
+    for(size_t i=0; i<fReflectedDetectedPhotons.size(); ++i) {
+      fReflectedDetectedPhotons.at(i).clear();
+      fReflectedDetectedPhotons.at(i).SetChannel(i);
+      //fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
+    }
 
-    for(std::map<int,std::map<int, int>>::iterator it=fLitePhotons.begin(); it!=fLitePhotons.end(); ++it)
+    for(auto it=fLitePhotons.begin(); it!=fLitePhotons.end(); ++it)
+      (it->second).clear();
+    for(auto it=fReflectedLitePhotons.begin(); it!=fReflectedLitePhotons.end(); ++it)
       (it->second).clear();
     fLitePhotons.clear();
+    fReflectedLitePhotons.clear();
   }
-
-  //--------------------------------------------------
-  std::map<int, std::map<int, int>> OpDetPhotonTable::GetLitePhotons()
-  {
-    return fLitePhotons;
-  }
-
-  std::vector<sim::SimPhotons >& OpDetPhotonTable::GetPhotons() 
-  { return fDetectedPhotons; }
 
   //--------------------------------------------------
   sim::SimPhotons& OpDetPhotonTable::GetPhotonsForOpChannel(size_t opchannel)
@@ -144,11 +189,17 @@ namespace larg4 {
     return fDetectedPhotons.at(opchannel);
   }
 
-  std::map<int,int>& OpDetPhotonTable::GetLitePhotonsForOpChannel(int opchannel)
+  //--------------------------------------------------
+  sim::SimPhotons& OpDetPhotonTable::GetReflectedPhotonsForOpChannel(size_t opchannel)
   {
-    return fLitePhotons[opchannel];
+    if(opchannel >= fReflectedDetectedPhotons.size()) {
+      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>" 
+		<< "Invalid channel Number: " << opchannel 
+		<< std::endl;
+    }
+    return fReflectedDetectedPhotons.at(opchannel);
   }
-  
+
 
   //--------------------------------------------------
   void OpDetPhotonTable::AddEnergyDeposit(int n_elec,int n_photon,

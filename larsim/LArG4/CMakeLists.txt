@@ -43,7 +43,7 @@ art_make(
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4
                         larsim_MCCheater_ParticleInventoryService_service
-                        larsim_MCDumpers
+                        lardataalg_MCDumpers
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service

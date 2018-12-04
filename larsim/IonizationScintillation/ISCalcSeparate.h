@@ -49,6 +49,8 @@ namespace larg4 {
    double 	   	 fModBoxA;             ///< from LArG4Parameters service			  
    double 	   	 fModBoxB;             ///< from LArG4Parameters service			  
    bool   	   	 fUseModBoxRecomb;     ///< from LArG4Parameters service			  
+   double                fGeVToElectrons;      ///< from LArG4Parameters service
+
    double 	   	 fScintYieldFactor;    ///< scintillation yield factor                             
 
    double fEnergyDeposit;   ///< total energy deposited in the step

@@ -132,7 +132,7 @@ namespace phot{
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool getReflected, bool getReflT0, size_t getTiming)
+  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool getReflected, bool getReflT0, size_t getTiming, int fTimingMaxRange)
   {
     fLookupTable.clear();
     fReflLookupTable.clear();
@@ -233,9 +233,9 @@ namespace phot{
       if(fHasTiming!=0)
       {
         // TODO: use TF1::Copy
-	TF1 timingfunction(Form("timing_%i_%i",Voxel,OpChannel),fTimingParFormula.c_str(),0,200);
-
-	for (size_t k=0;k<fTimingParNParameters;k++)
+	TF1 timingfunction(Form("timing_%i_%i",Voxel,OpChannel),fTimingParFormula.c_str(),timing_par[0],fTimingMaxRange);
+        timingfunction.SetParameter(0,0.0);//first parameter is now in the range. Let's do this to keep compatible with old libraries.
+	for (size_t k=1;k<fTimingParNParameters;k++)
         {
 	  timingfunction.SetParameter(k,timing_par[k]);
         }

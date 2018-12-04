@@ -65,6 +65,7 @@ namespace cheat{
 
       //----------------------------------------------------------------------
       const std::vector< art::Ptr< sim::OpDetBacktrackerRecord >>& OpDetBTRs() ;
+      const double GetDelay();
       const std::vector< const sim::SDP* > TrackIdToSimSDPs_Ps(int const& id);
       const std::vector< const sim::SDP* > TrackIdToSimSDPs_Ps(int const& id, geo::View_t const& view);
        art::Ptr< sim::OpDetBacktrackerRecord > FindOpDetBTR(int const& opDetNum);
@@ -82,6 +83,7 @@ namespace cheat{
       const std::vector<std::vector<art::Ptr<recob::OpHit>>> TrackIdsToOpHits_Ps(std::vector<int> const& tkIds, std::vector<art::Ptr<recob::OpHit>> const& hitsIn);
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(recob::OpHit const& opHit) ;
       const std::vector< const sim::SDP* > OpHitToSimSDPs_Ps(art::Ptr<recob::OpHit> const& opHit_P) ;
+//      const std::vector< sim::SDP > OpHitToChannelWeightedSimSDPs(art::Ptr<recob::OpHit> const& opHit_P);
       const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(recob::OpHit const& opHit) ;
       const std::unordered_set< const sim::SDP* > OpHitToEveSimSDPs_Ps(art::Ptr<recob::OpHit>& opHit_P) ;
       const std::vector< double> SimSDPsToXYZ(std::vector<sim::SDP> const& sdps ) const& ;
@@ -116,7 +118,7 @@ namespace cheat{
           std::vector< art::Ptr<recob::OpHit> > const& opHits_Ps,
           std::vector< art::Ptr<recob::OpHit> > const& opHitsIn_Ps) { return PhotonBackTracker::OpHitLightCollectionEfficiency(tkIds, opHits_Ps, opHitsIn_Ps); }//Exists only temporarily. Is deprecated.
       const std::set<int> OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const;
-      const std::set < int > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P );
+      const std::vector < art::Ptr< recob::OpHit> > OpFlashToOpHits_Ps ( art::Ptr < recob::OpFlash > & flash_P );
       const std::vector < double > OpFlashToXYZ ( art::Ptr < recob::OpFlash > & flash_P );
 
 

@@ -11,7 +11,7 @@
  */
 
 // LArSoft libraries
-#include "larsim/MCDumpers/MCDumpers.h" // sim::dump namespace
+#include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 
 // nutools libraries
 #include "nusimdata/SimulationBase/MCTruth.h"

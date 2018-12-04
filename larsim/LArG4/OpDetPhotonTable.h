@@ -59,20 +59,28 @@ namespace larg4 {
     public:
       ~OpDetPhotonTable();
       static OpDetPhotonTable * Instance(bool LitePhotons = false);
-   
-      void AddPhoton( size_t opchannel, sim::OnePhoton&& photon);
-      void AddPhoton( std::map<int, std::map<int, int>>* StepPhoton);
 
-      std::vector<sim::SimPhotons >& GetPhotons();
+      void AddPhoton( size_t opchannel, sim::OnePhoton&& photon, bool Reflected=false);
+      void AddLitePhoton( int opchannel, int time, int nphotons, bool Reflected=false);
+      void AddPhoton(std::map<int, std::map<int, int>>* StepPhotonTable, bool Reflected=false);
+      void AddLitePhotons(std::map<int, std::map<int, int>>* StepPhotonTable, bool Reflected=false) { AddPhoton(StepPhotonTable, Reflected); }
+
+      std::vector<sim::SimPhotons >& GetPhotons(bool Reflected=false) { return (Reflected ? fReflectedDetectedPhotons : fDetectedPhotons); }
+      std::vector<sim::SimPhotons >& GetReflectedPhotons()            { return GetPhotons(true); }
       sim::SimPhotons&               GetPhotonsForOpChannel(size_t opchannel);
-      
-      std::map<int, std::map<int, int> >   GetLitePhotons();
-      std::map<int, int>&                  GetLitePhotonsForOpChannel(int opchannel); 
+      sim::SimPhotons&               GetReflectedPhotonsForOpChannel(size_t opchannel);
+
+      std::map<int, std::map<int, int> >    GetLitePhotons(bool Reflected=false) { return (Reflected ? fReflectedLitePhotons : fLitePhotons ); }
+      std::map<int, std::map<int, int> >    GetReflectedLitePhotons()            { return GetLitePhotons(true); }
+      std::map<int, int>&                   GetLitePhotonsForOpChannel(int opchannel)          { return fLitePhotons[opchannel]; }
+      std::map<int, int>&                   GetReflectedLitePhotonsForOpChannel(int opchannel) { return fReflectedLitePhotons[opchannel]; }
       void ClearTable(size_t nch=0);
 
-      void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc);
+      void AddOpDetBacktrackerRecord(sim::OpDetBacktrackerRecord soc, bool Reflected=false);
     //  std::vector<sim::OpDetBacktrackerRecord>& GetOpDetBacktrackerRecords(); //Replaced by YieldOpDetBacktrackerRecords()
       std::vector<sim::OpDetBacktrackerRecord> YieldOpDetBacktrackerRecords();
+      std::vector<sim::OpDetBacktrackerRecord> YieldReflectedOpDetBacktrackerRecords();
+
 
       void ClearEnergyDeposits();
       void AddEnergyDeposit(int n_elec,int n_photon,
@@ -90,10 +98,19 @@ namespace larg4 {
 
     private:
 
+      void AddOpDetBacktrackerRecord(std::vector< sim::OpDetBacktrackerRecord > & RecordsCol, 
+                                     std::map<int, int> &ChannelMap, 
+                                     sim::OpDetBacktrackerRecord soc);
+
+
       std::map<int, std::map<int,int> >     fLitePhotons;
+      std::map<int, std::map<int,int> >     fReflectedLitePhotons;
       std::vector< sim::OpDetBacktrackerRecord >      cOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
+      std::vector< sim::OpDetBacktrackerRecord >      cReflectedOpDetBacktrackerRecordsCol; //analogous to scCol for electrons
       std::map<int, int>  cOpChannelToSOCMap; //Where each OpChan is.
+      std::map<int, int>  cReflectedOpChannelToSOCMap; //Where each OpChan is.
       std::vector<sim::SimPhotons> fDetectedPhotons;
+      std::vector<sim::SimPhotons> fReflectedDetectedPhotons;
 
 
       std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > fSimEDepCol;
