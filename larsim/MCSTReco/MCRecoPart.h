@@ -116,9 +116,12 @@ namespace sim
 
   protected:
 
-    double _x_max, _x_min;
-    double _y_max, _y_min;
-    double _z_max, _z_min;
+    double _x_max; //!< x-max of volume box used to determine whether to save track information
+    double _x_min; //!< x-min of volume box used to determine whether to save track information
+    double _y_max; //!< y-max of volume box used to determine whether to save track information
+    double _y_min; //!< y-min of volume box used to determine whether to save track information
+    double _z_max; //!< z-max of volume box used to determine whether to save track information
+    double _z_min; //!< z-min of volume box used to determine whether to save track information
 
   }; // class MCRecoPart
   
