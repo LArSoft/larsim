@@ -11,7 +11,7 @@ larevt		v08_00_00_rc1
 marley		v1_0_0e
 larsoft_data    v1_02_01
 
-cetbuildtools	v7_04_00	-	only_for_build
+cetbuildtools	v7_03_03	-	only_for_build
 end_product_list
 
 qualifier	larevt	 	marley		larsoft_data	notes

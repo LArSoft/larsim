@@ -1,18 +1,19 @@
-//
-////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // \file PhotonBackTracker.cc
-// \brief The functions needed for the PhotonBackTracker class needed by the PhotonBackTrackerService in order to connect truth information with reconstruction.
+// \brief The functions needed for the PhotonBackTracker class needed by the
+//   PhotonBackTrackerService in order to connect truth information with
+//   reconstruction.
 // \author jason.stock@mines.sdsmt.edu
 //
 // Based on the original BackTracker by brebel@fnal.gov
 //
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 //TODO: Impliment alternate backtracking scheme developed by T. Usher
 //TODO: OpChanToOpDetSDPs (Expanded Clone of OpDetNumToOpDetSDPs
 //
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 
 //Includes
@@ -69,6 +70,7 @@ namespace cheat{
   //----------------------------------------------------------------
   void PhotonBackTracker::ClearEvent(){
     priv_OpDetBTRs.clear();
+    priv_OpFlashToOpHits.clear();
   }
 
   //----------------------------------------------------------------
@@ -80,7 +82,7 @@ namespace cheat{
   //----------------------------------------------------------------
   const bool PhotonBackTracker::OpFlashToOpHitsReady()
   {
-    return !( fOpFlashToOpHits.empty() ) ;
+    return !( priv_OpFlashToOpHits.empty() ) ;
   }
 
   //----------------------------------------------------------------
@@ -155,7 +157,7 @@ namespace cheat{
         tSDPs.push_back(info);
       }
     }
-    catch(cet::exception e){
+    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
       mf::LogWarning("PhotonBackTracker")<<"Exception caught\n"
         <<e;
     }
@@ -699,31 +701,26 @@ namespace cheat{
     return efficiency;
   }
   //--------------------------------------------------
-//  const std::vector< const recob::OpHit* > PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const
-    //const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
-//  {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
-//
-    //      art::FindManyP< recob::OpHit > fmoh(std::vector<art::Ptr<recob::OpFlash>>({flash_P}), evt, fOpHitLabel.label());
-    //      std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fmoh.at(0);
-//    std::vector<const recob::OpHit*> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
-//    std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = fOpFlashToOpHits.at(flash_P);
-//    return hits_Ps;
-//
-//  }
+  const std::vector< art::Ptr<recob::OpHit> > PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P) const
+    // const std::vector<art::Ptr<recob::OpHit>> PhotonBackTracker::OpFlashToOpHits_Ps(art::Ptr<recob::OpFlash>& flash_P, Evt const& evt) const
+  {//There is not "non-pointer" version of this because the art::Ptr is needed to look up the assn. One could loop the Ptrs and dereference them, but I will not encourage the behavior by building the tool to do it.
+    //
+    std::vector<art::Ptr<recob::OpHit>> const& hits_Ps = priv_OpFlashToOpHits.at(flash_P);
+    return hits_Ps;
+  }
 
   //--------------------------------------------------
-//  const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const
-//  {
-//    const std::vector< const recob::OpHit *> opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
-//    const std::vector<double> retVec = this->OpHitsToXYZ(opHits_Ps);
-//    const std::vector<double> retVec(0.0,3);
-//    //This feature temporarily disabled.
-//    return retVec;
-//  }
+  const std::vector<double> PhotonBackTracker::OpFlashToXYZ(art::Ptr<recob::OpFlash>& flash_P) const
+  {
+    const std::vector< art::Ptr< recob::OpHit > > opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
+    const std::vector<double> retVec = this->OpHitsToXYZ(opHits_Ps);
+    //const std::vector<double> retVec(0.0,3);
+    return retVec;
+  }
 
   //--------------------------------------------------
-//  const std::set<int> PhotonBackTracker::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const{
-    /* Temporarily disabled.
+  const std::set<int> PhotonBackTracker::OpFlashToTrackIds(art::Ptr<recob::OpFlash>& flash_P) const
+  {
     std::vector<art::Ptr<recob::OpHit> > opHits_Ps = this->OpFlashToOpHits_Ps(flash_P);
     std::set<int> ids;
     for( auto& opHit_P : opHits_Ps){
@@ -731,10 +728,9 @@ namespace cheat{
         ids.insert( id) ;
       } // end for ids
     }// end for opHits
-    */
-//    std::set<int> ids;
-//    return ids;
-//  }// end OpFlashToTrackIds
+    //    std::set<int> ids;
+    return ids;
+  }// end OpFlashToTrackIds
 
   //----------------------------------------------------- /*NEW*/
   //----------------------------------------------------- /*NEW*/

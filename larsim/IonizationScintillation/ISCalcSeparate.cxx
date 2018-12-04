@@ -23,11 +23,11 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
-/*
+
 // Wes did this for TRACE debugging
-#include "trace.h"
-#define TNAME "ISCalcSeparate"
-*/
+//#include "trace.h"
+//#define TNAME "ISCalcSeparate"
+
 
 namespace larg4{
 
@@ -66,6 +66,7 @@ namespace larg4{
     fModBoxA             = lgp->ModBoxA();
     fModBoxB             = lgp->ModBoxB()/detp->Density(detp->Temperature());
     fUseModBoxRecomb     = (bool)lgp->UseModBoxRecomb();  
+    fGeVToElectrons      = lgp->GeVToElectrons();
 
     this->Reset();
     
@@ -88,46 +89,41 @@ namespace larg4{
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
   void ISCalcSeparate::CalculateIonization(float e, float ds,
-						  float x, float y, float z){
+					   float x, float y, float z){
 
     //TRACEN(TNAME,3,"Calculate ionization called with e=%f, ds=%f, (x,y,z)=(%f,%f,%f)",
-    //   e,ds,x,y,z);
+    //       e,ds,x,y,z);
     //TRACEN(TNAME,3,"Initialized values: RecombA=%lf, Recombk=%lf, ModBoxA=%lf, ModBoxB=%lf, UseModBoxRecomb=%d",
-    //	   fLArG4Prop->RecombA(), fRecombk, fLArG4Prop->ModBoxA(), fModBoxB, fUseModBoxRecomb);
-
-    //std::cout << "ModBoxA: " << fLArG4Prop->ModBoxA() << " " << util::kModBoxA << " " << fModBoxA << std::endl;
-    //std::cout << "ModBoxB: " << fLArG4Prop->ModBoxB() << " " << util::kModBoxB << " " << fModBoxB << std::endl;
-
+    //	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
 
     double recomb = 0.;
-    double dEdx   = (ds>0)? 0.0: e/ds;
+    double dEdx   = (ds<=0.0)? 0.0: e/ds;
     double EFieldStep = EFieldAtStep(fDetProp->Efield(),x,y,z);
     
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if(dEdx < 1.) dEdx = 1.;
-
+    
     //TRACEN(TNAME,3,"dEdx=%f, EFieldStep=%f",dEdx,EFieldStep);
     
     if(fUseModBoxRecomb) {
       if(ds>0){
 	double Xi = fModBoxB * dEdx / EFieldStep;
-	recomb = log(fLArG4Prop->ModBoxA() + Xi) / Xi;
+	recomb = log(fModBoxA + Xi) / Xi;
       }
       else 
 	recomb = 0;
     }
     else{
-      recomb = fLArG4Prop->RecombA() / (1. + dEdx * fRecombk / EFieldStep);
+      recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
     
     //TRACEN(TNAME,3,"recomb=%f",recomb);
     
     // 1.e-3 converts fEnergyDeposit to GeV
-    fNumIonElectrons = fLArG4Prop->GeVToElectrons() * 1.e-3 * e * recomb;
-
+    fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
+    
     //TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
-    //if(fNumIonElectrons<0) //TRACEN(TNAME,0,"n_electrons (%f) < 0",fNumIonElectrons);
-
+    
     LOG_DEBUG("ISCalcSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
       << " MeV deposited with "     << recomb 

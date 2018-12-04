@@ -37,6 +37,8 @@
 
 #include "TF1.h"
 
+#include <math.h>
+
 namespace phot{
 
   PhotonVisibilityService::~PhotonVisibilityService()
@@ -82,7 +84,9 @@ namespace phot{
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
+    fParPropTime_MaxRange(),
     fInterpolate(false),
+    fReflectOverZeroX(false),
     fparslogNorm(nullptr),
     fparslogNorm_far(nullptr),
     fparsMPV(nullptr),
@@ -144,7 +148,7 @@ namespace phot{
             fTheLibrary = lib;
 
             size_t NVoxels = GetVoxelDef().GetNVoxels();
-            lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar);
+            lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar, fParPropTime_MaxRange);
           }
 	}
       }
@@ -202,10 +206,12 @@ namespace phot{
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
     fInterpolate          = p.get< bool        >("Interpolate", false);
+    fReflectOverZeroX     = p.get< bool        >("ReflectOverZeroX", false);
 
     fParPropTime          = p.get< bool        >("ParametrisedTimePropagation", false);
     fParPropTime_npar     = p.get< size_t      >("ParametrisedTimePropagationNParameters", 0);
     fParPropTime_formula  = p.get< std::string >("ParametrisedTimePropagationFittedFormula","");
+    fParPropTime_MaxRange = p.get< int         >("ParametrisedTimePropagationMaxRange", 200);
     
     if (!fParPropTime)
     {
@@ -355,7 +361,7 @@ namespace phot{
       return &ret.front();
     }
     else{
-      size_t VoxID = fVoxelDef.GetVoxelID(xyz);
+      size_t VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
       return GetLibraryEntries(VoxID, wantReflected);
     }
   }
@@ -393,12 +399,12 @@ namespace phot{
     if(fInterpolate){
       // In case we're outside the bounding box we'll get an empty vector here
       // and return visibility 0, which seems OK.
-      fVoxelDef.GetNeighboringVoxelIDs(xyz, neis);
+      fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz), neis);
     }
     else{
       // For no interpolation, use a single entry with weight 1
       neis.clear();
-      neis.emplace_back(fVoxelDef.GetVoxelID(xyz), 1);
+      neis.emplace_back(fVoxelDef.GetVoxelID(LibLocation(xyz)), 1);
     }
 
     // Sum up all the weighted neighbours to get interpolation behaviour
@@ -481,7 +487,7 @@ namespace phot{
 
   float const* PhotonVisibilityService::GetReflT0s(double const* xyz) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryReflT0Entries(VoxID);
   }
 
@@ -525,13 +531,13 @@ namespace phot{
 
   const std::vector<float>* PhotonVisibilityService::GetTimingPar(double const* xyz) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingParEntries(VoxID);
   }
 
   TF1* PhotonVisibilityService::GetTimingTF1(double const* xyz) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(xyz);
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingTF1Entries(VoxID);
   }
 
@@ -634,6 +640,23 @@ namespace phot{
 
     t0_max = fT0_max;
     t0_break_point = fT0_break_point;
+  }
+
+
+  //------------------------------------------------------
+  /***
+   * Preform any necessary transformations on the coordinates before trying to access
+   * a voxel ID.
+   **/
+  const TVector3 PhotonVisibilityService::LibLocation(const double * xyz) const
+  {
+    TVector3 location(xyz);
+    
+    // Always use postive X coordinate if set
+    if (fReflectOverZeroX && location.x() < 0) {
+      location.SetX( fabs(location.x() ) );
+    }
+    return location;
   }
 
 } // namespace

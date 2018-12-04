@@ -32,7 +32,8 @@ namespace cheat{
      fDetClocks(detClock),
      fG4ModuleLabel(config.G4ModuleLabel()),
      fHitLabel(config.DefaultHitModuleLabel()),
-     fMinHitEnergyFraction(config.MinHitEnergyFraction())
+     fMinHitEnergyFraction(config.MinHitEnergyFraction()),
+     fOverrideRealData(config.OverrideRealData())
   {
   }
 
@@ -43,7 +44,8 @@ namespace cheat{
      fDetClocks(detClock),
      fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
      fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
-     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010))
+     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010)),
+     fOverrideRealData    (pSet.get<bool>         ("OverrideRealData",false))
   {
   }
 
@@ -178,22 +180,35 @@ namespace cheat{
   }
 
   //These don't exist in the event. They are generated on the fly.
-  //-----------------------------------------------------------------------
-  const std::vector<sim::TrackIDE> BackTracker::HitToEveTrackIDEs( recob::Hit const& hit) const{
+  //----------------------------------------------------------------------------
+  const std::vector<sim::TrackIDE> BackTracker::HitToEveTrackIDEs( recob::Hit
+      const& hit) const{
     std::vector<sim::TrackIDE> eveIDEs;
     std::vector<sim::TrackIDE> trackIDEs = this->HitToTrackIDEs(hit);
-    std::map<int, double> eveToEMap;
+    std::map<int, std::pair<double,double>> eveToEMap;
     double totalE=0.0;
     for (const auto& trackIDE : trackIDEs){
-      eveToEMap[fPartInv->TrackIdToEveTrackId(trackIDE.trackID)] += trackIDE.energy;
+      auto check = eveToEMap.emplace(
+          fPartInv->TrackIdToEveTrackId(trackIDE.trackID),
+          std::make_pair(trackIDE.energy,trackIDE.numElectrons));
+      if(check.second==false)
+      {
+        check.first->second.first +=trackIDE.energy;
+        check.first->second.second +=trackIDE.numElectrons;
+      }
+      //      eveToEMap[fPartInv->TrackIdToEveTrackId(trackIDE.trackID)].first
+      //      += trackIDE.energy;
       totalE+=trackIDE.energy;
     }//End for trackIDEs
     eveIDEs.reserve(eveToEMap.size());
     for(const auto& eveToE : eveToEMap){
       sim::TrackIDE eveTrackIDE_tmp;
-      eveTrackIDE_tmp.trackID = eveToE.first;
-      eveTrackIDE_tmp.energy = eveToE.second;
-      eveTrackIDE_tmp.energyFrac = (eveTrackIDE_tmp.energy)/(totalE);
+
+      eveTrackIDE_tmp.trackID       = eveToE.first;
+      eveTrackIDE_tmp.energy        = eveToE.second.first;
+      eveTrackIDE_tmp.energyFrac    = (eveTrackIDE_tmp.energy)/(totalE);
+      eveTrackIDE_tmp.numElectrons  = eveToE.second.second;
+
       eveIDEs.push_back(eveTrackIDE_tmp);
     }//END eveToEMap loop
     return eveIDEs;
@@ -275,8 +290,8 @@ namespace cheat{
   //-----------------------------------------------------------------------
   const std::vector< const sim::IDE* > BackTracker::HitToSimIDEs_Ps (recob::Hit const& hit) const{
     std::vector< const sim::IDE* > retVec;
-//    const auto start_tdc = hit.PeakTimeMinusRMS();
-//    const auto end_tdc = hit.PeakTimePlusRMS();
+    //    const auto start_tdc = hit.PeakTimeMinusRMS();
+    //    const auto end_tdc = hit.PeakTimePlusRMS();
     int start_tdc = fDetClocks->TPCTick2TDC( hit.PeakTimeMinusRMS() );
     int end_tdc   = fDetClocks->TPCTick2TDC( hit.PeakTimePlusRMS()   );
     if(start_tdc<0) start_tdc = 0;
@@ -284,9 +299,9 @@ namespace cheat{
 
     if(start_tdc > end_tdc){throw;}
 
-/*    auto sc = this->FindSimChannel(hit.Channel());
-    auto tdcidemap = sc->TDCIDEMap();
-    auto& tdcidemapref = sc->TDCIDEMap();*/
+    /*    auto sc = this->FindSimChannel(hit.Channel());
+          auto tdcidemap = sc->TDCIDEMap();
+          auto& tdcidemapref = sc->TDCIDEMap();*/
 
     const std::vector< std::pair<unsigned short, std::vector<sim::IDE>> >& tdcIDEMap = (this->FindSimChannel(hit.Channel()))->TDCIDEMap(); //This in fact does not return a map. It returns a vector... with no guarantee that it is sorted...
     std::vector<const std::pair<unsigned short, std::vector<sim::IDE>>*> tdcIDEMap_SortedPointers;
@@ -296,12 +311,12 @@ namespace cheat{
 
     //Sort a vector of pointers to the TDCIDEs
     /*
-    auto pairSort = [](auto& a, auto& b) { return a.first < b.first ; } ;
-    if( !std::is_sorted( tdcIDEMap.begin(), tdcIDEMap.end(), pairSort)) {
-      std::cout<<"AlreadySorted\n";
-   //   std::sort (tdcIDEMap.begin(), tdcIDEMap.end(), pairSort);
+       auto pairSort = [](auto& a, auto& b) { return a.first < b.first ; } ;
+       if( !std::is_sorted( tdcIDEMap.begin(), tdcIDEMap.end(), pairSort)) {
+       std::cout<<"AlreadySorted\n";
+    //   std::sort (tdcIDEMap.begin(), tdcIDEMap.end(), pairSort);
     }else{
-      throw;
+    throw;
     }*/
 
     //This is a bunch of extra steps, due to needing a vector we can sort, and needing those items in the sorted vector to be the items from the sim channels (so a pointer to the IDEs inside the sim channels can be made). The work around is to make a vector of pointers to IDEs inside the TDCIDEMap (which is a constant reference to the fTDCIDEs in the SimChannel.)
@@ -319,7 +334,7 @@ namespace cheat{
     auto end_tdcPair_P = &end_tdcPair;
     auto
       mapFirst = std::lower_bound(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), start_tdcPair_P, pairSort);
-      //mapFirst = std::lower_bound(tdcIDEMap.begin(), tdcIDEMap.end(), start_tdcPair, pairSort);
+    //mapFirst = std::lower_bound(tdcIDEMap.begin(), tdcIDEMap.end(), start_tdcPair, pairSort);
     //const std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to just after the last interesting IDE
     auto
       mapLast  = std::upper_bound(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), end_tdcPair_P, pairSort);
@@ -329,9 +344,9 @@ namespace cheat{
         //std::cout<<"Dumping Selected IDEs from tdcIDEMap:\nTrackID: "<<ide.trackID<<"\nnumElectrons: "<<ide.numElectrons<<"\nenergy: "<<ide.energy<<"\nXYZ: "<<ide.x<<" "<<ide.y<<" "<<ide.z<<"\n";
       } //Add all interesting IDEs to the retVec
     }
-/*    for( auto ide : retVec){
-        std::cout<<"Dumping Selected IDEs from retVec:\nTrackID: "<<ide->trackID<<"\nnumElectrons: "<<ide->numElectrons<<"\nenergy: "<<ide->energy<<"\nXYZ: "<<ide->x<<" "<<ide->y<<" "<<ide->z<<"\n";
-    }*/
+    /*    for( auto ide : retVec){
+          std::cout<<"Dumping Selected IDEs from retVec:\nTrackID: "<<ide->trackID<<"\nnumElectrons: "<<ide->numElectrons<<"\nenergy: "<<ide->energy<<"\nXYZ: "<<ide->x<<" "<<ide->y<<" "<<ide->z<<"\n";
+          }*/
     return retVec;
   }
 
