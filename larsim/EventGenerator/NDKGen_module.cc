@@ -123,6 +123,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   NDKGen::NDKGen(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
     this->reconfigure(pset); 
     fStopwatch.Start();
@@ -310,7 +311,8 @@ namespace evgen{
 
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
     CLHEP::RandFlat flat(engine);
 
     double fvCut (5.0); // force vtx to be this far from any wall.

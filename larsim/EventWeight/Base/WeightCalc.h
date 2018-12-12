@@ -18,7 +18,8 @@ namespace evwgh {
   class WeightCalc
   {    
   public:
-    virtual void                Configure(fhicl::ParameterSet const& pset) = 0;
+    virtual void                Configure(fhicl::ParameterSet const& pset,
+                                          CLHEP::HepRandomEngine&) = 0;
     virtual std::vector<std::vector<double> > GetWeight(art::Event & e) = 0; 
     void                        SetName(std::string name) {fName=name;}
     std::string                 GetName() {return fName;}

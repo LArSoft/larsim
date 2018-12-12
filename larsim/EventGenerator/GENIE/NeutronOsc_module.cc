@@ -92,7 +92,7 @@ public:
 private:
 
   // Additional functions
-  int SelectAnnihilationMode(int pdg_code);
+  int SelectAnnihilationMode(int pdg_code, CLHEP::HepRandomEngine& engine);
 
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
@@ -101,6 +101,7 @@ private:
 
 
 evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
+  : art::EDProducer{p}
 {
   genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
@@ -132,7 +133,10 @@ void evgen::NeutronOsc::produce(art::Event & e)
   // Implementation of required member function here.
   genie::EventRecord * event = new genie::EventRecord;
   int target = 1000180400;  //Only use argon target
-  int decay  = SelectAnnihilationMode(target);
+  art::ServiceHandle<art::RandomNumberGenerator> rng;
+  CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                  moduleDescription().moduleLabel());
+  int decay  = SelectAnnihilationMode(target, engine);
   genie::Interaction * interaction = genie::Interaction::NOsc(target,decay);
   event->AttachSummary(interaction);
   
@@ -151,8 +155,6 @@ void evgen::NeutronOsc::produce(art::Event & e)
   simb::MCTruth truth;
   
   art::ServiceHandle<geo::Geometry> geo;
-  art::ServiceHandle<art::RandomNumberGenerator> rng;
-  CLHEP::HepRandomEngine &engine = rng->getEngine();
   CLHEP::RandFlat flat(engine);
 
   // Find boundary of active volume
@@ -234,7 +236,7 @@ void evgen::NeutronOsc::beginJob()
   // Implementation of optional member function here.
 }
 
-int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)
+int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code, CLHEP::HepRandomEngine& engine)
 {
   // if the mode is set to 'random' (the default), pick one at random!
   if ((int)gOptDecayMode == 0) {
@@ -269,8 +271,6 @@ int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)
     }
 
     // randomly generate a number between 1 and 0
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat flat(engine);
     double p = flat.fire();
 

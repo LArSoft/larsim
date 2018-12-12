@@ -48,32 +48,27 @@ public:
 
 private:
 
-  TF1 *fShapeMomentum;
-  TF1 *fShapeTheta;
-  CLHEP::RandFlat *fFlatRandom;
+  TF1 *fShapeMomentum{nullptr};
+  TF1 *fShapeTheta{nullptr};
+  CLHEP::RandFlat *fFlatRandom{nullptr};
   //size_t fNEvents; // unused
-  double fMass;
   double fTime;
   int    fPDGCode;
+  double fMass;
 };
 
 
 ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
-  : fShapeMomentum(nullptr), fShapeTheta(nullptr), fFlatRandom(nullptr)
+  : EDProducer{p}
+  , fTime{p.get<double>("Time")}
+  , fPDGCode{p.get<int>("PDGCode")}
+  , fMass{TDatabasePDG().GetParticle(fPDGCode)->Mass()}
 {
+  if(fPDGCode != 22 && !fMass) throw std::exception();
+
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
 
-  // Time
-  fTime = p.get<double>("Time");
-
-  // PDGCode
-  fPDGCode = p.get<int>("PDGCode");
-
-  // Mass
-  fMass = TDatabasePDG().GetParticle(fPDGCode)->Mass();
-  if(fPDGCode != 22 && !fMass) throw std::exception();
-  
   //
   // Momentum distribution
   //
@@ -139,7 +134,9 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   // unless overridden in configuration with key "Seed"
   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, p, "Seed");
   art::ServiceHandle<art::RandomNumberGenerator> rng;
-  CLHEP::HepRandomEngine &engine = rng->getEngine();
+  auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                p.get<std::string>("module_label"),
+                                "Seed");
   fFlatRandom = new CLHEP::RandFlat(engine);
 }
 

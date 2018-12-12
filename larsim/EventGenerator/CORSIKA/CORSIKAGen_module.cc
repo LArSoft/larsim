@@ -58,7 +58,7 @@ namespace evgen {
 
    
   private:
-    void openDBs();
+    void openDBs(std::string const& module_label);
     void populateNShowers();
     void populateTOffset();
     void GetSample(simb::MCTruth&);
@@ -97,7 +97,8 @@ namespace evgen {
 namespace evgen{
 
   CORSIKAGen::CORSIKAGen(fhicl::ParameterSet const& p)
-    : fProjectToHeight(p.get< double >("ProjectToHeight",0.)),
+    : EDProducer{p},
+      fProjectToHeight(p.get< double >("ProjectToHeight",0.)),
       fShowerInputFiles(p.get< std::vector< std::string > >("ShowerInputFiles")),
       fShowerFluxConstants(p.get< std::vector< double > >("ShowerFluxConstants")),
       fSampleTime(p.get< double >("SampleTime",0.)),
@@ -122,7 +123,7 @@ namespace evgen{
 
     this->reconfigure(p);
     
-    this->openDBs();
+    this->openDBs(p.get<std::string>("module_label"));
     this->populateNShowers();
     this->populateTOffset();
     
@@ -178,13 +179,15 @@ namespace evgen{
     
   }
   
-  void CORSIKAGen::openDBs(){
+  void CORSIKAGen::openDBs(std::string const& module_label){
     //choose files based on fShowerInputFiles, copy them with ifdh, open them
     // for c2: statement is unused
     //sqlite3_stmt *statement;
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine("gen");
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    module_label,
+                                                    "gen");
     CLHEP::RandFlat flat(engine);
     
     //setup ifdh object
@@ -390,10 +393,11 @@ namespace evgen{
 
     //get rng engine
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine("gen");
+    auto const& module_label = moduleDescription().moduleLabel();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(), module_label, "gen");
     CLHEP::RandFlat flat(engine);
 
-    CLHEP::HepRandomEngine &engine_pois = rng->getEngine("pois");
+    CLHEP::HepRandomEngine &engine_pois = rng->getEngine(art::ScheduleID::first(), module_label, "pois");
     CLHEP::RandPoissonQ randpois(engine_pois);
 
     // get geometry and figure where to project particles to, based on CRYHelper

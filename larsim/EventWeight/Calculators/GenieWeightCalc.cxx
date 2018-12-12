@@ -9,9 +9,6 @@
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
 #include "larsim/EventWeight/Base/WeightCalc.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-
 #include "CLHEP/Random/RandGaussQ.h"
 
 #include "nutools/NuReweight/art/NuReweight.h" //GENIEReweight.h"
@@ -25,14 +22,14 @@ namespace evwgh {
   {
   public:
     GenieWeightCalc();
-    void Configure(fhicl::ParameterSet const& pset);
-    std::vector<std::vector<double> > GetWeight(art::Event & e);
+    void Configure(fhicl::ParameterSet const& pset,
+                   CLHEP::HepRandomEngine& engine) override;
+    std::vector<std::vector<double> > GetWeight(art::Event & e) override;
     
   private:
     // The reweighting utility class:
-    std::vector<rwgt::NuReweight *> reweightVector;
+    std::vector<rwgt::NuReweight> reweightVector;
 
-    CLHEP::RandGaussQ *fGaussRandom;
     std::string fGenieModuleLabel;
 
     // What follows is the list of sereighting parameters present in LArSoft.
@@ -88,25 +85,26 @@ namespace evwgh {
   GenieWeightCalc::GenieWeightCalc()
   {}
 
-  void GenieWeightCalc::Configure(fhicl::ParameterSet const& p)
+  void GenieWeightCalc::Configure(fhicl::ParameterSet const& p,
+                                  CLHEP::HepRandomEngine& engine)
   {
     // Global Config
     fGenieModuleLabel = p.get<std::string> ("genie_module_label");
     fhicl::ParameterSet const &pset = p.get<fhicl::ParameterSet> (GetName());
 
     // Calc Config
-    std::vector<std::string> pars = pset.get<std::vector<std::string>> ("parameter_list");	
-    std::vector<float> parsigmas  = pset.get<std::vector<float>> ("parameter_sigma");	
-    std::string mode              = pset.get<std::string>("mode");
+    auto const pars = pset.get<std::vector<std::string>>("parameter_list");
+    auto const parsigmas = pset.get<std::vector<float>>("parameter_sigma");
+    auto const mode = pset.get<std::string>("mode");
 
     if (pars.size() != parsigmas.size())
       throw cet::exception(__PRETTY_FUNCTION__) << GetName()
             << "::Bad fcl configuration. parameter_list and parameter_sigma need to have same number of parameters." << std::endl;
 
-    int number_of_multisims = pset.get<int> ("number_of_multisims");
+    auto number_of_multisims = pset.get<int>("number_of_multisims");
       
     std::vector<EReweight> erwgh;
-    for (auto & s : pars) {
+    for (auto const& s : pars) {
       if      (s == "NCELaxial") erwgh.push_back(kNCELaxial);
       else if (s == "NCELeta") erwgh.push_back(kNCELeta);
       else if (s == "QEMA") erwgh.push_back(kQEMA);
@@ -155,9 +153,6 @@ namespace evwgh {
     }
       
     //Prepare sigmas
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    fGaussRandom = new CLHEP::RandGaussQ(rng->getEngine(GetName()));
-
     std::vector<std::vector<float>> reweightingSigmas(erwgh.size());
 
     if (mode.find("pm1sigma") != std::string::npos ) { 
@@ -167,7 +162,7 @@ namespace evwgh {
       reweightingSigmas[i].resize(number_of_multisims);
       for (int j = 0; j < number_of_multisims; j ++) {
 	if (mode.find("multisim") != std::string::npos )
-	  reweightingSigmas[i][j] = parsigmas[i]*fGaussRandom->shoot(&rng->getEngine(GetName()),0.,1.);
+          reweightingSigmas[i][j] = parsigmas[i]*CLHEP::RandGaussQ::shoot(&engine, 0., 1.);
         else if (mode.find("pm1sigma") != std::string::npos )
           reweightingSigmas[i][j] = (j == 0 ? 1.: -1.); // j==0 => 1; j==1 => -1 if pm1sigma is specified
 	else
@@ -177,164 +172,151 @@ namespace evwgh {
 
     reweightVector.resize(number_of_multisims);
     
-    for (int weight_point = 0; 
-	 weight_point < number_of_multisims;
-	 weight_point++){
-      
-      reweightVector[weight_point] = new rwgt::NuReweight;
-      
-      for (unsigned int i_reweightingKnob=0;i_reweightingKnob<erwgh.size();i_reweightingKnob++) {
-	std::cout<<GetName() << "::Setting up rwgh " <<weight_point << "\t" << i_reweightingKnob << "\t" << erwgh[i_reweightingKnob] << std::endl; 
+    for (unsigned weight_point = 0, e = reweightVector.size(); weight_point != e; ++weight_point) {
+      auto& driver = reweightVector[weight_point];
+      for (unsigned int i_reweightingKnob = 0; i_reweightingKnob<erwgh.size(); ++i_reweightingKnob) {
+        std::cout << GetName()
+                  << "::Setting up rwgh " << weight_point << "\t" << i_reweightingKnob << "\t" << erwgh[i_reweightingKnob] << std::endl;
 
 	switch (erwgh[i_reweightingKnob]){
 
 	case kNCELaxial:
-          reweightVector[weight_point] -> ReweightNCEL(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightNCEL(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kNCELeta:
-          reweightVector[weight_point] -> ReweightNCEL(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNCEL(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
             
 	case kQEMA:
-	  reweightVector[weight_point]
-	    -> ReweightQEMA(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightQEMA(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kQEVec:
-	  reweightVector[weight_point]
-	    -> ReweightQEVec(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightQEVec(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kResGanged:
-	  //reweightVector[weight_point]
-	  //  -> ReweightResGanged(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kCCResAxial:
-          reweightVector[weight_point] -> ReweightCCRes(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightCCRes(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kCCResVector:
-          reweightVector[weight_point] -> ReweightCCRes(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightCCRes(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
 
 	case kNCResAxial:
-          reweightVector[weight_point] -> ReweightNCRes(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightNCRes(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kNCResVector:
-          reweightVector[weight_point] -> ReweightNCRes(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNCRes(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
 	case kCohMA:
-          reweightVector[weight_point] -> ReweightCoh(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightCoh(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kCohR0:
-          reweightVector[weight_point] -> ReweightCoh(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightCoh(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
         
 	case kNonResRvp1pi:
-	  reweightVector[weight_point]
-	    -> ReweightNonResRvp1pi(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNonResRvp1pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
 	case kNonResRvbarp1pi:
-	  reweightVector[weight_point]
-	    -> ReweightNonResRvbarp1pi(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNonResRvbarp1pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
 	case kNonResRvp2pi:
-	  reweightVector[weight_point]
-	    -> ReweightNonResRvp2pi(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNonResRvp2pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
 	case kNonResRvbarp2pi:
-	  reweightVector[weight_point]
-	    -> ReweightNonResRvbarp2pi(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNonResRvbarp2pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kResDecayGamma:
-          reweightVector[weight_point] -> ReweightResDecay(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0.);
+          driver.ReweightResDecay(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0.);
 	  break;
         case kResDecayEta:
-          reweightVector[weight_point] -> ReweightResDecay(0., reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightResDecay(0., reweightingSigmas[i_reweightingKnob][weight_point], 0.);
           break;
         case kResDecayTheta:
-          reweightVector[weight_point] -> ReweightResDecay(0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightResDecay(0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
 	case kNC:
-	  reweightVector[weight_point]
-	    -> ReweightNC(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightNC(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kDISAth:
-          reweightVector[weight_point] -> ReweightDIS(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0., 0.);
+          driver.ReweightDIS(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0., 0.);
 	  break;
         case kDISBth:
-          reweightVector[weight_point] -> ReweightDIS(0., reweightingSigmas[i_reweightingKnob][weight_point], 0., 0.);
+          driver.ReweightDIS(0., reweightingSigmas[i_reweightingKnob][weight_point], 0., 0.);
           break;
         case kDISCv1u:
-          reweightVector[weight_point] -> ReweightDIS(0., 0., reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightDIS(0., 0., reweightingSigmas[i_reweightingKnob][weight_point], 0.);
           break;
         case kDISCv2u:
-          reweightVector[weight_point] -> ReweightDIS(0., 0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightDIS(0., 0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
 	case kDISnucl:
-	  reweightVector[weight_point]
-	    -> ReweightDISnucl(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightDISnucl(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
         
 	case kAGKYxF:
-      reweightVector[weight_point] -> ReweightAGKY(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightAGKY(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kAGKYpT:
-          reweightVector[weight_point] -> ReweightAGKY(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightAGKY(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
       
         case kFormZone:
-          reweightVector[weight_point] -> ReweightFormZone(reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightFormZone(reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
         case kFermiGasModelKf:
-          reweightVector[weight_point] -> ReweightFGM(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
+          driver.ReweightFGM(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
           break;
         case kFermiGasModelSf:
-          reweightVector[weight_point] -> ReweightFGM(0., reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightFGM(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
         case kIntraNukeNmfp:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightMFP_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightMFP_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukeNcex:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrCEx_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrCEx_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukeNel:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrElas_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrElas_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukeNinel:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrInel_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrInel_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukeNabs:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrAbs_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrAbs_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukeNpi:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrPiProd_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrPiProd_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePImfp:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightMFP_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightMFP_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePIcex:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrCEx_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrCEx_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePIel:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrElas_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrElas_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePIinel:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrInel_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrInel_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePIabs:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrAbs_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrAbs_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         case kIntraNukePIpi:
-          reweightVector[weight_point] -> ReweightIntraNuke(rwgt::fReweightFrPiProd_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          driver.ReweightIntraNuke(rwgt::fReweightFrPiProd_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
         
 	case kNReWeights:
@@ -346,7 +328,7 @@ namespace evwgh {
     // Tell all of the reweight drivers to configure themselves:
     std::cout<< GetName()<<"::Setting up "<<reweightVector.size()<<" reweightcalcs"<<std::endl;
     for(auto & driver : reweightVector){
-      driver -> Configure();
+      driver.Configure();
     }
 
   }
@@ -379,7 +361,7 @@ namespace evwgh {
       for (unsigned int i_weight = 0; 
 	   i_weight < reweightVector.size(); 
 	   i_weight ++){
-	weight[inu][i_weight]= reweightVector[i_weight]-> CalcWeight(*mclist[inu],*glist[inu]);
+        weight[inu][i_weight]= reweightVector[i_weight].CalcWeight(*mclist[inu],*glist[inu]);
       }
     }
     return weight;

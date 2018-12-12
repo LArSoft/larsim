@@ -46,9 +46,9 @@ namespace evgen {
 
       explicit SNNueAr40CCGen(fhicl::ParameterSet const& pset);
 
-      void beginRun(art::Run& run);
+      void beginRun(art::Run& run) override;
 
-      void produce(art::Event& event);
+      void produce(art::Event& event) override;
 
     private:
 
@@ -62,7 +62,8 @@ namespace evgen {
 
   //____________________________________________________________________________
   SNNueAr40CCGen::SNNueAr40CCGen(fhicl::ParameterSet const& pset)
-    : fGenerator(evgen::NueAr40CCGenerator
+    : EDProducer{pset}
+    , fGenerator(evgen::NueAr40CCGenerator
                              (pset.get< fhicl::ParameterSet >("GeneratorAlg")))
   {
 
@@ -100,7 +101,8 @@ namespace evgen {
 
     // Get an engine from the random number generator
     art::ServiceHandle< art::RandomNumberGenerator > randomNumberGenerator;
-    CLHEP::HepRandomEngine &engine = randomNumberGenerator->getEngine();
+    CLHEP::HepRandomEngine &engine = randomNumberGenerator->getEngine(art::ScheduleID::first(),
+                                                                      moduleDescription().moduleLabel());
 
     std::vector<simb::MCTruth> truths = fGenerator.Generate(engine);
 

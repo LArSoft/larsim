@@ -342,7 +342,8 @@ namespace larg4 {
   //----------------------------------------------------------------------
   // Constructor
   LArG4::LArG4(fhicl::ParameterSet const& pset)
-    : fG4Help                (0)
+    : art::EDProducer{pset}
+    , fG4Help                (0)
     , flarVoxelListAction    (0)
     , fparticleListAction    (0)
     , fG4PhysListName        (pset.get< std::string >("G4PhysListName","larg4::PhysicsList"))
@@ -462,13 +463,16 @@ namespace larg4 {
     // create the ionization and scintillation calculator;
     // this is a singleton (!) so it does not make sense
     // to create it in LArVoxelReadoutGeometry
-    IonizationAndScintillation::CreateInstance(rng->getEngine("propagation"));
+    auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                  moduleDescription().moduleLabel(),
+                                  "propagation");
+    IonizationAndScintillation::CreateInstance(engine);
 
     // make a parallel world for each TPC in the detector
     LArVoxelReadoutGeometry::Setup_t readoutGeomSetupData;
     readoutGeomSetupData.readoutSetup.offPlaneMargin = fOffPlaneMargin;
-    readoutGeomSetupData.readoutSetup.propGen
-      = &(rng->getEngine("propagation"));
+    readoutGeomSetupData.readoutSetup.propGen = &engine;
+
     pworlds.push_back(new LArVoxelReadoutGeometry
       ("LArVoxelReadoutGeometry", readoutGeomSetupData)
       );
@@ -599,7 +603,7 @@ namespace larg4 {
     std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordColRefl (new std::vector<sim::OpDetBacktrackerRecord>);
 
     
-    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
+    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt);
 
     //for energy deposits
     std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_TPCActive (new std::vector<sim::SimEnergyDeposit>);

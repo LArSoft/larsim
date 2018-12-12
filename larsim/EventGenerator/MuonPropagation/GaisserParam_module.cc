@@ -92,8 +92,8 @@ namespace evgen {
 
   private:
 
-    void SampleOne(unsigned int   i, simb::MCTruth &mct);   
-    void Sample(simb::MCTruth &mct);        
+    void SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
+    void Sample(simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
 
     std::pair<double,double> GetThetaAndEnergy(double rand1, double rand2);
     void MakePDF();
@@ -175,6 +175,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   GaisserParam::GaisserParam(fhicl::ParameterSet const& pset)
+    : art::EDProducer{pset}
   {
     this->reconfigure(pset);
 
@@ -307,7 +308,11 @@ namespace evgen{
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSingleParticle);
     
-    Sample(truth);
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
+    Sample(truth, engine);
 
     LOG_DEBUG("GaisserParam") << truth;
 
@@ -321,11 +326,8 @@ namespace evgen{
   //____________________________________________________________________________
   // Draw the type, momentum and position of a single particle from the 
   // FCIHL description
-  void GaisserParam::SampleOne(unsigned int i, simb::MCTruth &mct){
+  void GaisserParam::SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine){
 
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
@@ -433,24 +435,22 @@ namespace evgen{
   }
 
   //____________________________________________________________________________
-  void GaisserParam::Sample(simb::MCTruth &mct) 
+  void GaisserParam::Sample(simb::MCTruth &mct, CLHEP::HepRandomEngine& engine)
   {
     switch (fMode) {
     case 0: // List generation mode: every event will have one of each
 	    // particle species in the fPDG array
       for (unsigned int i=0; i<fPDG.size(); ++i) {
-	SampleOne(i,mct);
+        SampleOne(i, mct, engine);
       }//end loop over particles
       break;
     case 1: // Random selection mode: every event will exactly one particle
             // selected randomly from the fPDG array
       {
-	art::ServiceHandle<art::RandomNumberGenerator> rng;
-	CLHEP::HepRandomEngine &engine = rng->getEngine();
 	CLHEP::RandFlat flat(engine);
 
 	unsigned int i=flat.fireInt(fPDG.size());
-	SampleOne(i,mct);
+        SampleOne(i, mct, engine);
       }
       break;
     default:

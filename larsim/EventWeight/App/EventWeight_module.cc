@@ -49,63 +49,43 @@ namespace evwgh {
     EventWeight & operator = (EventWeight const &) = delete;
     EventWeight & operator = (EventWeight &&) = delete;
   
+  private:
     // Required functions.
     void produce(art::Event & e) override;
   
     //Optional functions.
     void endJob() override;
   
-  private:
-  
     WeightManager _wgt_manager;
-  
-    //std::map<std::string, Weight_t*> fWeightCalcMap;  
     std::string fGenieModuleLabel;
-  
   };
   
   EventWeight::EventWeight(fhicl::ParameterSet const & p) 
-  // Initialize member data here.
+    : EDProducer{p}
+    , fGenieModuleLabel{p.get<std::string>("genie_module_label", "generator")}
   {
-  
-    size_t n_func = _wgt_manager.Configure(p, *this);//p.get<fhicl::ParameterSet> ("WeightManagerConfig"), *this);
-  
-    fGenieModuleLabel = p.get<std::string> ("genie_module_label", "generator");
-  
-    // Call appropriate produces<>() functions here.
+    auto const n_func = _wgt_manager.Configure(p, *this);
     if ( n_func > 0 ) 
       produces<std::vector<MCEventWeight> >();
-  
   }
   
   void EventWeight::produce(art::Event & e)
   {
     // Implementation of required member function here.
-    std::unique_ptr<std::vector<MCEventWeight> > mcwghvec(new std::vector<MCEventWeight>);
+    auto mcwghvec = std::make_unique<std::vector<MCEventWeight>>();
   
     // Get the MC generator information out of the event       
     // these are all handles to mc information.
-    art::Handle< std::vector<simb::MCTruth> > mcTruthHandle;
     std::vector<art::Ptr<simb::MCTruth> > mclist;
   
       // Actually go and get the stuff
-      e.getByLabel(fGenieModuleLabel, mcTruthHandle);
-      if (!mcTruthHandle.isValid()) {
-        throw cet::exception(__FUNCTION__) << "Can't find GENIE module label with name " << fGenieModuleLabel << std::endl;
-      }
+    auto const mcTruthHandle = e.getValidHandle<std::vector<simb::MCTruth>>(fGenieModuleLabel);
       art::fill_ptr_vector(mclist, mcTruthHandle);    
   
-  
-    //
     // Loop over all neutrinos in this event
-    // 
-    for (unsigned int inu = 0; inu < mclist.size(); inu++) 
-    { 
-  
-      MCEventWeight mcwgh = _wgt_manager.Run(e, inu);
-  
-      (*mcwghvec).push_back(mcwgh);
-  
+    for (unsigned int inu = 0; inu < mclist.size(); ++inu) {
+      auto const mcwgh = _wgt_manager.Run(e, inu);
+      mcwghvec->push_back(mcwgh);
     }
   
     e.put(std::move(mcwghvec));
@@ -113,7 +93,6 @@ namespace evwgh {
 
   void EventWeight::endJob()
   {
-
     // Get the map from sting to Weight_t from the manager
     std::map<std::string, Weight_t*> weightCalcMap = _wgt_manager.GetWeightCalcMap();
 

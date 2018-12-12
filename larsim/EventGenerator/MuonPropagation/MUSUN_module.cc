@@ -222,12 +222,12 @@ namespace evgen {
 
    private:
 
-    void SampleOne(unsigned int   i, simb::MCTruth &mct);   
+    void SampleOne(unsigned int   i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
  
     void initialization( double theta1, double theta2, double phi1, double phi2,
 			 int figflag, double s_hor, double s_ver1, double s_ver2, double &FI );
 
-    void sampling( double &E, double &theta, double &phi, double &dep );
+    void sampling( double &E, double &theta, double &phi, double &dep, CLHEP::HepRandomEngine& engine );
 
 
     static const int kGAUS = 1;    
@@ -331,6 +331,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   MUSUN::MUSUN(fhicl::ParameterSet const& pset)
+    : art::EDProducer{pset}
   {
     this->reconfigure(pset);
 
@@ -531,7 +532,12 @@ namespace evgen{
     truth.SetOrigin(simb::kSingleParticle);
     
     ++NEvents;
-    SampleOne(NEvents,truth);
+
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
+    SampleOne(NEvents, truth, engine);
 
     LOG_DEBUG("MUSUN") << truth;
 
@@ -546,11 +552,8 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   // Draw the type, momentum and position of a single particle from the 
   // FCIHL description
-  void MUSUN::SampleOne(unsigned int i, simb::MCTruth &mct){
-
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+  void MUSUN::SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine)
+  {
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
@@ -560,7 +563,7 @@ namespace evgen{
     dep    = 0;
     Time   = 0;
     
-    sampling( Energy, theta, phi, dep );
+    sampling( Energy, theta, phi, dep, engine );
 
     theta = theta* M_PI/180;
 
@@ -885,11 +888,8 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   //  sampling
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::sampling( double &E, double &theta, double &phi, double &dep )
+  void MUSUN::sampling( double &E, double &theta, double &phi, double &dep, CLHEP::HepRandomEngine& engine )
   {
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
     CLHEP::RandFlat   flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 

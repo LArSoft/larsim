@@ -172,7 +172,8 @@ PhotonLibraryPropagation::~PhotonLibraryPropagation()
 }
 
 PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
-  : fRiseTimeFast{p.get<double>("RiseTimeFast", 0.0)}
+  : art::EDProducer{p}
+  , fRiseTimeFast{p.get<double>("RiseTimeFast", 0.0)}
   , fRiseTimeSlow{p.get<double>("RiseTimeSlow", 0.0)}
   , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
   , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
@@ -194,9 +195,10 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   art::ServiceHandle<sim::LArG4Parameters> lgp;
   auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
   art::ServiceHandle<art::RandomNumberGenerator> rng;
-  auto& engine_photon = rng->getEngine("photon");
+  auto const& module_label = moduleDescription().moduleLabel();
+  auto& engine_photon = rng->getEngine(art::ScheduleID::first(), module_label, "photon");
   CLHEP::RandPoissonQ randpoisphot{engine_photon};
-  auto& engine_scinttime = rng->getEngine("scinttime");
+  auto& engine_scinttime = rng->getEngine(art::ScheduleID::first(), module_label, "scinttime");
   CLHEP::RandFlat randflatscinttime{engine_scinttime};
   auto const nOpChannels = static_cast<int>(pvs->NOpChannels());
   fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());

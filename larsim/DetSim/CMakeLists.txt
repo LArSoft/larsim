@@ -1,4 +1,3 @@
-	
 art_make( NO_PLUGINS
           
           LIB_LIBRARIES larevt_Filters
@@ -95,6 +94,7 @@ simple_plugin(RecompressRawDigits "module"
                 ${ART_FRAMEWORK_CORE}
                 ${ART_FRAMEWORK_PRINCIPAL}
                 ${MF_MESSAGELOGGER}
+                art_Persistency_Provenance
                 ${FHICLCPP}
                 cetlib cetlib_except
 )

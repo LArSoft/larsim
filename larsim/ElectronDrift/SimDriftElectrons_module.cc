@@ -180,6 +180,7 @@ namespace detsim {
 
   //-------------------------------------------------
   SimDriftElectrons::SimDriftElectrons(fhicl::ParameterSet const& pset)
+    : art::EDProducer{pset}
   {
     this->reconfigure(pset);
 
@@ -226,7 +227,9 @@ namespace detsim {
 
     // Set up the gaussian generator.
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine& engine = rng->getEngine();
+    CLHEP::HepRandomEngine& engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel(),
+                                                    {});
     fRandGauss = std::unique_ptr<CLHEP::RandGauss>(new CLHEP::RandGauss(engine));
 
     // Define the physical constants we'll use.
