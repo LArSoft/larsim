@@ -28,49 +28,7 @@ art_make(
                         ${FHICLCPP}
                         cetlib cetlib_except
                         ${CLHEP}
-#			${GFWMSG}
-			${GFWALG}		
-			${GFWPARDAT}
-			${GPHDISXS}
-			${GPHDISXS}
-			${GPHCHMXS}
-			${GPHCOHEG} ${GPHCOHXS}
-			${GPHDFRCEG}
-			${GPHDISEG}
-			${GPHXSIG}
-			${GPHDCY}
-			${GPHQELXS}
-			${GPHQELXS}
-			${GFWGHEP}
-			${GFWEG}
-			${GPHCMN}
-			${GFWEG}
-			${GPHRESXS}
-			${GPHHADTRANSP}
-			${GPHHADNZ}
-			${GFWINT}
-			${GPHQELXS}
-			${GPHMNUCEG} ${GPHMNUCXS}
-			${GPHAMNGEG} ${GPHAMNGXS}
-			${GPHNUELEG} ${GPHNUELXS}
-			${GFWNTP}
-			${GPHNUCLST}
-			${GFWNUM}
-			${PHDISXS}
-			${GFWPARDAT}
-			${GPHPDF}
-			${GPHQELEG}
-			${GPHRESEG} ${GPHRESXS}
-			${GFWREG}
-			${GPHRESXS}
-			${GFWUTL}
-			${GTLGEO}
-			${GTLFLX}
-			${GPHMEL}
-			${GTLREW}
-			${GPHNDCY}
-			${GPHNNBAROSC}
-			${GFWMSG}
+                        ${GENIE_LIB_LIST}
                         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
                         ${ROOT_BASIC_LIB_LIST}
                         ${ROOT_EG}
