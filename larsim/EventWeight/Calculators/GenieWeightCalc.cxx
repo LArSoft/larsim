@@ -12,6 +12,8 @@
 #include "CLHEP/Random/RandGaussQ.h"
 
 #include "nutools/NuReweight/art/NuReweight.h" //GENIEReweight.h"
+#include "nutools/NuReweight/GENIEReweight.h"
+#include "nutools/NuReweight/ReweightLabels.h"
 
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
