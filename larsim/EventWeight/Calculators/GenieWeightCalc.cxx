@@ -69,17 +69,25 @@ namespace evwgh {
                     kFermiGasModelSf,  // Choice of model (sigma = 0 => FermiGas; sigma = 1 => SF (spectral function))
                     kIntraNukeNmfp,    // Nucleon mean free path (total rescattering probability)
                     kIntraNukeNcex,    // Nucleon charge exchange probability
+
                     // Nucleon elastic fate removed in hA2018 for GENIE v3
                     // -- S. Gardiner, 19 December 2018
-                    //kIntraNukeNel,     // Nucleon elastic reaction probability
+                    #ifdef GENIE_PRE_R3
+                    kIntraNukeNel,     // Nucleon elastic reaction probability
+                    #endif
+
                     kIntraNukeNinel,   // Nucleon inelastic reaction probability
                     kIntraNukeNabs,    // Nucleon absorption probability
                     kIntraNukeNpi,     // Nucleon pi-production probability
                     kIntraNukePImfp,   // Pi mean free path (total rescattering probability)
                     kIntraNukePIcex,   // Pi charge exchange probability
+
                     // Pion elastic fate removed in hA2018 for GENIE v3
                     // -- S. Gardiner, 19 December 2018
-                    //kIntraNukePIel,    // Pi elastic reaction probability
+                    #ifdef GENIE_PRE_R3
+                    kIntraNukePIel,    // Pi elastic reaction probability
+                    #endif
+
                     kIntraNukePIinel,  // Pi inelastic reaction probability
                     kIntraNukePIabs,   // Pi absorption probability
                     kIntraNukePIpi,    // Pi pi-production probability
@@ -151,8 +159,10 @@ namespace evwgh {
       else if (s == "IntraNukePIabs") erwgh.push_back(kIntraNukePIabs);
       else if (s == "IntraNukePIpi") erwgh.push_back(kIntraNukePIpi);
       // Elastic fates for nucleons and pions removed in hA2018 for GENIE v3
-      //else if (s == "IntraNukeNel") erwgh.push_back(kIntraNukeNel);
-      //else if (s == "IntraNukePIel") erwgh.push_back(kIntraNukePIel);
+      #ifdef GENIE_PRE_R3
+      else if (s == "IntraNukeNel") erwgh.push_back(kIntraNukeNel);
+      else if (s == "IntraNukePIel") erwgh.push_back(kIntraNukePIel);
+      #endif
       else {
 	throw cet::exception(__PRETTY_FUNCTION__) << GetName()
               << "::Physical process " << s << " you requested is not available to reweight." << std::endl;
@@ -288,7 +298,6 @@ namespace evwgh {
         case kFermiGasModelSf:
           driver.ReweightFGM(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-
         case kIntraNukeNmfp:
           driver.ReweightIntraNuke(rwgt::fReweightMFP_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
@@ -319,7 +328,15 @@ namespace evwgh {
         case kIntraNukePIpi:
           driver.ReweightIntraNuke(rwgt::fReweightFrPiProd_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-
+        // Elastic fates for nucleons and pions removed in hA2018 for GENIE v3
+        #ifdef GENIE_PRE_R3
+        case kIntraNukeNel:
+          driver.ReweightIntraNuke(rwgt::fReweightFrElas_N, reweightingSigmas[i_reweightingKnob][weight_point]);
+          break;
+        case kIntraNukePIel:
+          driver.ReweightIntraNuke(rwgt::fReweightFrElas_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
+          break;
+        #endif
 	case kNReWeights:
 	  break;
 	}
