@@ -88,6 +88,7 @@ include(BuildPlugins)
 # The top-level nutools CMakeLists.txt does this as well, but I don't think
 # that we can access the result of that version check in the larsim build.
 parse_ups_version( ${GENIE_VERSION} )
+include_directories ( $ENV{GENIE_INC}/GENIE )
 if( ${VMAJ} LESS 3 )
 
   add_definitions(-DGENIE_PRE_R3)

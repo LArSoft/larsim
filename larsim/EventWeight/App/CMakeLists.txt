@@ -6,6 +6,7 @@ art_make(LIBRARY_NAME     larsim_EventWeight
          MODULE_LIBRARIES larsim_EventWeight_Base
                           larsim_EventWeight_Calculators
 			  ${MF_MESSAGELOGGER}
+			  ${GENIE_LIB_LIST}
                      	  
 	)
 

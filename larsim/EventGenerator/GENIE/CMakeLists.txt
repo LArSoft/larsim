@@ -1,7 +1,7 @@
 
 cet_add_compiler_flags( CXX -DHIDE_GENIE_LOG_XXX )
 
-include_directories ( $ENV{GENIE_INC}/GENIE $ENV{LOG4CPP_INC} )
+include_directories ( $ENV{LOG4CPP_INC} )
 
 art_make( 
           MODULE_LIBRARIES 
