@@ -37,6 +37,7 @@ private:
   // Declare member data here.
   art::InputTag fMCParticleLabel;
   art::InputTag fSimChannelLabel;
+  bool fUseSimEnergyDeposit;
 
   ::sim::MCRecoPart fPart;
   ::sim::MCRecoEdep fEdep;
@@ -61,6 +62,8 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
     fMCParticleLabel = pset.get<art::InputTag>("G4ModName","largeant");
     fSimChannelLabel = pset.get<art::InputTag>("G4ModName","largeant");
   }
+
+  fUseSimEnergyDeposit = pset.get<bool>("UseSimEnergyDeposit",false);
 
   produces< std::vector< sim::MCShower> >();
   produces< std::vector< sim::MCTrack>  >();
@@ -90,16 +93,30 @@ void MCReco::produce(art::Event & evt)
     orig_array.push_back(mct->Origin());
   }
 
-  // Retrieve SimChannel
-  art::Handle<std::vector<sim::SimChannel> > schHandle;
-  evt.getByLabel(fSimChannelLabel,schHandle);
-  if(!schHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimChannel";
-
   const std::vector<simb::MCParticle>& mcp_array(*mcpHandle);
   fPart.AddParticles(mcp_array,orig_array);
 
-  const std::vector<sim::SimChannel>&  sch_array(*schHandle);
-  fEdep.MakeMCEdep(sch_array);
+
+  // change implemented by David Caratelli to allow for MCRECO to run without SimChannels and using
+  // SimEnergyDeposits instead
+  if (fUseSimEnergyDeposit == true) {
+    // Retrieve SimEnergyDeposit
+    art::Handle<std::vector<sim::SimEnergyDeposit> > sedHandle;
+    evt.getByLabel(fSimChannelLabel,sedHandle);
+    if(!sedHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimEnergyDeposit";
+    
+    const std::vector<sim::SimEnergyDeposit>&  sed_array(*sedHandle);
+    fEdep.MakeMCEdep(sed_array);
+  }
+  else {
+    // Retrieve SimChannel
+    art::Handle<std::vector<sim::SimChannel> > schHandle;
+    evt.getByLabel(fSimChannelLabel,schHandle);
+    if(!schHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimChannel";
+    
+    const std::vector<sim::SimChannel>&  sch_array(*schHandle);
+    fEdep.MakeMCEdep(sch_array);
+  }
 
   //Add MCShowers and MCTracks to the event 
   evt.put(fMCSAlg.Reconstruct(fPart,fEdep));
