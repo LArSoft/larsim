@@ -148,7 +148,7 @@ void evgen::NeutronOsc::produce(art::Event & e)
 //  std::cout<<"initState = "<<initState.AsString()<<std::endl;
 //  const genie::ProcessInfo &procInfo = inter->ProcInfo();
 //  std::cout<<"procInfo = "<<procInfo.AsString()<<std::endl;
-  LOG_DEBUG("NeutronOsc")
+  MF_LOG_DEBUG("NeutronOsc")
     << "Generated event: " << *event;
 
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);

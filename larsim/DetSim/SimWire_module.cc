@@ -170,7 +170,7 @@ namespace detsim{
     for(unsigned int i = 0; i < fNoise.size(); ++i) fNoise[i].clear();
     fNoise.clear();
 
-    LOG_WARNING("SimWire") << "SimWire is an example module that works for the "
+    MF_LOG_WARNING("SimWire") << "SimWire is an example module that works for the "
 			   << "MicroBooNE detector.  Each experiment should implement "
 			   << "its own version of this module to simulate electronics "
 			   << "response.";

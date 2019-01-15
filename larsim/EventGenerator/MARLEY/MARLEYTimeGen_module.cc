@@ -810,7 +810,7 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
       << "Invalid sampling mode \"" << samp_mode_str << "\""
       << " specified for the MARLEYTimeGen module.";
 
-  LOG_INFO("MARLEYTimeGen") << fNeutrinosPerEvent << " neutrino vertices"
+  MF_LOG_INFO("MARLEYTimeGen") << fNeutrinosPerEvent << " neutrino vertices"
     << " will be generated for each art::Event using the \"" << samp_mode_str
     << "\" sampling mode.";
 
@@ -929,7 +929,7 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
       false, lines_checked), line_num += lines_checked, !line.empty() )
     {
       if (found_end) {
-        LOG_WARNING("MARLEYTimeGen") << "Trailing content after last time"
+        MF_LOG_WARNING("MARLEYTimeGen") << "Trailing content after last time"
           << " bin found on line " << line_num << " of the spectrum file "
           << full_spectrum_file_name;
       }
@@ -986,7 +986,7 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
 
       make_final_timefit(last_bin_right_edge);
 
-      LOG_WARNING("MARLEYTimeGen") << "Missing right"
+      MF_LOG_WARNING("MARLEYTimeGen") << "Missing right"
       << " edge for the final time bin in the spectrum file "
       << full_spectrum_file_name << ". Assuming a width of "
       << delta_t_bin << " s for the final bin.";
@@ -1044,7 +1044,7 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
       << " in evgen::MarleyTimeGen::reconfigure()";
   }
 
-  LOG_INFO("MARLEYTimeGen") << "The flux-averaged total cross section"
+  MF_LOG_INFO("MARLEYTimeGen") << "The flux-averaged total cross section"
     << " predicted by MARLEY for the current supernova spectrum is "
     << fFluxAveragedCrossSection << " fm^2";
 

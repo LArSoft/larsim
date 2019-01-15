@@ -289,7 +289,7 @@ namespace evgen{
       SampleOne(i,truth);
     }//end loop over nuclides
 
-    LOG_DEBUG("RadioGen") << truth;
+    MF_LOG_DEBUG("RadioGen") << truth;
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
     return;

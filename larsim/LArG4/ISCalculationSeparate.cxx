@@ -126,7 +126,7 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
 
-    LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
+    MF_LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
 				       << " MeV deposited with "     << recomb 
 				       << " recombination: "         << fNumIonElectrons;
 
@@ -142,7 +142,7 @@ namespace larg4{
 
     if(fScintByParticleType){
 
-      LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
+      MF_LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
 
       // Get the definition of the current particle
       G4ParticleDefinition *pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
@@ -220,7 +220,7 @@ namespace larg4{
       fVisibleEnergyDeposition = 0.0; //This is set to zero because I have not made a correct implimentation of this value for anything but EMSaturation.
     }
 
-    LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
+    MF_LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)

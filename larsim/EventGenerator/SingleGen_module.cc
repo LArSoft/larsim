@@ -749,7 +749,7 @@ namespace evgen{
     truth.SetOrigin(simb::kSingleParticle);
     Sample(truth);
 
-    LOG_DEBUG("SingleGen") << truth;
+    MF_LOG_DEBUG("SingleGen") << truth;
 
     truthcol->push_back(truth);
 

@@ -539,7 +539,7 @@ namespace evgen{
                                                     moduleDescription().moduleLabel());
     SampleOne(NEvents, truth, engine);
 
-    LOG_DEBUG("MUSUN") << truth;
+    MF_LOG_DEBUG("MUSUN") << truth;
 
     truthcol->push_back(truth);
 

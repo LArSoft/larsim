@@ -314,7 +314,7 @@ namespace evgen{
                                                     moduleDescription().moduleLabel());
     Sample(truth, engine);
 
-    LOG_DEBUG("GaisserParam") << truth;
+    MF_LOG_DEBUG("GaisserParam") << truth;
 
     truthcol->push_back(truth);
 

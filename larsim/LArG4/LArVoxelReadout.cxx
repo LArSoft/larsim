@@ -86,7 +86,7 @@ namespace larg4 {
     bSingleTPC = true;
     fCstat = cryostat;
     fTPC = tpc;
-    LOG_DEBUG("LArVoxelReadout")
+    MF_LOG_DEBUG("LArVoxelReadout")
       << GetName() << "covers C=" << fCstat << " T=" << fTPC;
   } // LArVoxelReadout::SetSingleTPC()
 
@@ -94,7 +94,7 @@ namespace larg4 {
     bSingleTPC = false;
     fCstat = 0;
     fTPC = 0;
-    LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
+    MF_LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
   } // LArVoxelReadout::SetDiscoverTPC()
   
   
@@ -120,7 +120,7 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
     fSkipWireSignalInTPCs  = fLgpHandle->SkipWireSignalInTPCs();
 
-    LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
+    MF_LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
@@ -266,7 +266,7 @@ namespace larg4 {
             throw cet::exception
               ("LArG4") << "No TPC ID found in LArVoxelReadout::ProcessHits()";
           } // if
-          LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
+          MF_LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
         } // if more than one TPC
         
         // Note that if there is no particle ID for this energy deposit, the
@@ -418,7 +418,7 @@ namespace larg4 {
       // if we have no electrons (too small energy or too large recombination)
       // we are done already here
       if (nIonizedElectrons <= 0) {
-        LOG_DEBUG("LArVoxelReadout")
+        MF_LOG_DEBUG("LArVoxelReadout")
           << "No electrons drifted to readout, " << energy << " MeV lost.";
         return;
       }

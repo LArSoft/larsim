@@ -251,7 +251,7 @@ namespace detsim {
     fLongitudinalDiffusion = paramHandle->LongitudinalDiffusion(); // cm^2/ns units
     fTransverseDiffusion   = paramHandle->TransverseDiffusion(); // cm^2/ns units
 
-    LOG_DEBUG("SimDriftElectrons")  << " e lifetime (ns): "        << fElectronLifetime
+    MF_LOG_DEBUG("SimDriftElectrons")  << " e lifetime (ns): "        << fElectronLifetime
 				    << "\n Temperature (K): "     << detprop->Temperature()
 				    << "\n Drift velocity (cm/ns): "  << 1./fRecipDriftVel[0]
 				    <<" "<<1./fRecipDriftVel[1]<<" "<<1./fRecipDriftVel[2];
@@ -451,7 +451,7 @@ namespace detsim {
 	// if we have no electrons (too small energy or too large recombination)
 	// we are done already here
 	if (nIonizedElectrons <= 0) {
-	  LOG_DEBUG("SimDriftElectrons")
+	  MF_LOG_DEBUG("SimDriftElectrons")
 	    << "step "// << energyDeposit << "\n"
 	    << "No electrons drifted to readout, " << energy << " MeV lost.";
 	  continue;

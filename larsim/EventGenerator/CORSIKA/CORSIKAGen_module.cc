@@ -237,7 +237,7 @@ namespace evgen{
       mf::LogInfo("CorsikaGen")
         << "Fetching: "<<selectedflist[i].first<<" "<<selectedflist[i].second<<"\n";
       std::string fetchedfile(fIFDH->fetchInput(selectedflist[i].first));
-      LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile;
+      MF_LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile;
       locallist.push_back(fetchedfile);
     }
     
@@ -438,7 +438,7 @@ namespace evgen{
         //build and do query to get nshowers
         double thisrnd=flat(); //need a new random number for each query
         TString kthisStatement=TString::Format(kStatement.Data(),thisrnd,nShowerQry,thisrnd);
-        LOG_DEBUG("CORSIKAGen")<<"Executing: "<<kthisStatement;
+        MF_LOG_DEBUG("CORSIKAGen")<<"Executing: "<<kthisStatement;
         if ( sqlite3_prepare(fdb[i], kthisStatement.Data(), -1, &statement, 0 ) == SQLITE_OK ){
           int res=0;
           //loop over database rows, pushing particles into mctruth object

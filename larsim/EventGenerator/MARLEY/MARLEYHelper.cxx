@@ -69,7 +69,7 @@ evgen::MARLEYHelper::MARLEYHelper(
   }
 
   // Log initialization information from the MARLEY generator
-  LOG_INFO(fHelperName) << fMarleyLogStream.str();
+  MF_LOG_INFO(fHelperName) << fMarleyLogStream.str();
   fMarleyLogStream = std::stringstream();
 
   // Do any needed setup of the MARLEY class dictionaries
@@ -163,7 +163,7 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(
   // stringstream and forward them to the messagefacility logger
   std::string line;
   while(std::getline(fMarleyLogStream, line)) {
-    LOG_INFO(fHelperName) << line;
+    MF_LOG_INFO(fHelperName) << line;
   }
 
   // Reset the MARLEY log stream
@@ -234,7 +234,7 @@ void evgen::MARLEYHelper::reconfigure(
   }
 
   // Create a new MARLEY configuration based on the JSON parameters
-  LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
+  MF_LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
     " the JSON configuration\n" << json.dump_string() << '\n';
   marley::RootJSONConfig config(json);
 
@@ -261,7 +261,7 @@ void evgen::MARLEYHelper::load_marley_dictionaries()
   // for the executable (src/marley.cc). If you change how this
   // code works, please sync changes with the executable as well.
   if (gROOT->GetVersionInt() >= 60000) {
-    LOG_INFO("MARLEYHelper " + fHelperName) << "ROOT 6 or greater"
+    MF_LOG_INFO("MARLEYHelper " + fHelperName) << "ROOT 6 or greater"
       << " detected. Loading class information\nfrom headers"
       << " \"marley/Particle.hh\" and \"marley/Event.hh\"";
     TInterpreter::EErrorCode* ec = new TInterpreter::EErrorCode();
