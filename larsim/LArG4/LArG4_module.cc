@@ -355,8 +355,8 @@ namespace larg4 {
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
     , fSparsifyTrajectories  (pset.get< bool        >("SparsifyTrajectories",false)         )
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}
-                ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed")}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>{}
+                ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed"))
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
