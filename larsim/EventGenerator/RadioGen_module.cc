@@ -28,8 +28,6 @@
 //             fix to something that really deserves a more
 //             elegant and comprehensive solution.
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_RADIOLOGICAL
-#define EVGEN_RADIOLOGICAL
 
 // C++ includes.
 #include <iostream>
@@ -93,20 +91,15 @@ namespace evgen {
   /// Module to generate particles created by radiological decay, patterend off of SingleGen
   /// Currently it generates only in rectangular prisms oriented along the x,y,z axes
 
-
-
   class RadioGen : public art::EDProducer {
-
   public:
     explicit RadioGen(fhicl::ParameterSet const& pset);
-    virtual ~RadioGen();
 
+  private:
     // This is called for each event.
     void produce(art::Event& evt);
     void beginRun(art::Run& run);
     void reconfigure(fhicl::ParameterSet const& p);
-
-  private:
 
     typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
     typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
@@ -116,7 +109,7 @@ namespace evgen {
 
     TLorentzVector dirCalc(double p, double m);
 
-    void readfile(std::string nuclide, std::string filename);
+    void readfile(std::string nuclide, std::string const& filename);
     void samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p);
 
     void Ar42Gamma2(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods);
@@ -125,7 +118,7 @@ namespace evgen {
     void Ar42Gamma5(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods);
 
     // recoded so as to use the LArSoft-managed random number generator
-    double samplefromth1d(TH1D *hist);
+    double samplefromth1d(TH1D& hist);
 
     // itype = pdg code:  1000020040: alpha.  itype=11: beta. -11: positron,  itype=22: gamma.  -1: error
     // t is the kinetic energy in GeV  (= E-m)
@@ -156,21 +149,23 @@ namespace evgen {
     // const double gevperamu = 0.931494061;
     // TGenPhaseSpace rg;  // put this here so we don't constantly construct and destruct it
 
-    const double m_e = 0.000510998928;  // mass of electron in GeV
-    const double m_alpha = 3.727379240; // mass of an alpha particle in GeV
-    const double m_neutron = 0.9395654133; // mass of a neutron in GeV
-
     std::vector<std::string> spectrumname;
-    std::vector<TH1D*> alphaspectrum;
+    std::vector<std::unique_ptr<TH1D>> alphaspectrum;
     std::vector<double> alphaintegral;
-    std::vector<TH1D*> betaspectrum;
+    std::vector<std::unique_ptr<TH1D>> betaspectrum;
     std::vector<double> betaintegral;
-    std::vector<TH1D*> gammaspectrum;
+    std::vector<std::unique_ptr<TH1D>> gammaspectrum;
     std::vector<double> gammaintegral;
-    std::vector<TH1D*> neutronspectrum;
+    std::vector<std::unique_ptr<TH1D>> neutronspectrum;
     std::vector<double> neutronintegral;
-    cet::exempt_ptr<CLHEP::HepRandomEngine> fEngine{nullptr};
+    CLHEP::HepRandomEngine& fEngine;
   };
+}
+
+namespace {
+  constexpr double m_e = 0.000510998928;  // mass of electron in GeV
+  constexpr double m_alpha = 3.727379240; // mass of an alpha particle in GeV
+  constexpr double m_neutron = 0.9395654133; // mass of a neutron in GeV
 }
 
 namespace evgen{
@@ -178,50 +173,27 @@ namespace evgen{
   //____________________________________________________________________________
   RadioGen::RadioGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
-  {
-
-    this->reconfigure(pset);
-
+    , fNuclide {pset.get< std::vector<std::string>>("Nuclide")}
+    , fMaterial{pset.get< std::vector<std::string>>("Material")}
+    , fBq{pset.get< std::vector<double> >("BqPercc")}
+    , fT0{pset.get< std::vector<double> >("T0")}
+    , fT1{pset.get< std::vector<double> >("T1")}
+    , fX0{pset.get< std::vector<double> >("X0")}
+    , fY0{pset.get< std::vector<double> >("Y0")}
+    , fZ0{pset.get< std::vector<double> >("Z0")}
+    , fX1{pset.get< std::vector<double> >("X1")}
+    , fY1{pset.get< std::vector<double> >("Y1")}
+    , fZ1{pset.get< std::vector<double> >("Z1")}
+    , fIsFirstSignalSpecial{pset.get< bool >("IsFirstSignalSpecial", false)}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, pset, "Seed");
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    auto& engine = rng->getEngine(art::ScheduleID::first(),
-                                  pset.get<std::string>("module_label"));
-    fEngine = cet::make_exempt_ptr(&engine);
-
+    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}
+          ->createEngine(*this, pset, "Seed")}
+  {
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
-  }
-
-  //____________________________________________________________________________
-  RadioGen::~RadioGen()
-  {
-  }
-
-  //____________________________________________________________________________
-  void RadioGen::reconfigure(fhicl::ParameterSet const& p)
-  {
-    // do not put seed in reconfigure because we don't want to reset
-    // the seed midstream -- same as SingleGen
-
-    fNuclide       = p.get< std::vector<std::string>>("Nuclide");
-    fMaterial      = p.get< std::vector<std::string>>("Material");
-    fBq            = p.get< std::vector<double> >("BqPercc");
-    fT0            = p.get< std::vector<double> >("T0");
-    fT1            = p.get< std::vector<double> >("T1");
-    fX0            = p.get< std::vector<double> >("X0");
-    fY0            = p.get< std::vector<double> >("Y0");
-    fZ0            = p.get< std::vector<double> >("Z0");
-    fX1            = p.get< std::vector<double> >("X1");
-    fY1            = p.get< std::vector<double> >("Y1");
-    fZ1            = p.get< std::vector<double> >("Z1");
-    fIsFirstSignalSpecial      = p.get< bool >("IsFirstSignalSpecial", false);
-
     // check for consistency of vector sizes
-
     unsigned int nsize = fNuclide.size();
     if (  fMaterial.size() != nsize ) throw cet::exception("RadioGen") << "Different size Material vector and Nuclide vector\n";
     if (  fBq.size() != nsize ) throw cet::exception("RadioGen") << "Different size Bq vector and Nuclide vector\n";
@@ -241,8 +213,8 @@ namespace evgen{
       else if(nuclideName=="40K"  ){readfile("40K","Potassium_40.root") ;}
       else if(nuclideName=="232Th"){readfile("232Th","Thorium_232.root");}
       else if(nuclideName=="238U" ){readfile("238U","Uranium_238.root") ;}
-      else if(nuclideName=="222Rn"){continue;} //Rn222 is handeled separately later
-      else if(nuclideName=="59Ni"){continue;} //Rn222 is handeled separately later
+      else if(nuclideName=="222Rn"){continue;} //Rn222 is handled separately later
+      else if(nuclideName=="59Ni"){continue;} //Rn222 is handled separately later
       else if(nuclideName=="42Ar" ){
         readfile("42Ar_1", "Argon_42_1.root"); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
         readfile("42Ar_2", "Argon_42_2.root"); //This allows us to know which decay chain to follow for the dexcitation gammas.
@@ -257,27 +229,24 @@ namespace evgen{
         readfile(nuclideName,searchName);
       }
     }
+  }
 
-    return;
+  //____________________________________________________________________________
+  void RadioGen::reconfigure(fhicl::ParameterSet const& p)
+  {
   }
 
   //____________________________________________________________________________
   void RadioGen::beginRun(art::Run& run)
   {
-
     // grab the geometry object to see what geometry we are using
-
     art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
-    run.put(std::move(runcol));
-
-    return;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
   //____________________________________________________________________________
   void RadioGen::produce(art::Event& evt)
   {
-
     ///unique_ptr allows ownership to be transferred to the art::Event after the put statement
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
 
@@ -292,21 +261,18 @@ namespace evgen{
     MF_LOG_DEBUG("RadioGen") << truth;
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
-    return;
   }
 
   //____________________________________________________________________________
   // Generate radioactive decays per nuclide per volume according to the FCL parameters
 
-  void RadioGen::SampleOne(unsigned int i, simb::MCTruth &mct){
-
+  void RadioGen::SampleOne(unsigned int i, simb::MCTruth &mct)
+  {
     art::ServiceHandle<geo::Geometry> geo;
     TGeoManager *geomanager = geo->ROOTGeoManager();
 
-    // get the random number generator service and make some CLHEP generators
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::RandFlat     flat(*fEngine);
-    CLHEP::RandPoisson  poisson(*fEngine);
+    CLHEP::RandFlat     flat(fEngine);
+    CLHEP::RandPoisson  poisson(fEngine);
 
     // figure out how many decays to generate, assuming that the entire prism consists of the radioactive material.
     // we will skip over decays in other materials later.
@@ -314,6 +280,7 @@ namespace evgen{
     double rate = fabs( fBq[i] * (fT1[i] - fT0[i]) * (fX1[i] - fX0[i]) * (fY1[i] - fY0[i]) * (fZ1[i] - fZ0[i]) ) / 1.0E9;
     long ndecays = poisson.shoot(rate);
 
+    std::regex const re_material{fMaterial[i]};
     for (unsigned int idecay=0; idecay<ndecays; idecay++)
     {
       // generate just one particle at a time.  Need a little recoding if a radioactive
@@ -325,13 +292,10 @@ namespace evgen{
           fY0[i] + flat.fire()*(fY1[i] - fY0[i]),
           fZ0[i] + flat.fire()*(fZ1[i] - fZ0[i]),
           (idecay==0 && fIsFirstSignalSpecial) ? 0 : ( fT0[i] + flat.fire()*(fT1[i] - fT0[i]) ) );
-          //fT0[i] + flat.fire()*(fT1[i] - fT0[i]) );
 
       // discard decays that are not in the proper material
       std::string volmaterial = geomanager->FindNode(pos.X(),pos.Y(),pos.Z())->GetMedium()->GetMaterial()->GetName();
-      //mf::LogDebug("RadioGen") << "Position: " << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << pos.T() << " " << volmaterial << " " << fMaterial[i] << std::endl;
-      if ( ! std::regex_match(volmaterial, std::regex(fMaterial[i])) ) continue;
-      //mf::LogDebug("RadioGen") << "Decay accepted" << std::endl;
+        if (!std::regex_match(volmaterial, re_material)) continue;
 
       //Moved pdgid into the next statement, so that it is localized.
       // electron=11, photon=22, alpha = 1000020040, neutron = 2112
@@ -346,42 +310,34 @@ namespace evgen{
         double p2     = energy*energy - m*m;
         if (p2 > 0) p = TMath::Sqrt(p2);
         else        p = 0;
-        //Make TLorentzVector and push it to the back of v_prods.
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }//End special case RN222
       else if(fNuclide[i] == "59Ni"){ //Treat 59Ni Calibration Source separately (as I haven't made a spectrum for it, and ultimately it should be handeled with multiple particle outputs.
         double p=0.008997; td_Mass m=0; ti_PDGID pdgid=22; // td_Mas=double. ti_PDFID=int. Assigning p directly, as t=p for gammas.
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(partMassMom);
+          v_prods.emplace_back(pdgid, m, dirCalc(p,m));
       }//end special case Ni59 calibration source
       else if(fNuclide[i] == "42Ar"){   // Spot for special treatment of Ar42.
         double p=0; double t=0; td_Mass m = 0; ti_PDGID pdgid=0; //td_Mass = double. ti_PDGID = int;
         double bSelect = flat.fire();   //Make this a random number from 0 to 1.
         if(bSelect<0.819){              //beta channel 1. No Gamma. beta Q value 3525.22 keV
           samplespectrum("42Ar_1", pdgid, t, m, p);
-          std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-          v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
           //No gamma here.
         }else if(bSelect<0.9954){       //beta channel 2. 1 Gamma (1524.6 keV). beta Q value 2000.62
           samplespectrum("42Ar_2", pdgid, t, m, p);
-          std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-          v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
           Ar42Gamma2(v_prods);
         }else if(bSelect<0.9988){       //beta channel 3. 1 Gamma Channel. 312.6 keV + gamma 2. beta Q value 1688.02 keV
           samplespectrum("42Ar_3", pdgid, t, m, p);
-          std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-          v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
           Ar42Gamma3(v_prods);
         }else if(bSelect<0.9993){       //beta channel 4. 2 Gamma Channels. Either 899.7 keV (i 0.052) + gamma 2 or 2424.3 keV (i 0.020). beta Q value 1100.92 keV
           samplespectrum("42Ar_4", pdgid, t, m, p);
-          std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-          v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
           Ar42Gamma4(v_prods);
         }else{                          //beta channel 5. 3 gamma channels. 692.0 keV + 1228.0 keV + Gamma 2 (i 0.0033) ||OR|| 1021.2 keV + gamma 4 (i 0.0201) ||OR|| 1920.8 keV + gamma 2 (i 0.041). beta Q value 79.82 keV
           samplespectrum("42Ar_5", pdgid, t, m, p);
-          std::tuple<ti_PDGID, td_Mass, TLorentzVector> partMassMom = std::make_tuple(pdgid, m, dirCalc(p,m));
-          v_prods.push_back(partMassMom);
+            v_prods.emplace_back(pdgid, m, dirCalc(p, m));
           Ar42Gamma5(v_prods);
         }
         //Add beta.
@@ -421,44 +377,43 @@ namespace evgen{
   }
 
   //Calculate an arbitrary direction with a given magnitude p
-  TLorentzVector RadioGen::dirCalc(double p, double m){
-      CLHEP::RandFlat  flat(*fEngine);
+  TLorentzVector RadioGen::dirCalc(double p, double m)
+  {
+    CLHEP::RandFlat  flat(fEngine);
       // isotropic production angle for the decay product
       double costheta = (2.0*flat.fire() - 1.0);
       if (costheta < -1.0) costheta = -1.0;
       if (costheta > 1.0) costheta = 1.0;
-      double sintheta = sqrt(1.0-costheta*costheta);
-      double phi = 2.0*M_PI*flat.fire();
-        TLorentzVector pvec(p*sintheta*std::cos(phi),
+    double const sintheta = sqrt(1.0-costheta*costheta);
+    double const phi = 2.0*M_PI*flat.fire();
+    return TLorentzVector{p*sintheta*std::cos(phi),
           p*sintheta*std::sin(phi),
           p*costheta,
-          std::sqrt(p*p+m*m));
-      return pvec;
+                          std::sqrt(p*p+m*m)};
   }
-
 
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
 
-  void RadioGen::readfile(std::string nuclide, std::string filename)
+  void RadioGen::readfile(std::string nuclide, std::string const& filename)
   {
-    int ifound = 0;
+    bool found{false};
+    std::regex const re_argon{"42Ar.*"};
     for (size_t i=0; i<fNuclide.size(); i++)
     {
       if (fNuclide[i] == nuclide){ //This check makes sure that the nuclide we are searching for is in fact in our fNuclide list. Ar42 handeled separately.
-        ifound = 1;
+          found = true;
         break;
       } //End If nuclide is in our list. Next is the special case of Ar42
-      else if ( (std::regex_match(nuclide, std::regex( "42Ar.*" )) ) && fNuclide[i]=="42Ar" ){
-        ifound = 1;
+        else if (std::regex_match(nuclide, re_argon) && fNuclide[i]=="42Ar") {
+          found = true;
         break;
       }
     }
-    if (ifound == 0) return;
+    if (!found) return;
 
     Bool_t addStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE); // cloned histograms go in memory, and aren't deleted when files are closed.
     // be sure to restore this state when we're out of the routine.
-
 
     spectrumname.push_back(nuclide);
     cet::search_path sp("FW_SEARCH_PATH");
@@ -486,19 +441,18 @@ namespace evgen{
       name = "RadioGen_";
       name += nuclide;
       name += "_Alpha";
-      TH1D *alphahist = (TH1D*) new TH1D(name.c_str(),"Alpha Spectrum",np,0,np);
-      for (int i=0; i<np; i++)
-      {
+        auto alphahist = std::make_unique<TH1D>(name.c_str(),"Alpha Spectrum",np,0,np);
+        for (int i=0; i<np; i++) {
         alphahist->SetBinContent(i+1,y[i]);
         alphahist->SetBinError(i+1,0);
       }
-      alphaspectrum.push_back(alphahist);
       alphaintegral.push_back(alphahist->Integral());
+        alphaspectrum.push_back(move(alphahist));
     }
     else
     {
-      alphaspectrum.push_back(0);
       alphaintegral.push_back(0);
+        alphaspectrum.push_back(nullptr);
     }
 
 
@@ -511,20 +465,18 @@ namespace evgen{
       name = "RadioGen_";
       name += nuclide;
       name += "_Beta";
-      TH1D *betahist = (TH1D*) new TH1D(name.c_str(),"Beta Spectrum",np,0,np);
-
-      for (int i=0; i<np; i++)
-      {
+        auto betahist = std::make_unique<TH1D>(name.c_str(),"Beta Spectrum",np,0,np);
+        for (int i=0; i<np; i++) {
         betahist->SetBinContent(i+1,y[i]);
         betahist->SetBinError(i+1,0);
       }
-      betaspectrum.push_back(betahist);
       betaintegral.push_back(betahist->Integral());
+        betaspectrum.push_back(move(betahist));
     }
     else
     {
-      betaspectrum.push_back(0);
       betaintegral.push_back(0);
+        betaspectrum.push_back(nullptr);
     }
 
     if (gammagraph)
@@ -535,19 +487,18 @@ namespace evgen{
       name = "RadioGen_";
       name += nuclide;
       name += "_Gamma";
-      TH1D *gammahist = (TH1D*) new TH1D(name.c_str(),"Gamma Spectrum",np,0,np);
-      for (int i=0; i<np; i++)
-      {
+        auto gammahist = std::make_unique<TH1D>(name.c_str(),"Gamma Spectrum",np,0,np);
+        for (int i=0; i<np; i++) {
         gammahist->SetBinContent(i+1,y[i]);
         gammahist->SetBinError(i+1,0);
       }
-      gammaspectrum.push_back(gammahist);
       gammaintegral.push_back(gammahist->Integral());
+        gammaspectrum.push_back(move(gammahist));
     }
     else
     {
-      gammaspectrum.push_back(0);
       gammaintegral.push_back(0);
+        gammaspectrum.push_back(nullptr);
     }
 
     if (neutrongraph)
@@ -558,19 +509,19 @@ namespace evgen{
       name = "RadioGen_";
       name += nuclide;
       name += "_Neutron";
-      TH1D *neutronhist = (TH1D*) new TH1D(name.c_str(),"Neutron Spectrum",np,0,np);
+        auto neutronhist = std::make_unique<TH1D>(name.c_str(),"Neutron Spectrum",np,0,np);
       for (int i=0; i<np; i++)
       {
         neutronhist->SetBinContent(i+1,y[i]);
         neutronhist->SetBinError(i+1,0);
       }
-      neutronspectrum.push_back(neutronhist);
       neutronintegral.push_back(neutronhist->Integral());
+        neutronspectrum.push_back(move(neutronhist));
     }
     else
     {
-      neutronspectrum.push_back(0);
       neutronintegral.push_back(0);
+        neutronspectrum.push_back(nullptr);
     }
 
     f.Close();
@@ -589,7 +540,7 @@ namespace evgen{
 
   void RadioGen::samplespectrum(std::string nuclide, int &itype, double &t, double &m, double &p)
   {
-    CLHEP::RandFlat  flat(*fEngine);
+    CLHEP::RandFlat  flat(fEngine);
 
     int inuc = -1;
     for (size_t i=0; i<spectrumname.size(); i++)
@@ -614,29 +565,29 @@ namespace evgen{
     p = 0;
     for (int itry=0;itry<10;itry++) // maybe a tiny normalization issue with a sum of 0.99999999999 or something, so try a few times.
     {
-      if (rtype <= alphaintegral[inuc] && alphaspectrum[inuc] != 0)
+        if (rtype <= alphaintegral[inuc] && alphaspectrum[inuc] != nullptr)
       {
         itype = 1000020040; // alpha
         m = m_alpha;
-        t = samplefromth1d(alphaspectrum[inuc])/1000000.0;
+            t = samplefromth1d(*alphaspectrum[inuc])/1000000.0;
       }
-      else if (rtype <= alphaintegral[inuc]+betaintegral[inuc] && betaspectrum[inuc] != 0)
+        else if (rtype <= alphaintegral[inuc]+betaintegral[inuc] && betaspectrum[inuc] != nullptr)
       {
         itype = 11; // beta
         m = m_e;
-        t = samplefromth1d(betaspectrum[inuc])/1000000.0;
+            t = samplefromth1d(*betaspectrum[inuc])/1000000.0;
       }
-      else if ( rtype <= alphaintegral[inuc] + betaintegral[inuc] + gammaintegral[inuc] && gammaspectrum[inuc] != 0)
+        else if ( rtype <= alphaintegral[inuc] + betaintegral[inuc] + gammaintegral[inuc] && gammaspectrum[inuc] != nullptr)
       {
         itype = 22; // gamma
         m = 0;
-        t = samplefromth1d(gammaspectrum[inuc])/1000000.0;
+            t = samplefromth1d(*gammaspectrum[inuc])/1000000.0;
       }
-      else if( neutronspectrum[inuc] != 0)
+        else if( neutronspectrum[inuc] != nullptr)
       {
         itype = 2112;
         m     = m_neutron;
-        t     = samplefromth1d(neutronspectrum[inuc])/1000000.0;
+            t     = samplefromth1d(*neutronspectrum[inuc])/1000000.0;
       }
       if (itype >= 0) break;
     }
@@ -655,19 +606,19 @@ namespace evgen{
   // this is just a copy of TH1::GetRandom that uses the art-managed CLHEP random number generator instead of gRandom
   // and a better handling of negative bin contents
 
-  double RadioGen::samplefromth1d(TH1D *hist)
+  double RadioGen::samplefromth1d(TH1D& hist)
   {
-    CLHEP::RandFlat  flat(*fEngine);
+    CLHEP::RandFlat  flat(fEngine);
 
-    int nbinsx = hist->GetNbinsX();
+    int nbinsx = hist.GetNbinsX();
     std::vector<double> partialsum;
     partialsum.resize(nbinsx+1);
     partialsum[0] = 0;
 
     for (int i=1;i<=nbinsx;i++)
     {
-      double hc = hist->GetBinContent(i);
-      if ( hc < 0) throw cet::exception("RadioGen") << "Negative bin:  " << i << " " << hist->GetName() << "\n";
+        double hc = hist.GetBinContent(i);
+        if ( hc < 0) throw cet::exception("RadioGen") << "Negative bin:  " << i << " " << hist.GetName() << "\n";
       partialsum[i] = partialsum[i-1] + hc;
     }
     double integral = partialsum[nbinsx];
@@ -677,9 +628,10 @@ namespace evgen{
 
     double r1 = flat.fire();
     int ibin = TMath::BinarySearch(nbinsx,&(partialsum[0]),r1);
-    Double_t x = hist->GetBinLowEdge(ibin+1);
-    if (r1 > partialsum[ibin]) x +=
-      hist->GetBinWidth(ibin+1)*(r1-partialsum[ibin])/(partialsum[ibin+1] - partialsum[ibin]);
+    Double_t x = hist.GetBinLowEdge(ibin+1);
+    if (r1 > partialsum[ibin]) {
+      x += hist.GetBinWidth(ibin+1)*(r1-partialsum[ibin])/(partialsum[ibin+1] - partialsum[ibin]);
+    }
     return x;
   }
 
@@ -691,66 +643,66 @@ namespace evgen{
   //beta channel 4. 2 Gamma Channels. Either 899.7 keV (i 0.052) + gamma 2 or 2424.3 keV (i 0.020). beta Q value 1100.92 keV
   //beta channel 5. 3 gamma channels. 692.0 keV + 1228.0 keV + Gamma 2 (i 0.0033) ||OR|| 1021.2 keV + gamma 4 (i 0.0201) ||OR|| 1920.8 keV + gamma 2 (i 0.041). beta Q value 79.82 keV
   //No Ar42Gamma1 as beta channel 1 does not produce a dexcitation gamma.
-  void RadioGen::Ar42Gamma2(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
+  void RadioGen::Ar42Gamma2(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods)
+  {
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     std::vector<double> vd_p = {.0015246};//Momentum in GeV
     for(auto p : vd_p){
-      std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-      v_prods.push_back(prods);
+      v_prods.emplace_back(pdgid, m, dirCalc(p, m));
     }
   }
-  void RadioGen::Ar42Gamma3(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
+
+  void RadioGen::Ar42Gamma3(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods)
+  {
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     std::vector<double> vd_p = {.0003126};
     for(auto p : vd_p){
-      std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-      v_prods.push_back(prods);
+      v_prods.emplace_back(pdgid, m, dirCalc(p, m));
     }
     Ar42Gamma2(v_prods);
   }
-  void RadioGen::Ar42Gamma4(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
-    CLHEP::RandFlat     flat(*fEngine);
+
+  void RadioGen::Ar42Gamma4(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods)
+  {
+    CLHEP::RandFlat     flat(fEngine);
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     double chan1 = (0.052 / (0.052+0.020) );
     if(flat.fire()<chan1){
       std::vector<double> vd_p = {.0008997};//Momentum in GeV
       for(auto p : vd_p){
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(prods);
+        v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }
       Ar42Gamma2(v_prods);
     }else{
       std::vector<double> vd_p = {.0024243};//Momentum in GeV
       for(auto p : vd_p){
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(prods);
+        v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }
     }
   }
-  void RadioGen::Ar42Gamma5(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods){
-    CLHEP::RandFlat     flat(*fEngine);
+
+  void RadioGen::Ar42Gamma5(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods)
+  {
+    CLHEP::RandFlat     flat(fEngine);
     ti_PDGID pdgid = 22; td_Mass m = 0.0; //we are writing gammas
     double chan1 = ( 0.0033 / (0.0033 + 0.0201 + 0.041) ); double chan2 = ( 0.0201 / (0.0033 + 0.0201 + 0.041) );
     double chanPick = flat.fire();
     if(chanPick < chan1){
       std::vector<double> vd_p = {0.000692, 0.001228};//Momentum in GeV
       for(auto p : vd_p){
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(prods);
+        v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }
       Ar42Gamma2(v_prods);
     }else if (chanPick<(chan1+chan2)){
       std::vector<double> vd_p = {0.0010212};//Momentum in GeV
       for(auto p : vd_p){
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(prods);
+        v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }
       Ar42Gamma4(v_prods);
     }else{
       std::vector<double> vd_p = {0.0019208};//Momentum in GeV
       for(auto p : vd_p){
-        std::tuple<ti_PDGID, td_Mass, TLorentzVector> prods = std::make_tuple(pdgid, m, dirCalc(p,m));
-        v_prods.push_back(prods);
+        v_prods.emplace_back(pdgid, m, dirCalc(p, m));
       }
       Ar42Gamma2(v_prods);
     }
@@ -760,9 +712,7 @@ namespace evgen{
 
   // double RadioGen::betaphasespace(double mass, double q)
   //{
-  //  art::ServiceHandle<art::RandomNumberGenerator> rng;
-  //  CLHEP::HepRandomEngine &engine = rng->getEngine();
-  //  CLHEP::RandFlat     flat(engine);
+  //  CLHEP::RandFlat     flat(fEngine);
   //  double p = 0;
   //  double mi = mass+q+m_e;
   //  TLorentzVector p0(0,0,0,mi);      // pre-decay four-vector
@@ -779,16 +729,6 @@ namespace evgen{
   //return p;
   //}
 
-
-
-
 }//end namespace evgen
 
-namespace evgen{
-
-  DEFINE_ART_MODULE(RadioGen)
-
-}//end namespace evgen
-
-#endif
-////////////////////////////////////////////////////////////////////////
+DEFINE_ART_MODULE(evgen::RadioGen)

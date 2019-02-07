@@ -75,19 +75,17 @@ namespace detsim {
 
   // Base class for creation of raw signals on wires. 
   class SimWire : public art::EDProducer {
-    
   public:
         
     explicit SimWire(fhicl::ParameterSet const& pset); 
     virtual ~SimWire();
     
-    // read/write access to event
-    void produce (art::Event& evt);
-    void beginJob();
-    void endJob();
-    void reconfigure(fhicl::ParameterSet const& p);
-
   private:
+
+    // read/write access to event
+    void produce(art::Event& evt) override;
+    void beginJob() override;
+    void reconfigure(fhicl::ParameterSet const& p);
 
     void         ConvoluteResponseFunctions(); ///< convolute electronics and field response
     
@@ -133,6 +131,7 @@ namespace detsim {
     TH1D*                fIndTimeShape;     ///< convoluted shape for field x electronics @ ind plane
     TH1D*                fNoiseDist;        ///< distribution of noise counts
 
+    CLHEP::HepRandomEngine& fEngine;        ///< Random-number engine owned by art
   }; // class SimWire
 
 }
@@ -142,6 +141,9 @@ namespace detsim{
   //-------------------------------------------------
   SimWire::SimWire(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
+    // create a default random engine; obtain the random seed from NuRandomService,
+    // unless overridden in configuration with key "Seed"
+    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
   {
     this->reconfigure(pset);
 
@@ -150,11 +152,6 @@ namespace detsim{
     fCompression = raw::kNone;
     std::string compression(pset.get< std::string >("CompressionType"));
     if(compression.compare("Huffman") == 0) fCompression = raw::kHuffman;
-
-    // create a default random engine; obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, pset, "Seed");
   }
 
   //-------------------------------------------------
@@ -203,8 +200,6 @@ namespace detsim{
     fSampleRate       = detprop->SamplingRate();
     fTriggerOffset    = detprop->TriggerOffset();
     fNSamplesReadout  = detprop->NumberTimeSamples();
-
-    return;
   }
 
   //-------------------------------------------------
@@ -224,11 +219,8 @@ namespace detsim{
     // GenNoise() will further resize each channel's 
     // fNoise vector to fNTicks long.
 
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-                                                    moduleDescription().moduleLabel());
     for(int p = 0; p < 100; ++p){
-      GenNoise(fNoise[p], engine);
+      GenNoise(fNoise[p], fEngine);
       for(int i = 0; i < fNTicks; ++i){
 	fNoiseDist->Fill(fNoise[p][i]);
       }
@@ -238,23 +230,11 @@ namespace detsim{
     SetFieldResponse();
     SetElectResponse();
     ConvoluteResponseFunctions();
-
-
-    return;
-
-  }
-
-  //-------------------------------------------------
-  void SimWire::endJob() 
-  {
   }
 
   //-------------------------------------------------
   void SimWire::produce(art::Event& evt)
   {
-
-    //std::cout << "in SimWire::produce " << std::endl;
-
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;
     unsigned int signalSize = fNTicks;
@@ -284,10 +264,7 @@ namespace detsim{
     art::ServiceHandle<util::LArFFT> fFFT;
 
     // Add all channels  
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-                                                    moduleDescription().moduleLabel());
-    CLHEP::RandFlat flat(engine);
+    CLHEP::RandFlat flat(fEngine);
 
     std::map<int,double>::iterator mapIter;      
     for(chan = 0; chan < geo->Nchannels(); chan++) {    
