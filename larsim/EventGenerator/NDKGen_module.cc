@@ -66,24 +66,24 @@ namespace evgen {
     explicit NDKGen(fhicl::ParameterSet const &pset);
     virtual ~NDKGen();                        
 
-    void produce(art::Event& evt);  
-    void beginJob();
-    void beginRun(art::Run& run);
-    void reconfigure(fhicl::ParameterSet const& p);
-    void endJob();
-
   private:
+
+    void produce(art::Event& evt) override;
+    void beginJob() override;
+    void beginRun(art::Run& run) override;
+    void endJob() override;
 
         std::string ParticleStatus(int StatusCode);
         std::string ReactionChannel(int ccnc,int mode);
     
-        void FillHistograms(simb::MCTruth mc);
+    void FillHistograms(simb::MCTruth const& mc);
 
 	std::string         fNdkFile;
-	std::ifstream      *fEventFile;
+    std::ifstream       fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
 	
 	std::string fNDKModuleLabel;
+    CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
 	
 	TH1F* fGenerated[6];  ///< Spectra as generated
 	
@@ -112,8 +112,6 @@ namespace evgen {
 	TH1F* fCCMode;      ///< CC interaction mode
 	TH1F* fNCMode;      ///< CC interaction mode
 	
-        // for c2: fDeltaE is no longer used
-	//TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
 	TH1F* fECons;      ///< histogram to determine if energy is conserved in the event
 	
   };
@@ -124,20 +122,21 @@ namespace evgen{
   //____________________________________________________________________________
   NDKGen::NDKGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
+    , fNdkFile{pset.get<std::string>("NdkFile")}
+    , fEventFile{fNdkFile}
+      // create a default random engine; obtain the random seed from NuRandomService,
+      // unless overridden in configuration with key "Seed"
+    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
   {
-    this->reconfigure(pset); 
     fStopwatch.Start();
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
 
-    fEventFile = new std::ifstream(fNdkFile.c_str());
-    if(!fEventFile->good())
-      exit(0);
-    // create a default random engine; obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, pset, "Seed");
+    if(!fEventFile.good()) {
+      throw cet::exception("NDKGen")
+        << "Could not open file: " << fNdkFile << '\n';
+    }
 
   }
 
@@ -147,17 +146,10 @@ namespace evgen{
     fStopwatch.Stop();
   }
 
-  //____________________________________________________________________________
-  void NDKGen::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fNdkFile   =(p.get< std::string         >("NdkFile"));
-    return;
-  }
 //___________________________________________________________________________
   
-  void NDKGen::beginJob(){
-   
-    // Get access to the TFile service.
+  void NDKGen::beginJob()
+  {
     art::ServiceHandle<art::TFileService> tfs;
 
     fGenerated[0] = tfs->make<TH1F>("fGenerated_necc","",  100, 0.0, 20.0);
@@ -197,7 +189,6 @@ namespace evgen{
     fNCMode->GetXaxis()->SetBinLabel(5, "kNuElectronElastic");
     fNCMode->GetXaxis()->CenterLabels();
 
-    //fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.); 
     fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
     art::ServiceHandle<geo::Geometry> geo;
@@ -215,27 +206,22 @@ namespace evgen{
     fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv,     -x, x, ydiv, -y, y);
     fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -x, x);
     fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv, -y, y);
-
   }
 
   //____________________________________________________________________________
   void NDKGen::beginRun(art::Run& run)
   {
-
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
-
-    run.put(std::move(runcol));
-
-    return;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
   //____________________________________________________________________________
   void NDKGen::endJob()
   {
-    fEventFile->close();
+    fEventFile.close();
   }
+
   //____________________________________________________________________________
   void NDKGen::produce(art::Event& evt)
   {
@@ -310,12 +296,9 @@ namespace evgen{
     simb::MCTruth truth;
 
     art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-                                                    moduleDescription().moduleLabel());
-    CLHEP::RandFlat flat(engine);
+    CLHEP::RandFlat flat(fEngine);
 
-    double fvCut (5.0); // force vtx to be this far from any wall.
+    double const fvCut{5.0}; // force vtx to be this far from any wall.
 
     // Find boundary of active volume
     double minx = 1e9;
@@ -353,10 +336,10 @@ namespace evgen{
     
     int GenieEvt = -999;
     
-    if(!fEventFile->good())
+    if(!fEventFile.good())
       std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
     
-    while(getline(*fEventFile,k)){
+    while(getline(fEventFile,k)){
 
       if (k.find("** Event:")!= std::string::npos) {
         std::istringstream in;
@@ -496,7 +479,7 @@ namespace evgen{
   }
 
 //   //......................................................................
-  void NDKGen::FillHistograms(simb::MCTruth mc)
+  void NDKGen::FillHistograms(simb::MCTruth const& mc)
   {
     // Decide which histograms to put the spectrum in
     int id = -1;
