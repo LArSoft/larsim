@@ -49,8 +49,8 @@ TestGeneratedEventTimestamp::TestGeneratedEventTimestamp
   : EDAnalyzer(pset)
   // create two random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
-  , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
-  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed"))
+  , fEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
+  , fAuxEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed")}
 {}
 
 
