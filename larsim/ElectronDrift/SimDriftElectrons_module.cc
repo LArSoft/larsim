@@ -96,15 +96,18 @@ namespace detsim {
 
   // Base class for creation of raw signals on wires.
   class SimDriftElectrons : public art::EDProducer {
+
   public:
 
     explicit SimDriftElectrons(fhicl::ParameterSet const& pset);
+    virtual ~SimDriftElectrons() {};
 
     // Methods that that are available for a module derived from
     // art::EDProducer.
-    void produce (art::Event& evt) override;
-    void beginJob() override;
-    void endJob() override;
+    void produce (art::Event& evt);
+    void beginJob();
+    void endJob();
+    void reconfigure(fhicl::ParameterSet const& p);
 
   private:
 
@@ -113,7 +116,7 @@ namespace detsim {
     art::InputTag fSimModuleLabel;
 
     const detinfo::DetectorClocks* fTimeService;
-    CLHEP::RandGauss fRandGauss;
+    std::unique_ptr<CLHEP::RandGauss> fRandGauss;
 
     double fElectronLifetime;
     double fElectronClusterSize;
@@ -163,6 +166,9 @@ namespace detsim {
 
     double fDriftClusterPos[3];
 
+    // Utility routine.
+    //geo::vect::Vector_t RecoverOffPlaneDeposit (geo::vect::Vector_t const&, geo::PlaneGeo const&) const;
+
     art::ServiceHandle<geo::Geometry> fGeometry;  ///< Handle to the Geometry service
     ::detinfo::ElecClock              fClock;     ///< TPC electronics clock
 
@@ -175,17 +181,42 @@ namespace detsim {
   //-------------------------------------------------
   SimDriftElectrons::SimDriftElectrons(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
-    , fSimModuleLabel{pset.get<art::InputTag>("SimulationLabel")}
+  {
+    this->reconfigure(pset);
+
+    produces< std::vector<sim::SimChannel> >();
+    if(fStoreDriftedElectronClusters)produces< std::vector<sim::SimDriftedElectronCluster> >();
+    //produces< art::Assns<sim::SimChannel, sim::SimEnergyDeposit> >();
+
     // create a default random engine; obtain the random seed from
     // NuRandomService, unless overridden in configuration with key
     // "Seed"
-    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
-    , fStoreDriftedElectronClusters{pset.get<bool>("StoreDriftedElectronClusters", false)}
+    art::ServiceHandle<rndm::NuRandomService>()
+      ->createEngine(*this, pset, "Seed");
+
+    /**
+     * @brief Sets the margin for recovery of charge drifted off-plane.
+     * @param margin the extent of the margin on each frame coordinate [cm]
+     *
+     * This method sets the margin for the recovery of off-plane ionization
+     * charge. See `RecoverOffPlaneDeposit()` for a description of that feature.
+     *
+     */
+    //fOffPlaneMargin = pset.get< double >("ChargeRecoveryMargin",0.0);
+    // Protection against a silly value.
+    //fOffPlaneMargin = std::max(fOffPlaneMargin,0.0);
+  }
+
+  //-------------------------------------------------
+  void SimDriftElectrons::reconfigure(fhicl::ParameterSet const& p)
   {
-    produces< std::vector<sim::SimChannel> >();
-    if(fStoreDriftedElectronClusters) {
-      produces< std::vector<sim::SimDriftedElectronCluster> >();
-    }
+    std::string label= p.get< std::string >("SimulationLabel");
+    fSimModuleLabel = art::InputTag(label);
+
+    fStoreDriftedElectronClusters = p.get< bool >("StoreDriftedElectronClusters", false);
+
+
+    return;
   }
 
   //-------------------------------------------------
@@ -193,6 +224,13 @@ namespace detsim {
   {
     fTimeService = lar::providerFrom<detinfo::DetectorClocksService>();
     fClock = fTimeService->TPCClock();
+
+    // Set up the gaussian generator.
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine& engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel(),
+                                                    {});
+    fRandGauss = std::unique_ptr<CLHEP::RandGauss>(new CLHEP::RandGauss(engine));
 
     // Define the physical constants we'll use.
 
@@ -461,22 +499,26 @@ namespace detsim {
 	  else               fnEnDiff[xx] = 0.;
 	}
 
+	//std::cout << "Split into, " << nClus << " clusters." << std::endl;
+	
 	// Smear drift times by longitudinal diffusion
 	if (LDiffSig > 0.0)
-          fRandGauss.fireArray( nClus, &fLongDiff[0], 0., LDiffSig);
+	  fRandGauss->fireArray( nClus, &fLongDiff[0], 0., LDiffSig);
 	else
 	  fLongDiff.assign(nClus, 0.0);
 
 	if (TDiffSig > 0.0) {
 	  // Smear the coordinates in plane perpendicular to drift direction by the transverse diffusion
-          fRandGauss.fireArray( nClus, &fTransDiff1[0], avegagetransversePos1, TDiffSig);
-          fRandGauss.fireArray( nClus, &fTransDiff2[0], avegagetransversePos2, TDiffSig);
+	  fRandGauss->fireArray( nClus, &fTransDiff1[0], avegagetransversePos1, TDiffSig);
+	  fRandGauss->fireArray( nClus, &fTransDiff2[0], avegagetransversePos2, TDiffSig);
 	}
 	else {
 	  fTransDiff1.assign(nClus, avegagetransversePos1);
 	  fTransDiff2.assign(nClus, avegagetransversePos2);
 	}
 
+	//std::cout << "Smeared the " << nClus << " clusters." << std::endl;
+	
 	// make a collection of electrons for each plane
 	for(size_t p = 0; p < tpcGeo.Nplanes(); ++p){
 	
@@ -484,6 +526,11 @@ namespace detsim {
 
 	  // Drift nClus electron clusters to the induction plane
 	  for(int k = 0; k < nClus; ++k){
+
+	    //std::cout << "\tCluster " << k << " diffs are "
+	    //	      << fLongDiff[k] << " " << fTransDiff1[k] << " " << fTransDiff2[k]
+	   // 	      << std::endl;
+
 
 	    // Correct drift time for longitudinal diffusion and plane
 	    double TDiff = TDrift + fLongDiff[k] * fRecipDriftVel[0];
@@ -520,6 +567,11 @@ namespace detsim {
 	      */
 	      raw::ChannelID_t channel = fGeometry->NearestChannel(fDriftClusterPos, p, tpc, cryostat);
 
+//	      std::cout << "fDriftClusterPos[0]: " << fDriftClusterPos[0] << "\t fDriftClusterPos[1]: " << fDriftClusterPos[1] << "\t fDriftClusterPos[2]: " << fDriftClusterPos[2] << std::endl;
+//	      std::cout << "channel: " << channel << std::endl;
+
+	      //std::cout << "\tgot channel " << channel << " for cluster " << k << std::endl;
+
 	      /// \todo check on what happens if we allow the tdc value to be
 	      /// \todo beyond the end of the expected number of ticks
 	      // Add potential decay/capture/etc delay effect, simTime.
@@ -539,6 +591,8 @@ namespace detsim {
 	      // channel ID?
 	      if (search == channelDataMap.end())
 		{
+		  //std::cout << "\tHaven't done this channel before." << std::endl;
+
 		  // We haven't. Initialize the bookkeeping information
 		  // for this channel.
 		  ChannelBookKeeping_t bookKeeping;
@@ -549,6 +603,11 @@ namespace detsim {
 		  channels->emplace_back( channel );
 		  channelIndex = bookKeeping.channelIndex;
 
+		  // Save the pointer to the newly-created
+		  // sim::SimChannel.
+		  //channelPtr = &(channels->back());
+		  //bookKeeping.channelPtr = channelPtr;
+		
 		  // Initialize a vector with the index of the step that
 		  // created this channel.
 		  bookKeeping.stepList.push_back( edIndex );
@@ -560,8 +619,11 @@ namespace detsim {
 		// We've created this SimChannel for a previous energy
 		// deposit. Get its address.
 
+		//std::cout << "\tHave seen this channel before." << std::endl;
+
 		auto& bookKeeping = search->second;
 		channelIndex = bookKeeping.channelIndex;
+		//channelPtr = bookKeeping.channelPtr;
 		
 		// Has this step contributed to this channel before?
 		auto& stepList = bookKeeping.stepList;
@@ -574,6 +636,15 @@ namespace detsim {
 
 	      sim::SimChannel* channelPtr = &(channels->at(channelIndex));
 
+	      //std::cout << "\tAdding electrons to SimChannel" << std::endl;
+	      //std::cout << "\t\t"
+	      //	<< energyDeposit.TrackID() << " " << tdc
+	      //	<< " " << xyz[0] << " " << xyz[1] << " " << xyz[2]
+	      //	<< " " << fnEnDiff[k] << " " << fnElDiff[k]
+	      //	<< std::endl;
+
+	      //if(!channelPtr) std::cout << "\tUmm...ptr is NULL?" << std::endl;
+	      //else std::cout << "\tChannel is " << channelPtr->Channel() << std::endl;
 	      // Add the electron clusters and energy to the
 	      // sim::SimChannel
 	      channelPtr->AddIonizationElectrons(energyDeposit.TrackID(),
@@ -583,13 +654,16 @@ namespace detsim {
 						 fnEnDiff[k]);
 
 	      if(fStoreDriftedElectronClusters)
-                SimDriftedElectronClusterCollection->emplace_back(fnElDiff[k],
+		SimDriftedElectronClusterCollection->push_back(sim::SimDriftedElectronCluster(		
+											      fnElDiff[k],
 											      TDiff + simTime,		// timing
-                                                                  geo::Point_t{mp.X(),mp.Y(),mp.Z()}, // mean position of the deposited energy
-                                                                  geo::Point_t{fDriftClusterPos[0],fDriftClusterPos[1],fDriftClusterPos[2]}, // final position of the drifted cluster
-                                                                  geo::Point_t{LDiffSig,TDiffSig,TDiffSig}, // Longitudinal (X) and transverse (Y,Z) diffusion
+											      {mp.X(),mp.Y(),mp.Z()}, // mean position of the deposited energy
+											      {fDriftClusterPos[0],fDriftClusterPos[1],fDriftClusterPos[2]}, // final position of the drifted cluster
+											      {LDiffSig,TDiffSig,TDiffSig}, // Longitudinal (X) and transverse (Y,Z) diffusion
 											      fnEnDiff[k], //deposited energy that originated this cluster
-                                                                  energyDeposit.TrackID());
+											      energyDeposit.TrackID()) );
+
+	      //std::cout << "\tAdded the electrons." << std::endl;
 
  	    }
 	    catch(cet::exception &e) {
@@ -600,12 +674,91 @@ namespace detsim {
 	  } // end loop over clusters
 	} // end loop over planes
       } // for each sim::SimEnergyDeposit
+    /*
+    // Now that we've processed the information for all the
+    // sim::SimEnergyDeposit objects into sim::SimChannel objects,
+    // create the associations between them.
 
+    // Define the container for the associations between the channels
+    // and the energy deposits (steps). Note it's possible for an
+    // energy deposit to be associated with more than one channel (if
+    // its electrons drift to multiple wires), and a channel will
+    // almost certainly have multiple energy deposits.
+    std::unique_ptr< art::Assns<sim::SimEnergyDeposit, sim::SimChannel> >
+      step2channel (new art::Assns<sim::SimEnergyDeposit, sim::SimChannel>);
+
+    // For every element in the 3-D fChannelMaps array...
+    for ( auto i = fChannelMaps.begin(); i != fChannelMaps.end(); ++i ) {
+      for ( auto j = i->begin(); j != i->end(); ++j ) {
+	for ( auto k = j->begin(); k != j->end(); ++k ) {
+	  const ChannelBookKeeping_t& bookKeeping = (*k).second;
+	  const size_t channelIndex = bookKeeping.channelIndex;
+
+	  // Create a one-to-one association between each channel and
+	  // each step that created it.
+	  for ( size_t m = 0; m < bookKeeping.stepList.size(); ++m)
+	    {
+	      const size_t edIndex = bookKeeping.stepList[m];
+	      // Props to me for figuring out the following two
+	      // statements. You have to look deeply in the
+	      // documentation for art::Ptr and util::Associations to
+	      // put this together.
+	      art::Ptr<sim::SimEnergyDeposit> energyDepositPtr( energyDepositHandle, edIndex );
+	      util::CreateAssn(*this, event, *channels, energyDepositPtr, *step2channel, channelIndex);
+	    }
+	}
+      }
+    }
+    */
     // Write the sim::SimChannel collection.
     event.put(std::move(channels));
     if (fStoreDriftedElectronClusters) event.put(std::move(SimDriftedElectronClusterCollection));
+
+    // ... and its associations.
+    //event.put(std::move(step2channel));
+
+    return;
   }
 
+  //----------------------------------------------------------------------------
+  /*
+  geo::vect::Vector_t SimDriftElectrons::RecoverOffPlaneDeposit
+  (geo::vect::Vector_t const& pos, geo::PlaneGeo const& plane) const
+  {
+    //
+    // translate the landing position on the two frame coordinates
+    // ("width" and "depth")
+    //
+    auto const landingPos = plane.PointWidthDepthProjection(pos);
+
+    //
+    // compute the distance of the landing position on the two frame
+    // coordinates ("width" and "depth");
+    // keep the point within 10 micrometers (0.001 cm) from the border
+    //
+    auto const offPlane = plane.DeltaFromActivePlane(landingPos, 0.001);
+
+    //
+    // if both the distances are below the margin, move the point to
+    // the border
+    //
+
+    // nothing to recover: landing is inside
+    if ((offPlane.X() == 0.0) && (offPlane.Y() == 0.0)) return pos;
+
+    // won't recover: too far
+    if ((std::abs(offPlane.X()) > fOffPlaneMargin)
+	|| (std::abs(offPlane.Y()) > fOffPlaneMargin))
+      return pos;
+
+    // we didn't fully decompose because it might be unnecessary;
+    // now we need the full thing
+    auto const distance = plane.DistanceFromPlane(pos);
+
+    return plane.ComposePoint(distance, landingPos + offPlane);
+
+  } // SimDriftElectrons::RecoverOffPlaneDeposit()
+  */
 } // namespace detsim
 
 DEFINE_ART_MODULE(detsim::SimDriftElectrons)

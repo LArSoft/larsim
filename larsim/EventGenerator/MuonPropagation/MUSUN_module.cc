@@ -211,6 +211,7 @@ namespace evgen {
 
   public:
     explicit MUSUN(fhicl::ParameterSet const& pset);
+    virtual ~MUSUN();
 
     // This is called for each event.
     void produce(art::Event& evt);
@@ -230,8 +231,6 @@ namespace evgen {
 
 
     static const int kGAUS = 1;    
-
-    CLHEP::HepRandomEngine& fEngine;     ///< art-managed random-number engine
 
     int                 fPDG;            ///< PDG code of particles to generate   
     double              fChargeRatio;    ///< Charge ratio of particle / anti-particle  
@@ -333,13 +332,20 @@ namespace evgen{
   //____________________________________________________________________________
   MUSUN::MUSUN(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
-    // create a default random engine; obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
   {
     this->reconfigure(pset);
+
+    // create a default random engine; obtain the random seed from NuRandomService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<rndm::NuRandomService>()
+      ->createEngine(*this, pset, "Seed");
+
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
+  }
+  //____________________________________________________________________________
+  MUSUN::~MUSUN()
+  {
   }
   
   ////////////////////////////////////////////////////////////////////////////////
@@ -381,6 +387,8 @@ namespace evgen{
     fT0            = p.get< double              >("T0");
     fSigmaT        = p.get< double              >("SigmaT");
     fTDist         = p.get< int                 >("TDist");
+
+    return;
   }
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Job
@@ -525,13 +533,19 @@ namespace evgen{
     
     ++NEvents;
 
-    SampleOne(NEvents, truth, fEngine);
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
+    SampleOne(NEvents, truth, engine);
 
     MF_LOG_DEBUG("MUSUN") << truth;
 
     truthcol->push_back(truth);
 
     evt.put(std::move(truthcol));
+
+    return;
   }
   ////////////////////////////////////////////////////////////////////////////////
   //  Sample One

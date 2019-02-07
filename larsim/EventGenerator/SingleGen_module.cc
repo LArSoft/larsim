@@ -301,15 +301,17 @@ namespace evgen {
     int                 fAngleDist;      ///< How to distribute angles (gaus, uniform)
     std::string fHistFileName;               ///< Filename containing histogram of momenta
     std::vector<std::string> fPHist;     ///< name of histogram of momenta
+//    std::vector<std::string> fThetaPhiHist; ///< name of histogram for theta/phi distribution
     std::vector<std::string> fThetaXzYzHist;   ///< name of histogram for thetaxz/thetayz distribution
 
     std::vector<std::unique_ptr<TH1>> hPHist ;     /// actual TH1 for momentum distributions
+//    std::vector<TH2*> hThetaPhiHist ;  /// actual TH1 for theta distributions - Theta on x axis
     std::vector<std::unique_ptr<TH2>> hThetaXzYzHist ; /// actual TH2 for angle distributions - Xz on x axis . 
     // FYI - thetaxz and thetayz are related to standard polar angles as follows:
     // thetaxz = atan2(math.sin(theta) * cos(phi), cos(theta))
     // thetayz = asin(sin(theta) * sin(phi));
     
-    CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
+    cet::exempt_ptr<CLHEP::HepRandomEngine> fEngine; // FIXME: This should be a reference.
 
     
     /// Returns a vector with the name of particle selection mode keywords.
@@ -498,16 +500,26 @@ namespace evgen{
     , fAngleDist    (selectOption(config().AngleDist(), DistributionNames))
     , fHistFileName (config().HistogramFile())
     , fPHist        (config().PHist())
+//    , fThetaPhiHist (config().ThetaPhiHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this))
   {
     setup();
+    
+    // create a default random engine; obtain the random seed from NuRandomService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this);
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    auto& engine = rng->getEngine(art::ScheduleID::first(),
+                                  config.get_PSet().get<std::string>("module_label"));
+    fEngine = cet::make_exempt_ptr(&engine);
     rndm::NuRandomService::seed_t seed;
     if (config().Seed(seed)) {
-      fEngine.setSeed(seed, 0 /* dummy? */);
+      fEngine->setSeed(seed, 0 /* dummy? */);
     }
 
     produces< std::vector<simb::MCTruth> >();
+    //    produces< sumdata::RunData, art::InRun >();
+
   }
   
   
@@ -751,8 +763,8 @@ namespace evgen{
   // FCIHL description
   void SingleGen::SampleOne(unsigned int i, simb::MCTruth &mct){
 
-    CLHEP::RandFlat   flat(fEngine);
-    CLHEP::RandGaussQ gauss(fEngine);
+    CLHEP::RandFlat   flat(*fEngine);
+    CLHEP::RandGaussQ gauss(*fEngine);
 
     // Choose momentum
     double p = 0.0;
@@ -862,8 +874,8 @@ namespace evgen{
   // distributions defined in the fhicls
   void SingleGen::SampleMany(simb::MCTruth &mct){
 
-    CLHEP::RandFlat   flat(fEngine);
-    CLHEP::RandGaussQ gauss(fEngine);
+    CLHEP::RandFlat   flat(*fEngine);
+    CLHEP::RandGaussQ gauss(*fEngine);
 
     // Choose position
     TVector3 x;
@@ -989,7 +1001,7 @@ namespace evgen{
     case 1: // Random selection mode: every event will exactly one particle
             // selected randomly from the fPDG array
       {
-        CLHEP::RandFlat flat(fEngine);
+        CLHEP::RandFlat flat(*fEngine);
 
 	unsigned int i=flat.fireInt(fPDG.size());
 	SampleOne(i,mct);
@@ -1056,7 +1068,7 @@ namespace evgen{
   //____________________________________________________________________________
   double SingleGen::SelectFromHist(const TH1& h) // select from a 1D histogram
   {
-    CLHEP::RandFlat   flat(fEngine);
+    CLHEP::RandFlat   flat(*fEngine);
     
     double throw_value = h.Integral() * flat.fire();
     double cum_value(0);
@@ -1071,7 +1083,7 @@ namespace evgen{
   //____________________________________________________________________________
   void SingleGen::SelectFromHist(const TH2& h, double &x, double &y) // select from a 2D histogram
   {
-    CLHEP::RandFlat   flat(fEngine);
+    CLHEP::RandFlat   flat(*fEngine);
     
     double throw_value = h.Integral() * flat.fire();
     double cum_value(0);

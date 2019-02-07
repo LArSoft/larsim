@@ -74,15 +74,11 @@ private:
   const genie::EventRecordVisitorI * mcgen;
   genie::NucleonDecayMode_t gOptDecayMode    = genie::kNDNull;             // nucleon decay mode
   int dpdg = 0;
-  CLHEP::RandFlat flatDist;
 };
 
 
 evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   : art::EDProducer{p}
-  // create a default random engine; obtain the random seed from NuRandomService,
-  // unless overridden in configuration with key "Seed"
-  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, p, "Seed")}
 {
   genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
@@ -107,6 +103,11 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
   
+  // create a default random engine; obtain the random seed from NuRandomService,
+  // unless overridden in configuration with key "Seed"
+  art::ServiceHandle<rndm::NuRandomService>()
+    ->createEngine(*this, p, "Seed");
+
   unsigned int seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
   genie::utils::app_init::RandGen(seed);
 }
@@ -135,6 +136,10 @@ void evgen::NucleonDecay::produce(art::Event & e)
   simb::MCTruth truth;
   
   art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<art::RandomNumberGenerator> rng;
+  CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                  moduleDescription().moduleLabel());
+  CLHEP::RandFlat flat(engine);
 
   // Find boundary of active volume
   double minx = 1e9;
@@ -154,9 +159,9 @@ void evgen::NucleonDecay::produce(art::Event & e)
   }
 
   // Assign vertice position
-  double X0 = flatDist.fire( minx, maxx );
-  double Y0 = flatDist.fire( miny, maxy );
-  double Z0 = flatDist.fire( minz, maxz );
+  double X0 = flat.fire( minx, maxx );
+  double Y0 = flat.fire( miny, maxy );
+  double Z0 = flat.fire( minz, maxz );
 
   TIter partitr(event);
   genie::GHepParticle *part = 0;
