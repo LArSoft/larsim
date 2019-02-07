@@ -54,7 +54,7 @@ namespace evgen {
     : EDProducer{pset}
     // Create a default random engine: obtain the random seed
     // freom NuRandomService, unless overriden in configuration with key "Seed"
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
     , fGenerator{pset.get< fhicl::ParameterSet >("GeneratorAlg")}
   {
     produces< std::vector< simb::MCTruth > >();
