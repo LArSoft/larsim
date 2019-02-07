@@ -1,7 +1,7 @@
 /**
  * \file WeightManager.h
  *
- *
+ * 
  * \brief Allows to interface to EventWeight calculators
  *
  * @author Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
@@ -16,6 +16,9 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "canvas/Utilities/InputTag.h"
 #include "nutools/RandomUtils/NuRandomService.h"
 #include "lardataobj/Simulation/sim.h"
@@ -35,17 +38,17 @@ namespace evwgh {
   class WeightManager {
 
   public:
-
+    
     /// Default constructor
     WeightManager(const std::string name="WeightManager");
-
+    
     /// Default destructor
     ~WeightManager(){}
 
     /// Name getter
     const std::string& Name() const;
 
-    /**
+    /** 
       * @brief Configuration function
       * @param cfg the input parameters for settings
       * @param the enging creator for the random seed (usually passed with *this)
@@ -110,7 +113,12 @@ namespace evwgh {
         throw cet::exception(__FUNCTION__) << "Function " << func << " has been requested multiple times in fcl file!" << std::endl;
 
       // Create random engine for each rw function (name=func) (and seed it with random_seed set in the fcl)
-      CLHEP::HepRandomEngine& engine = seedservice->createEngine(module, "HepJamesRandom", func, ps_func, "random_seed");
+      seedservice->createEngine(module, "HepJamesRandom", func, ps_func, "random_seed");
+      auto& engine = art::ServiceHandle<art::RandomNumberGenerator>{}
+      ->getEngine(art::ScheduleID::first(),
+                  module_label,
+                  func);
+
       wcalc->SetName(func);
       wcalc->Configure(p, engine);
       Weight_t* winfo=new Weight_t();

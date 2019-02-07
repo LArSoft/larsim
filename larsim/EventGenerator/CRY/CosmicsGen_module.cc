@@ -6,6 +6,8 @@
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
+#ifndef EVGEN_COSMICSGEN_H
+#define EVGEN_COSMICSGEN_H
 
 // ROOT includes
 #include "TRandom3.h"
@@ -44,12 +46,17 @@ namespace evgen {
   class CosmicsGen : public art::EDProducer {
   public:
     explicit CosmicsGen(fhicl::ParameterSet const& pset);
+    virtual ~CosmicsGen();                        
+
+
+    void produce(art::Event& evt);  
+    void beginJob();
+    void beginRun(art::Run& run);
+    void reconfigure(fhicl::ParameterSet const& p);
 
   private:
 
-    void produce(art::Event& evt) override;
-    void beginJob() override;
-    void beginRun(art::Run& run) override;
+    evgb::CRYHelper* fCRYHelp; ///< CRY generator object
     
     std::vector<double> fbuffbox;
 
@@ -88,8 +95,7 @@ namespace evgen {
                                ///< the sampled time window
     TH1F* fMuonsInTPC;         ///< number of muons in the tpc during 
                                ///< the sampled time window
-    CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
-    evgb::CRYHelper fCRYHelp; ///< CRY generator object
+
   };
 }
 
@@ -97,17 +103,46 @@ namespace evgen{
 
   //____________________________________________________________________________
   CosmicsGen::CosmicsGen(fhicl::ParameterSet const& pset)
-    : art::EDProducer{pset}
-    , fbuffbox{pset.get<std::vector<double>>("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0})}
+    : art::EDProducer{pset}, fCRYHelp(0)
+  {
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed")}
-    , fCRYHelp{pset,
-               fEngine,
-               art::ServiceHandle<geo::Geometry>{}->GetWorldVolumeName()}
-  {
+    art::ServiceHandle<rndm::NuRandomService>()
+      ->createEngine(*this, pset, "Seed");
+    
+    //the buffer box bounds specified here will extend on the cryostat boundaries
+    fbuffbox = pset.get< std::vector<double> >("BufferBox",{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+
+    this->reconfigure(pset);
+    
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();    
+  }
+
+  //____________________________________________________________________________
+  CosmicsGen::~CosmicsGen()
+  {
+    if(fCRYHelp) delete fCRYHelp;
+  }
+
+  //____________________________________________________________________________
+  void CosmicsGen::reconfigure(fhicl::ParameterSet const& p)
+  {
+    if(fCRYHelp){
+      delete fCRYHelp; 
+      fCRYHelp = 0;
+    }
+
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine& engine = rng->getEngine(art::ScheduleID::first(),
+                                                    p.get<std::string>("module_label"));
+
+    art::ServiceHandle<geo::Geometry> geo;
+
+    fCRYHelp = new evgb::CRYHelper(p, engine, geo->GetWorldVolumeName());
+
+    return;
   }
 
   //____________________________________________________________________________
@@ -144,14 +179,21 @@ namespace evgen{
     fMuonsPerSample = tfs->make<TH1F>("fMuonsPerSample",  ";Number Muons;Samples", 100, 0, 1000); 
     fMuonsInCStat   = tfs->make<TH1F>("fMuonsInCryostat", ";Number Muons;Samples", 100, 0, 1000); 
     fMuonsInTPC     = tfs->make<TH1F>("fMuonsInTPC",      ";Number Muons;Samples", 100, 0, 1000); 
+
   }
 
   //____________________________________________________________________________
   void CosmicsGen::beginRun(art::Run& run)
   {
+
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+
+    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+
+    run.put(std::move(runcol));
+
+    return;
   }
 
   //____________________________________________________________________________
@@ -170,7 +212,7 @@ namespace evgen{
       
       simb::MCTruth pretruth;
       truth.SetOrigin(simb::kCosmicRay);
-      fCRYHelp.Sample(pretruth,
+      fCRYHelp->Sample(pretruth,
 		       geom->SurfaceY(),
 		       geom->DetLength(),
 		       0);
@@ -181,6 +223,10 @@ namespace evgen{
       int allPhotons   = 0;
       int allElectrons = 0;
       int allMuons     = 0;
+      // for c2: remove unused variables
+      //int tpcPhotons   = 0;
+      //int tpcElectrons = 0;
+      //int tpcMuons     = 0;
       
       // loop over particles in the truth object
       for(int i = 0; i < pretruth.NParticles(); ++i){
@@ -325,6 +371,8 @@ namespace evgen{
 
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
+  
+    return;
   }// end produce
 
 }// end namespace
@@ -335,3 +383,6 @@ namespace evgen{
   DEFINE_ART_MODULE(CosmicsGen)
 
 }
+
+#endif // EVGEN_COSMICSGEN_H
+////////////////////////////////////////////////////////////////////////

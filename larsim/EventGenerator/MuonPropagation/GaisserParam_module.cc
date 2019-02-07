@@ -9,6 +9,8 @@
 ///
 /// \author  k.warburton@sheffield.ac.uk
 ////////////////////////////////////////////////////////////////////////
+#ifndef EVGEN_GAISSERPARAM
+#define EVGEN_GAISSERPARAM
 
 // C++ includes.
 #include <iostream>
@@ -73,21 +75,22 @@ namespace evgen {
 
   public:
     explicit GaisserParam(fhicl::ParameterSet const& pset);
-
-  private:
+    virtual ~GaisserParam();
 
     // This is called for each event.
-    void produce(art::Event& evt) override;
-    void beginJob() override;
-    void beginRun(art::Run& run) override;
+    void produce(art::Event& evt);
+    void beginJob();
+    void beginRun(art::Run& run);
     void reconfigure(fhicl::ParameterSet const& p);
 
-    // Defining private maps.......
+    // Defining public maps.......
     typedef std::map<double, TH1*> dhist_Map;
     typedef std::map<double, TH1*>::iterator dhist_Map_it;
     TFile* m_File;
     dhist_Map* m_PDFmap;
     TH1* m_thetaHist;  
+
+  private:
 
     void SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
     void Sample(simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
@@ -99,9 +102,8 @@ namespace evgen {
     double GaisserFlux(double e, double theta);
     std::vector<double> GetBinning(const TAxis* axis, bool finalEdge=true);
 
-    CLHEP::HepRandomEngine& fEngine;     ///< art-managed random-number engine
 
-    static constexpr int kGAUS = 1;
+    static const int kGAUS = 1;    
 
     int                 fMode;           ///< Particle Selection Mode 
                                          ///< 0--generate a list of all particles, 
@@ -174,13 +176,21 @@ namespace evgen{
   //____________________________________________________________________________
   GaisserParam::GaisserParam(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
-    // create a default random engine; obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed"
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed")}
   {
     this->reconfigure(pset);
+
+    // create a default random engine; obtain the random seed from NuRandomService,
+    // unless overridden in configuration with key "Seed"
+    art::ServiceHandle<rndm::NuRandomService>()
+      ->createEngine(*this, pset, "Seed");
+
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
+  }
+
+  //____________________________________________________________________________
+  GaisserParam::~GaisserParam()
+  {
   }
 
   //____________________________________________________________________________
@@ -298,13 +308,19 @@ namespace evgen{
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSingleParticle);
     
-    Sample(truth, fEngine);
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
+    Sample(truth, engine);
 
     MF_LOG_DEBUG("GaisserParam") << truth;
 
     truthcol->push_back(truth);
 
     evt.put(std::move(truthcol));
+
+    return;
   }
 
   //____________________________________________________________________________
@@ -757,4 +773,11 @@ namespace evgen{
 
 }//end namespace evgen
 
-DEFINE_ART_MODULE(evgen::GaisserParam)
+namespace evgen{
+
+  DEFINE_ART_MODULE(GaisserParam)
+
+}//end namespace evgen
+
+#endif
+////////////////////////////////////////////////////////////////////////

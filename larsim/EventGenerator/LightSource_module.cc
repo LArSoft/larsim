@@ -55,6 +55,9 @@
  *     
  */
 
+#ifndef EVGEN_LIGHTSOURCE_H
+#define EVGEN_LIGHTSOURCE_H
+
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -176,7 +179,6 @@ namespace evgen {
     
     int                fFirstVoxel;
     int                fLastVoxel;
-    CLHEP::HepRandomEngine& fEngine;
   };
 }
 
@@ -185,16 +187,22 @@ namespace evgen{
   //----------------------------------------------------------------
   LightSource::LightSource(fhicl::ParameterSet const& pset) 
     : art::EDProducer{pset}
-    , fSourceMode{pset.get<int >("SourceMode")}
-    , fFillTree{pset.get<bool>("FillTree")}
-    , fPosDist{pset.get<int >("PosDist")}
-    , fTDist{pset.get<int >("TDist")}
-    , fPDist{pset.get<int >("PDist")}
+  {
+
+    // get the random number seed, use a random default if not specified    
+    // in the configuration file.  
+ 
+    fSourceMode   =     (pset.get<int >("SourceMode")  );
+    fFillTree     =     (pset.get<bool>("FillTree")    );
+    fPosDist      =     (pset.get<int >("PosDist")     );
+    fPDist        =     (pset.get<int >("PDist")       );
+    fTDist        =     (pset.get<int >("TDist")       );
+    
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>{}
-          ->createEngine(*this, pset, "Seed")}
-  {
+    art::ServiceHandle<rndm::NuRandomService>()
+      ->createEngine(*this, pset, "Seed");
+
     // load optional parameters in function
     produces< sumdata::RunData, art::InRun >();
     produces< std::vector<simb::MCTruth> >();
@@ -281,6 +289,9 @@ namespace evgen{
       throw cet::exception("LightSource") << "EVGEN Light Source : Unrecognised light source mode\n";
     }
     
+
+
+
     if(fFillTree)
       {
 	art::ServiceHandle<art::TFileService> tfs;
@@ -301,18 +312,27 @@ namespace evgen{
   //____________________________________________________________________________
   void LightSource::beginRun(art::Run& run)
   {
+
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+
+    run.put(std::move(runcol));
     
     fCurrentVoxel=fFirstVoxel;
+
+    return;
   }
 
   //----------------------------------------------------------------
   void LightSource::produce(art::Event& evt)
   {
-    if(fSourceMode==kFILE) {
+    
+    // FILE MODE -
     //  Each event, read coordinates of gun and number of photons to shoot from file
+    
+    if(fSourceMode==kFILE)
+      {
 	// Loop file if required
 	if(fInputFile.eof()){
 	  mf::LogWarning("LightSource") << "EVGEN Light Source : Warning, reached end of file,"
@@ -344,26 +364,49 @@ namespace evgen{
 	  fCurrentVoxel=0;
 	}
       }
-    else if(fSourceMode==kSCAN) {
+
+
+    // SCAN MODE -
     //  Step through detector using a number of steps provided in the config file
     //  firing a constant number of photons from each point
+    else if(fSourceMode==kSCAN)
+      {
+
+
 	TVector3 VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
+	
 	fX = VoxelCenter.X();
 	fY = VoxelCenter.Y();
 	fZ = VoxelCenter.Z();
+	
       }
+	
+    
+    // UNRECOGNISED MODE 
+    //  - neither file or scan mode, probably a config file error
+
     else{
-      //  Neither file or scan mode, probably a config file error
       throw cet::exception("LightSource") <<"EVGEN : Light Source, unrecognised source mode\n";
     }
     
+
+
+    //    std::cout<<"EVGEN Light source to be placed at  (x, y, z, t, dx, dy, dz, dt, n) " <<
+    //      fX << " " << fY << " " <<fZ << " " << fT << " " << 
+    //      fSigmaX << " " << fSigmaY << " " << fSigmaZ << " " << fSigmaT << " " <<
+    //      fN << std::endl<<std::endl;
+    
+      
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
 
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSingleParticle);
     Sample(truth);
     
+    //     std::cout << "put mctruth into the vector" << std::endl;
     truthcol->push_back(truth);
+
+    //     std::cout << "add vector to the event " << truthcol->size() << std::endl;
     evt.put(std::move(truthcol));
     
     phot::PhotonVisibilityService* vis = nullptr;
@@ -391,6 +434,10 @@ namespace evgen{
 	mf::LogVerbatim("LightSource") << "EVGEN Light Source fully scanned detector.  Starting over.";
 	fCurrentVoxel=fFirstVoxel;
       }
+    
+    return;
+
+
   }
 
 
@@ -398,8 +445,12 @@ namespace evgen{
   {
     mf::LogVerbatim("LightSource") <<"Light source debug : Shooting at " << fX <<" " << fY<<" "<< fZ;
     
-    CLHEP::RandFlat   flat(fEngine);
-    CLHEP::RandGaussQ gauss(fEngine);
+    // get the random number generator service and make some CLHEP generators
+    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+                                                    moduleDescription().moduleLabel());
+    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandGaussQ gauss(engine);
 
     for(int j=0; j!=fN; ++j){
       // Choose momentum (supplied in eV, convert to GeV)
@@ -476,6 +527,16 @@ namespace evgen{
 
   }
 
+
 }
 
-DEFINE_ART_MODULE(evgen::LightSource)
+
+namespace evgen{
+
+  DEFINE_ART_MODULE(LightSource)
+
+}//end namespace evgen
+
+
+#endif // EVGEN_LIGHTSOURCE_H
+////////////////////////////////////////////////////////////////////////

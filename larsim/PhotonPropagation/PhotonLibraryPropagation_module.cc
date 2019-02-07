@@ -151,19 +151,25 @@ private:
   bool fDoSlowComponent;
   vector<art::InputTag> fEDepTags;
   larg4::ISCalcSeparate fISAlg;
-  CLHEP::HepRandomEngine& fPhotonEngine;
-  CLHEP::HepRandomEngine& fScintTimeEngine;
-
-  void produce(art::Event&) override;
 
 public:
 
+  ~PhotonLibraryPropagation();
   explicit PhotonLibraryPropagation(fhicl::ParameterSet const&);
   PhotonLibraryPropagation(PhotonLibraryPropagation const&) = delete;
   PhotonLibraryPropagation(PhotonLibraryPropagation&&) = delete;
   PhotonLibraryPropagation& operator=(PhotonLibraryPropagation const&) = delete;
   PhotonLibraryPropagation& operator=(PhotonLibraryPropagation&&) = delete;
+
+public:
+
+  void produce(art::Event&) override;
+
 };
+
+PhotonLibraryPropagation::~PhotonLibraryPropagation()
+{
+}
 
 PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
   : art::EDProducer{p}
@@ -171,10 +177,11 @@ PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
   , fRiseTimeSlow{p.get<double>("RiseTimeSlow", 0.0)}
   , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
   , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
-  , fPhotonEngine{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton")}
-  , fScintTimeEngine{art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime")}
 {
-  if (art::ServiceHandle<sim::LArG4Parameters>{}->UseLitePhotons()) {
+  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton");
+  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime");
+  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  if (lgp->UseLitePhotons()) {
     produces<vector<sim::SimPhotonsLite>>();
   }
   else {
@@ -187,8 +194,12 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   art::ServiceHandle<PhotonVisibilityService> pvs;
   art::ServiceHandle<sim::LArG4Parameters> lgp;
   auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-  CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
-  CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
+  art::ServiceHandle<art::RandomNumberGenerator> rng;
+  auto const& module_label = moduleDescription().moduleLabel();
+  auto& engine_photon = rng->getEngine(art::ScheduleID::first(), module_label, "photon");
+  CLHEP::RandPoissonQ randpoisphot{engine_photon};
+  auto& engine_scinttime = rng->getEngine(art::ScheduleID::first(), module_label, "scinttime");
+  CLHEP::RandFlat randflatscinttime{engine_scinttime};
   auto const nOpChannels = static_cast<int>(pvs->NOpChannels());
   fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
   unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
