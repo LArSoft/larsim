@@ -119,6 +119,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   NUANCEGen::NUANCEGen(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
     this->reconfigure(pset); 
     fStopwatch.Start();

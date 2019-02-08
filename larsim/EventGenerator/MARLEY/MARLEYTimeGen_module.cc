@@ -529,7 +529,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
 
 //------------------------------------------------------------------------------
 evgen::MarleyTimeGen::MarleyTimeGen(const Parameters& p)
-  : fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0),
+  : EDProducer{p}, fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0),
   fEventNumber(0), fTNu(0.), fFluxAveragedCrossSection(0.)
 {
   // Configure the module (including MARLEY itself) using the FHiCL parameters

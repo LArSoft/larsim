@@ -113,7 +113,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   FileMuons::FileMuons(fhicl::ParameterSet const& pset)
-     : fEventNumberOffset(pset.get<      int                 >("EventNumberOffset"))
+     : EDProducer{pset}
+     , fEventNumberOffset(pset.get<      int                 >("EventNumberOffset"))
      , fPDG              (pset.get< std::vector<int>	     >("PDG")              )	       
      , fXYZ_Off          (pset.get< std::vector<double>	     >("InitialXYZOffsets"))	       
      , fFileName         (pset.get< std::string     	     >("FileName")         )      

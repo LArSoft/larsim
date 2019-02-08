@@ -62,7 +62,8 @@ private:
 
 
 spacecharge::ShiftEdepSCE::ShiftEdepSCE(fhicl::ParameterSet const & p)
-  : fEDepTag(p.get<art::InputTag>("EDepTag")),
+  : EDProducer{p}
+  , fEDepTag(p.get<art::InputTag>("EDepTag")),
     fMakeAnaTree(p.get<bool>("MakeAnaTree",true))
 {
   produces< std::vector<sim::SimEnergyDeposit> >();

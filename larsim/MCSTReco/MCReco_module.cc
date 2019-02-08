@@ -46,7 +46,8 @@ private:
 };
 
 MCReco::MCReco(fhicl::ParameterSet const & pset)
-  : fPart   (pset.get< fhicl::ParameterSet >("MCRecoPart"))
+  : EDProducer{pset}
+  , fPart   (pset.get< fhicl::ParameterSet >("MCRecoPart"))
   , fEdep   (pset.get< fhicl::ParameterSet >("MCRecoEdep"))
   , fMCSAlg (pset.get< fhicl::ParameterSet >("MCShowerRecoAlg"))
   , fMCTAlg (pset.get< fhicl::ParameterSet >("MCTrackRecoAlg"))

@@ -156,7 +156,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   GENIEGen::GENIEGen(fhicl::ParameterSet const& pset)
-    : fGENIEHelp(0)
+    : EDProducer{pset}
+    , fGENIEHelp(0)
     , fDefinedVtxHistRange (pset.get< bool >("DefinedVtxHistRange"))
     , fVtxPosHistRange (pset.get< std::vector<double> >("VtxPosHistRange"))
     , fPassEmptySpills (pset.get< bool   >("PassEmptySpills"))

@@ -1256,6 +1256,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   NuWroGen::NuWroGen(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
 
     fEventNumberOffset = pset.get< int >("EventNumberOffset",0);
@@ -2006,5 +2007,3 @@ namespace evgen{
 
 #endif // EVGEN_NUWROGEN_H
 ////////////////////////////////////////////////////////////////////////
-
-

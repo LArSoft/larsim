@@ -98,7 +98,8 @@ namespace raw {
     
     /// Constructor; see module documentation for configuration directions
     explicit RecompressRawDigits(Parameters const& config)
-      : fRawDigitLabel(config().rawDigitLabel())
+      : EDProducer{config}
+      , fRawDigitLabel(config().rawDigitLabel())
       , fCompressionType(parseCompressionType(config().compressionType()))
       , fInstanceName(config().instanceName())
       {

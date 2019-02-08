@@ -50,6 +50,7 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   // Constructor
   FilterNoMCParticles::FilterNoMCParticles(fhicl::ParameterSet const& pset) :
+    EDFilter{pset},
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
   {
     this->reconfigure(pset);

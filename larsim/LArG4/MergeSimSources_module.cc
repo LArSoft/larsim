@@ -59,7 +59,8 @@ private:
 
 
 sim::MergeSimSources::MergeSimSources(fhicl::ParameterSet const & p)
-  : fInputSourcesLabels(p.get< std::vector<std::string> >("InputSourcesLabels"))
+  : EDProducer{p}
+  , fInputSourcesLabels(p.get< std::vector<std::string> >("InputSourcesLabels"))
   , fTrackIDOffsets(p.get< std::vector<int> >("TrackIDOffsets"))
   , fMergeUtility(fTrackIDOffsets)
 {
