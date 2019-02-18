@@ -63,8 +63,10 @@ namespace phot{
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
-   void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
+    void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
+    void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double> > v[9], std::string& s, double& w, double& h, double& r) const;
     
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
@@ -75,6 +77,7 @@ namespace phot{
     std::string ParPropTimeFormula() const { return fParPropTime_formula; }
 
     bool IncludePropTime() const { return fIncludePropTime; }
+    bool IncludeGeoParametrz() const { return fIncludeGeoParametrz; }
 
     const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
@@ -102,6 +105,7 @@ namespace phot{
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
+    bool                 fIncludeGeoParametrz;
 
     bool                 fParPropTime;
     size_t               fParPropTime_npar;
@@ -125,7 +129,24 @@ namespace phot{
     TF1 *fparsCte_refl = nullptr;
     TF1 *fparsSlope_refl = nullptr;
     double fT0_max, fT0_break_point;
-   
+
+    //for vuv time parametrization
+    std::vector<double> fDistances_all;
+    std::vector<double> fNorm_over_entries;
+    std::vector<double> fMpv;
+    std::vector<double> fWidth;
+    std::vector<double> fDistances;
+    std::vector<double> fSlope; 
+    std::vector<double> fExpo_over_Landau_norm[3];
+    double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;   
+    //for the vuv/direct light signal (number of hits) parametrization
+    //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)
+    std::vector<std::vector<double> > fGH_RS60cm_SP, fGH_RS120cm_SP, fGH_RS180cm_SP,
+                                      fGH_RS60cm_DP, fGH_RS120cm_DP, fGH_RS180cm_DP,
+                                      fGH_RS60cm_SBN, fGH_RS120cm_SBN, fGH_RS180cm_SBN;
+    std::string fwhichDetector;
+    double fARAPUCA_height, fARAPUCA_width, fPMT_radius;
+
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;

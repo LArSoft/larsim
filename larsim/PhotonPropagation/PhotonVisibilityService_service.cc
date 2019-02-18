@@ -81,6 +81,7 @@ namespace phot{
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
+    fIncludeGeoParametrz(false),
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
@@ -202,7 +203,9 @@ namespace phot{
     fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
     fStoreReflected       = p.get< bool        >("StoreReflected", false);
     fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
+    // Parametrizations (time and Nhits)
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
+    fIncludeGeoParametrz  = p.get< bool        >("IncludeGeoParametrz", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
     fInterpolate          = p.get< bool        >("Interpolate", false);
@@ -247,8 +250,27 @@ namespace phot{
 
     if(fIncludePropTime)
       {
+
+	//VUV arrival time distribution parametrization (no detector dependent at first order)
+	std::cout<<"Loading the VUV time parametrization"<<std::endl;
+	fDistances_all     = p.get<std::vector<double> >("Distances_all");
+	fNorm_over_entries = p.get<std::vector<double> >("Norm_over_entries");
+	fMpv = p.get<std::vector<double> >("Mpv");
+	fWidth = p.get<std::vector<double> >("Width");
+	fDistances = p.get<std::vector<double> >("Distances");
+	fSlope = p.get<std::vector<double> >("Slope");
+	fExpo_over_Landau_norm[0] = p.get<std::vector<double> >("Expo_over_Landau_norm_0");
+	fExpo_over_Landau_norm[1] = p.get<std::vector<double> >("Expo_over_Landau_norm_30");
+	fExpo_over_Landau_norm[2] = p.get<std::vector<double> >("Expo_over_Landau_norm_60");
+	fstep_size = p.get<double>("step_size");
+	fmax_d= p.get<double>("max_d");
+	fvuv_vgroup_mean= p.get<double>("vuv_vgroup_mean");
+	fvuv_vgroup_max= p.get<double>("vuv_vgroup_max");
+	finflexion_point_distance= p.get<double>("inflexion_point_distance");
+	
+	//ALL BELOW IS OLD PARAMETRIZATION. TO BE REMOVED SOON (reflected component time needs to be updated too)
 	// Construct parameterized model parameter functions.         
-	std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
+	/*std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
 	std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
 	//range of distances where the parametrization is valid                                            
 	fD_break = p.get<double>("D_break");
@@ -325,9 +347,29 @@ namespace phot{
 	fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
 	for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
 	  fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
-
+	*/
 
       }
+
+    if(fIncludeGeoParametrz) {
+      std::cout<<" VUV hits Gaisser-Hillas Rayleigh scattering correction"<<std::endl;
+      fGH_RS60cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS60cm_SP");
+      fGH_RS120cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS120cm_SP");
+      fGH_RS180cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS180cm_SP");
+ 
+      fGH_RS60cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS60cm_DP");
+      fGH_RS120cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS120cm_DP");
+      fGH_RS180cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS180cm_DP");
+
+      fGH_RS60cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS60cm_SBN");
+      fGH_RS120cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS120cm_SBN");
+      fGH_RS180cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS180cm_SBN");
+      
+      fwhichDetector = p.get< std::string >("whichDetector", "");
+      fARAPUCA_height = p.get<double>("ARAPUCA_height");
+      fARAPUCA_width = p.get<double>("ARAPUCA_width");
+      fPMT_radius = p.get<double>("PMT_radius");
+    }
 
 
     return;
@@ -643,6 +685,48 @@ namespace phot{
   }
 
 
+
+  //------------------------------------------------------                                                                             
+  void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, 
+						     double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const
+  {
+    v[0] = fDistances_all;
+    v[1] = fNorm_over_entries;
+    v[2] = fMpv;
+    v[3] = fWidth;
+    v[4] = fDistances;
+    v[5] = fSlope;
+    v[6] = fExpo_over_Landau_norm[0];
+    v[7] = fExpo_over_Landau_norm[1];
+    v[8] = fExpo_over_Landau_norm[2];
+    
+    step_size = fstep_size;
+    max_d = fmax_d;
+    vuv_vgroup_mean = fvuv_vgroup_mean;
+    vuv_vgroup_max = fvuv_vgroup_max;
+    inflexion_point_distance = finflexion_point_distance;
+
+  }
+
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double> > v[9], std::string& s, double& w, double& h, double& r) const
+  {
+    v[0] = fGH_RS60cm_SBN;
+    v[1] = fGH_RS120cm_SBN;
+    v[2] = fGH_RS180cm_SBN;
+    v[3] = fGH_RS60cm_SP;
+    v[4] = fGH_RS120cm_SP;
+    v[5] = fGH_RS180cm_SP;
+    v[6] = fGH_RS60cm_DP;
+    v[7] = fGH_RS120cm_DP;
+    v[8] = fGH_RS180cm_DP;
+
+    s = fwhichDetector;
+
+    h = fARAPUCA_height;
+    w = fARAPUCA_width;
+    r = fPMT_radius;
+
+  }
   //------------------------------------------------------
   /***
    * Preform any necessary transformations on the coordinates before trying to access

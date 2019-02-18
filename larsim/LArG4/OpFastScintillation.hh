@@ -99,6 +99,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "TF1.h"
+#include "TVector3.h"
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -227,11 +228,13 @@ public: // With description
         void DumpPhysicsTable() const;
         // Prints the fast and slow scintillation integral tables.
 
-        std::vector<double> GetVUVTime(double, int) const;
-        std::vector<double> GetVisibleTimeOnlyCathode(double, int) const;
-       // Update configuration parameters.
+        std::vector<double> GetVUVTime(double, int);
+        std::vector<double> GetVisibleTimeOnlyCathode(double, int);
+        void generateparam(int index);
+        std::vector<double> getVUVTime(double, int);
+        // hits calculating functions
+        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 
-       //void reconfigure(const fhicl::ParameterSet& pset);
 
 protected:
 
@@ -269,7 +272,7 @@ private:
         G4double scint_time(const G4Step& aStep,
                             G4double ScintillationTime,
                             G4double ScintillationRiseTime) const;
-        std::vector<double> propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected=false) const;
+  std::vector<double> propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected=false); //const;
    
         // emission time distribution when there is a finite rise time
         G4double sample_time(G4double tau1, G4double tau2) const;
@@ -291,17 +294,54 @@ private:
         double fd_break;
         double fd_max;
         double ftf1_sampling_factor;
-        double ft0_max, ft0_break_point; 
+        double ft0_max, ft0_break_point;
+
+        //For new VUV time parametrization
+        double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
+        std::vector<double> fparameters[9];
+        std::vector<std::vector<double> > fGHvuvpars[9];
+        // vector containing generated VUV timing parameterisations
+        std::vector<TF1> VUV_timing;
+        // vector containing min and max range VUV timing parameterisations are sampled to
+        std::vector<double> VUV_max;
+        std::vector<double> VUV_min;
+        //array of correction for the VUV Nhits estimation
+        TF1* GHvuv[9];
+        std::string flagDetector;
+
         //double fGlobalTimeOffset;  
 
         void ProcessStep( const G4Step& step);
         
         bool bPropagate; ///< Whether propagation of photons is enabled.
-
+        int foptical_detector_type; 
+        double fheight, fwidth, fradius;
+        int fdelta_angulo, fL_abs_vuv;
+        std::vector<std::vector<double> > fOpDetCenter;
 };
 
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);
+  //For new VUV time parametrization    
+  double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate );
+  double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
+		       std::vector<double> &yData3, double x, bool extrapolate);
+  double model_close(double*, double*);
+  double model_far(double*, double*);
+  // gaisser-hillas function
+  double GaisserHillas(double *x, double *par);
+  // structure definition for solid angle of rectangle function                                                                                                                                     
+  struct acc{
+    // ax,ay,az = centre of rectangle; w = width; h = height                                                                                                                                
+    double ax, ay, az, w, h;
+  };
+  // solid angle of rectangular aperture calculation functions
+  double Rectangle_SolidAngle(double a, double b, double d);
+  double Rectangle_SolidAngle(acc& out, TVector3 v);
+
+  // solid angle of circular aperture calculation functions
+  double Disk_SolidAngle(double *x, double *p);
+  double Disk_SolidAngle(double d, double h, double b);
 
 ////////////////////
 // Inline methods

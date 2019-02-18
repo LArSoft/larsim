@@ -1,4 +1,4 @@
-// Class adapted for LArSoft by Ben Jones, MIT 10/10/12
+// Class ageodapted for LArSoft by Ben Jones, MIT 10/10/12
 //
 // This class is a physics process based on the standard Geant4
 // scintillation process.
@@ -128,6 +128,11 @@
 
 #include "TRandom3.h"
 #include "TMath.h"
+#include "TFormula.h"
+#include "Math/SpecFuncMathMore.h"
+#include "TSystem.h"
+#include <cmath>
+
 #include "boost/algorithm/string.hpp"
 
 namespace larg4{
@@ -152,7 +157,7 @@ namespace larg4{
     : G4VRestDiscreteProcess(processName, type)
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters>()->NoPhotonPropagation()))
   {
-    G4cout<<"BEA1 timing distribution"<<G4endl;
+   
     SetProcessSubType(25);
 
     fTrackSecondariesFirst = false;
@@ -179,12 +184,108 @@ namespace larg4{
 
     if (bPropagate) {
       art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+      // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time 
+      static art::ServiceHandle<geo::Geometry> geo;
+   
+      for(size_t i = 0; i != pvs->NOpChannels(); i++)
+	{
+	  double OpDetCenter_i[3];
+	  std::vector<double> OpDetCenter_v;
+	  geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
+	  OpDetCenter_v.assign(OpDetCenter_i, OpDetCenter_i +3);
+	  fOpDetCenter.push_back(OpDetCenter_v);
+	}
+      
       if(pvs->IncludePropTime()) {
+	//OLD VUV time parapetrization (to be removed soon)
         pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
         pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+	//New VUV time parapetrization
+	pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
+	// testing we are loading right the parameters
+	for(int jj=0; jj<9; jj++) {
+	  std::cout<<"Using parametrization for propagation time of the light. "<<std::endl;
+	  std::cout<<"fparameters["<<jj<<"] =";
+	  for(int kk=0; kk<int(fparameters[jj].size()); kk++) {
+	    std::cout<<fparameters[jj].at(kk)<<", ";
+	  }
+	  std::cout<<""<<std::endl;
+	}
+	// create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
+	// default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated  
+	int num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead
+	std::vector<TF1> VUV_timing_temp(num_params,TF1());
+	VUV_timing = VUV_timing_temp;
+    
+	// initialise vectors to contain range parameterisations sampled to in each case
+	// when using TF1->GetRandom(xmin,xmax), must be in same range otherwise sampling is regenerated, this is the slow part!
+	std::vector<double> VUV_empty(num_params, 0);
+	VUV_max = VUV_empty;
+	VUV_min = VUV_empty;
+
+      }
+      if(pvs->IncludeGeoParametrz()) {
+	std::cout<<"Loading the GH corrections"<<std::endl;
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, flagDetector, fheight, fwidth, fradius);
+	// LAr absorption length in cm
+	std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+	std::vector<double> x_v, y_v;
+	for(auto elem : abs_length_spectrum) {
+	  x_v.push_back(elem.first);
+	  y_v.push_back(elem.second);
+	}
+	fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
+	std::cout<<"Absorption Length Spectrum value for photons at 9.7 eV: "<<fL_abs_vuv<<" cm"<<std::endl;
+	fdelta_angulo = 10.;
+
+	foptical_detector_type = 0;
+	// Arapucas: detector_type = 0, PMTs: detector_type = 1
+
+	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
+	std::cout<<"Loading the parameters for the geometry corrections depending on the detector and raileigh Scattering length ..."<<std::endl;
+	double pars_ini[4] = {0,0,0,0};
+	// For SBN-like (size) detectors: SBND, MicroBooNE and ICARUS
+	if(flagDetector == "SBN") {
+	  std::cout<<"Light simulation for SBN detector (SBND, MicroBooNE and ICARUS)"<<std::endl;
+	  for(int bin = 0; bin < 9; bin++) {
+	    GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);      
+	    for(int j=0; j < 4; j++) {
+	      //fGHvuvpars[1], fGHvuvpars[2] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[0])
+	      pars_ini[j] = fGHvuvpars[0].at(j).at(bin);
+	      std::cout<<"fGHvuvpars[0].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
+	    }
+	    GHvuv[bin]->SetParameters(pars_ini);
+	  }
+	}
+	// For DUNE Single Phase like detector
+	if(flagDetector == "SP") {
+	  std::cout<<"Light simulation for DUNE SP detector"<<std::endl;
+          for(int bin = 0; bin < 9; bin++) {
+            GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
+            for(int j=0; j < 4; j++) {
+              //fGHvuvpars[4], fGHvuvpars[5] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[3])
+              pars_ini[j] = fGHvuvpars[3].at(j).at(bin);
+	      std::cout<<"fGHvuvpars[3].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
+            }
+            GHvuv[bin]->SetParameters(pars_ini);
+          }
+        }
+        // For DUNE Dual Phase like detector  
+	if(flagDetector == "DP") {
+	  std::cout<<"Light simulation for DUNE DP detector"<<std::endl;
+          for(int bin = 0; bin < 9; bin++) {
+            GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
+            for(int j=0; j < 4; j++) {
+              //fGHvuvpars[7], fGHvuvpars[8] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[6])
+              pars_ini[j] = fGHvuvpars[6].at(j).at(bin);
+	      std::cout<<"fGHvuvpars[6].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
+            }
+            GHvuv[bin]->SetParameters(pars_ini);
+          }
+	}
+   	
       }
     }
-
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
     const int nbins=tpbemission.size();
     double * parent=new double[nbins];
@@ -646,7 +747,7 @@ namespace larg4{
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
     
-      if(!Visibilities){
+      if(!Visibilities && !pvs->IncludeGeoParametrz()){
       }else{
         std::map<int, int> DetectedNum;
 
@@ -654,7 +755,19 @@ namespace larg4{
 
         for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
         {
-          G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+          G4int DetThisPMT = 0.;
+	  if(Visibilities && !pvs->IncludeGeoParametrz())
+	    DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+	  else {
+	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
+	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
+	    //std::cout<<"ScintPoint( "<<ScintPoint.X()<<", "<<ScintPoint.Y()<<", "<<ScintPoint.Z()<<")"<<std::endl;
+	    //std::cout<<"OpDetPoint( "<<OpDetPoint.X()<<", "<<OpDetPoint.Y()<<", "<<OpDetPoint.Z()<<")"<<std::endl;
+	    //std::cout<<"Distance = "<<(ScintPoint - OpDetPoint).Mag()<<std::endl;
+	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
+	    
+	  }
+	    
 
           if(DetThisPMT>0) 
           {
@@ -705,14 +818,14 @@ namespace larg4{
             double Edeposited  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
 
             // Get the transport time distribution
-            std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
-
+	    std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
             // Loop through the photons
             for (G4int i = 0; i < NPhotons; ++i)
             {
+	      //std::cout<<"VUV time correction: "<<arrival_time_dist[i]<<std::endl;
               G4double Time = t0
-                + scint_time(aStep, ScintillationTime, ScintillationRiseTime)
-                + arrival_time_dist[i]*CLHEP::ns;
+                + scint_time(aStep, ScintillationTime, ScintillationRiseTime) 
+		+ arrival_time_dist[i]*CLHEP::ns;
 
               // Always store the BTR
               tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
@@ -968,9 +1081,9 @@ namespace larg4{
   }
 
 
-  std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) const
+  std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) //const
   {
-    static art::ServiceHandle<geo::Geometry> geo;
+
     static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
 
     // Initialize vector of the right length with all 0's
@@ -999,16 +1112,16 @@ namespace larg4{
 
     else if (pvs->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization 
-      double OpDetCenter[3];
-      geo->OpDetGeoFromOpDet(OpChannel).GetCenter(OpDetCenter);
-      G4ThreeVector OpDetPoint(OpDetCenter[0]*CLHEP::cm,OpDetCenter[1]*CLHEP::cm,OpDetCenter[2]*CLHEP::cm);
+      G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm,fOpDetCenter.at(OpChannel)[1]*CLHEP::cm,fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
+      
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS! 
-        arrival_time_dist = GetVUVTime(distance_in_cm, NPhotons);//in ns
+        arrival_time_dist = getVUVTime(distance_in_cm, NPhotons);//in ns
       }
       else {
-        double t0_vis_lib = ReflT0s[OpChannel];                   
-        arrival_time_dist = GetVisibleTimeOnlyCathode(t0_vis_lib, NPhotons);
+	//std::cout<<"propagation time for visible component sset to 0"<<std::endl;
+        //double t0_vis_lib = ReflT0s[OpChannel];                   
+        //arrival_time_dist = GetVisibleTimeOnlyCathode(t0_vis_lib, NPhotons);
       }
     }
     
@@ -1063,7 +1176,7 @@ namespace larg4{
 // Parametrization of the VUV light timing (result from direct transport + Rayleigh scattering ONLY)
 // using a landau + expo function.The function below returns the arrival time distribution given the
 // distance IN CENTIMETERS between the scintillation/ionization point and the optical detectotr.
-  std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_photons) const {
+  std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_photons) {
 
     //-----Distances in cm and times in ns-----// 
     //gRandom->SetSeed(0);
@@ -1126,14 +1239,14 @@ namespace larg4{
     delete fexpo;
     delete fint;
     delete fVUVTiming;
-    G4cout<<"BEAMAUS timing distribution hecha"<<G4endl;
+    //G4cout<<"BEAMAUS timing distribution hecha"<<G4endl;
     return arrival_time_distrb;
   }
 
 // Parametrization of the Visible light timing (result from direct transport + Rayleigh scattering ONLY) 
 // using a landau + exponential function. The function below returns the arrival time distribution given the 
 // time of the first visible photon in the PMT. The light generated has been reflected by the cathode ONLY.
-  std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, int number_photons) const{
+  std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, int number_photons) {
     //-----Distances in cm and times in ns-----//  
     //gRandom->SetSeed(0);  
                
@@ -1193,9 +1306,181 @@ namespace larg4{
     delete fexpo;
     delete fint;
     delete fVisTiming;
-    G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
+    //G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
     return arrival_time_distrb;
   }
+
+  // New Parametrization code 
+  // parameterisation generation function
+  void OpFastScintillation::generateparam(int index) {
+    // get distance 
+    double distance_in_cm = (index * fstep_size) + 25;
+    
+    // time range
+    const double signal_t_range = 5000.;
+   
+    // parameterisation TF1    
+    TF1* fVUVTiming;
+      
+    // For very short distances the time correction is just a shift
+    double t_direct_mean = distance_in_cm/fvuv_vgroup_mean;
+    double t_direct_min = distance_in_cm/fvuv_vgroup_max;
+      
+    // Defining the model function(s) describing the photon transportation timing vs distance 
+    // Getting the landau parameters from the time parametrization
+    double* pars_landau = interpolate(fparameters[0], fparameters[2], fparameters[3], fparameters[1], distance_in_cm, true);
+    // Deciding which time model to use (depends on the distance)
+    // defining useful times for the VUV arrival time shapes
+    if(distance_in_cm >= finflexion_point_distance) {
+      double pars_far[4] = {t_direct_min, pars_landau[0], pars_landau[1], pars_landau[2]};
+      // Set model: Landau 
+      fVUVTiming =  new TF1("fVUVTiming",model_far,0,signal_t_range,4);
+      fVUVTiming->SetParameters(pars_far);
+    }
+    else {
+      // Set model: Landau + Exponential 
+      fVUVTiming =  new TF1("fVUVTiming",model_close,0,signal_t_range,7); 
+      // Exponential parameters
+      double pars_expo[2];   
+      // Getting the exponential parameters from the time parametrization
+      pars_expo[1] = interpolate(fparameters[4], fparameters[5], distance_in_cm, true);
+      //For simplicity, not considering the small dependency with the offset angle in pars_expo[0]
+      //Using the value for the [30,60deg] range. fparameters[6] and fparameters[8] are the values
+      //for [0,30deg] range and [60,90deg] range respectively
+      pars_expo[0] = fparameters[7].at(0) + fparameters[7].at(1)*distance_in_cm;
+      pars_expo[0] *= pars_landau[2];
+      pars_expo[0] = log(pars_expo[0]);
+      // this is to find the intersection point between the two functions:
+      TF1* fint = new TF1("fint",finter_d,pars_landau[0],4*t_direct_mean,5);
+      double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+      fint->SetParameters(parsInt);
+      double t_int = fint->GetMinimumX();
+      double minVal = fint->Eval(t_int);
+      // the functions must intersect - output warning if they don't
+      if(minVal>0.015) {
+	std::cout<<"WARNING: Parametrization of VUV light discontinuous for distance = " << distance_in_cm << std::endl;
+	std::cout<<"WARNING: This shouldn't be happening " << std::endl;
+      }
+      delete fint;   
+      double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
+      fVUVTiming->SetParameters(parsfinal);    
+    }
+
+    // set the number of points used to sample parameterisation
+    // for shorter distances, peak is sharper so more sensitive sampling required - values could be optimised, but since these are only generate once difference is not significant
+    int f_sampling;
+    if (distance_in_cm < 50) { f_sampling = 10000; }
+    else if (distance_in_cm < 100){ f_sampling = 5000; }
+    else { f_sampling = 1000; }
+    fVUVTiming->SetNpx(f_sampling);    
+
+    // calculate max and min distance relevant to sample parameterisation
+    // max 
+    const int nq_max=1;
+    double xq_max[nq_max];
+    double yq_max[nq_max];
+    xq_max[0] = 0.99;   // include 99%, 95% cuts out a lot of tail and time difference is negligible extending this
+    fVUVTiming->GetQuantiles(nq_max,yq_max,xq_max);
+    double max = yq_max[0];
+    // min 
+    double min = t_direct_min;
+
+    // generate the sampling
+    // the first call of GetRandom generates the timing sampling and stores it in the TF1 object, this is the slow part
+    // all subsequent calls check if it has been generated previously and are ~100+ times quicker
+    double arrival_time = fVUVTiming->GetRandom(min,max);
+    // add timing to the vector of timings and range to vectors of ranges
+    VUV_timing[index] = *fVUVTiming;
+    VUV_max[index] = max;
+    VUV_min[index] = min;
+
+    delete fVUVTiming;
+  }
+
+  // VUV arrival times calculation function
+  std::vector<double> OpFastScintillation::getVUVTime(double distance, int number_photons) {
+    
+    // pre-allocate memory
+    std::vector<double> arrival_time_distrb;
+    arrival_time_distrb.clear();
+    arrival_time_distrb.reserve(number_photons);
+    
+    // distance < 25cm
+    if (distance < 25) {
+      // times are fixed shift i.e. direct path only
+      double t_prop_correction = distance/fvuv_vgroup_mean;
+      for (int i = 0; i < number_photons; i++){
+	arrival_time_distrb.push_back(t_prop_correction);
+      }
+    }
+    // distance >= 25cm
+    else {
+      // determine nearest parameterisation in discretisation
+      int index = std::round((distance - 25) / fstep_size);
+      // check whether required parameterisation has been generated, generating if not
+      if (VUV_timing[index].GetNdim() == 0) {
+	generateparam(index);
+      }
+      // randomly sample parameterisation for each photon
+      for (int i = 0; i < number_photons; i++){
+	arrival_time_distrb.push_back(VUV_timing[index].GetRandom(VUV_min[index],VUV_max[index])); 
+      }  
+    }
+    return arrival_time_distrb;
+
+  }
+
+  // VUV hits calculation
+  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
+    
+    // distance and angle between ScintPoint and OpDetPoint
+    double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2) + pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
+    double cosine = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2)) / distance;
+    double theta = acos(cosine)*180./CLHEP::pi;
+    
+    // calculate solid angle:
+    double solid_angle;
+    // Arapucas
+    if (optical_detector_type == 0) {
+      // set Arapuca geometry struct for solid angle function
+      acc detPoint; 
+      detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];  // centre coordinates of optical detector
+      detPoint.w = fwidth; detPoint.h = fheight; // width and height in cm of arapuca active window
+
+      // get scintillation point coordinates relative to arapuca window centre
+      TVector3 ScintPoint_rel = ScintPoint - OpDetPoint;  
+
+      // calculate solid angle
+      solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
+    }
+    // PMTs
+    else if (optical_detector_type == 1) {
+      // offset in z-y plane
+      double d = sqrt(pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
+      // drift distance (in x)
+      double h =  sqrt(pow(ScintPoint[0] - OpDetPoint[0],2));
+      // Solid angle of a disk
+      solid_angle = Disk_SolidAngle(d, h, fradius);
+    }
+    else {
+      std::cout << "Error: Invalid optical detector type." <<std:: endl;
+      exit(1);
+    }  
+
+    // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
+    double hits_geo = exp(-1.*distance/fL_abs_vuv) * (solid_angle / (4*CLHEP::pi)) * Nphotons_created;
+
+    // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
+    // offset angle bin
+    int j = (theta/fdelta_angulo);
+    double hits_rec = gRandom->Poisson( GHvuv[j]->Eval(distance)*hits_geo/cosine );
+
+    // round to integer value, cannot have non-integer number of hits
+    int hits_vuv = std::round(hits_rec);
+
+    return hits_vuv;
+  }
+
 
   double finter_d(double *x, double *par) {
 
@@ -1229,6 +1514,212 @@ namespace larg4{
     return TMath::Abs(y1 - y2);
   }
 
+  double model_close(double *x, double *par)
+  {
+    // par0 = joining point
+    // par1 = Landau MPV
+    // par2 = Landau width
+    // par3 = normalization
+    // par4 = Expo cte
+    // par5 = Expo tau
+    // par6 = t_min
+  
+    double y1 = par[3]*TMath::Landau(x[0],par[1],par[2]);
+    double y2 = TMath::Exp(par[4]+x[0]*par[5]);
+    if(x[0] <= par[6] || x[0] > par[0]) y1 = 0.;
+    if(x[0] < par[0]) y2 = 0.;
+  
+    return (y1 + y2);
+  }
 
+  double model_far(double *x, double *par)
+  {
+    // par1 = Landau MPV
+    // par2 = Landau width
+    // par3 = normalization
+    // par0 = t_min
+
+    double y = par[3]*TMath::Landau(x[0],par[1],par[2]);
+    if(x[0] <= par[0]) y = 0.;
+  
+    return y;
+  }
+  double GaisserHillas(double *x,double *par) {
+    //This is the Gaisser-Hillas function
+    double X_mu_0=par[3];
+    double Normalization=par[0];
+    double Diff=par[1]-X_mu_0;
+    double Term=pow((*x-X_mu_0)/Diff,Diff/par[2]);
+    double Exponential=TMath::Exp((par[1]-*x)/par[2]);
+  
+    return (Normalization*Term*Exponential);
+  }
+
+  //======================================================================
+
+  //   Returns interpolated value at x from parallel arrays ( xData, yData )
+  //   Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
+  //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
+
+  double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate )
+  {
+    int size = xData.size();
+    int i = 0;                                          // find left end of interval for interpolation
+    if ( x >= xData[size - 2] )                         // special case: beyond right end
+      {
+	i = size - 2;
+      }
+    else
+      {
+	while ( x > xData[i+1] ) i++;
+      }
+    double xL = xData[i], yL = yData[i], xR = xData[i+1], yR = yData[i+1]; // points on either side (unless beyond ends)
+    if ( !extrapolate )                                                    // if beyond ends of array and not extrapolating
+      {
+	if ( x < xL ) yR = yL;
+	if ( x > xR ) yL = yR;
+      }
+    double dydx = ( yR - yL ) / ( xR - xL );            // gradient
+    return yL + dydx * ( x - xL );                      // linear interpolation
+  }
+
+  double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
+		       std::vector<double> &yData3, double x, bool extrapolate)
+  {
+    int size = xData.size();
+    int i = 0;                                          // find left end of interval for interpolation
+    if ( x >= xData[size - 2] )                         // special case: beyond right end
+      {
+	i = size - 2;
+      }
+    else
+      {
+	while ( x > xData[i+1] ) i++;
+      }
+    double xL = xData[i], xR = xData[i+1];// points on either side (unless beyond ends)
+    double yL1 = yData1[i], yR1 = yData1[i+1], yL2 = yData2[i], yR2 = yData2[i+1], yL3 = yData3[i], yR3 = yData3[i+1]; 
+  
+    if ( !extrapolate )                                                    // if beyond ends of array and not extrapolating
+      {
+	if ( x < xL ) {yR1 = yL1; yR2 = yL2; yR3 = yL3;}
+	if ( x > xR ) {yL1 = yR1; yL2 = yR2; yL3 = yR3;}
+      }
+    double dydx1 = ( yR1 - yL1 ) / ( xR - xL );            // gradient
+    double dydx2 = ( yR2 - yL2 ) / ( xR - xL );
+    double dydx3 = ( yR3 - yL3 ) / ( xR - xL );
+
+    double *yy = new double[3]; 
+    yy[0] = yL1 + dydx1 * ( x - xL );// linear interpolations
+    yy[1] = yL2 + dydx2 * ( x - xL );
+    yy[2] = yL3 + dydx3 * ( x - xL );
+  
+    return yy;                      
+  }
+
+  // solid angle of circular aperture
+  double Disk_SolidAngle(double* x, double *p) {
+    const double d = x[0];
+    const double h = x[1];
+    const double b = p[0];
+    if(b <= 0. || d < 0. || h <= 0.) return 0.; 
+    const double aa = TMath::Sqrt(h*h/(h*h+(b+d)*(b+d)));
+    if(d == 0) {
+      return 2.*TMath::Pi()*(1.-aa);
+    }
+    const double bb = TMath::Sqrt(4*b*d/(h*h+(b+d)*(b+d)));
+    const double cc = 4*b*d/((b+d)*(b+d));
+    
+    if(TMath::Abs(std::comp_ellint_1(bb) - bb) < 1e-10 && TMath::Abs(std::comp_ellint_3(cc,bb) - cc) <1e-10) {
+      throw(std::runtime_error("Problem loading ELLIPTIC INTEGRALS running Disk_SolidAngle!"));
+    }
+    if(d < b) {
+      return 2.*TMath::Pi() - 2.*aa*(std::comp_ellint_1(bb) + TMath::Sqrt(1.-cc)*std::comp_ellint_3(cc,bb));
+    }
+    if(d == b) {
+      return TMath::Pi() - 2.*aa*std::comp_ellint_1(bb);
+    }
+    if(d > b) {
+      return 2.*aa*(TMath::Sqrt(1.-cc)*std::comp_ellint_3(cc,bb) - std::comp_ellint_1(bb));
+    }
+
+    return 0.;
+  }
+
+  double Disk_SolidAngle(double d, double h, double b) {
+    double x[2] = { d, h };
+    double p[1] = { b };
+
+    return Disk_SolidAngle(x,p);
+    }
+ 
+  // solid angle of rectanglular aperture 
+
+  double Rectangle_SolidAngle(double a, double b, double d){
+
+    double aa = a/(2.0*d);
+    double bb = b/(2.0*d);
+    double aux = (1+aa*aa+bb*bb)/((1.+aa*aa)*(1.+bb*bb));
+    return 4*std::acos(std::sqrt(aux));
+
+  }
+  
+  double Rectangle_SolidAngle(acc& out, TVector3 v){
+
+    //v is the position of the track segment with respect to 
+    //the center position of the arapuca window 
+ 
+    // arapuca plane fixed in x direction
+
+    if( v.Y()==0.0 && v.Z()==0.0){
+      return Rectangle_SolidAngle(out.w,out.h,v.X());
+    }
+  
+    if( (std::abs(v.Y()) > out.w/2.0) && (std::abs(v.Z()) > out.h/2.0)){
+      double A, B, a, b, d;
+      A = std::abs(v.Y())-out.w/2.0;
+      B = std::abs(v.Z())-out.h/2.0;
+      a = out.w;
+      b = out.h;
+      d = abs(v.X());
+      double to_return = (Rectangle_SolidAngle(2*(A+a),2*(B+b),d)-Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*(A+a),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
+      return to_return;
+    }
+  
+    if( (std::abs(v.Y()) <= out.w/2.0) && (std::abs(v.Z()) <= out.h/2.0)){
+      double A, B, a, b, d;
+      A = -std::abs(v.Y())+out.w/2.0;
+      B = -std::abs(v.Z())+out.h/2.0;
+      a = out.w;
+      b = out.h;
+      d = abs(v.X());
+      double to_return = (Rectangle_SolidAngle(2*(a-A),2*(b-B),d)+Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
+      return to_return;
+    }
+
+    if( (std::abs(v.Y()) > out.w/2.0) && (std::abs(v.Z()) <= out.h/2.0)){
+      double A, B, a, b, d;
+      A = std::abs(v.Y())-out.w/2.0;
+      B = -std::abs(v.Z())+out.h/2.0;
+      a = out.w;
+      b = out.h;
+      d = abs(v.X());
+      double to_return = (Rectangle_SolidAngle(2*(A+a),2*(b-B),d)-Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(A+a),2*B,d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
+      return to_return;
+    }
+
+    if( (std::abs(v.Y()) <= out.w/2.0) && (std::abs(v.Z()) > out.h/2.0)){
+      double A, B, a, b, d;
+      A = -std::abs(v.Y())+out.w/2.0;
+      B = std::abs(v.Z())-out.h/2.0;
+      a = out.w;
+      b = out.h;
+      d = abs(v.X());
+      double to_return = (Rectangle_SolidAngle(2*(a-A),2*(B+b),d)-Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
+      return to_return;
+    }
+    // error message if none of these cases, i.e. something has gone wrong!
+    std::cout << "Warning: invalid solid angle call." << std::endl;
+    return 0.0;
+    }
 
 }

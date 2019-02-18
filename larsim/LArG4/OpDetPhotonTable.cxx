@@ -28,6 +28,7 @@ namespace larg4 {
   OpDetPhotonTable::OpDetPhotonTable()
   {
     fDetectedPhotons.clear();
+    fReflectedDetectedPhotons.clear();
   }
   OpDetPhotonTable::~OpDetPhotonTable(){}
 
@@ -164,6 +165,7 @@ namespace larg4 {
       fDetectedPhotons.at(i).SetChannel(i);
       //fDetectedPhotons.at(i).reserve(10000); // Just a guess on minimum # photons
     }
+    if(fReflectedDetectedPhotons.size() != nch) fReflectedDetectedPhotons.resize(nch);
     for(size_t i=0; i<fReflectedDetectedPhotons.size(); ++i) {
       fReflectedDetectedPhotons.at(i).clear();
       fReflectedDetectedPhotons.at(i).SetChannel(i);
