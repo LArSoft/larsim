@@ -299,15 +299,17 @@ private:
         //For new VUV time parametrization
         double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
         std::vector<double> fparameters[9];
-        std::vector<std::vector<double> > fGHvuvpars[9];
         // vector containing generated VUV timing parameterisations
         std::vector<TF1> VUV_timing;
         // vector containing min and max range VUV timing parameterisations are sampled to
         std::vector<double> VUV_max;
         std::vector<double> VUV_min;
-        //array of correction for the VUV Nhits estimation
-        TF1* GHvuv[9];
-        std::string flagDetector;
+        
+	//For VUV semi-analytic hits
+	//array of correction for the VUV Nhits estimation
+        std::vector<std::vector<double> > fGHvuvpars;
+	TF1* GHvuv[9];
+        
 
         //double fGlobalTimeOffset;  
 

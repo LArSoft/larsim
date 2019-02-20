@@ -66,7 +66,7 @@ namespace phot{
     void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
-    void LoadGHForVUVCorrection(std::vector<std::vector<double> > v[9], std::string& s, double& w, double& h, double& r) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r) const;
     
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
@@ -145,7 +145,7 @@ namespace phot{
                                       fGH_RS60cm_DP, fGH_RS120cm_DP, fGH_RS180cm_DP,
                                       fGH_RS60cm_SBN, fGH_RS120cm_SBN, fGH_RS180cm_SBN;
     std::string fwhichDetector;
-    double fARAPUCA_height, fARAPUCA_width, fPMT_radius;
+    double fAPERTURE_height, fAPERTURE_width, fPMT_radius;
 
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;

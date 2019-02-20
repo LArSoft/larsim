@@ -267,8 +267,8 @@ timeparametrization_photonvisibilityservice:
 
 # detectors: SP (DUNE Single Phase); DP (DUNE Dual Phase); SBN (SBND, MIcroBooNE, ICARUS)
 whichDetector: "SP"
-ARAPUCA_height: 9.3 # sensitive window heigh (in cm)
-ARAPUCA_width: 7.8 # sensitive window width (in cm)
+APERTURE_height: 9.3 # sensitive window heigh (in cm)
+APERTURE_width: 7.8 # sensitive window width (in cm)
 PMT_radius: 10.16 # 8" diameter PMT (in cm)
   
 }

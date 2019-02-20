@@ -225,8 +225,7 @@ namespace larg4{
 
       }
       if(pvs->IncludeGeoParametrz()) {
-	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, flagDetector, fheight, fwidth, fradius);
+	
 	// LAr absorption length in cm
 	std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
 	std::vector<double> x_v, y_v;
@@ -236,54 +235,28 @@ namespace larg4{
 	}
 	fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
 	std::cout<<"Absorption Length Spectrum value for photons at 9.7 eV: "<<fL_abs_vuv<<" cm"<<std::endl;
-	fdelta_angulo = 10.;
-
-	foptical_detector_type = 0;
+	
+	foptical_detector_type = 0; /// #### NEED TO CHANGE THIS!
 	// Arapucas: detector_type = 0, PMTs: detector_type = 1
+	
+	// Load Gaisser-Hillas corrections for VUV semi-analytic hits 
+	std::cout<<"Loading the GH corrections"<<std::endl;
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fheight, fwidth, fradius);
+        fdelta_angulo = 10.; // angle bin size
 
 	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
-	std::cout<<"Loading the parameters for the geometry corrections depending on the detector and raileigh Scattering length ..."<<std::endl;
 	double pars_ini[4] = {0,0,0,0};
-	// For SBN-like (size) detectors: SBND, MicroBooNE and ICARUS
-	if(flagDetector == "SBN") {
-	  std::cout<<"Light simulation for SBN detector (SBND, MicroBooNE and ICARUS)"<<std::endl;
-	  for(int bin = 0; bin < 9; bin++) {
-	    GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);      
-	    for(int j=0; j < 4; j++) {
-	      //fGHvuvpars[1], fGHvuvpars[2] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[0])
-	      pars_ini[j] = fGHvuvpars[0].at(j).at(bin);
-	      std::cout<<"fGHvuvpars[0].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
-	    }
-	    GHvuv[bin]->SetParameters(pars_ini);
+	std::cout << "Initalising Gaisser-Hillas parameters" << std::endl;
+	for(int bin = 0; bin < 9; bin++) {
+	  GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);      
+	  for(int j=0; j < 4; j++) {
+	    // loads parameter set read in from fcl
+	    pars_ini[j] = fGHvuvpars[j][bin];
+	    std::cout<<"fGHvuvpars.at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
 	  }
+	  GHvuv[bin]->SetParameters(pars_ini);
 	}
-	// For DUNE Single Phase like detector
-	if(flagDetector == "SP") {
-	  std::cout<<"Light simulation for DUNE SP detector"<<std::endl;
-          for(int bin = 0; bin < 9; bin++) {
-            GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
-            for(int j=0; j < 4; j++) {
-              //fGHvuvpars[4], fGHvuvpars[5] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[3])
-              pars_ini[j] = fGHvuvpars[3].at(j).at(bin);
-	      std::cout<<"fGHvuvpars[3].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
-            }
-            GHvuv[bin]->SetParameters(pars_ini);
-          }
-        }
-        // For DUNE Dual Phase like detector  
-	if(flagDetector == "DP") {
-	  std::cout<<"Light simulation for DUNE DP detector"<<std::endl;
-          for(int bin = 0; bin < 9; bin++) {
-            GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
-            for(int j=0; j < 4; j++) {
-              //fGHvuvpars[7], fGHvuvpars[8] are related with mean Rayleigh scattering lengths 120cm and 180 cm respectively, instead of 60 cm (fGHvuvpars[6])
-              pars_ini[j] = fGHvuvpars[6].at(j).at(bin);
-	      std::cout<<"fGHvuvpars[6].at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
-            }
-            GHvuv[bin]->SetParameters(pars_ini);
-          }
-	}
-   	
+  	
       }
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
@@ -756,17 +729,14 @@ namespace larg4{
         for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
         {
           G4int DetThisPMT = 0.;
-	  if(Visibilities && !pvs->IncludeGeoParametrz())
+	  if(Visibilities && !pvs->IncludeGeoParametrz()){
 	    DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+	  }
 	  else {
 	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
-	    //std::cout<<"ScintPoint( "<<ScintPoint.X()<<", "<<ScintPoint.Y()<<", "<<ScintPoint.Z()<<")"<<std::endl;
-	    //std::cout<<"OpDetPoint( "<<OpDetPoint.X()<<", "<<OpDetPoint.Y()<<", "<<OpDetPoint.Z()<<")"<<std::endl;
-	    //std::cout<<"Distance = "<<(ScintPoint - OpDetPoint).Mag()<<std::endl;
 	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
-	    
-	  }
+          }
 	    
 
           if(DetThisPMT>0) 

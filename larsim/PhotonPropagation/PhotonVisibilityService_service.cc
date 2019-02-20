@@ -366,8 +366,8 @@ namespace phot{
       fGH_RS180cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS180cm_SBN");
       
       fwhichDetector = p.get< std::string >("whichDetector", "");
-      fARAPUCA_height = p.get<double>("ARAPUCA_height");
-      fARAPUCA_width = p.get<double>("ARAPUCA_width");
+      fAPERTURE_height = p.get<double>("APERTURE_height");
+      fAPERTURE_width = p.get<double>("APERTURE_width");
       fPMT_radius = p.get<double>("PMT_radius");
     }
 
@@ -708,22 +708,25 @@ namespace phot{
 
   }
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double> > v[9], std::string& s, double& w, double& h, double& r) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r) const
   {
-    v[0] = fGH_RS60cm_SBN;
-    v[1] = fGH_RS120cm_SBN;
-    v[2] = fGH_RS180cm_SBN;
-    v[3] = fGH_RS60cm_SP;
-    v[4] = fGH_RS120cm_SP;
-    v[5] = fGH_RS180cm_SP;
-    v[6] = fGH_RS60cm_DP;
-    v[7] = fGH_RS120cm_DP;
-    v[8] = fGH_RS180cm_DP;
-
-    s = fwhichDetector;
-
-    h = fARAPUCA_height;
-    w = fARAPUCA_width;
+    std::cout << "Detector: " << fwhichDetector << std::endl;
+    // select which parameter set to load based on detector flag
+    // SBN [MicroBooNE, Icarus, SBND]
+    if (fwhichDetector == "SBN") {
+	v = fGH_RS60cm_SBN;
+    }
+    // DUNE SP
+    if (fwhichDetector == "SP"){
+	v = fGH_RS60cm_SP;
+    }
+    // DUNE DP
+    if (fwhichDetector == "DP"){
+	v = fGH_RS60cm_DP;
+    }
+    
+    h = fAPERTURE_height;
+    w = fAPERTURE_width;
     r = fPMT_radius;
 
   }
