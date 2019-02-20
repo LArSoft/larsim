@@ -256,7 +256,27 @@ namespace larg4{
 	  }
 	  GHvuv[bin]->SetParameters(pars_ini);
 	}
-  	
+
+	// Load corrections for VIS semi-anlytic hits
+	std::cout << "Loading Vis corrections"<<std::endl;
+	pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius);
+
+	std::cout << "SHAPE: " << std::endl;
+	std::cout << fvispars.size() << std::endl;
+	std::cout << fvispars[0].size() << std::endl;
+
+	// initialise vis correction functions
+	double pars_ini_vis[6] = {0,0,0,0,0,0};
+  	for (int bin = 0; bin < 9; bin++) {
+    		VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
+    		for (int j = 0; j < 6; j++){
+      			pars_ini_vis[j] = fvispars[j][bin];
+			std::cout<<"fvispars.at("<<j<<").at("<<bin<<") = "<<pars_ini_vis[j]<<std::endl;
+    		}
+    		VIS_pol[bin]->SetParameters(pars_ini_vis);
+  	}
+	
+ 	
       }
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();

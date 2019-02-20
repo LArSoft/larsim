@@ -67,7 +67,8 @@ namespace phot{
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
     void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r) const;
-    
+    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r) const;
+ 
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
     bool StoreReflected() const { return fStoreReflected; }
@@ -139,12 +140,15 @@ namespace phot{
     std::vector<double> fSlope; 
     std::vector<double> fExpo_over_Landau_norm[3];
     double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;   
-    //for the vuv/direct light signal (number of hits) parametrization
+    //for the semi-analytic vuv/direct light signal (number of hits) correction
     //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)
-    std::vector<std::vector<double> > fGH_RS60cm_SP, fGH_RS120cm_SP, fGH_RS180cm_SP,
-                                      fGH_RS60cm_DP, fGH_RS120cm_DP, fGH_RS180cm_DP,
-                                      fGH_RS60cm_SBN, fGH_RS120cm_SBN, fGH_RS180cm_SBN;
-    std::string fwhichDetector;
+    std::vector<std::vector<double> > fGH_PARS;
+    // for the semi-analytic visible/reflection light hits correction
+    // parameters exist for DUNE SP only currently
+    std::vector<std::vector<double>> fVIS_PARS;
+    double fPlane_Depth, fCATHODE_height, fCATHODE_width;
+    std::vector<double> fCATHODE_centre;
+
     double fAPERTURE_height, fAPERTURE_width, fPMT_radius;
 
     std::string          fLibraryFile;      

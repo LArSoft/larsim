@@ -309,6 +309,13 @@ private:
 	//array of correction for the VUV Nhits estimation
         std::vector<std::vector<double> > fGHvuvpars;
 	TF1* GHvuv[9];
+
+	// For VIS semi-analytic hits
+	// array of corrections for VIS Nhits estimation
+	std::vector<std::vector<double>> fvispars;
+	TF1* VIS_pol[9];
+	double fplane_depth, fcathode_width, fcathode_height;
+	std::vector<double>  fcathode_centre;
         
 
         //double fGlobalTimeOffset;  

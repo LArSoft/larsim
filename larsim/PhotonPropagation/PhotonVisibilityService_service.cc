@@ -352,23 +352,19 @@ namespace phot{
       }
 
     if(fIncludeGeoParametrz) {
-      std::cout<<" VUV hits Gaisser-Hillas Rayleigh scattering correction"<<std::endl;
-      fGH_RS60cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS60cm_SP");
-      fGH_RS120cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS120cm_SP");
-      fGH_RS180cm_SP = p.get<std::vector<std::vector<double> > >("GH_RS180cm_SP");
- 
-      fGH_RS60cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS60cm_DP");
-      fGH_RS120cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS120cm_DP");
-      fGH_RS180cm_DP = p.get<std::vector<std::vector<double> > >("GH_RS180cm_DP");
-
-      fGH_RS60cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS60cm_SBN");
-      fGH_RS120cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS120cm_SBN");
-      fGH_RS180cm_SBN = p.get<std::vector<std::vector<double> > >("GH_RS180cm_SBN");
-      
-      fwhichDetector = p.get< std::string >("whichDetector", "");
-      fAPERTURE_height = p.get<double>("APERTURE_height");
-      fAPERTURE_width = p.get<double>("APERTURE_width");
-      fPMT_radius = p.get<double>("PMT_radius");
+      	// VUV
+      	fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
+      	// VIS
+      	fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
+	fPlane_Depth = p.get<double>("Plane_Depth");
+	fCATHODE_height = p.get<double>("CATHODE_height");
+	fCATHODE_width = p.get<double>("CATHODE_width");
+	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
+      	
+	// Optical channel dimensions
+      	fAPERTURE_height = p.get<double>("APERTURE_height");
+      	fAPERTURE_width = p.get<double>("APERTURE_width");
+      	fPMT_radius = p.get<double>("PMT_radius");
     }
 
 
@@ -710,26 +706,29 @@ namespace phot{
 
   void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r) const
   {
-    std::cout << "Detector: " << fwhichDetector << std::endl;
-    // select which parameter set to load based on detector flag
-    // SBN [MicroBooNE, Icarus, SBND]
-    if (fwhichDetector == "SBN") {
-	v = fGH_RS60cm_SBN;
-    }
-    // DUNE SP
-    if (fwhichDetector == "SP"){
-	v = fGH_RS60cm_SP;
-    }
-    // DUNE DP
-    if (fwhichDetector == "DP"){
-	v = fGH_RS60cm_DP;
-    }
-    
+    v = fGH_PARS;    
+ 
     h = fAPERTURE_height;
     w = fAPERTURE_width;
     r = fPMT_radius;
 
   }
+
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r) const
+  {
+    v = fVIS_PARS;
+    plane_depth = fPlane_Depth;
+    w_cathode = fCATHODE_width;
+    h_cathode = fCATHODE_height;
+    cntr_cathode = fCATHODE_centre;
+
+    h = fAPERTURE_height;
+    w = fAPERTURE_width;
+    r = fPMT_radius;
+
+  }
+
+
   //------------------------------------------------------
   /***
    * Preform any necessary transformations on the coordinates before trying to access
