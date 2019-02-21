@@ -56,6 +56,9 @@ CATHODE_height_SP: 1209.466		# height of full cathode plane (in cm)
 CATHODE_width_SP: 1394.34		# width of full cathode plane (in cm)
 CATHODE_centre_SP: [363.38405, 0, 696.294]	# cathode centre coordinates
 
+# SBND Parameters 
+Plane_Depth_SBND: 0.0
+
 END_PROLOG
 
 
@@ -289,7 +292,7 @@ timeparametrization_photonvisibilityservice:
   #  VIS semi-analytic hits
   # *************************************************************************************************
   VIS_PARS: @local::VIS_RS60cm_SP 		# DUNE-SP
-  Plane_Depth: @local::Plane_Depth_SP
+  Plane_Depth: @local::Plane_Depth_SBND
   CATHODE_height: @local::CATHODE_height_SP
   CATHODE_width: @local::CATHODE_width_SP                    
   CATHODE_centre: @local::CATHODE_centre_SP

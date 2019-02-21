@@ -234,7 +234,7 @@ public: // With description
         std::vector<double> getVUVTime(double, int);
         // hits calculating functions
         int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
-
+ 	int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 
 protected:
 

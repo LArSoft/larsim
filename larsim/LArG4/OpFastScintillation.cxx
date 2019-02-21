@@ -236,7 +236,7 @@ namespace larg4{
 	fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
 	std::cout<<"Absorption Length Spectrum value for photons at 9.7 eV: "<<fL_abs_vuv<<" cm"<<std::endl;
 	
-	foptical_detector_type = 0; /// #### NEED TO CHANGE THIS!
+	foptical_detector_type = 1; /// #### NEED TO CHANGE THIS!
 	// Arapucas: detector_type = 0, PMTs: detector_type = 1
 	
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits 
@@ -757,8 +757,7 @@ namespace larg4{
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
 	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
           }
-	    
-
+	  
           if(DetThisPMT>0) 
           {
             DetectedNum[OpDet]=DetThisPMT;
@@ -768,10 +767,21 @@ namespace larg4{
             //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
           }
           if(pvs->StoreReflected()) {
-            G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+	    G4int ReflDetThisPMT = 0;
+	    if (!pvs->IncludeGeoParametrz()){
+	      ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+	    }
+	    else {
+	      TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
+	      TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
+	      ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
+	      //std::cout << "ReflDetThisPMT = " << ReflDetThisPMT;
+	    }	
+            
             if(ReflDetThisPMT>0)
             {
-              ReflDetectedNum[OpDet]=ReflDetThisPMT;
+	      ReflDetectedNum[OpDet]=ReflDetThisPMT;
+	      //std::cout << "   ReflDetectedNum[OpDet] = " << ReflDetectedNum[OpDet] << std::endl;
             }
           }
 
@@ -1109,7 +1119,7 @@ namespace larg4{
         arrival_time_dist = getVUVTime(distance_in_cm, NPhotons);//in ns
       }
       else {
-	//std::cout<<"propagation time for visible component sset to 0"<<std::endl;
+	//std::cout<<"TESTING:: propagation time for visible component set to 0"<<std::endl;
         //double t0_vis_lib = ReflT0s[OpChannel];                   
         //arrival_time_dist = GetVisibleTimeOnlyCathode(t0_vis_lib, NPhotons);
       }
@@ -1453,8 +1463,8 @@ namespace larg4{
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
     else {
-      std::cout << "Error: Invalid optical detector type." <<std:: endl;
-      exit(1);
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" <<std:: endl;
+	exit(1);
     }  
 
     // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
@@ -1469,6 +1479,93 @@ namespace larg4{
     int hits_vuv = std::round(hits_rec);
 
     return hits_vuv;
+  }
+
+  // VIS hits semi-analytic model calculation 
+  int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
+     
+     // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
+     
+     // set cathode plane struct for solid angle function
+     acc cathode_plane; 
+     cathode_plane.ax = fcathode_centre[0]; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];   	// centre coordinates of cathode plane
+     cathode_plane.w = fcathode_width; cathode_plane.h = fcathode_height;                        				// width and height in cm
+     
+     // get scintpoint coords relative to centre of cathode plane
+     TVector3 cathodeCentrePoint(fcathode_centre[0],fcathode_centre[1],fcathode_centre[2]);
+     TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint; 
+     
+     // calculate solid angle of cathode from the scintillation point
+     double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
+     
+     // calculate distance and angle between ScintPoint and hotspot
+     // vast majority of hits in hotspot region directly infront of scintpoint,therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
+     double distance_cathode = std::abs(fplane_depth - ScintPoint[0]);
+     double cosine_cathode = 1;
+     double theta_cathode = 0;
+     
+     // calculate hits on cathode plane via geometric acceptance
+     double cathode_hits_geo = exp(-1.*distance_cathode/fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
+     
+     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
+     // offset angle bin
+     int j = (theta_cathode/fdelta_angulo);
+     double cathode_hits_rec = GHvuv[j]->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
+      
+    
+     // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle 
+
+     // hotspot coordinates         
+     TVector3 hotspot(fplane_depth, ScintPoint[1], ScintPoint[2]);
+     
+     // get hotspot coordinates relative to detpoint
+     TVector3 emission_relative = hotspot - OpDetPoint;
+   
+     // calculate solid angle of optical channel
+     double solid_angle_detector;
+     // rectangular aperture
+     if (optical_detector_type == 0) {
+      	// set rectangular aperture geometry struct for solid angle function
+     	acc detPoint; 
+     	detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];  	// centre coordinates of optical detector
+     	detPoint.w = fwidth; detPoint.h = fheight;	 						// width and height in cm of optical detector active window [rectangular aperture]
+     	// calculate solid angle
+	solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
+     }
+     // disk aperture    
+     else if (optical_detector_type == 1) {
+	// offset in z-y plane
+      	double d = sqrt(pow(hotspot[1] - OpDetPoint[1],2) + pow(hotspot[2] - OpDetPoint[2],2));
+      	// drift distance (in x)
+      	double h =  sqrt(pow(hotspot[0] - OpDetPoint[0],2)); 
+	// calculate solid angle
+	solid_angle_detector = Disk_SolidAngle(d, h, fradius);
+     }
+     else {
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" <<std::endl;
+	exit(1);
+     }
+    
+     // calculate number of hits via geometeric acceptance
+     double hits_geo = (solid_angle_detector / (2.*CLHEP::pi)) * cathode_hits_rec;	// 2*pi rather than 4*pi due to presence of reflective foils (vm2000)
+  
+     // calculate distances and angles for application of corrections
+     // distance to hotspot
+     double distance_vuv = sqrt(pow(ScintPoint[0] - hotspot[0],2) + pow(ScintPoint[1] - hotspot[1],2) + pow(ScintPoint[2] - hotspot[2],2));
+     // distance from hotspot to optical detector
+     double distance_vis = sqrt(pow(hotspot[0] - OpDetPoint[0],2) + pow(hotspot[1] - OpDetPoint[1],2) + pow(hotspot[2] - OpDetPoint[2],2));
+     //  angle between hotspot and optical detector
+     double cosine_vis = sqrt(pow(hotspot[0] - OpDetPoint[0],2)) / distance_vis;
+     double theta_vis = acos(cosine_vis)*180./CLHEP::pi; 
+     
+     // apply correction 
+     int k = (theta_vis/fdelta_angulo);
+     double hits_rec = gRandom->Poisson(VIS_pol[k]->Eval(distance_vuv)*hits_geo/cosine_vis);
+    
+     // round final result, number of hits integer
+     int hits_vis = std::round(hits_rec);
+                                            
+     return hits_vis; 
   }
 
 
