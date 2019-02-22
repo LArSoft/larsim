@@ -233,7 +233,7 @@ public: // With description
         void generateparam(int index);
         std::vector<double> getVUVTime(double, int);
         // hits calculating functions
-        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type, int channel);
  	int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 
 protected:

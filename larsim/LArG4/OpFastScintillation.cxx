@@ -755,12 +755,14 @@ namespace larg4{
 	  else {
 	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
-	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
-          }
+	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type,OpDet); //opdet added for testing
+         
+	  }
 	  
           if(DetThisPMT>0) 
           {
             DetectedNum[OpDet]=DetThisPMT;
+
             //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
             //   //   it->second<<" " << Num << " " << DetThisPMT;  
 
@@ -775,13 +777,13 @@ namespace larg4{
 	      TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	      TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
 	      ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
-	      //std::cout << "ReflDetThisPMT = " << ReflDetThisPMT;
+	   
 	    }	
             
             if(ReflDetThisPMT>0)
             {
 	      ReflDetectedNum[OpDet]=ReflDetThisPMT;
-	      //std::cout << "   ReflDetectedNum[OpDet] = " << ReflDetectedNum[OpDet] << std::endl;
+	   
             }
           }
 
@@ -1431,7 +1433,7 @@ namespace larg4{
   }
 
   // VUV hits calculation
-  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
+  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type, int OpDet) {
     
     // distance and angle between ScintPoint and OpDetPoint
     double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2) + pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
@@ -1439,7 +1441,8 @@ namespace larg4{
     double theta = acos(cosine)*180./CLHEP::pi;
     
     // calculate solid angle:
-    double solid_angle;
+    double solid_angle = 0;
+    double d, h;  //testing
     // Arapucas
     if (optical_detector_type == 0) {
       // set Arapuca geometry struct for solid angle function
@@ -1456,15 +1459,14 @@ namespace larg4{
     // PMTs
     else if (optical_detector_type == 1) {
       // offset in z-y plane
-      double d = sqrt(pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
+      d = sqrt(pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
       // drift distance (in x)
-      double h =  sqrt(pow(ScintPoint[0] - OpDetPoint[0],2));
+      h =  sqrt(pow(ScintPoint[0] - OpDetPoint[0],2));
       // Solid angle of a disk
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
     else {
       std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" <<std:: endl;
-	exit(1);
     }  
 
     // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
@@ -1477,7 +1479,8 @@ namespace larg4{
 
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
-
+	// testing
+	std::cout << "Chan: " << OpDet << ", Hits_geo: " << hits_geo << ", hits_vuv: " << hits_vuv <<  ", solid_angle = " << solid_angle << ", d = " << d << ", h = "  << h << ", fradius = " << fradius << std::endl;
     return hits_vuv;
   }
 
@@ -1522,7 +1525,7 @@ namespace larg4{
      TVector3 emission_relative = hotspot - OpDetPoint;
    
      // calculate solid angle of optical channel
-     double solid_angle_detector;
+     double solid_angle_detector = 0;
      // rectangular aperture
      if (optical_detector_type == 0) {
       	// set rectangular aperture geometry struct for solid angle function
@@ -1543,7 +1546,6 @@ namespace larg4{
      }
      else {
       std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" <<std::endl;
-	exit(1);
      }
     
      // calculate number of hits via geometeric acceptance
