@@ -56,8 +56,8 @@ TestGeneratedEventTimestamp::TestGeneratedEventTimestamp
   // create two default random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
   art::ServiceHandle<rndm::NuRandomService> Seeds;
-  Seeds->createEngine(*this, pset, "Seed");
-  Seeds->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed");
+  (void)Seeds->createEngine(*this, pset, "Seed");
+  (void)Seeds->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed");
 } // TestGeneratedEventTimestamp::TestGeneratedEventTimestamp()
 
 

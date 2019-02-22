@@ -368,10 +368,10 @@ namespace larg4 {
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed" or "GEANTSeed"
-    art::ServiceHandle<rndm::NuRandomService>()
+    (void)art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, "G4Engine", "GEANT", pset, "GEANTSeed");
     // same thing for the propagation engine:
-    art::ServiceHandle<rndm::NuRandomService>()
+    (void)art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's

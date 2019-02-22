@@ -113,7 +113,7 @@ namespace evwgh {
         throw cet::exception(__FUNCTION__) << "Function " << func << " has been requested multiple times in fcl file!" << std::endl;
 
       // Create random engine for each rw function (name=func) (and seed it with random_seed set in the fcl)
-      seedservice->createEngine(module, "HepJamesRandom", func, ps_func, "random_seed");
+      (void)seedservice->createEngine(module, "HepJamesRandom", func, ps_func, "random_seed");
       auto& engine = art::ServiceHandle<art::RandomNumberGenerator>{}
       ->getEngine(art::ScheduleID::first(),
                   module_label,

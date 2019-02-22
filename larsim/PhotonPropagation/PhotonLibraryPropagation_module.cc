@@ -178,8 +178,8 @@ PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
   , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
   , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
 {
-  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton");
-  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime");
+  (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton");
+  (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime");
   art::ServiceHandle<sim::LArG4Parameters> lgp;
   if (lgp->UseLitePhotons()) {
     produces<vector<sim::SimPhotonsLite>>();

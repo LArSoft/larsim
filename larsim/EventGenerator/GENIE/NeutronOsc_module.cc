@@ -121,7 +121,7 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   
   // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  art::ServiceHandle<rndm::NuRandomService>()
+  (void)art::ServiceHandle<rndm::NuRandomService>()
     ->createEngine(*this, p, "Seed");
 
   unsigned int seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();

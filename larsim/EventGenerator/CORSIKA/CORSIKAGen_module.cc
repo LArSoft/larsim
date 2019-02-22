@@ -118,8 +118,8 @@ namespace evgen{
     ;
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "gen", p, { "Seed", "SeedGenerator" });
-    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "pois", p, "SeedPoisson");
+    (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "gen", p, { "Seed", "SeedGenerator" });
+    (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "pois", p, "SeedPoisson");
 
     this->reconfigure(p);
     

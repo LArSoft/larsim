@@ -72,7 +72,7 @@ namespace evgen {
 
     // Create a default random engine: obtain the random seed
     // freom NuRandomService, unless overriden in configuration with key "Seed"
-    art::ServiceHandle< rndm::NuRandomService >()
+    (void)art::ServiceHandle< rndm::NuRandomService >()
       ->createEngine(*this, pset, "Seed");
 
   }

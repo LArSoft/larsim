@@ -132,7 +132,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, p, "Seed");
+  (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, p, "Seed");
   art::ServiceHandle<art::RandomNumberGenerator> rng;
   auto& engine = rng->getEngine(art::ScheduleID::first(),
                                 p.get<std::string>("module_label"),

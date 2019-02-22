@@ -337,7 +337,7 @@ namespace evgen{
 
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()
+    (void)art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, pset, "Seed");
 
     produces< std::vector<simb::MCTruth> >();

@@ -507,7 +507,7 @@ namespace evgen{
     
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this);
+    (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this);
     art::ServiceHandle<art::RandomNumberGenerator> rng;
     auto& engine = rng->getEngine(art::ScheduleID::first(),
                                   config.get_PSet().get<std::string>("module_label"));
