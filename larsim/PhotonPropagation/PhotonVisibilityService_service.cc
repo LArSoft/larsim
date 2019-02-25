@@ -362,6 +362,7 @@ namespace phot{
 	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
       	
 	// Optical channel dimensions
+	fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
       	fAPERTURE_height = p.get<double>("APERTURE_height");
       	fAPERTURE_width = p.get<double>("APERTURE_width");
       	fPMT_radius = p.get<double>("PMT_radius");
@@ -704,17 +705,18 @@ namespace phot{
 
   }
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r, int& op_det_type) const
   {
     v = fGH_PARS;    
  
+    op_det_type = fOptical_Detector_Type;
     h = fAPERTURE_height;
     w = fAPERTURE_width;
     r = fPMT_radius;
 
   }
 
-  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r) const
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r, int& op_det_type) const
   {
     v = fVIS_PARS;
     plane_depth = fPlane_Depth;
@@ -722,6 +724,7 @@ namespace phot{
     h_cathode = fCATHODE_height;
     cntr_cathode = fCATHODE_centre;
 
+    op_det_type = fOptical_Detector_Type;
     h = fAPERTURE_height;
     w = fAPERTURE_width;
     r = fPMT_radius;

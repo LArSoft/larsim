@@ -129,11 +129,14 @@
 #include "TRandom3.h"
 #include "TMath.h"
 #include "TFormula.h"
-#include "Math/SpecFuncMathMore.h"
+//#include "Math/SpecFuncMathMore.h"
 #include "TSystem.h"
 #include <cmath>
 
 #include "boost/algorithm/string.hpp"
+
+#include "boost/math/special_functions/ellint_1.hpp"
+#include "boost/math/special_functions/ellint_3.hpp"
 
 namespace larg4{
 
@@ -236,12 +239,9 @@ namespace larg4{
 	fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
 	std::cout<<"Absorption Length Spectrum value for photons at 9.7 eV: "<<fL_abs_vuv<<" cm"<<std::endl;
 	
-	foptical_detector_type = 1; /// #### NEED TO CHANGE THIS!
-	// Arapucas: detector_type = 0, PMTs: detector_type = 1
-	
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits 
 	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, fheight, fwidth, fradius);
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fheight, fwidth, fradius, foptical_detector_type);
         fdelta_angulo = 10.; // angle bin size
 
 	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
@@ -259,7 +259,7 @@ namespace larg4{
 
 	// Load corrections for VIS semi-anlytic hits
 	std::cout << "Loading Vis corrections"<<std::endl;
-	pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius);
+	pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius, foptical_detector_type);
 
 	std::cout << "SHAPE: " << std::endl;
 	std::cout << fvispars.size() << std::endl;
@@ -275,6 +275,8 @@ namespace larg4{
     		}
     		VIS_pol[bin]->SetParameters(pars_ini_vis);
   	}
+
+	isgeomprtzloaded = true; 	// flag so know whether to delete TF1s in destructor to clear memory
 	
  	
       }
@@ -325,6 +327,13 @@ namespace larg4{
       delete theSlowIntegralTable;
     }
 
+    if (isgeomprtzloaded){
+      // delete correction TF1s 
+      for (int bin = 0; bin < 9; bin++){
+	delete GHvuv[bin];
+	delete VIS_pol[bin];
+      }
+    }
   }
 
   ////////////
@@ -1718,19 +1727,18 @@ namespace larg4{
     const double bb = TMath::Sqrt(4*b*d/(h*h+(b+d)*(b+d)));
     const double cc = 4*b*d/((b+d)*(b+d));
     
-    if(TMath::Abs(std::comp_ellint_1(bb) - bb) < 1e-10 && TMath::Abs(std::comp_ellint_3(cc,bb) - cc) <1e-10) {
+    if(TMath::Abs(boost::math::ellint_1(bb) - bb) < 1e-10 && TMath::Abs(boost::math::ellint_3(cc,bb) - cc) <1e-10) {
       throw(std::runtime_error("Problem loading ELLIPTIC INTEGRALS running Disk_SolidAngle!"));
     }
     if(d < b) {
-      return 2.*TMath::Pi() - 2.*aa*(std::comp_ellint_1(bb) + TMath::Sqrt(1.-cc)*std::comp_ellint_3(cc,bb));
+      return 2.*TMath::Pi() - 2.*aa*(boost::math::ellint_1(bb) + TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc));
     }
     if(d == b) {
-      return TMath::Pi() - 2.*aa*std::comp_ellint_1(bb);
+      return TMath::Pi() - 2.*aa*boost::math::ellint_1(bb);
     }
     if(d > b) {
-      return 2.*aa*(TMath::Sqrt(1.-cc)*std::comp_ellint_3(cc,bb) - std::comp_ellint_1(bb));
+      return 2.*aa*(TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc) - boost::math::ellint_1(bb));
     }
-
     return 0.;
   }
 
@@ -1769,7 +1777,7 @@ namespace larg4{
       B = std::abs(v.Z())-out.h/2.0;
       a = out.w;
       b = out.h;
-      d = abs(v.X());
+      d = std::abs(v.X());
       double to_return = (Rectangle_SolidAngle(2*(A+a),2*(B+b),d)-Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*(A+a),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
       return to_return;
     }
@@ -1780,7 +1788,7 @@ namespace larg4{
       B = -std::abs(v.Z())+out.h/2.0;
       a = out.w;
       b = out.h;
-      d = abs(v.X());
+      d = std::abs(v.X());
       double to_return = (Rectangle_SolidAngle(2*(a-A),2*(b-B),d)+Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
       return to_return;
     }
@@ -1791,7 +1799,7 @@ namespace larg4{
       B = -std::abs(v.Z())+out.h/2.0;
       a = out.w;
       b = out.h;
-      d = abs(v.X());
+      d = std::abs(v.X());
       double to_return = (Rectangle_SolidAngle(2*(A+a),2*(b-B),d)-Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(A+a),2*B,d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
       return to_return;
     }
@@ -1802,7 +1810,7 @@ namespace larg4{
       B = std::abs(v.Z())-out.h/2.0;
       a = out.w;
       b = out.h;
-      d = abs(v.X());
+      d = std::abs(v.X());
       double to_return = (Rectangle_SolidAngle(2*(a-A),2*(B+b),d)-Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
       return to_return;
     }

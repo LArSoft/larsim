@@ -297,10 +297,11 @@ timeparametrization_photonvisibilityservice:
   CATHODE_width: @local::CATHODE_width_SP                    
   CATHODE_centre: @local::CATHODE_centre_SP
 
-  # Optical Detector size
-  APERTURE_height: 9.3 # sensitive window heigh (in cm)
-  APERTURE_width: 7.8 # sensitive window width (in cm)
-  PMT_radius: 10.16 # 8" diameter PMT (in cm)
+  # Optical Detector information
+  Optical_Detector_Type: 1	# 0 = rectangular, 1 = disk 
+  APERTURE_height: 9.3 		# sensitive window heigh (in cm)
+  APERTURE_width: 7.8 		# sensitive window width (in cm)
+  PMT_radius: 10.16		# 8" diameter PMT (in cm)
 
 }
 microboone_photonvisibilityservice: @local::standard_photonvisibilityservice

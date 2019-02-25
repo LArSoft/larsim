@@ -307,7 +307,8 @@ private:
         
 	//For VUV semi-analytic hits
 	//array of correction for the VUV Nhits estimation
-        std::vector<std::vector<double> > fGHvuvpars;
+        bool isgeomprtzloaded = false;
+	std::vector<std::vector<double> > fGHvuvpars;
 	TF1* GHvuv[9];
 
 	// For VIS semi-analytic hits
