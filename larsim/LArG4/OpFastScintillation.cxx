@@ -200,7 +200,8 @@ namespace larg4{
 	}
       
       if(pvs->IncludePropTime()) {
-	//OLD VUV time parapetrization (to be removed soon)
+	std::cout << "Using parameterisation of timings." << std::endl;
+        //OLD VUV time parapetrization (to be removed soon)
         pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
         pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
 	//New VUV time parapetrization
@@ -225,6 +226,27 @@ namespace larg4{
 	std::vector<double> VUV_empty(num_params, 0);
 	VUV_max = VUV_empty;
 	VUV_min = VUV_empty;
+
+        // VIS time parameterisation
+        if (pvs->StoreReflected()) {
+	  // load parameters
+	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);
+	  // testing
+	  std::cout << "Refl timing parameters: " << std::endl;
+	  	for (unsigned int i = 0; i < fdistances_refl.size(); i++) {
+			std::cout << "Distance: " << fdistances_refl[i] << std::endl;
+			std::cout << "Tau: ";
+			for (unsigned int j = 0; j < fcut_off_pars.size(); j++) { 
+				std::cout << ftau_pars[j][i] << ", ";
+			}
+			std::cout << std::endl;
+			std::cout << "Cut-off: ";
+			for (unsigned int j = 0; j < fcut_off_pars.size(); j++) { 
+				std::cout << fcut_off_pars[j][i] << ", ";
+			}
+			std::cout << std::endl;
+		}	 	  
+	}
 
       }
       if(pvs->IncludeGeoParametrz()) {
@@ -1111,12 +1133,12 @@ namespace larg4{
       
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS! 
-        arrival_time_dist = getVUVTime(distance_in_cm, NPhotons);//in ns
+        arrival_time_dist = getVUVTime(distance_in_cm, NPhotons); // in ns
       }
       else {
-	//std::cout<<"TESTING:: propagation time for visible component set to 0"<<std::endl;
-        //double t0_vis_lib = ReflT0s[OpChannel];                   
-        //arrival_time_dist = GetVisibleTimeOnlyCathode(t0_vis_lib, NPhotons);
+	TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
+	TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0], fOpDetCenter.at(OpChannel)[1], fOpDetCenter.at(OpChannel)[2]); // in cm
+        arrival_time_dist = getVISTime(ScintPoint, OpDetPoint_tv3, NPhotons); // in ns
       }
     }
     
@@ -1423,6 +1445,124 @@ namespace larg4{
     }
     return arrival_time_distrb;
 
+  }
+
+  // VIS arrival times calculation functions
+  std::vector<double> OpFastScintillation::getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int number_photons) {
+    // *************************************************************************************************
+    //     Calculation of earliest arrival times and corresponding unsmeared distribution
+    // *************************************************************************************************
+    
+    // calculate point of reflection for shortest path accounting for difference in refractive indicies    
+    // vectors for storing results
+    TVector3 image(0,0,0);
+    TVector3 bounce_point(0,0,0);
+                                 
+    // distance to wall    
+    TVector3 v_to_wall(fplane_depth-ScintPoint[0],0,0);
+    
+    // hotspot is point on wall where TPB is activated most intensely by the scintillation
+    TVector3 hotspot(fplane_depth,ScintPoint[1],ScintPoint[2]);
+                                                     
+    // define "image" by reflecting over plane
+    image = hotspot + v_to_wall*(fn_LAr_vis/fn_LAr_vuv);
+                                                                 
+    // find point of intersection with plane j of ray from the PMT to the image
+    TVector3 tempvec = (OpDetPoint-image).Unit();
+    double tempnorm= ((image-hotspot).Mag())/std::abs(tempvec[0]);
+    bounce_point = image + tempvec*tempnorm;
+    
+    // calculate distance travelled by VUV light and by vis light
+    double VUVdist = (bounce_point-ScintPoint).Mag();
+    double Visdist = (OpDetPoint-bounce_point).Mag();
+    
+    // calculate times taken by each part
+    std::vector<double> VUVTimes  = getVUVTime(VUVdist, number_photons);
+    std::vector<double> ReflTimes(number_photons,Visdist/fvis_vmean);
+   
+    // sum parts to get total transport times times                    
+    std::vector<double> transport_time_vis(number_photons,0);
+    for (int i=0; i<number_photons; i++) {
+      transport_time_vis[i] = VUVTimes[i] + ReflTimes[i];
+    }
+
+    // *************************************************************************************************
+    //      Smearing of arrival time distribution
+    // *************************************************************************************************
+           
+    // calculate fastest time possible
+    // vis part
+    double vis_time = Visdist/fvis_vmean;
+    // vuv part
+    double vuv_time;
+    if (VUVdist < 25){
+      vuv_time = VUVdist/fvuv_vgroup_mean;
+    }
+    else {
+      // find index of required parameterisation
+      int index = std::round((VUVdist - 25) / fstep_size);
+      // find shortest time
+      vuv_time = VUV_min[index];
+    }
+    // sum
+    double fastest_time = vis_time + vuv_time;
+
+    // calculate angle alpha between scintillation point and reflection point
+    double cosine_alpha = sqrt(pow(ScintPoint[0] - bounce_point[0],2)) / VUVdist;
+    double alpha = acos(cosine_alpha)*180./CLHEP::pi;
+    
+    // determine smearing parameters using interpolation of generated points: 
+    // 1). tau = exponential smearing factor, varies with distance and angle
+    // 2). cutoff = largest smeared time allowed, preventing excessively large times caused by exponential
+    // distance to cathode
+    double distance_cathode_plane = std::abs(fplane_depth - ScintPoint[0]);
+    // angular bin
+    unsigned int alpha_bin = alpha / 10;
+    if (alpha_bin > ftau_pars.size()) {
+      alpha_bin = ftau_pars.size() - 1;      // default to the largest available bin if alpha larger than parameterised region; i.e. last bin effectively [last bin start value, 90] deg bin
+    }
+    // cut-off and tau
+    double cutoff = interpolate( fdistances_refl, fcut_off_pars[alpha_bin], distance_cathode_plane, true );
+    double tau = interpolate( fdistances_refl, ftau_pars[alpha_bin], distance_cathode_plane, true );
+    
+    // fail-safe if tau extrapolate goes wrong, drops below zero since last distance close to zero [did not occur in testing, but possible]
+    if (tau < 0){
+      tau = 0;
+    } 
+	
+    // apply smearing:
+    for (int i=0; i < number_photons; i++){
+      double arrival_time = transport_time_vis[i];
+      double arrival_time_smeared;
+      // if time is already greater than cutoff or minimum smeared time would be greater than cutoff, do not apply smearing
+      if (arrival_time + (arrival_time-fastest_time)*(exp(-tau*log(1.0))-1) >= cutoff) {
+        arrival_time_smeared = arrival_time;
+      }
+      // otherwise smear
+      else {
+        int counter = 0;
+        // loop until time generated is within cutoff limit
+        // most are within single attempt, very few take more than two
+        do {
+          // don't attempt smearings too many times for cases near cutoff (very few cases, not smearing these makes negigible difference)
+          if (counter >= 10){
+            arrival_time_smeared = arrival_time; // don't smear
+            break;
+          }
+          else {
+            // generate random number in appropriate range            
+            double x = gRandom->Uniform(0.5,1.0);
+      	    // apply the exponential smearing
+      	    arrival_time_smeared = arrival_time + (arrival_time-fastest_time)*(exp(-tau*log(x))-1);
+	  }
+	  // increment counter
+	  counter++;
+	}  while (arrival_time_smeared > cutoff);
+      }
+      transport_time_vis[i] = arrival_time_smeared;
+    }
+    
+    return transport_time_vis;
   }
 
   // VUV semi-analytic hits calculation

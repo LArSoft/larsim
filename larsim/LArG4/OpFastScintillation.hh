@@ -235,6 +235,8 @@ public: // With description
         std::vector<double> getVUVTime(double, int);
 	void generateparam(int index);
         // Functions for vuv component Landau + Exponential timing parameterisation, updated method
+        
+	std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
 
         int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 	// Calculates semi-analytic model number of hits for vuv component
@@ -310,7 +312,13 @@ private:
         // vector containing min and max range VUV timing parameterisations are sampled to
         std::vector<double> VUV_max;
         std::vector<double> VUV_min;
-        
+       
+	// For new VIS time parameterisation
+	double fvis_vmean, fn_LAr_vis, fn_LAr_vuv;
+	std::vector<double> fdistances_refl;
+        std::vector<std::vector<double>> fcut_off_pars;
+	std::vector<std::vector<double>> ftau_pars;
+ 
 	//For VUV semi-analytic hits
 	//array of correction for the VUV Nhits estimation
 	std::vector<std::vector<double> > fGHvuvpars;
@@ -323,16 +331,18 @@ private:
 	double fplane_depth, fcathode_width, fcathode_height;
 	std::vector<double>  fcathode_centre;
         
+	// Optical detector properties for semi-analytic hits
+	int foptical_detector_type; 
+        double fheight, fwidth, fradius;
+        int fdelta_angulo, fL_abs_vuv;
+        std::vector<std::vector<double> > fOpDetCenter;
 
         //double fGlobalTimeOffset;  
 
         void ProcessStep( const G4Step& step);
         
         bool bPropagate; ///< Whether propagation of photons is enabled.
-        int foptical_detector_type; 
-        double fheight, fwidth, fradius;
-        int fdelta_angulo, fL_abs_vuv;
-        std::vector<std::vector<double> > fOpDetCenter;
+        
 };
 
   double finter_d(double*, double*);
