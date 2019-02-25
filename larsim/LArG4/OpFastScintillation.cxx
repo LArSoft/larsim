@@ -228,6 +228,7 @@ namespace larg4{
 
       }
       if(pvs->IncludeGeoParametrz()) {
+	std::cout << "Using semi-analytic model for number of hits:" << std::endl;	
 	
 	// LAr absorption length in cm
 	std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
@@ -237,8 +238,7 @@ namespace larg4{
 	  y_v.push_back(elem.second);
 	}
 	fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
-	std::cout<<"Absorption Length Spectrum value for photons at 9.7 eV: "<<fL_abs_vuv<<" cm"<<std::endl;
-	
+
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits 
 	std::cout<<"Loading the GH corrections"<<std::endl;
 	pvs->LoadGHForVUVCorrection(fGHvuvpars, fheight, fwidth, fradius, foptical_detector_type);
@@ -252,33 +252,25 @@ namespace larg4{
 	  for(int j=0; j < 4; j++) {
 	    // loads parameter set read in from fcl
 	    pars_ini[j] = fGHvuvpars[j][bin];
-	    std::cout<<"fGHvuvpars.at("<<j<<").at("<<bin<<") = "<<pars_ini[j]<<std::endl;
 	  }
 	  GHvuv[bin]->SetParameters(pars_ini);
 	}
 
 	// Load corrections for VIS semi-anlytic hits
-	std::cout << "Loading Vis corrections"<<std::endl;
+	std::cout << "Loading vis corrections"<<std::endl;
 	pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius, foptical_detector_type);
-
-	std::cout << "SHAPE: " << std::endl;
-	std::cout << fvispars.size() << std::endl;
-	std::cout << fvispars[0].size() << std::endl;
 
 	// initialise vis correction functions
 	double pars_ini_vis[6] = {0,0,0,0,0,0};
-  	for (int bin = 0; bin < 9; bin++) {
-    		VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
+  	std::cout << "Initialising visible correction parameters" << std::endl;
+	for (int bin = 0; bin < 9; bin++) {
+  		VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
     		for (int j = 0; j < 6; j++){
+			// loads paramter set read in from fcl
       			pars_ini_vis[j] = fvispars[j][bin];
-			std::cout<<"fvispars.at("<<j<<").at("<<bin<<") = "<<pars_ini_vis[j]<<std::endl;
-    		}
+		}
     		VIS_pol[bin]->SetParameters(pars_ini_vis);
-  	}
-
-	isgeomprtzloaded = true; 	// flag so know whether to delete TF1s in destructor to clear memory
-	
- 	
+  	}	
       }
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
@@ -318,21 +310,13 @@ namespace larg4{
 
   OpFastScintillation::~OpFastScintillation()
   {
-    if (theFastIntegralTable != NULL) {
+   if (theFastIntegralTable != NULL) {
       theFastIntegralTable->clearAndDestroy();
       delete theFastIntegralTable;
     }
     if (theSlowIntegralTable != NULL) {
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
-    }
-
-    if (isgeomprtzloaded){
-      // delete correction TF1s 
-      for (int bin = 0; bin < 9; bin++){
-	delete GHvuv[bin];
-	delete VIS_pol[bin];
-      }
     }
   }
 
@@ -764,7 +748,7 @@ namespace larg4{
 	  else {
 	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
-	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type,OpDet); //opdet added for testing
+	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
          
 	  }
 	  
@@ -1441,9 +1425,15 @@ namespace larg4{
 
   }
 
-  // VUV hits calculation
-  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type, int OpDet) {
-    
+  // VUV semi-analytic hits calculation
+  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
+    // check optical channel is in same TPC as scintillation light, if not return 0 hits
+    // temporary method working for SBND, uBooNE, DUNE 1x2x6; will need replacing to work in full DUNE geometry
+    // check x coordinate has same sign or is zero, otherwise return 0 hits
+    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && OpDetPoint[0] != 0){	
+      return 0;	
+    }    
+ 
     // distance and angle between ScintPoint and OpDetPoint
     double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2) + pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
     double cosine = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2)) / distance;
@@ -1488,14 +1478,19 @@ namespace larg4{
 
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
-	// testing
-	std::cout << "Chan: " << OpDet << ", Hits_geo: " << hits_geo << ", hits_vuv: " << hits_vuv <<  ", solid_angle = " << solid_angle << ", d = " << d << ", h = "  << h << ", fradius = " << fradius << std::endl;
+
     return hits_vuv;
   }
 
   // VIS hits semi-analytic model calculation 
   int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
-     
+     // check optical channel is in same TPC as scintillation light, if not return 0 hits
+     // temporary method working for SBND, uBooNE, DUNE 1x2x6; will need replacing to work in full DUNE geometry
+     // check x coordinate has same sign or is zero, otherwise return 0 hits
+     if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && OpDetPoint[0] != 0){	
+       return 0;	
+     }
+ 
      // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
      
      // set cathode plane struct for solid angle function

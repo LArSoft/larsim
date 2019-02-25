@@ -230,11 +230,17 @@ public: // With description
 
         std::vector<double> GetVUVTime(double, int);
         std::vector<double> GetVisibleTimeOnlyCathode(double, int);
-        void generateparam(int index);
+  	// old timings -- to be deleted TEST      
+  
         std::vector<double> getVUVTime(double, int);
-        // hits calculating functions
-        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type, int channel);
+	void generateparam(int index);
+        // Functions for vuv component Landau + Exponential timing parameterisation, updated method
+
+        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+	// Calculates semi-analytic model number of hits for vuv component
+
  	int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+	// Calculates semi-analytic model number of hits for visible component
 
 protected:
 
@@ -307,7 +313,6 @@ private:
         
 	//For VUV semi-analytic hits
 	//array of correction for the VUV Nhits estimation
-        bool isgeomprtzloaded = false;
 	std::vector<std::vector<double> > fGHvuvpars;
 	TF1* GHvuv[9];
 
