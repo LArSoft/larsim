@@ -231,7 +231,7 @@ namespace larg4{
         if (pvs->StoreReflected()) {
 	  // load parameters
 	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);
-	  // testing
+	  // testing loading correct paramters
 	  std::cout << "Refl timing parameters: " << std::endl;
 	  	for (unsigned int i = 0; i < fdistances_refl.size(); i++) {
 			std::cout << "Distance: " << fdistances_refl[i] << std::endl;
@@ -1568,7 +1568,7 @@ namespace larg4{
   // VUV semi-analytic hits calculation
   int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
-    // temporary method working for SBND, uBooNE, DUNE 1x2x6; will need replacing to work in full DUNE geometry
+    // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is zero, otherwise return 0 hits
     if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && OpDetPoint[0] != 0){	
       return 0;	
@@ -1581,7 +1581,7 @@ namespace larg4{
     
     // calculate solid angle:
     double solid_angle = 0;
-    double d, h;  //testing
+    double d, h;
     // Arapucas
     if (optical_detector_type == 0) {
       // set Arapuca geometry struct for solid angle function
@@ -1625,7 +1625,7 @@ namespace larg4{
   // VIS hits semi-analytic model calculation 
   int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
      // check optical channel is in same TPC as scintillation light, if not return 0 hits
-     // temporary method working for SBND, uBooNE, DUNE 1x2x6; will need replacing to work in full DUNE geometry
+     // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
      // check x coordinate has same sign or is zero, otherwise return 0 hits
      if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && OpDetPoint[0] != 0){	
        return 0;	

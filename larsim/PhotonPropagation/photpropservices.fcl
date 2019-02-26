@@ -235,14 +235,14 @@ timeparametrization_photonvisibilityservice:
   # *************************************************************************************************
   #  VIS semi-analytic model
   # *************************************************************************************************
-  Plane_Depth: @local::Plane_Depth_SBND 
+  Plane_Depth: @local::Plane_Depth_SP 
 
   # Timing parameterisation:
   #
   # Smearing parameters
-  Distances_refl: @local::Distances_refl_SBND
-  Cut_off: @local::Cut_off_SBND
-  Tau: @local::Tau_SBND
+  Distances_refl: @local::Distances_refl_SP
+  Cut_off: @local::Cut_off_SP
+  Tau: @local::Tau_SP
 
   # vis velocity in cm/ns
   vis_vmean: 23.99
