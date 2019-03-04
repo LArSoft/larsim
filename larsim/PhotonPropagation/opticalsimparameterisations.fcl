@@ -117,6 +117,82 @@ CATHODE_centre_SP: [363.38405, 0, 696.294]	# cathode centre coordinates
 # SBND Parameters 
 Plane_Depth_SBND: 0.0
 
+
+
+
+
+
+# *************************************************************************************************
+#  VUV semi-analytic model, generic for all exper
+# *************************************************************************************************
+
+common_vuv_timing_parameterization:
+{
+  # Timing parameterisaion:
+  #
+  # Parameters of the Landau + Exponential (<= 300 cm) and Landau (> 300 cm) models
+  # Landau parameters
+  Distances_landau: @local::Distances_landau_all
+  Norm_over_entries: @local::Norm_over_entries_all
+  Mpv: @local::Mpv_all
+  Width: @local::Width_all
+  
+  # Exponential parameters
+  Distances_exp: @local::Distances_exp_all
+  Slope: @local::Slope_all
+  
+  # Normalisations
+  Expo_over_Landau_norm_0:  @local::Expo_over_Landau_norm_0_all
+  Expo_over_Landau_norm_30: @local::Expo_over_Landau_norm_30_all
+  Expo_over_Landau_norm_60: @local::Expo_over_Landau_norm_60_all
+   
+  # Discretisation step size in cm
+  step_size: 1. 
+  # Maximum distance in cm parameterisations are generated for (only generated when required to prevent long initial loading time)
+  max_d: 2500.
+  # VUV group velocity in cm/ns
+  vuv_vgroup_mean: 10.13
+  vuv_vgroup_max: 15.
+  # Distance in cm from "Landau + Expo" -> "Single Landau" model
+  inflexion_point_distance: 300.
+}
+
+
+
+
+# *************************************************************************************************
+#  VIS semi-analytic model, specific to DUNE
+# *************************************************************************************************
+
+dunesp_vis_timing_parameterization:
+{
+  Plane_Depth: @local::Plane_Depth_SP 
+
+  # Timing parameterisation:
+  #
+  # Smearing parameters
+  Distances_refl: @local::Distances_refl_SP
+  Cut_off: @local::Cut_off_SP
+  Tau: @local::Tau_SP
+
+  # vis velocity in cm/ns
+  vis_vmean: 23.99
+  # LAr refractive indices
+  n_LAr_VUV: 2.632 	# effective index due to group vel.
+  n_LAr_vis: 1.23
+
+  # Semi-analytic hits:
+  #
+  # Correction parameters
+  VIS_PARS: @local::VIS_RS60cm_SP 		# DUNE-SP
+  # Cathode properties
+  CATHODE_height: @local::CATHODE_height_SP
+  CATHODE_width: @local::CATHODE_width_SP                    
+  CATHODE_centre: @local::CATHODE_centre_SP
+}
+
+
+
 END_PROLOG
 
 

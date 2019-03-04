@@ -27,6 +27,7 @@ standard_photonvisibilityservice:
   ZMax: 1200
 }
 
+microboone_photonvisibilityservice: @local::standard_photonvisibilityservice
 
 protodunedp_photonvisibilityservice_buildlib:
 {
@@ -174,100 +175,88 @@ sbnd_timeparametrization_photonvisibilityservice:
 
 }
 
-timeparametrization_photonvisibilityservice:
+
+
+
+#
+# Just enable direct timing parameterization on top of a photon library.
+# Should work in all geometries
+#
+standard_library_timing_photonvisibilityservice:
 {
- 
-  NX: 75
-  NY: 75
-  NZ: 400
-  UseCryoBoundary: true
-  Interpolate: false
-  DoNotLoadLibrary: false
-  LibraryBuildJob: false
-  LibraryFile: "PhotonPropagation/LibraryData/uboone_photon_library_v4.root"
+   # Start from the standard visibility service
+   @table::standard_photonvisibilityservice
 
- #These are not used when usecryoboundary=true
-  XMin: -120
-  XMax: 120
-  YMin: -120
-  YMax: 120
-  ZMin: 0
-  ZMax: 1200
+   # Flags to enable parameterizations
+   IncludePropTime: true
 
-  # *************************************************************************************************
-  #  VUV semi-analytic model
-  # *************************************************************************************************
-  
-  # Timing parameterisaion:
-  #
-  # Parameters of the Landau + Exponential (<= 300 cm) and Landau (> 300 cm) models
-  # Landau parameters
-  Distances_landau: @local::Distances_landau_all
-  Norm_over_entries: @local::Norm_over_entries_all
-  Mpv: @local::Mpv_all
-  Width: @local::Width_all
-  
-  # Exponential parameters
-  Distances_exp: @local::Distances_exp_all
-  Slope: @local::Slope_all
-  
-  # Normalisations
-  Expo_over_Landau_norm_0:  @local::Expo_over_Landau_norm_0_all
-  Expo_over_Landau_norm_30: @local::Expo_over_Landau_norm_30_all
-  Expo_over_Landau_norm_60: @local::Expo_over_Landau_norm_60_all
-   
-  # Discretisation step size in cm
-  step_size: 1. 
-  # Maximum distance in cm parameterisations are generated for (only generated when required to prevent long initial loading time)
-  max_d: 2500.
-  # VUV group velocity in cm/ns
-  vuv_vgroup_mean: 10.13
-  vuv_vgroup_max: 15.
-  # Distance in cm from "Landau + Expo" -> "Single Landau" model
-  inflexion_point_distance: 300.
+   # Generic VUV timing parameterization
+   @table::common_vuv_timing_parameterization
 
-  # Semi-analytic hits:
-  #
-  # Gaisser-hillas correction parameters
-  GH_PARS: @local::GH_RS60cm_SP			# DUNE-SP
-  
-
-  # *************************************************************************************************
-  #  VIS semi-analytic model
-  # *************************************************************************************************
-  Plane_Depth: @local::Plane_Depth_SP 
-
-  # Timing parameterisation:
-  #
-  # Smearing parameters
-  Distances_refl: @local::Distances_refl_SP
-  Cut_off: @local::Cut_off_SP
-  Tau: @local::Tau_SP
-
-  # vis velocity in cm/ns
-  vis_vmean: 23.99
-  # LAr refractive indices
-  n_LAr_VUV: 2.632 	# effective index due to group vel.
-  n_LAr_vis: 1.23
-
-  # Semi-analytic hits:
-  #
-  # Correction parameters
-  VIS_PARS: @local::VIS_RS60cm_SP 		# DUNE-SP
-  # Cathode properties
-  CATHODE_height: @local::CATHODE_height_SP
-  CATHODE_width: @local::CATHODE_width_SP                    
-  CATHODE_centre: @local::CATHODE_centre_SP
-
-
-  # Optical Detector information
-  Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
-  APERTURE_height: 9.3 		# sensitive window heigh (in cm)
-  APERTURE_width: 7.8 		# sensitive window width (in cm)
-  PMT_radius: 10.16		# 8" diameter PMT (in cm)
-
+   # Optical Detector information - to be removed
+   Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
+   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
+   APERTURE_width: 7.8 		# sensitive window width (in cm)
+   PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
 }
-microboone_photonvisibilityservice: @local::standard_photonvisibilityservice
+
+
+#
+# Enable direct and reflected timing parameterization on top of a photon library.
+# Works only for DUNE SP.
+#
+dunesp_library_timing_reflections_photonvisibilityservice:
+{
+   # This will need to be repalced in dunetpc with
+   # dune-specific library settings
+   @table::standard_photonvisibilityservice
+
+   # Flags to enable parameterizations
+   IncludePropTime: true
+
+   # Ggeneric VUV timing parameterization
+   @table::common_vuv_timing_parameterization
+   
+   # DUNE-specific VIS parameterization
+   @table::dunesp_vis_timing_parameterization
+
+   # Optical Detector information - to be removed
+   Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
+   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
+   APERTURE_width: 7.8 		# sensitive window width (in cm)
+   PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
+}
+
+
+#
+# Enable direct and reflected parameterization on visibility and timing.
+# Works only for DUNE SP.
+#
+dunesp_paramvis_timing_reflections_photonvisibilityservice:
+{
+   # Flags to enable parameterizations, disable library
+   IncludePropTime: true
+   IncludeGeoParametrz: true
+   DoNotLoadLibrary: true
+   
+   # Ggeneric VUV timing parameterization
+   @table::common_vuv_timing_parameterization
+
+   # DUNE-specific VIS parameterization
+   @table::dunesp_vis_timing_parameterization
+
+   # Visibility parameters for 60 cm scattering length DUNE SP
+   GH_PARS: @local::GH_RS60cm_SP
+
+   # Optical Detector information - to be removed
+   Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
+   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
+   APERTURE_width: 7.8 		# sensitive window width (in cm)
+   PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
+}
+
+
+
 
 END_PROLOG
 
