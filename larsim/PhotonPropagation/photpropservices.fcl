@@ -193,11 +193,6 @@ standard_library_timing_photonvisibilityservice:
    # Generic VUV timing parameterization
    @table::common_vuv_timing_parameterization
 
-   # Optical Detector information - to be removed
-   Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
-   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
-   APERTURE_width: 7.8 		# sensitive window width (in cm)
-   PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
 }
 
 
@@ -214,17 +209,12 @@ dunesp_library_timing_reflections_photonvisibilityservice:
    # Flags to enable parameterizations
    IncludePropTime: true
 
-   # Ggeneric VUV timing parameterization
+   # Generic VUV timing parameterization
    @table::common_vuv_timing_parameterization
    
    # DUNE-specific VIS parameterization
    @table::dunesp_vis_timing_parameterization
 
-   # Optical Detector information - to be removed
-   Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
-   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
-   APERTURE_width: 7.8 		# sensitive window width (in cm)
-   PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
 }
 
 
@@ -239,22 +229,45 @@ dunesp_paramvis_timing_reflections_photonvisibilityservice:
    IncludeGeoParametrz: true
    DoNotLoadLibrary: true
    
-   # Ggeneric VUV timing parameterization
+   # Generic VUV timing parameterization
    @table::common_vuv_timing_parameterization
 
    # DUNE-specific VIS parameterization
    @table::dunesp_vis_timing_parameterization
 
-   # Visibility parameters for 60 cm scattering length DUNE SP
+   # Semi-analytic VUV Nhits parameters
    GH_PARS: @local::GH_RS60cm_SP
+   # Semi-analytic VIS Nhits parameters
+   # WARNING: be sure the RS length is the same than for the VUV		  
+   @table::dunesp_vis_hits_semianalytic
 
    # Optical Detector information - to be removed
    Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
-   APERTURE_height: 9.3 		# sensitive window heigh (in cm)
+   APERTURE_height: 9.3 	# sensitive window heigh (in cm)
    APERTURE_width: 7.8 		# sensitive window width (in cm)
    PMT_radius: 10.16		# 8 inch diameter PMT (in cm)
 }
 
+#
+# Enable direct and reflected timing parameterization on top of a photon library.
+# Works only for SBND.
+#
+sbnd_library_timing_reflections_photonvisibilityservice:
+{
+   # This will need to be repalced in sbndcode with
+   # sbnd-specific library settings
+   @table::standard_photonvisibilityservice
+
+   # Flags to enable parameterizations
+   IncludePropTime: true
+
+   # Generic VUV timing parameterization
+   @table::common_vuv_timing_parameterization
+
+   # SBND-specific VIS parameterization
+   @table::sbnd_vis_timing_parameterization
+
+}
 
 
 

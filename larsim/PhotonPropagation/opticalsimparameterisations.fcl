@@ -180,7 +180,10 @@ dunesp_vis_timing_parameterization:
   # LAr refractive indices
   n_LAr_VUV: 2.632 	# effective index due to group vel.
   n_LAr_vis: 1.23
+}
 
+dunesp_vis_hits_semianalytic:
+{
   # Semi-analytic hits:
   #
   # Correction parameters
@@ -191,6 +194,23 @@ dunesp_vis_timing_parameterization:
   CATHODE_centre: @local::CATHODE_centre_SP
 }
 
+sbnd_vis_timing_parameterization:
+{
+  Plane_Depth: @local::Plane_Depth_SBND
+
+  # Timing parameterisation:
+  #
+  # Smearing parameters
+  Distances_refl: @local::Distances_refl_SBND
+  Cut_off: @local::Cut_off_SBND
+  Tau: @local::Tau_SBND
+
+  # vis velocity in cm/ns
+  vis_vmean: 23.99
+  # LAr refractive indices
+  n_LAr_VUV: 2.632      # effective index due to group vel.
+  n_LAr_vis: 1.23
+}
 
 
 END_PROLOG
