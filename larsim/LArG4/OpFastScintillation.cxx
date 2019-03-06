@@ -206,15 +206,7 @@ namespace larg4{
         pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
 	//New VUV time parapetrization
 	pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
-	// testing we are loading right the parameters
-	for(int jj=0; jj<9; jj++) {
-	  std::cout<<"Using parametrization for propagation time of the light. "<<std::endl;
-	  std::cout<<"fparameters["<<jj<<"] =";
-	  for(int kk=0; kk<int(fparameters[jj].size()); kk++) {
-	    std::cout<<fparameters[jj].at(kk)<<", ";
-	  }
-	  std::cout<<""<<std::endl;
-	}
+
 	// create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
 	// default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated  
 	int num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead
@@ -230,22 +222,7 @@ namespace larg4{
         // VIS time parameterisation
         if (pvs->StoreReflected()) {
 	  // load parameters
-	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);
-	  // testing loading correct paramters
-	  std::cout << "Refl timing parameters: " << std::endl;
-	  	for (unsigned int i = 0; i < fdistances_refl.size(); i++) {
-			std::cout << "Distance: " << fdistances_refl[i] << std::endl;
-			std::cout << "Tau: ";
-			for (unsigned int j = 0; j < fcut_off_pars.size(); j++) { 
-				std::cout << ftau_pars[j][i] << ", ";
-			}
-			std::cout << std::endl;
-			std::cout << "Cut-off: ";
-			for (unsigned int j = 0; j < fcut_off_pars.size(); j++) { 
-				std::cout << fcut_off_pars[j][i] << ", ";
-			}
-			std::cout << std::endl;
-		}	 	  
+	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);	 	  
 	}
 
       }
@@ -792,7 +769,6 @@ namespace larg4{
 	      TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	      TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]); 
 	      ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
-	   
 	    }	
             
             if(ReflDetThisPMT>0)
@@ -1134,6 +1110,7 @@ namespace larg4{
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must be in CENTIMETERS! 
         arrival_time_dist = getVUVTime(distance_in_cm, NPhotons); // in ns
+
       }
       else {
 	TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
@@ -1141,7 +1118,7 @@ namespace larg4{
         arrival_time_dist = getVISTime(ScintPoint, OpDetPoint_tv3, NPhotons); // in ns
       }
     }
-    
+  
     return arrival_time_dist;
   }
  
@@ -1452,17 +1429,26 @@ namespace larg4{
     // *************************************************************************************************
     //     Calculation of earliest arrival times and corresponding unsmeared distribution
     // *************************************************************************************************
-    
+   
+    // set plane_depth for correct TPC:
+    double plane_depth;
+    if (ScintPoint[0] < 0) {
+      plane_depth = -fplane_depth;
+    }
+    else {
+      plane_depth = fplane_depth;
+    }
+ 
     // calculate point of reflection for shortest path accounting for difference in refractive indicies    
     // vectors for storing results
     TVector3 image(0,0,0);
     TVector3 bounce_point(0,0,0);
                                  
     // distance to wall    
-    TVector3 v_to_wall(fplane_depth-ScintPoint[0],0,0);
+    TVector3 v_to_wall(plane_depth-ScintPoint[0],0,0);
     
     // hotspot is point on wall where TPB is activated most intensely by the scintillation
-    TVector3 hotspot(fplane_depth,ScintPoint[1],ScintPoint[2]);
+    TVector3 hotspot(plane_depth,ScintPoint[1],ScintPoint[2]);
                                                      
     // define "image" by reflecting over plane
     image = hotspot + v_to_wall*(fn_LAr_vis/fn_LAr_vuv);
@@ -1475,7 +1461,7 @@ namespace larg4{
     // calculate distance travelled by VUV light and by vis light
     double VUVdist = (bounce_point-ScintPoint).Mag();
     double Visdist = (OpDetPoint-bounce_point).Mag();
-    
+
     // calculate times taken by each part
     std::vector<double> VUVTimes  = getVUVTime(VUVdist, number_photons);
     std::vector<double> ReflTimes(number_photons,Visdist/fvis_vmean);
@@ -1485,7 +1471,7 @@ namespace larg4{
     for (int i=0; i<number_photons; i++) {
       transport_time_vis[i] = VUVTimes[i] + ReflTimes[i];
     }
-
+   
     // *************************************************************************************************
     //      Smearing of arrival time distribution
     // *************************************************************************************************
@@ -1506,7 +1492,7 @@ namespace larg4{
     }
     // sum
     double fastest_time = vis_time + vuv_time;
-
+    
     // calculate angle alpha between scintillation point and reflection point
     double cosine_alpha = sqrt(pow(ScintPoint[0] - bounce_point[0],2)) / VUVdist;
     double alpha = acos(cosine_alpha)*180./CLHEP::pi;
@@ -1515,17 +1501,17 @@ namespace larg4{
     // 1). tau = exponential smearing factor, varies with distance and angle
     // 2). cutoff = largest smeared time allowed, preventing excessively large times caused by exponential
     // distance to cathode
-    double distance_cathode_plane = std::abs(fplane_depth - ScintPoint[0]);
+    double distance_cathode_plane = std::abs(plane_depth - ScintPoint[0]);
     // angular bin
     unsigned int alpha_bin = alpha / 10;
-    if (alpha_bin > ftau_pars.size()) {
+    if (alpha_bin >= ftau_pars.size()) {
       alpha_bin = ftau_pars.size() - 1;      // default to the largest available bin if alpha larger than parameterised region; i.e. last bin effectively [last bin start value, 90] deg bin
     }
-    // cut-off and tau
+   // cut-off and tau
     double cutoff = interpolate( fdistances_refl, fcut_off_pars[alpha_bin], distance_cathode_plane, true );
     double tau = interpolate( fdistances_refl, ftau_pars[alpha_bin], distance_cathode_plane, true );
-    
-    // fail-safe if tau extrapolate goes wrong, drops below zero since last distance close to zero [did not occur in testing, but possible]
+   
+   // fail-safe if tau extrapolate goes wrong, drops below zero since last distance close to zero [did not occur in testing, but possible]
     if (tau < 0){
       tau = 0;
     } 
@@ -1561,7 +1547,6 @@ namespace larg4{
       }
       transport_time_vis[i] = arrival_time_smeared;
     }
-    
     return transport_time_vis;
   }
 
@@ -1628,18 +1613,27 @@ namespace larg4{
      // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
      // check x coordinate has same sign or is zero, otherwise return 0 hits
      if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && OpDetPoint[0] != 0){	
-       return 0;	
+       	return 0;	
+     }
+ 
+     // set plane_depth for correct TPC:
+     double plane_depth;
+     if (ScintPoint[0] < 0) {
+       plane_depth = -fplane_depth;
+     }
+     else {
+       plane_depth = fplane_depth;
      }
  
      // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
      
      // set cathode plane struct for solid angle function
      acc cathode_plane; 
-     cathode_plane.ax = fcathode_centre[0]; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];   	// centre coordinates of cathode plane
+     cathode_plane.ax = plane_depth; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];       	// centre coordinates of cathode plane
      cathode_plane.w = fcathode_width; cathode_plane.h = fcathode_height;                        				// width and height in cm
      
      // get scintpoint coords relative to centre of cathode plane
-     TVector3 cathodeCentrePoint(fcathode_centre[0],fcathode_centre[1],fcathode_centre[2]);
+     TVector3 cathodeCentrePoint(plane_depth,fcathode_centre[1],fcathode_centre[2]);
      TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint; 
      
      // calculate solid angle of cathode from the scintillation point
@@ -1647,7 +1641,7 @@ namespace larg4{
      
      // calculate distance and angle between ScintPoint and hotspot
      // vast majority of hits in hotspot region directly infront of scintpoint,therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
-     double distance_cathode = std::abs(fplane_depth - ScintPoint[0]);
+     double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
      double cosine_cathode = 1;
      double theta_cathode = 0;
      
@@ -1663,7 +1657,7 @@ namespace larg4{
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle 
 
      // hotspot coordinates         
-     TVector3 hotspot(fplane_depth, ScintPoint[1], ScintPoint[2]);
+     TVector3 hotspot(plane_depth, ScintPoint[1], ScintPoint[2]);
      
      // get hotspot coordinates relative to detpoint
      TVector3 emission_relative = hotspot - OpDetPoint;
@@ -1710,7 +1704,7 @@ namespace larg4{
     
      // round final result, number of hits integer
      int hits_vis = std::round(hits_rec);
-                                            
+                                  
      return hits_vis; 
   }
 

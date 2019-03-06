@@ -372,12 +372,16 @@ namespace phot{
     if(fIncludeGeoParametrz) {
       	// VUV
       	fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
-      	// VIS
+      	
+        if (fStoreReflected) 
+	{
+        // VIS
       	fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-	fPlane_Depth = p.get<double>("Plane_Depth");
 	fCATHODE_height = p.get<double>("CATHODE_height");
 	fCATHODE_width = p.get<double>("CATHODE_width");
 	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
+	fPlane_Depth = fCATHODE_centre[0];
+	}
       	
 	// Optical channel dimensions
 	fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
