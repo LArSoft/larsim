@@ -196,18 +196,18 @@ namespace phot{
     art::ServiceHandle<geo::Geometry> geom;
     
     // Library details
-    fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob"     );
+    fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob", false);
     fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
     fHybrid               = p.get< bool        >("HybridLibrary", false);
-    fLibraryFile          = p.get< std::string >("LibraryFile"         );
-    fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
+    fLibraryFile          = p.get< std::string >("LibraryFile", "");
+    fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary");
     fStoreReflected       = p.get< bool        >("StoreReflected", false);
     fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
     // Parametrizations (time and Nhits)
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
     fIncludeGeoParametrz  = p.get< bool        >("IncludeGeoParametrz", false);
     // Voxel parameters
-    fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
+    fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary", false);
     fInterpolate          = p.get< bool        >("Interpolate", false);
     fReflectOverZeroX     = p.get< bool        >("ReflectOverZeroX", false);
 
@@ -220,6 +220,8 @@ namespace phot{
     {
       fParPropTime_npar=0;
     }
+
+    if(!fIncludeGeoParametrz) {
 
     if(fUseCryoBoundary)
       {
@@ -247,6 +249,8 @@ namespace phot{
     fNz        = p.get< int          >("NZ"       );
     
     fVoxelDef = sim::PhotonVoxelDef(fXmin, fXmax, fNx, fYmin, fYmax, fNy, fZmin, fZmax, fNz);
+
+    }
 
     if(fIncludePropTime)
       {
