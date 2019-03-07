@@ -226,7 +226,7 @@ namespace larg4{
 	}
 
       }
-      if(pvs->IncludeGeoParametrz()) {
+      if(pvs->UseNhitsModel()) {
 	std::cout << "Using semi-analytic model for number of hits:" << std::endl;	
 	
 	// LAr absorption length in cm
@@ -254,22 +254,24 @@ namespace larg4{
 	  }
 	  GHvuv[bin]->SetParameters(pars_ini);
 	}
-
-	// Load corrections for VIS semi-anlytic hits
-	std::cout << "Loading vis corrections"<<std::endl;
-	pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius, foptical_detector_type);
-
-	// initialise vis correction functions
-	double pars_ini_vis[6] = {0,0,0,0,0,0};
-  	std::cout << "Initialising visible correction parameters" << std::endl;
-	for (int bin = 0; bin < 9; bin++) {
-  		VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
-    		for (int j = 0; j < 6; j++){
-			// loads paramter set read in from fcl
-      			pars_ini_vis[j] = fvispars[j][bin];
-		}
-    		VIS_pol[bin]->SetParameters(pars_ini_vis);
-  	}	
+	
+	if(pvs->StoreReflected()) {
+	  // Load corrections for VIS semi-anlytic hits
+	  std::cout << "Loading vis corrections"<<std::endl;
+	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius, foptical_detector_type);
+	  
+	  // initialise vis correction functions
+	  double pars_ini_vis[6] = {0,0,0,0,0,0};
+	  std::cout << "Initialising visible correction parameters" << std::endl;
+	  for (int bin = 0; bin < 9; bin++) {
+	    VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
+	    for (int j = 0; j < 6; j++){
+	      // loads paramter set read in from fcl
+	      pars_ini_vis[j] = fvispars[j][bin];
+	    }
+	    VIS_pol[bin]->SetParameters(pars_ini_vis);
+	  }	
+	}
       }
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
@@ -732,7 +734,7 @@ namespace larg4{
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
     
-      if(!Visibilities && !pvs->IncludeGeoParametrz()){
+      if(!Visibilities && !pvs->UseNhitsModel()){
       }else{
         std::map<int, int> DetectedNum;
 
@@ -741,7 +743,7 @@ namespace larg4{
         for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
         {
           G4int DetThisPMT = 0.;
-	  if(Visibilities && !pvs->IncludeGeoParametrz()){
+	  if(Visibilities && !pvs->UseNhitsModel()){
 	    DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 	  }
 	  else {
@@ -762,7 +764,7 @@ namespace larg4{
           }
           if(pvs->StoreReflected()) {
 	    G4int ReflDetThisPMT = 0;
-	    if (!pvs->IncludeGeoParametrz()){
+	    if (!pvs->UseNhitsModel()){
 	      ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
 	    }
 	    else {

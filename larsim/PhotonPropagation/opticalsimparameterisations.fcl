@@ -182,12 +182,8 @@ dunesp_vis_timing_parameterization:
   n_LAr_vis: 1.23
 }
 
-dunesp_vis_hits_semianalytic:
+dunesp_cathode_info_for_nhits_vis:
 {
-  # Semi-analytic hits:
-  #
-  # Correction parameters
-  VIS_PARS: @local::VIS_RS60cm_SP 		# DUNE-SP
   # Cathode properties
   CATHODE_height: @local::CATHODE_height_SP
   CATHODE_width: @local::CATHODE_width_SP                    

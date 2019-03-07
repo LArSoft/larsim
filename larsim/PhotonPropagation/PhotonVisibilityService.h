@@ -79,7 +79,7 @@ namespace phot{
     std::string ParPropTimeFormula() const { return fParPropTime_formula; }
 
     bool IncludePropTime() const { return fIncludePropTime; }
-    bool IncludeGeoParametrz() const { return fIncludeGeoParametrz; }
+    bool UseNhitsModel() const { return fUseNhitsModel; }
 
     const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
@@ -107,7 +107,7 @@ namespace phot{
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
-    bool                 fIncludeGeoParametrz;
+    bool                 fUseNhitsModel;
 
     bool                 fParPropTime;
     size_t               fParPropTime_npar;

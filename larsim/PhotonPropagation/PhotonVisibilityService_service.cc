@@ -81,7 +81,7 @@ namespace phot{
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
-    fIncludeGeoParametrz(false),
+    fUseNhitsModel(false),
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
@@ -205,7 +205,7 @@ namespace phot{
     fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
     // Parametrizations (time and Nhits)
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
-    fIncludeGeoParametrz  = p.get< bool        >("IncludeGeoParametrz", false);
+    fUseNhitsModel        = p.get< bool        >("UseNhitsModel", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary", false);
     fInterpolate          = p.get< bool        >("Interpolate", false);
@@ -221,7 +221,7 @@ namespace phot{
       fParPropTime_npar=0;
     }
 
-    if(!fIncludeGeoParametrz) {
+    if(!fUseNhitsModel) {
 
     if(fUseCryoBoundary)
       {
@@ -369,7 +369,7 @@ namespace phot{
 
       }
 
-    if(fIncludeGeoParametrz) {
+    if(fUseNhitsModel) {
       	// VUV
       	fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
       	
