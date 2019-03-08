@@ -14,9 +14,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
@@ -44,10 +41,8 @@ namespace simfilter {
   public:
 
     explicit FilterGenInTime(fhicl::ParameterSet const &pset);
-    virtual ~FilterGenInTime();                        
     
     bool filter(art::Event&) ;
-    //virtual void reconfigure(fhicl::ParameterSet const&)  ;
       
     virtual void beginJob();
     
@@ -80,8 +75,6 @@ namespace simfilter {
       produces< std::vector<simb::MCTruth> >("intime");
       produces< std::vector<simb::MCTruth> >("outtime"); }
   }
-
-  FilterGenInTime::~FilterGenInTime() {}
 
   void FilterGenInTime::beginJob(){
     auto const& geom = *art::ServiceHandle<geo::Geometry>();

@@ -54,7 +54,6 @@ namespace evgen {
 
   public:
     explicit FileMuons(fhicl::ParameterSet const& pset);
-    virtual ~FileMuons();
 
     // This is called for each event.
     void produce(art::Event& evt);
@@ -214,11 +213,6 @@ namespace evgen{
     run.put(std::move(runcol));
 
     return;
-  }
-
-  //____________________________________________________________________________
-  FileMuons::~FileMuons()
-  {
   }
 
   //____________________________________________________________________________

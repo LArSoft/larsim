@@ -4,8 +4,6 @@
 ///
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FILTERPRIMARYPDG_H
-#define FILTER_FILTERPRIMARYPDG_H 
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -16,8 +14,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
@@ -51,12 +47,8 @@ namespace simfilter {
   public:
 
     explicit FilterPrimaryPDG(fhicl::ParameterSet const &pset);
-    virtual ~FilterPrimaryPDG();                        
     
     bool filter(art::Event&) ;
-    virtual void reconfigure(fhicl::ParameterSet const&)  ;
-      
-    virtual void beginJob()  ;
     /*
     virtual void endJob()  ;
     virtual bool beginRun(art::Run &)  ;
@@ -83,30 +75,8 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   // Constructor
   FilterPrimaryPDG::FilterPrimaryPDG(fhicl::ParameterSet const& pset)
-  {
-    this->reconfigure(pset);
-  }
-
-  //-----------------------------------------------------------------------
-  // Destructor
-  FilterPrimaryPDG::~FilterPrimaryPDG() 
-  {
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterPrimaryPDG::beginJob()
-  {
-    //    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<geo::Geometry> geo;
-  
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterPrimaryPDG::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fPrimaryVec =  p.get<std::vector<int> >("PrimaryParticles");
-    return;
-  }
+    : fPrimaryVec{pset.get<std::vector<int> >("PrimaryParticles")}
+  {}
 
   //-----------------------------------------------------------------------
   bool FilterPrimaryPDG::filter(art::Event& evt) 
@@ -157,6 +127,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterPrimaryPDG)
 
 } // namespace simfilter
-
-#endif // FILTER_FILTERPRIMARYPDG_H
-

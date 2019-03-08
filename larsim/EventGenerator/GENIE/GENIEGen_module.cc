@@ -6,8 +6,6 @@
 // brebel@fnal.gov
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_GENIEGEN_H
-#define EVGEN_GENIEGEN_H
 
 #include <cstdlib>
 #include <string>
@@ -608,5 +606,3 @@ namespace evgen{
   DEFINE_ART_MODULE(GENIEGen)
 
 }
-
-#endif 

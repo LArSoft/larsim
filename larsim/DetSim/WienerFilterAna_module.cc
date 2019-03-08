@@ -6,13 +6,6 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef WIENERFILTERANA_H
-#define WIENERFILTERANA_H
-
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
 
 // C++ includes
 #include <algorithm>
@@ -63,7 +56,6 @@ namespace detsim {
   public:
         
     explicit WienerFilterAna(fhicl::ParameterSet const& pset); 
-    virtual ~WienerFilterAna();
     
     /// read/write access to event
     void analyze (const art::Event& evt);
@@ -89,8 +81,6 @@ namespace detsim {
 
 } // End caldata namespace.
 
-#endif // WIENERFILTERANA_H
-
 namespace detsim{
 
   //-------------------------------------------------
@@ -99,11 +89,6 @@ namespace detsim{
     , fDetSimModuleLabel(pset.get< std::string >("DetSimModuleLabel"))
   {
 			 
-  }
-
-  //-------------------------------------------------
-  WienerFilterAna::~WienerFilterAna()
-  {
   }
 
   //-------------------------------------------------

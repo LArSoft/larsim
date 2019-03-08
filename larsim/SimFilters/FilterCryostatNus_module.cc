@@ -4,8 +4,6 @@
 ///
 /// \author  Matthew.Bass@physics.ox.ac.uk
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FilterCryostatNus_H
-#define FILTER_FilterCryostatNus_H
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -15,7 +13,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 
 // LArSoft Includes
@@ -38,7 +35,6 @@ namespace simfilter {
     explicit FilterCryostatNus(fhicl::ParameterSet const &pset);
 
     virtual bool filter(art::Event&) override;
-    //virtual void reconfigure(fhicl::ParameterSet const&)  ;
 
   private:
 
@@ -94,5 +90,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterCryostatNus)
 
 } // namespace simfilter
-
-#endif // FILTER_FILTERNODIRTNUS_H

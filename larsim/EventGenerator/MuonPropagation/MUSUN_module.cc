@@ -139,8 +139,6 @@
 ///c       Note that I use here the azimuthal angle range from 0 to 360 deg.
 ///c
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_MUSUN
-#define EVGEN_MUSUN
 
 // C++ includes.
 #include <cstdlib>
@@ -168,7 +166,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -216,7 +213,6 @@ namespace evgen {
     void produce(art::Event& evt);
     void beginJob();
     void beginRun(art::Run& run);
-    void reconfigure(fhicl::ParameterSet const& p);
     void endRun(art::Run& run);
 
    private:
@@ -336,52 +332,35 @@ namespace evgen{
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
     , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
+    , fPDG        {pset.get< int                 >("PDG")}
+    , fChargeRatio{pset.get< double              >("ChargeRatio")}
+    , fInputDir   {pset.get< std::string         >("InputDir")}
+    , fInputFile1 {pset.get< std::string         >("InputFile1")}
+    , fInputFile2 {pset.get< std::string         >("InputFile2")}
+    , fInputFile3 {pset.get< std::string         >("InputFile3")}
+    , fCavernAngle{pset.get< double              >("CavernAngle")}
+    , fRockDensity{pset.get< double              >("RockDensity")}
+    , fEmin       {pset.get< double              >("Emin")}
+    , fEmax       {pset.get< double              >("Emax")}
+    , fThetamin   {pset.get< double              >("Thetamin")}
+    , fThetamax   {pset.get< double              >("Thetamax")}
+    , fPhimin     {pset.get< double              >("Phimin")}
+    , fPhimax     {pset.get< double              >("Phimax")}
+    , figflag     {pset.get<int                  >("igflag")}
+    , fXmin       {pset.get<double               >("Xmin")}
+    , fYmin       {pset.get<double               >("Ymin")}
+    , fZmin       {pset.get<double               >("Zmin")}
+    , fXmax       {pset.get<double               >("Xmax")}
+    , fYmax       {pset.get<double               >("Ymax")}
+    , fZmax       {pset.get<double               >("Zmax")}
+    , fT0         {pset.get< double              >("T0")}
+    , fSigmaT     {pset.get< double              >("SigmaT")}
+    , fTDist      {pset.get< int                 >("TDist")}
   {
-    this->reconfigure(pset);
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
   }
   
-  ////////////////////////////////////////////////////////////////////////////////
-  //  Reconfigure
-  ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::reconfigure(fhicl::ParameterSet const& p)
-  {
-    // do not put seed in reconfigure because we don't want to reset 
-    // the seed midstream
-
-    fPDG           = p.get< int                 >("PDG");
-    fChargeRatio   = p.get< double              >("ChargeRatio");
-
-    fInputDir      = p.get< std::string         >("InputDir");
-    fInputFile1    = p.get< std::string         >("InputFile1");
-    fInputFile2    = p.get< std::string         >("InputFile2");
-    fInputFile3    = p.get< std::string         >("InputFile3");
-
-    fCavernAngle   = p.get< double              >("CavernAngle");
-    fRockDensity   = p.get< double              >("RockDensity");
-
-    fEmin          = p.get< double              >("Emin");
-    fEmax          = p.get< double              >("Emax");
-
-    fThetamin      = p.get< double              >("Thetamin");
-    fThetamax      = p.get< double              >("Thetamax");
-
-    fPhimin        = p.get< double              >("Phimin");
-    fPhimax        = p.get< double              >("Phimax");
-
-    figflag        = p.get<int                  >("igflag");
-    fXmin          = p.get<double               >("Xmin");
-    fYmin          = p.get<double               >("Ymin");
-    fZmin          = p.get<double               >("Zmin");
-    fXmax          = p.get<double               >("Xmax");
-    fYmax          = p.get<double               >("Ymax");
-    fZmax          = p.get<double               >("Zmax");
-
-    fT0            = p.get< double              >("T0");
-    fSigmaT        = p.get< double              >("SigmaT");
-    fTDist         = p.get< int                 >("TDist");
-  }
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Job
   ////////////////////////////////////////////////////////////////////////////////
@@ -970,6 +949,3 @@ namespace evgen{
   DEFINE_ART_MODULE(MUSUN)
   
 }//end namespace evgen
-
-#endif
-////////////////////////////////////////////////////////////////////////

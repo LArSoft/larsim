@@ -6,8 +6,6 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef SIMWIREANA_H
-#define SIMWIREANA_H
 
 // ROOT includes
 #include <TMath.h>
@@ -56,12 +54,10 @@ namespace detsim {
   public:
         
     explicit SimWireAna(fhicl::ParameterSet const& pset); 
-    virtual ~SimWireAna();
     
     /// read/write access to event
     void analyze (const art::Event& evt);
     void beginJob();
-    void reconfigure(fhicl::ParameterSet const& p);
 
   private:
 
@@ -85,21 +81,9 @@ namespace detsim{
   //-------------------------------------------------
   SimWireAna::SimWireAna(fhicl::ParameterSet const& pset) 
     : EDAnalyzer(pset)
-  {
-    this->reconfigure(pset);
-  }
+    , fDetSimModuleLabel{pset.get< std::string >("DetSimModuleLabel")}
+  {}
 
-  //-------------------------------------------------
-  SimWireAna::~SimWireAna()
-  {
-  }
-
-  void SimWireAna::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fDetSimModuleLabel = p.get< std::string >("DetSimModuleLabel");
-
-    return;
-  }
   //-------------------------------------------------
   void SimWireAna::beginJob() 
   {
@@ -183,5 +167,3 @@ namespace detsim{
   DEFINE_ART_MODULE(SimWireAna)
 
 }
-
-#endif // SIMWIREANA_H

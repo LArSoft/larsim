@@ -1,5 +1,3 @@
-#ifndef PhotonBackTrackerLoader_h
-#define PhotonBackTrackerLoader_h
 ////////////////////////////////////////////////////////////////////////
 // Class:       PhotonBackTrackerLoader
 // Module Type: producer
@@ -64,5 +62,3 @@ void cheat::PhotonBackTrackerLoader::produce(art::Event & e)
 
 
 DEFINE_ART_MODULE(cheat::PhotonBackTrackerLoader)
-
-#endif /* PhotonBackTrackerLoader_h */

@@ -27,14 +27,11 @@ namespace sim {
 
     int NPhotons;
 
-#ifndef __GCCXML__
   public:
 
     TVector3 GetLowerCorner() const;
     TVector3 GetUpperCorner() const;
     TVector3 GetCenter()      const;
-
-#endif
 
   };
 
@@ -60,7 +57,6 @@ namespace sim {
     int      fySteps;
     int      fzSteps;
 
-#ifndef __GCCXML__
   public:
 
     TVector3 GetRegionUpperCorner() const;
@@ -94,8 +90,6 @@ namespace sim {
     bool operator==(const PhotonVoxelDef &rhs) const;
     bool operator!=(const PhotonVoxelDef &rhs) const 
       { return ! ((*this)==rhs); }
-
-#endif
 
   };
 }

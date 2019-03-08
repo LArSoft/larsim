@@ -86,7 +86,6 @@ public:
   void produce(art::Event & e) override;
 
   // Selected optional functions.
-  void beginJob() override;
   void beginRun(art::Run& run) override;
 
 private:
@@ -226,11 +225,6 @@ void evgen::NeutronOsc::beginRun(art::Run& run)
   return;
 }
 
-
-void evgen::NeutronOsc::beginJob()
-{
-  // Implementation of optional member function here.
-}
 
 int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)
 {

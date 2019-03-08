@@ -4,8 +4,6 @@
 ///
 /// \author  dcaratelli@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FILTERSTOPPINGMUON_H
-#define FILTER_FILTERSTOPPINGMUON_H 
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -16,9 +14,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
@@ -53,13 +48,8 @@ namespace simfilter {
   public:
 
     explicit FilterStoppingMuon(fhicl::ParameterSet const &pset);
-    virtual ~FilterStoppingMuon();                        
     
     bool filter(art::Event&) ;
-    virtual void reconfigure(fhicl::ParameterSet const&)  ;
-      
-    virtual void beginJob()  ;
-
     private:
 
     std::string fLArG4ModuleLabel;
@@ -75,28 +65,6 @@ namespace simfilter {
   FilterStoppingMuon::FilterStoppingMuon(fhicl::ParameterSet const& pset) :
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "largeant")       )
   {
-    this->reconfigure(pset);
-  }
-
-  //-----------------------------------------------------------------------
-  // Destructor
-  FilterStoppingMuon::~FilterStoppingMuon() 
-  {
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterStoppingMuon::beginJob()
-  {
-    //    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<geo::Geometry> geo;
-  
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterStoppingMuon::reconfigure(fhicl::ParameterSet const& p)
-  {
-    
-    return;
   }
 
   //-----------------------------------------------------------------------
@@ -156,6 +124,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterStoppingMuon)
 
 } // namespace simfilter
-
-#endif // FILTER_FILTERNODIRTNUS_H
-

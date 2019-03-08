@@ -65,7 +65,6 @@ public:
   void produce(art::Event & e) override;
 
   // Selected optional functions.
-  void beginJob() override;
   void beginRun(art::Run& run) override;
 
 private:
@@ -210,10 +209,5 @@ void evgen::NucleonDecay::beginRun(art::Run& run)
   return;
 }
 
-
-void evgen::NucleonDecay::beginJob()
-{
-  // Implementation of optional member function here.
-}
 
 DEFINE_ART_MODULE(evgen::NucleonDecay)

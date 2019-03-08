@@ -1,4 +1,3 @@
-
 include_directories ( $ENV{GENIE_INC}/GENIE )
 
 # genie
@@ -55,80 +54,68 @@ endif ( ${VMAJ} EQUAL 2 AND ${VMIN} LESS 9 )
 message(STATUS "GENIE version ${GENIE_VERSION} major ${VMAJ} minor ${VMIN} ${GRSSPELLING}")
 cet_find_library( GREINSEHGAL NAMES ${GRSSPELLING} PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 
-art_make( 
-          MODULE_LIBRARIES 
-                        lardataalg_MCDumpers
-                        larsim_Simulation lardataobj_Simulation
-                        nusimdata_SimulationBase
-                        larcoreobj_SummaryData
-                        larcorealg_Geometry
-                        larcore_Geometry_Geometry_service
-                        nutools_RandomUtils_NuRandomService_service
-                        nutools_EventGeneratorBase_GENIE
-                        ${ART_FRAMEWORK_CORE}
-                        ${ART_FRAMEWORK_PRINCIPAL}
-                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                        art_Persistency_Common
-                        art_Persistency_Provenance
-                        art_Utilities
-                        canvas
-                        ${MF_MESSAGELOGGER}
-                        
-                        ${FHICLCPP}
-                        cetlib cetlib_except
-                        ${CLHEP}
-#			${GMESSENGER}
-			${GALGORITHM}		
-			${GBARYONRESONANCE}
-			${GBASE}
-			${GBODEKYANG}
-			${GCHARM}
-			${GCOH}
-			${GDFRC}
-			${GDIS}
-			${GCROSSSECTIONS}
-			${GDECAY}
-			${GELAS}
-			${GELFF}
-			${GHEP}
-			${GEVGCORE}
-			${GEVGMODULES}
-			${GEVGDRIVERS}
-			${GGIBUU}
-			${GHADRONTRANSP}
-			${GFRAGMENTATION}
-			${GINTERACTION}
-			${GLLEWELLYNSMITH}
-			${GMEC}
-			${GNUGAMMA}
-			${GNUE}
-			${GNTUPLE}
-			${GNUCLEAR}
-			${GNUMERICAL}
-			${GQPM}
-			${GPDG}
-			${GPDF}
-			${GQEL}
-			${GRES}
-			${GREGISTRY}
-			${GREINSEHGAL}
-			${GUTILS}
-			${GGEO}
-			${GFLUXDRIVERS}
-			${GMUELOSS}
-			${GREWEIGHT}
-			${GNUCLEONDECAY}
-			${GNEUTRONOSC}
-			${GMESSENGER}
-                        ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
-                        ${ROOT_BASIC_LIB_LIST}
-                        ${ROOT_EG}
+art_make(MODULE_LIBRARIES
+         lardataalg_MCDumpers
+         larsim_Simulation lardataobj_Simulation
+         nusimdata_SimulationBase
+         larcoreobj_SummaryData
+         larcorealg_Geometry
+         larcore_Geometry_Geometry_service
+         nutools_RandomUtils_NuRandomService_service
+         nutools_EventGeneratorBase_GENIE
+         ${ART_FRAMEWORK_SERVICES_REGISTRY}
+         ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+         ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+         art_Persistency_Provenance
+         ${MF_MESSAGELOGGER}
+         ${CLHEP}
+#	 ${GMESSENGER}
+         ${GALGORITHM}
+         ${GBARYONRESONANCE}
+         ${GBASE}
+         ${GBODEKYANG}
+         ${GCHARM}
+         ${GCOH}
+         ${GDFRC}
+         ${GDIS}
+         ${GCROSSSECTIONS}
+         ${GDECAY}
+         ${GELAS}
+         ${GELFF}
+         ${GHEP}
+         ${GEVGCORE}
+         ${GEVGMODULES}
+         ${GEVGDRIVERS}
+         ${GGIBUU}
+         ${GHADRONTRANSP}
+         ${GFRAGMENTATION}
+         ${GINTERACTION}
+         ${GLLEWELLYNSMITH}
+         ${GMEC}
+         ${GNUGAMMA}
+         ${GNUE}
+         ${GNTUPLE}
+         ${GNUCLEAR}
+         ${GNUMERICAL}
+         ${GQPM}
+         ${GPDG}
+         ${GPDF}
+         ${GQEL}
+         ${GRES}
+         ${GREGISTRY}
+         ${GREINSEHGAL}
+         ${GUTILS}
+         ${GGEO}
+         ${GFLUXDRIVERS}
+         ${GMUELOSS}
+         ${GREWEIGHT}
+         ${GNUCLEONDECAY}
+         ${GNEUTRONOSC}
+         ${GMESSENGER}
+         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
+         ${ROOT_EG}
         )
 
 install_headers()
 install_fhicl()
 install_source()
-

@@ -1,6 +1,3 @@
-#ifndef PHOTLIBANALYZER_H
-#define PHOTLIBANALYZER_H
-
 //
 // Name: PhotonLibraryAnalyzer.h
 //
@@ -36,18 +33,12 @@ namespace phot {
     // Constructors, destructor
 
     explicit PhotonLibraryAnalyzer(fhicl::ParameterSet const& pset);
-    virtual ~PhotonLibraryAnalyzer();
 
     // Overrides.
 
-    void reconfigure(fhicl::ParameterSet const& pset);
     void beginJob();
     void analyze(const art::Event& evt);
     
-    void endJob();
-  
-    
-
   private:
     std::string fAltXAxis;
     int         fOpDet;
@@ -57,30 +48,17 @@ namespace phot {
   
 }
 
-#endif
-
 namespace phot {
 
   //----------------------------------------------------------------------------
   PhotonLibraryAnalyzer::PhotonLibraryAnalyzer(const fhicl::ParameterSet& pset)
     : EDAnalyzer(pset)
+    , fAltXAxis{pset.get<std::string>("alt_x_axis")}
+    , fOpDet{pset.get<int>("opdet")}
+    , fEachSlice{pset.get<bool>("each_slice")}
+    , fEachDetector{pset.get<bool>("each_detector")}
   {
-    reconfigure(pset);
     std::cout<<"Photon library analyzer constructor "<<std::endl;
-  }
-
-  //----------------------------------------------------------------------------
-  PhotonLibraryAnalyzer::~PhotonLibraryAnalyzer()
-  {
-  }
-
-  //----------------------------------------------------------------------------
-  void PhotonLibraryAnalyzer::reconfigure(fhicl::ParameterSet const& pset)
-  {
-    fAltXAxis     = pset.get<std::string>("alt_x_axis");
-    fOpDet        = pset.get<int>("opdet");
-    fEachSlice    = pset.get<bool>("each_slice");
-    fEachDetector = pset.get<bool>("each_detector");
   }
 
   //----------------------------------------------------------------------------
@@ -280,14 +258,6 @@ namespace phot {
   
   }
 
-
-
-  
-  //----------------------------------------------------------------------------
-  void PhotonLibraryAnalyzer::endJob()
-  {
-
-  }
 }
 
 

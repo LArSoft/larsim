@@ -4,8 +4,6 @@
 ///
 /// \author  Matthew.Bass@physics.ox.ac.uk
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_CORSIKAGen_H
-#define EVGEN_CORSIKAGen_H
 
 // ROOT includes
 #include "TRandom3.h"
@@ -24,7 +22,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -52,9 +49,7 @@ namespace evgen {
     virtual ~CORSIKAGen();
 
     void produce(art::Event& evt);
-    void beginJob();
     void beginRun(art::Run& run);
-    void reconfigure(fhicl::ParameterSet const& p);
 
 
   private:
@@ -121,7 +116,6 @@ namespace evgen{
     ;
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    this->reconfigure(p);
 
     this->openDBs(p.get<std::string>("module_label"));
     this->populateNShowers();
@@ -492,17 +486,6 @@ namespace evgen{
     }
   }
 
-  void CORSIKAGen::reconfigure(fhicl::ParameterSet const& p){
-
-    return;
-  }
-
-  void CORSIKAGen::beginJob(){
-    art::ServiceHandle<art::TFileService> tfs;
-
-
-  }
-
   void CORSIKAGen::beginRun(art::Run& run){
 
     // grab the geometry object to see what geometry we are using
@@ -598,6 +581,3 @@ namespace evgen{
   DEFINE_ART_MODULE(CORSIKAGen)
 
 }
-
-#endif // EVGEN_CORSIKAGen_H
-////////////////////////////////////////////////////////////////////////

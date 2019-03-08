@@ -79,12 +79,10 @@ namespace evgen {
 class evgen::TextFileGen : public art::EDProducer {
 public:
   explicit TextFileGen(fhicl::ParameterSet const & p);
-  virtual ~TextFileGen();
 
   void produce(art::Event & e)                    override;
   void beginJob()               		  override;
   void beginRun(art::Run & run) 		  override;
-  void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
@@ -97,16 +95,16 @@ private:
 evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   : EDProducer{p}
   , fInputFile(0)
+  , fInputFileName{p.get<std::string>("InputFileName")}
+  , fMoveY{p.get<double>("MoveY", -1e9)}
+
 {
-  this->reconfigure(p);
+  if (fMoveY>-1e8){
+    mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
+  }
 
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
-}
-
-//------------------------------------------------------------------------------
-evgen::TextFileGen::~TextFileGen()
-{
 }
 
 //------------------------------------------------------------------------------
@@ -216,17 +214,6 @@ void evgen::TextFileGen::produce(art::Event & e)
 
   e.put(std::move(truthcol));
 
-  return;
-}
-
-//------------------------------------------------------------------------------
-void evgen::TextFileGen::reconfigure(fhicl::ParameterSet const & p)
-{
-  fInputFileName = p.get<std::string>("InputFileName");
-  fMoveY         = p.get<double>("MoveY", -1e9);
-  if (fMoveY>-1e8){
-    mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
-  }
   return;
 }
 

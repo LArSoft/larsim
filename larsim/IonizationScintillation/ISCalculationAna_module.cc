@@ -15,7 +15,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "TNtuple.h"
@@ -50,7 +49,6 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-  void reconfigure(fhicl::ParameterSet const & p);
 
 private:
 
@@ -62,12 +60,9 @@ private:
 
 
 larg4::ISCalculationAna::ISCalculationAna(fhicl::ParameterSet const & p)
-  :
-  EDAnalyzer(p)  // ,
- // More initializers here.
-{
-  this->reconfigure(p);
-}
+  : EDAnalyzer(p)
+  , fEDepTag{p.get<art::InputTag>("EDepModuleLabel")}
+{}
 
 void larg4::ISCalculationAna::analyze(art::Event const & e)
 {
@@ -96,11 +91,6 @@ void larg4::ISCalculationAna::beginJob()
 		    lar::providerFrom<spacecharge::SpaceChargeService>());
   art::ServiceHandle<art::TFileService> tfs;
   fNtuple = tfs->make<TNtuple>("nt_is","EDep IS Calc Ntuple","run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon");
-}
-
-void larg4::ISCalculationAna::reconfigure(fhicl::ParameterSet const & p)
-{
-  fEDepTag = p.get<art::InputTag>("EDepModuleLabel");
 }
 
 DEFINE_ART_MODULE(larg4::ISCalculationAna)

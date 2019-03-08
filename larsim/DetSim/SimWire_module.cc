@@ -8,13 +8,6 @@
 // - save the electron clusters associated with each digit.
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef SIMWIRE_H
-#define SIMWIRE_H
-
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
 
 // ROOT includes
 #include <TMath.h>
@@ -554,5 +547,3 @@ namespace detsim{
   DEFINE_ART_MODULE(SimWire)
 
 }
-
-#endif // SIMWIRE_H

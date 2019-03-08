@@ -102,8 +102,6 @@ namespace sim {
 
     sim::LArVoxelID fVoxelID; //id for the voxel represented by these data
 
-#ifndef __GCCXML__
-
   public:
     // The energy routines described above.  (std::accumulate is
     // defined in <numeric>, and is a standard STL algorithm.)
@@ -189,13 +187,9 @@ namespace sim {
     // an existing item.									   
     void insert( const key_type& key, const mapped_type& value );
 
-#endif
-
   };
 
 } // namespace sim
-
-#ifndef __GCCXML__
 
 inline void                  sim::LArVoxelData::SetVoxelID(sim::LArVoxelID voxID) { fVoxelID = voxID; }
 inline sim::LArVoxelID                sim::LArVoxelData::VoxelID()          const { return fVoxelID;  }
@@ -289,7 +283,5 @@ inline const sim::LArVoxelData::mapped_type& sim::LArVoxelData::at(const sim::LA
 { return ftrackEnergy.at(key); }	   
 inline void sim::LArVoxelData::insert( const sim::LArVoxelData::key_type& key, const sim::LArVoxelData::mapped_type& value )
 { ftrackEnergy[key] = value; }    
-
-#endif
 
 #endif // Simulation_LArVoxelData_h_

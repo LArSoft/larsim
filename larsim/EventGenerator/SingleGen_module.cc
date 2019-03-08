@@ -6,8 +6,6 @@
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_SINGLEGEN
-#define EVGEN_SINGLEGEN
 
 // C++ includes.
 #include <iostream>
@@ -35,7 +33,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -1097,6 +1094,3 @@ namespace evgen{
   DEFINE_ART_MODULE(SingleGen)
 
 }//end namespace evgen
-
-#endif
-////////////////////////////////////////////////////////////////////////

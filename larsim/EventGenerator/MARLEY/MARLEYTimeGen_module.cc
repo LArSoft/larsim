@@ -229,8 +229,6 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     // @brief Configuration-checking constructor
     explicit MarleyTimeGen(const Parameters& p);
 
-    virtual ~MarleyTimeGen();
-
     virtual void produce(art::Event& e) override;
     virtual void beginRun(art::Run& run) override;
 
@@ -555,11 +553,6 @@ evgen::MarleyTimeGen::MarleyTimeGen(const Parameters& p)
   produces< std::vector<sim::SupernovaTruth> >();
   produces< art::Assns<simb::MCTruth, sim::SupernovaTruth> >();
   produces< sumdata::RunData, art::InRun >();
-}
-
-//------------------------------------------------------------------------------
-evgen::MarleyTimeGen::~MarleyTimeGen()
-{
 }
 
 //------------------------------------------------------------------------------

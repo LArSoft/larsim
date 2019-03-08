@@ -5,8 +5,7 @@
 // brebel@fnal.gov
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef CHEAT_CHECKBACKTRACKING_H
-#define CHEAT_CHECKBACKTRACKING_H
+
 #include <string>
 #include <vector>
 
@@ -35,11 +34,8 @@ namespace cheat {
   class CheckBackTracking : public art::EDAnalyzer {
   public:
     explicit CheckBackTracking(fhicl::ParameterSet const& pset);
-    virtual ~CheckBackTracking();
 
     void analyze(art::Event const& evt);
-
-    void reconfigure(fhicl::ParameterSet const& pset);
 
  private:
 
@@ -54,23 +50,9 @@ namespace cheat{
   //--------------------------------------------------------------------
   CheckBackTracking::CheckBackTracking(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
-  {
-    this->reconfigure(pset);
-  }
-
-  //--------------------------------------------------------------------
-  CheckBackTracking::~CheckBackTracking()
-  {
-  }
-
-  //--------------------------------------------------------------------
-  void CheckBackTracking::reconfigure(fhicl::ParameterSet const& pset)
-  {
-    fHitModuleLabel    = pset.get< std::string >("HitModuleLabel",    "ffthit"  );
-    fG4ModuleLabel     = pset.get< std::string >("G4ModuleLabel",     "largeant");
-
-    return;
-  }
+    , fHitModuleLabel{pset.get< std::string >("HitModuleLabel",    "ffthit"  )}
+    , fG4ModuleLabel {pset.get< std::string >("G4ModuleLabel",     "largeant")}
+  {}
 
   //--------------------------------------------------------------------
   void CheckBackTracking::analyze(art::Event const& evt)
@@ -157,5 +139,3 @@ namespace cheat{
   DEFINE_ART_MODULE(CheckBackTracking)
 
 }
-
-#endif

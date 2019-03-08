@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////
 // Chris Backhouse, UCL, Nov 2017
 ////////////////////////////////////////////////////////////////////////
@@ -7,7 +6,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"

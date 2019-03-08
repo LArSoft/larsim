@@ -33,7 +33,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -80,7 +79,6 @@ namespace evgen {
     void produce(art::Event& evt) override;
     void beginJob() override;
     void beginRun(art::Run& run) override;
-    void reconfigure(fhicl::ParameterSet const& p);
 
     // Defining private maps.......
     typedef std::map<double, TH1*> dhist_Map;
@@ -177,50 +175,33 @@ namespace evgen{
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
     , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
+    , fMode         {pset.get< int                 >("ParticleSelectionMode")}
+    , fPadOutVectors{pset.get< bool                >("PadOutVectors")}
+    , fPDG          {pset.get< std::vector<int>    >("PDG")}
+    , fCharge       {pset.get< int >("Charge")}
+    , fInputDir     {pset.get< std::string         >("InputDir")}
+    , fEmin         {pset.get< double              >("Emin")}
+    , fEmax         {pset.get< double              >("Emax")}
+    , fEmid         {pset.get< double              >("Emid")}
+    , fEBinsLow     {pset.get< int                 >("EBinsLow")}
+    , fEBinsHigh    {pset.get< int                 >("EBinsHigh")}
+    , fThetamin     {pset.get< double              >("Thetamin")}
+    , fThetamax     {pset.get< double              >("Thetamax")}
+    , fThetaBins    {pset.get< int                 >("ThetaBins")}
+    , fXHalfRange   {pset.get< double              >("XHalfRange")}
+    , fYInput       {pset.get< double              >("YInput")}
+    , fZHalfRange   {pset.get< double              >("ZHalfRange")}
+    , fT0           {pset.get< double              >("T0")}
+    , fSigmaT       {pset.get< double              >("SigmaT")}
+    , fTDist        {pset.get< int                 >("TDist")}
+    , fSetParam     {pset.get< bool                >("SetParam")}
+    , fSetRead      {pset.get< bool                >("SetRead")}
+    , fSetWrite     {pset.get< bool                >("SetWrite")}
+    , fSetReWrite   {pset.get< bool                >("SetReWrite")}
+    , fEpsilon      {pset.get< double              >("Epsilon")}
   {
-    this->reconfigure(pset);
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
-  }
-
-  //____________________________________________________________________________
-  void GaisserParam::reconfigure(fhicl::ParameterSet const& p)
-  {
-    // do not put seed in reconfigure because we don't want to reset 
-    // the seed midstream
-
-    fPadOutVectors = p.get< bool                >("PadOutVectors");
-    fMode          = p.get< int                 >("ParticleSelectionMode");
-    fPDG           = p.get< std::vector<int>    >("PDG");
-
-    fCharge        = p.get< int >("Charge");
-    fInputDir      = p.get< std::string         >("InputDir");
-
-    fEmin          = p.get< double              >("Emin");
-    fEmax          = p.get< double              >("Emax");
-    fEmid          = p.get< double              >("Emid");
-    fEBinsLow      = p.get< int                 >("EBinsLow");
-    fEBinsHigh     = p.get< int                 >("EBinsHigh");
-
-    fThetamin      = p.get< double              >("Thetamin");
-    fThetamax      = p.get< double              >("Thetamax");
-    fThetaBins     = p.get< int                 >("ThetaBins");
-   
-    fXHalfRange    = p.get< double              >("XHalfRange");
-    fYInput        = p.get< double              >("YInput");
-    fZHalfRange    = p.get< double              >("ZHalfRange");
-
-    fT0            = p.get< double              >("T0");
-    fSigmaT        = p.get< double              >("SigmaT");
-    fTDist         = p.get< int                 >("TDist");
-
-    fSetParam      = p.get< bool                >("SetParam");
-    fSetRead       = p.get< bool                >("SetRead");
-    fSetWrite      = p.get< bool                >("SetWrite");
-    fSetReWrite    = p.get< bool                >("SetReWrite");
-    fEpsilon       = p.get< double              >("Epsilon");
-    
-    return;
   }
 
   //____________________________________________________________________________

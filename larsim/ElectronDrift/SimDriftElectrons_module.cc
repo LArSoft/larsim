@@ -104,7 +104,6 @@ namespace detsim {
     // art::EDProducer.
     void produce (art::Event& evt) override;
     void beginJob() override;
-    void endJob() override;
 
   private:
 
@@ -238,11 +237,6 @@ namespace detsim {
 
 
     return;
-  }
-
-  //-------------------------------------------------
-  void SimDriftElectrons::endJob()
-  {
   }
 
   //-------------------------------------------------

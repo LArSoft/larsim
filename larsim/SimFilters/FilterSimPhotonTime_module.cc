@@ -15,7 +15,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 
 #include <memory>
@@ -45,9 +44,6 @@ public:
 
   // Required functions.
   bool filter(art::Event & e) override;
-
-  // Selected optional functions.
-  //void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
@@ -153,10 +149,5 @@ bool simfilter::FilterSimPhotonTime::filter(art::Event & e)
 
   return false;
 }
-
-//void simfilter::FilterSimPhotonTime::reconfigure(fhicl::ParameterSet const & p)
-//{
-  // Implementation of optional member function here.
-//}
 
 DEFINE_ART_MODULE(simfilter::FilterSimPhotonTime)

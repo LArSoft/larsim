@@ -90,8 +90,6 @@ namespace sim {
 
     std::vector<int> fbins; // (x,y,z,t) bins.
 
-#ifndef __GCCXML__
-
   public:
     // Accessors for the bin values.  I don't expect these to be used
     // often, but include them for completeness.
@@ -132,13 +130,9 @@ namespace sim {
 
     friend std::ostream& operator<< ( std::ostream& output, const LArVoxelID& );
 
-#endif
-    
   };
 
 } // sim 
-
-#ifndef __GCCXML__
 
 inline int sim::LArVoxelID::XBin() const { return fbins[0]; }
 inline int sim::LArVoxelID::YBin() const { return fbins[1]; }
@@ -168,7 +162,5 @@ namespace std {
     }
   };
 } // std
-
-#endif
 
 #endif // sim_LArVoxelID_h

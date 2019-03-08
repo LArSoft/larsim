@@ -1,5 +1,3 @@
-#ifndef BackTrackerLoader_h
-#define BackTrackerLoader_h
 ////////////////////////////////////////////////////////////////////////
 // Class:       BackTrackerLoader
 // Module Type: producer
@@ -64,5 +62,3 @@ void cheat::BackTrackerLoader::produce(art::Event & e)
 
 
 DEFINE_ART_MODULE(cheat::BackTrackerLoader)
-
-#endif /* BackTrackerLoader_h */

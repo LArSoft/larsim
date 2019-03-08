@@ -7,6 +7,7 @@
 #ifndef MCRECOEDEP_CC
 #define MCRECOEDEP_CC
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "MCRecoEdep.h"
 
 // #include "Utilities/DetectorProperties.h"

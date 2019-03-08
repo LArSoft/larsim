@@ -4,8 +4,6 @@
 ///
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FILTERNODIRTNUS_H
-#define FILTER_FILTERNODIRTNUS_H 
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -16,9 +14,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
@@ -53,12 +48,8 @@ namespace simfilter {
   public:
 
     explicit FilterNoDirtNeutrinos(fhicl::ParameterSet const &pset);
-    virtual ~FilterNoDirtNeutrinos();                        
     
     bool filter(art::Event&) ;
-    virtual void reconfigure(fhicl::ParameterSet const&)  ;
-      
-    virtual void beginJob()  ;
     /*
     virtual void endJob()  ;
     virtual bool beginRun(art::Run &)  ;
@@ -85,28 +76,6 @@ namespace simfilter {
     , fGenModuleLabel    (pset.get< std::string > ("GenModuleLabel"  , "NoLabel")       )
     , fKeepCryostatNeutrinos    (pset.get< bool > ("KeepCryostatNeutrinos", false)      )
   {
-    this->reconfigure(pset);
-  }
-
-  //-----------------------------------------------------------------------
-  // Destructor
-  FilterNoDirtNeutrinos::~FilterNoDirtNeutrinos() 
-  {
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterNoDirtNeutrinos::beginJob()
-  {
-    //    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<geo::Geometry> geo;
-  
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterNoDirtNeutrinos::reconfigure(fhicl::ParameterSet const& p)
-  {
-
-    return;
   }
 
   //-----------------------------------------------------------------------
@@ -223,6 +192,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterNoDirtNeutrinos)
 
 } // namespace simfilter
-
-#endif // FILTER_FILTERNODIRTNUS_H
-

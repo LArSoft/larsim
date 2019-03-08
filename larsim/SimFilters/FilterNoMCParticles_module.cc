@@ -4,8 +4,6 @@
 ///
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FILTERNODIRTNUS_H
-#define FILTER_FILTERNODIRTNUS_H
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -15,7 +13,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft Includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -35,7 +32,6 @@ namespace simfilter {
     explicit FilterNoMCParticles(fhicl::ParameterSet const &pset);
 
     bool filter(art::Event&) ;
-    void reconfigure(fhicl::ParameterSet const&)  ;
 
   private:
 
@@ -52,16 +48,7 @@ namespace simfilter {
   FilterNoMCParticles::FilterNoMCParticles(fhicl::ParameterSet const& pset) :
     EDFilter{pset},
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
-  {
-    this->reconfigure(pset);
-  }
-
-  //-----------------------------------------------------------------------
-  void FilterNoMCParticles::reconfigure(fhicl::ParameterSet const& p)
-  {
-
-    return;
-  }
+  {}
 
   //-----------------------------------------------------------------------
   bool FilterNoMCParticles::filter(art::Event& evt)
@@ -84,5 +71,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterNoMCParticles)
 
 } // namespace simfilter
-
-#endif // FILTER_FILTERNODIRTNUS_H

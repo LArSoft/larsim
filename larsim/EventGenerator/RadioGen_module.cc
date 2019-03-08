@@ -51,7 +51,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -99,7 +98,6 @@ namespace evgen {
     // This is called for each event.
     void produce(art::Event& evt);
     void beginRun(art::Run& run);
-    void reconfigure(fhicl::ParameterSet const& p);
 
     typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
     typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
@@ -228,11 +226,6 @@ namespace evgen{
         readfile(nuclideName,searchName);
       }
     }
-  }
-
-  //____________________________________________________________________________
-  void RadioGen::reconfigure(fhicl::ParameterSet const& p)
-  {
   }
 
   //____________________________________________________________________________

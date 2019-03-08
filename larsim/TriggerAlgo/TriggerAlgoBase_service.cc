@@ -4,9 +4,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef TRIGGERALGOBASE_CC
-#define TRIGGERALGOBASE_CC
-
 #include "TriggerAlgoBase.h"
 
 namespace trigger{
@@ -88,5 +85,3 @@ namespace trigger{
   //DEFINE_ART_SERVICE(TriggerAlgoBase)
 
 } // namespace trigger
-
-#endif 

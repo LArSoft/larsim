@@ -14,11 +14,6 @@
 #include <sstream>
 #include <fstream>
 #include <bitset>
-// POSIX includes
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h" 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -29,8 +24,6 @@ extern "C" {
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 // Root Includes
 #include "TMath.h"
 #include "TGraph.h"
@@ -58,13 +51,9 @@ namespace larg {
   public:
         
     explicit LArSimChannelAna(fhicl::ParameterSet const& pset); 
-    virtual ~LArSimChannelAna();
     
     /// read/write access to event
     void analyze (const art::Event& evt);
-    void beginJob(){};
-    void endJob();
-    void reconfigure(fhicl::ParameterSet const& p);
 
     // intilize the histograms
     //
@@ -108,6 +97,7 @@ namespace larg {
   //-------------------------------------------------
   LArSimChannelAna::LArSimChannelAna(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
+    , fLArG4ModuleLabel{pset.get< std::string >("LArGeantModuleLabel")}
     , initDone(false)
     , fChargeXpos()
     , fChargeYpos()
@@ -121,20 +111,8 @@ namespace larg {
     , fEnergyPerTDC()
     , fElectronsPerIDE()
     , fEnergyPerIDE()
-  {
-    this->reconfigure(pset);
-  }
+  {}
 
-  //-------------------------------------------------
-  LArSimChannelAna::~LArSimChannelAna()
-  {
-  }
-
-  void LArSimChannelAna::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fLArG4ModuleLabel         = p.get< std::string >("LArGeantModuleLabel");
-    return;
-  }
   //-------------------------------------------------
   void LArSimChannelAna::ensureHists() {
     if (initDone) return; // Bail if we've already done this.
@@ -193,9 +171,6 @@ namespace larg {
     return;
 
   }
-
-  //-------------------------------------------------
-  void LArSimChannelAna::endJob() {}
 
   //-------------------------------------------------
   void LArSimChannelAna::analyze(const art::Event& evt)
@@ -257,4 +232,3 @@ namespace larg {
   DEFINE_ART_MODULE(LArSimChannelAna)
 
 } // end of hit namespace
-

@@ -4,8 +4,6 @@
 ///
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
-#ifndef LARG4_LARG4ANA_H
-#define LARG4_LARG4ANA_H 
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -58,11 +56,9 @@ namespace larg4 {
  
     /// Standard constructor and destructor for an FMWK module.
     explicit LArG4Ana(fhicl::ParameterSet const& pset);
-    virtual ~LArG4Ana();
 
     void analyze (const art::Event& evt); 
     void beginJob();
-    void reconfigure(fhicl::ParameterSet const& pset);
 
   private:
 
@@ -89,8 +85,8 @@ namespace larg4 {
     Int_t fTRun;
     Int_t fTPdg;
     Int_t fTID;
-    Int_t fTNds;
     Int_t fTNdsOriginal;
+    Int_t fTNds;
     Int_t fTNds4;
     Int_t *fTDID;
     Int_t *fTDPdg;
@@ -118,15 +114,11 @@ namespace larg4 {
   // Constructor
   LArG4Ana::LArG4Ana(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
-  {
-    this->reconfigure(pset);
-  }
-
-  //-----------------------------------------------------------------------
-  // Destructor
-  LArG4Ana::~LArG4Ana() 
-  {
-  }
+    , fG4ModuleLabel{pset.get< std::string >("GeantModuleLabel")}
+    , fTruthModuleLabel{pset.get< std::string >("TruthModuleLabel")}
+    , fTNdsOriginal{pset.get< int         >("Ndaughters"      )}
+    , fTNds{fTNdsOriginal}
+  {}
 
   //-----------------------------------------------------------------------
   void LArG4Ana::beginJob()
@@ -201,17 +193,6 @@ namespace larg4 {
     fTree->Branch("MCMomentum", fT4Momentum, "MCMomentum[4]/F");
     fTree->Branch("MCDMomentum", fT4DMomentum, "MCDMomentum[MCNumDs4]/F");
   
-  }
-
-  //-----------------------------------------------------------------------
-  void LArG4Ana::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fG4ModuleLabel    = p.get< std::string >("GeantModuleLabel");
-    fTNdsOriginal     = p.get< int         >("Ndaughters"      );
-    fTruthModuleLabel = p.get< std::string >("TruthModuleLabel"); 
-    fTNds = fTNdsOriginal;
-    
-    return;
   }
 
   //-----------------------------------------------------------------------
@@ -374,6 +355,3 @@ namespace larg4 {
   DEFINE_ART_MODULE(LArG4Ana)
 
 } // namespace LArG4
-
-#endif // LARG4_LARG4_H
-

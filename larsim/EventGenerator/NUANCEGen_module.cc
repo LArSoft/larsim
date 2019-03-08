@@ -7,8 +7,6 @@
 // saima@ksu.edu
 //
 ////////////////////////////////////////////////////////////////////////
-#ifndef EVGEN_NUANCEGEN_H
-#define EVGEN_NUANCEGEN_H
 
 #include <cstdlib>
 #include <string>
@@ -108,8 +106,6 @@ namespace evgen {
 	TH1F* fCCMode;      ///< CC interaction mode
 	TH1F* fNCMode;      ///< CC interaction mode
 	
-        // for c2: fDeltaE is no longer used
-	//TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
 	TH1F* fECons;      ///< histogram to determine if energy is conserved in the event
 	
   };
@@ -120,8 +116,9 @@ namespace evgen{
   //____________________________________________________________________________
   NUANCEGen::NUANCEGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
+    , fNuanceFile       (pset.get< std::string         >("NuanceFile"))
+    , fBeamVerticalAngle(pset.get< double              >("BeamVerticalAngle"))
   {
-    this->reconfigure(pset); 
     fStopwatch.Start();
 
     produces< std::vector<simb::MCTruth> >();
@@ -141,17 +138,9 @@ namespace evgen{
     fStopwatch.Stop();
   }
 
-  //____________________________________________________________________________
-  void NUANCEGen::reconfigure(fhicl::ParameterSet const& p)
-  {
-    fNuanceFile          =(p.get< std::string         >("NuanceFile"));
-    fBeamVerticalAngle   =(p.get< double              >("BeamVerticalAngle"));
-    return;
-  }
 //___________________________________________________________________________
-  
-  void NUANCEGen::beginJob(){
-   
+  void NUANCEGen::beginJob()
+  {
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
 
@@ -730,5 +719,3 @@ namespace evgen{
   DEFINE_ART_MODULE(NUANCEGen)
 
 }
-
-#endif 

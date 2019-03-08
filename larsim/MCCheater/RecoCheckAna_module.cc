@@ -1,5 +1,3 @@
-#ifndef RecoCheckAna_h
-#define RecoCheckAna_h
 ////////////////////////////////////////////////////////////////////////
 // Class:       RecoCheckAna
 // Module Type: analyzer
@@ -42,11 +40,9 @@ class TTree;
 class cheat::RecoCheckAna : public art::EDAnalyzer {
 public:
   explicit RecoCheckAna(fhicl::ParameterSet const &p);
-  virtual ~RecoCheckAna();
 
   virtual void analyze(art::Event const &e);
 
-  virtual void reconfigure(fhicl::ParameterSet const & p);
   virtual void beginRun(art::Run const &r);
 
   
@@ -155,15 +151,18 @@ private:
 //-------------------------------------------------------------------
 cheat::RecoCheckAna::RecoCheckAna(fhicl::ParameterSet const &p)
   : EDAnalyzer(p)
-{
-  this->reconfigure(p);
-}
-
-//-------------------------------------------------------------------
-cheat::RecoCheckAna::~RecoCheckAna() 
-{
-  // Clean up dynamic memory and other resources here.
-}
+  , fHitModuleLabel    {p.get< std::string >("HitModuleLabel")}
+  , fClusterModuleLabel{p.get< std::string >("ClusterModuleLabel")}
+  , fShowerModuleLabel {p.get< std::string >("ShowerModuleLabel"  )}
+  , fTrackModuleLabel  {p.get< std::string >("TrackModuleLabel" )}
+  , fVertexModuleLabel {p.get< std::string >("VertexModuleLabel" )}
+  , fEventModuleLabel  {p.get< std::string >("EventModuleLabel"  )}
+  , fCheckClusters     {p.get< bool        >("CheckClusters")}
+  , fCheckShowers      {p.get< bool        >("CheckShowers" )}
+  , fCheckTracks       {p.get< bool        >("CheckTracks"  )}
+  , fCheckVertices     {p.get< bool        >("CheckVertices")}
+  , fCheckEvents       {p.get< bool        >("CheckEvents"  )}
+{}
 
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::analyze(art::Event const &e) 
@@ -216,23 +215,6 @@ void cheat::RecoCheckAna::analyze(art::Event const &e)
 
   return;
  
-}
-
-//-------------------------------------------------------------------
-void cheat::RecoCheckAna::reconfigure(fhicl::ParameterSet const & p) 
-{
-  fHitModuleLabel     = p.get< std::string >("HitModuleLabel");
-  fClusterModuleLabel = p.get< std::string >("ClusterModuleLabel");
-  fShowerModuleLabel  = p.get< std::string >("ShowerModuleLabel"  );
-  fTrackModuleLabel   = p.get< std::string >("TrackModuleLabel" );
-  fVertexModuleLabel  = p.get< std::string >("VertexModuleLabel" );
-  fEventModuleLabel   = p.get< std::string >("EventModuleLabel"  );
-
-  fCheckClusters      = p.get< bool        >("CheckClusters");
-  fCheckShowers       = p.get< bool        >("CheckShowers" );
-  fCheckTracks        = p.get< bool        >("CheckTracks"  );
-  fCheckVertices      = p.get< bool        >("CheckVertices");
-  fCheckEvents        = p.get< bool        >("CheckEvents"  );
 }
 
 //-------------------------------------------------------------------
@@ -666,5 +648,3 @@ void cheat::RecoCheckAna::FillResults(std::vector< art::Ptr<recob::Hit> > const&
 
 
 DEFINE_ART_MODULE(cheat::RecoCheckAna)
-
-#endif /* RecoCheckAna_h */
