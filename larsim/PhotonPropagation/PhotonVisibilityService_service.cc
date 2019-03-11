@@ -512,7 +512,7 @@ namespace phot{
     lib->SetReflCount(VoxID,OpChannel, N);
     
     //std::cout<< " PVS logging " << VoxID << " " << OpChannel<<std::endl;
-    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    MF_LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------
@@ -572,7 +572,7 @@ namespace phot{
 
     lib->SetReflT0(VoxID,OpChannel,T0);
 
-    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    MF_LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------      
@@ -635,7 +635,7 @@ namespace phot{
 
     lib->SetTimingPar(VoxID,OpChannel,par, parnum);
 
-    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    MF_LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
   //------------------------------------------------------
@@ -648,7 +648,7 @@ namespace phot{
 
     lib->SetTimingTF1(VoxID,OpChannel,func);
 
-    LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
+    MF_LOG_DEBUG("PhotonVisibilityService") << " PVS logging " << VoxID << " " << OpChannel<<std::endl;
   }
 
 

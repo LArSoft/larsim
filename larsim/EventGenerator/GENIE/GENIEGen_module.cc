@@ -156,7 +156,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   GENIEGen::GENIEGen(fhicl::ParameterSet const& pset)
-    : fGENIEHelp(0)
+    : EDProducer{pset}
+    , fGENIEHelp(0)
     , fDefinedVtxHistRange (pset.get< bool >("DefinedVtxHistRange"))
     , fVtxPosHistRange (pset.get< std::vector<double> >("VtxPosHistRange"))
     , fPassEmptySpills (pset.get< bool   >("PassEmptySpills"))
@@ -392,7 +393,7 @@ namespace evgen{
       
       // check to see if we are to pass empty spills
       if(truthcol->size() < 1 && fPassEmptySpills){
-	LOG_DEBUG("GENIEGen") << "no events made for this spill but "
+	MF_LOG_DEBUG("GENIEGen") << "no events made for this spill but "
 			      << "passing it on and ending the event anyway";
 	break;
       }
@@ -531,7 +532,7 @@ namespace evgen{
     }
 
 
-    LOG_DEBUG("GENIEInteractionInformation") 
+    MF_LOG_DEBUG("GENIEInteractionInformation") 
       << std::endl
       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) 
       << std::endl
@@ -557,14 +558,14 @@ namespace evgen{
       double energy = part.E(); 
       double Ek = (energy-mass); // Kinetic Energy (GeV)
       if(status=="kIStStableFinalState"||status=="kIStHadronInTheNucleus")
-	LOG_DEBUG("GENIEFinalState") 
+	MF_LOG_DEBUG("GENIEFinalState") 
 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
 	  << std::setw(18)<< energy
 	  << std::setw(18)<< mass
 	  << std::setw(18)<< Ek <<std::endl;
       else 
-	LOG_DEBUG("GENIEFinalState")
+	MF_LOG_DEBUG("GENIEFinalState")
 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
 	  << std::setw(18) << energy

@@ -4,8 +4,6 @@
 ///
 /// \author  Matthew.Bass@physics.ox.ac.uk
 ////////////////////////////////////////////////////////////////////////
-#ifndef FILTER_FILTERGENINTIME_H
-#define FILTER_FILTERGENINTIME_H 
 
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -70,6 +68,7 @@ namespace simfilter {
 namespace simfilter {
 
   FilterGenInTime::FilterGenInTime(fhicl::ParameterSet const& pset) :
+    EDFilter{pset},
     fMinKE    (pset.get< double > ("MinEnergy"  , 0.0)       )
     , fKeepOnlyMuons    (pset.get< bool > ("KeepOnlyMuons", false)      )
     , fMinT    (pset.get< double > ("MinT",0.0)      )
@@ -200,6 +199,3 @@ namespace simfilter {
   DEFINE_ART_MODULE(FilterGenInTime)
   
 } // namespace simfilter
-
-#endif // FILTER_FILTERNODIRTNUS_H
-

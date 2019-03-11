@@ -50,6 +50,7 @@ namespace simfilter {
 namespace simfilter {
 
   FilterCryostatNus::FilterCryostatNus(fhicl::ParameterSet const& pset) :
+    EDFilter{pset},
     fKeepNusInCryostat    (pset.get<bool>("KeepNusInCryostat",false))
   {}
 

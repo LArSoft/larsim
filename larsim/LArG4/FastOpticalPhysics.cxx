@@ -133,7 +133,7 @@ namespace larg4 {
   //-----------------------------------------------------------  
   void FastOpticalPhysics::ConstructParticle()
   {
-    LOG_DEBUG("FastOpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
+    MF_LOG_DEBUG("FastOpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
     // optical photon
     G4OpticalPhoton::OpticalPhotonDefinition();
     
@@ -168,7 +168,7 @@ namespace larg4 {
   void FastOpticalPhysics::ConstructProcess()
     {
     // Add standard EM Processes
-    LOG_DEBUG("FastOpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
+    MF_LOG_DEBUG("FastOpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     
     fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
     fTheAbsorptionProcess          = new G4OpAbsorption();

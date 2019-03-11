@@ -32,94 +32,36 @@
 // artextensions libraries
 #include "nutools/RandomUtils/NuRandomService.h"
 
-
 class TestGeneratedEventTimestamp: public art::EDAnalyzer {
     public:
   explicit TestGeneratedEventTimestamp(fhicl::ParameterSet const& pset);
   
+private:
   void analyze(art::Event const & e) override;
-  
-    protected:
-  static unsigned short RollStat(CLHEP::RandFlat& rand);
-  static std::string CreateCharacter(CLHEP::HepRandomEngine& engine);
-  
+  CLHEP::HepRandomEngine& fEngine;
+  CLHEP::HepRandomEngine& fAuxEngine;
 }; // class TestGeneratedEventTimestamp
 
 
 //------------------------------------------------------------------------------
-//---  TestGeneratedEventTimestamp implementation
-//---
 TestGeneratedEventTimestamp::TestGeneratedEventTimestamp
   (fhicl::ParameterSet const& pset)
   : EDAnalyzer(pset)
-{
-  // create two default random engines; obtain the random seed from NuRandomService,
+  // create two random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
-  art::ServiceHandle<rndm::NuRandomService> Seeds;
-  Seeds->createEngine(*this, pset, "Seed");
-  Seeds->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed");
-} // TestGeneratedEventTimestamp::TestGeneratedEventTimestamp()
+  , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
+  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed"))
+{}
 
 
 //------------------------------------------------------------------------------
-void TestGeneratedEventTimestamp::analyze(art::Event const& event) {
-  
-  mf::LogInfo log("TestGeneratedEventTimestamp");
-  
-  art::ServiceHandle<art::RandomNumberGenerator> rng;
-  auto const& module_label = moduleDescription().moduleLabel();
-  CLHEP::HepRandomEngine const& MainEngine = rng->getEngine(art::ScheduleID::first(), module_label);
-  CLHEP::HepRandomEngine const& AuxEngine = rng->getEngine(art::ScheduleID::first(), module_label, "aux");
-  
-  rndm::NuRandomService::seed_t seed = MainEngine.getSeed(),
-    aux_seed = AuxEngine.getSeed();
-  
-  log
-    <<   "Event time stamp: " << event.time().value()
-    << "\nRandom seeds: " << seed << " (main), " << aux_seed << " (aux)";
-  
-} // TestGeneratedEventTimestamp::analyze()
-
-
-//------------------------------------------------------------------------------
-unsigned short TestGeneratedEventTimestamp::RollStat(CLHEP::RandFlat& rand) {
-  std::vector<unsigned short> rolls(4);
-  unsigned int min = 6, total = 0;
-  for (int i = 0; i < 4; ++i) {
-    unsigned int roll = 1 + rand.fireInt(0, 6);
-    rolls[i] = roll;
-    if (min > roll) min = roll;
-    total += roll;
-  }
-  total -= min;
-  return total;
-} // TestGeneratedEventTimestamp::RollStat()
-
-
-//------------------------------------------------------------------------------
-std::string TestGeneratedEventTimestamp::CreateCharacter
-  (CLHEP::HepRandomEngine& engine)
+void TestGeneratedEventTimestamp::analyze(art::Event const& event)
 {
-  CLHEP::RandFlat flat(engine);
-  constexpr size_t NStats = 6;
-  // double braces for c2
-  static const std::array<std::string, NStats> statNames
-    = {{ "STR", "DEX", "CON", "INT", "WIS", "CHA" }};
-  std::array<unsigned short int, NStats> stats;
-  std::generate(stats.begin(), stats.end(), [&flat]{ return RollStat(flat); });
-  
-  short int bonus = 0;
-  std::ostringstream sstr;
-  for (size_t iStat = 0; iStat < NStats; ++iStat) {
-    sstr << "  " << statNames[iStat] << "=" << std::setw(2) << stats[iStat];
-    bonus += stats[iStat] / 2 - 5;
-  } // for
-  sstr << "  [bonus: " << std::setw(3) << std::showpos << bonus << "]";
-  return sstr.str();
-} // TestGeneratedEventTimestamp::CreateCharacter()
+  mf::LogInfo("TestGeneratedEventTimestamp")
+    <<   "Event time stamp: " << event.time().value()
+    << "\nRandom seeds: " << fEngine.getSeed() << " (main), "
+    << fAuxEngine.getSeed() << " (aux)";
+  }
 
 
-//------------------------------------------------------------------------------
 DEFINE_ART_MODULE(TestGeneratedEventTimestamp)
-
-//------------------------------------------------------------------------------

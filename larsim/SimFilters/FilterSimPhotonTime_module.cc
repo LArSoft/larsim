@@ -65,6 +65,7 @@ private:
 
 simfilter::FilterSimPhotonTime::FilterSimPhotonTime(fhicl::ParameterSet const & p)
   :
+  EDFilter{p},
   fSimPhotonsCollectionLabel(p.get<std::string>("SimPhotonsCollectionLabel")),
   fTimeWindows(p.get< std::vector< std::vector<float> > >("TimeWindows")),
   fMinTotalEnergy(p.get<float>("MinTotalEnergy",0.0)),

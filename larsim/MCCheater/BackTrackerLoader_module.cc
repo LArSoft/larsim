@@ -34,7 +34,8 @@ private:
 };
 
 //------------------------------------------------------------------------------
-cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & /*p*/)
+cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & p)
+  : EDProducer{p}
 {
   // Call appropriate Produces<>() functions here.
 }

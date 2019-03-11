@@ -124,7 +124,7 @@ namespace larg4{
     
     //TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
     
-    LOG_DEBUG("ISCalcSeparate") 
+    MF_LOG_DEBUG("ISCalcSeparate") 
       << " Electrons produced for " << fEnergyDeposit 
       << " MeV deposited with "     << recomb 
       << " recombination: "         << fNumIonElectrons << std::endl; 
@@ -143,7 +143,7 @@ namespace larg4{
     double scintYield = fLArProp->ScintYield(true);
     if(fLArProp->ScintByParticleType()){
 
-      LOG_DEBUG("ISCalcSeparate") << "scintillating by particle type";
+      MF_LOG_DEBUG("ISCalcSeparate") << "scintillating by particle type";
 
       switch(pdg) {
 

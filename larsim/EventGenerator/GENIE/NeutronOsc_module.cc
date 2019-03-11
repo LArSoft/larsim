@@ -92,16 +92,21 @@ public:
 private:
 
   // Additional functions
-  int SelectAnnihilationMode(int pdg_code, CLHEP::HepRandomEngine& engine);
+  int SelectAnnihilationMode(int pdg_code);
 
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
   genie::NeutronOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
+  CLHEP::RandFlat flatDist;
+
 };
 
 
 evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   : art::EDProducer{p}
+  // create a default random engine; obtain the random seed from NuRandomService,
+  // unless overridden in configuration with key "Seed"
+  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, p, "Seed")}
 {
   genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
@@ -119,11 +124,6 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
   
-  // create a default random engine; obtain the random seed from NuRandomService,
-  // unless overridden in configuration with key "Seed"
-  art::ServiceHandle<rndm::NuRandomService>()
-    ->createEngine(*this, p, "Seed");
-
   unsigned int seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
   genie::utils::app_init::RandGen(seed);
 }
@@ -133,10 +133,7 @@ void evgen::NeutronOsc::produce(art::Event & e)
   // Implementation of required member function here.
   genie::EventRecord * event = new genie::EventRecord;
   int target = 1000180400;  //Only use argon target
-  art::ServiceHandle<art::RandomNumberGenerator> rng;
-  CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-                                                  moduleDescription().moduleLabel());
-  int decay  = SelectAnnihilationMode(target, engine);
+  int decay  = SelectAnnihilationMode(target);
   genie::Interaction * interaction = genie::Interaction::NOsc(target,decay);
   event->AttachSummary(interaction);
   
@@ -148,14 +145,13 @@ void evgen::NeutronOsc::produce(art::Event & e)
 //  std::cout<<"initState = "<<initState.AsString()<<std::endl;
 //  const genie::ProcessInfo &procInfo = inter->ProcInfo();
 //  std::cout<<"procInfo = "<<procInfo.AsString()<<std::endl;
-  LOG_DEBUG("NeutronOsc")
+  MF_LOG_DEBUG("NeutronOsc")
     << "Generated event: " << *event;
 
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
   simb::MCTruth truth;
   
   art::ServiceHandle<geo::Geometry> geo;
-  CLHEP::RandFlat flat(engine);
 
   // Find boundary of active volume
   double minx = 1e9;
@@ -175,9 +171,9 @@ void evgen::NeutronOsc::produce(art::Event & e)
   }
 
   // Assign vertice position
-  double X0 = flat.fire( minx, maxx );
-  double Y0 = flat.fire( miny, maxy );
-  double Z0 = flat.fire( minz, maxz );
+  double X0 = flatDist.fire( minx, maxx );
+  double Y0 = flatDist.fire( miny, maxy );
+  double Z0 = flatDist.fire( minz, maxz );
 
   TIter partitr(event);
   genie::GHepParticle *part = 0;
@@ -236,7 +232,7 @@ void evgen::NeutronOsc::beginJob()
   // Implementation of optional member function here.
 }
 
-int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code, CLHEP::HepRandomEngine& engine)
+int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)
 {
   // if the mode is set to 'random' (the default), pick one at random!
   if ((int)gOptDecayMode == 0) {
@@ -271,8 +267,7 @@ int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code, CLHEP::HepRandomEngi
     }
 
     // randomly generate a number between 1 and 0
-    CLHEP::RandFlat flat(engine);
-    double p = flat.fire();
+    double p = flatDist.fire();
 
     // loop through all modes, figure out which one our random number corresponds to
     double threshold = 0;

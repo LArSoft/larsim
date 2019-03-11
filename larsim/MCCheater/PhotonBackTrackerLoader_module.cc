@@ -34,7 +34,8 @@ private:
 };
 
 //------------------------------------------------------------------------------
-cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  const& /*p*/)
+cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  const& p)
+  : EDProducer{p}
 {
   // Call appropriate Produces<>() functions here.
 }

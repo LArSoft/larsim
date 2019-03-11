@@ -1256,6 +1256,7 @@ namespace evgen{
 
   //____________________________________________________________________________
   NuWroGen::NuWroGen(fhicl::ParameterSet const& pset)
+    : EDProducer{pset}
   {
 
     fEventNumberOffset = pset.get< int >("EventNumberOffset",0);
@@ -1802,7 +1803,7 @@ namespace evgen{
     }
 
 
-//     LOG_DEBUG("GENIEInteractionInformation") 
+//     MF_LOG_DEBUG("GENIEInteractionInformation") 
 //       << std::endl
 //       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) 
 //       << std::endl
@@ -1828,14 +1829,14 @@ namespace evgen{
 //       double energy = part.E(); 
 //       double Ek = (energy-mass); // Kinetic Energy (GeV)
 //       if(status=="kIStFinalStB4Interactions")
-// 	LOG_DEBUG("GENIEFinalState")
+// 	MF_LOG_DEBUG("GENIEFinalState")
 // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 // 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
 // 	  << std::setw(18)<< energy
 // 	  << std::setw(18)<< mass
 // 	  << std::setw(18)<< Ek <<std::endl;
 //       else 
-// 	LOG_DEBUG("GENIEFinalState") 
+// 	MF_LOG_DEBUG("GENIEFinalState") 
 // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 // 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
 // 	  << std::setw(18) << energy
@@ -2006,5 +2007,3 @@ namespace evgen{
 
 #endif // EVGEN_NUWROGEN_H
 ////////////////////////////////////////////////////////////////////////
-
-

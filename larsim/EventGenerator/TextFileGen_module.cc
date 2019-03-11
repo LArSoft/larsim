@@ -95,7 +95,8 @@ private:
 
 //------------------------------------------------------------------------------
 evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
-  : fInputFile(0)
+  : EDProducer{p}
+  , fInputFile(0)
 {
   this->reconfigure(p);
 

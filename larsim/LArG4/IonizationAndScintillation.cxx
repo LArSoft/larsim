@@ -132,7 +132,7 @@ namespace larg4 {
  
       fISCalc->CalculateIonizationAndScintillation(fStep);
     
-      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
+      MF_LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
 					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
 					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
 					      << "\nPhotons: "   << fISCalc->NumberScintillationPhotons();

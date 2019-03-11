@@ -106,7 +106,8 @@ class evgen::MarleyGen : public art::EDProducer {
 
 //------------------------------------------------------------------------------
 evgen::MarleyGen::MarleyGen(const Parameters& p)
-  : fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0), fEventNumber(0)
+  : EDProducer{p},
+    fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0), fEventNumber(0)
 {
   // Configure the module (including MARLEY itself) using the FHiCL parameters
   this->reconfigure(p);

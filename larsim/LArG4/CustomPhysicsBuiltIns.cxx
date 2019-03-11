@@ -12,6 +12,7 @@ namespace larg4 {
   DecayPhysicsFactory           f3;
   HadronElasticPhysicsFactory   f4;
   HadronPhysicsFactory          f5;
+  HadronHPPhysicsFactory        f55;
   StoppingPhysicsFactory        f6;
   IonPhysicsFactory             f7;
   NeutronTrackingCutFactory     f8;

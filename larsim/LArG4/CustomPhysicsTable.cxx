@@ -69,7 +69,7 @@ namespace larg4 {
       mf::LogWarning("CustomPhysicsTable") << "Physics constructor being overwritten"
 					   << " in CustomPhysicsTable";
     TheCustomPhysicsTable->theTable[Factory->GetName()]=Factory;
-    LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics " 
+    MF_LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics " 
 				   << Factory->GetName();
   }
   

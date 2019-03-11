@@ -40,6 +40,8 @@ namespace sim {
     bool   DrawNeutrals()                                     const { return fDrawNeutrals;           }
     double VisualizationEnergyCut()                           const { return fVisualizationEnergyCut; }
     bool   UseCustomPhysics()                                 const { return fUseCustomPhysics;       }
+    bool   ModifyProtonCut()                                  const { return fModifyProtonCut;        }
+    double NewProtonCut()                                     const { return fNewProtonCut;           } 
     double RecombA()                                          const { return fRecombA;                }
     double Recombk()                                          const { return fRecombk;                }
     double ModBoxA()                                          const { return fModBoxA;                }
@@ -49,7 +51,7 @@ namespace sim {
     double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
     double TransverseDiffusion()                              const { return fTransverseDiffusion;    }
     double ElectronClusterSize()                              const { return fElectronClusterSize;    }
-    int    MinNumberOfElCluster()			      const { return fMinNumberOfElCluster;   }
+    int    MinNumberOfElCluster()                             const { return fMinNumberOfElCluster;   }
     const std::vector<std::string>& EnabledPhysics()          const { return fEnabledPhysics;         }
     int    K0Bias()                                           const { return fK0Bias;                 }
     int    MNXBias()                                          const { return fXBias;                  }
@@ -66,7 +68,7 @@ namespace sim {
 
     bool   FillSimEnergyDeposits()                            const { return fFillSimEnergyDeposits;  }
     bool   NoElectronPropagation()                            const { return fNoElectronPropagation;  }
-    bool   NoPhotonPropagation()                              const { return fNoPhotonPropagation;  }
+    bool   NoPhotonPropagation()                              const { return fNoPhotonPropagation;    }
 
   private:
     int                      fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
@@ -78,11 +80,13 @@ namespace sim {
     double                   fVisualizationEnergyCut;///< depricated, GeV
     bool                     fUseCustomPhysics;      ///< Whether to use a custom list of physics processes 
                                                      ///< or the default
+    bool                     fModifyProtonCut;       ///< Whether to enable custom ProtonCut value, needed for HadronHP 
+    double                   fNewProtonCut;          ///< New Proton Cut parameter to override default in HadronHP
     double                   fLongitudinalDiffusion; ///< Amount of diffusion in the longitudinal direction, cm^2/ns
     double                   fTransverseDiffusion;   ///< Amount of diffusion in the transverse direction, cm^2/ns
     double                   fElectronClusterSize;   ///< Number of ionization electrons in a given cluster 
                                                      ///< to be simulated in the readout simulation
-    int 		     fMinNumberOfElCluster;   ///< Minimum number of electron clusters
+    int                      fMinNumberOfElCluster;  ///< Minimum number of electron clusters
     std::vector<std::string> fEnabledPhysics;        ///< List of enabled physics processes if using Custom physics
     int                      fK0Bias;                ///< Turns on secondary particle bias for K0, Lambda, 
                                                      ///< neutrons in MuNuclear

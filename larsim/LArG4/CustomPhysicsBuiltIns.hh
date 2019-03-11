@@ -27,12 +27,12 @@
 #include "Geant4/G4HadronElasticPhysics.hh"
 #include "Geant4/G4NeutronTrackingCut.hh"
 #include "Geant4/G4HadronPhysicsQGSP_BERT.hh"
+#include "Geant4/G4HadronPhysicsQGSP_BERT_HP.hh"
 #include "Geant4/G4EmStandardPhysics.hh"
 #include "Geant4/G4EmLivermorePhysics.hh"
 #include "Geant4/G4ChargeExchangePhysics.hh"
 
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
-
 
 namespace larg4 {
 
@@ -60,7 +60,6 @@ namespace larg4 {
     virtual ~ChargeExchange() {}
   };
 
-
   class DecayPhysicsFactory : public CustomPhysicsFactory<G4DecayPhysics>
   {
   public:
@@ -76,7 +75,7 @@ namespace larg4 {
     HadronElasticPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysics>("HadronElastic") {}
    virtual ~HadronElasticPhysicsFactory() {}
   };
-
+  
   class HadronPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>
   {
   public:
@@ -84,6 +83,15 @@ namespace larg4 {
     G4VPhysicsConstructor * Build() {return new G4HadronPhysicsQGSP_BERT("hadron",quasiElastic=true);}
     HadronPhysicsFactory() : CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>("Hadron") {}
    virtual ~HadronPhysicsFactory() {}
+  };
+
+  class HadronHPPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>
+  {
+  public:
+    G4bool quasiElastic;
+    G4VPhysicsConstructor * Build() {return new G4HadronPhysicsQGSP_BERT_HP("hadronHP",true);}
+    HadronHPPhysicsFactory() : CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>("HadronHP") {}
+   virtual ~HadronHPPhysicsFactory() {}
   };
 
   class StoppingPhysicsFactory : public CustomPhysicsFactory<G4StoppingPhysics>

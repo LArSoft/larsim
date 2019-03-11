@@ -94,7 +94,7 @@ namespace larg4 {
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_" + std::to_string(svNum); 
       AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, svNum);
 
-      LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":" << svNum;
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
@@ -149,7 +149,7 @@ namespace larg4 {
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_0"; 
       AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, 0);
 
-      LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":0";
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class

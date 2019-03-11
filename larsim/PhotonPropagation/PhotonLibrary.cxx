@@ -420,7 +420,7 @@ namespace phot{
       if (channel > maxChannel) maxChannel = channel;
     } // while
     
-    LOG_DEBUG("PhotonLibrary")
+    MF_LOG_DEBUG("PhotonLibrary")
       << "Detected highest channel to be " << maxChannel << " from " << iEntry
       << " tree entries";
     

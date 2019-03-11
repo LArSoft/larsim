@@ -3,6 +3,10 @@
 /// \brief Create the physics lists to be used by Geant4.
 ///
 /// \author  seligman@nevis.columbia.edu
+//  \modified by: drivera@fnal.gov 
+//  \changes: removed QGSP_BERT.h include because it is not pertinent 
+//            here nor where this header is included 
+//      
 ////////////////////////////////////////////////////////////////////////
 ///
 /// Without a physics list, Geant4 won't do anything.  G4 comes with a
@@ -35,6 +39,12 @@
 /// Hence this class.  It takes the physics from QGSP_BERT, but it
 /// extends one of the methods to include recognition of physics
 /// processes in the parallel world.
+/// -------------------------------------------------------------------------------------------
+/// 03/04/19 - D. Rivera
+/// The physics list is not chosen in this header. Instead this header file defines the Modular
+/// Physics list object. The actual available physics lists are limited to what is defined in the
+/// CustomPhysicsBuiltIns.hh which is where various other physics lists can be included. 
+/// 
 
 #ifndef LArG4_PhysicsList_h
 #define LArG4_PhysicsList_h
@@ -44,7 +54,6 @@
 #include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/globals.hh"
-#include "Geant4/QGSP_BIC.hh"
 #include "larsim/LArG4/ConfigurablePhysicsList.hh"
 
 namespace larg4 {
@@ -81,8 +90,7 @@ namespace larg4 {
   };
 
   /// This typedef is what defines the name "larg4::PhysicsList" in
-  /// any class that includes this header.  Compare this with the
-  /// contents of $G4INSTALL/include/QGSP_BERT.hh.
+  /// any class that includes this header. 
   typedef TConfigurablePhysicsList<ModularPhysicsList> PhysicsList;
 
 } // namespace larg4

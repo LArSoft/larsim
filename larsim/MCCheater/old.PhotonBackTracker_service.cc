@@ -148,13 +148,13 @@ namespace cheat{
 
     fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
 
-    LOG_DEBUG("PhotonBackTracker") << "PhotonBackTracker has " << cOpDetBacktrackerRecords.size()
+    MF_LOG_DEBUG("PhotonBackTracker") << "PhotonBackTracker has " << cOpDetBacktrackerRecords.size()
            << " sim::OpDetBacktrackerRecords and " << GetSetOfTrackIDs().size()
            << " tracks.  The particles are:\n"
            << fParticleList
            << "\n the MCTruth information is\n";
     for(size_t mc = 0; mc < fMCTruthList.size(); ++mc)
-      LOG_DEBUG("PhotonBackTracker") << *(fMCTruthList.at(mc).get());
+      MF_LOG_DEBUG("PhotonBackTracker") << *(fMCTruthList.at(mc).get());
 
     return;
   }

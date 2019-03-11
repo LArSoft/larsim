@@ -128,7 +128,7 @@ namespace larg4 {
   //-----------------------------------------------------------  
   void OpticalPhysics::ConstructParticle()
   {
-    LOG_DEBUG("OpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN OPTICAL PHYSICS";
+    MF_LOG_DEBUG("OpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     // optical photon
     G4OpticalPhoton::OpticalPhotonDefinition();
     
@@ -167,7 +167,7 @@ namespace larg4 {
     const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // Add standard EM Processes
-    LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
+    MF_LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     
     fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
     fTheScintillationProcess       = new G4Scintillation("Scintillation");

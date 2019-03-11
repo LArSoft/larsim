@@ -72,7 +72,7 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
     double x = uniform_dist(fTPCEngine, x_range);
     double y = uniform_dist(fTPCEngine, y_range);
     double z = uniform_dist(fTPCEngine, z_range);
-    LOG_INFO("ActiveVolumeVertexSampler " + fGeneratorName)
+    MF_LOG_INFO("ActiveVolumeVertexSampler " + fGeneratorName)
       << "Sampled primary vertex in TPC #" << tpc_index << ", x = " << x
       << ", y = " << y << ", z = " << z;
 
