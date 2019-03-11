@@ -5,8 +5,8 @@ standard_genie:
  module_type:      "GENIEGen"
 
  DefinedVtxHistRange: false
- VtxPosHistRange:  [0. , 0., 0., 0., 0., 0.] #if DefinedVtxHistRange is set to true VtxPosHistRange sets the hist range of the vertex positions: [xmin, xmax, ymin, ymax, zmin, zmax]. 
-					     #It is helpful for dual phase detector for which the range is asymmetric.
+ VtxPosHistRange:  [0. , 0., 0., 0., 0., 0.] #if DefinedVtxHistRange is set to true VtxPosHistRange sets the hist range of the vertex positions: [xmin, xmax, ymin, ymax, zmin, zmax].
+                                             #It is helpful for dual phase detector for which the range is asymmetric.
  PassEmptySpills:  false
  FluxType:         "mono"     #mono, histogram, ntuple, or simple_flux
  FluxFiles:         ["flugg_L010z185i_neutrino_mode.root"] #name of file with flux histos
@@ -23,7 +23,7 @@ standard_genie:
  RandomTimeOffset: 10000.          #length of spill in ns
  FiducialCut:      "none"          #fiducial cut, see https://cdcvs.fnal.gov/redmine/projects/nusoft/wiki/GENIEHelper
  GenFlavors:       [12,14,-12,-14] #pdg codes of flux generator neutrino flavors
- Environment:      ["GPRODMODE", "YES"] # deprecated
+ Environment:      [  ]  # obsolete
  ProductionMode:   "yes"           #turn off the GENIE verbosity
  EventGeneratorList: "Default"
  DetectorLocation: "MINOS-NearDet" #location name for flux window
@@ -34,14 +34,14 @@ standard_genie:
  XSecTable: "gxspl-FNALsmall.xml"  #default cross section
 }
 
-standard_genie_atmo_flux:            @local::standard_genie  
+standard_genie_atmo_flux:            @local::standard_genie
 standard_genie_atmo_flux.FluxType:   "atmo_BARTOL"         # use the BARTOL fluxes in GENIE
 standard_genie_atmo_flux.AtmoEmin:   0.01                  # minimum neutrino energy, in GeV
 standard_genie_atmo_flux.AtmoEmax:   100.                  # maximum neutrino energy, in GeV
 standard_genie_atmo_flux.Rl:         20.                   # radius of sphere on which to generate neutrinos
 standard_genie_atmo_flux.Rt:         20.                   # radius of transverse area on sphere
 standard_genie_atmo_flux.TopVolume:  "volTPCActive"
-standard_genie_atmo_flux.GenFlavors: [12, 14, -12, -14] 
+standard_genie_atmo_flux.GenFlavors: [12, 14, -12, -14]
 standard_genie_atmo_flux.GeomScan:   "flux: 10000 1.1"
 
 standard_genie_uniform_flux:            @local::standard_genie
@@ -52,20 +52,14 @@ standard_genie_uniform_flux.FluxEmin:      500
 standard_genie_uniform_flux.FluxEmax:      600
 standard_genie_uniform_flux.TopVolume:  "volTPCActive"
 standard_genie_uniform_flux.FluxFiles:  ["dune_scan_flux.root"]
-standard_genie_uniform_flux.GenFlavors: [12,14] 
+standard_genie_uniform_flux.GenFlavors: [12,14]
 standard_genie_uniform_flux.GeomScan:   "flux: 10000 1.1"
 
 standard_genie_uniform_flux_nc:             @local::standard_genie_uniform_flux
-standard_genie_uniform_flux_nc.Environment: ["GPRODMODE", 
- 	                                     "YES",
-                                             "GEVGL",
-                                             "NC"]
+standard_genie_uniform_flux_nc.EventGeneratorList: "NC"
 
 standard_genie_uniform_flux_cc:             @local::standard_genie_uniform_flux
-standard_genie_uniform_flux_cc.Environment: ["GPRODMODE", 
- 	                                     "YES",
-                                             "GEVGL",
-                                             "CC"]
+standard_genie_uniform_flux_cc.EventGeneratorList: "CC"
 
 argoneut_genie_hist_neutrino:                @local::standard_genie
 argoneut_genie_hist_neutrino.FluxType:       "histogram"
