@@ -230,13 +230,14 @@ public: // With description
 
         std::vector<double> GetVUVTime(double, int);
         std::vector<double> GetVisibleTimeOnlyCathode(double, int);
-  	// old timings -- to be deleted TEST      
+  	// old timings -- to be deleted       
   
         std::vector<double> getVUVTime(double, int);
 	void generateparam(int index);
         // Functions for vuv component Landau + Exponential timing parameterisation, updated method
         
 	std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
+	// Visible component timing parameterisation
 
         int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 	// Calculates semi-analytic model number of hits for vuv component

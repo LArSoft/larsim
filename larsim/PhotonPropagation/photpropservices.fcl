@@ -202,7 +202,8 @@ dunesp_library_vuv_vis_prop_timing_photonvisibilityservice:
    # dunesp-specific library settings
    @table::standard_library_vuv_prop_timing_photonvisibilityservice
 
-   # Flag to enable visible light simulation
+   # Flag to enable visible light simulation & load TPB properties
+   LoadExtraMatProperties: true
    StoreReflected: true
    
    # DUNE-specific VIS parameterization
@@ -227,10 +228,10 @@ dunesp_Nhits_vuv_prop_timing_photonvisibilityservice:
    # Semi-analytic VUV Nhits parameters
    GH_PARS: @local::GH_RS60cm_SP
 
-   # Optical Detector information - to be removed
+   # Optical Detector information - to be replaced with using geometry service subsequently
    Optical_Detector_Type: 0     # 0 = rectangular, 1 = disk
    APERTURE_height: 9.3         # sensitive window heigh (in cm)
-   APERTURE_width: 7.8          # sensitive window width (in cm)
+   APERTURE_width: 46.8          # sensitive window width supercell (in cm)
    PMT_radius: 10.16            # 8 inch diameter PMT (in cm)
 }
 
@@ -243,7 +244,8 @@ dunesp_Nhits_vuv_vis_prop_timing_photonvisibilityservice:
    # DUNE-SP VUV timing and Nhits settings
    @table::dunesp_Nhits_vuv_prop_timing_photonvisibilityservice
 
-   # Flag to enable visible light simulation
+   # Flag to enable visible light simulation & load TPB properties
+   LoadExtraMatProperties: true
    StoreReflected: true
  
    # DUNE-specific VIS parameterization
@@ -253,7 +255,7 @@ dunesp_Nhits_vuv_vis_prop_timing_photonvisibilityservice:
    VIS_PARS: @local::VIS_RS60cm_SP
    @table::dunesp_cathode_info_for_nhits_vis
 
-   # Optical Detector information - to be removed
+   # Optical Detector information - to be replaced with using geometry subsequently
    Optical_Detector_Type: 0	# 0 = rectangular, 1 = disk 
    APERTURE_height: 9.3 	# sensitive window heigh (in cm)
    APERTURE_width: 46.8 	# sensitive window width supercell (in cm)
@@ -270,9 +272,10 @@ sbnd_library_vuv_vis_prop_timing_photonvisibilityservice:
    # sbnd-specific library settings
    @table::standard_library_vuv_prop_timing_photonvisibilityservice
 
-   # Flag to enable visible light simulation
+   # Flag to enable visible light simulation & load TPB properties
    StoreReflected: true
-
+   LoadExtraMatProperties: true
+   
    # SBND-specific VIS parameterization
    @table::sbnd_vis_timing_parameterization
 

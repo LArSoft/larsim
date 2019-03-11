@@ -114,12 +114,8 @@ CATHODE_height_SP: 1209.466		# height of full cathode plane (in cm)
 CATHODE_width_SP: 1394.34		# width of full cathode plane (in cm)
 CATHODE_centre_SP: [363.38405, 0, 696.294]	# cathode centre coordinates
 
-# SBND Parameters 
-Plane_Depth_SBND: 0.0
-
-
-
-
+# SBND
+Plane_Depth_SBND: 0			# foils/cathode x-coordinate; needed for SBND timings, SBND Nhits paramters not yet produced
 
 
 # *************************************************************************************************
