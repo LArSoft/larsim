@@ -1384,7 +1384,7 @@ namespace larg4{
     // generate the sampling
     // the first call of GetRandom generates the timing sampling and stores it in the TF1 object, this is the slow part
     // all subsequent calls check if it has been generated previously and are ~100+ times quicker
-    double arrival_time = fVUVTiming->GetRandom(min,max);
+    //double arrival_time = fVUVTiming->GetRandom(min,max);
     // add timing to the vector of timings and range to vectors of ranges
     VUV_timing[index] = *fVUVTiming;
     VUV_max[index] = max;
