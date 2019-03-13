@@ -53,7 +53,7 @@ namespace evgen {
         fhicl::OptionalAtom<std::string> seed_ {
           Name("seed"),
           Comment("Seed used for sampling vertex locations"),
-          [this]() -> bool { return type_() == "sampled"; }
+          [this]() -> bool { return type_() != "fixed"; }
         };
 
         fhicl::Sequence<double, 3> position_ {
@@ -62,9 +62,28 @@ namespace evgen {
           [this]() -> bool { return type_() == "fixed"; }
         };
 
+        fhicl::Sequence<double, 3> min_position_ {
+          Name("min_position"),
+          Comment("The minimum allowed values for the x, y, and z coordinates"),
+          [this]() -> bool { return type_() == "box"; }
+        };
+
+        fhicl::Sequence<double, 3> max_position_ {
+          Name("max_position"),
+          Comment("The maximum allowed values for the x, y, and z coordinates"),
+          [this]() -> bool { return type_() == "box"; }
+        };
+
+        fhicl::OptionalAtom<bool> check_active_ {
+          Name("check_active"),
+          Comment("Whether to enforce that the sampled vertices are within a TPC"
+            " active volume"),
+          [this]() -> bool { return type_() == "box"; }
+        };
+
       }; // struct Config
 
-      enum class vertex_type_t { kSampled, kFixed };
+      enum class vertex_type_t { kSampled, kFixed, kBox };
 
       // Configuration-checking constructors
       ActiveVolumeVertexSampler(const fhicl::Table<Config>& conf,
@@ -100,6 +119,17 @@ namespace evgen {
 
       // RNG object used to sample TPCs
       std::mt19937_64 fTPCEngine;
+
+      // Helper variables used only for "box" sampling mode
+      double fXmin;
+      double fYmin;
+      double fZmin;
+
+      double fXmax;
+      double fYmax;
+      double fZmax;
+
+      bool fCheckActive;
 
   }; // class evgen::ActiveVolumeVertexSampler
 
