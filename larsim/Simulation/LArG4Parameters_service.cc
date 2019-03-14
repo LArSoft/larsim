@@ -33,8 +33,8 @@ namespace sim {
     fDrawNeutrals           = pset.get< bool                     >("VisualizeNeutrals"       );      
     fVisualizationEnergyCut = pset.get< double                   >("VisualizationEnergyCut"  );  
     fUseCustomPhysics       = pset.get< bool                     >("UseCustomPhysics"        );      
-    fModifyProtonCut        = pset.get< bool                     >("ModifyProtonCut"         ); 
-    fNewProtonCut           = pset.get< double                   >("NewProtonCut"            ); //for HadronHP
+    fModifyProtonCut        = pset.get< bool                     >("ModifyProtonCut"         , false); 
+    fNewProtonCut           = fModifyProtonCut? pset.get<double>("NewProtonCut") /* for HadronHP */ : 0.0;
     fKeepEMShowerDaughters  = pset.get< bool                     >("KeepEMShowerDaughters"   );
     fLongitudinalDiffusion  = pset.get< double                   >("LongitudinalDiffusion"   );   
     fTransverseDiffusion    = pset.get< double                   >("TransverseDiffusion"     );     
