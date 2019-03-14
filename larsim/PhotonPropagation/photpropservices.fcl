@@ -1,5 +1,6 @@
-BEGIN_PROLOG
+#include "opticalsimparameterisations.fcl"   
 
+BEGIN_PROLOG
 
 standard_photonvisibilityservice:
 {
@@ -26,6 +27,7 @@ standard_photonvisibilityservice:
   ZMax: 1200
 }
 
+microboone_photonvisibilityservice: @local::standard_photonvisibilityservice
 
 protodunedp_photonvisibilityservice_buildlib:
 {
@@ -173,7 +175,106 @@ sbnd_timeparametrization_photonvisibilityservice:
 
 }
 
+#
+# Just enable direct timing parameterization on top of a photon library.
+# Should work in all geometries
+#
+standard_library_vuv_prop_timing_photonvisibilityservice:
+{
+   # Start from the standard visibility service
+   @table::standard_photonvisibilityservice
 
-microboone_photonvisibilityservice: @local::standard_photonvisibilityservice
+   # Flag to enable time parameterizations
+   IncludePropTime: true
+
+   # Generic VUV timing parameterization
+   @table::common_vuv_timing_parameterization
+
+}
+
+#
+# Enable direct and reflected timing parameterization on top of a photon library.
+# Works only for DUNE SP.
+#
+dunesp_library_vuv_vis_prop_timing_photonvisibilityservice:
+{
+   # This will need to be repalced in dunetpc with
+   # dunesp-specific library settings
+   @table::standard_library_vuv_prop_timing_photonvisibilityservice
+
+   # Flag to enable visible light simulation
+   StoreReflected: true
+   
+   # DUNE-specific VIS parameterization
+   @table::dunesp_vis_timing_parameterization
+
+}
+
+#
+# Enable direct timing parameterization and Nhits model estimation.
+# Works only for DUNE SP.
+#
+dunesp_Nhits_vuv_prop_timing_photonvisibilityservice:
+{
+   # Flags to enable parameterizations, disable library
+   IncludePropTime: true
+   UseNhitsModel: true
+   DoNotLoadLibrary: true
+
+   # Generic VUV timing parameterization
+   @table::common_vuv_timing_parameterization
+
+   # Semi-analytic VUV Nhits parameters
+   GH_PARS: @local::GH_RS60cm_SP
+
+   # Optical Detector information - to be replaced with using geometry service subsequently
+   Optical_Detector_Type: 0     # 0 = rectangular, 1 = disk
+   APERTURE_height: 9.3         # sensitive window heigh (in cm)
+   APERTURE_width: 46.8         # sensitive window width supercell (in cm)
+   PMT_radius: 10.16            # 8 inch diameter PMT (in cm)
+}
+
+#
+# Enable direct and reflected timing parameterization and Nhits model estimation.
+# Works only for DUNE SP.
+#
+dunesp_Nhits_vuv_vis_prop_timing_photonvisibilityservice:
+{
+   # DUNE-SP VUV timing and Nhits settings
+   @table::dunesp_Nhits_vuv_prop_timing_photonvisibilityservice
+
+   # Flag to enable visible light simulation
+   StoreReflected: true
+ 
+   # DUNE-specific VIS parameterization
+   @table::dunesp_vis_timing_parameterization
+
+   # Semi-analytic VIS Nhits parameters
+   VIS_PARS: @local::VIS_RS60cm_SP
+   @table::dunesp_cathode_info_for_nhits_vis
+}
+
+#
+# Enable direct and reflected timing parameterization on top of a photon library.
+# Works only for SBND.
+#
+sbnd_library_vuv_vis_prop_timing_photonvisibilityservice:
+{
+   # This will need to be repalced in sbndcode with
+   # sbnd-specific library settings
+   @table::standard_library_vuv_prop_timing_photonvisibilityservice
+
+   # Flag to enable visible light simulation
+   StoreReflected: true
+   
+   # SBND-specific VIS parameterization
+   @table::sbnd_vis_timing_parameterization
+
+}
+
+
+
 
 END_PROLOG
+
+

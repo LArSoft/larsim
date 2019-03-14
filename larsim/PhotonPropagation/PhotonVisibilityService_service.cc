@@ -81,6 +81,7 @@ namespace phot{
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
+    fUseNhitsModel(false),
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
@@ -195,16 +196,18 @@ namespace phot{
     art::ServiceHandle<geo::Geometry> geom;
     
     // Library details
-    fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob"     );
+    fLibraryBuildJob      = p.get< bool        >("LibraryBuildJob", false);
     fParameterization     = p.get< bool        >("DUNE10ktParameterization", false);
     fHybrid               = p.get< bool        >("HybridLibrary", false);
-    fLibraryFile          = p.get< std::string >("LibraryFile"         );
-    fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary"    );
+    fLibraryFile          = p.get< std::string >("LibraryFile", "");
+    fDoNotLoadLibrary     = p.get< bool        >("DoNotLoadLibrary");
     fStoreReflected       = p.get< bool        >("StoreReflected", false);
     fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
+    // Parametrizations (time and Nhits)
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
+    fUseNhitsModel        = p.get< bool        >("UseNhitsModel", false);
     // Voxel parameters
-    fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
+    fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary", false);
     fInterpolate          = p.get< bool        >("Interpolate", false);
     fReflectOverZeroX     = p.get< bool        >("ReflectOverZeroX", false);
 
@@ -217,6 +220,8 @@ namespace phot{
     {
       fParPropTime_npar=0;
     }
+
+    if(!fUseNhitsModel) {
 
     if(fUseCryoBoundary)
       {
@@ -245,10 +250,45 @@ namespace phot{
     
     fVoxelDef = sim::PhotonVoxelDef(fXmin, fXmax, fNx, fYmin, fYmax, fNy, fZmin, fZmax, fNz);
 
+    }
+
     if(fIncludePropTime)
       {
+
+	// load VUV arrival time distribution parametrization (no detector dependent at first order)
+	std::cout<<"Loading the VUV time parametrization"<<std::endl;
+	fDistances_all     = p.get<std::vector<double> >("Distances_landau");
+	fNorm_over_entries = p.get<std::vector<double> >("Norm_over_entries");
+	fMpv = p.get<std::vector<double> >("Mpv");
+	fWidth = p.get<std::vector<double> >("Width");
+	fDistances = p.get<std::vector<double> >("Distances_exp");
+	fSlope = p.get<std::vector<double> >("Slope");
+	fExpo_over_Landau_norm[0] = p.get<std::vector<double> >("Expo_over_Landau_norm_0");
+	fExpo_over_Landau_norm[1] = p.get<std::vector<double> >("Expo_over_Landau_norm_30");
+	fExpo_over_Landau_norm[2] = p.get<std::vector<double> >("Expo_over_Landau_norm_60");
+	fstep_size = p.get<double>("step_size");
+	fmax_d= p.get<double>("max_d");
+	fvuv_vgroup_mean= p.get<double>("vuv_vgroup_mean");
+	fvuv_vgroup_max= p.get<double>("vuv_vgroup_max");
+	finflexion_point_distance= p.get<double>("inflexion_point_distance");
+
+	if (fStoreReflected) 
+	{
+
+	  // load VIS arrival time distribution paramterisation
+	  std::cout << "Loading the VIS time paramterisation" << std::endl;
+	  fDistances_refl = p.get<std::vector<double>> ("Distances_refl");
+	  fCut_off = p.get<std::vector<std::vector<double>>> ("Cut_off");
+	  fTau = p.get<std::vector<std::vector<double>>> ("Tau");
+	  fvis_vmean = p.get<double> ("vis_vmean");
+	  fn_LAr_VUV = p.get<double> ("n_LAr_VUV");
+	  fn_LAr_vis = p.get<double> ("n_LAr_vis");
+	  fPlane_Depth = p.get<double>("Plane_Depth");
+
+	}
+	//ALL BELOW IS OLD PARAMETRIZATION. TO BE REMOVED SOON (reflected component time needs to be updated too)
 	// Construct parameterized model parameter functions.         
-	std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
+	/*std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
 	std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
 	//range of distances where the parametrization is valid                                            
 	fD_break = p.get<double>("D_break");
@@ -325,9 +365,30 @@ namespace phot{
 	fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
 	for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
 	  fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
-
+	*/
 
       }
+
+    if(fUseNhitsModel) {
+      	// VUV
+      	fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
+      	
+        if (fStoreReflected) 
+	{
+        // VIS
+      	fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
+	fCATHODE_height = p.get<double>("CATHODE_height");
+	fCATHODE_width = p.get<double>("CATHODE_width");
+	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
+	fPlane_Depth = fCATHODE_centre[0];
+	}
+      	
+	// Optical channel dimensions
+	fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
+      	fAPERTURE_height = p.get<double>("APERTURE_height");
+      	fAPERTURE_width = p.get<double>("APERTURE_width");
+      	fPMT_radius = p.get<double>("PMT_radius");
+    }
 
 
     return;
@@ -640,6 +701,71 @@ namespace phot{
 
     t0_max = fT0_max;
     t0_break_point = fT0_break_point;
+  }
+
+
+
+  //------------------------------------------------------                                                                             
+  void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, 
+						     double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const
+  {
+    v[0] = fDistances_all;
+    v[1] = fNorm_over_entries;
+    v[2] = fMpv;
+    v[3] = fWidth;
+    v[4] = fDistances;
+    v[5] = fSlope;
+    v[6] = fExpo_over_Landau_norm[0];
+    v[7] = fExpo_over_Landau_norm[1];
+    v[8] = fExpo_over_Landau_norm[2];
+    
+    step_size = fstep_size;
+    max_d = fmax_d;
+    vuv_vgroup_mean = fvuv_vgroup_mean;
+    vuv_vgroup_max = fvuv_vgroup_max;
+    inflexion_point_distance = finflexion_point_distance;
+
+  }
+
+  void PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau,
+										 double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const
+  {
+  distances = fDistances_refl;
+  cut_off = fCut_off;
+  tau = fTau;
+
+  vis_vmean = fvis_vmean;
+  n_vis = fn_LAr_vis;
+  n_vuv = fn_LAr_VUV;
+  plane_depth = fPlane_Depth;
+
+  }
+
+
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r, int& op_det_type) const
+  {
+    v = fGH_PARS;    
+ 
+    op_det_type = fOptical_Detector_Type;
+    h = fAPERTURE_height;
+    w = fAPERTURE_width;
+    r = fPMT_radius;
+
+  }
+
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r, int& op_det_type) const
+  {
+    v = fVIS_PARS;
+    plane_depth = fPlane_Depth;
+    w_cathode = fCATHODE_width;
+    h_cathode = fCATHODE_height;
+    cntr_cathode = fCATHODE_centre;
+
+    op_det_type = fOptical_Detector_Type;
+    h = fAPERTURE_height;
+    w = fAPERTURE_width;
+    r = fPMT_radius;
+
   }
 
 
