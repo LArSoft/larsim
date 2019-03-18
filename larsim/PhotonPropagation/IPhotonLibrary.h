@@ -12,8 +12,7 @@ namespace phot
   class IPhotonLibrary
   {
   public:
-    IPhotonLibrary(){}
-    virtual ~IPhotonLibrary(){}
+    virtual ~IPhotonLibrary() = default;
 
     virtual float GetCount(size_t Voxel, size_t OpChannel) const = 0;
     virtual float GetReflCount(size_t Voxel, size_t OpChannel) const = 0;

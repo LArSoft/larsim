@@ -1,5 +1,10 @@
-#ifndef PhotonVoxels_h 
-#define PhotonVoxels_h 1
+/**
+ * @file  larsim/Simulation/PhotonVoxels.h
+ * @brief Definitions of voxel data structures.
+ */
+
+#ifndef LARSIM_SIMULATION_PHOTONVOXELS_H
+#define LARSIM_SIMULATION_PHOTONVOXELS_H
 
 #include "TVector3.h"
 
@@ -8,6 +13,7 @@ namespace sim {
 
   class PhotonVoxel{
   public:
+    PhotonVoxel() = default;
     PhotonVoxel(double xMin, 
 		double xMax, 
 		double yMin, 
@@ -15,15 +21,14 @@ namespace sim {
 		double zMin, 
 		double zMax, 
 		int N = 0) ;
-    PhotonVoxel();
 
   private:
-    double xVoxelMin;
-    double xVoxelMax;
-    double yVoxelMin;
-    double yVoxelMax;
-    double zVoxelMin;
-    double zVoxelMax;
+    double xVoxelMin = 0.0;
+    double xVoxelMax = 0.0;
+    double yVoxelMin = 0.0;
+    double yVoxelMax = 0.0;
+    double zVoxelMin = 0.0;
+    double zVoxelMax = 0.0;
 
     int NPhotons;
 
@@ -33,12 +38,13 @@ namespace sim {
     TVector3 GetUpperCorner() const;
     TVector3 GetCenter()      const;
 
-  };
+  }; // class PhotonVoxel
 
 
   class PhotonVoxelDef
   {
   public:
+    PhotonVoxelDef() = default;
     PhotonVoxelDef(double xMin, 
 		   double xMax, 
 		   int xN, 
@@ -48,7 +54,6 @@ namespace sim {
 		   double zMin, 
 		   double zMax, 
 		   int z);
-    PhotonVoxelDef();
     
   private:
     TVector3 fLowerCorner;
@@ -91,7 +96,8 @@ namespace sim {
     bool operator!=(const PhotonVoxelDef &rhs) const 
       { return ! ((*this)==rhs); }
 
-  };
-}
+  }; // class PhotonVoxelDef
+  
+} // namespace sim
 
-#endif
+#endif // LARSIM_SIMULATION_PHOTONVOXELS_H

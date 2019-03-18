@@ -1,11 +1,24 @@
+/**
+ * @file  larsim/Simulation/PhotonVoxels.cxx
+ * @brief Definitions of voxel data structures: implementation.
+ * @see   larsim/Simulation/PhotonVoxels.h
+ */
+
+// library header
 #include "larsim/Simulation/PhotonVoxels.h"
 
-#include <cmath> // std::floor()
-#include <iostream>
+// C++ standard libraries
+#include <vector>
+#include <string>
+#include <algorithm> // std::min(), std::max()
+#include <stdexcept> // std::runtime_error
+#include <cmath> // std::abs(), std::floor()
+
 
 namespace sim {
 
 
+  //----------------------------------------------------------------------------
   // PhotonVoxel class
   //----------------------------------------------------------------------------
   PhotonVoxel::PhotonVoxel(double xMin, 
@@ -25,11 +38,6 @@ namespace sim {
     NPhotons = N;
   }
 
-  //----------------------------------------------------------------------------
-  PhotonVoxel::PhotonVoxel()
-  {
-  }
-  
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxel::GetLowerCorner() const
   {
@@ -55,6 +63,8 @@ namespace sim {
 
 
   //----------------------------------------------------------------------------
+  // PhotonVoxelDef class
+  //----------------------------------------------------------------------------
   PhotonVoxelDef::PhotonVoxelDef(double xMin, 
 				 double xMax, 
 				 int xN, 
@@ -72,11 +82,6 @@ namespace sim {
     
     fLowerCorner = TVector3(xMin,yMin,zMin);
     fUpperCorner = TVector3(xMax,yMax,zMax);
-  }
-
-  //----------------------------------------------------------------------------
-  PhotonVoxelDef::PhotonVoxelDef()
-  {
   }
 
   //----------------------------------------------------------------------------
@@ -200,13 +205,16 @@ namespace sim {
     // Sanity check the weights sum to 1
     double wSum = 0;
     for(const NeiInfo& n: ret) wSum += n.weight;
-    if(fabs(wSum-1) > 1e-3){
-      std::cout << "PhotonVoxelDef::GetNeighboringVoxelIDs(): "
-                << "Weights sum to " << wSum << " (should be 1). "
-                << "Weights are:";
-      for(const NeiInfo& n: ret) std::cout << " " << n.weight;
-      std::cout << " Aborting." << std::endl;
-      abort();
+    if(std::abs(wSum-1) > 1e-3){
+      std::string msg
+        = "PhotonVoxelDef::GetNeighboringVoxelIDs():"
+          " Weights sum to " + std::to_string(wSum) + " (should be 1)."
+          " Weights are:";
+      for(const NeiInfo& n: ret) {
+        msg += ' ';
+        msg += std::to_string(n.weight);
+      }
+      throw std::runtime_error(msg);
     }
   }
 
@@ -261,4 +269,5 @@ namespace sim {
     return ReturnVector;
     
   }
-}
+  
+} // namespace sim
