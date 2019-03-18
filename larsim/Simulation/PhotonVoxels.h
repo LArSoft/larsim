@@ -15,12 +15,12 @@ namespace sim {
   public:
     PhotonVoxel() = default;
     PhotonVoxel(double xMin, 
-		double xMax, 
-		double yMin, 
-		double yMax, 
-		double zMin, 
-		double zMax, 
-		int N = 0) ;
+                double xMax, 
+                double yMin, 
+                double yMax, 
+                double zMin, 
+                double zMax, 
+                int N = 0) ;
 
   private:
     double xVoxelMin = 0.0;
@@ -46,14 +46,14 @@ namespace sim {
   public:
     PhotonVoxelDef() = default;
     PhotonVoxelDef(double xMin, 
-		   double xMax, 
-		   int xN, 
-		   double yMin, 
-		   double yMax, 
-		   int yN, 
-		   double zMin, 
-		   double zMax, 
-		   int z);
+                   double xMax, 
+                   int xN, 
+                   double yMin, 
+                   double yMax, 
+                   int yN, 
+                   double zMin, 
+                   double zMax, 
+                   int z);
     
   private:
     TVector3 fLowerCorner;

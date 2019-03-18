@@ -22,12 +22,12 @@ namespace sim {
   // PhotonVoxel class
   //----------------------------------------------------------------------------
   PhotonVoxel::PhotonVoxel(double xMin, 
-			   double xMax, 
-			   double yMin, 
-			   double yMax, 
-			   double zMin, 
-			   double zMax, 
-			   int N)
+                           double xMax, 
+                           double yMin, 
+                           double yMax, 
+                           double zMin, 
+                           double zMax, 
+                           int N)
   {
     xVoxelMin = xMin;
     xVoxelMax = xMax;
@@ -66,14 +66,14 @@ namespace sim {
   // PhotonVoxelDef class
   //----------------------------------------------------------------------------
   PhotonVoxelDef::PhotonVoxelDef(double xMin, 
-				 double xMax, 
-				 int xN, 
-				 double yMin, 
-				 double yMax, 
-				 int yN, 
-				 double zMin, 
-				 double zMax, 
-				 int zN)
+                                 double xMax, 
+                                 int xN, 
+                                 double yMin, 
+                                 double yMax, 
+                                 int yN, 
+                                 double zMin, 
+                                 double zMax, 
+                                 int zN)
   {
     fxSteps = xN;
     fySteps = yN;
