@@ -95,8 +95,9 @@ namespace sim {
     
     TVector3 GetSteps() const;
 
-
-    TVector3 GetVoxelSize()const;
+    
+    template <typename Vector = DefaultVector>
+    Vector GetVoxelSize() const;
 
     int GetNVoxels() const;
 
@@ -156,6 +157,16 @@ decltype(auto) sim::PhotonVoxelDef::GetRegionLowerCorner() const
 template <typename Point /* = DefaultPoint */>
 decltype(auto) sim::PhotonVoxelDef::GetRegionUpperCorner() const
   { return geo::vect::convertTo<Point>(fUpperCorner); }
+
+//------------------------------------------------------------------------------
+template <typename Vector /* = DefaultVector */>
+Vector sim::PhotonVoxelDef::GetVoxelSize() const {
+  return {
+    (fUpperCorner.X() - fLowerCorner.X()) / fxSteps,
+    (fUpperCorner.Y() - fLowerCorner.Y()) / fySteps,
+    (fUpperCorner.Z() - fLowerCorner.Z()) / fzSteps
+    };
+} // sim::PhotonVoxelDef::GetVoxelSize()
 
 //------------------------------------------------------------------------------
 

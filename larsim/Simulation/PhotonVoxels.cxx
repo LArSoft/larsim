@@ -162,16 +162,6 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetVoxelSize() const
-  {
-    TVector3 TheSize = TVector3((GetRegionUpperCorner()[0]-GetRegionLowerCorner()[0]) / fxSteps,
-                                (GetRegionUpperCorner()[1]-GetRegionLowerCorner()[1]) / fySteps,
-                                (GetRegionUpperCorner()[2]-GetRegionLowerCorner()[2]) / fzSteps);
-    return TheSize;
-  }
-
-
-  //----------------------------------------------------------------------------
   PhotonVoxel PhotonVoxelDef::GetPhotonVoxel(int ID) const
   {
     //    float TempID = (float) ID;
