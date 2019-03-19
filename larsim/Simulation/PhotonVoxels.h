@@ -19,12 +19,15 @@ namespace sim {
   class PhotonVoxel{
   public:
     PhotonVoxel() = default;
+    PhotonVoxel(geo::Point_t const& min, geo::Point_t const& max)
+      : fVoxelMin(min), fVoxelMax(max) {}
     PhotonVoxel(double xMin, 
                 double xMax, 
                 double yMin, 
                 double yMax, 
                 double zMin, 
-                double zMax);
+                double zMax)
+      : PhotonVoxel({ xMin, yMin, zMin }, { xMax, yMax, zMax }) {}
 
   private:
     geo::Point_t fVoxelMin;

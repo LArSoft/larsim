@@ -21,19 +21,6 @@ namespace sim {
 
 
   //----------------------------------------------------------------------------
-  // PhotonVoxel class
-  //----------------------------------------------------------------------------
-  PhotonVoxel::PhotonVoxel(double xMin, 
-                           double xMax, 
-                           double yMin, 
-                           double yMax, 
-                           double zMin, 
-                           double zMax)
-    : fVoxelMin(xMin, yMin, zMin)
-    , fVoxelMax(xMax, yMax, zMax)
-    {}
-
-  //----------------------------------------------------------------------------
   // PhotonVoxelDef class
   //----------------------------------------------------------------------------
   PhotonVoxelDef::PhotonVoxelDef(double xMin, 
