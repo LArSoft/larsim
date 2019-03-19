@@ -6,7 +6,8 @@ art_make(LIB_LIBRARIES
          ${FHICLCPP}
          ${CLHEP}
          ${ROOT_CORE}
-         ${ROOT_MATRIX})
+         ${ROOT_MATRIX}
+         ${Boost_SYSTEM_LIBRARY})
 
 install_headers()
 install_fhicl()
