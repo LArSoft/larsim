@@ -16,6 +16,7 @@
 namespace sim {
 
 
+  /// Representation of a single small volume (voxel).
   class PhotonVoxel{
   public:
     PhotonVoxel() = default;
@@ -57,7 +58,8 @@ namespace sim {
     
   }; // class PhotonVoxel
 
-
+  
+  /// Representation of a region of space diced into voxels.
   class PhotonVoxelDef
   {
   public:
@@ -80,9 +82,16 @@ namespace sim {
     int      fzSteps;
 
   public:
-
-    TVector3 GetRegionUpperCorner() const;
-    TVector3 GetRegionLowerCorner() const;
+    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
+    
+    /// Returns the volume vertex (type `Point`) with the lowest coordinates.
+    template <typename Point = DefaultPoint>
+    decltype(auto) GetRegionLowerCorner() const;
+    
+    /// Returns the volume vertex (type `Point`) with the highest coordinates.
+    template <typename Point = DefaultPoint>
+    decltype(auto) GetRegionUpperCorner() const;
+    
     TVector3 GetSteps() const;
 
 
@@ -136,6 +145,16 @@ Point sim::PhotonVoxel::GetCenter() const
   { return geo::vect::convertTo<Point>(geo::vect::middlePoint({ fVoxelMin, fVoxelMax })); }
 
 
+//------------------------------------------------------------------------------
+//--- sim::PhotonVoxelDef
+//------------------------------------------------------------------------------
+template <typename Point /* = DefaultPoint */>
+decltype(auto) sim::PhotonVoxelDef::GetRegionLowerCorner() const
+  { return geo::vect::convertTo<Point>(fLowerCorner); }
+  
+template <typename Point /* = DefaultPoint */>
+decltype(auto) sim::PhotonVoxelDef::GetRegionUpperCorner() const
+  { return geo::vect::convertTo<Point>(fUpperCorner); }
 
 //------------------------------------------------------------------------------
 

@@ -40,18 +40,6 @@ namespace sim {
     {}
 
   //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetRegionLowerCorner() const
-  {
-    return geo::vect::toTVector3(fLowerCorner);
-  }
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetRegionUpperCorner() const
-  {
-    return geo::vect::toTVector3(fUpperCorner);
-  }
-
-  //----------------------------------------------------------------------------
   TVector3 PhotonVoxelDef::GetSteps() const
   {
     TVector3 Steps = TVector3(fxSteps, fySteps, fzSteps);
