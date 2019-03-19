@@ -61,33 +61,8 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(const TVector3& p) const
-  {
-    const double xyz[3] = {p.X(), p.Y(), p.Z()};
-    return GetVoxelID(xyz);
-  }
-
-  //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(double const* Position) const
-  {
-    // figure out how many steps this point is in the x,y,z directions
-    int xStep = int (std::floor((Position[0]-fLowerCorner.X()) / (fUpperCorner.X()-fLowerCorner.X()) * fxSteps ));
-    int yStep = int (std::floor((Position[1]-fLowerCorner.Y()) / (fUpperCorner.Y()-fLowerCorner.Y()) * fySteps ));
-    int zStep = int (std::floor((Position[2]-fLowerCorner.Z()) / (fUpperCorner.Z()-fLowerCorner.Z()) * fzSteps ));
-
-    // check if point lies within the voxelized region
-    if((0 <= xStep) && ((unsigned int)xStep < fxSteps) &&
-       (0 <= yStep) && ((unsigned int)yStep < fySteps) &&
-       (0 <= zStep) && ((unsigned int)zStep < fzSteps) ){
-      // if within bounds, generate the voxel ID
-      return (xStep
-              + yStep * (fxSteps)
-              + zStep * (fxSteps * fySteps));
-      }
-    else{
-      // out of bounds
-      return -1;
-    }
+  int PhotonVoxelDef::GetVoxelID(double const* Position) const {
+    return GetVoxelIDImpl(geo::vect::makeFromCoords<geo::Point_t>(Position));
   }
 
   //----------------------------------------------------------------------------
@@ -201,6 +176,25 @@ namespace sim {
     ReturnVector.at(2) =  ((ID - ReturnVector.at(0) - (ReturnVector.at(1) * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
     return ReturnVector;
     
+  }
+  
+  //----------------------------------------------------------------------------
+  int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const {
+    if (!isInside(p)) return -1;
+    
+    auto const span = fUpperCorner - fLowerCorner;
+    auto const relPos = p - fLowerCorner;
+    
+    // figure out how many steps this point is in the x,y,z directions;
+    // `p` is guaranteed to be in the mapped volume by the previous check
+    int xStep = static_cast<int>((relPos.X() / span.X()) * fxSteps );
+    int yStep = static_cast<int>((relPos.Y() / span.Y()) * fySteps );
+    int zStep = static_cast<int>((relPos.Z() / span.Z()) * fzSteps );
+
+    // if within bounds, generate the voxel ID
+    return (xStep
+            + yStep * (fxSteps)
+            + zStep * (fxSteps * fySteps));
   }
   
   //----------------------------------------------------------------------------

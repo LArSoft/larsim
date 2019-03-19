@@ -98,8 +98,11 @@ namespace sim {
     Vector GetVoxelSize() const;
 
     unsigned int GetNVoxels() const;
-
-    int GetVoxelID(const TVector3&) const;
+    
+    /// Returns the ID of the voxel containing `p`, or `-1` if none.
+    template <typename Point>
+    int GetVoxelID(Point const& p) const;
+    
     int GetVoxelID(double const*)  const;
     bool IsLegalVoxelID(int) const;
 
@@ -117,6 +120,11 @@ namespace sim {
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;
     PhotonVoxel      GetContainingVoxel(TVector3) const;
+    
+    /// Returns whether point `p` is inside the region (upper border excluded).
+    bool isInside(geo::Point_t const& p) const
+      { return isInsideImpl(p); }
+    
 
     bool operator==(const PhotonVoxelDef &rhs) const;
     bool operator!=(const PhotonVoxelDef &rhs) const 
@@ -124,8 +132,11 @@ namespace sim {
     
   private:
     
+    int GetVoxelIDImpl(geo::Point_t const& p) const;
+    
     /// Returns whether the specified point is within the volume.
-    bool isInsideImpl(geo::Point_t const& point) const;
+    bool isInsideImpl(geo::Point_t const& point) const
+      { return isInsideVolume(point, fLowerCorner, fUpperCorner); }
     
     static bool isInsideVolume(
       geo::Point_t const& point,
@@ -176,6 +187,11 @@ Vector sim::PhotonVoxelDef::GetVoxelSize() const {
     (fUpperCorner.Z() - fLowerCorner.Z()) / fzSteps
     };
 } // sim::PhotonVoxelDef::GetVoxelSize()
+
+//------------------------------------------------------------------------------
+template <typename Point>
+int sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
+  { return GetVoxelIDImpl(geo::vect::toPoint(p)); }
 
 //------------------------------------------------------------------------------
 
