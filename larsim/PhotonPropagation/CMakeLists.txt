@@ -12,6 +12,10 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${CLHEP}
                        cetlib_except
                        ${ROOT_EG}
+                       ${ROOT_RIO}
+                       ${ROOT_HIST}
+                       ${ROOT_MATRIX}
+                       ${ROOT_TREE}
           SERVICE_LIBRARIES larsim_PhotonPropagation
                        larsim_Simulation
                        nutools_ParticleNavigation
@@ -39,6 +43,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                         art_Persistency_Provenance
                         ${MF_MESSAGELOGGER}
                         ${CLHEP}
+                        ${ROOT_GPAD}
          )
 
 install_headers()

@@ -27,6 +27,7 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         ${ROOT_EGPYTHIA6}
                         ${ROOT_GUI}
                         ${ROOT_GEOM}
+                        ${ROOT_MATHCORE}
                         ${CLHEP}
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_LArG4

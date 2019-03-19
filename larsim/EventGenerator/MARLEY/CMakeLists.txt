@@ -13,6 +13,7 @@ art_make(
                         ${MARLEY}
                         ${MARLEY_ROOT}
                         ${FHICLCPP}
+                        ${MF_MESSAGELOGGER}
                         cetlib_except
                         ${ROOT_GEOM}
       MODULE_LIBRARIES
@@ -34,6 +35,9 @@ art_make(
                         art_Persistency_Provenance
                         ${CLHEP}
                         ${ROOT_GEOM}
+                        ${ROOT_HIST}
+                        ${ROOT_TREE}
+                        ${ROOT_RIO}
                         ${G4_LIB_LIST}
         )
 

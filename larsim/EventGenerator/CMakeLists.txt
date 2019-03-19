@@ -26,6 +26,7 @@ art_make(LIB_LIBRARIES nusimdata_SimulationBase
                            ${MF_MESSAGELOGGER}
                            ${CLHEP}
                            ${ROOT_EG}
+                           ${ROOT_GEOM}
         )
 
 install_headers()

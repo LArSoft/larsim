@@ -8,6 +8,7 @@ cet_make_library(
   nutools_ParticleNavigation
   lardataobj_Simulation
   nusimdata_SimulationBase
+  ${MF_MESSAGELOGGER}
   )
 
 cet_make_library(
@@ -105,6 +106,8 @@ simple_plugin(RecoCheckAna "module"
   ${ART_FRAMEWORK_SERVICES_OPTIONAL}
   ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
   art_Persistency_Provenance
+  ${ROOT_TREE}
+  ${ROOT_HIST}
   )
 
 simple_plugin(BackTrackerLoader "module"

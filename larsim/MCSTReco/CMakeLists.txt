@@ -32,6 +32,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
                            ${ROOT_XMLIO}
                            ${ROOT_GDML}
                            ${ROOT_EG}
+                           ${ROOT_HIST}
                            ${CLHEP}
                         )
 

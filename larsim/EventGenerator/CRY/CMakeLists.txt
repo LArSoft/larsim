@@ -12,7 +12,10 @@ art_make(MODULE_LIBRARIES
          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
          art_Persistency_Provenance
-         ${CLHEP})
+         ${CLHEP}
+         ${MF_MESSAGELOGGER}
+         ${ROOT_HIST}
+         ${ROOT_PHYSICS})
 
 install_headers()
 install_fhicl()

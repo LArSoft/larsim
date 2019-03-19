@@ -10,7 +10,9 @@ art_make(NO_PLUGINS
            nusimdata_SimulationBase
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_FRAMEWORK_PRINCIPAL}
-           ${ART_PERSISTENCY_PROVENANCE})
+           ${ART_PERSISTENCY_PROVENANCE}
+           ${ROOT_CORE}
+           ${ROOT_PHYSICS})
 
 simple_plugin(LArVoxelCalculator "service")
 simple_plugin(LArG4Parameters "service")

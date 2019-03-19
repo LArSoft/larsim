@@ -20,7 +20,9 @@ simple_plugin(SimWire "module"
                       ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                       art_Persistency_Provenance
                       ${MF_MESSAGELOGGER}
-                      ${CLHEP})
+                      ${CLHEP}
+                      ${ROOT_MATHCORE}
+                      ${ROOT_HIST})
 
 
 simple_plugin(WienerFilterAna "module"
@@ -31,7 +33,8 @@ simple_plugin(WienerFilterAna "module"
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                               ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                               art_Persistency_Provenance
-                              ${MF_MESSAGELOGGER})
+                              ${MF_MESSAGELOGGER}
+                              ${ROOT_HIST})
 
 simple_plugin(RecompressRawDigits "module"
               lardataobj_RawData

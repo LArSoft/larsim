@@ -114,6 +114,8 @@ art_make(MODULE_LIBRARIES
          ${GMESSENGER}
          ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
          ${ROOT_EG}
+         ${ROOT_HIST}
+         ${ROOT_MATHCORE}
         )
 
 install_headers()

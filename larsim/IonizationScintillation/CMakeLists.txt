@@ -12,7 +12,9 @@ art_make(LIB_LIBRARIES
            lardataobj_Simulation
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE})
+           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+           ${ROOT_TREE}
+           ${MF_MESSAGELOGGER})
 
 install_headers()
 install_fhicl()
