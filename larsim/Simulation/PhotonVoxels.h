@@ -73,8 +73,8 @@ namespace sim {
                    int z);
     
   private:
-    TVector3 fLowerCorner;
-    TVector3 fUpperCorner;
+    geo::Point_t fLowerCorner;
+    geo::Point_t fUpperCorner;
     int      fxSteps;
     int      fySteps;
     int      fzSteps;

@@ -32,26 +32,23 @@ namespace sim {
                                  double zMin, 
                                  double zMax, 
                                  int zN)
-  {
-    fxSteps = xN;
-    fySteps = yN;
-    fzSteps = zN;
-    
-    
-    fLowerCorner = TVector3(xMin,yMin,zMin);
-    fUpperCorner = TVector3(xMax,yMax,zMax);
-  }
+    : fLowerCorner(xMin, yMin, zMin)
+    , fUpperCorner(xMax, yMax, zMax)
+    , fxSteps(xN)
+    , fySteps(yN)
+    , fzSteps(zN)
+    {}
 
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxelDef::GetRegionLowerCorner() const
   {
-    return fLowerCorner;
+    return geo::vect::toTVector3(fLowerCorner);
   }
 
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxelDef::GetRegionUpperCorner() const
   {
-    return fUpperCorner;
+    return geo::vect::toTVector3(fUpperCorner);
   }
 
   //----------------------------------------------------------------------------
@@ -86,9 +83,9 @@ namespace sim {
   int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
     // figure out how many steps this point is in the x,y,z directions
-    int xStep = int( std::floor((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps ));
-    int yStep = int( std::floor((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps ));
-    int zStep = int( std::floor((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps ));
+    int xStep = int (std::floor((Position[0]-fLowerCorner.X()) / (fUpperCorner.X()-fLowerCorner.X()) * fxSteps ));
+    int yStep = int (std::floor((Position[1]-fLowerCorner.Y()) / (fUpperCorner.Y()-fLowerCorner.Y()) * fySteps ));
+    int zStep = int (std::floor((Position[2]-fLowerCorner.Z()) / (fUpperCorner.Z()-fLowerCorner.Z()) * fzSteps ));
 
     // check if point lies within the voxelized region
     if((0 <= xStep) && (xStep < fxSteps) &&
@@ -117,9 +114,9 @@ namespace sim {
     for(int i = 0; i < 3; ++i){
       // If we're outside the cuboid we have values for, return empty vector,
       // ie failure.
-      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return;// {};
+      if(v[i] < GetRegionLowerCorner()[i] || v[i] > GetRegionUpperCorner()[i]) return;// {};
       // Figure out our position wrt to the centres of the voxels
-      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] ) - 0.5;
+      rStepD[i] = ((v[i]-GetRegionLowerCorner()[i]) / (GetRegionUpperCorner()[i]-GetRegionLowerCorner()[i]) * GetSteps()[i] ) - 0.5;
     }
 
     // The neighbours are the 8 corners of a cube around this point
@@ -199,12 +196,12 @@ namespace sim {
 
     TVector3 VoxelSize = GetVoxelSize();
 
-    double xMin = VoxelSize[0] * (xStep)   + fLowerCorner[0];
-    double xMax = VoxelSize[0] * (xStep+1) + fLowerCorner[0];
-    double yMin = VoxelSize[1] * (yStep)   + fLowerCorner[1];
-    double yMax = VoxelSize[1] * (yStep+1) + fLowerCorner[1];
-    double zMin = VoxelSize[2] * (zStep)   + fLowerCorner[2];
-    double zMax = VoxelSize[2] * (zStep+1) + fLowerCorner[2];
+    double xMin = VoxelSize[0] * (xStep)   + fLowerCorner.X();
+    double xMax = VoxelSize[0] * (xStep+1) + fLowerCorner.X();
+    double yMin = VoxelSize[1] * (yStep)   + fLowerCorner.Y();
+    double yMax = VoxelSize[1] * (yStep+1) + fLowerCorner.Y();
+    double zMin = VoxelSize[2] * (zStep)   + fLowerCorner.Z();
+    double zMax = VoxelSize[2] * (zStep+1) + fLowerCorner.Z();
 
 
    
