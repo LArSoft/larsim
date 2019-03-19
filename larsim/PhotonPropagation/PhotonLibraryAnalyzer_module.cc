@@ -199,7 +199,7 @@ namespace phot {
     mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - running through voxels "<< std::endl;
 
 
-    for(int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
+    for(unsigned int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
     {
       if(i%reportnum==0) std::cout<<"Photon library analyzer at voxel " << i<<std::endl;
     

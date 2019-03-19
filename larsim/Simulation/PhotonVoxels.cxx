@@ -55,7 +55,7 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetNVoxels() const
+  unsigned int PhotonVoxelDef::GetNVoxels() const
   {
     return fxSteps * fySteps * fzSteps;
   }
@@ -189,7 +189,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   bool PhotonVoxelDef::IsLegalVoxelID(int ID) const
   {
-    return (( ID > -1) && (ID<GetNVoxels()));
+    return (( ID >= 0) && (static_cast<unsigned int>(ID) < GetNVoxels()));
   }
 
   std::vector<int> PhotonVoxelDef::GetVoxelCoords(int ID) const
@@ -202,5 +202,28 @@ namespace sim {
     return ReturnVector;
     
   }
+  
+  //----------------------------------------------------------------------------
+  bool PhotonVoxelDef::isInsideVolume(
+    geo::Point_t const& point,
+    geo::Point_t const& lower, geo::Point_t const& upper
+    )
+  {
+    return
+         isInsideRange(point.X(), lower.X(), upper.X())
+      && isInsideRange(point.Y(), lower.Y(), upper.Y())
+      && isInsideRange(point.Z(), lower.Z(), upper.Z())
+      ;
+  }
+  
+  bool PhotonVoxelDef::isInsideRange(double value, double lower, double upper) {
+    
+    return (value >= lower) && (value < upper);
+    
+  } // PhotonVoxelDef::isInsideRange()
+  
+  
+  //----------------------------------------------------------------------------
+  
   
 } // namespace sim

@@ -109,7 +109,7 @@ namespace phot
 			std::vector<Visibility> viss;
 			viss.reserve(voxdef.GetNVoxels());
 
-			for(int voxIdx = 0; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
+			for(unsigned int voxIdx = 0U; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
 			     
        				const TVector3 voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
 				const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};

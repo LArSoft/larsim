@@ -70,7 +70,7 @@ namespace sim {
     unsigned int fxSteps = 1U;
     unsigned int fySteps = 1U;
     unsigned int fzSteps = 1U;
-
+    
   public:
     PhotonVoxelDef() = default;
     PhotonVoxelDef(double xMin, 
@@ -97,7 +97,7 @@ namespace sim {
     template <typename Vector = DefaultVector>
     Vector GetVoxelSize() const;
 
-    int GetNVoxels() const;
+    unsigned int GetNVoxels() const;
 
     int GetVoxelID(const TVector3&) const;
     int GetVoxelID(double const*)  const;
@@ -121,7 +121,18 @@ namespace sim {
     bool operator==(const PhotonVoxelDef &rhs) const;
     bool operator!=(const PhotonVoxelDef &rhs) const 
       { return ! ((*this)==rhs); }
-
+    
+  private:
+    
+    /// Returns whether the specified point is within the volume.
+    bool isInsideImpl(geo::Point_t const& point) const;
+    
+    static bool isInsideVolume(
+      geo::Point_t const& point,
+      geo::Point_t const& lower, geo::Point_t const& upper
+      );
+    static bool isInsideRange(double value, double lower, double upper);
+    
   }; // class PhotonVoxelDef
   
 } // namespace sim
