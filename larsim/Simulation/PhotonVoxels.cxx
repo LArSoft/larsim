@@ -6,6 +6,8 @@
 
 // library header
 #include "larsim/Simulation/PhotonVoxels.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h"
+#include "larcorealg/Geometry/geo_vectors_utils_TVector.h"
 
 // C++ standard libraries
 #include <vector>
@@ -26,39 +28,29 @@ namespace sim {
                            double yMin, 
                            double yMax, 
                            double zMin, 
-                           double zMax, 
-                           int N)
-  {
-    xVoxelMin = xMin;
-    xVoxelMax = xMax;
-    yVoxelMin = yMin;
-    yVoxelMax = yMax;
-    zVoxelMin = zMin;
-    zVoxelMax = zMax;
-    NPhotons = N;
-  }
+                           double zMax)
+    : fVoxelMin(xMin, yMin, zMin)
+    , fVoxelMax(xMax, yMax, zMax)
+    {}
 
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxel::GetLowerCorner() const
   {
-    TVector3 LowerCorner = TVector3(xVoxelMin, yVoxelMin, zVoxelMin);
-    return LowerCorner;
+    return geo::vect::toTVector3(fVoxelMin);
   }
 
 
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxel::GetUpperCorner() const
   {
-    TVector3 UpperCorner = TVector3(xVoxelMax, yVoxelMax, zVoxelMax);
-    return UpperCorner;
+    return geo::vect::toTVector3(fVoxelMax);
   }
 
 
   //----------------------------------------------------------------------------
   TVector3 PhotonVoxel::GetCenter() const
   {
-    TVector3 Center = TVector3((xVoxelMin+xVoxelMax)/2.0, (yVoxelMin+yVoxelMax)/2.0, (zVoxelMin+zVoxelMax)/2.0);
-    return Center;
+    return geo::vect::toTVector3(geo::vect::middlePoint({ fVoxelMin, fVoxelMax }));
   }
 
 

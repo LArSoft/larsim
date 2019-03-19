@@ -6,6 +6,10 @@
 #ifndef LARSIM_SIMULATION_PHOTONVOXELS_H
 #define LARSIM_SIMULATION_PHOTONVOXELS_H
 
+// LArSoft libraries
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+
+// ROOT libraries
 #include "TVector3.h"
 
 namespace sim {
@@ -19,19 +23,12 @@ namespace sim {
                 double yMin, 
                 double yMax, 
                 double zMin, 
-                double zMax, 
-                int N = 0) ;
+                double zMax);
 
   private:
-    double xVoxelMin = 0.0;
-    double xVoxelMax = 0.0;
-    double yVoxelMin = 0.0;
-    double yVoxelMax = 0.0;
-    double zVoxelMin = 0.0;
-    double zVoxelMax = 0.0;
-
-    int NPhotons;
-
+    geo::Point_t fVoxelMin;
+    geo::Point_t fVoxelMax;
+    
   public:
 
     TVector3 GetLowerCorner() const;
