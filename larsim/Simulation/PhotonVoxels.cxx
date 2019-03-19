@@ -40,10 +40,9 @@ namespace sim {
     {}
 
   //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetSteps() const
+  std::array<unsigned int, 3U> PhotonVoxelDef::GetSteps() const
   {
-    TVector3 Steps = TVector3(fxSteps, fySteps, fzSteps);
-    return Steps;
+    return { fxSteps, fySteps, fzSteps };
   }
 
   //----------------------------------------------------------------------------

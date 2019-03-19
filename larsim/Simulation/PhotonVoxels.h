@@ -91,7 +91,8 @@ namespace sim {
     template <typename Point = DefaultPoint>
     decltype(auto) GetRegionUpperCorner() const;
     
-    TVector3 GetSteps() const;
+    /// Returns the number of voxels along each of the three dimensions.
+    std::array<unsigned int, 3U> GetSteps() const;
 
     
     template <typename Vector = DefaultVector>
