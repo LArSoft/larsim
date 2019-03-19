@@ -76,9 +76,9 @@ namespace sim {
     int zStep = int (std::floor((Position[2]-fLowerCorner.Z()) / (fUpperCorner.Z()-fLowerCorner.Z()) * fzSteps ));
 
     // check if point lies within the voxelized region
-    if((0 <= xStep) && (xStep < fxSteps) &&
-       (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) ){
+    if((0 <= xStep) && ((unsigned int)xStep < fxSteps) &&
+       (0 <= yStep) && ((unsigned int)yStep < fySteps) &&
+       (0 <= zStep) && ((unsigned int)zStep < fzSteps) ){
       // if within bounds, generate the voxel ID
       return (xStep
               + yStep * (fxSteps)

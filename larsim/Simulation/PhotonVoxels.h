@@ -77,12 +77,13 @@ namespace sim {
   private:
     geo::Point_t fLowerCorner;
     geo::Point_t fUpperCorner;
-    int      fxSteps;
-    int      fySteps;
-    int      fzSteps;
+    unsigned int fxSteps;
+    unsigned int fySteps;
+    unsigned int fzSteps;
 
   public:
     using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
+    using DefaultVector = TVector3; // legacy; it should really be `geo::Vector_t`
     
     /// Returns the volume vertex (type `Point`) with the lowest coordinates.
     template <typename Point = DefaultPoint>
