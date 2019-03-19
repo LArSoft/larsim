@@ -119,7 +119,6 @@ namespace sim {
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;
-    PhotonVoxel      GetContainingVoxel(TVector3) const;
     
     /// Returns whether point `p` is inside the region (upper border excluded).
     bool isInside(geo::Point_t const& p) const
