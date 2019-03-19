@@ -62,6 +62,15 @@ namespace sim {
   /// Representation of a region of space diced into voxels.
   class PhotonVoxelDef
   {
+    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
+    using DefaultVector = TVector3; // legacy; it should really be `geo::Vector_t`
+    
+    geo::Point_t fLowerCorner;
+    geo::Point_t fUpperCorner;
+    unsigned int fxSteps = 1U;
+    unsigned int fySteps = 1U;
+    unsigned int fzSteps = 1U;
+
   public:
     PhotonVoxelDef() = default;
     PhotonVoxelDef(double xMin, 
@@ -73,17 +82,6 @@ namespace sim {
                    double zMin, 
                    double zMax, 
                    int z);
-    
-  private:
-    geo::Point_t fLowerCorner;
-    geo::Point_t fUpperCorner;
-    unsigned int fxSteps;
-    unsigned int fySteps;
-    unsigned int fzSteps;
-
-  public:
-    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
-    using DefaultVector = TVector3; // legacy; it should really be `geo::Vector_t`
     
     /// Returns the volume vertex (type `Point`) with the lowest coordinates.
     template <typename Point = DefaultPoint>
