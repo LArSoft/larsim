@@ -7,6 +7,7 @@
 #define LARSIM_SIMULATION_PHOTONVOXELS_H
 
 // LArSoft libraries
+#include "larcorealg/Geometry/geo_vectors_utils.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
 // ROOT libraries
@@ -30,11 +31,27 @@ namespace sim {
     geo::Point_t fVoxelMax;
     
   public:
+    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
+    
+    /// @{
+    // the choice of `decltype(auto)` is because in case `geo::Point_t` is the
+    // requested `Point` type, a reference to the data member is returned
+    // instead of a copy.
+    
+    /// Returns the voxel vertex (type `Point`) with the lowest coordinates.
+    template <typename Point = DefaultPoint>
+    decltype(auto) GetLowerCorner() const;
+    
+    /// Returns the voxel vertex (type `Point`) with the highest coordinates.
+    template <typename Point = DefaultPoint>
+    decltype(auto) GetUpperCorner() const;
+    
+    /// Returns the center of the voxel (type `Point`).
+    template <typename Point = DefaultPoint>
+    Point GetCenter() const;
 
-    TVector3 GetLowerCorner() const;
-    TVector3 GetUpperCorner() const;
-    TVector3 GetCenter()      const;
-
+    /// @}
+    
   }; // class PhotonVoxel
 
 
@@ -96,5 +113,27 @@ namespace sim {
   }; // class PhotonVoxelDef
   
 } // namespace sim
+
+
+//------------------------------------------------------------------------------
+//--- template implementation
+//------------------------------------------------------------------------------
+//--- sim::PhotonVoxel
+//------------------------------------------------------------------------------
+template <typename Point /* = DefaultPoint */>
+decltype(auto) sim::PhotonVoxel::GetLowerCorner() const
+  { return geo::vect::convertTo<Point>(fVoxelMin); }
+
+template <typename Point /* = DefaultPoint */>
+decltype(auto) sim::PhotonVoxel::GetUpperCorner() const
+  { return geo::vect::convertTo<Point>(fVoxelMax); }
+  
+template <typename Point /* = DefaultPoint */>
+Point sim::PhotonVoxel::GetCenter() const
+  { return geo::vect::convertTo<Point>(geo::vect::middlePoint({ fVoxelMin, fVoxelMax })); }
+
+
+
+//------------------------------------------------------------------------------
 
 #endif // LARSIM_SIMULATION_PHOTONVOXELS_H

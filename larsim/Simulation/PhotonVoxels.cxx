@@ -34,27 +34,6 @@ namespace sim {
     {}
 
   //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetLowerCorner() const
-  {
-    return geo::vect::toTVector3(fVoxelMin);
-  }
-
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetUpperCorner() const
-  {
-    return geo::vect::toTVector3(fVoxelMax);
-  }
-
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetCenter() const
-  {
-    return geo::vect::toTVector3(geo::vect::middlePoint({ fVoxelMin, fVoxelMax }));
-  }
-
-
-  //----------------------------------------------------------------------------
   // PhotonVoxelDef class
   //----------------------------------------------------------------------------
   PhotonVoxelDef::PhotonVoxelDef(double xMin, 
