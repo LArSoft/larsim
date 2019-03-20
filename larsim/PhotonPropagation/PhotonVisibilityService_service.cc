@@ -454,14 +454,12 @@ namespace phot{
 
   float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p, unsigned int OpChannel, bool wantReflected) const
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
-
     if(!fInterpolate) {
-      return GetLibraryEntry(fVoxelDef.GetVoxelID(LibLocation(xyz)), OpChannel, wantReflected);
+      return GetLibraryEntry(fVoxelDef.GetVoxelID(LibLocation(p)), OpChannel, wantReflected);
     }
     
     // In case we're outside the bounding box we'll get a empty optional list.
-    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz));
+    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(p));
     if (!neis) return 0.0;
     
     // Sum up all the weighted neighbours to get interpolation behaviour
@@ -545,8 +543,7 @@ namespace phot{
 
   float const* PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
     return GetLibraryReflT0Entries(VoxID);
   }
 
@@ -590,15 +587,13 @@ namespace phot{
 
   const std::vector<float>* PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
     return GetLibraryTimingParEntries(VoxID);
   }
 
   TF1* PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
+    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
     return GetLibraryTimingTF1Entries(VoxID);
   }
 
