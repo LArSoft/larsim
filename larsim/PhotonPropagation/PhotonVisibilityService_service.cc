@@ -460,7 +460,7 @@ namespace phot{
     if(fInterpolate){
       // In case we're outside the bounding box we'll get an empty vector here
       // and return visibility 0, which seems OK.
-      fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz), neis);
+      neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz));
     }
     else{
       // For no interpolation, use a single entry with weight 1

@@ -115,8 +115,8 @@ namespace sim {
     };
 
     // Out-param allows less allocation if caller re-uses a buffer
-    void GetNeighboringVoxelIDs(const TVector3& v,
-                                std::vector<NeiInfo>& ret) const;
+    template <typename Point>
+    std::vector<NeiInfo> GetNeighboringVoxelIDs(Point const& v) const;
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::vector<int> GetVoxelCoords(int ID) const;
@@ -134,6 +134,13 @@ namespace sim {
     
     int GetVoxelIDImpl(geo::Point_t const& p) const;
     
+    std::vector<NeiInfo> GetNeighboringVoxelIDsImpl
+      (geo::Point_t const& v) const;
+    
+    /// Returns the coordinates of the cvoxel containing `p` in step units.
+    std::array<double, 3U> GetVoxelStepCoordsUnchecked
+      (geo::Point_t const& p) const;
+      
     /// Returns whether the specified point is within the volume.
     bool isInsideImpl(geo::Point_t const& point) const
       { return isInsideVolume(point, fLowerCorner, fUpperCorner); }
@@ -192,6 +199,12 @@ Vector sim::PhotonVoxelDef::GetVoxelSize() const {
 template <typename Point>
 int sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
   { return GetVoxelIDImpl(geo::vect::toPoint(p)); }
+
+//------------------------------------------------------------------------------
+template <typename Point>
+std::vector<sim::PhotonVoxelDef::NeiInfo>
+sim::PhotonVoxelDef::GetNeighboringVoxelIDs(Point const& v) const
+  { return GetNeighboringVoxelIDsImpl(geo::vect::toPoint(v)); }
 
 //------------------------------------------------------------------------------
 

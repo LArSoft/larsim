@@ -65,22 +65,17 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  void PhotonVoxelDef::
-  GetNeighboringVoxelIDs(const TVector3& v, std::vector<NeiInfo>& ret) const
+  std::vector<PhotonVoxelDef::NeiInfo> PhotonVoxelDef::GetNeighboringVoxelIDsImpl
+    (geo::Point_t const& v) const
   {
-    ret.clear();
+    if (!isInside(v)) return {};
+    
+    std::vector<NeiInfo> ret;
     ret.reserve(8);
 
     // Position in voxel coordinates including floating point part
-    double rStepD[3];
-    for(int i = 0; i < 3; ++i){
-      // If we're outside the cuboid we have values for, return empty vector,
-      // ie failure.
-      if(v[i] < GetRegionLowerCorner()[i] || v[i] > GetRegionUpperCorner()[i]) return;// {};
-      // Figure out our position wrt to the centres of the voxels
-      rStepD[i] = ((v[i]-GetRegionLowerCorner()[i]) / (GetRegionUpperCorner()[i]-GetRegionLowerCorner()[i]) * GetSteps()[i] ) - 0.5;
-    }
-
+    auto const rStepD = GetVoxelStepCoordsUnchecked(v);
+    
     // The neighbours are the 8 corners of a cube around this point
     for(int dx = 0; dx <= 1; ++dx){
       for(int dy = 0; dy <= 1; ++dy){
@@ -133,6 +128,7 @@ namespace sim {
       }
       throw std::runtime_error(msg);
     }
+    return ret;
   }
 
   //----------------------------------------------------------------------------
@@ -178,17 +174,31 @@ namespace sim {
   }
   
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const {
-    if (!isInside(p)) return -1;
+  std::array<double, 3U> PhotonVoxelDef::GetVoxelStepCoordsUnchecked
+    (geo::Point_t const& p) const
+  {
     
     auto const span = fUpperCorner - fLowerCorner;
     auto const relPos = p - fLowerCorner;
     
+    return {
+      (relPos.X() / span.X()) * fxSteps,
+      (relPos.Y() / span.Y()) * fySteps,
+      (relPos.Z() / span.Z()) * fzSteps
+      };
+  } // PhotonVoxelDef::GetVoxelStepCoordsUnchecked()
+  
+  //----------------------------------------------------------------------------
+  int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const {
+    if (!isInside(p)) return -1;
+    
+    auto const stepCoords = GetVoxelStepCoordsUnchecked(p);
+    
     // figure out how many steps this point is in the x,y,z directions;
     // `p` is guaranteed to be in the mapped volume by the previous check
-    int xStep = static_cast<int>((relPos.X() / span.X()) * fxSteps );
-    int yStep = static_cast<int>((relPos.Y() / span.Y()) * fySteps );
-    int zStep = static_cast<int>((relPos.Z() / span.Z()) * fzSteps );
+    int xStep = static_cast<int>(stepCoords[0]);
+    int yStep = static_cast<int>(stepCoords[1]);
+    int zStep = static_cast<int>(stepCoords[2]);
 
     // if within bounds, generate the voxel ID
     return (xStep
