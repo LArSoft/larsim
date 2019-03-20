@@ -119,7 +119,7 @@ namespace sim {
     std::vector<NeiInfo> GetNeighboringVoxelIDs(Point const& v) const;
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
-    std::vector<int> GetVoxelCoords(int ID) const;
+    std::array<int, 3U> GetVoxelCoords(int ID) const;
     
     /// Returns whether point `p` is inside the region (upper border excluded).
     bool isInside(geo::Point_t const& p) const

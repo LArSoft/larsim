@@ -201,7 +201,7 @@ namespace phot {
     {
       if(i%reportnum==0) std::cout<<"Photon library analyzer at voxel " << i<<std::endl;
     
-      std::vector<int> Coords = TheVoxelDef.GetVoxelCoords(i);
+      auto const Coords = TheVoxelDef.GetVoxelCoords(i);
                 
       const float* Visibilities = pvs->GetLibraryEntries(i);
       size_t NOpChannels = pvs->NOpChannels();

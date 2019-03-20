@@ -162,15 +162,13 @@ namespace sim {
     return (( ID >= 0) && (static_cast<unsigned int>(ID) < GetNVoxels()));
   }
 
-  std::vector<int> PhotonVoxelDef::GetVoxelCoords(int ID) const
+  std::array<int, 3U> PhotonVoxelDef::GetVoxelCoords(int ID) const
   {
-    std::vector<int> ReturnVector;
-    ReturnVector.resize(3);
-    ReturnVector.at(0) =  ID % fxSteps ;
-    ReturnVector.at(1) =  ((ID - ReturnVector.at(0) ) / fxSteps) % fySteps ;
-    ReturnVector.at(2) =  ((ID - ReturnVector.at(0) - (ReturnVector.at(1) * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
+    std::array<int, 3U> ReturnVector;
+    ReturnVector[0] =  ID % fxSteps ;
+    ReturnVector[1] =  ((ID - ReturnVector[0] ) / fxSteps) % fySteps ;
+    ReturnVector[2] =  ((ID - ReturnVector[0] - (ReturnVector[1] * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
     return ReturnVector;
-    
   }
   
   //----------------------------------------------------------------------------
