@@ -16,8 +16,8 @@
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 #include "larsim/Simulation/PhotonVoxels.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 
-#include <TVector3.h>
 
 class TF1;
 
@@ -88,7 +88,7 @@ namespace phot{
     
   private:
 
-    const TVector3 LibLocation(const double * xyz) const;
+    geo::Point_t LibLocation(const double * xyz) const;
 
     int    fCurrentVoxel;
     double fCurrentValue;

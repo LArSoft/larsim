@@ -769,13 +769,13 @@ namespace phot{
    * Preform any necessary transformations on the coordinates before trying to access
    * a voxel ID.
    **/
-  const TVector3 PhotonVisibilityService::LibLocation(const double * xyz) const
+  geo::Point_t PhotonVisibilityService::LibLocation(const double * xyz) const
   {
-    TVector3 location(xyz);
+    auto location = geo::vect::makeFromCoords<geo::Point_t>(xyz);
     
     // Always use postive X coordinate if set
-    if (fReflectOverZeroX && location.x() < 0) {
-      location.SetX( fabs(location.x() ) );
+    if (fReflectOverZeroX && location.X() < 0) {
+      location.SetX( fabs(location.X() ) );
     }
     return location;
   }
