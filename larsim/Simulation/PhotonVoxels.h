@@ -13,6 +13,11 @@
 // ROOT libraries
 #include "TVector3.h"
 
+// C/C++ standard libraries
+#include <array>
+#include <optional>
+
+
 namespace sim {
 
 
@@ -109,14 +114,26 @@ namespace sim {
 
     struct NeiInfo
     {
+      NeiInfo() = default;
       NeiInfo(int i, double w) : id(i), weight(w) {}
-      int id;
-      double weight;
+      int id = -1;
+      double weight = 0.0;
     };
-
-    // Out-param allows less allocation if caller re-uses a buffer
+    
+    
+    /**
+     * @brief Returns IDs of the eight neighboring voxels around `v`.
+     * @param v location within the mapped volume
+     * @return an optional collection of eight neighboring voxels
+     * 
+     * If `v` is not inside the mapped volume, no list is returned (the optional
+     * return value evaluates to `false`).
+     * Otherwise, each of the eight voxels with the center closest to `v` are
+     * returned, each with a weight proportional to the distance of `v` from
+     * that center.
+     */
     template <typename Point>
-    std::vector<NeiInfo> GetNeighboringVoxelIDs(Point const& v) const;
+    std::optional<std::array<NeiInfo, 8U>> GetNeighboringVoxelIDs(Point const& v) const;
 
     PhotonVoxel      GetPhotonVoxel(int ID) const;
     std::array<int, 3U> GetVoxelCoords(int ID) const;
@@ -134,7 +151,7 @@ namespace sim {
     
     int GetVoxelIDImpl(geo::Point_t const& p) const;
     
-    std::vector<NeiInfo> GetNeighboringVoxelIDsImpl
+    std::optional<std::array<NeiInfo, 8U>> GetNeighboringVoxelIDsImpl
       (geo::Point_t const& v) const;
     
     /// Returns the coordinates of the cvoxel containing `p` in step units.
@@ -202,7 +219,7 @@ int sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
 
 //------------------------------------------------------------------------------
 template <typename Point>
-std::vector<sim::PhotonVoxelDef::NeiInfo>
+std::optional<std::array<sim::PhotonVoxelDef::NeiInfo, 8U>>
 sim::PhotonVoxelDef::GetNeighboringVoxelIDs(Point const& v) const
   { return GetNeighboringVoxelIDsImpl(geo::vect::toPoint(v)); }
 

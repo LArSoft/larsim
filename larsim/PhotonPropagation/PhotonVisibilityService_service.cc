@@ -453,24 +453,19 @@ namespace phot{
 
   float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
   {
-    // Static to avoid reallocating this buffer between calls
-    // (GetNeighbouringVoxelIDs makes sure to clear it).
-    static std::vector<sim::PhotonVoxelDef::NeiInfo> neis;
 
-    if(fInterpolate){
-      // In case we're outside the bounding box we'll get an empty vector here
-      // and return visibility 0, which seems OK.
-      neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz));
+    if(!fInterpolate) {
+      return GetLibraryEntry(fVoxelDef.GetVoxelID(LibLocation(xyz)), OpChannel, wantReflected);
     }
-    else{
-      // For no interpolation, use a single entry with weight 1
-      neis.clear();
-      neis.emplace_back(fVoxelDef.GetVoxelID(LibLocation(xyz)), 1);
-    }
-
+    
+    // In case we're outside the bounding box we'll get a empty optional list.
+    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz));
+    if (!neis) return 0.0;
+    
     // Sum up all the weighted neighbours to get interpolation behaviour
-    float vis = 0;
-    for(const sim::PhotonVoxelDef::NeiInfo& n: neis){
+    float vis = 0.0;
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value()) {
+      if (n.id < 0) continue;
       vis += n.weight * GetLibraryEntry(n.id, OpChannel, wantReflected);
     }
     return vis;

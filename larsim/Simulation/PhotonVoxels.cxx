@@ -65,21 +65,21 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  std::vector<PhotonVoxelDef::NeiInfo> PhotonVoxelDef::GetNeighboringVoxelIDsImpl
-    (geo::Point_t const& v) const
+  std::optional<std::array<sim::PhotonVoxelDef::NeiInfo, 8U>>
+  PhotonVoxelDef::GetNeighboringVoxelIDsImpl(geo::Point_t const& v) const
   {
     if (!isInside(v)) return {};
     
-    std::vector<NeiInfo> ret;
-    ret.reserve(8);
+    std::array<sim::PhotonVoxelDef::NeiInfo, 8U> ret;
 
     // Position in voxel coordinates including floating point part
     auto const rStepD = GetVoxelStepCoordsUnchecked(v);
     
     // The neighbours are the 8 corners of a cube around this point
-    for(int dx = 0; dx <= 1; ++dx){
-      for(int dy = 0; dy <= 1; ++dy){
-        for(int dz = 0; dz <= 1; ++dz){
+    std::size_t iNeigh = 0U;
+    for(int dx: { 0, 1 }) {
+      for(int dy: { 0, 1 }) {
+        for(int dz: { 0, 1 }) {
           // The full 3D step
           const int dr[3] = {dx, dy, dz};
 
@@ -109,7 +109,7 @@ namespace sim {
                           rStepI[1] * (fxSteps) +
                           rStepI[2] * (fxSteps * fySteps));
 
-          ret.emplace_back(id, w);
+          ret[iNeigh++] = { id, w };
         }
       }
     }
@@ -128,7 +128,7 @@ namespace sim {
       }
       throw std::runtime_error(msg);
     }
-    return ret;
+    return { ret };
   }
 
   //----------------------------------------------------------------------------
