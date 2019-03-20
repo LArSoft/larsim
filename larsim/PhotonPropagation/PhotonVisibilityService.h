@@ -16,6 +16,7 @@
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 #include "larsim/Simulation/PhotonVoxels.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 
 
@@ -35,15 +36,15 @@ namespace phot{
     double GetQuenchingFactor(double dQdx) const;
     
     static double DistanceToOpDet(          double const* xyz, unsigned int OpDet )
-      { return DistanceToOpDetImpl(xyz, OpDet); }
+      { return DistanceToOpDetImpl(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpDet); }
     static double SolidAngleFactor(         double const* xyz, unsigned int OpDet )
-      { return SolidAngleFactorImpl(xyz, OpDet); }
+      { return SolidAngleFactorImpl(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpDet); }
     
     float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const
-      { return doGetVisibility(xyz, OpChannel, wantReflected); }
+      { return doGetVisibility(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpChannel, wantReflected); }
 
     float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const
-      { return doGetAllVisibilities(xyz, wantReflected); }
+      { return doGetAllVisibilities(geo::vect::makeFromCoords<geo::Point_t>(xyz), wantReflected); }
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -57,19 +58,19 @@ namespace phot{
     float const* GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
 
     float const* GetReflT0s( double const* xyz ) const
-      { return doGetReflT0s(xyz); }
+      { return doGetReflT0s(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
     void SetLibraryReflT0Entry( int VoxID, int OpChannel, float value );
     float const* GetLibraryReflT0Entries( int VoxID ) const;
     float GetLibraryReflT0Entry( int VoxID, int Channel ) const;
  
     const std::vector<float>* GetTimingPar( double const* xyz ) const
-      {  return doGetTimingPar(xyz); }
+      {  return doGetTimingPar(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
     const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
     float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
 
     TF1* GetTimingTF1( double const* xyz ) const
-      { return doGetTimingTF1(xyz); }
+      { return doGetTimingTF1(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
@@ -171,28 +172,30 @@ namespace phot{
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
     
-    geo::Point_t LibLocation(const double * xyz) const;
+    geo::Point_t LibLocation(const double * xyz) const
+      { return geo::vect::makeFromCoords<geo::Point_t>(xyz); }
+    geo::Point_t LibLocation(geo::Point_t const& p) const;
     
     // --- BEGIN Implementation functions --------------------------------------
     /// @name Implementation functions
     /// @{
 
-    static double DistanceToOpDetImpl(double const* xyz, unsigned int OpDet);
+    static double DistanceToOpDetImpl(geo::Point_t const& p, unsigned int OpDet);
     
-    static double SolidAngleFactorImpl(double const* xyz, unsigned int OpDet);
+    static double SolidAngleFactorImpl(geo::Point_t const& p, unsigned int OpDet);
     
     float doGetVisibility
-      (double const* xyz, unsigned int OpChannel, bool wantReflected = false)
+      (geo::Point_t const& p, unsigned int OpChannel, bool wantReflected = false)
       const;
 
     float const* doGetAllVisibilities
-      (double const* xyz, bool wantReflected = false) const;
+      (geo::Point_t const& p, bool wantReflected = false) const;
     
-    float const* doGetReflT0s(double const* xyz) const;
+    float const* doGetReflT0s(geo::Point_t const& p) const;
     
-    const std::vector<float>* doGetTimingPar(double const* xyz) const;
+    const std::vector<float>* doGetTimingPar(geo::Point_t const& p) const;
     
-    TF1* doGetTimingTF1(double const* xyz) const;
+    TF1* doGetTimingTF1(geo::Point_t const& p) const;
     
     /// @}
     // --- END Implementation functions ----------------------------------------

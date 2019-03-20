@@ -413,8 +413,9 @@ namespace phot{
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point xyz
 
-  float const* PhotonVisibilityService::doGetAllVisibilities(double const* xyz, bool wantReflected) const
+  float const* PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     if(fInterpolate){
       static std::vector<float> ret;
       if(ret.size() != NOpChannels()) ret.resize(NOpChannels());
@@ -431,8 +432,9 @@ namespace phot{
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double PhotonVisibilityService::DistanceToOpDetImpl( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::DistanceToOpDetImpl( geo::Point_t const& p, unsigned int OpDet )
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
       
@@ -443,16 +445,18 @@ namespace phot{
 
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double PhotonVisibilityService::SolidAngleFactorImpl( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::SolidAngleFactorImpl( geo::Point_t const& p, unsigned int OpDet )
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
   }
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::doGetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
+  float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p, unsigned int OpChannel, bool wantReflected) const
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
 
     if(!fInterpolate) {
       return GetLibraryEntry(fVoxelDef.GetVoxelID(LibLocation(xyz)), OpChannel, wantReflected);
@@ -541,8 +545,9 @@ namespace phot{
   // Get a vector of the refl <tfirst> of each OpDet
   //  in the event to a point xyz
 
-  float const* PhotonVisibilityService::doGetReflT0s(double const* xyz) const
+  float const* PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryReflT0Entries(VoxID);
   }
@@ -585,14 +590,16 @@ namespace phot{
 
 /////////////****////////////
 
-  const std::vector<float>* PhotonVisibilityService::doGetTimingPar(double const* xyz) const
+  const std::vector<float>* PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingParEntries(VoxID);
   }
 
-  TF1* PhotonVisibilityService::doGetTimingTF1(double const* xyz) const
+  TF1* PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const
   {
+    double xyz[3] = { p.X(), p.Y(), p.Z() };
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingTF1Entries(VoxID);
   }
@@ -769,9 +776,9 @@ namespace phot{
    * Preform any necessary transformations on the coordinates before trying to access
    * a voxel ID.
    **/
-  geo::Point_t PhotonVisibilityService::LibLocation(const double * xyz) const
+  geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
-    auto location = geo::vect::makeFromCoords<geo::Point_t>(xyz);
+    auto location = p; // copy, which we'll change
     
     // Always use postive X coordinate if set
     if (fReflectOverZeroX && location.X() < 0) {
