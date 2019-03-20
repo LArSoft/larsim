@@ -112,10 +112,9 @@ namespace phot
     static art::ServiceHandle<geo::Geometry> geom;
     const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opchan);
 
-    const TVector3 voxvec = fVoxDef.GetPhotonVoxel(vox).GetCenter();
-    const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};
+    const auto voxvec = fVoxDef.GetPhotonVoxel(vox).GetCenter();
 
-    const double dist = opdet.DistanceToPoint(xyzvox);
+    const double dist = opdet.DistanceToPoint(voxvec);
 
     return rec.fit.Eval(dist);
   }

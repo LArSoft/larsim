@@ -17,6 +17,8 @@
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
+#include <TVector3.h>
+
 class TF1;
 
 ///General LArSoft Utilities

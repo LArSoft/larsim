@@ -10,9 +10,6 @@
 #include "larcorealg/Geometry/geo_vectors_utils.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
-// ROOT libraries
-#include "TVector3.h"
-
 // C/C++ standard libraries
 #include <array>
 #include <optional>
@@ -40,7 +37,7 @@ namespace sim {
     geo::Point_t fVoxelMax;
     
   public:
-    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
+    using DefaultPoint = geo::Point_t;
     
     /// @{
     // the choice of `decltype(auto)` is because in case `geo::Point_t` is the
@@ -67,8 +64,8 @@ namespace sim {
   /// Representation of a region of space diced into voxels.
   class PhotonVoxelDef
   {
-    using DefaultPoint = TVector3; // legacy; it should really be `geo::Point_t`
-    using DefaultVector = TVector3; // legacy; it should really be `geo::Vector_t`
+    using DefaultPoint = geo::Point_t;
+    using DefaultVector = geo::Vector_t;
     
     geo::Point_t fLowerCorner;
     geo::Point_t fUpperCorner;

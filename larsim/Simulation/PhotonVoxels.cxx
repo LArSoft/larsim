@@ -7,7 +7,6 @@
 // library header
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"
-#include "larcorealg/Geometry/geo_vectors_utils_TVector.h"
 
 // C++ standard libraries
 #include <vector>
