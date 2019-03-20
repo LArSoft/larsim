@@ -142,14 +142,14 @@ namespace sim {
     int zStep =  ((ID - xStep - (yStep * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
 
 
-    TVector3 VoxelSize = GetVoxelSize();
+    auto const VoxelSize = GetVoxelSize<geo::Vector_t>();
 
-    double xMin = VoxelSize[0] * (xStep)   + fLowerCorner.X();
-    double xMax = VoxelSize[0] * (xStep+1) + fLowerCorner.X();
-    double yMin = VoxelSize[1] * (yStep)   + fLowerCorner.Y();
-    double yMax = VoxelSize[1] * (yStep+1) + fLowerCorner.Y();
-    double zMin = VoxelSize[2] * (zStep)   + fLowerCorner.Z();
-    double zMax = VoxelSize[2] * (zStep+1) + fLowerCorner.Z();
+    double const xMin = VoxelSize.X() * (xStep)   + fLowerCorner.X();
+    double const xMax = VoxelSize.X() * (xStep+1) + fLowerCorner.X();
+    double const yMin = VoxelSize.Y() * (yStep)   + fLowerCorner.Y();
+    double const yMax = VoxelSize.Y() * (yStep+1) + fLowerCorner.Y();
+    double const zMin = VoxelSize.Z() * (zStep)   + fLowerCorner.Z();
+    double const zMax = VoxelSize.Z() * (zStep+1) + fLowerCorner.Z();
 
 
    
