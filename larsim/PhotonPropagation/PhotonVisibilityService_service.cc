@@ -411,7 +411,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Get a vector of the relative visibilities of each OpDet
-  //  in the event to a point xyz
+  //  in the event to a point p
 
   float const* PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const
   {
@@ -423,7 +423,7 @@ namespace phot{
       return &ret.front();
     }
     else{
-      size_t VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
+      size_t VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
       return GetLibraryEntries(VoxID, wantReflected);
     }
   }
@@ -539,7 +539,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Get a vector of the refl <tfirst> of each OpDet
-  //  in the event to a point xyz
+  //  in the event to a point p
 
   float const* PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const
   {

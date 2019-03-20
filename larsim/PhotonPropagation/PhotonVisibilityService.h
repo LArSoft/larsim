@@ -35,16 +35,20 @@ namespace phot{
     
     double GetQuenchingFactor(double dQdx) const;
     
-    static double DistanceToOpDet(          double const* xyz, unsigned int OpDet )
-      { return DistanceToOpDetImpl(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpDet); }
-    static double SolidAngleFactor(         double const* xyz, unsigned int OpDet )
-      { return SolidAngleFactorImpl(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpDet); }
+    template <typename Point>
+    static double DistanceToOpDet(Point const& p, unsigned int OpDet )
+      { return DistanceToOpDetImpl(geo::vect::makeFromCoords<geo::Point_t>(p), OpDet); }
+    template <typename Point>
+    static double SolidAngleFactor(Point const& p, unsigned int OpDet )
+      { return SolidAngleFactorImpl(geo::vect::makeFromCoords<geo::Point_t>(p), OpDet); }
     
-    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const
-      { return doGetVisibility(geo::vect::makeFromCoords<geo::Point_t>(xyz), OpChannel, wantReflected); }
+    template <typename Point>
+    float GetVisibility(Point const& p, unsigned int OpChannel, bool wantReflected=false ) const
+      { return doGetVisibility(geo::vect::makeFromCoords<geo::Point_t>(p), OpChannel, wantReflected); }
 
-    float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const
-      { return doGetAllVisibilities(geo::vect::makeFromCoords<geo::Point_t>(xyz), wantReflected); }
+    template <typename Point>
+    float const* GetAllVisibilities(Point const& p, bool wantReflected=false ) const
+      { return doGetAllVisibilities(geo::vect::makeFromCoords<geo::Point_t>(p), wantReflected); }
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -57,20 +61,23 @@ namespace phot{
     float GetLibraryEntry( int VoxID, int OpChannel, bool wantReflected=false ) const;
     float const* GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
 
-    float const* GetReflT0s( double const* xyz ) const
-      { return doGetReflT0s(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
+    template <typename Point>
+    float const* GetReflT0s(Point const& p) const
+      { return doGetReflT0s(geo::vect::makeFromCoords<geo::Point_t>(p)); }
     void SetLibraryReflT0Entry( int VoxID, int OpChannel, float value );
     float const* GetLibraryReflT0Entries( int VoxID ) const;
     float GetLibraryReflT0Entry( int VoxID, int Channel ) const;
  
-    const std::vector<float>* GetTimingPar( double const* xyz ) const
-      {  return doGetTimingPar(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
+    template <typename Point>
+    const std::vector<float>* GetTimingPar(Point const& p) const
+      { return doGetTimingPar(geo::vect::makeFromCoords<geo::Point_t>(p)); }
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
     const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
     float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
 
-    TF1* GetTimingTF1( double const* xyz ) const
-      { return doGetTimingTF1(geo::vect::makeFromCoords<geo::Point_t>(xyz)); }
+    template <typename Point>
+    TF1* GetTimingTF1(Point const& p) const
+      { return doGetTimingTF1(geo::vect::makeFromCoords<geo::Point_t>(p)); }
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
@@ -172,8 +179,6 @@ namespace phot{
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
     
-    geo::Point_t LibLocation(const double * xyz) const
-      { return geo::vect::makeFromCoords<geo::Point_t>(xyz); }
     geo::Point_t LibLocation(geo::Point_t const& p) const;
     
     // --- BEGIN Implementation functions --------------------------------------
