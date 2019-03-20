@@ -413,7 +413,7 @@ namespace phot{
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point xyz
 
-  float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz, bool wantReflected) const
+  float const* PhotonVisibilityService::doGetAllVisibilities(double const* xyz, bool wantReflected) const
   {
     if(fInterpolate){
       static std::vector<float> ret;
@@ -431,7 +431,7 @@ namespace phot{
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double PhotonVisibilityService::DistanceToOpDet( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::DistanceToOpDetImpl( double const* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
@@ -443,7 +443,7 @@ namespace phot{
 
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double PhotonVisibilityService::SolidAngleFactor( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::SolidAngleFactorImpl( double const* xyz, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
     return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
@@ -451,7 +451,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
+  float PhotonVisibilityService::doGetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
   {
 
     if(!fInterpolate) {
@@ -541,7 +541,7 @@ namespace phot{
   // Get a vector of the refl <tfirst> of each OpDet
   //  in the event to a point xyz
 
-  float const* PhotonVisibilityService::GetReflT0s(double const* xyz) const
+  float const* PhotonVisibilityService::doGetReflT0s(double const* xyz) const
   {
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryReflT0Entries(VoxID);
@@ -585,13 +585,13 @@ namespace phot{
 
 /////////////****////////////
 
-  const std::vector<float>* PhotonVisibilityService::GetTimingPar(double const* xyz) const
+  const std::vector<float>* PhotonVisibilityService::doGetTimingPar(double const* xyz) const
   {
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingParEntries(VoxID);
   }
 
-  TF1* PhotonVisibilityService::GetTimingTF1(double const* xyz) const
+  TF1* PhotonVisibilityService::doGetTimingTF1(double const* xyz) const
   {
     int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
     return GetLibraryTimingTF1Entries(VoxID);

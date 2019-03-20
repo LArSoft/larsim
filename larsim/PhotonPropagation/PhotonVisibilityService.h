@@ -34,11 +34,16 @@ namespace phot{
     
     double GetQuenchingFactor(double dQdx) const;
     
-    static double DistanceToOpDet(          double const* xyz, unsigned int OpDet );
-    static double SolidAngleFactor(         double const* xyz, unsigned int OpDet );
-    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const;
+    static double DistanceToOpDet(          double const* xyz, unsigned int OpDet )
+      { return DistanceToOpDetImpl(xyz, OpDet); }
+    static double SolidAngleFactor(         double const* xyz, unsigned int OpDet )
+      { return SolidAngleFactorImpl(xyz, OpDet); }
+    
+    float GetVisibility(                    double const* xyz, unsigned int OpChannel, bool wantReflected=false ) const
+      { return doGetVisibility(xyz, OpChannel, wantReflected); }
 
-    float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const;
+    float const* GetAllVisibilities( double const* xyz, bool wantReflected=false ) const
+      { return doGetAllVisibilities(xyz, wantReflected); }
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -51,17 +56,20 @@ namespace phot{
     float GetLibraryEntry( int VoxID, int OpChannel, bool wantReflected=false ) const;
     float const* GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
 
-    float const* GetReflT0s( double const* xyz ) const;
+    float const* GetReflT0s( double const* xyz ) const
+      { return doGetReflT0s(xyz); }
     void SetLibraryReflT0Entry( int VoxID, int OpChannel, float value );
     float const* GetLibraryReflT0Entries( int VoxID ) const;
     float GetLibraryReflT0Entry( int VoxID, int Channel ) const;
  
-    const std::vector<float>* GetTimingPar( double const* xyz ) const;
+    const std::vector<float>* GetTimingPar( double const* xyz ) const
+      {  return doGetTimingPar(xyz); }
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
     const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
     float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
 
-    TF1* GetTimingTF1( double const* xyz ) const;
+    TF1* GetTimingTF1( double const* xyz ) const
+      { return doGetTimingTF1(xyz); }
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
@@ -87,8 +95,6 @@ namespace phot{
     size_t NOpChannels() const;
     
   private:
-
-    geo::Point_t LibLocation(const double * xyz) const;
 
     int    fCurrentVoxel;
     double fCurrentValue;
@@ -164,6 +170,32 @@ namespace phot{
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
+    
+    geo::Point_t LibLocation(const double * xyz) const;
+    
+    // --- BEGIN Implementation functions --------------------------------------
+    /// @name Implementation functions
+    /// @{
+
+    static double DistanceToOpDetImpl(double const* xyz, unsigned int OpDet);
+    
+    static double SolidAngleFactorImpl(double const* xyz, unsigned int OpDet);
+    
+    float doGetVisibility
+      (double const* xyz, unsigned int OpChannel, bool wantReflected = false)
+      const;
+
+    float const* doGetAllVisibilities
+      (double const* xyz, bool wantReflected = false) const;
+    
+    float const* doGetReflT0s(double const* xyz) const;
+    
+    const std::vector<float>* doGetTimingPar(double const* xyz) const;
+    
+    TF1* doGetTimingTF1(double const* xyz) const;
+    
+    /// @}
+    // --- END Implementation functions ----------------------------------------
     
     
   }; // class PhotonVisibilityService
