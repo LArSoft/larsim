@@ -1,5 +1,6 @@
 #include "larsim/Simulation/PhotonVoxels.h"
 
+#include <cmath> // std::floor()
 #include <iostream>
 
 namespace sim {
@@ -122,9 +123,9 @@ namespace sim {
   int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
     // figure out how many steps this point is in the x,y,z directions
-    int xStep = int ((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps );
-    int yStep = int ((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps );
-    int zStep = int ((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps );
+    int xStep = int( std::floor((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps ));
+    int yStep = int( std::floor((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps ));
+    int zStep = int( std::floor((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps ));
 
     // check if point lies within the voxelized region
     if((0 <= xStep) && (xStep < fxSteps) &&
