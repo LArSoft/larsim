@@ -434,9 +434,8 @@ namespace phot{
   // Get distance to optical detector OpDet
   double PhotonVisibilityService::DistanceToOpDetImpl( geo::Point_t const& p, unsigned int OpDet )
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
     art::ServiceHandle<geo::Geometry> geom;
-    return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
+    return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(p);
       
   }
 
@@ -447,9 +446,8 @@ namespace phot{
   // Get the solid angle reduction factor for planar optical detector OpDet
   double PhotonVisibilityService::SolidAngleFactorImpl( geo::Point_t const& p, unsigned int OpDet )
   {
-    double xyz[3] = { p.X(), p.Y(), p.Z() };
     art::ServiceHandle<geo::Geometry> geom;
-    return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
+    return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(p);
   }
 
   //------------------------------------------------------
