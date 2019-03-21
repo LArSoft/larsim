@@ -15,9 +15,13 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
+#include "larsim/PhotonPropagation/IPhotonMappingTransformations.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+
+// C/C++ standard libraries
+#include <memory> // std::unique_ptr<>
 
 
 class TF1;
@@ -178,6 +182,9 @@ namespace phot{
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
+    
+    /// Mapping of detector space into library space.
+    std::unique_ptr<phot::IPhotonMappingTransformations> fMapping;
     
     geo::Point_t LibLocation(geo::Point_t const& p) const;
     

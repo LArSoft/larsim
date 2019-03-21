@@ -26,6 +26,8 @@
 // LArSoft includes
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
+#include "larsim/PhotonPropagation/PhotonMappingIdentityTransformations.h" // FIXME remove after toolification
+#include "larsim/PhotonPropagation/PhotonMappingXMirrorTransformations.h" // FIXME remove after toolification
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "larcore/Geometry/Geometry.h"
@@ -111,6 +113,18 @@ namespace phot{
     fVoxelDef()
   {
     this->reconfigure(pset);
+    
+    if (fReflectOverZeroX) {
+      fMapping
+        = std::make_unique<phot::PhotonMappingXMirrorTransformations>
+        (pset.get<fhicl::ParameterSet>("mapping", {}));
+    }
+    else {
+      fMapping
+        = std::make_unique<phot::PhotonMappingIdentityTransformations>
+          (pset.get<fhicl::ParameterSet>("mapping", {}));
+    }
+    
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
   }
 
@@ -771,6 +785,7 @@ namespace phot{
    **/
   geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
+    return fMapping->locationToLibrary(p);
     auto location = p; // copy, which we'll change
     
     // Always use postive X coordinate if set
