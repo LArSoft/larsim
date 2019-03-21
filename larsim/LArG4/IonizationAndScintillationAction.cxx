@@ -9,7 +9,6 @@
 #include "larsim/LArG4/IonizationAndScintillationAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Geant4/G4Step.hh"
 

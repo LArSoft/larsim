@@ -12,7 +12,6 @@
 
 
 #include "larsim/LArG4/OpDetPhotonTable.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"

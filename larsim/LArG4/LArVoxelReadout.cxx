@@ -25,7 +25,6 @@
 // framework libraries
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LArSoft code
 #include "larsim/LArG4/LArVoxelReadout.h"

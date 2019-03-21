@@ -14,7 +14,6 @@
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 namespace sim{

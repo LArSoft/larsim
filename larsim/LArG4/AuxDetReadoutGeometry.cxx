@@ -7,7 +7,6 @@
 #include "nutools/G4Base/DetectorConstruction.h"
 
 // Framework includes
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes

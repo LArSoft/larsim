@@ -3,7 +3,6 @@
 // art libraries
 #include "canvas/Utilities/Exception.h"
 //#include "art/Utilities/Exception.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // ROOT libraries

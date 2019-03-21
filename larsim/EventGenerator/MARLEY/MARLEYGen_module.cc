@@ -21,7 +21,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Table.h"
 #include "cetlib_except/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
 #include "nutools/RandomUtils/NuRandomService.h"

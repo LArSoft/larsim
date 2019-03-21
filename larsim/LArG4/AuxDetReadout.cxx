@@ -7,8 +7,6 @@
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Geant4/G4HCofThisEvent.hh"
 #include "Geant4/G4TouchableHistory.hh"
