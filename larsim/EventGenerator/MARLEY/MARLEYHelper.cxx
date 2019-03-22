@@ -299,11 +299,18 @@ marley::JSON evgen::MARLEYHelper::fhicl_parameter_to_json(
       // This is an ugly hack to load FHiCL atoms into JSON objects. We have
       // to do it type-by-type using the current (12/2016) implementation of
       // the fhicl::Atom and fhicl::OptionalAtom template classes.
-      if (!par->is_optional()) {
+      if ( !par->is_optional() ) {
         if (auto atm = dynamic_cast<const fhicl::Atom<double>* >(par))
           return fhicl_atom_to_json<>(atm);
-        else if (auto atm = dynamic_cast<const
-          fhicl::Atom<std::string>* >(par))
+        else if (auto atm = dynamic_cast<const fhicl::Atom<std::string>* >(par))
+        {
+          return fhicl_atom_to_json<>(atm);
+        }
+        else if (auto atm = dynamic_cast<const fhicl::Atom<bool>* >(par))
+        {
+          return fhicl_atom_to_json<>(atm);
+        }
+        else if (auto atm = dynamic_cast<const fhicl::Atom<int>* >(par))
         {
           return fhicl_atom_to_json<>(atm);
         }
@@ -311,13 +318,19 @@ marley::JSON evgen::MARLEYHelper::fhicl_parameter_to_json(
           << " the type of the FHiCL atom " << par->key();
       }
       else { // optional atoms
-        if (auto opt_atom = dynamic_cast<const
-          fhicl::OptionalAtom<double>* >(par))
+        if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<double>* >(par))
         {
           return fhicl_optional_atom_to_json<>(opt_atom);
         }
-        else if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<
-          std::string>* >(par))
+        else if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<std::string>* >(par))
+        {
+          return fhicl_optional_atom_to_json<>(opt_atom);
+        }
+        else if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<bool>* >(par))
+        {
+          return fhicl_optional_atom_to_json<>(opt_atom);
+        }
+        else if (auto opt_atom = dynamic_cast<const fhicl::OptionalAtom<int>* >(par))
         {
           return fhicl_optional_atom_to_json<>(opt_atom);
         }
@@ -332,13 +345,19 @@ marley::JSON evgen::MARLEYHelper::fhicl_parameter_to_json(
       // implementation of the fhicl::Sequence template class.
       if (auto seq = dynamic_cast<const fhicl::Sequence<double>* >(par))
         return fhicl_sequence_to_json<>(seq);
-      else if (auto seq = dynamic_cast<const
-        fhicl::Sequence<double, 3>* >(par))
+      else if (auto seq = dynamic_cast<const fhicl::Sequence<double, 3>* >(par))
       {
         return fhicl_sequence_to_json<>(seq);
       }
-      else if (auto seq = dynamic_cast<const
-        fhicl::Sequence<std::string>* >(par))
+      else if (auto seq = dynamic_cast<const fhicl::Sequence<std::string>* >(par))
+      {
+        return fhicl_sequence_to_json<>(seq);
+      }
+      else if (auto seq = dynamic_cast<const fhicl::Sequence<int>* >(par))
+      {
+        return fhicl_sequence_to_json<>(seq);
+      }
+      else if (auto seq = dynamic_cast<const fhicl::Sequence<bool>* >(par))
       {
         return fhicl_sequence_to_json<>(seq);
       }

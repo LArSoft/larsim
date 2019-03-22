@@ -201,6 +201,12 @@ namespace evgen {
           }
         };
 
+        fhicl::Atom<bool> weight_flux_ {
+          Name("weight_flux"),
+          Comment("Whether to weight the input flux by the reaction cross section(s)"),
+          true
+        };
+
       }; // struct Source_Config
 
       /// Collection of configuration parameters that will be

@@ -62,8 +62,9 @@ standard_marley:
     # measurement for the experimental matrix elements,
     # while the 1998 version uses a 40Ti beta decay
     # measurement.
-    reactions: [ "ve40ArCC_2009.react" ]
-    #reactions: [ "ve40ArCC_1998.react" ]
+    reactions: [ "ve40ArCC_Bhattacharya2009.react" ]
+    #reactions: [ "ve40ArCC_Bhattacharya1998.react" ]
+    #reactions: [ "ve40ArCC_Liu1998.react" ]
 
     # Nuclear structure (discrete levels and gamma-ray
     # branching ratios) data files in the TALYS format
