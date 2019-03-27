@@ -17,29 +17,20 @@
 /// Well, hyper-cubes actually, since we have to potentially include
 /// divisions in time as well.
 
-/// Example of a typical use:
-///   const sim::LArVoxelCalculator* lhc = sim::LArVoxelCalculator::Instance();
-///   double xSize = lhc->VoxelSizeX();
-
 #ifndef sim_LArVoxelCalculator_H
 #define sim_LArVoxelCalculator_H
 
 #include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
 namespace sim {
 
-  class LArVoxelCalculator
-  {
+  class LArVoxelCalculator {
   public:
 
     LArVoxelCalculator(fhicl::ParameterSet const& pset);
-
-    void reconfigure(fhicl::ParameterSet const& pset);
 
     /// Access to voxel dimensions and offsets.
     double VoxelSizeX()   const { return m_voxelSize[0];   }
@@ -88,19 +79,19 @@ namespace sim {
     typedef std::vector<double> vector_type;
 
     /// The sizes of the voxels in (x,y,z,t).  Units are (mm,ns).
-    vector_type m_voxelSize;
+    vector_type const m_voxelSize;
 
     /// The offsets of the voxel binning from the origin in (x,y,z,t).
     /// Units are (mm,ns).
-    vector_type m_voxelOffset;
+    vector_type const m_voxelOffset;
 
     /// The total amount of energy in a voxel must be greater than
     /// this value for it to be written to the output.
-    double m_energyCut;
+    double const m_energyCut;
 
   };
 
 } // namespace sim
 
-DECLARE_ART_SERVICE(sim::LArVoxelCalculator, LEGACY)
+DECLARE_ART_SERVICE(sim::LArVoxelCalculator, GLOBAL)
 #endif //  sim_LArVoxelCalculator_H
