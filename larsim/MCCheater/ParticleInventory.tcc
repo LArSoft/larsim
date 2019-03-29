@@ -39,7 +39,15 @@ namespace cheat{
       for(const auto& partIn : partVecIn){
         fParticleList.Add(new simb::MCParticle(partIn)); //Is this still doing a copy? If so, another method should be used.
       }
-      fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
+      if(fEveIdCalculator=="EmEveIdCalculator"){
+        fParticleList.AdoptEveIdCalculator(new sim::EmEveIdCalculator);
+      }else if(fEveIdCalculator=="EveIdCalculator"){
+        fParticleList.AdoptEveIdCalculator(new sim::EveIdCalculator);
+      }else{
+        throw cet::exception("ParticleInventory3") 
+          << "Particle Inventory cannot initialize the particle list.\n "
+          << fEveIdCalculator <<" is not a known EveIdCalculator.\n";
+      }
     }
 
   //--------------------------------------------------------------------
@@ -56,8 +64,8 @@ namespace cheat{
         unsigned short mctruth_idx = USHRT_MAX;
         for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
           if (fMCTObj.fMCTruthList[i] == mct){
-             mctruth_idx = i;
-             break;
+            mctruth_idx = i;
+            break;
           }
         }
         if (mctruth_idx == USHRT_MAX){

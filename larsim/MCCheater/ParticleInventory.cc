@@ -24,13 +24,15 @@
 namespace cheat{
 
   ParticleInventory::ParticleInventory(const ParticleInventoryConfig& config )
-  :fG4ModuleLabel(config.G4ModuleLabel())
+    :fG4ModuleLabel(config.G4ModuleLabel()),
+    fEveIdCalculator(config.EveIdCalculator())
   {
   }
 
   //----------------------------------------------------------------------
   ParticleInventory::ParticleInventory(const fhicl::ParameterSet& pSet )
-  :fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant"))
+    :fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
+    fEveIdCalculator(pSet.get<std::string>("EveIdCalculator", "EmEveIdCalculator"))
   {
   }
 
@@ -48,7 +50,7 @@ namespace cheat{
   const simb::MCParticle* ParticleInventory::TrackIdToParticle_P(int const& id) const {
     sim::ParticleList::const_iterator part_it = fParticleList.find(id);
     if(part_it == fParticleList.end()){
-      mf::LogWarning("ParticleInventory") << "Particle with TrackId: " 
+      mf::LogWarning("ParticleInventory") << "Particle with TrackId: "
         << id << " not found in inventory. "
         << "Returning null pointer.";
       return 0;
@@ -59,7 +61,7 @@ namespace cheat{
 
   //-----------------------------------------------------------------------
   const simb::MCParticle* ParticleInventory::TrackIdToMotherParticle_P(int const& id) const
-  {   
+  {
     return this->TrackIdToParticle_P(fParticleList.EveId(abs(id)));
   }
 
@@ -68,7 +70,7 @@ namespace cheat{
   {
     // find the entry in the MCTruth collection for this track id
     auto mctItr = fMCTObj.fTrackIdToMCTruthIndex.find(abs(id));
-    if(mctItr!=fMCTObj.fTrackIdToMCTruthIndex.end()){ 
+    if(mctItr!=fMCTObj.fTrackIdToMCTruthIndex.end()){
       int partIndex = mctItr->second;
       return fMCTObj.fMCTruthList.at(partIndex);
     }else{

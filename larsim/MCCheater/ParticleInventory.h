@@ -167,9 +167,9 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "nutools/ParticleNavigation/EmEveIdCalculator.h"
+#include "nutools/ParticleNavigation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nutools/ParticleNavigation/ParticleList.h"
-#include "nutools/ParticleNavigation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 
@@ -183,6 +183,10 @@ namespace cheat{
           fhicl::Name("G4ModuleLabel"),
           fhicl::Comment("The label of the LArG4 module used to produce the art file we will be examining"),
           "largeant"};
+        fhicl::Atom<std::string> EveIdCalculator{
+          fhicl::Name("EveIdCalculator"),
+          fhicl::Comment("For selecting which EveID caclulator to use at initialization."),
+          "EmEveIdCalculator"};
       };
 
       //using provider_type = ParticleInventory;
@@ -258,6 +262,13 @@ namespace cheat{
       mutable MCTObjects fMCTObj;
       //For fhicl validation, makea config struct
       art::InputTag fG4ModuleLabel;
+      //std::string fEveIdCalculatorName;
+      //enum EveIdCalculator
+      //{
+      //  EmEveIdCalculator,
+      //  EveIdCalculator
+      //}
+      std::string fEveIdCalculator;
 
 
 
