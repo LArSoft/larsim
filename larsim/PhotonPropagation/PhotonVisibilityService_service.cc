@@ -114,15 +114,18 @@ namespace phot{
   {
     this->reconfigure(pset);
     
+    fhicl::ParameterSet mapDefaultSet;
     if (fReflectOverZeroX) {
+      mapDefaultSet.put("tool_type", "PhotonMappingXMirrorTransformations");
       fMapping
         = std::make_unique<phot::PhotonMappingXMirrorTransformations>
-        (pset.get<fhicl::ParameterSet>("mapping", {}));
+        (pset.get<fhicl::ParameterSet>("mapping", mapDefaultSet));
     }
     else {
+      mapDefaultSet.put("tool_type", "PhotonMappingXMirrorTransformations");
       fMapping
         = std::make_unique<phot::PhotonMappingIdentityTransformations>
-          (pset.get<fhicl::ParameterSet>("mapping", {}));
+          (pset.get<fhicl::ParameterSet>("mapping", mapDefaultSet));
     }
     
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
@@ -437,7 +440,7 @@ namespace phot{
       return &ret.front();
     }
     else{
-      size_t VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
+      auto const VoxID = VoxelAt(p);
       return GetLibraryEntries(VoxID, wantReflected);
     }
   }
@@ -469,7 +472,7 @@ namespace phot{
   float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p, unsigned int OpChannel, bool wantReflected) const
   {
     if(!fInterpolate) {
-      return GetLibraryEntry(fVoxelDef.GetVoxelID(LibLocation(p)), OpChannel, wantReflected);
+      return GetLibraryEntry(VoxelAt(p), OpChannel, wantReflected);
     }
     
     // In case we're outside the bounding box we'll get a empty optional list.
@@ -555,10 +558,12 @@ namespace phot{
   // Get a vector of the refl <tfirst> of each OpDet
   //  in the event to a point p
 
-  float const* PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const
+  auto PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const -> MappedT0s_t
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
-    return GetLibraryReflT0Entries(VoxID);
+    // both the input and the output go through mapping to apply needed symmetries.
+    int const VoxID = VoxelAt(p);
+    float const* data = GetLibraryReflT0Entries(VoxID);
+    return fMapping->applyOpDetMapping(p, data);
   }
 
   //------------------------------------------------------
@@ -601,13 +606,13 @@ namespace phot{
 
   const std::vector<float>* PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
+    int const VoxID = VoxelAt(p);
     return GetLibraryTimingParEntries(VoxID);
   }
 
   TF1* PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(p));
+    int const VoxID = VoxelAt(p);
     return GetLibraryTimingTF1Entries(VoxID);
   }
 
@@ -786,13 +791,6 @@ namespace phot{
   geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
     return fMapping->locationToLibrary(p);
-    auto location = p; // copy, which we'll change
-    
-    // Always use postive X coordinate if set
-    if (fReflectOverZeroX && location.X() < 0) {
-      location.SetX( fabs(location.X() ) );
-    }
-    return location;
   }
 
 } // namespace

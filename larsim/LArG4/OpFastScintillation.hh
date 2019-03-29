@@ -83,6 +83,8 @@
 // Includes
 /////////////
 
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h" // MappedT0s_t
+
 #include "Geant4/globals.hh"
 #include "Geant4/templates.hh"
 #include "Geant4/G4ThreeVector.hh"
@@ -296,7 +298,7 @@ private:
         G4EmSaturation* emSaturation;
         // functions and parameters for the propagation time parametrization
         TF1* ParPropTimeTF1;
-        float const* ReflT0s;
+        phot::PhotonVisibilityService::MappedT0s_t ReflT0s;
 
         TF1 const* functions_vuv[8];
         TF1 const* functions_vis[5];                     

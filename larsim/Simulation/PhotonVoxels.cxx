@@ -41,7 +41,9 @@ namespace sim {
   //----------------------------------------------------------------------------
   std::array<unsigned int, 3U> PhotonVoxelDef::GetSteps() const
   {
-    return { fxSteps, fySteps, fzSteps };
+    // BUG the double brace syntax is required to work around clang bug 21629
+    // (https://bugs.llvm.org/show_bug.cgi?id=21629)
+    return {{ fxSteps, fySteps, fzSteps }};
   }
 
   //----------------------------------------------------------------------------
@@ -178,11 +180,13 @@ namespace sim {
     auto const span = fUpperCorner - fLowerCorner;
     auto const relPos = p - fLowerCorner;
     
-    return {
+    // BUG the double brace syntax is required to work around clang bug 21629
+    // (https://bugs.llvm.org/show_bug.cgi?id=21629)
+    return {{
       (relPos.X() / span.X()) * fxSteps,
       (relPos.Y() / span.Y()) * fySteps,
       (relPos.Z() / span.Z()) * fzSteps
-      };
+      }};
   } // PhotonVoxelDef::GetVoxelStepCoordsUnchecked()
   
   //----------------------------------------------------------------------------

@@ -30,7 +30,20 @@ class TF1;
 namespace phot{
   
   class PhotonVisibilityService {
+    
   public:
+    
+    /// Type of mapped visibility counts. No data storage is provided.
+    using MappedCounts_t
+      = phot::IPhotonMappingTransformations::MappedOpDetData_t
+        <phot::IPhotonLibrary::Counts_t>
+      ;
+    
+    /// Type of mapped arrival times. No data storage is provided.
+    using MappedT0s_t
+      = phot::IPhotonMappingTransformations::MappedOpDetData_t
+        <phot::IPhotonLibrary::T0s_t>
+      ;
     
     ~PhotonVisibilityService();
     PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
@@ -66,7 +79,7 @@ namespace phot{
     float const* GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
 
     template <typename Point>
-    float const* GetReflT0s(Point const& p) const
+    MappedT0s_t GetReflT0s(Point const& p) const
       { return doGetReflT0s(geo::vect::makeFromCoords<geo::Point_t>(p)); }
     void SetLibraryReflT0Entry( int VoxID, int OpChannel, float value );
     float const* GetLibraryReflT0Entries( int VoxID ) const;
@@ -188,6 +201,10 @@ namespace phot{
     
     geo::Point_t LibLocation(geo::Point_t const& p) const;
     
+    int VoxelAt(geo::Point_t const& p) const
+      { return fVoxelDef.GetVoxelID(LibLocation(p)); }
+    
+    
     // --- BEGIN Implementation functions --------------------------------------
     /// @name Implementation functions
     /// @{
@@ -203,7 +220,7 @@ namespace phot{
     float const* doGetAllVisibilities
       (geo::Point_t const& p, bool wantReflected = false) const;
     
-    float const* doGetReflT0s(geo::Point_t const& p) const;
+    MappedT0s_t doGetReflT0s(geo::Point_t const& p) const;
     
     const std::vector<float>* doGetTimingPar(geo::Point_t const& p) const;
     

@@ -76,8 +76,8 @@ namespace phot {
     int NOpDet = pvs->NOpChannels();
 
     sim::PhotonVoxelDef TheVoxelDef = pvs->GetVoxelDef();
-    decltype(auto) const UpperCorner = TheVoxelDef.GetRegionUpperCorner();
-    decltype(auto) const LowerCorner = TheVoxelDef.GetRegionLowerCorner();
+    auto const& UpperCorner = TheVoxelDef.GetRegionUpperCorner();
+    auto const& LowerCorner = TheVoxelDef.GetRegionLowerCorner();
 
     mf::LogInfo("PhotonLibraryAnalyzer") << "UpperCorner: " << lar::dump::vector3D(UpperCorner) << "\n"
                                          << "LowerCorner: " << lar::dump::vector3D(LowerCorner);
