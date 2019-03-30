@@ -4,7 +4,10 @@
 #ifndef IPHOTONLIBRARY_H
 #define IPHOTONLIBRARY_H
 
+#include <vector>
 #include <cstddef> // size_t
+
+class TF1; // forward declaration
 
 namespace phot
 {
@@ -17,6 +20,14 @@ namespace phot
     
     /// Type for time of arrival per optical channel.
     using T0s_t = const float*;
+    
+    /// Type for function parameters
+    /// (which is not part of this interface yet).
+    using Params_t = std::vector<float> const*;
+    
+    /// Type for parametrization function
+    /// (which is not part of this interface yet).
+    using Functions_t = TF1*;
     
     
     virtual ~IPhotonLibrary() = default;
@@ -38,6 +49,9 @@ namespace phot
 
     virtual int NOpChannels() const = 0;
     virtual int NVoxels() const = 0;
+    
+    virtual bool isVoxelValid(size_t Voxel) const
+      { return Voxel < (std::size_t) NVoxels(); }
 
     /// Returns the number of elements in the library
     size_t LibrarySize() const { return NVoxels() * NOpChannels(); }

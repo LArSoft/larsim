@@ -297,7 +297,7 @@ private:
   
         G4EmSaturation* emSaturation;
         // functions and parameters for the propagation time parametrization
-        TF1* ParPropTimeTF1;
+        phot::PhotonVisibilityService::MappedFunctions_t ParPropTimeTF1;
         phot::PhotonVisibilityService::MappedT0s_t ReflT0s;
 
         TF1 const* functions_vuv[8];

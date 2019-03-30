@@ -167,7 +167,7 @@ namespace phot {
      * mapping rather than a reference to an existing one.
      * 
      */
-    virtual LibOpDetIDmap opDetsFromLibrary
+    virtual LibOpDetIDmap const& opDetsFromLibrary
       (geo::Point_t const& location) const override
       { return fDirectOpDetMap; }
     

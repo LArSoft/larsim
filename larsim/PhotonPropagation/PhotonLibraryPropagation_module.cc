@@ -194,7 +194,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
   CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
   CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
-  auto const nOpChannels = static_cast<int>(pvs->NOpChannels());
+  auto const nOpChannels = pvs->NOpChannels();
   fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
   unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
   auto& photonCollection{*photCol};
@@ -202,7 +202,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   unique_ptr<vector<sim::SimPhotonsLite>> photLiteCol{new vector<sim::SimPhotonsLite>{}};
   auto& photonLiteCollection{*photLiteCol};
   photonLiteCollection.resize(nOpChannels);
-  for (int i = 0; i < nOpChannels; ++i) {
+  for (unsigned int i = 0; i < nOpChannels; ++i) {
     photonLiteCollection[i].OpChannel = i;
     photonCollection[i].fOpChannel = i;
   }
@@ -214,12 +214,12 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   for (auto const& edeps : edep_vecs) { //loop over modules
     for (auto const& edep : *edeps) { //loop over energy deposits: one per step
       //int count_onePhot =0; // unused
-      double const xyz[3] = {edep.X(), edep.Y(), edep.Z()};
-      float const* Visibilities = pvs->GetAllVisibilities(xyz);
-      if (Visibilities == nullptr) {
+      auto const& p = edep.MidPoint();
+      auto const& Visibilities = pvs->GetAllVisibilities(p);
+      if (!Visibilities) {
         throw cet::exception("PhotonLibraryPropagation")
           << "There is no entry in the PhotonLibrary for this position in space. "
-             "Position x: "<< xyz[0] << "y: " << xyz[1] << "z: " << xyz[2];
+             "Position: " << edep.MidPoint();
       }
       fISAlg.Reset();
       fISAlg.CalculateIonizationAndScintillation(edep);
@@ -229,7 +229,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
       double nphot_fast = static_cast<int>(GetScintYield(edep, *larp) * nphot);
       //amount of scintillated photons created via the slow scintillation process
       double nphot_slow = nphot - nphot_fast;
-      for (int channel = 0; channel < nOpChannels; ++channel) {
+      for (unsigned int channel = 0; channel < nOpChannels; ++channel) {
         auto visibleFraction = Visibilities[channel];
         if (visibleFraction == 0.0) {
           // Voxel is not visible at this optical channel, skip doing anything for this channel.

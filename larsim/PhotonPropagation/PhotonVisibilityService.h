@@ -20,11 +20,13 @@
 #include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 
+// ROOT libraries
+#include "TF1.h"
+
 // C/C++ standard libraries
 #include <memory> // std::unique_ptr<>
 
 
-class TF1;
 
 ///General LArSoft Utilities
 namespace phot{
@@ -32,6 +34,9 @@ namespace phot{
   class PhotonVisibilityService {
     
   public:
+    
+    /// Type of optical detector ID.
+    using OpDetID_t = phot::IPhotonMappingTransformations::OpDetID_t;
     
     /// Type of mapped visibility counts. No data storage is provided.
     using MappedCounts_t
@@ -45,6 +50,18 @@ namespace phot{
         <phot::IPhotonLibrary::T0s_t>
       ;
     
+    /// Type of set of parameters for functions. No data storage is provided.
+    using MappedParams_t
+      = phot::IPhotonMappingTransformations::MappedOpDetData_t
+        <phot::IPhotonLibrary::Params_t>
+      ;
+    
+    /// Type of mapped parametrization functions. No data storage is provided.
+    using MappedFunctions_t
+      = phot::IPhotonMappingTransformations::MappedOpDetData_t
+        <phot::IPhotonLibrary::Functions_t>
+      ;
+    
     ~PhotonVisibilityService();
     PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     
@@ -54,18 +71,23 @@ namespace phot{
     
     template <typename Point>
     static double DistanceToOpDet(Point const& p, unsigned int OpDet )
-      { return DistanceToOpDetImpl(geo::vect::makeFromCoords<geo::Point_t>(p), OpDet); }
+      { return DistanceToOpDetImpl(geo::vect::toPoint(p), OpDet); }
     template <typename Point>
     static double SolidAngleFactor(Point const& p, unsigned int OpDet )
-      { return SolidAngleFactorImpl(geo::vect::makeFromCoords<geo::Point_t>(p), OpDet); }
+      { return SolidAngleFactorImpl(geo::vect::toPoint(p), OpDet); }
     
     template <typename Point>
-    float GetVisibility(Point const& p, unsigned int OpChannel, bool wantReflected=false ) const
-      { return doGetVisibility(geo::vect::makeFromCoords<geo::Point_t>(p), OpChannel, wantReflected); }
+    bool HasVisibility(Point const& p, bool wantReflected = false) const
+      { return doHasVisibility(geo::vect::toPoint(p), wantReflected); }
 
     template <typename Point>
-    float const* GetAllVisibilities(Point const& p, bool wantReflected=false ) const
-      { return doGetAllVisibilities(geo::vect::makeFromCoords<geo::Point_t>(p), wantReflected); }
+    float GetVisibility(Point const& p, unsigned int OpChannel, bool wantReflected=false ) const
+      { return doGetVisibility(geo::vect::toPoint(p), OpChannel, wantReflected); }
+
+    template <typename Point>
+    MappedCounts_t GetAllVisibilities
+      (Point const& p, bool wantReflected=false ) const
+      { return doGetAllVisibilities(geo::vect::toPoint(p), wantReflected); }
     
     void LoadLibrary() const;
     void StoreLibrary();
@@ -74,29 +96,30 @@ namespace phot{
     void StoreLightProd(    int  VoxID,  double  N );
     void RetrieveLightProd( int& VoxID,  double& N ) const;
     
-    void SetLibraryEntry(  int VoxID, int OpChannel, float N, bool wantReflected=false );
-    float GetLibraryEntry( int VoxID, int OpChannel, bool wantReflected=false ) const;
-    float const* GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
+    void SetLibraryEntry(  int VoxID, OpDetID_t libOpChannel, float N, bool wantReflected=false );
+    float GetLibraryEntry( int VoxID, OpDetID_t libOpChannel, bool wantReflected=false ) const;
+    bool HasLibraryEntries(int VoxID, bool wantReflected=false) const;
+    phot::IPhotonLibrary::Counts_t GetLibraryEntries( int VoxID, bool wantReflected=false ) const;
 
     template <typename Point>
     MappedT0s_t GetReflT0s(Point const& p) const
-      { return doGetReflT0s(geo::vect::makeFromCoords<geo::Point_t>(p)); }
+      { return doGetReflT0s(geo::vect::toPoint(p)); }
     void SetLibraryReflT0Entry( int VoxID, int OpChannel, float value );
-    float const* GetLibraryReflT0Entries( int VoxID ) const;
-    float GetLibraryReflT0Entry( int VoxID, int Channel ) const;
+    phot::IPhotonLibrary::Counts_t GetLibraryReflT0Entries( int VoxID ) const;
+    float GetLibraryReflT0Entry( int VoxID, OpDetID_t libOpChannel ) const;
  
     template <typename Point>
-    const std::vector<float>* GetTimingPar(Point const& p) const
-      { return doGetTimingPar(geo::vect::makeFromCoords<geo::Point_t>(p)); }
+    MappedParams_t GetTimingPar(Point const& p) const
+      { return doGetTimingPar(geo::vect::toPoint(p)); }
     void SetLibraryTimingParEntry( int VoxID, int OpChannel, float value, size_t parnum );
-    const std::vector<float>* GetLibraryTimingParEntries( int VoxID ) const;
-    float GetLibraryTimingParEntry( int VoxID, int Channel, size_t npar ) const;
+    phot::IPhotonLibrary::Params_t GetLibraryTimingParEntries( int VoxID ) const;
+    float GetLibraryTimingParEntry( int VoxID, OpDetID_t libOpChannel, size_t npar ) const;
 
     template <typename Point>
-    TF1* GetTimingTF1(Point const& p) const
-      { return doGetTimingTF1(geo::vect::makeFromCoords<geo::Point_t>(p)); }
-    void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
-    TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
+    MappedFunctions_t GetTimingTF1(Point const& p) const
+      { return doGetTimingTF1(geo::vect::toPoint(p)); }
+    void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 const& func );
+    phot::IPhotonLibrary::Functions_t GetLibraryTimingTF1Entries( int VoxID ) const;
  
     void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
@@ -204,6 +227,12 @@ namespace phot{
     int VoxelAt(geo::Point_t const& p) const
       { return fVoxelDef.GetVoxelID(LibLocation(p)); }
     
+    // same as `doGetVisibility()` but the channel number refers to the library
+    // ID rather than to the actual optical detector ID.
+    float doGetVisibilityOfLibOpDet
+      (geo::Point_t const& p, OpDetID_t libOpChannel, bool wantReflected = false)
+      const;
+
     
     // --- BEGIN Implementation functions --------------------------------------
     /// @name Implementation functions
@@ -213,18 +242,20 @@ namespace phot{
     
     static double SolidAngleFactorImpl(geo::Point_t const& p, unsigned int OpDet);
     
+    bool doHasVisibility(geo::Point_t const& p, bool wantReflected = false) const;
+
     float doGetVisibility
       (geo::Point_t const& p, unsigned int OpChannel, bool wantReflected = false)
       const;
 
-    float const* doGetAllVisibilities
+    MappedCounts_t doGetAllVisibilities
       (geo::Point_t const& p, bool wantReflected = false) const;
     
     MappedT0s_t doGetReflT0s(geo::Point_t const& p) const;
     
-    const std::vector<float>* doGetTimingPar(geo::Point_t const& p) const;
+    MappedParams_t doGetTimingPar(geo::Point_t const& p) const;
     
-    TF1* doGetTimingTF1(geo::Point_t const& p) const;
+    MappedFunctions_t doGetTimingTF1(geo::Point_t const& p) const;
     
     /// @}
     // --- END Implementation functions ----------------------------------------

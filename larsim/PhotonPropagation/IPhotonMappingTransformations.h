@@ -11,9 +11,9 @@
 #define LARSIM_PHOTONPROPAGATION_IPHOTONMAPPINGTRANSFORMATIONS_H
 
 // LArSoft libraries
-#include "lardataalg/Utilities/MappedContainer.h"
 #include "larcorealg/CoreUtils/ContainerMeta.h" // util::collection_value_t<>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+#include "larsim/PhotonPropagation/OpDetVisibilityData.h"
 
 // C++ standard libraries
 #include <vector>
@@ -82,12 +82,15 @@ namespace phot {
      *  * `operator[](OpDetID_t)` to access the optical detector ID of the
      *    specified library detector ID
      *  * `size()` to report how many library optical detectors are supported
+     *  * either conversion to `bool`, response to `empty()` or to `std::size()`
+     *    to determine if the contained data is valid
+     *    (actually, just response to `phot::isValidLibraryData()`)
      * 
      */
     using LibOpDetIDmap = std::vector<int>;
     
     template <typename LibDataColl>
-    using MappedOpDetData_t = util::MappedContainer
+    using MappedOpDetData_t = phot::OpDetVisibilityData
       <
         util::collection_reference_t<LibDataColl>,
         util::collection_reference_t<LibOpDetIDmap const>
@@ -225,7 +228,7 @@ namespace phot {
      * mapping rather than a reference to an existing one.
      * 
      */
-    virtual LibOpDetIDmap opDetsFromLibrary
+    virtual LibOpDetIDmap const& opDetsFromLibrary
       (geo::Point_t const& location) const = 0;
     
     /**
@@ -326,7 +329,7 @@ auto phot::IPhotonMappingTransformations::applyOpDetMapping(
   auto const n = opDetMappingSize(); // number of available destination slots
   
   return MappedOpDetData_t<Coll>{
-      util::collection_reference_t<Coll>(std::forward<Coll>(source))
+      util::make_collection_reference(std::forward<Coll>(source))
     , std::cref(opDetMap) // mapping is referenced
     , n                   // size
     , defaultValue
