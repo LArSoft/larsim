@@ -1,5 +1,5 @@
 /**
- * @file   larsim/PhotonPropagation/OpDetVisibilityData.h
+ * @file   larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h
  * @brief  Data container for use with photon visibility libraries.
  * @author Gianluca Petrillo (petrillo@slac.stanford.edu)
  * @date   March 29, 2019
@@ -8,8 +8,8 @@
  * 
  */
 
-#ifndef LARSIM_PHOTONPROPAGATION_OPDETVISIBILITYDATA_H
-#define LARSIM_PHOTONPROPAGATION_OPDETVISIBILITYDATA_H
+#ifndef LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_OPDETVISIBILITYDATA_H
+#define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_OPDETVISIBILITYDATA_H
 
 // LArSoft libraries
 #include "lardataalg/Utilities/MappedContainer.h"
@@ -415,4 +415,4 @@ namespace phot {
 } // namespace phot
 
 
-#endif // LARSIM_PHOTONPROPAGATION_OPDETVISIBILITYDATA_H
+#endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_OPDETVISIBILITYDATA_H

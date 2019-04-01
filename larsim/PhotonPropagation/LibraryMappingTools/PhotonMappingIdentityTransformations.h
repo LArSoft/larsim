@@ -1,17 +1,17 @@
 /**
- * @file   larsim/PhotonPropagation/PhotonMappingIdentityTransformations.h
+ * @file   larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h
  * @brief  A photon mapping identity transformation.
  * @author Gianluca Petrillo (petrillo@slac.stanford.edu)
  * @date   March 20, 2019
- * @see    `larsim/PhotonPropagation/PhotonMappingIdentityTransformations.cxx`
+ * @see    `larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations_tool.cc`
  * 
  */
 
-#ifndef LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
-#define LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
+#ifndef LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
+#define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
 
 // LArSoft libraries
-#include "larsim/PhotonPropagation/IPhotonMappingTransformations.h"
+#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h" // lar::providerFrom()
 #include "larcorealg/Geometry/GeometryCore.h"
@@ -204,5 +204,4 @@ namespace phot {
 } // namespace phot
 
 
-
-#endif // LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
+#endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H

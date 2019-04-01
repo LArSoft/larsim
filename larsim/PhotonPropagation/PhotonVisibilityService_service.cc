@@ -21,15 +21,11 @@
 //  between the library and the service instance for sensible results.
 // 
 //
-// Framework includes
 
 // LArSoft includes
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
-#include "larsim/PhotonPropagation/PhotonMappingIdentityTransformations.h" // FIXME remove after toolification
-#include "larsim/PhotonPropagation/PhotonMappingXMirrorTransformations.h" // FIXME remove after toolification
 #include "larsim/Simulation/PhotonVoxels.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
@@ -37,9 +33,16 @@
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
 
+// framework libraries
+#include "art/Utilities/make_tool.h"
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+
+// ROOT libraries
 #include "TF1.h"
 
+// C/C++ standard libraries
 #include <math.h>
+
 
 namespace phot{
 
@@ -114,19 +117,29 @@ namespace phot{
   {
     this->reconfigure(pset);
     
+    if (pset.has_key("ReflectOverZeroX")) { // legacy parameter warning
+      if (pset.has_key("Mapping")) {
+        throw art::Exception(art::errors::Configuration) <<
+          "`PhotonVisbilityService` configuration specifies both `Mapping` and `ReflectOverZeroX`."
+          " Please remove the latter (and use `PhotonMappingXMirrorTransformations` tool)."
+          ;
+      }
+      else {
+        mf::LogWarning("PhotonVisbilityService")
+          << "Please update the configuration of `PhotonVisbilityService` service"
+          " replacing `ReflectOverZeroX` with tool configuration:"
+          "\n  Mapping: { tool_type: \"PhotonMappingXMirrorTransformations\" }"
+          ;
+      }
+    } // if 
     fhicl::ParameterSet mapDefaultSet;
-    if (fReflectOverZeroX) {
-      mapDefaultSet.put("tool_type", "PhotonMappingXMirrorTransformations");
-      fMapping
-        = std::make_unique<phot::PhotonMappingXMirrorTransformations>
-        (pset.get<fhicl::ParameterSet>("mapping", mapDefaultSet));
-    }
-    else {
-      mapDefaultSet.put("tool_type", "PhotonMappingXMirrorTransformations");
-      fMapping
-        = std::make_unique<phot::PhotonMappingIdentityTransformations>
-          (pset.get<fhicl::ParameterSet>("mapping", mapDefaultSet));
-    }
+    mapDefaultSet.put("tool_type",
+      fReflectOverZeroX
+        ? "PhotonMappingXMirrorTransformations"
+        : "PhotonMappingIdentityTransformations"
+      );
+    fMapping = art::make_tool<phot::IPhotonMappingTransformations>
+      (pset.get<fhicl::ParameterSet>("Mapping", mapDefaultSet));
     
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
   }

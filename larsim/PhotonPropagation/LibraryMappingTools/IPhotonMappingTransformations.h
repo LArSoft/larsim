@@ -1,5 +1,5 @@
 /**
- * @file   larsim/PhotonPropagation/IPhotonMappingTransformations.h
+ * @file   larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h
  * @brief  Interface for transformation of photon visibility maps.
  * @author Gianluca Petrillo (petrillo@slac.stanford.edu)
  * @date   March 20, 2019
@@ -7,13 +7,13 @@
  * This is a pure interface.
  */
 
-#ifndef LARSIM_PHOTONPROPAGATION_IPHOTONMAPPINGTRANSFORMATIONS_H
-#define LARSIM_PHOTONPROPAGATION_IPHOTONMAPPINGTRANSFORMATIONS_H
+#ifndef LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_IPHOTONMAPPINGTRANSFORMATIONS_H
+#define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_IPHOTONMAPPINGTRANSFORMATIONS_H
 
 // LArSoft libraries
+#include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
 #include "larcorealg/CoreUtils/ContainerMeta.h" // util::collection_value_t<>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
-#include "larsim/PhotonPropagation/OpDetVisibilityData.h"
 
 // C++ standard libraries
 #include <vector>
@@ -315,6 +315,7 @@ namespace phot {
 } // namespace phot
 
 
+
 //------------------------------------------------------------------------------
 //---  Template implementation
 //------------------------------------------------------------------------------
@@ -340,4 +341,4 @@ auto phot::IPhotonMappingTransformations::applyOpDetMapping(
 
 //------------------------------------------------------------------------------
 
-#endif // LARSIM_PHOTONPROPAGATION_IPHOTONMAPPINGTRANSFORMATIONS_H
+#endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_IPHOTONMAPPINGTRANSFORMATIONS_H

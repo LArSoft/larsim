@@ -3,7 +3,7 @@
  * @brief   Unit test for `phot::isValidLibraryData()`.
  * @author  Gianluca Petrillo (petrillo@fnal.gov)
  * @date    March 29, 2019
- * @see     `larsim/PhotonPropagation/OpDetVisibilityData.h`
+ * @see     `larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h`
  */
 
 // Boost libraries
@@ -12,7 +12,7 @@
 #include <boost/test/test_tools.hpp> // BOOST_CHECK()
 
 // LArSoft libraries
-#include "larsim/PhotonPropagation/OpDetVisibilityData.h"
+#include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
 #include "larcorealg/CoreUtils/MetaUtils.h"
 
 // C/C++ standard libraries

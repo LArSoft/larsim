@@ -15,7 +15,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
-#include "larsim/PhotonPropagation/IPhotonMappingTransformations.h"
+#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t

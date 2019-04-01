@@ -1,17 +1,17 @@
 /**
- * @file   larsim/PhotonPropagation/PhotonMappingXMirrorTransformations.h
+ * @file   larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingXMirrorTransformations.h
  * @brief  A photon mapping transformation with reflection at x = 0.
  * @author Gianluca Petrillo (petrillo@slac.stanford.edu)
  * @date   March 20, 2019
- * @see    `larsim/PhotonPropagation/PhotonMappingXMirrorTransformations.cxx`
+ * @see    `larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingXMirrorTransformations_tool.cc`
  * 
  */
 
-#ifndef LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
-#define LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
+#ifndef LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
+#define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
 
 // LArSoft libraries
-#include "larsim/PhotonPropagation/PhotonMappingIdentityTransformations.h"
+#include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h"
 
 // framework libraries
 #include "art/Utilities/ToolConfigTable.h"
@@ -76,4 +76,4 @@ namespace phot {
 } // namespace phot
 
 
-#endif // LARSIM_PHOTONPROPAGATION_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
+#endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGXMIRRORTRANSFORMATIONS_H
