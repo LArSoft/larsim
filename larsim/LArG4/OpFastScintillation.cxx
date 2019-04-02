@@ -240,7 +240,7 @@ namespace larg4{
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits 
 	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, fheight, fwidth, fradius, foptical_detector_type);
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fzdimension, fydimension, fradius, foptical_detector_type);
         fdelta_angulo = 10.; // angle bin size
 
 	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
@@ -258,8 +258,8 @@ namespace larg4{
 	if(pvs->StoreReflected()) {
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
-	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_width, fcathode_height, fcathode_centre, fheight,fwidth,fradius, foptical_detector_type);
-	  
+	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_zdimension, fcathode_ydimension, fcathode_centre, fzdimension,fydimension,fradius, foptical_detector_type);
+	 std::cout << "fzdimension = " << fzdimension << ", fydimension = " << fydimension << ", fcathode_ydimension = " << fcathode_ydimension << ", fcathode_zdimension = " << fcathode_zdimension << std::endl;
 	  // initialise vis correction functions
 	  double pars_ini_vis[6] = {0,0,0,0,0,0};
 	  std::cout << "Initialising visible correction parameters" << std::endl;
@@ -1575,13 +1575,14 @@ namespace larg4{
       // set Arapuca geometry struct for solid angle function
       acc detPoint; 
       detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];  // centre coordinates of optical detector
-      detPoint.w = fwidth; detPoint.h = fheight; // width and height in cm of arapuca active window
+      detPoint.w = fydimension; detPoint.h = fzdimension; // width and height in cm of arapuca active window
 
       // get scintillation point coordinates relative to arapuca window centre
       TVector3 ScintPoint_rel = ScintPoint - OpDetPoint;  
 
       // calculate solid angle
       solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
+
     }
     // PMTs
     else if (optical_detector_type == 1) {
@@ -1634,7 +1635,7 @@ namespace larg4{
      // set cathode plane struct for solid angle function
      acc cathode_plane; 
      cathode_plane.ax = plane_depth; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];       	// centre coordinates of cathode plane
-     cathode_plane.w = fcathode_width; cathode_plane.h = fcathode_height;                        				// width and height in cm
+     cathode_plane.w = fcathode_ydimension; cathode_plane.h = fcathode_zdimension;                        				// width and height in cm
      
      // get scintpoint coords relative to centre of cathode plane
      TVector3 cathodeCentrePoint(plane_depth,fcathode_centre[1],fcathode_centre[2]);
@@ -1673,8 +1674,8 @@ namespace larg4{
       	// set rectangular aperture geometry struct for solid angle function
      	acc detPoint; 
      	detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];  	// centre coordinates of optical detector
-     	detPoint.w = fwidth; detPoint.h = fheight;	 						// width and height in cm of optical detector active window [rectangular aperture]
-     	// calculate solid angle
+     	detPoint.w = fydimension; detPoint.h = fzdimension;	 						// width and height in cm of optical detector active window [rectangular aperture]
+	// calculate solid angle
 	solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
      }
      // disk aperture    
@@ -1859,12 +1860,12 @@ namespace larg4{
     }
     const double bb = TMath::Sqrt(4*b*d/(h*h+(b+d)*(b+d)));
     const double cc = 4*b*d/((b+d)*(b+d));
-    
+ 
     if(TMath::Abs(boost::math::ellint_1(bb) - bb) < 1e-10 && TMath::Abs(boost::math::ellint_3(cc,bb) - cc) <1e-10) {
       throw(std::runtime_error("Problem loading ELLIPTIC INTEGRALS running Disk_SolidAngle!"));
     }
     if(d < b) {
-      return 2.*TMath::Pi() - 2.*aa*(boost::math::ellint_1(bb) + TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc));
+     return 2.*TMath::Pi() - 2.*aa*(boost::math::ellint_1(bb) + TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc));
     }
     if(d == b) {
       return TMath::Pi() - 2.*aa*boost::math::ellint_1(bb);
