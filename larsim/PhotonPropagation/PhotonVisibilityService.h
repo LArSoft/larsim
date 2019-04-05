@@ -33,6 +33,9 @@ namespace phot{
   
   class PhotonVisibilityService {
     
+    /// Type of optical library index.
+    using LibraryIndex_t = phot::IPhotonMappingTransformations::LibraryIndex_t;
+    
   public:
     
     /// Type of optical detector ID.
@@ -229,8 +232,8 @@ namespace phot{
     
     // same as `doGetVisibility()` but the channel number refers to the library
     // ID rather than to the actual optical detector ID.
-    float doGetVisibilityOfLibOpDet
-      (geo::Point_t const& p, OpDetID_t libOpChannel, bool wantReflected = false)
+    float doGetVisibilityOfOpLib
+      (geo::Point_t const& p, LibraryIndex_t libIndex, bool wantReflected = false)
       const;
 
     

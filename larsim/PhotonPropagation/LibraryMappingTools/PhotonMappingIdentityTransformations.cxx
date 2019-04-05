@@ -14,16 +14,33 @@
 
 
 //------------------------------------------------------------------------------
-phot::IPhotonMappingTransformations::OpDetIDmap
-phot::PhotonMappingIdentityTransformations::makeDirectOpDetMap() const {
+phot::IPhotonMappingTransformations::LibraryIndexToOpDetMap
+phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap
+  () const
+{
   
   auto const nOpDets = fGeom->NOpDets();
   
-  OpDetIDmap map(nOpDets);
+  LibraryIndexToOpDetMap map(nOpDets);
   std::iota(map.begin(), map.end(), 0);
   
   return map;
-} // phot::PhotonMappingIdentityTransformations::makeDirectOpDetMap()
+} // phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap()
+
+
+//------------------------------------------------------------------------------
+phot::IPhotonMappingTransformations::OpDetToLibraryIndexMap
+phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap
+  () const
+{
+  
+  auto const nOpDets = fGeom->NOpDets();
+  
+  OpDetToLibraryIndexMap map(nOpDets);
+  std::iota(map.begin(), map.end(), 0);
+  
+  return map;
+} // phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap()
 
 
 //------------------------------------------------------------------------------

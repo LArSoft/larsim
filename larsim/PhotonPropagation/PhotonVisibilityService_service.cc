@@ -446,12 +446,18 @@ namespace phot{
   auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const -> MappedCounts_t
   {
     phot::IPhotonLibrary::Counts_t data{};
+    
+    // first we fill a container of visibilities in the library index space
+    // (it is directly the values of the library unless interpolation is
+    //  requested)
     if(fInterpolate){
       // this is a punch into multithreading face:
       static std::vector<float> ret;
-      ret.resize(fMapping->libraryOpDetMappingSize(p));
-      for(std::size_t libOpDet = 0; libOpDet < ret.size(); ++libOpDet)
-        ret[libOpDet] = doGetVisibilityOfLibOpDet(p, libOpDet, wantReflected);
+      ret.resize(fMapping->libraryMappingSize(p));
+      for(std::size_t libIndex = 0; libIndex < ret.size(); ++libIndex) {
+        ret[libIndex]
+          = doGetVisibilityOfOpLib(p, LibraryIndex_t(libIndex), wantReflected);
+      }
       data = &ret.front();
     }
     else{
@@ -485,11 +491,11 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::doGetVisibilityOfLibOpDet
-    (geo::Point_t const& p, OpDetID_t libOpChannel, bool wantReflected /* = false */) const
+  float PhotonVisibilityService::doGetVisibilityOfOpLib
+    (geo::Point_t const& p, LibraryIndex_t libIndex, bool wantReflected /* = false */) const
   {
     if(!fInterpolate) {
-      return GetLibraryEntry(VoxelAt(p), libOpChannel, wantReflected);
+      return GetLibraryEntry(VoxelAt(p), libIndex, wantReflected);
     }
     
     // In case we're outside the bounding box we'll get a empty optional list.
@@ -500,7 +506,7 @@ namespace phot{
     float vis = 0.0;
     for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value()) {
       if (n.id < 0) continue;
-      vis += n.weight * GetLibraryEntry(n.id, libOpChannel, wantReflected);
+      vis += n.weight * GetLibraryEntry(n.id, libIndex, wantReflected);
     }
     return vis;
   }
@@ -516,8 +522,9 @@ namespace phot{
 
   float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p, unsigned int OpChannel, bool wantReflected) const
   {
-    auto const libOpChannel = fMapping->opDetToLibrary(p, OpChannel);
-    return doGetVisibilityOfLibOpDet(p, libOpChannel, wantReflected);
+    // here we quietly confuse op. det. channel (interface) and op. det. (library)
+    LibraryIndex_t const libIndex = fMapping->opDetToLibraryIndex(p, OpChannel);
+    return doGetVisibilityOfOpLib(p, libIndex, wantReflected);
   }
 
 
@@ -832,7 +839,7 @@ namespace phot{
    **/
   geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
-    return fMapping->locationToLibrary(p);
+    return fMapping->detectorToLibrary(p);
   }
 
 } // namespace

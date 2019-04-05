@@ -32,17 +32,73 @@ namespace phot {
    * internal mapping to a basic volume, and using the symmetry rules to convert
    * between that basic volume and the world volume where the entire detector
    * is represented.
-   * It is common that the symmetries require also a rearrangement of the actual
-   * optical detector channels: a hook for that type of mapping is also
-   * provided, bidirectional.
+   * It is common that the symmetries require also a logic rearrangement of the
+   * actual optical detectors: a hook for that type of mapping is also provided,
+   * bidirectional.
    * 
    * This interface expresses the following transformations:
-   * * `locationToLibrary()` transform a point in the detector (world) space
+   * * `detectorToLibrary()` transform a point in the detector space
    *     to a point in the library space
-   * * `opDetToLibrary()` transforms a optical detector channel ID into the
-   *     corresponding ID as seen by the library
-   * * `opDetFromLibrary()` transforms a detector ID in the library into a
+   * * `opDetToLibraryIndex()` transforms a optical detector ID into the
+   *     corresponding library index
+   * * `libraryIndexToOpDet()` transforms a library index into the corresponding
    *     global optical detector ID
+   * 
+   * 
+   * Glossary
+   * =========
+   * @anchor PhotonMappingTransformations_Glossary
+   * 
+   * In this class and its documentation the following terms are in use:
+   * 
+   * * _library_ is a source of data; our libraries mapping the real space into
+   *      some parametrization, and store the data as function of the
+   *      parametrization values. In particular, they usually parametrize the
+   *      covered space into tiny boxes ("voxels") and they address the data
+   *      with a voxel index; and for each voxel index they store a collection
+   *      of data values, addressed by another independent index that we call...
+   * * _detector space_ or _world_ is the physical space where the whole
+   *      detector is represented; in LArSoft this space is described in the
+   *      global (or world) coordinate system, and the geometry description
+   *      (provided by `geo::GeometryCore`) works in this space
+   * * _library space_ is a representation of the physical space covered by the
+   *      library; it may effectively be a subset of the world space (e.g.
+   *      a single drift volume) or it may be a completely local representation,
+   *      that needs a mapping with the world space in order to be of any use
+   * * _library identifier_ or _library ID_ or _library index_ is the index used
+   *      to access a single value of the library (after having chosen the voxel
+   *      to get data for); note that the "library identifier" does not actually
+   *      identify a library, but rather some specific data within the a
+   *      library. This mapping class uses this concept to identify and select
+   *      library data values, and uses the type `LibraryIndex_t` to represent
+   *      it in the code
+   * * _optical detector_ is a LArSoft concept, representing a physical detector
+   *      with a presence in the real world; in LArSoft, they may be represented
+   *      by...
+   * * _optical detector number_ or _optical detector ID_ is a unique identifier
+   *      in the form of either an integral number or as a location structure,
+   *      `geo::OpDetID`; this concept is also used, e.g., as argument of
+   *      `geo::GeometryCore::OpDetGeoFromOpDet()`. This mapping class uses the
+   *      concept and the single unique number representation to identify the
+   *      optical detector, and uses the local type `OpDetID_t` to represent it
+   *      in the code; 
+   * * _optical detector readout channel_ or just _channel_ is a LArSoft
+   * *    concept, representing a data single source from optical detectors, and
+   *      associated with optical detector readout. In most detectors, there is
+   *      one channel per optical detector and vice versa. It may be described
+   *      in LArSoft by...
+   * * _optical detector channel number_ or _channel number_ or (again)
+   *   _channel_ is a unique numeric identifier for a optical detector readout
+   *      channel; this is used, e.g., as argument of
+   *      `geo::GeometryCore::OpDetGeoFromOpDet()`)
+   * 
+   * 
+   * @note While optical detector and optical detector channels are different
+   *       concepts, nothing this class is currently dealing with relies on any
+   *       difference between the two. Nevertheless, given the nature of the
+   *       library of providing visibility information based on the geometry of
+   *       the detectors, using the concept of physical optical detector is more
+   *       appropriate than using the one of readout channel.
    * 
    * 
    * Technical notes
@@ -53,8 +109,8 @@ namespace phot {
    * 
    * Currently the mapping is expressed with a specific type. If more
    * flexibility is needed, the mapping might use run time polymorphism.
-   * In that case, `util::MappedContainer` will not be sufficient any more,
-   * but a similar class may be created.
+   * This case is not supported right now. If need arose, something might be
+   * designed on top of what is here now.
    * 
    */
   class IPhotonMappingTransformations {
@@ -64,44 +120,75 @@ namespace phot {
     // --- BEGIN Data types ----------------------------------------------------
     using OpDetID_t = int; ///< Type describing a optical detector ID.
     
+    /// Type describing a library index. FIXME former LibraryOpDetID_t
+    using LibraryIndex_t = OpDetID_t; // currently bound to channel ID
+    
     /**
-     * @brief Type to return the mapping of optical IDs into library IDs.
+     * @brief Type describing the mapping of optical detectors into library
+     *        indices.
+     * 
+     * This type of mapping allows querying data values by optical detector ID,
+     * fetching them from library data source.
      * 
      * This type guarantees:
-     *  * `operator[](OpDetID_t)` to access the library ID of the specified
-     *    optical detector ID
+     *  * `operator[](OpDetID_t)` to fetch the library index associated to
+     *    the specified optical detector
      *  * `size()` to report how many optical detectors are supported
      * 
      */
-    using OpDetIDmap = std::vector<int>;
+    using LibraryIndexToOpDetMap = std::vector<OpDetID_t>;
     
     /**
-     * @brief Type to return the mapping of library IDs into optical IDs.
+     * @brief Type describing the mapping of library indices into optical
+     *        detectors.
+     * 
+     * This type of mapping allows querying data values by library index,
+     * fetching them from an optical-detector-based data source.
      * 
      * This type guarantees:
-     *  * `operator[](OpDetID_t)` to access the optical detector ID of the
-     *    specified library detector ID
+     *  * `operator[](LibraryIndex_t)` to access the optical detector ID of
+     *    the specified library index
      *  * `size()` to report how many library optical detectors are supported
      *  * either conversion to `bool`, response to `empty()` or to `std::size()`
      *    to determine if the contained data is valid
      *    (actually, just response to `phot::isValidLibraryData()`)
      * 
      */
-    using LibOpDetIDmap = std::vector<int>;
+    using OpDetToLibraryIndexMap = std::vector<LibraryIndex_t>; // FIXME former LibOpDetIDmap
     
+    /**
+     * @brief Type of optical detector data collection.
+     * @tparam LibDataColl type of the original library data container
+     * 
+     * This type behaves like a random access collection with as index the
+     * optical detector ID and as value the data corresponding to that optical
+     * detector.
+     */
     template <typename LibDataColl>
     using MappedOpDetData_t = phot::OpDetVisibilityData
       <
         util::collection_reference_t<LibDataColl>,
-        util::collection_reference_t<LibOpDetIDmap const>
+        util::collection_reference_t<OpDetToLibraryIndexMap const>
       >;
     
     // --- END Data types ------------------------------------------------------
     
     
-    /// Value used for an invalid index (for both detector and library).
-    static constexpr OpDetID_t InvalidIndex
+    /**
+     * @brief Value used to identify an invalid optical detector.
+     * 
+     * It may be used as value of the library-to-detector mapping.
+     */
+    static constexpr OpDetID_t InvalidOpDetID
       = std::numeric_limits<OpDetID_t>::max();
+    
+    /**
+     * @brief Value used for an invalid library index.
+     * 
+     * It may be used as value of the detector-to-library mapping.
+     */
+    static constexpr LibraryIndex_t InvalidLibraryIndex
+      = std::numeric_limits<LibraryIndex_t>::max();
     
     
     // --- BEGIN Geometry mapping interface ------------------------------------
@@ -113,138 +200,153 @@ namespace phot {
      *        location.
      * @param location position in world coordinates [cm]
      * @return a vector expressing `location` in the library space
-     * @see `()`
      * @throw std::domain_error if the function can't handle `location`
      * 
-     * The units and meaning of the returned location are 
+     * The units and meaning of the returned location are library-dependent.
      * 
      * Example: assuming that `fVoxelDef` contains the description of the
      * voxelization of the library, the ID of the voxel at `location` can be
      * obtained from a `mapping` as:
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
      * auto const voxelID
-     *   = fVoxelDef.GetVoxelID(mapping->locationToLibrary(location));
+     *   = fVoxelDef.GetVoxelID(mapping->detectorToLibrary(location));
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      * where `mapping` points to an object implementing the
      * `phot::IPhotonMappingTransformations` interface.
+     * Note that the caller here has no business with the translated location,
+     * beside propagating it to the library: caller simply is not explained
+     * the meaning of that translated location.
      */
-    virtual geo::Point_t locationToLibrary
+    virtual geo::Point_t detectorToLibrary
       (geo::Point_t const& location) const = 0;
     
     /// @}
     // --- END Geometry mapping interface --------------------------------------
     
     
-    // --- BEGIN Optical detector identifier mapping interface -----------------
-    /// @name Optical detector identifier mapping interface
+    // --- BEGIN Optical detector mapping interface ----------------------------
+    /**
+     * @name Optical detector mapping interface
+     * 
+     * Here the mapping is provided between optical detectors (`OpDetID_t`) and
+     * library indices (`LibraryIndex_t`).
+     * 
+     * Terms and roles of the various concepts involved in the mapping may be
+     * confusing: see the @ref PhotonMappingTransformations_Glossary "glossary"
+     * in `phot::IPhotonMappingTransformations` class description for their
+     * definition.
+     */
     /// @{
     
     /**
-     * @brief Returns the identifier within the library of the specified
-     *        optical detector.
-     * @param location a world reference point to provide global context
-     * @param opDet optical detector ID
-     *              (as used, e.g., in `geo::GeometryCore::OpDetGeoFromOpDet()`)
-     * @return identifier within the library of specified optical detector 
+     * @brief Returns the library index for the specified optical detector.
+     * @param location a point in detector space to provide global context
+     * @param opDetID optical detector identifier
+     * @return index corresponding to `opDetID`, or `InvalidLibraryIndex`
      * @throw std::out_of_range if input optical detector can't be handled
-     * @see `opDetFromLibrary()`
+     * @throw std::domain_error if location can't be handled
+     * @see `libraryIndexToOpDet()`, `opDetsToLibraryIndices()`
      * 
-     * The global identifier `opDet` of an optical detector is converted into
-     * an identifier internal to the library.
-     */
-    virtual int opDetToLibrary
-      (geo::Point_t const& location, OpDetID_t opDet) const = 0;
-    
-    /**
-     * @brief Returns the identifier in the detector of the optical detector
-     *        specified via a library-specific identifier.
-     * @param location a world reference point to provide global context
-     * @param libOpDet optical detector ID internal to the library
-     * @return identifier in the detector of specified optical detector 
-     *         (as used, e.g., in `geo::GeometryCore::OpDetGeoFromOpDet()`)
-     * @throw std::out_of_range if input identifier can't be handled
-     * @see `opDetToLibrary()`
+     * The specified global identifier `opDetID` of an optical detector is
+     * converted into an index for the library.
      * 
-     * The library-specific identifier `libOpDet` of an optical detector is
-     * converted into an identifier valid for detector geometry.
+     * If the library does not include information for this optical detector,
+     * the value `InvalidLibraryIndex` is returned instead.
      * 
      * The specified `location` is used to inform the conversion, and it is
      * usually pointing to the source of scintillation.
-     * 
-     * Note that such a reference is not needed for the inverse operation
-     * (`opDetToLibrary()`) because in the mapping each optical detector must
-     * map to exactly one library optical detector.
      */
-    virtual int opDetFromLibrary
-      (geo::Point_t const& location, OpDetID_t libOpDet) const = 0;
+    virtual LibraryIndex_t opDetToLibraryIndex
+      (geo::Point_t const& location, OpDetID_t opDetID) const = 0;
+    
+    /**
+     * @brief Returns the optical detector ID for the specified library index.
+     * @param location a point in detector space to provide global context
+     * @param libIndex library index to be mapped
+     * @return optical detector corresponding to `libIndex`, or `InvalidOpDetID`
+     * @throw std::out_of_range if input index can't be handled
+     * @throw std::domain_error if location can't be handled
+     * @see `opDetToLibraryIndex()`, `libraryIndicesToOpDets()`
+     * 
+     * The library index `libIndex` is converted into a optical detector ID.
+     * If the library does not include information for this optical detector,
+     * the value `InvalidLibraryIndex` is returned instead.
+     * 
+     * The specified `location` is used to inform the conversion, and it is
+     * usually pointing to the source of scintillation.
+     */
+    virtual OpDetID_t libraryIndexToOpDet
+      (geo::Point_t const& location, LibraryIndex_t libIndex) const = 0;
     
     
     /**
-     * @brief Returns a map of identifiers within the library for each optical
-     *        detector.
+     * @brief Returns a map of library indices as function of optical detectors.
      * @param location a world reference point to provide global context
-     * @return identifiers within the library for all optical detectors
-     * @see `opDetToLibrary()`, `opDetsToLibrary()`
+     * @return library indices for all optical detectors
+     * @throw std::domain_error if location can't be handled
+     * @see `opDetToLibraryIndex()`, `opDetsToLibraryIndices()`
      * 
-     * The returned value is a mapping object (see `OpDetIDmap` documentation
-     * for the interface).
+     * The returned value is a mapping object (see `OpDetToLibraryIndexMap`
+     * documentation for the interface). If an optical detector has no
+     * representation in the library at `location`, the index value
+     * corresponding to it is `InvalidLibraryIndex`.
      * 
      * The specified `location` is used to inform the conversion, and it is
      * usually pointing to the source of scintillation. It may be left unused.
-     * 
-     * This is a static global mapping that does not depend on any location:
-     * each optical detector maps to exactly one library optical detector.
-     * 
      */
-    virtual OpDetIDmap const& opDetsToLibrary
+    virtual OpDetToLibraryIndexMap const& opDetsToLibraryIndices
       (geo::Point_t const& location) const = 0;
     
     /**
-     * @brief Expected size of the mapping of optical detectors.
-     * @return the expected size of the mapping of library optical detectors
-     * @see `opDetsToLibrary()`
+     * @brief Expected number of mappings of optical detector into library
+     *        index.
+     * @return the expected size of the mapping of optical detectors
+     * @see `opDetsToLibraryIndices()`
      * 
      * This is effectively the number of available optical detectors, as well
-     * as the size of the mapping as returned by `opDetsToLibrary()`.
+     * as the size of the mapping as returned by `opDetsToLibraryIndices()`.
      */
     virtual std::size_t opDetMappingSize() const = 0;
     
     /**
-     * @brief Returns a map of identifiers of optical detectors for each optical
-     *        detector identifier within the library around the specified
-     *        `location`.
+     * @brief Returns a map of optical detectors identifiers, one for each
+     *        library index.
      * @param location a world reference point to provide global context
-     * @return identifiers of optical detectors for all library identifiers
-     * @throw std::domain_error if input identifier can't be handled
-     * @see `opDetToLibrary()`, `opDetsFromLibrary()`
+     * @return optical detector identifiers for all library indices
+     * @throw std::domain_error if location can't be handled
+     * @see `opDetsToLibraryIndices()`, `libraryIndexToOpDet()`
      * 
-     * The returned value is a mapping object (see `LibOpDetIDmap` documentation
-     * for the interface).
+     * The returned value is a mapping object (see `LibraryIndexToOpDetMap`
+     * documentation for the interface). If a library index does not map to any
+     * optical detector in the library at `location` (which is unusual!),
+     * the optical detector ID corresponding to it is `InvalidOpDetID`.
      * 
-     * The specified `location` is used to provide context for the mapping, in
-     * a similar fashion as `locationToLibrary()` does.
-     * 
-     * Differently from `opDetsFromLibrary()`, this method returns a copy of the
-     * mapping rather than a reference to an existing one.
-     * 
+     * The specified `location` is used to provide context in a similar
+     * fashion as `detectorToLibrary()` does. It can be used to choose the
+     * correct mapping among the available ones.
      */
-    virtual LibOpDetIDmap const& opDetsFromLibrary
+    virtual LibraryIndexToOpDetMap const& libraryIndicesToOpDets
       (geo::Point_t const& location) const = 0;
     
     /**
-     * @brief Expected size of the mapping of library optical detectors.
+     * @brief Expected size of the mapping from library to optical detectors.
      * @param location a world reference point to provide global context
-     * @return the expected size of the mapping of library optical detectors
-     * @see `opDetsFromLibrary()`
+     * @throw std::domain_error if location can't be handled
+     * @return the expected size of the mapping from library indices to
+     *         optical detectors
+     * @see `libraryIndicesToOpDets()`
      * 
-     * This is effectively the size of the mapping as returned by
-     * `opDetsFromLibrary()`.
+     * This is effectively the size of the mapping returned by
+     * `libraryIndicesToOpDets()`. It represents how many library indices are
+     * provided by the library for the specified `location`. For example, in
+     * an implementation exploiting the modularity of a detector with _N_
+     * channels and made of _M_ modules, this value might be _N / M_.
      */
-    virtual std::size_t libraryOpDetMappingSize
+    virtual std::size_t libraryMappingSize
       (geo::Point_t const& location) const = 0;
     
     /// @}
-    // --- END Optical detector identifier mapping interface -------------------
+    // --- END Optical detector mapping interface ------------------------------
     
     
     // --- BEGIN Utility methods -----------------------------------------------
@@ -252,47 +354,48 @@ namespace phot {
     /// @{
     
     /**
-     * @brief Remaps a collection indexed by library optical detector IDs into
-     *        one indexed by (global) optical detector IDs.
-     * @tparam Coll type of collection of data to be mapped
-     * @param opDetMap the mapping to be applied
-     * @tparam source collection of data to be mapped
-     * @return a random access collection remapping the original data
+     * @brief Remaps a collection indexed by library index into one indexed by
+     *        optical detector IDs.
+     * @tparam Coll type of collection of data from the library, to be mapped
+     * @param opDetToLibraryMap the mapping to be applied
+     * @param source collection of library data to be mapped
+     * @param defaultValue value returned for unmapped optical detector IDs
+     * @return a random access collection providing data by optical detector ID
      * 
      * This method returns a collection proxy that dynamically applies the
      * specified mapping. The original data is not copied.
      * 
-     * The format of the map is an object with a indicing operator where the
-     * index is the one in the destination collection (i.e. the optical detector
-     * index) and the mapped value is the index in the source collection (the
-     * libarry internal optical detector index). Each valid input index must be
-     * mapped. If the mapped output index value is the largest
-     * possible index (`InvalidIndex`), the item is not mapped anywhere and the
-     * corresponding entry in the mapped collection is assigned the value
-     * `defaultValue`. Otherwise, the index must be within the range of input
-     * indices (which is up to `libraryOpDetMappingSize()` applied to the
-     * location where `opDetMap` is valid).
+     * The format of the map (`opDetMap`) is an object with a indexing operator
+     * where the index is _the one in the destination collection_ (i.e. the
+     * optical detector ID) and the mapped value is the index in the source
+     * collection (the libary index). Each valid optical detector ID must be
+     * mapped. If the library index mapped to an optical detector is
+     * `InvalidLibraryIndex`, that optical detector is not mapped anywhere and
+     * its entry in the mapped collection is assigned the value `defaultValue`.
+     * Otherwise, the library index must be valid (which means, up to the result
+     * of `libraryMappingSize()` applied to the location where `opDetMap` is
+     * valid).
      * 
      */
     template <typename Coll>
     MappedOpDetData_t<Coll> applyOpDetMapping(
-      LibOpDetIDmap const& opDetMap, Coll&& source,
+      OpDetToLibraryIndexMap const& opDetToLibraryMap, Coll&& source,
       util::collection_value_t<Coll> defaultValue = {}
       ) const;
     
     /**
-     * @brief Remaps a collection indexed by library optical detector IDs into
-     *        one indexed by (global) optical detector IDs.
-     * @tparam Coll type of collection of data to be mapped
+     * @brief Remaps a collection indexed by library index into one indexed by
+     *        optical detector IDs according to the mapping at `location`.
+     * @tparam Coll type of collection of data from the library, to be mapped
      * @param location a world reference point to provide global context
-     * @param source collection of data to be mapped
-     * @param defaultValue value returned for unmapped indices
-     * @return a vector with copies of the original data, reshuffled
-     * @see `applyOpDetMappingPtr()`
+     * @param source collection of library data to be mapped
+     * @param defaultValue value returned for unmapped optical detector IDs
+     * @return a random access collection providing data by optical detector ID
+     * @see `applyOpDetMapping()`
      * 
      * This method applies a mapping (see
-     * `applyOpDetMapping(LibOpDetIDmap const&, Coll&&)`) that is
-     * obtained via `opDetsFromLibrary()`.
+     * `applyOpDetMapping(OpDetToLibraryIndexMap const&, Coll&&, util::collection_value_t<Coll>)`)
+     * that is obtained via `libraryIndicesToOpDets()`.
      */
     template <typename Coll>
     auto applyOpDetMapping(
@@ -301,7 +404,8 @@ namespace phot {
       ) const
       {
         return applyOpDetMapping(
-          opDetsFromLibrary(location), std::forward<Coll>(source), defaultValue
+          opDetsToLibraryIndices(location), std::forward<Coll>(source),
+          defaultValue
           );
       }
     
@@ -321,18 +425,21 @@ namespace phot {
 //------------------------------------------------------------------------------
 template <typename Coll>
 auto phot::IPhotonMappingTransformations::applyOpDetMapping(
-  LibOpDetIDmap const& opDetMap, Coll&& source,
+  OpDetToLibraryIndexMap const& opDetToLibraryMap, Coll&& source,
   util::collection_value_t<Coll> defaultValue /* = {} */
 ) const 
   -> MappedOpDetData_t<Coll>
 {
   
-  auto const n = opDetMappingSize(); // number of available destination slots
+  using std::size;
+  
+  // number of available destination slots (i.e. how many optical detectors)
+  auto const n = size(opDetToLibraryMap);
   
   return MappedOpDetData_t<Coll>{
       util::make_collection_reference(std::forward<Coll>(source))
-    , std::cref(opDetMap) // mapping is referenced
-    , n                   // size
+    , std::cref(opDetToLibraryMap) // mapping is referenced
+    , n                            // size
     , defaultValue
     };
   

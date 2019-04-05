@@ -60,13 +60,13 @@ namespace phot {
      *        location.
      * @param location position in world coordinates [cm]
      * @return a vector expressing `location` in the library space
-     * @see `locationFromLibrary()`
      * 
-     * The returned vector is an exact copy of `location`.
+     * The returned vector is the same as `location`, but with the _x_ component
+     * always positive..
      * 
      * No exception is ever thrown.
      */
-    virtual geo::Point_t locationToLibrary
+    virtual geo::Point_t detectorToLibrary
       (geo::Point_t const& location) const override
       { return { std::abs(location.X()), location.Y(), location.Z() }; }
     
