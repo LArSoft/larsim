@@ -105,7 +105,7 @@ namespace phot {
      */
     virtual LibraryIndex_t opDetToLibraryIndex
       (geo::Point_t const& location, OpDetID_t opDetID) const override
-      { return { opDetID }; }
+      { return LibraryIndex_t{ opDetID }; }
     
     /**
      * @brief Maps a library index with an optical detector.

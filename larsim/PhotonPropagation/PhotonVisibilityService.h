@@ -14,11 +14,13 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h"
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 #include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+
 
 // ROOT libraries
 #include "TF1.h"
@@ -37,33 +39,6 @@ namespace phot{
     using LibraryIndex_t = phot::IPhotonMappingTransformations::LibraryIndex_t;
     
   public:
-    
-    /// Type of optical detector ID.
-    using OpDetID_t = phot::IPhotonMappingTransformations::OpDetID_t;
-    
-    /// Type of mapped visibility counts. No data storage is provided.
-    using MappedCounts_t
-      = phot::IPhotonMappingTransformations::MappedOpDetData_t
-        <phot::IPhotonLibrary::Counts_t>
-      ;
-    
-    /// Type of mapped arrival times. No data storage is provided.
-    using MappedT0s_t
-      = phot::IPhotonMappingTransformations::MappedOpDetData_t
-        <phot::IPhotonLibrary::T0s_t>
-      ;
-    
-    /// Type of set of parameters for functions. No data storage is provided.
-    using MappedParams_t
-      = phot::IPhotonMappingTransformations::MappedOpDetData_t
-        <phot::IPhotonLibrary::Params_t>
-      ;
-    
-    /// Type of mapped parametrization functions. No data storage is provided.
-    using MappedFunctions_t
-      = phot::IPhotonMappingTransformations::MappedOpDetData_t
-        <phot::IPhotonLibrary::Functions_t>
-      ;
     
     ~PhotonVisibilityService();
     PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
@@ -267,4 +242,4 @@ namespace phot{
   }; // class PhotonVisibilityService
 } //namespace phot
 DECLARE_ART_SERVICE(phot::PhotonVisibilityService, LEGACY)
-#endif // UTIL_DETECTOR_PROPERTIES_H
+#endif // PHOTONVISIBILITYSERVICE_H

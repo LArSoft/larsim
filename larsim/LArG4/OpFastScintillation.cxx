@@ -611,7 +611,7 @@ namespace larg4{
     double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
     auto const& Visibilities = pvs->GetAllVisibilities(xyz);
 
-    phot::PhotonVisibilityService::MappedCounts_t ReflVisibilities;
+    phot::MappedCounts_t ReflVisibilities;
 
     
     // Store timing information in the object for use in propagation_time method
