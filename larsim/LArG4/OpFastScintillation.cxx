@@ -1556,8 +1556,7 @@ namespace larg4{
   int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type) {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
-    // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    // QUICK FIX UNTIL MORE ELEGANT SOLUTION CAN BE CREATED
+    // check x coordinate has same sign or is close to zero, otherwise return 0 hits 
     if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10){	
       return 0;	
     }    
@@ -1616,7 +1615,6 @@ namespace larg4{
      // check optical channel is in same TPC as scintillation light, if not return 0 hits
      // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
      // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-     // QUICK FIX UNTIL MORE ELEGANT SOLUTION CAN BE CREATED
      if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10){	
        return 0;	
      }   
