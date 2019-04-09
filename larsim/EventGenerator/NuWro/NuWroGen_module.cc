@@ -7,9 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef EVGEN_NUWROGEN_H
-#define EVGEN_NUWROGEN_H
-
 #include <sys/stat.h> 
 #include <cstdlib>
 #include <string>
@@ -1503,7 +1500,7 @@ namespace evgen{
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
     run.put(std::move(runcol));
 
     return;
@@ -2004,6 +2001,3 @@ namespace evgen{
   DEFINE_ART_MODULE(NuWroGen)
 
 }
-
-#endif // EVGEN_NUWROGEN_H
-////////////////////////////////////////////////////////////////////////

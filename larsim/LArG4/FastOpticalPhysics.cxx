@@ -40,9 +40,6 @@
 // ********************************************************************
 //
 
-#ifndef LARG4_FASTOPTICALPHYSICS_CXX
-#define LARG4_FASTOPTICALPHYSICS_CXX 1
-
 #include "larsim/LArG4/FastOpticalPhysics.h"
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
@@ -217,5 +214,3 @@ namespace larg4 {
     
   }
 }
-
-#endif

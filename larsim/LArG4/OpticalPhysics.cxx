@@ -38,9 +38,6 @@
 // ********************************************************************
 //
 
-#ifndef LARG4_OPTICALPHYSICS_CXX
-#define LARG4_OPTICALPHYSICS_CXX 1
-
 #include "larsim/LArG4/OpticalPhysics.hh"
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
@@ -232,5 +229,3 @@ namespace larg4 {
     
   }
 }
-
-#endif

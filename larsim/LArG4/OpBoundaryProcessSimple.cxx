@@ -49,9 +49,6 @@
 // Optical Photon Boundary Process Class Implementation
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef LARG4_OPBOUNDARYPROCESSSIMPLE_CXX
-#define LARG4_OPBOUNDARYPROCESSSIMPLE_CXX 1
-
 #include "TH1.h"
 #include "TTree.h"
 
@@ -303,8 +300,3 @@ namespace larg4 {
     return DBL_MAX;
   }
 }
-
-
-#endif
-
-

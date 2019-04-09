@@ -1,6 +1,3 @@
-#ifndef WEIGHTMANAGER_CXX
-#define WEIGHTMANAGER_CXX
-
 #include <sstream>
 #include <map>
 #include <set>
@@ -60,5 +57,3 @@ namespace evwgh {
   }
 
 }
-
-#endif

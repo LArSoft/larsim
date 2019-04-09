@@ -306,7 +306,7 @@ namespace evgen{
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     run.put(std::move(runcol));
 
@@ -327,7 +327,7 @@ namespace evgen{
   void GENIEGen::endSubRun(art::SubRun& sr)
   {
 
-    std::unique_ptr<sumdata::POTSummary> p(new sumdata::POTSummary());
+    auto p = std::make_unique<sumdata::POTSummary>();
     
     p->totpot = fGENIEHelp->TotalExposure() - fPrevTotPOT;
     p->totgoodpot = fGENIEHelp->TotalExposure() - fPrevTotGoodPOT;

@@ -6,9 +6,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef MCTRACKRECOALG_CXX
-#define MCTRACKRECOALG_CXX
-
 #include "MCTrackRecoAlg.h"
 #include <iostream>
 #include <fstream>
@@ -275,6 +272,3 @@ namespace sim {
     return result;
   }
 }
-
-
-#endif

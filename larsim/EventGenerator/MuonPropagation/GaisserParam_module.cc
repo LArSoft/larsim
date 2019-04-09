@@ -257,7 +257,7 @@ namespace evgen{
   {
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
-    std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     // Check fcl parameters were set correctly
     if ( fThetamax > M_PI/2 + 0.01 ) throw cet::exception("GaisserParam")<< "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this cause an error so leaving program now...\n\n"; 

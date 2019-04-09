@@ -129,7 +129,7 @@ namespace larg4 {
     , fReadoutSetupData(setupData.readoutSetup)
   {
     larg4::IonizationAndScintillation *ios = larg4::IonizationAndScintillation::Instance();
-    std::unique_ptr<G4UserLimits> fStepLimit(new G4UserLimits(ios->StepSizeLimit()));
+    auto fStepLimit = std::make_unique<G4UserLimits>(ios->StepSizeLimit());
   }
 
   ////////////////////////////////////////////////////////////////////

@@ -4,9 +4,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef MCSHOWERRECOPART_CXX
-#define MCSHOWERRECOPART_CXX
-
 #include "MCShowerRecoPart.h"
 
 namespace sim {
@@ -125,4 +122,3 @@ namespace sim {
   }
   
 }
-#endif

@@ -4,9 +4,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef MCRECOPART_CXX
-#define MCRECOPART_CXX
-
 #include "MCRecoPart.h"
 
 namespace sim {
@@ -202,4 +199,3 @@ namespace sim {
     }
   }
 }
-#endif
