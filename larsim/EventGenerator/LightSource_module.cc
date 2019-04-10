@@ -56,7 +56,6 @@
  */
 
 // C++ includes.
-#include <iostream>
 #include <string>
 #include <cmath>
 #include <memory>
@@ -229,7 +228,7 @@ namespace evgen{
 	    fZSteps = pset.get<int >("ZSteps");
 	  }
 
-	art::ServiceHandle<geo::Geometry> geo;
+        art::ServiceHandle<geo::Geometry const> geo;
 	// get TPC dimensions removed. -TA
 
 
@@ -240,7 +239,7 @@ namespace evgen{
 	// the geometry, or use values specified by the user.
 	if(!fUseCustomRegion)
 	  {
-	    art::ServiceHandle<phot::PhotonVisibilityService> vis;   
+            art::ServiceHandle<phot::PhotonVisibilityService const> vis;
 	    fThePhotonVoxelDef = vis->GetVoxelDef();
 	  }
 	else
@@ -282,7 +281,7 @@ namespace evgen{
     
     if(fFillTree)
       {
-	art::ServiceHandle<art::TFileService> tfs;
+        art::ServiceHandle<art::TFileService const> tfs;
 	fPhotonsGenerated = tfs->make<TTree>("PhotonsGenerated","PhotonsGenerated");
 	fPhotonsGenerated->Branch("X",&(fShotPos[0]),"X/D");
 	fPhotonsGenerated->Branch("Y",&(fShotPos[1]),"Y/D");
@@ -301,7 +300,7 @@ namespace evgen{
   void LightSource::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
     
     fCurrentVoxel=fFirstVoxel;

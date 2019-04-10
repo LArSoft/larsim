@@ -24,9 +24,7 @@
 #include "nutools/RandomUtils/NuRandomService.h"
 
 #include <cmath>
-#include <map>
 #include <memory>
-#include <vector>
 
 using namespace std;
 
@@ -182,7 +180,7 @@ PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
   , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton"))
   , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime"))
 {
-  if (art::ServiceHandle<sim::LArG4Parameters>{}->UseLitePhotons()) {
+  if (art::ServiceHandle<sim::LArG4Parameters const>{}->UseLitePhotons()) {
     produces<vector<sim::SimPhotonsLite>>();
   }
   else {
@@ -192,8 +190,8 @@ PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
 
 void PhotonLibraryPropagation::produce(art::Event& e)
 {
-  art::ServiceHandle<PhotonVisibilityService> pvs;
-  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  art::ServiceHandle<PhotonVisibilityService const> pvs;
+  art::ServiceHandle<sim::LArG4Parameters const> lgp;
   auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
   CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
   CLHEP::RandFlat randflatscinttime{fScintTimeEngine};

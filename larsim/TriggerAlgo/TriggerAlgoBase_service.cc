@@ -9,7 +9,7 @@
 namespace trigger{
 
   //****************************************************************************
-  TriggerAlgoBase::TriggerAlgoBase(fhicl::ParameterSet const& pset, art::ActivityRegistry& /* reg */) {
+  TriggerAlgoBase::TriggerAlgoBase(fhicl::ParameterSet const& pset) {
   //****************************************************************************
 
     ClearTriggerInfo();

@@ -29,8 +29,7 @@ namespace sim {
 
   class LArG4Parameters {
   public:
-    LArG4Parameters(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~LArG4Parameters() {}
+    LArG4Parameters(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& pset);
     

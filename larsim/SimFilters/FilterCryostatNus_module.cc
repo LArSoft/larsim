@@ -23,7 +23,6 @@
 
 // C++ Includes
 #include <cmath> // std::abs()
-#include <vector>
 
 
 namespace simfilter {

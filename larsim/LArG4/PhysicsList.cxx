@@ -51,7 +51,7 @@ namespace larg4 {
     // G4VModularPhysicsList::ConstructProcess() to handle the
     // parallel geometry.
 
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     bool DisableWireplanes = lgp->DisableWireplanes();
 
     G4ParallelWorldScoringProcess* LArVoxelParallelWorldScoringProcess

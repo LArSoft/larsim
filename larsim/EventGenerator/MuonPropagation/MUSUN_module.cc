@@ -150,12 +150,9 @@
 #include <cmath>
 #include <memory>
 #include <iterator>
-#include <vector>
 #include <utility> 
 #include <sys/stat.h>
 #include <exception>
-#include <map>
-#include <vector>
 #include <algorithm>
 
 // Framework includes
@@ -183,7 +180,6 @@
 #include "larcoreobj/SummaryData/RunData.h"
 
 #include "TTree.h"
-#include "TVector3.h"
 #include "TDatabasePDG.h"
 #include "TMath.h"
 #include "TF2.h"
@@ -367,7 +363,7 @@ namespace evgen{
   void MUSUN::beginJob()
   {
     // Make the Histograms....
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     /*
     hPDGCode      = tfs->make<TH1D>("hPDGCode"     ,"PDG Code"      ,30 , -15           , 15             );
     hPositionX    = tfs->make<TH1D>("hPositionX"   ,"Position (cm)" ,500, ( fXmin - 10 ), ( fXmax + 10 ) );
@@ -420,7 +416,7 @@ namespace evgen{
   void MUSUN::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
     
     // Check fcl parameters were set correctly

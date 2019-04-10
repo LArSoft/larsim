@@ -8,10 +8,8 @@
 // \brief by LArVoxelReadout
 ////////////////////////////////////////////////////////////////////////
 // C++ std library includes
-#include <vector>
 #include <string>
 #include <algorithm>
-#include <sstream>
 #include <fstream>
 #include <bitset>
 // Framework includes
@@ -20,8 +18,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/Ptr.h" 
-#include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 // Root Includes
@@ -33,7 +29,6 @@
 #include "TString.h"
 #include "TGraph.h"
 #include "TH1.h"
-#include "TVector3.h"
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -119,9 +114,9 @@ namespace larg {
     initDone = true; // Insure that we bail later on
 
     // get access to the TFile service
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     // geometry data.
-    art::ServiceHandle<geo::Geometry> geom; 
+    art::ServiceHandle<geo::Geometry const> geom; 
     // detector specific properties
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
@@ -182,7 +177,7 @@ namespace larg {
     
     ensureHists();
 
-    art::ServiceHandle<geo::Geometry> geom; 
+    art::ServiceHandle<geo::Geometry const> geom; 
 
     art::Handle< std::vector<sim::SimChannel> > chanHandle;
     evt.getByLabel(fLArG4ModuleLabel,chanHandle);

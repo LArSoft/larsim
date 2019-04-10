@@ -73,7 +73,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -83,7 +82,6 @@
 #include "TMath.h"
 
 // C++ includes
-#include <vector>
 #include <map>
 #include <algorithm> // std::find
 #include <cmath>
@@ -162,7 +160,7 @@ namespace detsim {
 
     double fDriftClusterPos[3];
 
-    art::ServiceHandle<geo::Geometry> fGeometry;  ///< Handle to the Geometry service
+    art::ServiceHandle<geo::Geometry const> fGeometry;  ///< Handle to the Geometry service
     ::detinfo::ElecClock              fClock;     ///< TPC electronics clock
 
 
@@ -206,7 +204,7 @@ namespace detsim {
 
     // To-do: Move the parameters we fetch from "LArG4" to detector
     // properties.
-    art::ServiceHandle<sim::LArG4Parameters> paramHandle;
+    art::ServiceHandle<sim::LArG4Parameters const> paramHandle;
     fElectronClusterSize   = paramHandle->ElectronClusterSize();
     fMinNumberOfElCluster  = paramHandle->MinNumberOfElCluster();
     fLongitudinalDiffusion = paramHandle->LongitudinalDiffusion(); // cm^2/ns units

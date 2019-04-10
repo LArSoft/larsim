@@ -23,10 +23,8 @@
 
 // C++ Includes
 #include <sstream>
-#include <vector>
 #include <map>
 #include <set>
-#include <iostream>
 #include <sys/stat.h>
 
 // Framework includes
@@ -359,7 +357,7 @@ namespace larg4 {
                 ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed"))
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
+    art::ServiceHandle<art::RandomNumberGenerator const> rng;
 
     if (pset.has_key("Seed")) {
       throw art::Exception(art::errors::Configuration)
@@ -379,12 +377,12 @@ namespace larg4 {
     bool useInputLabels = pset.get_if_present< std::vector<std::string> >("InputLabels",fInputLabels);
     if(!useInputLabels) fInputLabels.resize(0);
 
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fUseLitePhotons = lgp->UseLitePhotons();
 
     if(!lgp->NoPhotonPropagation()){
       try {
-        art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+        art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
         fStoreReflected = pvs->StoreReflected();
       }
       catch (art::Exception const& e) {
@@ -443,7 +441,7 @@ namespace larg4 {
   //----------------------------------------------------------------------
   void LArG4::beginJob()
   {
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     fG4Help = new g4b::G4Helper(fG4MacroPath, fG4PhysListName);
     if(fCheckOverlaps) fG4Help->SetOverlapCheck(true);
@@ -485,7 +483,7 @@ namespace larg4 {
     g4b::UserActionManager* uaManager = g4b::UserActionManager::Instance();
 
     // User-action class for accumulating LAr voxels.
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
 
     // UserAction for getting past a bug in v4.9.4.p02 of Geant4.
     // This action will not be used once the bug has been fixed
@@ -538,7 +536,7 @@ namespace larg4 {
     // if we don't have favourite volumes, don't even bother creating a filter
     if (vol_names.empty()) return {};
 
-    auto const& geom = *art::ServiceHandle<geo::Geometry>();
+    auto const& geom = *art::ServiceHandle<geo::Geometry const>();
 
     std::vector<std::vector<TGeoNode const*>> node_paths
       = geom.FindAllVolumePaths(vol_names);
@@ -606,8 +604,8 @@ namespace larg4 {
     std::unique_ptr< std::vector<sim::SimEnergyDeposit> > edepCol_Other     (new std::vector<sim::SimEnergyDeposit>);
 
     // Fetch the lists of LAr voxels and particles.
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     // Clear the detected photon table
     OpDetPhotonTable::Instance()->ClearTable(geom->NOpDets());

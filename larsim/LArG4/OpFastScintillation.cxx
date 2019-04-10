@@ -158,7 +158,7 @@ namespace larg4{
   
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
     : G4VRestDiscreteProcess(processName, type)
-    , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters>()->NoPhotonPropagation()))
+    , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
   {
    
     SetProcessSubType(25);
@@ -186,9 +186,9 @@ namespace larg4{
     emSaturation = NULL;
 
     if (bPropagate) {
-      art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+      art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time 
-      static art::ServiceHandle<geo::Geometry> geo;
+      static art::ServiceHandle<geo::Geometry const> geo;
    
       for(size_t i = 0; i != pvs->NOpChannels(); i++)
 	{
@@ -480,7 +480,7 @@ namespace larg4{
   bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)//, double stepEnergy)
   {
     // make sure that whatever happens afterwards, the energy deposition is stored
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     if(lgp->FillSimEnergyDeposits())
       ProcessStep(aStep);
   
@@ -520,7 +520,7 @@ namespace larg4{
       return 0;
 
     // Get the visibility vector for this point
-    art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
     size_t const NOpChannels = pvs->NOpChannels();
 
 
@@ -1079,7 +1079,7 @@ namespace larg4{
   std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) //const
   {
 
-    static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
 
     // Initialize vector of the right length with all 0's
     std::vector<double> arrival_time_dist(NPhotons, 0);

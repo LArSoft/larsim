@@ -130,7 +130,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
 void ToyOneShowerGen::beginRun(art::Run& run)
 {
   // grab the geometry object to see what geometry we are using
-  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry const> geo;
   run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 }
 
@@ -138,7 +138,7 @@ std::vector<double> ToyOneShowerGen::GetXYZPosition() {
 
   std::vector<double> pos(3,0);
 
-  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry const> geo;
 
   pos.at(0) = fFlatRandom.fire(0.,2.*(geo->DetHalfWidth()));
   pos.at(1) = fFlatRandom.fire(-1.*(geo->DetHalfHeight()), geo->DetHalfHeight());

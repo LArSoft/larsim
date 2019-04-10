@@ -10,7 +10,6 @@
 #include "larsim/MCCheater/PhotonBackTrackerService.h"
 
 //CPP includes
-#include <map>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"

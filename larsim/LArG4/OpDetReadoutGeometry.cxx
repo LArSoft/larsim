@@ -103,7 +103,7 @@ namespace larg4 {
     std::vector<G4LogicalVolume*>  OpParamVolumesFound;
     std::vector<G4Transform3D>     OpParamTransformationsFound;
     
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     
     std::vector<std::string> OpParamModels       = lgp->OpticalParamModels();
     std::vector<std::string> OpParamVolumes      = lgp->OpticalParamVolumes();

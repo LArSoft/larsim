@@ -32,7 +32,7 @@ namespace larg4 {
 
   VisualizationAction::VisualizationAction()
   {
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     m_energyCutoff = lgp->VisualizationEnergyCut()*CLHEP::GeV;
     m_drawNeutrals = lgp->DrawNeutrals();
 

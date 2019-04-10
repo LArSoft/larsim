@@ -8,7 +8,6 @@
 #include "larsim/Simulation/LArVoxelList.h"
 
 #include <iterator>
-#include <vector>
 #include <iostream>
 #include <cmath>
 

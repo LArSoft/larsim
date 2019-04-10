@@ -42,8 +42,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
 
 LArStackingAction::LArStackingAction(G4int dum)
@@ -68,7 +66,7 @@ G4ClassificationOfNewTrack
 LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 {
   G4ClassificationOfNewTrack classification = fWaiting;
-  art::ServiceHandle<geo::Geometry> geom;
+  art::ServiceHandle<geo::Geometry const> geom;
   TString volName(InsideTPC(aTrack));
   Double_t buffer = 500; // Keep muNucl neutrals within 5m (for now) of larTPC.
 
@@ -172,7 +170,7 @@ LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 std::string LArStackingAction::InsideTPC(const G4Track * aTrack)
 {
 
-  art::ServiceHandle<geo::Geometry> geom;
+  art::ServiceHandle<geo::Geometry const> geom;
   const G4ThreeVector tr4Pos = aTrack->GetPosition();
 
   // G4 returns positions in mm, have to convert to cm for LArSoft coordinate systems

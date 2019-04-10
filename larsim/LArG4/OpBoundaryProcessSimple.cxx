@@ -50,7 +50,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "TH1.h"
-#include "TTree.h"
 
 #include "Geant4/G4ios.hh"
 #include "Geant4/G4OpProcessSubType.hh"
@@ -134,7 +133,7 @@ namespace larg4 {
     if(Material1 != Material2)
       {
 
-  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  art::ServiceHandle<sim::LArG4Parameters const> lgp;
 
   fVerbosity = lgp->OpVerbosity();
 

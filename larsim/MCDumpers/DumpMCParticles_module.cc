@@ -30,7 +30,6 @@
 
 // C/C++ standard libraries
 #include <memory> // std::unique_ptr<>
-#include <vector>
 #include <string>
 #include <cstddef> // std::size_t
 

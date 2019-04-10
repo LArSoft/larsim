@@ -20,7 +20,6 @@ namespace cheat {
 class cheat::PhotonBackTrackerLoader : public art::EDProducer {
 public:
   explicit PhotonBackTrackerLoader(fhicl::ParameterSet  const& p);
-  virtual ~PhotonBackTrackerLoader();
 
   virtual void produce(art::Event & e);
 
@@ -39,12 +38,6 @@ cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  con
 }
 
 //------------------------------------------------------------------------------
-cheat::PhotonBackTrackerLoader::~PhotonBackTrackerLoader()
-{
-  // Clean up dynamic memory and other resources here.
-}
-
-//------------------------------------------------------------------------------
 // the sole purpose of this module is to issue the Rebuild command to the
 // PhotonBackTracker service.  It should be put after all simulation data producing
 // modules have run in the job, and only in jobs that create the simulation and
@@ -56,8 +49,6 @@ void cheat::PhotonBackTrackerLoader::produce(art::Event & e)
   art::ServiceHandle<cheat::PhotonBackTrackerService> pbt_serv;
   pi_serv->Rebuild(e);
   pbt_serv->Rebuild(e);
-
-  return;
 }
 
 

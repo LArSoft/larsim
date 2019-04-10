@@ -19,10 +19,8 @@
 
 // C++ includes
 #include <algorithm>
-#include <sstream>
 #include <fstream>
 #include <bitset>
-#include <vector>
 #include <string>
 
 
@@ -199,11 +197,11 @@ namespace detsim{
   void SimWire::beginJob() 
   { 
     // get access to the TFile service
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fNoiseDist      = tfs->make<TH1D>("Noise", ";Noise (ADC);", 1000, -10., 10.);
 
-    art::ServiceHandle<util::LArFFT> fFFT;
+    art::ServiceHandle<util::LArFFT const> fFFT;
     fNTicks = fFFT->FFTSize();
     fChargeWork.resize(fNTicks, 0.);
 
@@ -229,7 +227,7 @@ namespace detsim{
   void SimWire::produce(art::Event& evt)
   {
     // get the geometry to be able to figure out signal types and chan -> plane mappings
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     unsigned int signalSize = fNTicks;
     // vectors for working
     std::vector<short>    adcvec(signalSize, 0);	
@@ -341,7 +339,7 @@ namespace detsim{
     col.resize(fNTicks, 0.);  
 
     // write the shapes out to a file
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     fColTimeShape = tfs->make<TH1D>("ConvolutedCollection",";ticks; Electronics#timesCollection",fNTicks,0,fNTicks);
     fIndTimeShape = tfs->make<TH1D>("ConvolutedInduction",";ticks; Electronics#timesInduction",fNTicks,0,fNTicks);    
 
@@ -425,7 +423,7 @@ namespace detsim{
 
     //     std::cerr << "SetFieldResponse" << std::endl;
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
  
     double xyz1[3] = {0.};
     double xyz2[3] = {0.};
@@ -446,7 +444,7 @@ namespace detsim{
 
     // write out the response functions to the file
     // get access to the TFile service
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     fIndFieldResp = tfs->make<TH1D>("InductionFieldResponse",";t (ns);Induction Response",fNTicks,0,fNTicks);
     fColFieldResp = tfs->make<TH1D>("CollectionFieldResponse",";t (ns);Collection Response",fNTicks,0,fNTicks);
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -488,7 +486,7 @@ namespace detsim{
 
     //     std::cerr << "SetElectResponse" << std::endl;
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
   
     fElectResponse.resize(fNTicks, 0.);
     std::vector<double> time(fNTicks,0.);
@@ -528,7 +526,7 @@ namespace detsim{
     fNElectResp = fElectResponse.size();
 
     // write the response out to a file
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     fElectResp = tfs->make<TH1D>("ElectronicsResponse",";t (ns);Electronics Response",fNElectResp,0,fNElectResp);
     for(unsigned int i = 0; i < fNElectResp; ++i){
       //mf::LogInfo("SimWire") <<"checking ElectResponse: i=  "<< i << "  time[i]=  " << time[i] << "  fElectResponse[i]=  " << fElectResponse[i];

@@ -23,7 +23,6 @@
 // C/C++ standard libraries
 #include <string>
 #include <iomanip>
-#include <vector>
 #include <algorithm> // std::max()
 
 

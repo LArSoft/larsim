@@ -8,7 +8,6 @@
 #include "nutools/G4Base/DetectorConstruction.h"
 
 // C/C++ libraries
-#include <vector>
 #include <cmath>
 #include <map>
 #include <memory> // std::unique_ptr()
@@ -289,7 +288,7 @@ namespace larg4 {
 
         // Get some constants from the LAr voxel information object.
         // Remember, ROOT uses cm.
-        art::ServiceHandle<sim::LArVoxelCalculator> lvc;
+        art::ServiceHandle<sim::LArVoxelCalculator const> lvc;
         G4double voxelSizeX   = lvc->VoxelSizeX() * CLHEP::cm;
         G4double voxelSizeY   = lvc->VoxelSizeY() * CLHEP::cm;
         G4double voxelSizeZ   = lvc->VoxelSizeZ() * CLHEP::cm;

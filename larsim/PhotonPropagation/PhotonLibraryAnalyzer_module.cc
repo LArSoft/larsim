@@ -6,7 +6,6 @@
 //   bjpjones@mit.edu
 //
 #include <iostream>
-#include <vector>
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Event.h"
@@ -69,9 +68,9 @@ namespace phot {
     mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - begin"<< std::endl;
 
     
-    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<PhotonVisibilityService> pvs;
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<art::TFileService const> tfs;
+    art::ServiceHandle<PhotonVisibilityService const> pvs;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     int NOpDet = pvs->NOpChannels();
 

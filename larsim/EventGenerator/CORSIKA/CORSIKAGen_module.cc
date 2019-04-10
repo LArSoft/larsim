@@ -287,7 +287,7 @@ namespace evgen{
 
 
     //compute shower area based on the maximal x,z dimensions of cryostat boundaries + fShowerAreaExtension
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
       double bounds[6] = {0.};
       geom->CryostatBoundaries(bounds, c);
@@ -375,7 +375,7 @@ namespace evgen{
     CLHEP::RandPoissonQ randpois(fPoisEngine);
 
     // get geometry and figure where to project particles to, based on CRYHelper
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     double x1, x2;
     double y1, y2;
     double z1, z2;
@@ -487,7 +487,7 @@ namespace evgen{
   void CORSIKAGen::beginRun(art::Run& run){
 
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
@@ -499,7 +499,7 @@ namespace evgen{
   void CORSIKAGen::produce(art::Event& evt){
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
 
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     simb::MCTruth truth;
     truth.SetOrigin(simb::kCosmicRay);

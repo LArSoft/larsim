@@ -103,7 +103,7 @@ namespace evgen{
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed"))
     , fCRYHelp{pset,
                fEngine,
-               art::ServiceHandle<geo::Geometry>{}->GetWorldVolumeName()}
+               art::ServiceHandle<geo::Geometry const>{}->GetWorldVolumeName()}
   {
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();    
@@ -112,7 +112,7 @@ namespace evgen{
   //____________________________________________________________________________
   void CosmicsGen::beginJob()
   {
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fPhotonAngles     = tfs->make<TH2F>("fPhotonAngles",      ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
     fPhotonAnglesLo   = tfs->make<TH2F>("fPhotonAnglesLo",    ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
@@ -149,7 +149,7 @@ namespace evgen{
   void CosmicsGen::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
@@ -159,7 +159,7 @@ namespace evgen{
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
 
     // fill some histograms about this event
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     
     int nCrossCryostat = 0;
 

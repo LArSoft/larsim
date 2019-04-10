@@ -14,7 +14,6 @@
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
 
-#include <iostream>
 #include <utility> // std::move()
 #include <algorithm> // std::find()
 #include <ctime>

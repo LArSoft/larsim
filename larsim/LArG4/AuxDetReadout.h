@@ -73,7 +73,7 @@ namespace larg4 {
     sim::AuxDetSimChannel const GetAuxDetSimChannel() const { return fAuxDetSimChannel; };
     
   private:
-    art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
+    art::ServiceHandle<geo::Geometry const> fGeoHandle;        ///< Handle to the Geometry service
     uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
     uint32_t                          fAuxDetSensitive;  ///< which sensitive volume of the AuxDet this AuxDetReadout corresponds to
     sim::AuxDetSimChannel             fAuxDetSimChannel; ///< Contains the sim::AuxDetSimChannel for this AuxDet

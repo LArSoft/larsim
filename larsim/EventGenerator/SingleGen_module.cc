@@ -14,7 +14,6 @@
 #include <cmath>
 #include <memory>
 #include <iterator>
-#include <vector>
 #include <map>
 #include <initializer_list>
 #include <cctype> // std::tolower()
@@ -713,7 +712,7 @@ namespace evgen{
   {
 
     // grab the geometry object to see what geometry we are using
-    //    art::ServiceHandle<geo::Geometry> geo;
+    //    art::ServiceHandle<geo::Geometry const> geo;
     // auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     //run.put(std::move(runcol));

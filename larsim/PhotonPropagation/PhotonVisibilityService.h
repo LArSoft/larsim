@@ -41,7 +41,7 @@ namespace phot{
   public:
     
     ~PhotonVisibilityService();
-    PhotonVisibilityService(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    PhotonVisibilityService(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& p);
     

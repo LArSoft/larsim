@@ -68,7 +68,7 @@ namespace larg4 {
 					std::string&       daughterName,
 					unsigned int       expectedNum);
 
-    art::ServiceHandle<geo::Geometry> fGeo;       ///< Handle to the geometry    
+    art::ServiceHandle<geo::Geometry const> fGeo;       ///< Handle to the geometry    
     std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management, 
                                                   ///< so we have to
     

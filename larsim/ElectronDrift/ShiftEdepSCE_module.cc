@@ -71,11 +71,11 @@ spacecharge::ShiftEdepSCE::ShiftEdepSCE(fhicl::ParameterSet const & p)
 void spacecharge::ShiftEdepSCE::beginJob()
 {
   if(fMakeAnaTree){
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     fNtEdepAna = tfs->make<TNtuple>("nt_edep_ana","Edep PosDiff Ana Ntuple","energy:orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
   }
 
-  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 		    &(*lg4paramHandle),
@@ -85,13 +85,13 @@ void spacecharge::ShiftEdepSCE::beginJob()
 
 void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 {
-  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 		    &(*lg4paramHandle),
 		    lar::providerFrom<spacecharge::SpaceChargeService>());
   /*
-  art::ServiceHandle<sim::LArG4Parameters> lg4paramHandle;
+  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 		    lg4paramHandle,

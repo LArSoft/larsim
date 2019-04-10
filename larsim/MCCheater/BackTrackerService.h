@@ -49,61 +49,57 @@ namespace cheat{
 
       void Rebuild( const art::Event& evt );
 
-      const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() ;
+      const std::vector < art::Ptr < sim::SimChannel > >& SimChannels() const ;
 
-      const std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id) ;
-      const std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) ;
+      std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id) const ;
+      std::vector < const sim::IDE* > TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const ;
 
-      const art::Ptr < sim::SimChannel > FindSimChannel( raw::ChannelID_t channel );
+      art::Ptr < sim::SimChannel > FindSimChannel( raw::ChannelID_t channel ) const;
 
-      const std::vector < sim::TrackIDE > ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time, const double hit_end_time) ;
+      std::vector < sim::TrackIDE > ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time, const double hit_end_time) const;
 
-      const std::vector < sim::TrackIDE > HitToTrackIDEs(recob::Hit const& hit) ;
-      const std::vector < sim::TrackIDE > HitToTrackIDEs(art::Ptr < recob::Hit > const& hit) ;
+      std::vector < sim::TrackIDE > HitToTrackIDEs(recob::Hit const& hit) const;
+      std::vector < sim::TrackIDE > HitToTrackIDEs(art::Ptr < recob::Hit > const& hit) const;
 
-      const std::vector < int > HitToTrackIds(recob::Hit const& hit) ;
+      std::vector < int > HitToTrackIds(recob::Hit const& hit) const;
 
-      const std::vector < sim::TrackIDE > HitToEveTrackIDEs(recob::Hit const& hit) ;
-      const std::vector < sim::TrackIDE > HitToEveTrackIDEs(art::Ptr < recob::Hit > const& hit) ;
+      std::vector < sim::TrackIDE > HitToEveTrackIDEs(recob::Hit const& hit) const;
+      std::vector < sim::TrackIDE > HitToEveTrackIDEs(art::Ptr < recob::Hit > const& hit) const;
 
-      const std::vector < art::Ptr < recob::Hit > > TrackIdToHits_Ps( const int& tkId, std::vector < art::Ptr < recob::Hit > > const& hitsIn ) ;
-      const std::vector < art::Ptr < recob::Hit > > TrackIdToHits_Ps( const int& tkId ) ;
+      std::vector < art::Ptr < recob::Hit > > TrackIdToHits_Ps( const int& tkId, std::vector < art::Ptr < recob::Hit > > const& hitsIn ) const;
+      std::vector < art::Ptr < recob::Hit > > TrackIdToHits_Ps( const int& tkId ) const;
 
-      const std::vector < std::vector < art::Ptr < recob::Hit > > > TrackIdsToHits_Ps( std::vector < int > const& tkIds, std:: vector < art::Ptr < recob::Hit > > const& hitsIn ) ;
-      const std::vector < std::vector < art::Ptr < recob::Hit > > > TrackIdsToHits_Ps( std::vector < int > const& tkIds ) ;
+      std::vector < std::vector < art::Ptr < recob::Hit > > > TrackIdsToHits_Ps( std::vector < int > const& tkIds, std:: vector < art::Ptr < recob::Hit > > const& hitsIn ) const;
+      std::vector < std::vector < art::Ptr < recob::Hit > > > TrackIdsToHits_Ps( std::vector < int > const& tkIds ) const;
 
-      const std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) ;
-      const std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) ;
+      std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) const;
+      std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) const;
 
-      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (recob::Hit const& hit) ;
-      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) ;
+      std::vector< const sim::IDE* > HitToSimIDEs_Ps (recob::Hit const& hit) const;
+      std::vector< const sim::IDE* > HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) const;
 
-      const std::vector<double> SimIDEsToXYZ( std::vector< sim::IDE > const& ides) ;
-      const std::vector<double> SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) ;
+      std::vector<double> SimIDEsToXYZ( std::vector< sim::IDE > const& ides) const;
+      std::vector<double> SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) const;
 
-      const std::vector<double> HitToXYZ(const recob::Hit& hit) ;
-      const std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) ;
+      std::vector<double> HitToXYZ(const recob::Hit& hit) const;
+      std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) const;
 
-      const double HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) ;
-      const double HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const&     hits) ;
+      double HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
+      double HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const&     hits) const;
 
-      const double HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) ;
+      double HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const;
 
-      const double HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> > const&        hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) ;
+      double HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> > const&        hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const;
 
-      const std::set<int> GetSetOfTrackIds() ;
-      const std::set<int> GetSetOfEveIds() ;
+      std::set<int> GetSetOfTrackIds() const;
+      std::set<int> GetSetOfEveIds() const;
 
-      const std::set<int> GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) ;
-      const std::set<int> GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) ;
+      std::set<int> GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+      std::set<int> GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
 
-      const std::vector< double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits);
-      const std::vector< art::Ptr< recob::Hit > > SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const&      spt);
-      const std::vector< double > SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt);
-
-
-
-
+      std::vector< double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const;
+      std::vector< art::Ptr< recob::Hit > > SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const& spt) const;
+      std::vector< double > SpacePointToXYZ( art::Ptr< recob::SpacePoint > const& spt) const;
 
     private:
       const art::Event* fEvt=nullptr;

@@ -26,7 +26,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C/C++ standard libraries
-#include <vector>
 #include <string>
 #include <iterator> // std::back_inserter()
 #include <algorithm> // std::copy()

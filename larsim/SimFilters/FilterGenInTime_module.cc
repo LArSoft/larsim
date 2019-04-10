@@ -27,7 +27,6 @@
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
-#include <iostream>
 #include <cstring>
 #include <sys/stat.h>
 
@@ -77,7 +76,7 @@ namespace simfilter {
   }
 
   void FilterGenInTime::beginJob(){
-    auto const& geom = *art::ServiceHandle<geo::Geometry>();
+    auto const& geom = *art::ServiceHandle<geo::Geometry const>();
 	  
 	  geom.CryostatBoundaries(fbounds, 0);
   }
@@ -140,7 +139,7 @@ namespace simfilter {
 
     
     //get the list of particles from this event
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     
     std::vector< art::Handle< std::vector<simb::MCTruth> > > allmclists;
     evt.getManyByType(allmclists);

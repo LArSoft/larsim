@@ -83,7 +83,7 @@ namespace simfilter {
   {
     bool interactionDesired(false);
     //get the list of particles from this event
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     // * MC truth information
     art::Handle< std::vector<simb::MCTruth> > mctruthListHandle;

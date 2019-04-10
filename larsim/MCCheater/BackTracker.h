@@ -90,25 +90,23 @@ namespace cheat{
       const std::vector<art::Ptr<sim::SimChannel>>& SimChannels() const { return fSimChannels; }
       //All Hit List would go here. We explicitly choose not to include it, as the user should not be using backtracker to access Hits. This could change in a concievable future use case where we also allow the user to define what the "AllHitList" should be, though this would have ramifications on other functions.
 
-      const std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id) const;
-      //const std::vector<const sim::IDE>    TrackIdToSimIDEs (int const& id) const; 
-      const std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const; 
-      //std::vector<const sim::IDE>    TrackIdToSimIDEs (int const& id, const geo::View_t view) const; 
+      std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id) const;
+      std::vector<const sim::IDE* >   TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const;
 
       art::Ptr<sim::SimChannel> FindSimChannel( raw::ChannelID_t channel ) const;
 
-      const std::vector< sim::TrackIDE > ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time, const double hit_end_time) const;
+      std::vector< sim::TrackIDE > ChannelToTrackIDEs(raw::ChannelID_t channel, const double hit_start_time, const double hit_end_time) const;
 
 
       //Track IDEs cannot be returned as pointers, as they dont exist in the data product, and we will not be storing them.
-      const std::vector< sim::TrackIDE> HitToTrackIDEs(recob::Hit const& hit) const;
-      const std::vector< sim::TrackIDE> HitToTrackIDEs(art::Ptr<recob::Hit> const& hit) const { return this->HitToTrackIDEs(*hit);}
+      std::vector< sim::TrackIDE> HitToTrackIDEs(recob::Hit const& hit) const;
+      std::vector< sim::TrackIDE> HitToTrackIDEs(art::Ptr<recob::Hit> const& hit) const { return this->HitToTrackIDEs(*hit);}
 
-      const std::vector< int > HitToTrackIds(recob::Hit const& hit) const ;
+      std::vector< int > HitToTrackIds(recob::Hit const& hit) const ;
       //   std::vector< const int> HitToTrackId(art::Ptr<recob::Hit> const& hit) { return this->HitToTrackId(*hit); }
 
-      const std::vector<sim::TrackIDE> HitToEveTrackIDEs(recob::Hit const& hit) const;
-      const std::vector<sim::TrackIDE> HitToEveTrackIDEs(art::Ptr<recob::Hit> const& hit) const{ return this->HitToEveTrackIDEs(*hit);}
+      std::vector<sim::TrackIDE> HitToEveTrackIDEs(recob::Hit const& hit) const;
+      std::vector<sim::TrackIDE> HitToEveTrackIDEs(art::Ptr<recob::Hit> const& hit) const{ return this->HitToEveTrackIDEs(*hit);}
 
       //I will not return these by copy, as that could get very large very quickly.
       std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const; 
@@ -120,38 +118,38 @@ namespace cheat{
 //      std::vector< std::vector< art::Ptr<recob::Hit> > > TrackIdsToHits_Ps( std::vector<int> const& tkIds ) const
 //      {return this->TrackIdsToHits_Ps(tkIds, fAllHitList);}
 
-      const std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) const;
-      const std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) const{ return this->HitToAvgSimIDEs(*hit);}
+      std::vector< sim::IDE > HitToAvgSimIDEs ( recob::Hit const& hit) const;
+      std::vector< sim::IDE > HitToAvgSimIDEs ( art::Ptr<recob::Hit> hit) const{ return this->HitToAvgSimIDEs(*hit);}
 
-      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (recob::Hit const& hit) const;
-      const std::vector< const sim::IDE* > HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) const { return this->HitToSimIDEs_Ps (*hit); }
+      std::vector< const sim::IDE* > HitToSimIDEs_Ps (recob::Hit const& hit) const;
+      std::vector< const sim::IDE* > HitToSimIDEs_Ps (art::Ptr< recob::Hit > const& hit) const { return this->HitToSimIDEs_Ps (*hit); }
 
-      //const std::vector< sim::IDE > HitToSimIDEs (recob::Hit const& hit);
+      //   std::vector< sim::IDE > HitToSimIDEs (recob::Hit const& hit);
       //   std::vector< const sim::IDE > HitToSimIDEs (art::Ptr< recob::Hit > const& hit) { return this->HitToSimIDEsPs (*hit); }
 
-      const std::vector<double> SimIDEsToXYZ( std::vector< sim::IDE > const& ides) const;
-      const std::vector<double> SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) const;
+      std::vector<double> SimIDEsToXYZ( std::vector< sim::IDE > const& ides) const;
+      std::vector<double> SimIDEsToXYZ( std::vector< const sim::IDE* > const& ide_Ps) const;
 
-      const std::vector<double> HitToXYZ(const recob::Hit& hit) const;
-      const std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) const{ return this->HitToXYZ(*hit);}
-
-
-
-      const double HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
-      const double HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
-
-      const double HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const; 
+      std::vector<double> HitToXYZ(const recob::Hit& hit) const;
+      std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) const{ return this->HitToXYZ(*hit);}
 
 
-      const double HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> > const& hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const; 
 
-      const std::set<int> GetSetOfTrackIds() const { return fPartInv->GetSetOfTrackIds();}
-      const std::set<int> GetSetOfEveIds() const { return fPartInv->GetSetOfEveIds();}
+      double HitCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
+      double HitChargeCollectionPurity( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits) const;
 
-      const std::set<int> GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
-      const std::set<int> GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+      double HitCollectionEfficiency( std::set<int> const& trackIds, std::vector< art::Ptr<recob::Hit> > const& hits, std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const;
 
-      const std::vector<  double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const;
+
+      double HitChargeCollectionEfficiency( std::set<int> trackIds, std::vector< art::Ptr<recob::Hit> > const& hits,        std::vector< art::Ptr<recob::Hit> > const& allhits, geo::View_t const& view) const;
+
+      std::set<int> GetSetOfTrackIds() const { return fPartInv->GetSetOfTrackIds();}
+      std::set<int> GetSetOfEveIds() const { return fPartInv->GetSetOfEveIds();}
+
+      std::set<int> GetSetOfTrackIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+      std::set<int> GetSetOfEveIds( std::vector< art::Ptr< recob::Hit > > const& hits ) const;
+
+      std::vector<  double> SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const;
 
     private:
       const cheat::ParticleInventory* fPartInv; //The constructor needs to put something in here

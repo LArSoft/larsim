@@ -42,7 +42,7 @@ namespace larg4 {
 
   private:
 
-    art::ServiceHandle<geo::Geometry> fGeo;  //< handle to geometry service
+    art::ServiceHandle<geo::Geometry const> fGeo;  //< handle to geometry service
     int fNoIncomingMuons;
 
   };

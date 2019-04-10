@@ -20,7 +20,6 @@ namespace cheat {
 class cheat::BackTrackerLoader : public art::EDProducer {
 public:
   explicit BackTrackerLoader(fhicl::ParameterSet const & p);
-  virtual ~BackTrackerLoader();
 
   virtual void produce(art::Event & e);
 
@@ -39,12 +38,6 @@ cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & p)
 }
 
 //------------------------------------------------------------------------------
-cheat::BackTrackerLoader::~BackTrackerLoader()
-{
-  // Clean up dynamic memory and other resources here.
-}
-
-//------------------------------------------------------------------------------
 // the sole purpose of this module is to issue the Rebuild command to the
 // BackTracker service.  It should be put after all simulation data producing
 // modules have run in the job, and only in jobs that create the simulation and
@@ -56,8 +49,6 @@ void cheat::BackTrackerLoader::produce(art::Event & e)
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   pi_serv->Rebuild(e);
   bt_serv->Rebuild(e);
-
-  return;
 }
 
 

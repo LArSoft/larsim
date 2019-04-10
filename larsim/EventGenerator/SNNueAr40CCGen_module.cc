@@ -30,7 +30,6 @@
 #include "CLHEP/Random/RandomEngine.h"
 
 // C++ includes
-#include <map>
 
 namespace evgen {
   
@@ -64,7 +63,7 @@ namespace evgen {
   void SNNueAr40CCGen::beginRun(art::Run& run)
   {
     // Store information about the geometry we are using in run information
-    art::ServiceHandle< geo::Geometry > geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 

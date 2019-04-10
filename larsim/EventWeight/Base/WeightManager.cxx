@@ -1,6 +1,3 @@
-#include <sstream>
-#include <map>
-#include <set>
 #include "WeightManager.h"
 
 

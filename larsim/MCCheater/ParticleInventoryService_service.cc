@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 //STL includes
-#include <map>
 //ROOT includes
 //Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -117,13 +116,13 @@ namespace cheat{
 
   //deliverables
   
-  const sim::ParticleList& ParticleInventoryService::ParticleList() { 
+  const sim::ParticleList& ParticleInventoryService::ParticleList() const {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non lazy functions
     return ParticleInventory::ParticleList(); 
   } //This should be replaced with a public struct so we can get away from the nutools dependency.
   
-  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() {
+  const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() const {
     //if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
     // Not used for non-lazy mode
     return ParticleInventory::MCTruthVector_Ps();
@@ -131,40 +130,40 @@ namespace cheat{
 
   //TrackIdToParticleP
 
-  const simb::MCParticle* ParticleInventoryService::TrackIdToParticle_P(int const& id) {
+  const simb::MCParticle* ParticleInventoryService::TrackIdToParticle_P(int const id) const {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non-lazy mode
     return ParticleInventory::TrackIdToParticle_P(id);
   }//End TrackIdToParticle
 
 
-  const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const& id) 
+  const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const id) const
   {   
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non-lazy mode
     return ParticleInventory::TrackIdToMotherParticle_P(id);
   }
 
-  const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruth_P(int const& id) 
+  const art::Ptr<simb::MCTruth>& ParticleInventoryService::TrackIdToMCTruth_P(int const id) const
   {
 //    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
 //    Not used for non-lazy mode
     return ParticleInventory::TrackIdToMCTruth_P(id);
   }
 
-  int ParticleInventoryService::TrackIdToEveTrackId(const int& tid) const 
+  int ParticleInventoryService::TrackIdToEveTrackId(const int tid) const
   { 
     return ParticleInventory::TrackIdToEveTrackId(tid);
   }
 
-  const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p)
+  const art::Ptr<simb::MCTruth>& ParticleInventoryService::ParticleToMCTruth_P(const simb::MCParticle* p) const
   {
 //    if(!this->priv_TrackIdToMCTruthReady()){this->priv_PrepTrackIdToMCTruthIndex();}
 //    Not used for non-lazy mode
     return this->TrackIdToMCTruth_P(p->TrackId());
   }
 
-  const std::vector<const simb::MCParticle*> ParticleInventoryService::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) 
+  std::vector<const simb::MCParticle*> ParticleInventoryService::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const
   {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    if(!this->priv_MCTruthListReady()){this->priv_PrepMCTruthList();}
@@ -172,13 +171,13 @@ namespace cheat{
     return ParticleInventory::MCTruthToParticles_Ps(mct);
   }
 
-  std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
+  std::set<int> ParticleInventoryService::GetSetOfTrackIds() const {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non-lazy mode
     return ParticleInventory::GetSetOfTrackIds();
   }
 
-  std::set<int> ParticleInventoryService::GetSetOfEveIds(){
+  std::set<int> ParticleInventoryService::GetSetOfEveIds() const {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non-lazy mode
     return ParticleInventory::GetSetOfEveIds();

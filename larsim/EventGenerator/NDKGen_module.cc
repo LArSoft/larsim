@@ -11,8 +11,6 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <vector>
-#include <map>
 #include <memory>
 #include <unistd.h>
 #include <stdio.h>
@@ -149,7 +147,7 @@ namespace evgen{
   
   void NDKGen::beginJob()
   {
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fGenerated[0] = tfs->make<TH1F>("fGenerated_necc","",  100, 0.0, 20.0);
     fGenerated[1] = tfs->make<TH1F>("fGenerated_nebcc","", 100, 0.0, 20.0);
@@ -190,7 +188,7 @@ namespace evgen{
 
     fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     double x = 2.1*geo->DetHalfWidth();
     double y = 2.1*geo->DetHalfHeight();
     double z = 2.*geo->DetLength();
@@ -211,7 +209,7 @@ namespace evgen{
   void NDKGen::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
@@ -294,7 +292,7 @@ namespace evgen{
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     CLHEP::RandFlat flat(fEngine);
 
     double const fvCut{5.0}; // force vtx to be this far from any wall.

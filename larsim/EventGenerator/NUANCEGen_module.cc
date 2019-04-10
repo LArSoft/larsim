@@ -13,8 +13,6 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <vector>
-#include <map>
 #include <memory>
 #include <unistd.h>
 #include <stdio.h>
@@ -142,7 +140,7 @@ namespace evgen{
   void NUANCEGen::beginJob()
   {
     // Get access to the TFile service.
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fGenerated[0] = tfs->make<TH1F>("fGenerated_necc","",  100, 0.0, 20.0);
     fGenerated[1] = tfs->make<TH1F>("fGenerated_nebcc","", 100, 0.0, 20.0);
@@ -184,7 +182,7 @@ namespace evgen{
     //fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.); 
     fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     double x = 2.1*geo->DetHalfWidth();
     double y = 2.1*geo->DetHalfHeight();
     double z = 2.*geo->DetLength();
@@ -207,7 +205,7 @@ namespace evgen{
   {
 
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     run.put(std::move(runcol));
@@ -412,7 +410,7 @@ namespace evgen{
 	  P = std::sqrt(pow(energy/1000,2.) - pow(Mass,2.)); // GeV/c
 	  //std::cout << "Momentum = " << P << std::endl;
 	  
-	  art::ServiceHandle<geo::Geometry> geo;
+	  art::ServiceHandle<geo::Geometry const> geo;
 	  
 	  double X0 = X + geo->DetHalfWidth();
 	  double Y0 = Y;

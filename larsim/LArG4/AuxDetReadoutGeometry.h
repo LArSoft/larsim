@@ -55,7 +55,7 @@ namespace larg4 {
 				    unsigned int depth,
 				    G4Transform3D DepthToWorld);    
 
-    art::ServiceHandle<geo::Geometry> fGeo;             ///< Handle to the geometry    
+    art::ServiceHandle<geo::Geometry const> fGeo;             ///< Handle to the geometry    
     uint32_t                          fNumSensitiveVol; ///< number of sensitive volumes
 
   };

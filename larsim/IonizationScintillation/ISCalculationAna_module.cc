@@ -84,12 +84,12 @@ void larg4::ISCalculationAna::analyze(art::Event const & e)
 
 void larg4::ISCalculationAna::beginJob()
 {
-  art::ServiceHandle<sim::LArG4Parameters> lgpHandle;
+  art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 		    &(*lgpHandle),
 		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  art::ServiceHandle<art::TFileService> tfs;
+  art::ServiceHandle<art::TFileService const> tfs;
   fNtuple = tfs->make<TNtuple>("nt_is","EDep IS Calc Ntuple","run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon");
 }
 

@@ -325,8 +325,8 @@ namespace larg4 {
     double                                    fOffPlaneMargin = 0.0;
 
     std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
-    art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service
-    art::ServiceHandle<sim::LArG4Parameters>  fLgpHandle;  ///< Handle to the LArG4 parameters service
+    art::ServiceHandle<geo::Geometry const>         fGeoHandle;  ///< Handle to the Geometry service
+    art::ServiceHandle<sim::LArG4Parameters const>  fLgpHandle;  ///< Handle to the LArG4 parameters service
     unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC

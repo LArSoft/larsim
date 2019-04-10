@@ -18,7 +18,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include <TLorentzVector.h>
 
-#include <iostream>
 
 namespace sim {
 
@@ -43,7 +42,7 @@ namespace sim {
   {
     // Copy each axis from the vector and convert it to a bin.
     fbins = std::vector<int>(4);
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     for ( Ssiz_t a = 0; a != 4; ++a ){
       fbins[a] = voxelCalc->AxisToBin( a, coord[a] );
     }
@@ -52,7 +51,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   LArVoxelID::LArVoxelID( const double x, const double y, const double z, const double t )
   {
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
 
     // Convert each axis into its corresponding bin.
     fbins = std::vector<int>(4);
@@ -71,28 +70,28 @@ namespace sim {
   /// co-ordinates at the bin centers.
   double LArVoxelID::X() const 
   { 
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->XBinToAxis(fbins[0]);
   }
 
   //----------------------------------------------------------------------------
   double LArVoxelID::Y() const 
   { 
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->YBinToAxis(fbins[1]);
   }
 
   //----------------------------------------------------------------------------
   double LArVoxelID::Z() const 
   { 
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->ZBinToAxis(fbins[2]);
   }
 
   //----------------------------------------------------------------------------
   double LArVoxelID::T() const 
   { 
-    art::ServiceHandle<sim::LArVoxelCalculator> voxelCalc;
+    art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->TBinToAxis(fbins[3]);
   }
 

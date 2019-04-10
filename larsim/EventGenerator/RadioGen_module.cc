@@ -30,14 +30,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <regex>
 #include <cmath>
 #include <memory>
 #include <iterator>
-#include <vector>
 #include <sys/stat.h>
 #include <TGeoManager.h>
 #include <TGeoMaterial.h>
@@ -70,7 +67,6 @@
 // root includes
 
 #include "TLorentzVector.h"
-#include "TVector3.h"
 #include "TGenPhaseSpace.h"
 #include "TMath.h"
 #include "TFile.h"
@@ -230,7 +226,7 @@ namespace evgen{
   void RadioGen::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
@@ -258,7 +254,7 @@ namespace evgen{
 
   void RadioGen::SampleOne(unsigned int i, simb::MCTruth &mct)
   {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     TGeoManager *geomanager = geo->ROOTGeoManager();
 
     CLHEP::RandFlat     flat(fEngine);

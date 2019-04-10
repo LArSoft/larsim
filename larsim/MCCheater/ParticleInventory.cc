@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 //STL includes
-#include <map>
 //ROOT includes
 //Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -91,7 +90,7 @@ namespace cheat{
   }
 
   //-----------------------------------------------------------------------
-  const std::vector<const simb::MCParticle*> ParticleInventory::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const
+  std::vector<const simb::MCParticle*> ParticleInventory::MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const
   {
     std::vector<const simb::MCParticle*> ret;
     // sim::ParticleList::value_type is a pair (track Id, particle pointer)
@@ -123,6 +122,3 @@ namespace cheat{
 
 
 } //namespace
-
-
-

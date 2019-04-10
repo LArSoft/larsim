@@ -16,7 +16,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -67,7 +66,7 @@ sim::MergeSimSources::MergeSimSources(fhicl::ParameterSet const & p)
   if(fInputSourcesLabels.size() != fTrackIDOffsets.size())
     throw std::runtime_error("ERROR in MergeSimSources: Unequal input vector sizes.");
 
-  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  art::ServiceHandle<sim::LArG4Parameters const> lgp;
   fUseLitePhotons = lgp->UseLitePhotons();
   
   if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
@@ -81,7 +80,7 @@ sim::MergeSimSources::MergeSimSources(fhicl::ParameterSet const & p)
 
 void sim::MergeSimSources::produce(art::Event & e)
 {
-  art::ServiceHandle<sim::LArG4Parameters> lgp;
+  art::ServiceHandle<sim::LArG4Parameters const> lgp;
 
   std::unique_ptr< std::vector<simb::MCParticle> > partCol  (new std::vector<simb::MCParticle  >);
   std::unique_ptr< std::vector<sim::SimChannel>  > scCol    (new std::vector<sim::SimChannel>);

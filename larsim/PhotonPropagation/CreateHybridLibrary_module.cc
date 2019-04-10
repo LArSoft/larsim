@@ -50,9 +50,9 @@ namespace phot
 		: EDAnalyzer(p)
 	{ 
 		
-		art::ServiceHandle<geo::Geometry> geom;
+		art::ServiceHandle<geo::Geometry const> geom;
 
-		art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+		art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
 		sim::PhotonVoxelDef voxdef = pvs->GetVoxelDef();
 
 		TFile* fout_full = new TFile("full.root", "RECREATE");

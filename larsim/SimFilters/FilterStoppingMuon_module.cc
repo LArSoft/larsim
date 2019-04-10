@@ -14,8 +14,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/FindOneP.h"
@@ -73,7 +71,7 @@ namespace simfilter {
     // for c2: interactionDesired is unused
     //bool interactionDesired(false);
     //get the list of particles from this event
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     // * MC truth information
     art::Handle<std::vector<simb::MCParticle> > mcpHandle;

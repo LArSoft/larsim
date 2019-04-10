@@ -29,7 +29,6 @@
 #include "Geant4/G4Point3D.hh"
 #include "Geant4/globals.hh"
 
-#include <vector>
 #include <cmath>
 
 namespace larg4 {

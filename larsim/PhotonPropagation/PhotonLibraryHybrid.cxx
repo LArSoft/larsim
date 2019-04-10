@@ -65,7 +65,7 @@ namespace phot
 
     !fRecords.empty() || fatal("No opdet_*/ directories in "+fname);
 
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     geom->NOpDets() == fRecords.size() || fatal("Number of opdets mismatch");
 
     fRecords.shrink_to_fit(); // save memory
@@ -109,7 +109,7 @@ namespace phot
 
     // Otherwise, we use the interpolation, which requires a distance
 
-    static art::ServiceHandle<geo::Geometry> geom;
+    static art::ServiceHandle<geo::Geometry const> geom;
     const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opchan);
 
     const auto voxvec = fVoxDef.GetPhotonVoxel(vox).GetCenter();

@@ -247,7 +247,7 @@ namespace cheat{
 
       const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector_Ps() const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
 
-      const std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
+      std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
 
       std::set<int> GetSetOfTrackIds() const;
       std::set<int> GetSetOfEveIds() const;
@@ -281,4 +281,3 @@ namespace cheat{
 #include "ParticleInventory.tcc"
 
 #endif //CHEAT_PARTICLEINVENTORY_H
-

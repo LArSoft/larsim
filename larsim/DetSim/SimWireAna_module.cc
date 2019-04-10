@@ -15,7 +15,6 @@
 
 // C++ includes
 #include <algorithm>
-#include <sstream>
 #include <fstream>
 #include <bitset>
 
@@ -41,7 +40,6 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 
-#include <vector>
 #include <string>
 
 
@@ -88,7 +86,7 @@ namespace detsim{
   void SimWireAna::beginJob() 
   {
     // get access to the TFile service
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fDiffs          = tfs->make<TH1F>("One timestamp diffs", ";#Delta ADC;",        40,   -19.5,  20.5);
     fCompressErr    = tfs->make<TH1F>("compressErr",         ";Raw-Compressed;",    1000, -495.5, 500.5);

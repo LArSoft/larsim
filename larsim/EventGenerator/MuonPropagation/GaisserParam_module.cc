@@ -17,12 +17,10 @@
 #include <cmath>
 #include <memory>
 #include <iterator>
-#include <vector>
 #include <utility> 
 #include <sys/stat.h>
 #include <exception>
 #include <map>
-#include <vector>
 #include <algorithm>
 
 // Framework includes
@@ -208,7 +206,7 @@ namespace evgen{
   void GaisserParam::beginJob()
   {
     //Work out center of cryostat(s)
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     for (unsigned int i=0; i < geom->Ncryostats() ; i++ ) {
       geom->CryostatBoundaries(fCryoBoundaries, i);
       if ( xNeg > fCryoBoundaries[0] ) xNeg = fCryoBoundaries[0];
@@ -220,7 +218,7 @@ namespace evgen{
     fCenterZ = zNeg + (zPos-zNeg)/2;
     
     // Make the Histograms....
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     /*
     fPositionX    = tfs->make<TH1D>("fPositionX"   ,"Position (cm)" ,500,fCenterX-(fXHalfRange+10) ,fCenterX+(fXHalfRange+10));
     fPositionY    = tfs->make<TH1D>("fPositionY"   ,"Position (cm)" ,500,-(fYInput+10),(fYInput+10));
@@ -256,7 +254,7 @@ namespace evgen{
   void GaisserParam::beginRun(art::Run& run)
   {
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     // Check fcl parameters were set correctly

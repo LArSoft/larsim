@@ -33,7 +33,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 
-#include <vector>
 #include <string>
 #include "art/Framework/Core/EDProducer.h"
 #include "TFile.h"
@@ -205,7 +204,7 @@ namespace evgen{
   {
 
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     run.put(std::move(runcol));
@@ -347,7 +346,7 @@ namespace evgen{
       //add vector of the position of the center of the point between Cryostats
       // level with top. (To which I've added 3m - in above code - in height.)
       // This is referenced from origin at center-right of first cryostat.
-      art::ServiceHandle<geo::Geometry> geom;
+      art::ServiceHandle<geo::Geometry const> geom;
       TVector3 off3(geom->CryostatHalfWidth()*0.01,geom->CryostatHalfHeight()*0.01,geom->CryostatLength()*0.01+cryoGap*0.01/2.0) ;
       x += off3;
 

@@ -15,8 +15,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
 
 // LArSoft Includes
@@ -26,7 +24,6 @@
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
-#include <iostream>
 #include <cstring>
 #include <sys/stat.h>
 
@@ -83,8 +80,8 @@ namespace simfilter {
   {
 
     //get the list of particles from this event
-    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     // get the particles from the back tracker
     const sim::ParticleList& Particles = pi_serv->ParticleList();

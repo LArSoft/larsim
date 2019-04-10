@@ -9,7 +9,6 @@
 
 // C++ includes
 #include <algorithm>
-#include <sstream>
 #include <fstream>
 #include <bitset>
 #include <string>
@@ -95,15 +94,15 @@ namespace detsim{
   void WienerFilterAna::beginJob() 
   {
     // get access to the TFile service
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
     
-    art::ServiceHandle<util::LArFFT> fFFT;
+    art::ServiceHandle<util::LArFFT const> fFFT;
     int fNTicks = fFFT->FFTSize();
     fNBins=fNTicks/2+1;
     const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     double samprate=detp->SamplingRate();
     double sampfreq=1./samprate *1e6; // in kHz   
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     unsigned int fNPlanes = geo->Nplanes();
     unsigned int fNCryostats=geo->Ncryostats();
     unsigned int fNTPC=geo->NTPC();                   
@@ -137,7 +136,7 @@ namespace detsim{
   void WienerFilterAna::endJob() 
   {
     
-     art::ServiceHandle<geo::Geometry> geom;
+     art::ServiceHandle<geo::Geometry const> geom;
     unsigned int nplanes=geom->Nplanes();
     unsigned int fNCryostats=geom->Ncryostats();
     unsigned int fNTPC=geom->NTPC();                   
@@ -201,8 +200,8 @@ namespace detsim{
     }
 
     
-    art::ServiceHandle<geo::Geometry> geom;
-    art::ServiceHandle<util::LArFFT> fft;
+    art::ServiceHandle<geo::Geometry const> geom;
+    art::ServiceHandle<util::LArFFT const> fft;
 
     for(unsigned int rd = 0; rd < rdvec.size(); ++rd){
       

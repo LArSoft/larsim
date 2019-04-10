@@ -23,18 +23,11 @@
 namespace sim {
 
   //----------------------------------------------------------------------------
-  LArVoxelCalculator::LArVoxelCalculator(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry & /* reg */) 
+  LArVoxelCalculator::LArVoxelCalculator(fhicl::ParameterSet const& pset)
   {
 
     this->reconfigure(pset);
 
-  }
-
-  //----------------------------------------------------------------------------
-  /// Destructor.
-  LArVoxelCalculator::~LArVoxelCalculator()
-  {
   }
 
   //----------------------------------------------------------------------------
@@ -104,4 +97,3 @@ namespace sim {
 
 
 } // namespace sim
- 

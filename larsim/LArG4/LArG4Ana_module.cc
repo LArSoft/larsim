@@ -17,8 +17,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
 
 // LArSoft Includes
@@ -36,7 +34,6 @@
 #include <TTree.h>
 
 // C++ Includes
-#include <iostream>
 #include <cstring>
 #include <sys/stat.h>
 
@@ -123,8 +120,8 @@ namespace larg4 {
   //-----------------------------------------------------------------------
   void LArG4Ana::beginJob()
   {
-    art::ServiceHandle<art::TFileService> tfs;
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<art::TFileService const> tfs;
+    art::ServiceHandle<geo::Geometry const> geo;
     
     fPDGCodes    = tfs->make<TH1D>("pdgcodes", ";PDG Code;",               5000, -2500, 2500);
     fPi0Momentum = tfs->make<TH1D>("pi0mom",   ";#pi^{0} Momentum (GeV);", 1000, 0.,    1000.);
@@ -200,9 +197,9 @@ namespace larg4 {
   {
 
     //get the list of particles from this event
-    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+    art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
     const sim::ParticleList& plist = pi_serv->ParticleList();
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
 
     // loop over all sim::SimChannels in the event and make sure there are no
     // sim::IDEs with trackID values that are not in the sim::ParticleList

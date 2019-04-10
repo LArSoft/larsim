@@ -70,11 +70,8 @@ namespace trigger
 
   public:
 
-    /// Default constructor with fhicl parameters
-    TriggerAlgoBase(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-
-    /// Default destructor
-    virtual ~TriggerAlgoBase(){};
+    TriggerAlgoBase(fhicl::ParameterSet const& pset);
+    virtual ~TriggerAlgoBase() = default;
 
     /// Function to run trigger simulation ... children class may be override
     virtual void RunTriggerSim(const art::Event& event){

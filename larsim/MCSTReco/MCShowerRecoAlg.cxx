@@ -26,7 +26,7 @@ namespace sim {
 				    MCRecoEdep& edep_v)
   {
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     auto pindex = details::createPlaneIndexMap();
 

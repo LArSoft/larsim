@@ -19,7 +19,7 @@ namespace sim {
 
       _pdg_list.insert(id);
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     // Build "Fiducial" Volume Definition:
     //
     // Iterate over all TPC's to get bounding box that covers volumes of each individual TPC in the detector

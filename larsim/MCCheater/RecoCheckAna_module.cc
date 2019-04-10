@@ -84,8 +84,8 @@ private:
 		  TH1D*                                                            purityEfficiency,
 		  TH2D*                                                            purityEfficiency2D);
 
-  art::ServiceHandle<cheat::BackTrackerService> fBT; ///< the back tracker service
-  art::ServiceHandle<cheat::ParticleInventoryService> fPI; ///< the back tracker service
+  art::ServiceHandle<cheat::BackTrackerService const> fBT; ///< the back tracker service
+  art::ServiceHandle<cheat::ParticleInventoryService const> fPI; ///< the back tracker service
 
   std::string fHitModuleLabel;		 ///< label for module making the hits
   std::string fClusterModuleLabel;	 ///< label for module making the clusters
@@ -220,7 +220,7 @@ void cheat::RecoCheckAna::analyze(art::Event const &e)
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::beginRun(art::Run const &/*r*/) 
 {
-  art::ServiceHandle<art::TFileService> tfs;
+  art::ServiceHandle<art::TFileService const> tfs;
 
   if(fCheckEvents){
     fEventPurity	     = tfs->make<TH1D>("eventPurity",       ";Purity;Events",       100, 0., 1.1);

@@ -8,7 +8,7 @@
 /// computing the LArVoxelID, and provides access to the any LArVoxel
 /// parameters from the input file(s).  
 
-/// It is to be called using art::ServiceHandle<sim::LArVoxelCalculator> lvx;
+/// It is to be called using art::ServiceHandle<sim::LArVoxelCalculator const> lvx;
 /// The service makes it act like a singleton, but it knows about the
 /// Parameters defined in the input file.
 
@@ -37,8 +37,7 @@ namespace sim {
   {
   public:
 
-    LArVoxelCalculator(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~LArVoxelCalculator();
+    LArVoxelCalculator(fhicl::ParameterSet const& pset);
 
     void reconfigure(fhicl::ParameterSet const& pset);
 

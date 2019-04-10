@@ -54,7 +54,7 @@ namespace larg4 {
   
   int OpDetLookup::FindClosestOpDet(G4VPhysicalVolume* vol, double& distance)
   {
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     int    OpDetCount = 0;
     
     double MinDistance = UINT_MAX;

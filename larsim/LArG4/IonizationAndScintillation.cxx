@@ -55,7 +55,7 @@ namespace larg4 {
     , fElectronsVsPhotons(0)
     , fEngine(engine)
   {
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
 
     if(fISCalculator.compare("NEST") == 0)
@@ -76,7 +76,7 @@ namespace larg4 {
     fISCalc->Initialize();
 
     // make the histograms
-    art::ServiceHandle< art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     fElectronsPerStep   = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps", 
 					  500, 0., 5000.);			

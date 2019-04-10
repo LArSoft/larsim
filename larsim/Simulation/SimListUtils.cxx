@@ -33,7 +33,7 @@ namespace sim{
   // are putting into the list
   sim::LArVoxelList SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
-    art::ServiceHandle<sim::LArG4Parameters> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // get the sim::SimChannels

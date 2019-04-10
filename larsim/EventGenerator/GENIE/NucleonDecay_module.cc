@@ -133,7 +133,7 @@ void evgen::NucleonDecay::produce(art::Event & e)
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
   simb::MCTruth truth;
   
-  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry const> geo;
 
   // Find boundary of active volume
   double minx = 1e9;
@@ -201,7 +201,7 @@ void evgen::NucleonDecay::beginRun(art::Run& run)
 {
     
   // grab the geometry object to see what geometry we are using
-  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry const> geo;
   auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
   
   run.put(std::move(runcol));

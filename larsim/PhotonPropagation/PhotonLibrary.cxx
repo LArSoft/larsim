@@ -24,7 +24,7 @@ namespace phot{
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
 
-    art::ServiceHandle<art::TFileService> tfs;
+    art::ServiceHandle<art::TFileService const> tfs;
 
     TTree *tt = tfs->make<TTree>("PhotonLibraryData","PhotonLibraryData");
  
