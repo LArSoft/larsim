@@ -133,8 +133,6 @@ namespace sim {
     _mc_edeps.clear();
     _track_index.clear();
 
-    std::cout << "DAVID C : Making MCEdep from SimEnergyDeposit" << std::endl;
-
     art::ServiceHandle<geo::Geometry> geom;
 //    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
@@ -196,7 +194,16 @@ namespace sim {
 	// NOTE: the below code works only when the drift coordinate is indeed in x (i.e. 0th coordinate)
 	// see code linked above for a much more careful treatment of the coordinate system
 	// David Caratelli, comment end.
-	raw::ChannelID_t ch = geom->NearestChannel(xyz, p, tpc, cryostat);
+	raw::ChannelID_t ch;
+	try {
+	  ch = geom->NearestChannel(xyz, p, tpc, cryostat);
+	}
+	catch(cet::exception &e){
+	  mf::LogWarning("SimDriftElectrons") << "step "// << energyDeposit << "\n"
+					      << "nearest wire not in TPC\n" 
+					      << e;
+	  continue;
+	}
 
 	int track_id = sed.TrackID();
 
