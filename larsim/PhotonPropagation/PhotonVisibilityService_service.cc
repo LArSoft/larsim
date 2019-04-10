@@ -377,16 +377,16 @@ namespace phot{
 	{
         // VIS
       	fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-	fCATHODE_height = p.get<double>("CATHODE_height");
-	fCATHODE_width = p.get<double>("CATHODE_width");
+	fCATHODE_ydimension = p.get<double>("CATHODE_height");
+	fCATHODE_zdimension = p.get<double>("CATHODE_width");
 	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
 	fPlane_Depth = fCATHODE_centre[0];
 	}
       	
 	// Optical channel dimensions
 	fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
-      	fAPERTURE_height = p.get<double>("APERTURE_height");
-      	fAPERTURE_width = p.get<double>("APERTURE_width");
+      	fAPERTURE_ydimension = p.get<double>("APERTURE_height");
+      	fAPERTURE_zdimension = p.get<double>("APERTURE_width");
       	fPMT_radius = p.get<double>("PMT_radius");
     }
 
@@ -742,28 +742,28 @@ namespace phot{
   }
 
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& zdim, double& ydim, double& r, int& op_det_type) const
   {
     v = fGH_PARS;    
  
     op_det_type = fOptical_Detector_Type;
-    h = fAPERTURE_height;
-    w = fAPERTURE_width;
+    ydim = fAPERTURE_ydimension;
+    zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
 
   }
 
-  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const
   {
     v = fVIS_PARS;
     plane_depth = fPlane_Depth;
-    w_cathode = fCATHODE_width;
-    h_cathode = fCATHODE_height;
+    zdim_cathode = fCATHODE_zdimension;
+    ydim_cathode = fCATHODE_ydimension;
     cntr_cathode = fCATHODE_centre;
 
     op_det_type = fOptical_Detector_Type;
-    h = fAPERTURE_height;
-    w = fAPERTURE_width;
+    ydim = fAPERTURE_ydimension;
+    zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
 
   }

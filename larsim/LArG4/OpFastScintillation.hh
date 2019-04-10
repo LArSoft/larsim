@@ -329,12 +329,12 @@ private:
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
 	TF1* VIS_pol[9];
-	double fplane_depth, fcathode_width, fcathode_height;
+	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
 	std::vector<double>  fcathode_centre;
         
 	// Optical detector properties for semi-analytic hits
 	int foptical_detector_type; 
-        double fheight, fwidth, fradius;
+        double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
 
