@@ -84,10 +84,8 @@ namespace phot
 			tr_full->Branch("xpos", &xpos); //not needed to parameterize the visibilities, useful for tests in SP
 
 			const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opdetIdx);
-			double xyzopdet[3];
-			opdet.GetCenter(xyzopdet);
-			//std::cout << "OpDet position " << opdetIdx << " x =  " <<xyzopdet[0] << " y =  " <<xyzopdet[1] << " z =  " <<xyzopdet[2]<< std::endl;
-			const TVector3 opdetvec(xyzopdet);
+			auto const opdetCenter = opdet.GetCenter();
+			//std::cout << "OpDet position " << opdetIdx << ": " << opdetCenter << std::endl;
 
 			struct Visibility{
 			  Visibility(int vx, int t, float d, float v, float p, float th, float xp) : vox(vx), taken(t), dist(d), vis(v), psi(p), theta(th), xpos(xp) {}
@@ -109,9 +107,9 @@ namespace phot
 			std::vector<Visibility> viss;
 			viss.reserve(voxdef.GetNVoxels());
 
-			for(int voxIdx = 0; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
+			for(unsigned int voxIdx = 0U; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
 			     
-       				const TVector3 voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
+       				const auto voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
 				const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};
 				const double fc_y = 600; //624cm is below the center of the first voxel outside the Field Cage
 				const double fc_z = 1394;
@@ -119,25 +117,25 @@ namespace phot
 				taken = 0;
 				//DP does not need variable "taken" because all voxels are inside the Field Cage for the Photon Library created in LightSim.
 				//DP taken = 1;
-				dist = opdet.DistanceToPoint(xyzvox);
-				vis = pvs->GetVisibility(xyzvox, opdetIdx);
+				dist = opdet.DistanceToPoint(voxvec);
+				vis = pvs->GetVisibility(xyzvox, opdetIdx); // TODO use Point_t when available
 				// all voxels outside the Field Cage would be assigned these values of psi and theta
 				psi = 100; 
 				theta = 200;
-      				xpos = xyzvox[0];
+      				xpos = voxvec.X();
 
-				if((xyzvox[0] - xyzopdet[0])<0){
-				  psi = atan((xyzvox[1] - xyzopdet[1])/(-xyzvox[0] +xyzopdet[0]));
+				if((voxvec.X() - opdetCenter.X())<0){
+				  psi = atan((voxvec.Y() - opdetCenter.Y())/(-voxvec.X() +opdetCenter.X()));
 				}
 			      
-				if(xyzvox[0]<fc_x && xyzvox[0]>-fc_x && xyzvox[1]<fc_y && xyzvox[1]>-fc_y && xyzvox[2]> -9 && xyzvox[2]<fc_z){
+				if(voxvec.X()<fc_x && voxvec.X()>-fc_x && voxvec.Y()<fc_y && voxvec.Y()>-fc_y && voxvec.Z()> -9 && voxvec.Z()<fc_z){
 				  g.SetPoint(g.GetN(), dist, vis*dist*dist); 
 				  taken = 1;
-				  psi = atan((xyzvox[1] - xyzopdet[1])/(xyzvox[0] - xyzopdet[0]))* 180.0/PI ; // psi takes values within (-PI/2, PI/2)
-				  theta = acos((xyzvox[2] - xyzopdet[2])/dist) * 180.0/PI;  // theta takes values within (0 (beam direction, z), PI (-beam direction, -z))          
+				  psi = atan((voxvec.Y() - opdetCenter.Y())/(voxvec.X() - opdetCenter.X()))* 180.0/PI ; // psi takes values within (-PI/2, PI/2)
+				  theta = acos((voxvec.Z() - opdetCenter.Z())/dist) * 180.0/PI;  // theta takes values within (0 (beam direction, z), PI (-beam direction, -z))          
 				  
-				  if((xyzvox[0] - xyzopdet[0])<0){
-				  psi = atan((xyzvox[1] - xyzopdet[1])/(-xyzvox[0] +xyzopdet[0]));
+				  if((voxvec.X() - opdetCenter.X())<0){
+				  psi = atan((voxvec.Y() - opdetCenter.Y())/(-voxvec.X() +opdetCenter.X()));
 				  }
 			
 				}

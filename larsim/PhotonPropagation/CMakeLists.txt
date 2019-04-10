@@ -16,6 +16,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${ROOT_HIST}
                        ${ROOT_MATRIX}
                        ${ROOT_TREE}
+                       ${ROOT_GENVECTOR}
           SERVICE_LIBRARIES larsim_PhotonPropagation
                        larsim_Simulation
                        nutools_ParticleNavigation
@@ -27,6 +28,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                        ${MF_MESSAGELOGGER}
+                       ${ROOT_GENVECTOR}
           MODULE_LIBRARIES larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larsim_IonizationScintillation
@@ -43,6 +45,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                         art_Persistency_Provenance
                         ${MF_MESSAGELOGGER}
                         ${CLHEP}
+                        ${ROOT_GENVECTOR}
                         ${ROOT_GPAD}
          )
 
@@ -51,3 +54,4 @@ install_fhicl()
 install_source()
 
 add_subdirectory(LibraryBuildTools)
+add_subdirectory(LibraryMappingTools)

@@ -346,7 +346,7 @@ namespace evgen{
     else if(fSourceMode==kSCAN) {
     //  Step through detector using a number of steps provided in the config file
     //  firing a constant number of photons from each point
-	TVector3 VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
+	auto const VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
 	fX = VoxelCenter.X();
 	fY = VoxelCenter.Y();
 	fZ = VoxelCenter.Z();
