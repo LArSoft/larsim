@@ -299,7 +299,6 @@ namespace evgen{
   //____________________________________________________________________________
   void LightSource::beginRun(art::Run& run)
   {
-    // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 

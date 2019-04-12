@@ -40,29 +40,15 @@ namespace simfilter {
 
   class FilterPrimaryPDG : public art::EDFilter
   {
-  // explicit EDFilter(ParameterSet const&)
   public:
 
     explicit FilterPrimaryPDG(fhicl::ParameterSet const &pset);
 
-    bool filter(art::Event&) ;
-    /*
-    virtual void endJob()  ;
-    virtual bool beginRun(art::Run &)  ;
-    virtual bool endRun(art::Run &)  ;
-    virtual bool beginSubRun(art::SubRun &)  ;
-    virtual bool endSubRun(art::SubRun &)  ;
-    */
     private:
+    bool filter(art::Event&) override;
 
     std::string fG4ModuleLabel;
     std::vector<int> fPrimaryVec;
-    /*
-  virtual void respondToOpenInputFile(FileBlock const& fb)
-  virtual void respondToCloseInputFile(FileBlock const& fb)
-  virtual void respondToOpenOutputFiles(FileBlock const& fb)
-  virtual void respondToCloseOutputFiles(FileBlock const& fb)
-    */
   };
 
 } // namespace simfilter

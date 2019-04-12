@@ -253,19 +253,15 @@ namespace evgen{
   //____________________________________________________________________________
   void GaisserParam::beginRun(art::Run& run)
   {
-    // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry const> geo;
-    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
     // Check fcl parameters were set correctly
     if ( fThetamax > M_PI/2 + 0.01 ) throw cet::exception("GaisserParam")<< "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this cause an error so leaving program now...\n\n";
     if ( fThetamin < 0         )     throw cet::exception("GaisserParam")<< "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this cause an error so leaving program now...\n\n" << std::endl;
     if ( fThetamax < fThetamin )     throw cet::exception("GaisserParam")<< "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n" << std::endl;
 
-    run.put(std::move(runcol));
+    // grab the geometry object to see what geometry we are using
+    art::ServiceHandle<geo::Geometry const> geo;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
     MakePDF ();
-
-    return;
   }
 
   //____________________________________________________________________________

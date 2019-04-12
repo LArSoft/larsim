@@ -44,20 +44,12 @@ namespace simfilter {
 
   class FilterNoDirtNeutrinos : public art::EDFilter
   {
-  // explicit EDFilter(ParameterSet const&)
   public:
 
     explicit FilterNoDirtNeutrinos(fhicl::ParameterSet const &pset);
 
-    bool filter(art::Event&) ;
-    /*
-    virtual void endJob()  ;
-    virtual bool beginRun(art::Run &)  ;
-    virtual bool endRun(art::Run &)  ;
-    virtual bool beginSubRun(art::SubRun &)  ;
-    virtual bool endSubRun(art::SubRun &)  ;
-    */
     private:
+    bool filter(art::Event&) override;
 
     std::string fLArG4ModuleLabel;
     std::string fGenModuleLabel;

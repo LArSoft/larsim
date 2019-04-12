@@ -74,14 +74,12 @@ class evgen::MarleyGen : public art::EDProducer {
     // Configuration-checking constructors
     explicit MarleyGen(const Parameters& p);
 
-    virtual ~MarleyGen();
-
     virtual void produce(art::Event& e) override;
     virtual void beginRun(art::Run& run) override;
 
     virtual void reconfigure(const Parameters& p);
 
-  protected:
+  private:
 
     // Object that provides an interface to the MARLEY event generator
     std::unique_ptr<evgen::MARLEYHelper> fMarleyHelper;
@@ -129,19 +127,10 @@ evgen::MarleyGen::MarleyGen(const Parameters& p)
 }
 
 //------------------------------------------------------------------------------
-evgen::MarleyGen::~MarleyGen()
-{
-}
-
-//------------------------------------------------------------------------------
 void evgen::MarleyGen::beginRun(art::Run& run)
 {
-  // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry const> geo;
-  std::unique_ptr<sumdata::RunData>
-    runcol(new sumdata::RunData(geo->DetectorName()));
-
-  run.put(std::move(runcol));
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 }
 
 //------------------------------------------------------------------------------

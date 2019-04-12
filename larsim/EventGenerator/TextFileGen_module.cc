@@ -116,21 +116,13 @@ void evgen::TextFileGen::beginJob()
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
 					<< " cannot be read.\n";
-
-  return;
 }
 
 //------------------------------------------------------------------------------
 void evgen::TextFileGen::beginRun(art::Run& run)
 {
-
-    // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
-    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
-    run.put(std::move(runcol));
-
-    return;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
 //------------------------------------------------------------------------------
@@ -212,8 +204,6 @@ void evgen::TextFileGen::produce(art::Event & e)
   truthcol->push_back(truth);
 
   e.put(std::move(truthcol));
-
-  return;
 }
 
 DEFINE_ART_MODULE(evgen::TextFileGen)

@@ -203,14 +203,8 @@ namespace evgen{
   //____________________________________________________________________________
   void NUANCEGen::beginRun(art::Run& run)
   {
-
-    // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
-    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
-    run.put(std::move(runcol));
-
-    return;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
   //____________________________________________________________________________

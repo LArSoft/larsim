@@ -193,21 +193,12 @@ void evgen::NucleonDecay::produce(art::Event & e)
   e.put(std::move(truthcol));
 
   delete event;
-  return;
-
 }
 
 void evgen::NucleonDecay::beginRun(art::Run& run)
 {
-
-  // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry const> geo;
-  auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
-  run.put(std::move(runcol));
-
-  return;
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 }
-
 
 DEFINE_ART_MODULE(evgen::NucleonDecay)

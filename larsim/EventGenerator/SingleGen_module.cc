@@ -233,7 +233,6 @@ namespace evgen {
 
     // This is called for each event.
     void produce(art::Event& evt);
-    void beginRun(art::Run& run);
 
   private:
 
@@ -705,19 +704,6 @@ namespace evgen{
     }// end if the vector size is not the same as fPDG
 
     return true;
-  }
-
-  //____________________________________________________________________________
-  void SingleGen::beginRun(art::Run& run)
-  {
-
-    // grab the geometry object to see what geometry we are using
-    //    art::ServiceHandle<geo::Geometry const> geo;
-    // auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
-    //run.put(std::move(runcol));
-
-    return;
   }
 
   //____________________________________________________________________________

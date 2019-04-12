@@ -415,10 +415,6 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   void MUSUN::beginRun(art::Run& run)
   {
-    // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry const> geo;
-    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
     // Check fcl parameters were set correctly
     if ( fThetamax > 90.5 ) throw cet::exception("MUSUNGen") << "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n";
     if ( fThetamin < 0    ) throw cet::exception("MUSUNGen") << "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n";
@@ -428,8 +424,9 @@ namespace evgen{
     if ( fPhimax < fPhimin) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
     if ( fEmax   < fEmin  ) throw cet::exception("MUSUNGen") << "\nMinimum energy is bigger than maximum energy....causes an error so leaving program now....\n\n";
 
-
-    run.put(std::move(runcol));
+    // grab the geometry object to see what geometry we are using
+    art::ServiceHandle<geo::Geometry const> geo;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 
     // area of the horizontal plane of the parallelepiped
     s_hor = (fZmax-fZmin)*(fXmax-fXmin);

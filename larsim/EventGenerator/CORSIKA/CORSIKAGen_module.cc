@@ -484,16 +484,10 @@ namespace evgen{
     }
   }
 
-  void CORSIKAGen::beginRun(art::Run& run){
-
-    // grab the geometry object to see what geometry we are using
+  void CORSIKAGen::beginRun(art::Run& run)
+  {
     art::ServiceHandle<geo::Geometry const> geo;
-
-    auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-
-    run.put(std::move(runcol));
-
-    return;
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
   }
 
   void CORSIKAGen::produce(art::Event& evt){

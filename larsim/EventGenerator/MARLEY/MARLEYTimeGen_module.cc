@@ -556,12 +556,8 @@ evgen::MarleyTimeGen::MarleyTimeGen(const Parameters& p)
 
 //------------------------------------------------------------------------------
 void evgen::MarleyTimeGen::beginRun(art::Run& run) {
-  // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry const> geo;
-  std::unique_ptr<sumdata::RunData>
-    runcol(new sumdata::RunData(geo->DetectorName()));
-
-  run.put(std::move(runcol));
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 }
 
 //------------------------------------------------------------------------------
