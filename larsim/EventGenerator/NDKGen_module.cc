@@ -61,7 +61,7 @@ namespace evgen {
   class NDKGen : public art::EDProducer {
   public:
     explicit NDKGen(fhicl::ParameterSet const &pset);
-    virtual ~NDKGen();                        
+    virtual ~NDKGen();
 
   private:
 
@@ -72,45 +72,45 @@ namespace evgen {
 
         std::string ParticleStatus(int StatusCode);
         std::string ReactionChannel(int ccnc,int mode);
-    
+
     void FillHistograms(simb::MCTruth const& mc);
 
 	std::string         fNdkFile;
     std::ifstream       fEventFile;
 	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
-	
+
 	std::string fNDKModuleLabel;
     CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
-	
+
 	TH1F* fGenerated[6];  ///< Spectra as generated
-	
+
 	TH1F* fVertexX;    ///< vertex location of generated events in x
 	TH1F* fVertexY;    ///< vertex location of generated events in y
 	TH1F* fVertexZ;    ///< vertex location of generated events in z
-	
+
 	TH2F* fVertexXY;   ///< vertex location in xy
 	TH2F* fVertexXZ;   ///< vertex location in xz
 	TH2F* fVertexYZ;   ///< vertex location in yz
-	
+
 	TH1F* fDCosX;      ///< direction cosine in x
 	TH1F* fDCosY;      ///< direction cosine in y
 	TH1F* fDCosZ;      ///< direction cosine in z
-	
+
 	TH1F* fMuMomentum; ///< momentum of outgoing muons
 	TH1F* fMuDCosX;    ///< direction cosine of outgoing mu in x
 	TH1F* fMuDCosY;    ///< direction cosine of outgoing mu in y
 	TH1F* fMuDCosZ;    ///< direction cosine of outgoing mu in z
-	
+
 	TH1F* fEMomentum;  ///< momentum of outgoing electrons
 	TH1F* fEDCosX;     ///< direction cosine of outgoing e in x
 	TH1F* fEDCosY;     ///< direction cosine of outgoing e in y
 	TH1F* fEDCosZ;     ///< direction cosine of outgoing e in z
-	
+
 	TH1F* fCCMode;      ///< CC interaction mode
 	TH1F* fNCMode;      ///< CC interaction mode
-	
+
 	TH1F* fECons;      ///< histogram to determine if energy is conserved in the event
-	
+
   };
 } // namespace
 
@@ -139,12 +139,12 @@ namespace evgen{
 
   //____________________________________________________________________________
   NDKGen::~NDKGen()
-  {  
+  {
     fStopwatch.Stop();
   }
 
 //___________________________________________________________________________
-  
+
   void NDKGen::beginJob()
   {
     art::ServiceHandle<art::TFileService const> tfs;
@@ -155,7 +155,7 @@ namespace evgen{
     fGenerated[3] = tfs->make<TH1F>("fGenerated_nmbcc","", 100, 0.0, 20.0);
     fGenerated[4] = tfs->make<TH1F>("fGenerated_nnc","",   100, 0.0, 20.0);
     fGenerated[5] = tfs->make<TH1F>("fGenerated_nbnc","",  100, 0.0, 20.0);
-    
+
     fDCosX = tfs->make<TH1F>("fDCosX", ";dx/ds", 200, -1., 1.);
     fDCosY = tfs->make<TH1F>("fDCosY", ";dy/ds", 200, -1., 1.);
     fDCosZ = tfs->make<TH1F>("fDCosZ", ";dz/ds", 200, -1., 1.);
@@ -195,11 +195,11 @@ namespace evgen{
     int xdiv = TMath::Nint(2*x/5.);
     int ydiv = TMath::Nint(2*y/5.);
     int zdiv = TMath::Nint(2*z/5.);
-    
+
     fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv,  -x, x);
     fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv,  -y, y);
     fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.2*z, z);
-    
+
     fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv,     -x, x, ydiv, -y, y);
     fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -x, x);
     fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv, -y, y);
@@ -228,14 +228,14 @@ namespace evgen{
     //std::cout << "run    : " << evt.Header().Run() << std::endl;
     //std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
     //std::cout << "event  : " << evt.Header().Event() << std::endl;
-    std::cout << "event  : " << evt.id().event() << std::endl;  
+    std::cout << "event  : " << evt.id().event() << std::endl;
 
     // TODO: fill more quantities out, as below.
     /*
     double X; // vertex position from Ndk
     double Y; // vertex position from Ndk
     double Z; // vertex position from Ndk
-    double PDGCODE = -9999.; 
+    double PDGCODE = -9999.;
     double CHANNEL = -9999.;
     int channel = -9999;
     double energy = 0.; // in MeV from Ndk
@@ -247,7 +247,7 @@ namespace evgen{
     */
 
     std::string name, k, dollar;
-     
+
 
     // event dump format on file output by the two commands ....
     // gevgen_ndcy  -g 1000180400  -m 8 -n 400 -o ndk
@@ -263,10 +263,10 @@ namespace evgen{
     int FirstMother = -1;
     double Mass = -9999;
     int Status = -9999;
-    
+
     double P; // momentum of MCParticle IN GeV/c
 
-    // TODO: Could perhaps imagine using these in NDk. 
+    // TODO: Could perhaps imagine using these in NDk.
     /*
     int targetnucleusPdg = -9999;
     int hitquarkPdg = -9999;
@@ -278,17 +278,17 @@ namespace evgen{
     TLorentzVector q;
     TLorentzVector Hadron4mom;
 
-    // TODO: Could perhaps imagine using these in NDk. 
+    // TODO: Could perhaps imagine using these in NDk.
     /*
-    int Tpdg = 0;  // for target 
+    int Tpdg = 0;  // for target
     double Tmass = 0;
     int Tstatus = 11;
     double Tcosx, Tcosy, Tcosz, Tenergy;
     */
 
     TLorentzVector Tpos;
-    
-        
+
+
     std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
 
@@ -310,7 +310,7 @@ namespace evgen{
       double world[3] = {0.,0.,0.};
       const geo::TPCGeo &tpc = geo->TPC(i);
       tpc.LocalToWorld(local,world);
-      if (minx>world[0]-geo->DetHalfWidth(i)) 
+      if (minx>world[0]-geo->DetHalfWidth(i))
         minx = world[0]-geo->DetHalfWidth(i);
       if (maxx<world[0]+geo->DetHalfWidth(i))
         maxx = world[0]+geo->DetHalfWidth(i);
@@ -330,19 +330,19 @@ namespace evgen{
     double Z0 = 0.0 + flat.fire( minz+fvCut , maxz-fvCut );
 
     std::cout << "NDKGen_module: X, Y, Z of vtx: " << X0 << ", "<< Y0 << ", "<< Z0 << std::endl;
-    
+
     int GenieEvt = -999;
-    
+
     if(!fEventFile.good())
-      std::cout << "NdkFile: Problem reading Ndk file" << std::endl; 
-    
+      std::cout << "NdkFile: Problem reading Ndk file" << std::endl;
+
     while(getline(fEventFile,k)){
 
       if (k.find("** Event:")!= std::string::npos) {
         std::istringstream in;
         in.clear();
         in.str(k);
-        std::string dummy;   
+        std::string dummy;
         in>> dummy>> dummy>> dummy >> dummy>> dummy>> dummy>> dummy >> dummy>> dummy>> dummy >> GenieEvt;
         std::cout<<"Genie Evt "<< GenieEvt <<" art evt "<<evt.id().event()<<"\n";
       }
@@ -374,55 +374,55 @@ namespace evgen{
           //std::cout<<std::setprecision(9)<<dollar<<"  "<<name<<"  "<<PDGCODE<<"  "<<energy<<"  "<<cosx<<" "<<cosy<<"  "<<cosz<<"  "<<partnumber<<std::endl;
       	  if (Ist!=1) continue;
 
-      	  std::cout << "PDG = " << PDG << std::endl;	
-      	
+      	  std::cout << "PDG = " << PDG << std::endl;
+
       	  const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
       	  const TParticlePDG* definition = databasePDG->GetParticle(PDG);
       	  Mass = definition->Mass(); // GeV
       	  if (E-Mass < 0.001) continue; // KE is too low.
-      	
+
       	  //	  if(partnumber == -1)
       	  Status = 1;
-      	  
+
       	  simb::MCParticle mcpart(trackid,
       		  		PDG,
-      			  	primary,		    
+      			  	primary,
       		  		FirstMother,
       			  	Mass,
       		  		Status
       			  	);
-      		
+
       	  P = std::sqrt(pow(E,2.) - pow(Mass,2.)); // GeV/c
       	  std::cout << "Momentum = " << P << std::endl;
-      	
+
       	  TLorentzVector pos(X0, Y0, Z0, 0);
 
       	  Tpos = pos; // for target
-      	
+
       	  TLorentzVector mom(Px,Py,Pz, E);
-      	
+
       	  mcpart.AddTrajectoryPoint(pos,mom);
       	  truth.Add(mcpart);
-      	
-      	
+
+
         }// loop over particles in an event
         truth.SetOrigin(simb::kUnknown);
-            
+
         //if (!k.compare(1,1,"FLAGS")) // end of event
-        //  break;  
+        //  break;
 
       }
     } // end while loop
-    
+
     /////////////////////////////////
-    std::cout << "NDKGen.cxx: Putting " << truth.NParticles() << " tracks on stack." << std::endl; 
+    std::cout << "NDKGen.cxx: Putting " << truth.NParticles() << " tracks on stack." << std::endl;
     truthcol->push_back(truth);
-    //FillHistograms(truth);  
+    //FillHistograms(truth);
     evt.put(std::move(truthcol));
-      
+
     return;
   }
-  
+
 //   //......................................................................
   std::string NDKGen::ParticleStatus(int StatusCode)
   {
@@ -494,23 +494,23 @@ namespace evgen{
       else                                     id = 5;
     }
     if (id==-1) abort();
-    
+
     // Fill the specta histograms
     fGenerated[id]->Fill(mc.GetNeutrino().Nu().E() );
-      
-    //< fill the vertex histograms from the neutrino - that is always 
+
+    //< fill the vertex histograms from the neutrino - that is always
     //< particle 0 in the list
     simb::MCNeutrino       mcnu = mc.GetNeutrino();
     const simb::MCParticle nu   = mcnu.Nu();
-    
+
     fVertexX->Fill(nu.Vx());
     fVertexY->Fill(nu.Vy());
     fVertexZ->Fill(nu.Vz());
-    
+
     fVertexXY->Fill(nu.Vx(), nu.Vy());
     fVertexXZ->Fill(nu.Vz(), nu.Vx());
     fVertexYZ->Fill(nu.Vz(), nu.Vy());
-    
+
     double mom = nu.P();
     if(std::abs(mom) > 0.){
       fDCosX->Fill(nu.Px()/mom);
@@ -519,14 +519,14 @@ namespace evgen{
     }
 
 
-//     MF_LOG_DEBUG("GENIEInteractionInformation") 
+//     MF_LOG_DEBUG("GENIEInteractionInformation")
 //       << std::endl
-//       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) 
+//       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode())
 //       << std::endl
 //       << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl
-//       << std::setiosflags(std::ios::left) 
+//       << std::setiosflags(std::ios::left)
 //       << std::setw(20) << "PARTICLE"
-//       << std::setiosflags(std::ios::left) 
+//       << std::setiosflags(std::ios::left)
 //       << std::setw(32) << "STATUS"
 //       << std::setw(18) << "E (GeV)"
 //       << std::setw(18) << "m (GeV/c2)"
@@ -535,14 +535,14 @@ namespace evgen{
 
 //     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
 
-//     // Loop over the particle stack for this event 
+//     // Loop over the particle stack for this event
 //     for(int i = 0; i < mc.NParticles(); ++i){
 //       simb::MCParticle part(mc.GetParticle(i));
 //       std::string name = databasePDG->GetParticle(part.PdgCode())->GetName();
 //       int code = part.StatusCode();
 //       std::string status = ParticleStatus(code);
 //       double mass = part.Mass();
-//       double energy = part.E(); 
+//       double energy = part.E();
 //       double Ek = (energy-mass); // Kinetic Energy (GeV)
 //       if(status=="kIStFinalStB4Interactions")
 // 	MF_LOG_DEBUG("GENIEFinalState")
@@ -551,27 +551,27 @@ namespace evgen{
 // 	  << std::setw(18)<< energy
 // 	  << std::setw(18)<< mass
 // 	  << std::setw(18)<< Ek <<std::endl;
-//       else 
-// 	MF_LOG_DEBUG("GENIEFinalState") 
+//       else
+// 	MF_LOG_DEBUG("GENIEFinalState")
 // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 // 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
 // 	  << std::setw(18) << energy
-// 	  << std::setw(18) << mass <<std::endl; 
+// 	  << std::setw(18) << mass <<std::endl;
 
     std::cout << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) << std::endl;
     std::cout << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl;
-    std::cout << std::setiosflags(std::ios::left) 
+    std::cout << std::setiosflags(std::ios::left)
 	      << std::setw(20) << "PARTICLE"
-	      << std::setiosflags(std::ios::left) 
+	      << std::setiosflags(std::ios::left)
 	      << std::setw(32) << "STATUS"
 	      << std::setw(18) << "E (GeV)"
 	      << std::setw(18) << "m (GeV/c2)"
 	      << std::setw(18) << "Ek (GeV)"
 	      << std::endl << std::endl;
-    
+
     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
-    
-    // Loop over the particle stack for this event 
+
+    // Loop over the particle stack for this event
     for(int i = 0; i < mc.NParticles(); ++i){
       simb::MCParticle part(mc.GetParticle(i));
       std::string name;
@@ -579,24 +579,24 @@ namespace evgen{
 	name = "Ar40 18040";
       else if (part.PdgCode() != -99999 )
 	{
-	  name = databasePDG->GetParticle(part.PdgCode())->GetName(); 
+	  name = databasePDG->GetParticle(part.PdgCode())->GetName();
 	}
-      
+
       int code = part.StatusCode();
       std::string status = ParticleStatus(code);
       double mass = part.Mass();
-      double energy = part.E(); 
+      double energy = part.E();
       double Ek = (energy-mass); // Kinetic Energy (GeV)
-      
+
       std::cout << std::setiosflags(std::ios::left) << std::setw(20) << name
 		<< std::setiosflags(std::ios::left) << std::setw(32) <<status
 		<< std::setw(18)<< energy
 		<< std::setw(18)<< mass
-		<< std::setw(18)<< Ek <<std::endl;  
+		<< std::setw(18)<< Ek <<std::endl;
     }
 
     if(mc.GetNeutrino().CCNC() == simb::kCC){
-  
+
       ///look for the outgoing lepton in the particle stack
       ///just interested in the first one
       for(int i = 0; i < mc.NParticles(); ++i){

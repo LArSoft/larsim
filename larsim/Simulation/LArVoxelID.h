@@ -51,7 +51,7 @@
 
 namespace sim {
 
-  class LArVoxelID 
+  class LArVoxelID
   {
   public:
     // What is an appropriate storage class for an element of the bin
@@ -64,9 +64,9 @@ namespace sim {
     // one is provided for completeness, but it's not the one I
     // anticipate the clients will use.  Note that it's also serves
     // as the no-argument constructor that ROOT requires for I/O.
-    LArVoxelID( const int x = 0, 
-		const int y = 0, 
-		const int z = 0, 
+    LArVoxelID( const int x = 0,
+		const int y = 0,
+		const int z = 0,
 		const int t = 0 );
 
     // The constructors that I expect most clients to use: Given the
@@ -76,9 +76,9 @@ namespace sim {
     // and the Monte Carlo, but this class does not enforce that
     // consistency.
     explicit LArVoxelID( const TLorentzVector& v );
-    LArVoxelID( const double x, 
-		const double y, 
-		const double z, 
+    LArVoxelID( const double x,
+		const double y,
+		const double z,
 		const double t );
 
     // Destructor.
@@ -93,10 +93,10 @@ namespace sim {
   public:
     // Accessors for the bin values.  I don't expect these to be used
     // often, but include them for completeness.
-    int XBin() const; 
-    int YBin() const; 
-    int ZBin() const; 
-    int TBin() const; 
+    int XBin() const;
+    int YBin() const;
+    int ZBin() const;
+    int TBin() const;
 
     // The accessors I expect to be used: The values of the
     // co-ordinates at the bin centers.
@@ -132,7 +132,7 @@ namespace sim {
 
   };
 
-} // sim 
+} // sim
 
 inline int sim::LArVoxelID::XBin() const { return fbins[0]; }
 inline int sim::LArVoxelID::YBin() const { return fbins[1]; }
@@ -152,7 +152,7 @@ inline int sim::LArVoxelID::TBin() const { return fbins[3]; }
 // map<LArVoxelID*,double> will be sorted in the order I expect.
 
 namespace std {
-  template <> 
+  template <>
   class less<sim::LArVoxelID*>
   {
   public:

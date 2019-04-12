@@ -12,8 +12,8 @@
 namespace sim {
 
   //##################################################################
-  MCShowerRecoAlg::MCShowerRecoAlg(fhicl::ParameterSet const& pset) 
-    : fPartAlg(pset.get<fhicl::ParameterSet>("MCShowerRecoPart")),   
+  MCShowerRecoAlg::MCShowerRecoAlg(fhicl::ParameterSet const& pset)
+    : fPartAlg(pset.get<fhicl::ParameterSet>("MCShowerRecoPart")),
       fDebugMode(pset.get<bool>("DebugMode")),
       fMinShowerEnergy(pset.get<double>("MinShowerEnergy")),
       fMinNumDaughters(pset.get<unsigned int>("MinNumDaughters"))
@@ -21,11 +21,11 @@ namespace sim {
   {
   }
 
-  std::unique_ptr<std::vector<sim::MCShower>> 
+  std::unique_ptr<std::vector<sim::MCShower>>
                MCShowerRecoAlg::Reconstruct(MCRecoPart& part_v,
 				    MCRecoEdep& edep_v)
   {
-    
+
     art::ServiceHandle<geo::Geometry const> geo;
 
     auto pindex = details::createPlaneIndexMap();
@@ -88,7 +88,7 @@ namespace sim {
       mcs_to_spart_v.push_back(shower_index);
 
       if(fDebugMode)
-	
+
 	std::cout << " Storage index " << mcshower.size() << " => Shower index " << shower_index
 		  << std::endl;
 
@@ -148,7 +148,7 @@ namespace sim {
     std::vector<double>         mcs_daughter_dedx_v     ( mcshower.size(), 0                );
     std::vector<double>         mcs_daughter_dedxRAD_v  ( mcshower.size(), 0                );
     std::vector<TVector3>       mcs_daughter_dir_v      ( mcshower.size(), TVector3()       );
- 
+
     for(size_t mcs_index=0; mcs_index<mcshower.size(); ++mcs_index) {
 
       auto& mcs_daughter_vtx       = mcs_daughter_vtx_v[mcs_index];
@@ -160,33 +160,33 @@ namespace sim {
       auto& plane_dqdx             = plane_dqdx_v[mcs_index];
 
       for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
-	
+
 	auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
-	
+
 	auto const& daughter_part = part_v[daughter_part_index];
-	
+
 	auto const daughter_edep_index = edep_v.TrackToEdepIndex(daughter_trk_id);
 
 	if(daughter_edep_index<0) continue;
-	
+
 	auto const& daughter_edep = edep_v.GetEdepArrayAt(daughter_edep_index);
-	
+
 	if(!(daughter_edep.size())) continue;
 
 	// Record first daughter's vtx point
 	double min_dist = sim::kINVALID_DOUBLE;
 	for(auto const& edep : daughter_edep) {
-	  
+
 	  double dist = sqrt( pow(edep.pos._x - daughter_part._start_vtx[0],2) +
 			      pow(edep.pos._y - daughter_part._start_vtx[1],2) +
 			      pow(edep.pos._z - daughter_part._start_vtx[2],2) );
-	  
+
 	  if(dist < min_dist) {
 	    min_dist = dist;
 	    mcs_daughter_vtx[0] = edep.pos._x;
 	    mcs_daughter_vtx[1] = edep.pos._y;
 	    mcs_daughter_vtx[2] = edep.pos._z;
-	    mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + daughter_part._start_vtx[3];	    
+	    mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + daughter_part._start_vtx[3];
 	  }
 
 	}
@@ -199,13 +199,13 @@ namespace sim {
 	  double magnitude = 0;
 	  for(size_t i=0; i<3; ++i)
 	    magnitude += pow(shower_dir[i],2);
-	  
+
 	  magnitude = sqrt(magnitude);
-	  
+
 	  if(magnitude > 1.e-10) {
 	    // If enough momentum, include angle info
 	    min_dist = sim::kINVALID_DOUBLE;
-	    
+
 	    for(auto& v : shower_dir) v /= magnitude;
 
 	    for(auto const& edep : daughter_edep) {
@@ -213,16 +213,16 @@ namespace sim {
 	      shower_dep_dir[0] = edep.pos._x - mcshower[mcs_index].Start().X();
 	      shower_dep_dir[1] = edep.pos._y - mcshower[mcs_index].Start().Y();
 	      shower_dep_dir[2] = edep.pos._z - mcshower[mcs_index].Start().Z();
-	      
+
 	      double dist = sqrt( pow(shower_dep_dir[0],2) + pow(shower_dep_dir[1],2) + pow(shower_dep_dir[2],2) );
 	      for(auto& v : shower_dep_dir) v /= dist;
 
 	      double angle = acos( shower_dep_dir[0] * shower_dir[0] +
 				   shower_dep_dir[1] * shower_dir[1] +
 				   shower_dep_dir[2] * shower_dir[2] ) / TMath::Pi() * 180.;
-	      
+
 	      if(dist < min_dist && angle < 10) {
-		
+
 		min_dist = dist;
 		mcs_daughter_vtx[0] = edep.pos._x;
 		mcs_daughter_vtx[1] = edep.pos._y;
@@ -231,25 +231,25 @@ namespace sim {
 	      }
 	    }
 	  }
-	}	
+	}
 	break;
       }
       // Now take care of momentum & plane charge
 
       std::vector<double> mom(3,0);
       for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
-	
+
 	//auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
-	
+
 	// for c2: daughter_part is unused
 	//auto const& daughter_part = part_v[daughter_part_index];
-	
+
 	auto const daughter_edep_index = edep_v.TrackToEdepIndex(daughter_trk_id);
 
 	if(daughter_edep_index<0) continue;
-	
+
 	auto const& daughter_edep = edep_v.GetEdepArrayAt(daughter_edep_index);
-	
+
 	if(!(daughter_edep.size())) continue;
 
 	//bool first=true;  // unused
@@ -279,13 +279,13 @@ namespace sim {
 	    mcs_daughter_mom[1] += mom.at(1);
 	    mcs_daughter_mom[2] += mom.at(2);
 	  }
-	  //Determine the direction of the shower right at the start point 
+	  //Determine the direction of the shower right at the start point
 	  double E = 0;
 	  double N = 0;
-	  if(sqrt( pow( edep.pos._x - mcs_daughter_vtx[0],2) + 
-		   pow( edep.pos._y - mcs_daughter_vtx[1],2) + 
+	  if(sqrt( pow( edep.pos._x - mcs_daughter_vtx[0],2) +
+		   pow( edep.pos._y - mcs_daughter_vtx[1],2) +
 		   pow( edep.pos._z - mcs_daughter_vtx[2],2)) < 2.4 && magnitude>1.e-10){
-	    
+
 	    mcs_daughter_dir[0] += mom.at(0);
 	    mcs_daughter_dir[1] += mom.at(1);
 	    mcs_daughter_dir[2] += mom.at(2);
@@ -295,7 +295,7 @@ namespace sim {
 
 	  if(E > 0) E /= N;
 	  mcs_daughter_dedxRAD += E;
-	  
+
 	  mcs_daughter_mom[3] += energy;
 
 	  // Charge
@@ -308,34 +308,34 @@ namespace sim {
 
       }///Looping through MCShower daughters
       mcs_daughter_dedxRAD /= 2.4;
-      
+
       for(auto const& daughter_trk_id : mcshower[mcs_index].DaughterTrackID()) {
-	
+
 	//auto const daughter_part_index = part_v.TrackToParticleIndex(daughter_trk_id);
-	
+
 	// for c2: daughter_part is unused
 	//auto const& daughter_part = part_v[daughter_part_index];
-	
+
 	auto const daughter_edep_index = edep_v.TrackToEdepIndex(daughter_trk_id);
 
 	if(daughter_edep_index<0) continue;
-	
+
 	auto const& daughter_edep = edep_v.GetEdepArrayAt(daughter_edep_index);
-	
-	if(!(daughter_edep.size())) continue;	
+
+	if(!(daughter_edep.size())) continue;
 
 	for(auto const& edep : daughter_edep) {
-	  
-	  //Defining dEdx	
+
+	  //Defining dEdx
 	  //Need to define a plane through the shower start point (x_0, y_0, z_0) with a normal along the momentum vector of the shower
 	  //The plane will be defined in the typical way:
 	  // a*x + b*y + c*z + d = 0
 	  // where, a = dir_x, b = dir_y, c = dir_z, d = - (a*x_0+b*y_0+c*z_0)
-	  // then the *signed* distance of any point (x_1, y_1, z_1) from this plane is: 
-	  // D = (a*x_1 + b*y_1 + c*z_1 + d )/sqrt( pow(a,2) + pow(b,2) + pow(c,2))  	        
-	  
+	  // then the *signed* distance of any point (x_1, y_1, z_1) from this plane is:
+	  // D = (a*x_1 + b*y_1 + c*z_1 + d )/sqrt( pow(a,2) + pow(b,2) + pow(c,2))
 
-	  
+
+
 	  double p_mag = sqrt( pow(mcs_daughter_dir[0],2) + pow(mcs_daughter_dir[1],2) + pow(mcs_daughter_dir[2],2) );
 	  double a = 0, b = 0, c = 0, d = 0;
 	  if(p_mag > 1.e-10){
@@ -348,10 +348,10 @@ namespace sim {
 	  //Radial Distance
 	  if( (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) < 2.4 &&
 	      (a*edep.pos._x + b*edep.pos._y + c*edep.pos._z + d)/sqrt( pow(a,2) + pow(b,2) + pow(c,2)) > 0){
-	     
+
 	    double E = 0;
 	    double N = 0;
-	    
+
 	    for(auto const& pid_energy : edep.deps) {
 	      N += 1;
 	      E += pid_energy.energy;
@@ -368,25 +368,25 @@ namespace sim {
 	    auto const pid = edep.pid;
 	    auto q_i = pindex.find(pid);
             if(q_i != pindex.end())
-              plane_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge); 
+              plane_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
 	  }
 	}
       }
-      mcs_daughter_dedx /= 2.4;      
+      mcs_daughter_dedx /= 2.4;
       plane_dqdx.at(0) /= 2.4;
       plane_dqdx.at(1) /= 2.4;
       plane_dqdx.at(2) /= 2.4;
 
 
     }///Looping through MCShowers
-  
+
     if(fDebugMode)
       std::cout << " Found " << mcshower.size() << " MCShowers. Now storing..." << std::endl;
-    
+
     // Store plane charge & daughter momentum
     for(size_t mcs_index=0; mcs_index<mcshower.size(); ++mcs_index) {
-      
-      auto& daughter_vtx     = mcs_daughter_vtx_v[mcs_index]; 
+
+      auto& daughter_vtx     = mcs_daughter_vtx_v[mcs_index];
       auto& daughter_mom     = mcs_daughter_mom_v[mcs_index];
       auto& daughter_dedx    = mcs_daughter_dedx_v[mcs_index];
       auto& daughter_dedxRAD = mcs_daughter_dedxRAD_v[mcs_index];
@@ -395,14 +395,14 @@ namespace sim {
       auto& plane_dqdx       = plane_dqdx_v[mcs_index];
 
       double magnitude = sqrt(pow(daughter_mom[0],2)+pow(daughter_mom[1],2)+pow(daughter_mom[2],2));
-      
+
       if(daughter_mom[3]>1.e-10) {
 	daughter_mom[0] *= daughter_mom[3]/magnitude;
 	daughter_mom[1] *= daughter_mom[3]/magnitude;
 	daughter_mom[2] *= daughter_mom[3]/magnitude;
       }else
 	for(size_t i=0; i<4; ++i) daughter_mom[i]=0;
-      
+
       mcshower.at(mcs_index).DetProfile( MCStep( daughter_vtx, daughter_mom ) );
       mcshower.at(mcs_index).Charge(plane_charge);
       mcshower.at(mcs_index).dQdx(plane_dqdx);
@@ -411,13 +411,13 @@ namespace sim {
       mcshower.at(mcs_index).StartDir(daughter_dir);
 
     }
-    
+
     if(fDebugMode) {
-      
+
       for(auto const& prof : mcshower) {
-	
+
 	std::cout
-	  
+
 	  << Form("  Shower particle:     PDG=%d : Track ID=%d Start @ (%g,%g,%g,%g) with Momentum (%g,%g,%g,%g)",
 		  prof.PdgCode(), prof.TrackID(),
 		  prof.Start().X(),prof.Start().Y(),prof.Start().Z(),prof.Start().T(),
@@ -437,14 +437,14 @@ namespace sim {
 		  prof.DaughterTrackID().size(),
 		  prof.DetProfile().X(),prof.DetProfile().Y(),prof.DetProfile().Z(),prof.DetProfile().T(),
 		  prof.DetProfile().Px(),prof.DetProfile().Py(),prof.DetProfile().Pz(),prof.DetProfile().E())
-	  << std::endl		  
+	  << std::endl
 	  << "    Charge per plane: ";
 	size_t const nPlanes = prof.Charge().size();
 	for(size_t i=0; i<nPlanes; ++i) {
-	  
+
 	  std::cout << " | Plane " << i << std::flush;
 	  std::cout << " ... Q = " << prof.Charge(i) << std::flush;
-	  
+
 	}
 	std::cout<<std::endl<<std::endl;
       }

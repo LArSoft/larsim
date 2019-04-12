@@ -73,7 +73,7 @@ namespace cheat{
 
       const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p) const; //Users are encouraged to use ParticleToMCTruthP
       simb::MCTruth                  ParticleToMCTruth (const simb::MCParticle* p) const
-      { return *(this->ParticleToMCTruth_P(p)); } 
+      { return *(this->ParticleToMCTruth_P(p)); }
 
       const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector_Ps() const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
 

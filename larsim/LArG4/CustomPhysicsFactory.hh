@@ -18,12 +18,12 @@ namespace larg4 {
   public:
     CustomPhysicsFactoryBase() {}
     virtual ~CustomPhysicsFactoryBase() {}
-    
+
     virtual bool Registered() = 0;
     virtual std::string GetName() = 0;
     virtual G4VPhysicsConstructor * Build() = 0;
   };
-  
+
   template<class T>
   class CustomPhysicsFactory : public CustomPhysicsFactoryBase
   {
@@ -31,56 +31,56 @@ namespace larg4 {
     CustomPhysicsFactory();
     CustomPhysicsFactory(std::string);
     virtual ~CustomPhysicsFactory() {};
-    bool Registered () 
+    bool Registered ()
     {return registered;}
-    std::string GetName() 
+    std::string GetName()
     { return myName;}
     virtual G4VPhysicsConstructor * Build();
-    
-    
+
+
   private:
     std::string myName;
     bool registered;
     bool verbose;
   };
-}  
+}
 #include "larsim/LArG4/CustomPhysicsTable.hh"
- 
+
 namespace larg4 {
- 
+
   template<class T> G4VPhysicsConstructor * CustomPhysicsFactory<T>::Build()
   {
     return new T();
   }
-  
+
   template<class T> CustomPhysicsFactory<T>::CustomPhysicsFactory(std::string Name)
   {
-    
-    // For debugging. 
+
+    // For debugging.
     verbose=true;
-    
+
     if(Name!="")
       myName=Name;
     else
       std::cerr<<"CustomPhysicsFactory Error : Physics registered with no name!"<<std::endl;
-    
+
     // register self in physics table - note, factory is actually registered
     // in static TheCustomPhysicsTable, not the instance created below
     // which just acts to pass information along
     new CustomPhysicsTable(this);
     registered=true;
   }
-  
-  
-  
+
+
+
   template<class T> CustomPhysicsFactory<T>::CustomPhysicsFactory()
   {
     registered=false;
   }
-  
+
 }
-  
+
 #endif
-  
+
 
 // Sept 2009 - Ben Jones, MIT

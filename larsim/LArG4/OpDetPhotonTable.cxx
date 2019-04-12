@@ -22,7 +22,7 @@
 
 namespace larg4 {
   OpDetPhotonTable * TheOpDetPhotonTable;
-  
+
   //--------------------------------------------------
   OpDetPhotonTable::OpDetPhotonTable()
   {
@@ -38,7 +38,7 @@ namespace larg4 {
     if(!TheOpDetPhotonTable){
       TheOpDetPhotonTable = new OpDetPhotonTable;
     }
-    return TheOpDetPhotonTable;  
+    return TheOpDetPhotonTable;
   }
 
 
@@ -55,7 +55,7 @@ namespace larg4 {
 		<< std::endl;
       throw std::exception();
     }
-    if (!Reflected) 
+    if (!Reflected)
       fDetectedPhotons.at(opchannel).push_back(photon);
     else
       fReflectedDetectedPhotons.at(opchannel).push_back(photon);
@@ -69,7 +69,7 @@ namespace larg4 {
     else
       fReflectedLitePhotons[opchannel][time] += nphotons;
   }
-  
+
   //--------------------------------------------------
   void OpDetPhotonTable::AddPhoton(std::map<int, std::map<int, int>>* StepPhotonTable, bool Reflected)
   {
@@ -94,7 +94,7 @@ namespace larg4 {
     else
       AddOpDetBacktrackerRecord(cReflectedOpDetBacktrackerRecordsCol, cReflectedOpChannelToSOCMap, soc);
   }
-  
+
   //--------------------------------------------------- cOpDetBacktrackerRecord population
   void OpDetPhotonTable::AddOpDetBacktrackerRecord(std::vector< sim::OpDetBacktrackerRecord > & RecordsCol,
                                                    std::map<int, int> & ChannelMap,
@@ -119,8 +119,8 @@ namespace larg4 {
         }//end sdp : timesdp.second
       }//end const timesdp : timeSDPMap
     }// if chanPos == cOpChan else
-    
-    
+
+
 //    std::cout << "DEBUG: Add to " << iChan << " to cOpDetBTR. Now " << RecordsCol.size() << " in size " << std::endl;
   }//END void OpDetPhotonTable::AdOpDetBacktrackerRecords
 
@@ -139,7 +139,7 @@ namespace larg4 {
     cOpChannelToSOCMap.clear();
     return result;
   } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
-  
+
   //--------------------------------------------------
   // cReflectedOpDetBacktrackerRecord return.
   std::vector<sim::OpDetBacktrackerRecord> OpDetPhotonTable::YieldReflectedOpDetBacktrackerRecords() {
@@ -153,7 +153,7 @@ namespace larg4 {
     cReflectedOpChannelToSOCMap.clear();
     return result;
   } // OpDetPhotonTable::YieldOpDetBacktrackerRecords()
-  
+
 
   //--------------------------------------------------
   void OpDetPhotonTable::ClearTable(const size_t nch)
@@ -183,8 +183,8 @@ namespace larg4 {
   sim::SimPhotons& OpDetPhotonTable::GetPhotonsForOpChannel(size_t opchannel)
   {
     if(opchannel >= fDetectedPhotons.size()) {
-      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>" 
-		<< "Invalid channel Number: " << opchannel 
+      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>"
+		<< "Invalid channel Number: " << opchannel
 		<< std::endl;
     }
     return fDetectedPhotons.at(opchannel);
@@ -194,8 +194,8 @@ namespace larg4 {
   sim::SimPhotons& OpDetPhotonTable::GetReflectedPhotonsForOpChannel(size_t opchannel)
   {
     if(opchannel >= fReflectedDetectedPhotons.size()) {
-      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>" 
-		<< "Invalid channel Number: " << opchannel 
+      std::cerr << "<<" << __PRETTY_FUNCTION__ << ">>"
+		<< "Invalid channel Number: " << opchannel
 		<< std::endl;
     }
     return fReflectedDetectedPhotons.at(opchannel);
@@ -210,7 +210,7 @@ namespace larg4 {
 					  double start_time,double end_time,
 					  int trackid,int pdgcode,
 					  std::string const& vol)
-  {  
+  {
     fSimEDepCol[vol].emplace_back(n_elec,n_photon,
 				  energy,
 				  geo::Point_t{start_x,start_y,start_z},
@@ -222,11 +222,11 @@ namespace larg4 {
   //--------------------------------------------------
   void OpDetPhotonTable::ClearEnergyDeposits()
   { fSimEDepCol.clear(); }
-  
-  
+
+
   //--------------------------------------------------
   std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> > const& OpDetPhotonTable::GetSimEnergyDeposits() const
   { return fSimEDepCol; }
-  
+
 
 }

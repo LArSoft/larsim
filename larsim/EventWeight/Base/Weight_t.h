@@ -5,7 +5,7 @@
 
 namespace evwgh {
   struct Weight_t {
-    
+
   Weight_t() :
     fMinWeight(std::numeric_limits<double>::max()),
     fMaxWeight(std::numeric_limits<double>::min()),
@@ -24,7 +24,7 @@ namespace evwgh {
 			    *std::max_element(wgh[inu].begin(),wgh[inu].end()));
 	fNcalls++;
       }
-      
+
       return wgh;
     }
     std::string fName;

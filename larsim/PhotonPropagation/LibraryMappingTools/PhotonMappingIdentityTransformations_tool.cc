@@ -5,7 +5,7 @@
  * @date   March 20, 2019
  * @see    `larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h`
  *         `larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.cxx`
- * 
+ *
  * Note that the separation of the code into a implementation and a tool part
  * is not because of factorization to have art-independent code, but because
  * we want this object to be customizable by inheritance.
@@ -14,7 +14,7 @@
  * library also contains the registration of the tool into the _art_ framework
  * (`DEFINE_ART_CLASS_TOOL()` macro), the functions registering the base tool
  * will conflict with the ones for the registration of the derived tool.
- * 
+ *
  */
 
 

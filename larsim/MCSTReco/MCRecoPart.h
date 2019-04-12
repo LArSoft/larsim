@@ -89,10 +89,10 @@ namespace sim
 
     /*
       Take TrackID and returns the corresponding particle unique index number (MCParticle array index)
-      Returns kINVALID_UINT if nothing found. 
+      Returns kINVALID_UINT if nothing found.
     */
     unsigned int TrackToParticleIndex(const unsigned int track_id) const
-    { 
+    {
       auto const iter (_track_index.find(track_id));
       if(iter==_track_index.end()) return kINVALID_UINT;
       return (*iter).second;
@@ -101,7 +101,7 @@ namespace sim
     bool InDetector(const double& x,
 		    const double& y,
 		    const double& z) const;
-    
+
   public:
 
     /// Track ID => Index Map
@@ -121,6 +121,6 @@ namespace sim
     double _z_min; //!< z-min of volume box used to determine whether to save track information
 
   }; // class MCRecoPart
-  
+
 } //namespace cluster
 #endif

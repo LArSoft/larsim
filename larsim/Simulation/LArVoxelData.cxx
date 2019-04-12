@@ -11,10 +11,10 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   // Constructor; take care of any initializations.
-  LArVoxelData::LArVoxelData() 
+  LArVoxelData::LArVoxelData()
     : fenergy(0)
   {}
-  
+
   //----------------------------------------------------------------------------
   // Destructor.
   LArVoxelData::~LArVoxelData() {}
@@ -66,7 +66,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   /// Just in case: define the result of "scalar * LArVoxelData" to be
   /// the same as "LArVoxelData * scalar".
-  const LArVoxelData operator*(const double& value, const LArVoxelData& data) 
+  const LArVoxelData operator*(const double& value, const LArVoxelData& data)
   {
     return LArVoxelData(data) *= value;
   }
@@ -83,7 +83,7 @@ namespace sim {
     for ( LArVoxelData::const_iterator i = data.begin(); i != data.end(); ++i){
       if ( i != data.begin() )
 	output << ",";
-      
+
       output << "<" << (*i).first << "," << (*i).second << ">";
     }
     if( unassigned > 0 )

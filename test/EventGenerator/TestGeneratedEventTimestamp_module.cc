@@ -31,7 +31,7 @@
 class TestGeneratedEventTimestamp: public art::EDAnalyzer {
     public:
   explicit TestGeneratedEventTimestamp(fhicl::ParameterSet const& pset);
-  
+
 private:
   void analyze(art::Event const & e) override;
   CLHEP::HepRandomEngine& fEngine;

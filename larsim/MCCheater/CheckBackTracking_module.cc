@@ -38,7 +38,7 @@ namespace cheat {
 
  private:
 
-    std::string fHitModuleLabel;    ///< label for module creating recob::Hit objects	   
+    std::string fHitModuleLabel;    ///< label for module creating recob::Hit objects
     std::string fG4ModuleLabel;     ///< label for module running G4 and making particles, etc
 
   };
@@ -65,7 +65,7 @@ namespace cheat{
     // so no need for a art::PtrVector here
     std::vector< art::Ptr<recob::Hit> > hits;
     art::fill_ptr_vector(hits, hitcol);
-    
+
     // loop over the hits and figure out which particle contributed to each one
     std::vector< art::Ptr<recob::Hit> >::iterator itr = hits.begin();
 
@@ -84,25 +84,25 @@ namespace cheat{
       std::vector<sim::TrackIDE> eveides   = bt_serv->HitToEveTrackIDEs(*itr);
       std::vector<double>          xyz       = bt_serv->HitToXYZ(*itr);
 
-      mf::LogInfo("CheckBackTracking") << "hit weighted mean position is (" 
+      mf::LogInfo("CheckBackTracking") << "hit weighted mean position is ("
 				       << xyz[0] << "," << xyz[1] << "," << xyz[2] << ")";
-	
+
       for(size_t t = 0; t < trackides.size(); ++t){
 
 	// find the Eve particle for the current trackID
 	int eveID = pi_serv->ParticleList().EveId( trackides[t].trackID );
 
-	mf::LogInfo("CheckBackTracking") << "track id: " << trackides[t].trackID 
-					 << " contributed " << trackides[t].energy << "/" 
-					 << trackides[t].energyFrac 
+	mf::LogInfo("CheckBackTracking") << "track id: " << trackides[t].trackID
+					 << " contributed " << trackides[t].energy << "/"
+					 << trackides[t].energyFrac
 					 << " to the current hit and has eveID: "
 					 << eveID;
       }
 
       for(size_t e = 0; e < eveides.size(); ++e){
-	mf::LogInfo("CheckBackTracking") << "eve id: " << eveides[e].trackID 
-					 << " contributed " << eveides[e].energy << "/" 
-					 << eveides[e].energyFrac 
+	mf::LogInfo("CheckBackTracking") << "eve id: " << eveides[e].trackID
+					 << " contributed " << eveides[e].energy << "/"
+					 << eveides[e].energyFrac
 					 << " to the current hit";
 
 	if(eveIDs.find(eveides[e].trackID) == eveIDs.end()) eveIDs.insert(eveides[e].trackID);
@@ -117,13 +117,13 @@ namespace cheat{
 
       std::set<int> id;
       id.insert(*setitr);
-      mf::LogInfo("CheckBackTracking") << "eve ID: " << *setitr 
-				       << " purity: " 
+      mf::LogInfo("CheckBackTracking") << "eve ID: " << *setitr
+				       << " purity: "
 				       << bt_serv->HitCollectionPurity(id, hits)
 				       << " efficiency: "
 				       << bt_serv->HitCollectionEfficiency(id, hits, hits, geo::k3D);
 
-      
+
       setitr++;
     }
 

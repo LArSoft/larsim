@@ -74,7 +74,7 @@ class G4OpAbsorption;
 class G4OpWLS;
 class G4OpRayleigh;
 
-namespace larg4 {  
+namespace larg4 {
 
   class OpFastScintillation;
   class OpBoundaryProcessSimple;
@@ -84,10 +84,10 @@ namespace larg4 {
   public:
     FastOpticalPhysics(G4int ver = 0, const G4String& name = "FastOptical");
     virtual ~FastOpticalPhysics();
-    
+
     virtual void ConstructParticle();
     virtual void ConstructProcess();
-    
+
   private:
     G4int  verbose;
     G4Cerenkov*              fTheCerenkovProcess;
@@ -97,7 +97,7 @@ namespace larg4 {
     OpBoundaryProcessSimple* fTheBoundaryProcess;
     G4OpWLS *                fTheWLSProcess;
   };
-  
+
 }
 #if defined __clang__
   #pragma clang diagnostic pop

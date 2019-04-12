@@ -1,8 +1,8 @@
-#include "WeightCalcCreator.h" 
+#include "WeightCalcCreator.h"
 #include "WeightCalcFactory.h"
 
 namespace evwgh {
-  WeightCalcCreator::WeightCalcCreator(const std::string& wghcalcname) 
+  WeightCalcCreator::WeightCalcCreator(const std::string& wghcalcname)
   {
     WeightCalcFactory::Register(wghcalcname, this);
   }

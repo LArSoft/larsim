@@ -21,7 +21,7 @@ namespace trigger{
   //****************************************************************************
   void TriggerAlgoBase::Config(fhicl::ParameterSet const& pset) {
   //****************************************************************************
-    
+
     _preceeding_slices = pset.get< int >("PreceedingWindow");
 
     _proceeding_slices = pset.get< int >("ProceedingWindow");
@@ -48,17 +48,17 @@ namespace trigger{
     for(std::set<trigdata::TrigTimeSlice_t>::const_iterator iter(_timestamps.begin());
 	iter != _timestamps.end();
 	++iter){
-      
+
       if(!(last_timestamp) || (*iter) > (last_timestamp + _deadtime)) {
-	
+
 	window_begin = ((*iter) > _preceeding_slices) ? ((*iter) - _preceeding_slices) : 0;
-	
+
 	window_end   = (*iter) + _proceeding_slices;
 
 	_time_windows.insert(std::make_pair(window_end,window_begin));
-	
+
 	last_timestamp=(*iter);
-	
+
       }
 
     }
@@ -70,7 +70,7 @@ namespace trigger{
   //****************************************************************************
   bool TriggerAlgoBase::IsTriggered(trigdata::TrigTimeSlice_t time) const {
   //****************************************************************************
-    
+
     if(!_time_windows.size()) return false;
 
     std::map<trigdata::TrigTimeSlice_t,trigdata::TrigTimeSlice_t>::const_iterator start_time(_time_windows.lower_bound(time));
@@ -78,10 +78,10 @@ namespace trigger{
     if(start_time==_time_windows.end()) return false;
 
     else return ((*start_time).second < time);
-    
+
   }
-  
-  
+
+
   //DEFINE_ART_SERVICE(TriggerAlgoBase)
 
 } // namespace trigger

@@ -19,8 +19,8 @@ class NestAlg {
   const G4VParticleChange& CalculateIonizationAndScintillation(G4Track const& aTrack,
 							       G4Step  const& aStep);
 
-  void   SetScintillationYieldFactor(double const& yf)     { fYieldFactor = yf;       } 
-  void   SetScintillationExcitationRatio(double const& er) { fExcitationRatio = er;   } 
+  void   SetScintillationYieldFactor(double const& yf)     { fYieldFactor = yf;       }
+  void   SetScintillationExcitationRatio(double const& er) { fExcitationRatio = er;   }
   int    NumberScintillationPhotons() const                { return fNumScintPhotons; }
   int    NumberIonizationElectrons()  const                { return fNumIonElectrons; }
   double EnergyDeposition()           const                { return fEnergyDep;       }
@@ -34,14 +34,14 @@ class NestAlg {
   G4int BinomFluct(G4int N0, G4double prob); //function for doing fluctuations
   void InitMatPropValues ( G4MaterialPropertiesTable* nobleElementMat, int z );
 
-  double             fYieldFactor;     ///< turns scint. on/off				
-  double 	     fExcitationRatio; ///< N_ex/N_i, the dimensionless ratio of initial 
-                                       ///< excitons to ions 
-  int    	     fNumScintPhotons; ///< number of photons produced by the step	
+  double             fYieldFactor;     ///< turns scint. on/off
+  double 	     fExcitationRatio; ///< N_ex/N_i, the dimensionless ratio of initial
+                                       ///< excitons to ions
+  int    	     fNumScintPhotons; ///< number of photons produced by the step
   int    	     fNumIonElectrons; ///< number of ionization electrons produced by step
-  double 	     fEnergyDep;       ///< energy deposited by the step                   
+  double 	     fEnergyDep;       ///< energy deposited by the step
   G4VParticleChange  fParticleChange;  ///< pointer to G4VParticleChange
-  std::map<int,bool> fElementPropInit; ///< map of noble element z to flag 
+  std::map<int,bool> fElementPropInit; ///< map of noble element z to flag
                                        ///< for whether that element's material
                                        ///< properties table has been initialized
   CLHEP::HepRandomEngine& fEngine;     ///< random engine

@@ -3,8 +3,8 @@
 /// \brief Generator for underground muon propagation
 ///
 /// Module designed to propagate muons underground
-///  
-/// For a description of how to use the module see DUNE DocDB  
+///
+/// For a description of how to use the module see DUNE DocDB
 /// It is highly recommended that you read it before use.....
 ///
 /// Original MUSUN code was written by Vitaly A. Kudryavtsev (University of Sheffield).
@@ -14,13 +14,13 @@
 /// Interfaced with LArSoft by Karl Warburton (University of Sheffield) with necessary changes.
 /// ------------START OF NECCESSARY CHANGES---------------
 /// Changing variables to fcl parameters
-/// Restructuring to fit LArSoft design 
-/// Co-ordinate transformation... y -> x, x -> z, z -> y ????SHOULD BE x -> -z AS PER VITALY???? 
+/// Restructuring to fit LArSoft design
+/// Co-ordinate transformation... y -> x, x -> z, z -> y ????SHOULD BE x -> -z AS PER VITALY????
 /// Restore cavern angle convention to Vitaly's definition.
 /// ------------END OF NECCESSARY CHANGES-----------------
 /// \author  k.warburton@sheffield.ac.uk
 ///
-/// Further Notes - Taken from Kareem Kazkaz; 
+/// Further Notes - Taken from Kareem Kazkaz;
 ///
 /// This C++ code is a port of the musun-surf.f and test-musun-surf.f code written
 /// by Vitaly Kudryavtsev of the University of Sheffield. It generates muons with
@@ -65,7 +65,7 @@
 ///c       Coordinate system for the muon intensities
 ///c       is determined by the mountain profile provided
 ///c       by Chao Zhang (USD, South Dakota): x-axis is pointing to the East.
-///c       Muons are sampled on a surface of a rectangular parallelepiped,  
+///c       Muons are sampled on a surface of a rectangular parallelepiped,
 ///c       the planes of which are parallel to the walls of the cavern.
 ///c       The long side of the cavern is pointing at 6.6 deg from the North
 ///c       to the East (or 90 - 6.6 deg from the East to the North).
@@ -75,9 +75,9 @@
 ///c       North to the East.
 ///c       The angle phi is measured from the positive x-axis towards
 ///c       positive y-axis (0-360 deg).
-///c       Z-axis is pointing upwards. 
+///c       Z-axis is pointing upwards.
 ///
-/// Further notes taken from Vitaly's original code, as written for LBNE 
+/// Further notes taken from Vitaly's original code, as written for LBNE
 /// (note the differing definition for theta, which is used here,
 /// theta is measured from East to South, not North to East.
 ///c
@@ -112,7 +112,7 @@
 ///c	formula for muon spectrum at sea level
 ///c	(T.K.Gaisser, Cosmic Rays and Particle Physics, Cambridge
 ///c	University Press, 1990) modified for large zenith angles and
-///c	prompt muon flux with parameters from the best fit to the LVD data. 
+///c	prompt muon flux with parameters from the best fit to the LVD data.
 ///c
 ///c       Muon flux through a sphere = 6.65x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - old
 ///c       Muon flux through a sphere = 6.65x10^(-9) cm^(-2) s^(-1) (gamma=2.77) - new
@@ -135,7 +135,7 @@
 ///c       to the walls of the laboratory halls.
 ///c       The angle phi in the slant depth distribution file is measured
 ///c       from the positive x-axis towards positive y-axis.
-///c       Z-axis is pointing upwards. 
+///c       Z-axis is pointing upwards.
 ///c       Note that I use here the azimuthal angle range from 0 to 360 deg.
 ///c
 ////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@
 #include <cmath>
 #include <memory>
 #include <iterator>
-#include <utility> 
+#include <utility>
 #include <sys/stat.h>
 #include <exception>
 #include <algorithm>
@@ -214,19 +214,19 @@ namespace evgen {
    private:
 
     void SampleOne(unsigned int   i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
- 
+
     void initialization( double theta1, double theta2, double phi1, double phi2,
 			 int figflag, double s_hor, double s_ver1, double s_ver2, double &FI );
 
     void sampling( double &E, double &theta, double &phi, double &dep, CLHEP::HepRandomEngine& engine );
 
 
-    static const int kGAUS = 1;    
+    static const int kGAUS = 1;
 
     CLHEP::HepRandomEngine& fEngine;     ///< art-managed random-number engine
 
-    int                 fPDG;            ///< PDG code of particles to generate   
-    double              fChargeRatio;    ///< Charge ratio of particle / anti-particle  
+    int                 fPDG;            ///< PDG code of particles to generate
+    double              fChargeRatio;    ///< Charge ratio of particle / anti-particle
 
     std::string         fInputDir;       ///< Input Directory
     std::string         fInputFile1;     ///< Input File 1
@@ -235,7 +235,7 @@ namespace evgen {
 
     double              fCavernAngle;    ///< Angle of the detector from the North to the East.
     double              fRockDensity;    ///< Default rock density is 2.70 g cm-3. If this is
-                                         ///< changed then the three input files need to be 
+                                         ///< changed then the three input files need to be
                                          ///< remade. If there is a desire for this contact
                                          ///< Vitaly Kudryavtsev at V.Kudryavtsev@shef.ac.uk
 
@@ -256,9 +256,9 @@ namespace evgen {
     double              fZmax;           ///< Maximum Z position
 
     double              fT0;             ///< Central t position (ns) in world coordinates
-    double              fSigmaT;         ///< Variation in t position (ns)  
+    double              fSigmaT;         ///< Variation in t position (ns)
     int                 fTDist;          ///< How to distribute t  (gaus, or uniform)
-       
+
     //Define TFS histograms.....
     /*
     TH1D* hPDGCode;
@@ -266,13 +266,13 @@ namespace evgen {
     TH1D* hPositionY;
     TH1D* hPositionZ;
     TH1D* hTime;
-    TH1D* hMomentumHigh; 
-    TH1D* hMomentum; 
+    TH1D* hMomentumHigh;
+    TH1D* hMomentum;
     TH1D* hEnergyHigh;
     TH1D* hEnergy;
     TH1D* hDepth;
-    TH1D* hDirCosineX; 
-    TH1D* hDirCosineY; 
+    TH1D* hDirCosineX;
+    TH1D* hDirCosineY;
     TH1D* hDirCosineZ;
     TH1D* hTheta;
     TH1D* hPhi;
@@ -356,7 +356,7 @@ namespace evgen{
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
   }
-  
+
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Job
   ////////////////////////////////////////////////////////////////////////////////
@@ -370,14 +370,14 @@ namespace evgen{
     hPositionY    = tfs->make<TH1D>("hPositionY"   ,"Position (cm)" ,500, ( fYmin - 10 ), ( fYmax + 10 ) );
     hPositionZ    = tfs->make<TH1D>("hPositionZ"   ,"Position (cm)" ,500, ( fZmin - 10 ), ( fZmax + 10 ) );
     hTime         = tfs->make<TH1D>("hTime"        ,"Time (s)"      ,500, 0    , 1e6       );
-    hMomentumHigh = tfs->make<TH1D>("hMomentumHigh","Momentum (GeV)",500, fEmin, fEmax     ); 
+    hMomentumHigh = tfs->make<TH1D>("hMomentumHigh","Momentum (GeV)",500, fEmin, fEmax     );
     hMomentum     = tfs->make<TH1D>("hMomentum"    ,"Momentum (GeV)",500, fEmin, fEmin+1e3 );
     hEnergyHigh   = tfs->make<TH1D>("hEnergyHigh"  ,"Energy (GeV)"  ,500, fEmin, fEmax     );
     hEnergy       = tfs->make<TH1D>("hEnergy"      ,"Energy (GeV)"  ,500, fEmin, fEmin+1e3 );
     hDepth        = tfs->make<TH1D>("hDepth"       ,"Depth (m)"     ,800, 0    , 14000     );
 
-    hDirCosineX = tfs->make<TH1D>("hDirCosineX","Normalised Direction cosine",500, -1, 1 ); 
-    hDirCosineY = tfs->make<TH1D>("hDirCosineY","Normalised Direction cosine",500, -1, 1 ); 
+    hDirCosineX = tfs->make<TH1D>("hDirCosineX","Normalised Direction cosine",500, -1, 1 );
+    hDirCosineY = tfs->make<TH1D>("hDirCosineY","Normalised Direction cosine",500, -1, 1 );
     hDirCosineZ = tfs->make<TH1D>("hDirCosineZ","Normalised Direction cosine",500, -1, 1 );
 
     hTheta      = tfs->make<TH1D>("hTheta"     ,"Angle (degrees)",500, 0, 90  );
@@ -418,17 +418,17 @@ namespace evgen{
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-    
+
     // Check fcl parameters were set correctly
-    if ( fThetamax > 90.5 ) throw cet::exception("MUSUNGen") << "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n";  
-    if ( fThetamin < 0    ) throw cet::exception("MUSUNGen") << "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n";      
-    if ( fThetamax < fThetamin ) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n"; 
-    if ( fPhimax > 360.5  ) throw cet::exception("MUSUNGen") << "\nPhimax has to be less than " << 2*M_PI << ", but was entered as " << fPhimax << ", this cause an error so leaving program now...\n\n"; 
-    if ( fPhimin < 0      ) throw cet::exception("MUSUNGen") << "\nPhimin has to be more than 0, but was entered as " << fPhimin << ", this causes an error so leaving program now...\n\n"; 
+    if ( fThetamax > 90.5 ) throw cet::exception("MUSUNGen") << "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n";
+    if ( fThetamin < 0    ) throw cet::exception("MUSUNGen") << "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n";
+    if ( fThetamax < fThetamin ) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
+    if ( fPhimax > 360.5  ) throw cet::exception("MUSUNGen") << "\nPhimax has to be less than " << 2*M_PI << ", but was entered as " << fPhimax << ", this cause an error so leaving program now...\n\n";
+    if ( fPhimin < 0      ) throw cet::exception("MUSUNGen") << "\nPhimin has to be more than 0, but was entered as " << fPhimin << ", this causes an error so leaving program now...\n\n";
     if ( fPhimax < fPhimin) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
     if ( fEmax   < fEmin  ) throw cet::exception("MUSUNGen") << "\nMinimum energy is bigger than maximum energy....causes an error so leaving program now....\n\n";
-     
-    
+
+
     run.put(std::move(runcol));
 
     // area of the horizontal plane of the parallelepiped
@@ -437,11 +437,11 @@ namespace evgen{
     s_ver1 = (fXmax-fXmin)*(fYmax-fYmin);
     // area of the vertical plane of the parallelepiped, perpendicular to x-axis
     s_ver2 = (fZmax-fZmin)*(fYmax-fYmin);
-    
+
     //std::cout << s_hor << " " << s_ver1 << " " << s_ver2 << std::endl;
 
     initialization(fThetamin,fThetamax,fPhimin,fPhimax,figflag,s_hor,s_ver1,s_ver2,FI );
-    
+
     std::cout << "Material - SURF rock" << std::endl;
     std::cout << "Density = " << fRockDensity << " g/cm^3" << std::endl;
     std::cout << "Parameters for muon spectrum are from LVD best fit" << std::endl;
@@ -489,7 +489,7 @@ namespace evgen{
   }
   ////////////////////////////////////////////////////////////////////////////////
   //  Produce
-  ////////////////////////////////////////////////////////////////////////////////  
+  ////////////////////////////////////////////////////////////////////////////////
   void MUSUN::produce(art::Event& evt)
   {
     ///unique_ptr allows ownership to be transferred to the art::Event after the put statement
@@ -497,7 +497,7 @@ namespace evgen{
 
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSingleParticle);
-    
+
     ++NEvents;
 
     SampleOne(NEvents, truth, fEngine);
@@ -511,7 +511,7 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   //  Sample One
   ////////////////////////////////////////////////////////////////////////////////
-  // Draw the type, momentum and position of a single particle from the 
+  // Draw the type, momentum and position of a single particle from the
   // FCIHL description
   void MUSUN::SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine)
   {
@@ -520,10 +520,10 @@ namespace evgen{
 
     Energy = 0;
     theta  = 0;
-    phi    = 0; 
+    phi    = 0;
     dep    = 0;
     Time   = 0;
-    
+
     sampling( Energy, theta, phi, dep, engine );
 
     theta = theta* M_PI/180;
@@ -538,11 +538,11 @@ namespace evgen{
     if( phi < 0 )
       phi += 360.;
     phi *= M_PI / 180.;
-    
+
     // set track id to -i as these are all primary particles and have id <= 0
     int trackid = -1*(i+1);
     std::string primary("primary");
-    
+
     // Work out whether particle/antiparticle, and mass...
     double m = 0.0;
     PdgCode = fPDG;
@@ -555,7 +555,7 @@ namespace evgen{
     if (pdgp) m = pdgp->Mass();
 
     //std::cout << pdgfire << " " << ChargeCheck << " " << PdgCode << " " << m << std::endl;
-    
+
     // Work out T0...
     if(fTDist==kGAUS){
       Time = gauss.fire(fT0, fSigmaT);
@@ -563,7 +563,7 @@ namespace evgen{
     else {
       Time = fT0 + fSigmaT*(2.0*flat.fire()-1.0);
     }
-	
+
     //  The minus sign above is for y-axis pointing up, so the y-momentum
     //  is always pointing down
     cx       = -sin(theta)*sin(phi);
@@ -573,8 +573,8 @@ namespace evgen{
     px0      = Momentum * cx;
     py0      = Momentum * cy;
     pz0      = Momentum * cz;
-    TLorentzVector pvec(px0, py0, pz0, Energy );   
-    
+    TLorentzVector pvec(px0, py0, pz0, Energy );
+
     //  Muon coordinates
     double sh1 = s_hor * cos(theta);
     double sv1 = s_ver1 * sin(theta) * fabs(cos(phi));
@@ -597,8 +597,8 @@ namespace evgen{
       z0 = (fZmax - fZmin)*flat.fire() + fZmin;
     }
     // Make Lorentz vector for x and t....
-    TLorentzVector pos(x0, y0, z0, Time); 
-   
+    TLorentzVector pos(x0, y0, z0, Time);
+
     //  Parameters written to the file muons_surf_v2_test*.dat
     //      nmu - muon sequential number
     //      id_part - muon charge (10 - positive, 11 - negative )
@@ -609,7 +609,7 @@ namespace evgen{
     //          distribution files) is measured from x to y. z-axis is
     //          pointing upwards.
     //      cx, cy, cz - direction cosines.
-  
+
     simb::MCParticle part(trackid, PdgCode, primary);
     part.AddTrajectoryPoint(pos, pvec);
 
@@ -618,12 +618,12 @@ namespace evgen{
     theta = theta * 180/M_PI;
     phi   = phi   * 180/M_PI;
 
-    // Sum energies, angles, depth for average outputs. 
+    // Sum energies, angles, depth for average outputs.
     se += Energy;
     st += theta;
     sp += phi;
     sd += dep;
-    
+
     // Fill Histograms.....
     /*
     hPDGCode      ->Fill (PdgCode);
@@ -631,21 +631,21 @@ namespace evgen{
     hPositionY    ->Fill (y0);
     hPositionZ    ->Fill (z0);
     hTime         ->Fill (Time);
-    hMomentumHigh ->Fill (Momentum); 
-    hMomentum     ->Fill (Momentum); 
+    hMomentumHigh ->Fill (Momentum);
+    hMomentum     ->Fill (Momentum);
     hEnergyHigh   ->Fill (Energy);
     hEnergy       ->Fill (Energy);
     hDepth        ->Fill (dep);
-    hDirCosineX   ->Fill (cx); 
-    hDirCosineY   ->Fill (cy); 
+    hDirCosineX   ->Fill (cx);
+    hDirCosineY   ->Fill (cy);
     hDirCosineZ   ->Fill (cz);
     hTheta        ->Fill (theta);
     hPhi          ->Fill (phi);
     */
     /*
     // Write event by event outsputs.....
-    std::cout << "Theta: " << theta << " Phi: " << phi << " Energy: " << Energy << " Momentum: " << Momentum << std::endl; 
-    std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;   
+    std::cout << "Theta: " << theta << " Phi: " << phi << " Energy: " << Energy << " Momentum: " << Momentum << std::endl;
+    std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
     std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
     std::cout << "Normalised..." << cx << " " << cy << " " << cz << std::endl;
     */
@@ -664,7 +664,7 @@ namespace evgen{
     //
     int lineNumber = 0, index = 0;
     char inputLine[10000];
-    std::string fROOTfile; 
+    std::string fROOTfile;
 
     for (int a=0;a<121;++a) for (int b=0;b<62;++b) for (int c=0;c<50;++c) spmu[a][b][c]=0;
     for (int a=0;a<23401;++a)                      fnmu[a]    = 0;
@@ -678,7 +678,7 @@ namespace evgen{
     if( sp1.find_file(fInputFile1, fROOTfile) ) File1Loc = fROOTfile;
     std::ifstream file1( File1Loc.c_str(), std::ios::in );
     if (!file1.good() ) throw cet::exception("MUSUNGen") << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
-    
+
     while( file1.good() ) {
       //std::cout << "Looking at file 1...." << std::endl;
       file1.getline( inputLine, 9999 );
@@ -697,7 +697,7 @@ namespace evgen{
       }
     }
     file1.close();
-    
+
     std::ostringstream File2LocStream;
     File2LocStream  << fInputDir << fInputFile2;
     std::string File2Loc = File2LocStream. str();
@@ -705,7 +705,7 @@ namespace evgen{
     if( sp2.find_file(fInputFile2, fROOTfile) ) File2Loc = fROOTfile;
     std::ifstream file2( File2Loc.c_str(), std::ios::binary|std::ios::in );
     if (!file2.good() ) throw cet::exception("MUSUNGen") << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
-  
+
     int i1 = 0, i2 = 0, i3 = 0;
     float readVal;
     while( file2.good() ) {
@@ -731,7 +731,7 @@ namespace evgen{
 	  spmu[i][j][k] = spmu[i+1][j][k];
     spmu[1][1][0] = 0.000853544;
     //std::cout << "Set spmu to some value..." << std::endl;
-    
+
     std::ostringstream File3LocStream;
     File3LocStream  << fInputDir << fInputFile3;
     std::string File3Loc = File3LocStream. str();
@@ -759,11 +759,11 @@ namespace evgen{
       }
     }
     file3.close();
-    
+
     //
     //  Set up variables
     //
-    
+
     the1 = theta1;
     the2 = theta2;
     // for c2: c1 and c2 are unused
@@ -773,7 +773,7 @@ namespace evgen{
     ph2 = M_PI/180.*phi2;
     // for c2: dph is unused
     //double dph = ph2-ph1;
-    
+
     int ipc = 1;
     double theta = theta1;
     double dc = 1.;
@@ -792,15 +792,15 @@ namespace evgen{
         if( ic1 < 1 ) ic1 = 1;
         double phi = phi1;
         double dp = 1.;
-        
+
         while( phi < phi2-dp/2. ) {
             phi += dp/2.;
             //  the long side of the cavern is pointing at 14 deg to the north:
             //  double phi0 = M_PI / 180. * (phi + 90. - 14);
-	    
+
 	    //  Want our co-ord system going from East to South.
 	    double phi0 = M_PI / 180. * (phi + fCavernAngle);
-            
+
 	    double asv1 = asv01 * fabs(cos(phi0));
             double asv2 = asv02 * fabs(sin(phi0));
             double asv0 = ash + asv1 + asv2;
@@ -812,7 +812,7 @@ namespace evgen{
             if( ip2 > 360 ) ip2 = 1;
             if( ip1 < 1 ) ip1 = 360;
             double sp1 = 0.;
-            
+
             for( int ii=0; ii<4; ii++ ) {
                 int iic = ii/2;
                 int iip = ii%2;
@@ -827,8 +827,8 @@ namespace evgen{
 		}
             }
 	    /*
-	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = " 
-	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n" 
+	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = "
+	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n"
 	      << std::endl; */
 	    sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
 	    ++iteration;
@@ -836,7 +836,7 @@ namespace evgen{
             fnmu[ipc-1] = sc;
             phi = phi + dp / 2.;
         }
-        
+
         theta = theta + dc / 2.;
     }
     //std::cout << *FI << " = " << sc << std::endl;
@@ -844,8 +844,8 @@ namespace evgen{
     for( int ipc1 = 0; ipc1 < ipc; ipc1++ )
       fnmu[ipc1] = fnmu[ipc1] / fnmu[ipc-1];
   }
-  
-  
+
+
   ////////////////////////////////////////////////////////////////////////////////
   //  sampling
   ////////////////////////////////////////////////////////////////////////////////
@@ -873,7 +873,7 @@ namespace evgen{
       else
 	loIndex = i;
       i = (loIndex + hiIndex)/2;
-      
+
       if( xfl > fnmu[i-1] && xfl <= fnmu[i] )
 	foundIndex = true;
     }
@@ -884,14 +884,14 @@ namespace evgen{
     #endif
     int ic = (i-2)/360;
     int ip = i-2-ic*360;
-        
+
     xfl = flat.fire();
     theta = the1 + ((double)ic+xfl);
     xfl = flat.fire();
     phi = ph1 + ((double)ip+xfl);
     if ( phi > 360 ) phi = phi -360;
     dep = depth[ip][ic] * fRockDensity;
-    
+
     int ic1 = cos(M_PI/180.*theta) * 50.;
     if( ic1 < 0 )
       ic1 = 0;
@@ -922,7 +922,7 @@ namespace evgen{
       else
 	loIndex = j;
       j = (loIndex + hiIndex)/2;
-      
+
       if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
 	foundIndex = true;
     }
@@ -934,14 +934,14 @@ namespace evgen{
     double En1 = 0.05 * (j-1);
     double En2 = 0.05 * (j);
     E = pow(10.,En1 + (En2 - En1)*flat.fire());
-    
+
     return;
   }
-  
+
 }//end namespace evgen
 
 namespace evgen{
-  
+
   DEFINE_ART_MODULE(MUSUN)
-  
+
 }//end namespace evgen

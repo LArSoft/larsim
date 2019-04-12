@@ -43,7 +43,7 @@ namespace sim {
     double voxelOffsetY = pset.get<double>("VoxelOffsetY");
     double voxelOffsetZ = pset.get<double>("VoxelOffsetZ");
     double voxelOffsetT = pset.get<double>("VoxelOffsetT");
-    
+
     m_voxelSize.clear();
     m_voxelSize.push_back( voxelSizeX );
     m_voxelSize.push_back( voxelSizeY );
@@ -70,7 +70,7 @@ namespace sim {
   /// Convert a co-ordinate axis (x, y, z, or t) into a bin number.
   /// The first argument is the axis (x=0, y=1, z=2, t=3) and the
   /// second is the value on that axis.
-  int LArVoxelCalculator::AxisToBin( const int axis, 
+  int LArVoxelCalculator::AxisToBin( const int axis,
 				     const double coord ) const
   {
     // We have to be careful of how to handle the case when coord -
@@ -83,14 +83,14 @@ namespace sim {
   /// Get the value of an axis at the center of the given bin.  The
   /// first argument is the axis (x=0, y=1, z=2, t=3) and the second
   /// is the bin number on that axis.
-  double LArVoxelCalculator::BinToAxis( const int axis, 
+  double LArVoxelCalculator::BinToAxis( const int axis,
 					const int bin ) const
   {
     return ( static_cast<double>(bin) + 0.5 ) * m_voxelSize[axis] + m_voxelOffset[axis];
   }
 
 } // namespace sim
- 
+
 namespace sim {
 
   DEFINE_ART_SERVICE(LArVoxelCalculator)

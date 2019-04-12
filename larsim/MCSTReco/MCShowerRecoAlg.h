@@ -52,6 +52,6 @@ namespace sim
     unsigned int fMinNumDaughters;
 
   }; // class MCShowerHitRecoAlg
-  
+
 } //namespace cluster
 #endif

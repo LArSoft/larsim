@@ -32,32 +32,32 @@ namespace sim {
 
 namespace {
   using namespace fhicl;
-  
+
   /// Collection of configuration parameters for the module
   struct Config {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
-    
+
     fhicl::Atom<art::InputTag> InputShowers {
       Name("InputShowers"),
       Comment("data product with the MC showers to be dumped")
       };
-    
+
     fhicl::Atom<std::string> OutputCategory {
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpMCShowers" /* default value */
       };
-    
+
     fhicl::Atom<unsigned int> DaughtersPerLine {
       Name("DaughtersPerLine"),
       Comment("daughter IDs to print on each output line"),
       12 /* default value */
       };
-    
+
   }; // struct Config
-  
-  
+
+
   /// Returns a string describing the type of origin
   std::string OriginDescription(simb::Origin_t origin) {
     switch (origin) {
@@ -73,7 +73,7 @@ namespace {
       << "Unexpected origin type #" << ((int) origin) << "\n";
   } // OriginDescription()
 
-  
+
   /// Prints a MC step into a stream
   template <typename Stream>
   void PrintMCStep(Stream&& out, sim::MCStep const& step) {
@@ -92,21 +92,21 @@ class sim::DumpMCShowers: public art::EDAnalyzer {
     public:
   // type to enable module parameters description by art
   using Parameters = art::EDAnalyzer::Table<Config>;
-  
+
   /// Configuration-checking constructor
   explicit DumpMCShowers(Parameters const& config);
-  
+
   // Plugins should not be copied or assigned.
   DumpMCShowers(DumpMCShowers const&) = delete;
   DumpMCShowers(DumpMCShowers &&) = delete;
   DumpMCShowers& operator = (DumpMCShowers const&) = delete;
   DumpMCShowers& operator = (DumpMCShowers &&) = delete;
-  
-  
+
+
   // Operates on the event
   virtual void analyze(art::Event const& event) override;
-  
-  
+
+
   /**
    * @brief Dumps the content of the specified particle in the output stream
    * @tparam Stream the type of output stream
@@ -114,10 +114,10 @@ class sim::DumpMCShowers: public art::EDAnalyzer {
    * @param particle the particle to be dumped
    * @param indent base indentation string (default: none)
    * @param bIndentFirst if first output line should be indented (default: yes)
-   * 
+   *
    * The indent string is prepended to every line of output, with the possible
    * exception of the first one, in case bIndentFirst is true.
-   * 
+   *
    * The output starts on the current line, and the last line is NOT broken.
    */
   template <typename Stream>
@@ -125,14 +125,14 @@ class sim::DumpMCShowers: public art::EDAnalyzer {
     Stream&& out, sim::MCShower const& shower,
     std::string indent = "", bool bIndentFirst = true
     ) const;
-  
-  
+
+
     private:
-  
+
   art::InputTag fInputShowers;    ///< name of MCShower's data product
   std::string fOutputCategory;    ///< name of the stream for output
   unsigned int fDaughtersPerLine; ///< number of daughter IDs printed per line
-  
+
 }; // class sim::DumpMCShowers
 
 
@@ -165,8 +165,8 @@ void sim::DumpMCShowers::DumpMCShower(
   out << "\n" << indent
     << "  ending at ";
   ::PrintMCStep(out, shower.End());
-  
-  TVector3 const& startDir = shower.StartDir();    
+
+  TVector3 const& startDir = shower.StartDir();
   out << "\n" << indent
     << "pointing toward ("
     << startDir.X() << ", " << startDir.Y() << ", " << startDir.Z() << ") cm";
@@ -188,7 +188,7 @@ void sim::DumpMCShowers::DumpMCShower(
     } // for plane
   }
   else out << "no energy or charge information available";
-     
+
   std::vector<unsigned int> const& daughters = shower.DaughterTrackID();
   out << "\n" << indent
     << "combined energy deposition information: ";
@@ -210,7 +210,7 @@ void sim::DumpMCShowers::DumpMCShower(
   out << "\n" << indent
     << "  ending at ";
   ::PrintMCStep(out, shower.MotherEnd());
-  
+
   out << "\n" << indent
     << "ancestor ID=" << shower.AncestorTrackID()
     << " PDG ID=" << shower.AncestorPdgCode()
@@ -227,27 +227,27 @@ void sim::DumpMCShowers::DumpMCShower(
 
 //------------------------------------------------------------------------------
 void sim::DumpMCShowers::analyze(art::Event const& event) {
-  
+
   // get the particles from the event
   auto const& Showers
     = *(event.getValidHandle<std::vector<sim::MCShower>>(fInputShowers));
-  
+
   mf::LogVerbatim(fOutputCategory)
     << "Event " << event.id() << ": data product '"
     << fInputShowers.encode() << "' contains "
     << Showers.size() << " MCShower objects";
-  
+
   unsigned int iShower = 0;
   mf::LogVerbatim log(fOutputCategory);
   for (sim::MCShower const& shower: Showers) {
-    
+
     // a bit of a header
     log << "\n[#" << (iShower++) << "] ";
     DumpMCShower(log, shower, "  ", false);
-    
+
   } // for
   log << "\n";
-  
+
 } // sim::DumpMCShowers::analyze()
 
 

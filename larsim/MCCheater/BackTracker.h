@@ -47,13 +47,13 @@ namespace cheat{
       };
 
 
-      BackTracker(const fhiclConfig& config, 
-          const cheat::ParticleInventory* partInv, 
-          const geo::GeometryCore* geom, 
+      BackTracker(const fhiclConfig& config,
+          const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom,
           const detinfo::DetectorClocks* detClock );
-      BackTracker(const fhicl::ParameterSet& pSet, 
-          const cheat::ParticleInventory* partInv, 
-          const geo::GeometryCore* geom, 
+      BackTracker(const fhicl::ParameterSet& pSet,
+          const cheat::ParticleInventory* partInv,
+          const geo::GeometryCore* geom,
           const detinfo::DetectorClocks* detClock );
       //I may need to include this to delete copy of service providers.
       BackTracker(BackTracker const&) = delete;
@@ -109,7 +109,7 @@ namespace cheat{
       std::vector<sim::TrackIDE> HitToEveTrackIDEs(art::Ptr<recob::Hit> const& hit) const{ return this->HitToEveTrackIDEs(*hit);}
 
       //I will not return these by copy, as that could get very large very quickly.
-      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const; 
+      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId, std::vector< art::Ptr< recob::Hit > > const& hitsIn ) const;
 //I am not allowing this function for now, as caching the allhitlist indiscriminately is a catastrophically bad idea.
 //      std::vector< art::Ptr<recob::Hit> > TrackIdToHits_Ps( const int& tkId ) const
 //      {return this->TrackIdToHits_Ps(tkId, fAllHitList); }

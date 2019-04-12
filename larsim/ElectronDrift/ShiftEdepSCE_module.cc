@@ -99,16 +99,16 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
   */
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
-  std::unique_ptr< std::vector<sim::SimEnergyDeposit> > 
+  std::unique_ptr< std::vector<sim::SimEnergyDeposit> >
     outEdepVecPtr(new std::vector<sim::SimEnergyDeposit>() );
   auto & outEdepVec(*outEdepVecPtr);
 
   art::Handle< std::vector<sim::SimEnergyDeposit> > inEdepHandle;
   e.getByLabel(fEDepTag,inEdepHandle);
   auto const& inEdepVec(*inEdepHandle);
-  
+
   outEdepVec.reserve(inEdepVec.size());
-  
+
   geo::Vector_t posOffsetsStart{0.0,0.0,0.0};
   geo::Vector_t posOffsetsEnd{0.0,0.0,0.0};
   for(auto const& edep : inEdepVec){
@@ -136,7 +136,7 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 		       edep.X(),edep.Y(),edep.Z(),edep.NumElectrons(),edep.NumPhotons(),
 		       outEdepVec.back().X(),outEdepVec.back().Y(),outEdepVec.back().Z(),
 		       outEdepVec.back().NumElectrons(),outEdepVec.back().NumPhotons());
-		      
+
 	//std::cout << "space charge position: (" << edep.X() << ", " << edep.Y() << ", " << edep.Z() << ") --> (" << outEdepVec.back().X() << ", " << outEdepVec.back().Y() << ", " << outEdepVec.back().Z() << ")" << std::endl;
   }
 

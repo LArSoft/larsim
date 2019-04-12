@@ -105,7 +105,7 @@ void MCReco::produce(art::Event & evt)
     art::Handle<std::vector<sim::SimEnergyDeposit> > sedHandle;
     evt.getByLabel(fSimChannelLabel,sedHandle);
     if(!sedHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimEnergyDeposit";
-    
+
     const std::vector<sim::SimEnergyDeposit>&  sed_array(*sedHandle);
     fEdep.MakeMCEdep(sed_array);
   }
@@ -114,15 +114,15 @@ void MCReco::produce(art::Event & evt)
     art::Handle<std::vector<sim::SimChannel> > schHandle;
     evt.getByLabel(fSimChannelLabel,schHandle);
     if(!schHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::SimChannel";
-    
+
     const std::vector<sim::SimChannel>&  sch_array(*schHandle);
     fEdep.MakeMCEdep(sch_array);
   }
 
-  //Add MCShowers and MCTracks to the event 
+  //Add MCShowers and MCTracks to the event
   evt.put(fMCSAlg.Reconstruct(fPart,fEdep));
   evt.put(fMCTAlg.Reconstruct(fPart,fEdep));
-  
+
   fEdep.Clear();
   fPart.clear();
 }

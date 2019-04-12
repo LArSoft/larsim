@@ -18,10 +18,10 @@ class NeutronHPphysics : public G4VPhysicsConstructor
   public:
     virtual void ConstructParticle() {};
     virtual void ConstructProcess();
-    
+
   public:
-    void SetThermalPhysics(G4bool flag) {fThermal = flag;};  
-    
+    void SetThermalPhysics(G4bool flag) {fThermal = flag;};
+
   private:
     G4bool  fThermal;
 };

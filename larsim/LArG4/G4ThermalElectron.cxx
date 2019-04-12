@@ -26,7 +26,7 @@
 //
 // GEANT4 tag $Name: geant4-09-02 $
 //
-// 
+//
 // ----------------------------------------------------------------------
 //      GEANT 4 class implementation file
 //
@@ -67,16 +67,16 @@ G4ThermalElectron* G4ThermalElectron::Definition()
   //  static const double CLHEP::electron_mass_c2 = 0.51099906 * MeV;
 
     anInstance = new G4ParticleDefinition(
-                 name,  CLHEP::electron_mass_c2,       0.0*CLHEP::MeV,    -1.*CLHEP::eplus, 
-		    1,                 0,             0,          
-		    0,                 0,             0,             
+                 name,  CLHEP::electron_mass_c2,       0.0*CLHEP::MeV,    -1.*CLHEP::eplus,
+		    1,                 0,             0,
+		    0,                 0,             0,
 	     "lepton",                 1,             0,          11,
 		 true,              -1.0,          NULL,
              false,                  "e"
               );
     // Bohr Magnetron
    G4double muB =  -0.5*CLHEP::eplus*CLHEP::hbar_Planck/(CLHEP::electron_mass_c2/CLHEP::c_squared) ;
-   
+
    anInstance->SetPDGMagneticMoment( muB * 2.* 1.0011596521859 );
 
   }

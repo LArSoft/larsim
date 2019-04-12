@@ -17,19 +17,19 @@ namespace phot
   public:
     /// Type for visibility count per optical channel.
     using Counts_t = const float*;
-    
+
     /// Type for time of arrival per optical channel.
     using T0s_t = const float*;
-    
+
     /// Type for function parameters
     /// (which is not part of this interface yet).
     using Params_t = std::vector<float> const*;
-    
+
     /// Type for parametrization function
     /// (which is not part of this interface yet).
     using Functions_t = TF1*;
-    
-    
+
+
     virtual ~IPhotonLibrary() = default;
 
     virtual float GetCount(size_t Voxel, size_t OpChannel) const = 0;
@@ -49,7 +49,7 @@ namespace phot
 
     virtual int NOpChannels() const = 0;
     virtual int NVoxels() const = 0;
-    
+
     virtual bool isVoxelValid(size_t Voxel) const
       { return Voxel < (std::size_t) NVoxels(); }
 

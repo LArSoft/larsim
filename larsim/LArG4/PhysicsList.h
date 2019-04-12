@@ -3,10 +3,10 @@
 /// \brief Create the physics lists to be used by Geant4.
 ///
 /// \author  seligman@nevis.columbia.edu
-//  \modified by: drivera@fnal.gov 
-//  \changes: removed QGSP_BERT.h include because it is not pertinent 
-//            here nor where this header is included 
-//      
+//  \modified by: drivera@fnal.gov
+//  \changes: removed QGSP_BERT.h include because it is not pertinent
+//            here nor where this header is included
+//
 ////////////////////////////////////////////////////////////////////////
 ///
 /// Without a physics list, Geant4 won't do anything.  G4 comes with a
@@ -24,7 +24,7 @@
 ///
 /// IMPORTANT: For now, I'm just copying this physics list from the
 /// work I did for NuSOnG, which in turn I copied from ATLAS.  More
-/// thought is needed for the physics list for MicroBooNE.  
+/// thought is needed for the physics list for MicroBooNE.
 ///
 /// If you decide to replace QGSP_BERT with another of G4's
 /// pre-supplied physics lists, you can just do a global replace on
@@ -43,8 +43,8 @@
 /// 03/04/19 - D. Rivera
 /// The physics list is not chosen in this header. Instead this header file defines the Modular
 /// Physics list object. The actual available physics lists are limited to what is defined in the
-/// CustomPhysicsBuiltIns.hh which is where various other physics lists can be included. 
-/// 
+/// CustomPhysicsBuiltIns.hh which is where various other physics lists can be included.
+///
 
 #ifndef LArG4_PhysicsList_h
 #define LArG4_PhysicsList_h
@@ -74,23 +74,23 @@ namespace larg4 {
 
     // Non-virtual methods in G4VModularPhysicsList.  Just call the
     // method with the same name in G4VModularPhysicsList.
-    void RegisterPhysics(G4VPhysicsConstructor* g) 
-    { 
-      G4VModularPhysicsList::RegisterPhysics(g); 
+    void RegisterPhysics(G4VPhysicsConstructor* g)
+    {
+      G4VModularPhysicsList::RegisterPhysics(g);
     }
-    const G4VPhysicsConstructor* GetPhysics(G4int index) const 
-    { 
-      return G4VModularPhysicsList::GetPhysics(index); 
+    const G4VPhysicsConstructor* GetPhysics(G4int index) const
+    {
+      return G4VModularPhysicsList::GetPhysics(index);
     }
-    const G4VPhysicsConstructor* GetPhysics(const G4String& name) const 
-    { 
-      return G4VModularPhysicsList::GetPhysics(name); 
+    const G4VPhysicsConstructor* GetPhysics(const G4String& name) const
+    {
+      return G4VModularPhysicsList::GetPhysics(name);
     }
 
   };
 
   /// This typedef is what defines the name "larg4::PhysicsList" in
-  /// any class that includes this header. 
+  /// any class that includes this header.
   typedef TConfigurablePhysicsList<ModularPhysicsList> PhysicsList;
 
 } // namespace larg4

@@ -49,27 +49,27 @@ namespace evgen {
     void produce(art::Event& evt) override;
     void beginJob() override;
     void beginRun(art::Run& run) override;
-    
+
     std::vector<double> fbuffbox;
 
     TH2F* fPhotonAngles;       ///< Photon rate vs angle
     TH2F* fPhotonAnglesLo;     ///< Photon rate vs angle, low momenta
     TH2F* fPhotonAnglesMi;     ///< Photon rate vs angle, middle momenta
     TH2F* fPhotonAnglesHi;     ///< Photon rate vs angle, high momenta
-    TH1F* fPhotonCosQ;         ///< Photon rate vs cos(Q)			       
-    TH1F* fPhotonEnergy;       ///< Photon energy (GeV)                            
+    TH1F* fPhotonCosQ;         ///< Photon rate vs cos(Q)
+    TH1F* fPhotonEnergy;       ///< Photon energy (GeV)
     TH1F* fPhotonsPerSample;   ///< number of photons in the sampled time window
-    TH1F* fPhotonsInCStat;     ///< number of photons in the cryostat during 
+    TH1F* fPhotonsInCStat;     ///< number of photons in the cryostat during
                                ///< the sampled time window
-    TH1F* fPhotonsInTPC;       ///< number of photons in the tpc during 
+    TH1F* fPhotonsInTPC;       ///< number of photons in the tpc during
                                ///< the sampled time window
 
     TH2F* fElectronAngles;     ///< Electron rate vs angle
     TH2F* fElectronAnglesLo;   ///< Electron rate vs angle, low momenta
     TH2F* fElectronAnglesMi;   ///< Electron rate vs angle, middle momenta
     TH2F* fElectronAnglesHi;   ///< Electron rate vs angle, high momenta
-    TH1F* fElectronCosQ;       ///< Electron rate vs cos(Q)		 
-    TH1F* fElectronEnergy;     ///< Electron energy (GeV)                  
+    TH1F* fElectronCosQ;       ///< Electron rate vs cos(Q)
+    TH1F* fElectronEnergy;     ///< Electron energy (GeV)
     TH1F* fElectronsPerSample; ///< number of electrons in the sampled time window
     TH1F* fElectronsInCStat;   ///< number of electrons in the cryostat during
                                ///< the sampled time window
@@ -80,12 +80,12 @@ namespace evgen {
     TH2F* fMuonAnglesLo;       ///< Muon rate vs angle, low momenta
     TH2F* fMuonAnglesMi;       ///< Muon rate vs angle, middle momenta
     TH2F* fMuonAnglesHi;       ///< Muon rate vs angle, high momenta
-    TH1F* fMuonCosQ;           ///< Muon rate vs cos(Q)		 
-    TH1F* fMuonEnergy;         ///< Muon energy (GeV)                  
+    TH1F* fMuonCosQ;           ///< Muon rate vs cos(Q)
+    TH1F* fMuonEnergy;         ///< Muon energy (GeV)
     TH1F* fMuonsPerSample;     ///< number of muons in the sampled time window
-    TH1F* fMuonsInCStat;       ///< number of muons in the cryostat during 
+    TH1F* fMuonsInCStat;       ///< number of muons in the cryostat during
                                ///< the sampled time window
-    TH1F* fMuonsInTPC;         ///< number of muons in the tpc during 
+    TH1F* fMuonsInTPC;         ///< number of muons in the tpc during
                                ///< the sampled time window
     CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
     evgb::CRYHelper fCRYHelp; ///< CRY generator object
@@ -106,7 +106,7 @@ namespace evgen{
                art::ServiceHandle<geo::Geometry const>{}->GetWorldVolumeName()}
   {
     produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();    
+    produces< sumdata::RunData, art::InRun >();
   }
 
   //____________________________________________________________________________
@@ -120,9 +120,9 @@ namespace evgen{
     fPhotonAnglesHi   = tfs->make<TH2F>("fPhotonAnglesHi",    ";#phi;cos#theta",    36,-180.0,180.0,50,-1.0,1.0);
     fPhotonCosQ       = tfs->make<TH1F>("fPhotonCosQ",        ";cos#theta;tracks",         50,-1.0,1.0);
     fPhotonEnergy     = tfs->make<TH1F>("fPhotonEnergy",      ";E (GeV)",                5000,0.0,1000.0);
-    fPhotonsPerSample = tfs->make<TH1F>("fPhotonsPerSample",  ";Number Photons;Samples", 100, 0, 1000); 
-    fPhotonsInCStat   = tfs->make<TH1F>("fPhotonsInCryostat", ";Number Photons;Samples", 100, 0, 1000); 
-    fPhotonsInTPC     = tfs->make<TH1F>("fPhotonsInTPC",      ";Number Photons;Samples", 100, 0, 1000); 
+    fPhotonsPerSample = tfs->make<TH1F>("fPhotonsPerSample",  ";Number Photons;Samples", 100, 0, 1000);
+    fPhotonsInCStat   = tfs->make<TH1F>("fPhotonsInCryostat", ";Number Photons;Samples", 100, 0, 1000);
+    fPhotonsInTPC     = tfs->make<TH1F>("fPhotonsInTPC",      ";Number Photons;Samples", 100, 0, 1000);
 
     fElectronAngles     = tfs->make<TH2F>("fElectronAngles",      ";#phi;cos#theta",36,-180.0,180.0,50,-1.0,1.0);
     fElectronAnglesLo   = tfs->make<TH2F>("fElectronAnglesLo",    ";#phi;cos#theta",36,-180.0,180.0,50,-1.0,1.0);
@@ -130,19 +130,19 @@ namespace evgen{
     fElectronAnglesHi   = tfs->make<TH2F>("fElectronAnglesHi",    ";#phi;cos#theta",36,-180.0,180.0,50,-1.0,1.0);
     fElectronCosQ       = tfs->make<TH1F>("fElectronCosQ",        ";cos#theta;tracks",50,-1.0,1.0);
     fElectronEnergy     = tfs->make<TH1F>("fElectronEnergy",      ";E (GeV)",    5000,0.0,1000.0);
-    fElectronsPerSample = tfs->make<TH1F>("fElectronsPerSample",  ";Number Electrons;Samples", 100, 0, 1000); 
-    fElectronsInCStat   = tfs->make<TH1F>("fElectronsInCryotat",  ";Number Electrons;Samples", 100, 0, 1000); 
-    fElectronsInTPC     = tfs->make<TH1F>("fElectronsInTPC",      ";Number Electrons;Samples", 100, 0, 1000); 
-  
+    fElectronsPerSample = tfs->make<TH1F>("fElectronsPerSample",  ";Number Electrons;Samples", 100, 0, 1000);
+    fElectronsInCStat   = tfs->make<TH1F>("fElectronsInCryotat",  ";Number Electrons;Samples", 100, 0, 1000);
+    fElectronsInTPC     = tfs->make<TH1F>("fElectronsInTPC",      ";Number Electrons;Samples", 100, 0, 1000);
+
     fMuonAngles     = tfs->make<TH2F>("fMuonAngles",      ";#phi;cos#theta",        36,-180.0,180.0,50,-1.0,1.0);
     fMuonAnglesLo   = tfs->make<TH2F>("fMuonAnglesLo",    ";#phi;cos#theta",        36,-180.0,180.0,50,-1.0,1.0);
     fMuonAnglesMi   = tfs->make<TH2F>("fMuonAnglesMi",    ";#phi;cos#theta",        36,-180.0,180.0,50,-1.0,1.0);
     fMuonAnglesHi   = tfs->make<TH2F>("fMuonAnglesHi",    ";#phi;cos#theta",        36,-180.0,180.0,50,-1.0,1.0);
     fMuonCosQ       = tfs->make<TH1F>("fMuonCosQ",        ";cos#theta;tracks",50,-1.0,1.0);
     fMuonEnergy     = tfs->make<TH1F>("fMuonEnergy",      ";E (GeV)",    5000,0.0,1000.0);
-    fMuonsPerSample = tfs->make<TH1F>("fMuonsPerSample",  ";Number Muons;Samples", 100, 0, 1000); 
-    fMuonsInCStat   = tfs->make<TH1F>("fMuonsInCryostat", ";Number Muons;Samples", 100, 0, 1000); 
-    fMuonsInTPC     = tfs->make<TH1F>("fMuonsInTPC",      ";Number Muons;Samples", 100, 0, 1000); 
+    fMuonsPerSample = tfs->make<TH1F>("fMuonsPerSample",  ";Number Muons;Samples", 100, 0, 1000);
+    fMuonsInCStat   = tfs->make<TH1F>("fMuonsInCryostat", ";Number Muons;Samples", 100, 0, 1000);
+    fMuonsInTPC     = tfs->make<TH1F>("fMuonsInTPC",      ";Number Muons;Samples", 100, 0, 1000);
   }
 
   //____________________________________________________________________________
@@ -160,13 +160,13 @@ namespace evgen{
 
     // fill some histograms about this event
     art::ServiceHandle<geo::Geometry const> geom;
-    
+
     int nCrossCryostat = 0;
 
     simb::MCTruth truth;
 
     while(nCrossCryostat < 1){
-      
+
       simb::MCTruth pretruth;
       truth.SetOrigin(simb::kCosmicRay);
       fCRYHelp.Sample(pretruth,
@@ -180,7 +180,7 @@ namespace evgen{
       int allPhotons   = 0;
       int allElectrons = 0;
       int allMuons     = 0;
-      
+
       // loop over particles in the truth object
       for(int i = 0; i < pretruth.NParticles(); ++i){
 	simb::MCParticle particle = pretruth.GetParticle(i);
@@ -192,7 +192,7 @@ namespace evgen{
 	if      (std::abs(particle.PdgCode())==13) ++allMuons;
 	else if (std::abs(particle.PdgCode())==22) ++allPhotons;
 	else if (std::abs(particle.PdgCode())==11) ++allElectrons;
-	
+
 	TH1F* hCosQ     = 0;
 	TH2F* hAngles   = 0;
 	TH2F* hAnglesLo = 0;
@@ -223,27 +223,27 @@ namespace evgen{
 	  hAnglesHi = fElectronAnglesHi;
 	  hEnergy   = fElectronEnergy;
 	}
-	
+
 	// now check if the particle goes through any cryostat in the detector
 	// if so, add it to the truth object.
 	for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
-	
+
 	  double bounds[6] = {0.};
 	  geom->CryostatBoundaries(bounds, c);
-	  
+
 	  //add a buffer box around the cryostat bounds to increase the acceptance
-	  //(geometrically) at the CRY level to make up for particles we will loose 
+	  //(geometrically) at the CRY level to make up for particles we will loose
 	  //due to multiple scattering effects that pitch in during GEANT4 tracking
 	  //By default, the buffer box has zero size
 	  for (unsigned int cb=0; cb<6; cb++)
 	     bounds[cb] = bounds[cb]+fbuffbox[cb];
-	  
+
 	  //calculate the intersection point with each cryostat surface
 	  bool intersects_cryo = false;
 	  for (int bnd=0; bnd!=6; ++bnd) {
 	    if (bnd<2) {
 	      double p2[3] = {bounds[bnd],  x0[1] + (dx[1]/dx[0])*(bounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(bounds[bnd] - x0[0])};
-	      if ( p2[1] >= bounds[2] && p2[1] <= bounds[3] && 
+	      if ( p2[1] >= bounds[2] && p2[1] <= bounds[3] &&
 	           p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
 	        intersects_cryo = true;
 		break;
@@ -251,7 +251,7 @@ namespace evgen{
 	    }
 	    else if (bnd>=2 && bnd<4) {
 	      double p2[3] = {x0[0] + (dx[0]/dx[1])*(bounds[bnd] - x0[1]), bounds[bnd], x0[2] + (dx[2]/dx[1])*(bounds[bnd] - x0[1])};
-	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] &&
 	           p2[2] >= bounds[4] && p2[2] <= bounds[5] ) {
 	        intersects_cryo = true;
 		break;
@@ -259,24 +259,24 @@ namespace evgen{
 	    }
 	    else if (bnd>=4) {
 	      double p2[3] = {x0[0] + (dx[0]/dx[2])*(bounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(bounds[bnd] - x0[2]), bounds[bnd]};
-	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] && 
+	      if ( p2[0] >= bounds[0] && p2[0] <= bounds[1] &&
 	           p2[1] >= bounds[2] && p2[1] <= bounds[3] ) {
 	        intersects_cryo = true;
 		break;
 	      }
 	    }
 	  }
-	  
+
 
 	  if (intersects_cryo) {
 	    truth.Add(particle);
-	    
+
 	    if      (std::abs(particle.PdgCode())==13) ++numMuons;
 	    else if (std::abs(particle.PdgCode())==22) ++numPhotons;
 	    else if (std::abs(particle.PdgCode())==11) ++numElectrons;
 
             //The following code no longer works now that we require intersection with the cryostat boundary
-	    //For example, the particle could intersect this cryostat but miss its TPC, but intersect a TPC 
+	    //For example, the particle could intersect this cryostat but miss its TPC, but intersect a TPC
 	    //in another cryostat
 	    /*try{
 	      unsigned int tpc   = 0;
@@ -301,10 +301,10 @@ namespace evgen{
 	      else                  hAnglesHi->Fill(phi,cosq);
 	      hEnergy->Fill(p4.E());
 	    }//end if there is a cos(theta) histogram
-	    break; //leave loop over cryostats to avoid adding particle multiple times  
+	    break; //leave loop over cryostats to avoid adding particle multiple times
 	  }// end if particle goes into a cryostat
 	}// end loop over cryostats in the detector
-	
+
       }// loop on particles
 
       nCrossCryostat = truth.NParticles();

@@ -48,8 +48,8 @@ namespace phot
 	//--------------------------------------------------------------------
 	CreateHybridLibrary::CreateHybridLibrary(const fhicl::ParameterSet& p)
 		: EDAnalyzer(p)
-	{ 
-		
+	{
+
 		art::ServiceHandle<geo::Geometry const> geom;
 
 		art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
@@ -60,9 +60,9 @@ namespace phot
 
 		std::cout << voxdef.GetNVoxels() << " voxels for each of " << geom->NOpDets() << " OpDets" << std::endl;
 		std::cout << std::endl;
-		
+
 		//EP = Exception points: the parameterization is not a good description of the visibility and the value of the Photon Library is kept.
-		long totExceptions = 0; 
+		long totExceptions = 0;
 		long totPts = 0;
 
 		for(unsigned int opdetIdx =0; opdetIdx < geom->NOpDets(); ++opdetIdx){
@@ -108,7 +108,7 @@ namespace phot
 			viss.reserve(voxdef.GetNVoxels());
 
 			for(unsigned int voxIdx = 0U; voxIdx < voxdef.GetNVoxels(); ++voxIdx){
-			     
+
        				const auto voxvec = voxdef.GetPhotonVoxel(voxIdx).GetCenter();
 				const double xyzvox[] = {voxvec.X(), voxvec.Y(), voxvec.Z()};
 				const double fc_y = 600; //624cm is below the center of the first voxel outside the Field Cage
@@ -120,24 +120,24 @@ namespace phot
 				dist = opdet.DistanceToPoint(voxvec);
 				vis = pvs->GetVisibility(xyzvox, opdetIdx); // TODO use Point_t when available
 				// all voxels outside the Field Cage would be assigned these values of psi and theta
-				psi = 100; 
+				psi = 100;
 				theta = 200;
       				xpos = voxvec.X();
 
 				if((voxvec.X() - opdetCenter.X())<0){
 				  psi = atan((voxvec.Y() - opdetCenter.Y())/(-voxvec.X() +opdetCenter.X()));
 				}
-			      
+
 				if(voxvec.X()<fc_x && voxvec.X()>-fc_x && voxvec.Y()<fc_y && voxvec.Y()>-fc_y && voxvec.Z()> -9 && voxvec.Z()<fc_z){
-				  g.SetPoint(g.GetN(), dist, vis*dist*dist); 
+				  g.SetPoint(g.GetN(), dist, vis*dist*dist);
 				  taken = 1;
 				  psi = atan((voxvec.Y() - opdetCenter.Y())/(voxvec.X() - opdetCenter.X()))* 180.0/PI ; // psi takes values within (-PI/2, PI/2)
-				  theta = acos((voxvec.Z() - opdetCenter.Z())/dist) * 180.0/PI;  // theta takes values within (0 (beam direction, z), PI (-beam direction, -z))          
-				  
+				  theta = acos((voxvec.Z() - opdetCenter.Z())/dist) * 180.0/PI;  // theta takes values within (0 (beam direction, z), PI (-beam direction, -z))
+
 				  if((voxvec.X() - opdetCenter.X())<0){
 				  psi = atan((voxvec.Y() - opdetCenter.Y())/(-voxvec.X() +opdetCenter.X()));
 				  }
-			
+
 				}
       				tr_full->Fill();
 				viss.emplace_back(voxIdx, taken, dist, vis, psi, theta, xpos);
@@ -163,7 +163,7 @@ namespace phot
 
 			gPad->SetLogy();
 
-			TH1F h("", "", 200, 0, 20); 
+			TH1F h("", "", 200, 0, 20);
 
 			d_fit->cd();
 			TTree* tr_fit = new TTree("tr", "tr");
@@ -174,37 +174,37 @@ namespace phot
 			tr_fit->Branch("psi", &psi);
 			tr_fit->Branch("theta", &theta);
 			tr_fit->Branch("xpos", &xpos);
-			
-	   
+
+
 			for(const Visibility& v: viss){
 				// 2e-5 is the magic scaling factor to get back to integer photon
 				// counts. TODO this will differ for new libraries, should work out a
 				// way to communicate it or derive it.
 			        const double obs = v.vis / 2e-5; //taken from the Photon Library
 				const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 2e-5; //calculated with parameterization
-				
+
 				//DP const double obs = v.vis / 1e-7; //magic scaling factor for DP library created in LightSim
 				//Minimal amount of detected photons is 50, bc of Landau dustribution
 				//Those voxels with detected photons < 50 were set to 0
 				//DP const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 1e-7; //calculated with parametrisation
 				//std::cout << "observed = "<<obs<<" predicted (by parametrization) = "<<pred <<std::endl;
-				
+
 
 				// Log-likelihood ratio for poisson statistics
 				double chisq = 2*(pred-obs);
-				if(obs) chisq += 2*obs*log(obs/pred); 
-				
+				if(obs) chisq += 2*obs*log(obs/pred);
+
 				vox = v.vox;
 				dist = v.dist;
 				vis = pred *2e-5;
 				psi = v.psi;
 				theta = v.theta;
 				xpos = v.xpos;
-				//DP vis = pred *1e-7;  
-				
+				//DP vis = pred *1e-7;
+
 
 				if (v.taken==1){
-				  h.Fill(chisq);	
+				  h.Fill(chisq);
 				}
 
 
@@ -220,14 +220,14 @@ namespace phot
 			d_fit->cd();
 			tr_fit->Write();
 			delete tr_fit;
-			g2.SetMarkerSize(1); 
+			g2.SetMarkerSize(1);
 			g2.SetLineWidth(3);
 			g2.SetMarkerStyle(7);
 			g2.SetMarkerColor(kRed);
 			gStyle->SetLabelSize(.04, "XY");
 			gStyle->SetTitleSize(.04,"XY");
 			c1->cd();
-			g2.Draw("p same"); 
+			g2.Draw("p same");
 			c1->SaveAs(TString::Format("plots/Chris_vis_vs_dist_%d.png", opdetIdx).Data());
 
 

@@ -45,7 +45,7 @@ G4bool SinglePhase=false, ThomasImelTail=true, OutElectrons=true;
 G4double biExc = 0.77; //for alpha particles (bi-excitonic collisions)
 
 //----------------------------------------------------------------------------
-// Default constructor will return no photons or electrons unless the set 
+// Default constructor will return no photons or electrons unless the set
 // methods are called.
 NestAlg::NestAlg(CLHEP::HepRandomEngine& engine)
   : fYieldFactor(0)
@@ -59,9 +59,9 @@ NestAlg::NestAlg(CLHEP::HepRandomEngine& engine)
   fElementPropInit[10] = false;
   fElementPropInit[18] = false;
   fElementPropInit[36] = false;
-  fElementPropInit[54] = false;  
+  fElementPropInit[54] = false;
 }
-  
+
 //----------------------------------------------------------------------------
 NestAlg::NestAlg(double yieldFactor, CLHEP::HepRandomEngine& engine)
   : fYieldFactor(yieldFactor)
@@ -75,7 +75,7 @@ NestAlg::NestAlg(double yieldFactor, CLHEP::HepRandomEngine& engine)
   fElementPropInit[10] = false;
   fElementPropInit[18] = false;
   fElementPropInit[36] = false;
-  fElementPropInit[54] = false;  
+  fElementPropInit[54] = false;
 }
 
 //----------------------------------------------------------------------------
@@ -86,14 +86,14 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   CLHEP::RandFlat  UniformGen(fEngine);
 
 
-  // reset the variables accessed by other objects 
+  // reset the variables accessed by other objects
   // make the energy deposit the energy in this step,
   // set the number of electrons and photons to 0
   fEnergyDep       = aStep.GetTotalEnergyDeposit();
   fNumIonElectrons = 0.;
   fNumScintPhotons = 0.;
 
-  
+
   if ( !fYieldFactor ) //set YF=0 when you want S1Light off in your sim
     return fParticleChange;
 
@@ -103,24 +103,24 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   bool   fAlpha                 = false;
   bool   fMultipleScattering    = false;
   double fKr83m                 = 0.;
-  
+
   if( aTrack.GetParentID() == 0 && aTrack.GetCurrentStepNumber() == 1 ) {
     fExcitedNucleus = false; //an initialization or reset
     fVeryHighEnergy = false; //initializes or (later) resets this
     fAlpha = false; //ditto
     fMultipleScattering = false;
   }
-  
+
   const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
   G4ParticleDefinition *pDef = aParticle->GetDefinition();
   G4String particleName = pDef->GetParticleName();
   const G4Material* aMaterial = aStep.GetPreStepPoint()->GetMaterial();
   const G4Material* bMaterial = aStep.GetPostStepPoint()->GetMaterial();
-  
+
   if((particleName == "neutron" || particleName == "antineutron") &&
      aStep.GetTotalEnergyDeposit() <= 0)
     return fParticleChange;
-  
+
   // code for determining whether the present/next material is noble
   // element, or, in other words, for checking if either is a valid NEST
   // scintillating material, and save Z for later L calculation, or
@@ -160,11 +160,11 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       j = 0; //no sites yet
     } //material properties initialized
   } //end of atomic number check
-  
+
   if ( !NobleNow && !NobleLater )
     return fParticleChange;
-  
-  // retrieval of the particle's position, time, attributes at both the 
+
+  // retrieval of the particle's position, time, attributes at both the
   // beginning and the end of the current step along its track
   G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
   G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();
@@ -173,7 +173,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   G4double evtStrt = pPreStepPoint->GetGlobalTime();
   G4double      t0 = pPreStepPoint->GetLocalTime();
   G4double      t1 = pPostStepPoint->GetLocalTime();
-  
+
   // now check if we're entering a scintillating material (inside) or
   // leaving one (outside), in order to determine (later on in the code,
   // based on the booleans inside & outside) whether to add/subtract
@@ -186,20 +186,20 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     aMaterial = bMaterial; inside = true; z1 = z2;
     aMaterialPropertiesTable = bMaterial->GetMaterialPropertiesTable();
   }
-  if ( NobleNow && NobleLater && 
+  if ( NobleNow && NobleLater &&
        aMaterial->GetDensity() != bMaterial->GetDensity() )
     InsAndOuts = true;
-  
+
   // retrieve scintillation-related material properties
   G4double Density = aMaterial->GetDensity()/(CLHEP::g/CLHEP::cm3);
   G4double nDensity = Density*AVO; //molar mass factor applied below
   G4int Phase = aMaterial->GetState(); //solid, liquid, or gas?
   G4double ElectricField(0.), FieldSign(0.); //for field quenching of S1
   G4bool GlobalFields = false;
-  
+
   if ( (WIN == 0) && !TOP && !ANE && !SRF && !GAT && !CTH && !BOT && !PMT ) {
-    ElectricField = aMaterialPropertiesTable->GetConstProperty("ELECTRICFIELD"); 
-    GlobalFields = true; 
+    ElectricField = aMaterialPropertiesTable->GetConstProperty("ELECTRICFIELD");
+    GlobalFields = true;
   }
   else {
     if ( x1[2] < WIN && x1[2] > TOP && Phase == kStateGas )
@@ -324,7 +324,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       R0 = 0.0*CLHEP::um; //all Doke/Birks interactions (except for alphas)
       G4double Townsend = (ElectricField/nDensity)*1e17;
       DokeBirks[0] = 0.0000; //all geminate (except at zero, low fields)
-      DokeBirks[2] = 0.1933*pow(Density,2.6199)+0.29754 - 
+      DokeBirks[2] = 0.1933*pow(Density,2.6199)+0.29754 -
 	(0.045439*pow(Density,2.4689)+0.066034)*log10(ElectricField);
       if ( ElectricField>6990 ) DokeBirks[2]=0.0;
       if ( ElectricField<1000 ) DokeBirks[2]=0.2;
@@ -343,7 +343,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       tau1 = 3.5*CLHEP::ns; tau3 = 20.*CLHEP::ns; tauR = 40.*CLHEP::ns;
     } //solid Xe
   }
-  
+
   // log present and running tally of energy deposition in this section
   G4double anExcitationEnergy = ((const G4Ions*)(pDef))->
     GetExcitationEnergy(); //grab nuclear energy level
@@ -351,13 +351,13 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     aMaterialPropertiesTable->GetConstProperty( "ENERGY_DEPOSIT_TOT" );
   G4bool convert = false, annihil = false;
   //set up special cases for pair production and positron annihilation
-  if(pPreStepPoint->GetKineticEnergy()>=(2*CLHEP::electron_mass_c2) && 
-     !pPostStepPoint->GetKineticEnergy() && 
+  if(pPreStepPoint->GetKineticEnergy()>=(2*CLHEP::electron_mass_c2) &&
+     !pPostStepPoint->GetKineticEnergy() &&
      !aStep.GetTotalEnergyDeposit() && aParticle->GetPDGcode()==22) {
     convert = true; TotalEnergyDeposit = CLHEP::electron_mass_c2;
   }
-  if(pPreStepPoint->GetKineticEnergy() && 
-     !pPostStepPoint->GetKineticEnergy() && 
+  if(pPreStepPoint->GetKineticEnergy() &&
+     !pPostStepPoint->GetKineticEnergy() &&
      aParticle->GetPDGcode()==-11) {
     annihil = true; TotalEnergyDeposit += aStep.GetTotalEnergyDeposit();
   }
@@ -373,7 +373,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 		    AddConstProperty( "ENERGY_DEPOSIT_TOT", TotalEnergyDeposit );
   //save current deposit for determining number of quanta produced now
   TotalEnergyDeposit = aStep.GetTotalEnergyDeposit();
-  
+
   // check what the current "goal" E is for dumping scintillation,
   // often the initial kinetic energy of the parent particle, and deal
   // with all other energy-related matters in this block of code
@@ -413,7 +413,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     }
   }
   if ( InsAndOuts ) {
-    //G4double dribble = pPostStepPoint->GetKineticEnergy() - 
+    //G4double dribble = pPostStepPoint->GetKineticEnergy() -
     //pPreStepPoint->GetKineticEnergy();
     aMaterialPropertiesTable->
       AddConstProperty("ENERGY_DEPOSIT_GOL",(-0.1*CLHEP::keV)+
@@ -446,7 +446,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       aMaterialPropertiesTable->GetConstProperty("ENERGY_DEPOSIT_GOL")==0 &&
       aMaterialPropertiesTable->GetConstProperty("ENERGY_DEPOSIT_TOT")==0)
     return fParticleChange;
-  
+
   G4String procName;
   if ( aTrack.GetCreatorProcess() )
     procName = aTrack.GetCreatorProcess()->GetProcessName();
@@ -454,7 +454,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     procName = "NULL";
   if ( procName == "eBrem" && outside && !OutElectrons )
     fMultipleScattering = true;
-  
+
   // next 2 codeblocks deal with position-related things
   if ( fAlpha ) delta = 1000.*CLHEP::km;
   G4int i, k, counter = 0; G4double pos[3];
@@ -463,7 +463,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       fMultipleScattering = true;
     x1 = x0; //prevents generation of quanta outside active volume
   } //no scint. for e-'s that leave
-  
+
   char xCoord[80]; char yCoord[80]; char zCoord[80];
   G4bool exists = false; //for querying whether set-up of new site needed
   for(i=0;i<j;i++) { //loop over all saved interaction sites
@@ -480,7 +480,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   }
   if(!exists && TotalEnergyDeposit) { //current interaction too far away
     counter = j;
-    sprintf(xCoord,"POS_X_%i",j); sprintf(yCoord,"POS_Y_%i",j); 
+    sprintf(xCoord,"POS_X_%i",j); sprintf(yCoord,"POS_Y_%i",j);
     sprintf(zCoord,"POS_Z_%i",j);
     //save 3-space coordinates of the new interaction site
     aMaterialPropertiesTable->AddConstProperty( xCoord, x1[0] );
@@ -490,14 +490,14 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     aMaterialPropertiesTable-> //save
       AddConstProperty( "TOTALNUM_INT_SITES", j );
   }
-  
+
   // this is where nuclear recoil "L" factor is handled: total yield is
   // reduced for nuclear recoil as per Lindhard theory
-  
+
   //we assume you have a mono-elemental scintillator only
   //now, grab A's and Z's of current particle and of material (avg)
   G4double a1 = ElementA->GetA();
-  z2 = pDef->GetAtomicNumber(); 
+  z2 = pDef->GetAtomicNumber();
   G4double a2 = (G4double)(pDef->GetAtomicMass());
   if ( particleName == "alpha" || (z2 == 2 && a2 == 4) )
     fAlpha = true; //used later to get S1 pulse shape correct for alpha
@@ -507,7 +507,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   G4double gamma = 3.*pow(epsilon,0.15)+0.7*pow(epsilon,0.6)+epsilon;
   G4double kappa = 0.133*pow(z1,(2./3.))*pow(a2,(-1./2.))*(2./3.);
   //check if we are dealing with nuclear recoil (Z same as material)
-  if ( (z1 == z2 && pDef->GetParticleType() == "nucleus") || 
+  if ( (z1 == z2 && pDef->GetParticleType() == "nucleus") ||
        particleName == "neutron" || particleName == "antineutron" ) {
     fYieldFactor=(kappa*gamma)/(1+kappa*gamma); //Lindhard factor
     if ( z1 == 18 && Phase == kStateLiquid )
@@ -519,11 +519,11 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       if ( z1 == 54 ) ThomasImel = 0.19;
       if ( z1 == 18 ) ThomasImel = 0.25;
     } //special TIB parameters for nuclear recoil only, in LXe and LAr
-    fExcitationRatio = 0.69337 + 
+    fExcitationRatio = 0.69337 +
       0.3065*exp(-0.008806*pow(ElectricField,0.76313));
   }
   else fYieldFactor = 1.000; //default
-  
+
   // determine ultimate #quanta from current E-deposition (ph+e-)
   G4double MeanNumberOfQuanta = //total mean number of exc/ions
     ScintillationYield*TotalEnergyDeposit;
@@ -540,15 +540,15 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   //less than zero because Gaussian fluctuated low, update to zero
   if(TotalEnergyDeposit < 1/ScintillationYield || NumQuanta < 0)
     NumQuanta = 0;
-  
+
   // next section binomially assigns quanta to excitons and ions
-  G4int NumExcitons = 
+  G4int NumExcitons =
     BinomFluct(NumQuanta,fExcitationRatio/(1+fExcitationRatio));
   G4int NumIons = NumQuanta - NumExcitons;
-  
+
   // this section calculates recombination following the modified Birks'
   // Law of Doke, deposition by deposition, and may be overridden later
-  // in code if a low enough energy necessitates switching to the 
+  // in code if a low enough energy necessitates switching to the
   // Thomas-Imel box model for recombination instead (determined by site)
   G4double dE, dx=0, LET=0, recombProb;
   dE = TotalEnergyDeposit/CLHEP::MeV;
@@ -567,7 +567,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     if(dx) LET = (dE/dx)*(1/Density); //lin. energy xfer (prop. to dE/dx)
     if ( LET > 0 && dE > 0 && dx > 0 ) {
       G4double ratio = CalculateElectronLET(dE*1e3,z1)/LET;
-      if ( j == 1 && ratio < 0.7 && !ThomasImelTail && 
+      if ( j == 1 && ratio < 0.7 && !ThomasImelTail &&
 	   particleName == "e-" ) {
 	dx /= ratio; LET *= ratio; }}
   }
@@ -586,7 +586,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   //collected electrons are the "escape" (non-recombined) electrons
   G4int NumPhotons = NumExcitons + BinomFluct(NumIons,recombProb);
   G4int NumElectrons = NumQuanta - NumPhotons;
-  
+
   fEnergyDep       = TotalEnergyDeposit;
   fNumIonElectrons = NumElectrons;
   fNumScintPhotons = NumPhotons;
@@ -603,7 +603,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
   sprintf(numPho,"N_PHO_%i",counter); sprintf(numEle,"N_ELE_%i",counter);
   aMaterialPropertiesTable->AddConstProperty( numPho, NumPhotons   );
   aMaterialPropertiesTable->AddConstProperty( numEle, NumElectrons );
-  
+
   // increment and save the total track length, and save interaction
   // times for later, when generating the scintillation quanta
   char trackL[80]; char time00[80]; char time01[80]; char energy[80];
@@ -632,29 +632,29 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     if (t1 > deltaTime)
       aMaterialPropertiesTable->AddConstProperty( time01, t1 );
   }
-  
+
   // begin the process of setting up creation of scint./ionization
   TotalEnergyDeposit=aMaterialPropertiesTable->
     GetConstProperty("ENERGY_DEPOSIT_TOT"); //get the total E deposited
   InitialKinetEnergy=aMaterialPropertiesTable->
     GetConstProperty("ENERGY_DEPOSIT_GOL"); //E that should have been
-  if(InitialKinetEnergy > HIENLIM && 
+  if(InitialKinetEnergy > HIENLIM &&
      abs(aParticle->GetPDGcode()) != 2112) fVeryHighEnergy=true;
   G4double safety; //margin of error for TotalE.. - InitialKinetEnergy
   if (fVeryHighEnergy && !fExcitedNucleus) safety = 0.2*CLHEP::keV;
   else safety = 2.*CLHEP::eV;
-  
+
   //force a scintillation dump for NR and for full nuclear de-excitation
-  if( !anExcitationEnergy && pDef->GetParticleType() == "nucleus" && 
+  if( !anExcitationEnergy && pDef->GetParticleType() == "nucleus" &&
       aTrack.GetTrackStatus() != fAlive && !fAlpha )
     InitialKinetEnergy = TotalEnergyDeposit;
   if ( particleName == "neutron" || particleName == "antineutron" )
     InitialKinetEnergy = TotalEnergyDeposit;
-    
+
   //force a dump of all saved scintillation under the following
-  //conditions: energy goal reached, and current particle dead, or an 
+  //conditions: energy goal reached, and current particle dead, or an
   //error has occurred and total has exceeded goal (shouldn't happen)
-  if( std::abs(TotalEnergyDeposit-InitialKinetEnergy)<safety || 
+  if( std::abs(TotalEnergyDeposit-InitialKinetEnergy)<safety ||
       TotalEnergyDeposit>=InitialKinetEnergy ){
     dx = 0; dE = 0;
     //calculate the total number of quanta from all sites and all
@@ -670,16 +670,16 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 
     G4int buffer = 100; if ( fVeryHighEnergy ) buffer = 1;
     fParticleChange.SetNumberOfSecondaries(buffer*(NumPhotons+NumElectrons));
-    
+
     if (fTrackSecondariesFirst) {
       if (aTrack.GetTrackStatus() == fAlive )
 	fParticleChange.ProposeTrackStatus(fSuspend);
     }
-    
-    
+
+
     // begin the loop over all sites which generates all the quanta
     for(i=0;i<j;i++) {
-      // get the position X,Y,Z, exciton and ion numbers, total track 
+      // get the position X,Y,Z, exciton and ion numbers, total track
       // length of the site, and interaction times
       sprintf(xCoord,"POS_X_%d",i); sprintf(yCoord,"POS_Y_%d",i);
       sprintf(zCoord,"POS_Z_%d",i);
@@ -695,9 +695,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       energ = aMaterialPropertiesTable->GetConstProperty( energy );
       t0 = aMaterialPropertiesTable->GetConstProperty( time00 );
       t1 = aMaterialPropertiesTable->GetConstProperty( time01 );
-      
+
       //if site is small enough, override the Doke/Birks' model with
-      //Thomas-Imel, but not if we're dealing with super-high energy 
+      //Thomas-Imel, but not if we're dealing with super-high energy
       //particles, and if it's NR force Thomas-Imel (though NR should be
       //already short enough in track even up to O(100) keV)
       if ( (delta < R0 && !fVeryHighEnergy) || z2 == z1 || fAlpha ) {
@@ -750,7 +750,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	aMaterialPropertiesTable->
 	  AddConstProperty( numEle, NumElectrons );
       }
-      
+
       // grab NumPhotons/NumElectrons, which come from Birks if
       // the Thomas-Imel block of code above was not executed
       NumPhotons  = (G4int)aMaterialPropertiesTable->
@@ -760,7 +760,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       // extra Fano factor caused by recomb. fluct.
       G4double FanoFactor =0; //ionization channel
       if(Phase == kStateLiquid && fYieldFactor == 1) {
-	FanoFactor = 
+	FanoFactor =
 	  2575.9*pow((ElectricField+15.154),-0.64064)-1.4707;
 	if ( fKr83m ) TotalEnergyDeposit = 4*CLHEP::keV;
 	if ( (dE/CLHEP::keV) <= 100 && ElectricField >= 0 ) {
@@ -774,7 +774,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       if ( Phase == kStateGas && Density>0.5 ) FanoFactor =
 						 0.42857-4.7857*Density+7.8571*pow(Density,2.);
       if( FanoFactor <= 0 || fVeryHighEnergy ) FanoFactor = 0;
-      NumQuanta = NumPhotons + NumElectrons; 
+      NumQuanta = NumPhotons + NumElectrons;
       if(z1==54 && FanoFactor) NumElectrons = G4int(
 						    floor(GaussGen.fire(NumElectrons,
 									     sqrt(FanoFactor*NumElectrons))+0.5));
@@ -786,23 +786,23 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  NumPhotons = BinomFluct(NumPhotons,biExc);
 	NumPhotons = BinomFluct(NumPhotons,QE_EFF);
       } NumElectrons = G4int(floor(NumElectrons*phe_per_e+0.5));
-      
-      
-      
+
+
+
 
       // new stuff to make Kr-83m work properly
       if(fKr83m || InitialKinetEnergy==9.4*CLHEP::keV) fKr83m += dE/CLHEP::keV;
       if(fKr83m > 41) fKr83m = 0;
       if ( SinglePhase ) //for a 1-phase det. don't propagate e-'s
 	NumElectrons = 0; //saves simulation time
-      
+
       // reset material properties numExc, numIon, numPho, numEle, as
       // their values have been used or stored elsewhere already
       aMaterialPropertiesTable->AddConstProperty( numExc, 0 );
       aMaterialPropertiesTable->AddConstProperty( numIon, 0 );
       aMaterialPropertiesTable->AddConstProperty( numPho, 0 );
       aMaterialPropertiesTable->AddConstProperty( numEle, 0 );
-      
+
       // start particle creation loop
       if( InitialKinetEnergy < MAX_ENE && InitialKinetEnergy > MIN_ENE &&
 	  !fMultipleScattering )
@@ -811,7 +811,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       for(k = 0; k < NumQuanta; k++) {
 	G4double sampledEnergy;
 	std::unique_ptr<G4DynamicParticle> aQuantum;
-	
+
 	// Generate random direction
 	G4double cost = 1. - 2.*UniformGen.fire();
 	G4double sint = std::sqrt((1.-cost)*(1.+cost));
@@ -819,15 +819,15 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	G4double sinp = std::sin(phi); G4double cosp = std::cos(phi);
 	G4double px = sint*cosp; G4double py = sint*sinp;
 	G4double pz = cost;
-	
+
 	// Create momentum direction vector
 	G4ParticleMomentum photonMomentum(px, py, pz);
-	
+
 	// case of photon-specific stuff
 	if (k < NumPhotons) {
-	  // Determine polarization of new photon 
+	  // Determine polarization of new photon
 	  G4double sx = cost*cosp;
-	  G4double sy = cost*sinp; 
+	  G4double sy = cost*sinp;
 	  G4double sz = -sint;
 	  G4ThreeVector photonPolarization(sx, sy, sz);
 	  G4ThreeVector perp = photonMomentum.cross(photonPolarization);
@@ -836,7 +836,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  cosp = std::cos(phi);
 	  photonPolarization = cosp * photonPolarization + sinp * perp;
 	  photonPolarization = photonPolarization.unit();
-	  
+
 	  // Generate a new photon or electron:
 	  sampledEnergy = GaussGen.fire(PhotMean,PhotWidth);
 	  aQuantum = std::make_unique<G4DynamicParticle>(G4OpticalPhoton::OpticalPhoton(),
@@ -845,7 +845,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 				    photonPolarization.y(),
 				    photonPolarization.z());
 	}
-	
+
 	else { // this else statement is for ionization electrons
 	  if(ElectricField) {
 	    // point all electrons straight up, for drifting
@@ -866,13 +866,13 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	    sampledEnergy = 1.38e-23*(CLHEP::joule/CLHEP::kelvin)*Temperature;
 	  }
 	}
-	
+
 	//assign energy to make particle real
 	aQuantum->SetKineticEnergy(sampledEnergy);
-	
+
 	// Generate new G4Track object:
 	// emission time distribution
-	
+
 	// first an initial birth time is provided that is typically
 	// <<1 ns after the initial interaction in the simulation, then
 	// singlet, triplet lifetimes, and recombination time, are
@@ -948,8 +948,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  if ( Phase == kStateLiquid )
 	    aSecondaryTime -= tauTrap*CLHEP::ns*log(UniformGen.fire());
 	}
-	
-	// emission position distribution -- 
+
+	// emission position distribution --
 	// Generate the position of a new photon or electron, with NO
 	// stochastic variation because that could lead to particles
 	// being mistakenly generated outside of your active region by
@@ -1002,18 +1002,18 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 	  if(aSecondaryPosition[2] <= PMT && !GlobalFields)
 	    aSecondaryPosition[2] = PMT + R_TOL;
 	} //end of electron diffusion code
-	
+
 	  // GEANT4 business: stuff you need to make a new track
 	if ( aSecondaryTime < 0 ) aSecondaryTime = 0; //no neg. time
 	/*
-	  auto aSecondaryTrack = 
+	  auto aSecondaryTrack =
 	  std::make_unique<G4Track>(aQuantum,aSecondaryTime,aSecondaryPosition);
 	  if ( k < NumPhotons || radius < R_MAX )
 	  {
-	  
+
 	*/
       }
-      
+
       //reset bunch of things when done with an interaction site
       aMaterialPropertiesTable->AddConstProperty( xCoord, 999*CLHEP::km );
       aMaterialPropertiesTable->AddConstProperty( yCoord, 999*CLHEP::km );
@@ -1022,9 +1022,9 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
       aMaterialPropertiesTable->AddConstProperty( energy, 0*CLHEP::eV );
       aMaterialPropertiesTable->AddConstProperty( time00, DBL_MAX );
       aMaterialPropertiesTable->AddConstProperty( time01, -1*CLHEP::ns );
-      
+
     } //end of interaction site loop
-    
+
       //more things to reset...
     aMaterialPropertiesTable->
       AddConstProperty( "TOTALNUM_INT_SITES", 0 );
@@ -1035,7 +1035,7 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
     fExcitedNucleus = false;
     fAlpha = false;
   }
-  
+
   //don't do anything when you're not ready to scintillate
   else {
     fParticleChange.SetNumberOfSecondaries(0);
@@ -1046,8 +1046,8 @@ const G4VParticleChange& NestAlg::CalculateIonizationAndScintillation(G4Track co
 }
 
 //----------------------------------------------------------------------------
-G4double NestAlg::GetGasElectronDriftSpeed(G4double /*efieldinput*/, 
-					   G4double /*density*/) 
+G4double NestAlg::GetGasElectronDriftSpeed(G4double /*efieldinput*/,
+					   G4double /*density*/)
 {
   std::cout << "WARNING: NestAlg::GetGasElectronDriftSpeed(G4double, G4double) "
 	    << "is not defined, returning bogus value of -999." << std::endl;
@@ -1057,9 +1057,9 @@ G4double NestAlg::GetGasElectronDriftSpeed(G4double /*efieldinput*/,
 
 
 //----------------------------------------------------------------------------
-G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput, 
-					      G4double efieldinput, 
-					      G4bool Miller, 
+G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput,
+					      G4double efieldinput,
+					      G4bool Miller,
 					      G4int Z) {
   if(efieldinput<0) efieldinput *= (-1);
   //Liquid equation one (165K) coefficients
@@ -1095,7 +1095,7 @@ G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput,
     thrj=201512.080026704;
   G4double y1=0,y2=0,f1=0,f2=0,f3=0,edrift=0,
     t1=0,t2=0,slope=0,intercept=0;
-    
+
   //Equations defined
   f1=onea/(1+exp(-(efieldinput-oneb)/onec))+oned/
     (1+exp(-(efieldinput-onef)/oneg))+
@@ -1106,7 +1106,7 @@ G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput,
   f3=thra*exp(-thrb*efieldinput)+thrc*exp(-(pow(efieldinput-thrd,2))/
 					  (thrf*thrf))+
     thrg*exp(-(pow(efieldinput-thrh,2)/(thri*thri)))+thrj;
-    
+
   if(efieldinput<20 && efieldinput>=0) {
     f1=2951*efieldinput;
     f2=5312*efieldinput;
@@ -1138,7 +1138,7 @@ G4double NestAlg::GetLiquidElectronDriftSpeed(G4double tempinput,
     intercept=y1-slope*t1;
     edrift=slope*tempinput+intercept;
   }
-    
+
   if ( Miller ) {
     if ( efieldinput <= 40. )
       edrift = -0.13274+0.041082*efieldinput-0.0006886*pow(efieldinput,2.)+
@@ -1185,7 +1185,7 @@ G4double NestAlg::CalculateElectronLET ( G4double E, G4int Z ) {
   }
   return LET;
 }
-  
+
 //----------------------------------------------------------------------------
 G4int NestAlg::BinomFluct ( G4int N0, G4double prob ) {
   CLHEP::RandGauss GaussGen(fEngine);
@@ -1196,7 +1196,7 @@ G4int NestAlg::BinomFluct ( G4int N0, G4double prob ) {
   G4int N1 = 0;
   if ( prob == 0.00 ) return N1;
   if ( prob == 1.00 ) return N0;
-    
+
   if ( N0 < 10 ) {
     for(G4int i = 0; i < N0; i++) {
       if(UniformGen.fire() < prob) N1++;
@@ -1209,7 +1209,7 @@ G4int NestAlg::BinomFluct ( G4int N0, G4double prob ) {
   if ( N1 < 0 ) N1 = 0;
   return N1;
 }
-  
+
 //----------------------------------------------------------------------------
 void NestAlg::InitMatPropValues ( G4MaterialPropertiesTable *nobleElementMat,
 				  int z) {
@@ -1237,7 +1237,7 @@ void NestAlg::InitMatPropValues ( G4MaterialPropertiesTable *nobleElementMat,
     nobleElementMat->AddConstProperty( time00, DBL_MAX );
     nobleElementMat->AddConstProperty( time01,-1*CLHEP::ns );
   }
-    
+
   // we initialize the total number of interaction sites, a variable for
   // updating the amount of energy deposited thus far in the medium, and a
   // variable for storing the amount of energy expected to be deposited
@@ -1249,7 +1249,7 @@ void NestAlg::InitMatPropValues ( G4MaterialPropertiesTable *nobleElementMat,
 
   return;
 }
-  
+
 //----------------------------------------------------------------------------
 G4double UnivScreenFunc ( G4double E, G4double Z, G4double A ) {
   G4double a_0 = 5.29e-11*CLHEP::m; G4double a = 0.626*a_0*pow(Z,(-1./3.));
@@ -1267,4 +1267,4 @@ G4double UnivScreenFunc ( G4double E, G4double Z, G4double A ) {
 					  (a*m_N*pow(CLHEP::eplus,2.)));
   return 1.38e5*0.5*(1+tanh(50*epsilon-0.25))*epsilon*(s_e/s_n);
 }
-  
+

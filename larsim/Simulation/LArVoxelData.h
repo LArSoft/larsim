@@ -51,7 +51,7 @@
 ///    IDs change. In that case, all the voxel energies are moved to
 ///    "unassigned" energy.
 ///
-/// LArVoxelData::AssignedEnergy() returns, in effect, 
+/// LArVoxelData::AssignedEnergy() returns, in effect,
 ///    Energy() - UnassignedEnergy()
 ///
 
@@ -67,7 +67,7 @@
 
 namespace sim {
 
-  class LArVoxelData 
+  class LArVoxelData
   {
   public:
     // Some type definitions to make life easier, and to help "hide"
@@ -128,7 +128,7 @@ namespace sim {
     // performed by LArVoxelList.
     void Add( const LArVoxelData& );
     LArVoxelData& operator+=( const LArVoxelData& other );
-    const LArVoxelData operator+(const LArVoxelData& other) const; 
+    const LArVoxelData operator+(const LArVoxelData& other) const;
 
     LArVoxelData& operator*=( const double& value );
     const LArVoxelData operator*(const double& value) const;
@@ -154,37 +154,37 @@ namespace sim {
     // methods. Remember, the "map" portion of this class doesn't
     // always tell the whole story; you also need to look at the
     // "unasigned" energy separately.
-    iterator               begin();        			   
-    const_iterator         begin()  const; 			   
-    iterator               end();          			   
-    const_iterator         end()    const; 			   
-    reverse_iterator       rbegin();       			   
-    const_reverse_iterator rbegin() const; 			   
-    reverse_iterator       rend();         			   
-    const_reverse_iterator rend()   const; 			   
-					   			   
-    size_type size()                const; 			   
-    bool      empty()               const; 			   
+    iterator               begin();
+    const_iterator         begin()  const;
+    iterator               end();
+    const_iterator         end()    const;
+    reverse_iterator       rbegin();
+    const_reverse_iterator rbegin() const;
+    reverse_iterator       rend();
+    const_reverse_iterator rend()   const;
+
+    size_type size()                const;
+    bool      empty()               const;
     void      swap( LArVoxelData& other );
     void      clear();
-												   
-    iterator       find(const key_type& key);              
-    const_iterator find(const key_type& key)        const; 
-    iterator       upper_bound(const key_type& key);       
-    const_iterator upper_bound(const key_type& key) const; 
-    iterator       lower_bound(const key_type& key);       
-    const_iterator lower_bound(const key_type& key) const; 
-    size_type      erase( const key_type& key );           
-												   
+
+    iterator       find(const key_type& key);
+    const_iterator find(const key_type& key)        const;
+    iterator       upper_bound(const key_type& key);
+    const_iterator upper_bound(const key_type& key) const;
+    iterator       lower_bound(const key_type& key);
+    const_iterator lower_bound(const key_type& key) const;
+    size_type      erase( const key_type& key );
+
     mapped_type&       operator[](const key_type& key);
-    // My own little addition: operator[] in a const context.					   
-    const mapped_type& operator[]( const key_type& key) const;	   
-    mapped_type&       at(const key_type& key);               	   
+    // My own little addition: operator[] in a const context.
+    const mapped_type& operator[]( const key_type& key) const;
+    mapped_type&       at(const key_type& key);
     const mapped_type& at(const key_type& key)          const;
-												   
-    // In addition to operator[], include one insert() method.  Note				   
-    // that, as with operator[], there's no check against overwriting				   
-    // an existing item.									   
+
+    // In addition to operator[], include one insert() method.  Note
+    // that, as with operator[], there's no check against overwriting
+    // an existing item.
     void insert( const key_type& key, const mapped_type& value );
 
   };
@@ -221,67 +221,67 @@ inline void sim::LArVoxelData::RemoveAllTracks()
   fenergy = this->Energy();
   ftrackEnergy.clear();
 }
-inline void sim::LArVoxelData::Add( const sim::LArVoxelData::mapped_type& energy, 
-				    const sim::LArVoxelData::key_type& trackID ) 
+inline void sim::LArVoxelData::Add( const sim::LArVoxelData::mapped_type& energy,
+				    const sim::LArVoxelData::key_type& trackID )
 { ftrackEnergy[trackID] += energy; }
 inline void sim::LArVoxelData::Add( const sim::LArVoxelData::mapped_type& energy)
-{ fenergy += energy; } 
+{ fenergy += energy; }
 inline sim::LArVoxelData& sim::LArVoxelData::operator+=( const sim::LArVoxelData& other)
-{ 
-  this->Add(other); 
-  return *this; 
+{
+  this->Add(other);
+  return *this;
 }
 inline const sim::LArVoxelData sim::LArVoxelData::operator+(const sim::LArVoxelData& other) const
 {
   return LArVoxelData(*this) += other;
 }
-inline const sim::LArVoxelData sim::LArVoxelData::operator*(const double& value) const 
+inline const sim::LArVoxelData sim::LArVoxelData::operator*(const double& value) const
 {
   return LArVoxelData(*this) *= value;
 }
 inline sim::LArVoxelData::iterator               sim::LArVoxelData::begin()        { return ftrackEnergy.begin();  }
-inline sim::LArVoxelData::const_iterator         sim::LArVoxelData::begin()  const { return ftrackEnergy.begin();  }			   
-inline sim::LArVoxelData::iterator               sim::LArVoxelData::end()          { return ftrackEnergy.end();    }			   
-inline sim::LArVoxelData::const_iterator         sim::LArVoxelData::end()    const { return ftrackEnergy.end();    }			   
-inline sim::LArVoxelData::reverse_iterator       sim::LArVoxelData::rbegin()       { return ftrackEnergy.rbegin(); }			   
-inline sim::LArVoxelData::const_reverse_iterator sim::LArVoxelData::rbegin() const { return ftrackEnergy.rbegin(); }			   
-inline sim::LArVoxelData::reverse_iterator       sim::LArVoxelData::rend()         { return ftrackEnergy.rend();   }			   
-inline sim::LArVoxelData::const_reverse_iterator sim::LArVoxelData::rend()   const { return ftrackEnergy.rend();   }			   
-												   
-inline sim::LArVoxelData::size_type              sim::LArVoxelData::size()   const { return ftrackEnergy.size();   }			   
-inline bool                                      sim::LArVoxelData::empty()  const { return ftrackEnergy.empty();  }			   
-inline void sim::LArVoxelData::swap( LArVoxelData& other ) 
-{ 												   
-  ftrackEnergy.swap( other.ftrackEnergy ); 							   
-  double temp = fenergy;									   
-  fenergy = other.fenergy;									   
-  other.fenergy = temp;									   
-}												   
-inline void sim::LArVoxelData::clear() { fenergy = 0.; ftrackEnergy.clear(); }	
+inline sim::LArVoxelData::const_iterator         sim::LArVoxelData::begin()  const { return ftrackEnergy.begin();  }
+inline sim::LArVoxelData::iterator               sim::LArVoxelData::end()          { return ftrackEnergy.end();    }
+inline sim::LArVoxelData::const_iterator         sim::LArVoxelData::end()    const { return ftrackEnergy.end();    }
+inline sim::LArVoxelData::reverse_iterator       sim::LArVoxelData::rbegin()       { return ftrackEnergy.rbegin(); }
+inline sim::LArVoxelData::const_reverse_iterator sim::LArVoxelData::rbegin() const { return ftrackEnergy.rbegin(); }
+inline sim::LArVoxelData::reverse_iterator       sim::LArVoxelData::rend()         { return ftrackEnergy.rend();   }
+inline sim::LArVoxelData::const_reverse_iterator sim::LArVoxelData::rend()   const { return ftrackEnergy.rend();   }
+
+inline sim::LArVoxelData::size_type              sim::LArVoxelData::size()   const { return ftrackEnergy.size();   }
+inline bool                                      sim::LArVoxelData::empty()  const { return ftrackEnergy.empty();  }
+inline void sim::LArVoxelData::swap( LArVoxelData& other )
+{
+  ftrackEnergy.swap( other.ftrackEnergy );
+  double temp = fenergy;
+  fenergy = other.fenergy;
+  other.fenergy = temp;
+}
+inline void sim::LArVoxelData::clear() { fenergy = 0.; ftrackEnergy.clear(); }
 inline sim::LArVoxelData::iterator       sim::LArVoxelData::find(const sim::LArVoxelData::key_type& key)
 { return ftrackEnergy.find(key);        }
-inline sim::LArVoxelData::const_iterator sim::LArVoxelData::find(const sim::LArVoxelData::key_type& key) const 
+inline sim::LArVoxelData::const_iterator sim::LArVoxelData::find(const sim::LArVoxelData::key_type& key) const
 { return ftrackEnergy.find(key);        }
-inline sim::LArVoxelData::iterator       sim::LArVoxelData::upper_bound(const sim::LArVoxelData::key_type& key)       
+inline sim::LArVoxelData::iterator       sim::LArVoxelData::upper_bound(const sim::LArVoxelData::key_type& key)
 { return ftrackEnergy.upper_bound(key); }
-inline sim::LArVoxelData::const_iterator sim::LArVoxelData::upper_bound(const sim::LArVoxelData::key_type& key) const 
+inline sim::LArVoxelData::const_iterator sim::LArVoxelData::upper_bound(const sim::LArVoxelData::key_type& key) const
 { return ftrackEnergy.upper_bound(key); }
-inline sim::LArVoxelData::iterator       sim::LArVoxelData::lower_bound(const sim::LArVoxelData::key_type& key)       
+inline sim::LArVoxelData::iterator       sim::LArVoxelData::lower_bound(const sim::LArVoxelData::key_type& key)
 { return ftrackEnergy.lower_bound(key); }
-inline sim::LArVoxelData::const_iterator sim::LArVoxelData::lower_bound(const sim::LArVoxelData::key_type& key) const 
+inline sim::LArVoxelData::const_iterator sim::LArVoxelData::lower_bound(const sim::LArVoxelData::key_type& key) const
 { return ftrackEnergy.lower_bound(key); }
-inline sim::LArVoxelData::size_type      sim::LArVoxelData::erase( const sim::LArVoxelData::key_type& key )           
+inline sim::LArVoxelData::size_type      sim::LArVoxelData::erase( const sim::LArVoxelData::key_type& key )
 { return this->RemoveTrack(key);        }
-												   
-inline sim::LArVoxelData::mapped_type&   sim::LArVoxelData::operator[](const sim::LArVoxelData::key_type& key)        
-{ return ftrackEnergy[key];    }	   
-inline const sim::LArVoxelData::mapped_type& sim::LArVoxelData::operator[]( const sim::LArVoxelData::key_type& key) const 
-{ return ftrackEnergy.at(key); }	   
-inline sim::LArVoxelData::mapped_type&       sim::LArVoxelData::at(const sim::LArVoxelData::key_type& key)                
-{ return ftrackEnergy.at(key); }	   
-inline const sim::LArVoxelData::mapped_type& sim::LArVoxelData::at(const sim::LArVoxelData::key_type& key) const 
-{ return ftrackEnergy.at(key); }	   
+
+inline sim::LArVoxelData::mapped_type&   sim::LArVoxelData::operator[](const sim::LArVoxelData::key_type& key)
+{ return ftrackEnergy[key];    }
+inline const sim::LArVoxelData::mapped_type& sim::LArVoxelData::operator[]( const sim::LArVoxelData::key_type& key) const
+{ return ftrackEnergy.at(key); }
+inline sim::LArVoxelData::mapped_type&       sim::LArVoxelData::at(const sim::LArVoxelData::key_type& key)
+{ return ftrackEnergy.at(key); }
+inline const sim::LArVoxelData::mapped_type& sim::LArVoxelData::at(const sim::LArVoxelData::key_type& key) const
+{ return ftrackEnergy.at(key); }
 inline void sim::LArVoxelData::insert( const sim::LArVoxelData::key_type& key, const sim::LArVoxelData::mapped_type& value )
-{ ftrackEnergy[key] = value; }    
+{ ftrackEnergy[key] = value; }
 
 #endif // Simulation_LArVoxelData_h_

@@ -74,7 +74,7 @@ class G4OpRayleigh;
   #pragma clang diagnostic ignored "-Wunused-private-field"
 #endif
 
-namespace larg4 {  
+namespace larg4 {
 
   class OpBoundaryProcessSimple;
 
@@ -83,10 +83,10 @@ namespace larg4 {
   public:
     OpticalPhysics(G4int ver = 0, const G4String& name = "G4Optical");
     virtual ~OpticalPhysics();
-    
+
     virtual void ConstructParticle();
     virtual void ConstructProcess();
-    
+
   private:
     G4int  verbose;
     G4Cerenkov*              fTheCerenkovProcess;
@@ -97,7 +97,7 @@ namespace larg4 {
     G4OpBoundaryProcess*     fTheBoundaryProcess_g4;
     G4OpWLS *                fTheWLSProcess;
   };
-  
+
 }
 #if defined __clang__
   #pragma clang diagnostic pop

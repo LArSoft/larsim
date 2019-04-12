@@ -23,9 +23,9 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   /// Expert constructor based on actual bins.
-  LArVoxelID::LArVoxelID( const int x, 
-			  const int y, 
-			  const int z, 
+  LArVoxelID::LArVoxelID( const int x,
+			  const int y,
+			  const int z,
 			  const int t )
   {
     fbins = std::vector<int>(4);
@@ -68,29 +68,29 @@ namespace sim {
   //----------------------------------------------------------------------------
   /// The accessors I expect to be used: The values of the
   /// co-ordinates at the bin centers.
-  double LArVoxelID::X() const 
-  { 
+  double LArVoxelID::X() const
+  {
     art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->XBinToAxis(fbins[0]);
   }
 
   //----------------------------------------------------------------------------
-  double LArVoxelID::Y() const 
-  { 
+  double LArVoxelID::Y() const
+  {
     art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->YBinToAxis(fbins[1]);
   }
 
   //----------------------------------------------------------------------------
-  double LArVoxelID::Z() const 
-  { 
+  double LArVoxelID::Z() const
+  {
     art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->ZBinToAxis(fbins[2]);
   }
 
   //----------------------------------------------------------------------------
-  double LArVoxelID::T() const 
-  { 
+  double LArVoxelID::T() const
+  {
     art::ServiceHandle<sim::LArVoxelCalculator const> voxelCalc;
     return voxelCalc->TBinToAxis(fbins[3]);
   }
@@ -131,7 +131,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   /// The comparison operator.  This a key function, since it
   /// establishes the sort order of the voxels in a list.
-  bool LArVoxelID::operator<( const LArVoxelID& other ) const 
+  bool LArVoxelID::operator<( const LArVoxelID& other ) const
   {
     // What is a good sort order for voxels in the list?  I'm not sure.
     // For now, pick an ordering but be prepared to change it: sort by
@@ -141,22 +141,22 @@ namespace sim {
 
     if ( fbins[3] == other.fbins[3] ){
       if ( fbins[2] < other.fbins[2] ) return true;
-      
+
       if ( fbins[2] == other. fbins[2] ){
 	if ( fbins[0] < other.fbins[0] ) return true;
-	
+
 	if ( fbins[0] == other.fbins[0] ){
 	  if ( fbins[1] < other.fbins[1] ) return true;
 	}
       }
     }
-    
+
     return false;
   }
-  
+
   //----------------------------------------------------------------------------
   /// Test for equality.  Handy, but not usually necessary.
-  bool LArVoxelID::operator==( const LArVoxelID& other ) const 
+  bool LArVoxelID::operator==( const LArVoxelID& other ) const
   {
     if ( fbins[0] == other.fbins[0]  &&
 	 fbins[1] == other.fbins[1]  &&
@@ -169,15 +169,15 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   LArVoxelID::operator TLorentzVector() const
-  { 
-    return TLorentzVector( X(), Y(), Z(), T() ); 
+  {
+    return TLorentzVector( X(), Y(), Z(), T() );
   }
 
   //----------------------------------------------------------------------------
   LArVoxelID::operator TVector3() const
-  { 
-    return TVector3( X(), Y(), Z() ); 
+  {
+    return TVector3( X(), Y(), Z() );
   }
-  
+
 
 } // namespace sim

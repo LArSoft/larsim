@@ -37,7 +37,7 @@ namespace sim
 
 
   class MCEdepHit {
-    
+
   public:
 
     //static const unsigned short kINVALID_USHORT;
@@ -45,7 +45,7 @@ namespace sim
   public:
 
     MCEdepHit(){ Clear(); }
-    
+
     unsigned short timeStart;
     unsigned short timeEnd;
     unsigned short timeMax;
@@ -94,13 +94,13 @@ namespace sim
     geo::PlaneID pid {};
     std::vector<deposit> deps {};
 
-    MCEdep() = default; 
- 
-    MCEdep(sim::UniquePosition p, 
-           geo::PlaneID pi, 
+    MCEdep() = default;
+
+    MCEdep(sim::UniquePosition p,
+           geo::PlaneID pi,
            size_t num_planes,
-           float e, float c,  
-           size_t id) : 
+           float e, float c,
+           size_t id) :
            pos(p), pid(pi), deps(num_planes) { deps[id].energy=e; deps[id].charge=c;}
   };
 
@@ -116,12 +116,12 @@ namespace sim
 
     void MakeMCEdep(const std::vector<sim::SimEnergyDeposit>& sedArray);
 
-    bool ExistTrack(const unsigned int track_id) const 
-    { return (_track_index.find(track_id) != _track_index.end()); } 
+    bool ExistTrack(const unsigned int track_id) const
+    { return (_track_index.find(track_id) != _track_index.end()); }
 
     /// Converts a track ID to MCEdep array index. Returns -1 if no corresponding array found .
     int TrackToEdepIndex(unsigned int track_id) const
-    { 
+    {
       auto iter = _track_index.find(track_id);
       return (iter == _track_index.end() ? -1 : (int)((*iter).second));
     }
@@ -137,7 +137,7 @@ namespace sim
       _mc_edeps.clear();
       _track_index.clear();
       std::vector<std::vector<sim::MCEdep>>().swap(_mc_edeps);
-      std::map<unsigned int,size_t>().swap(_track_index);  
+      std::map<unsigned int,size_t>().swap(_track_index);
   }
   protected:
 
@@ -147,8 +147,8 @@ namespace sim
     bool _save_mchit;
     std::map<unsigned int,size_t>      _track_index;
     std::vector<std::vector<sim::MCEdep> > _mc_edeps;
-    
+
   }; // class MCRecoEdep
-  
+
 } //namespace cluster
 #endif

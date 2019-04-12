@@ -75,7 +75,7 @@ namespace larg4 {
     HadronElasticPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysics>("HadronElastic") {}
    virtual ~HadronElasticPhysicsFactory() {}
   };
-  
+
   class HadronPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>
   {
   public:

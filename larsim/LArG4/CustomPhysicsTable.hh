@@ -4,13 +4,13 @@
 /// \author  bjpjones@mit.edu
 ////////////////////////////////////////////////////////////////////////
 //
-// The custom physics table keeps track of all compiled physics modules and feeds their 
+// The custom physics table keeps track of all compiled physics modules and feeds their
 // names and constructors to the ConfigurablePhysicsList.
 //
 // A CustomPhysicsTable is instantiated in the constructor of each CustomPhysicsFactory<T>
 // with a pointer to the instantiating factory as an argument.  This pointer is passed to
-// a singleton, static CustomPhysicsTable called TheCustomPhysicsTable.  It is this table 
-// which the ConfigurablePhysicsList interacts with.  
+// a singleton, static CustomPhysicsTable called TheCustomPhysicsTable.  It is this table
+// which the ConfigurablePhysicsList interacts with.
 //
 // At runtime the CustomPhysicsTable contains an array of CustomPhysicsFactories, one
 // for each available physics module, and can provide the list of their names and
@@ -36,7 +36,7 @@ namespace larg4 { class CustomPhysicsFactoryBase; }
 namespace larg4 {
   class CustomPhysicsTable
   {
-    
+
   public:
     CustomPhysicsTable(CustomPhysicsFactoryBase*);
     ~CustomPhysicsTable() {};
@@ -46,17 +46,17 @@ namespace larg4 {
     std::map<std::string,CustomPhysicsFactoryBase* > GetFullTable()
     { return theTable;}
     void AddPhysics(CustomPhysicsFactoryBase*);
-    
-    
+
+
   protected:
     std::map<std::string,CustomPhysicsFactoryBase* > theTable;
     CustomPhysicsTable() {};
   };
-  
+
 }
 
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
-  
+
 #endif
 
 

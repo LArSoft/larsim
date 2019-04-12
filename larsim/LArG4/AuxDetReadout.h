@@ -23,32 +23,32 @@ class G4TouchableHistory;
 class G4Step;
 
 namespace larg4 {
-  
+
   class AuxDetReadout : public G4VSensitiveDetector
   {
   public:
     // Constructor.
-    AuxDetReadout(std::string const& name, 
+    AuxDetReadout(std::string const& name,
 		  unsigned int       adNum,
 		  unsigned int       svNum);
-    
+
     // Destructor
     virtual ~AuxDetReadout();
-    
+
     // Required for classes that inherit from G4VSensitiveDetector.
     //
     // Called at start and end of each event.
     virtual void Initialize(G4HCofThisEvent*);
     virtual void EndOfEvent(G4HCofThisEvent*);
-    
+
     // Called to clear any accumulated information.
     virtual void clear();
-    
+
     // The key method of this class.  It's called by Geant4 for each
     // step within the read-out geometry.  It accumulates the energy
     // in the G4Step in the ?.
     virtual G4bool ProcessHits( G4Step*, G4TouchableHistory* );
-    
+
     // Moved here from AuxDetSimChannel
     virtual void AddParticleStep(int	inputTrackID,
 				 float	inputEnergyDeposited,
@@ -68,10 +68,10 @@ namespace larg4 {
     // used in Geant4 applications.
     virtual void DrawAll();
     virtual void PrintAll();
-    
+
     // Independent method; returns the accumulated information
     sim::AuxDetSimChannel const GetAuxDetSimChannel() const { return fAuxDetSimChannel; };
-    
+
   private:
     art::ServiceHandle<geo::Geometry const> fGeoHandle;        ///< Handle to the Geometry service
     uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to

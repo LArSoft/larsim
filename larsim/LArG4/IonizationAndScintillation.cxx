@@ -78,14 +78,14 @@ namespace larg4 {
     // make the histograms
     art::ServiceHandle<art::TFileService const> tfs;
 
-    fElectronsPerStep   = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps", 
-					  500, 0., 5000.);			
-    fPhotonsPerStep   	= tfs->make<TH1F>("photonsPerStep", ";Photons;Steps", 	
-					  500, 0., 5000.);			
-    fEnergyPerStep    	= tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps", 
-					  100, 0., 0.5);				
-    fStepSize         	= tfs->make<TH1F>("stepSize", ";Step Size (CLHEP::cm);Steps", 	
-					  500, 0., 0.2);                          
+    fElectronsPerStep   = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps",
+					  500, 0., 5000.);
+    fPhotonsPerStep   	= tfs->make<TH1F>("photonsPerStep", ";Photons;Steps",
+					  500, 0., 5000.);
+    fEnergyPerStep    	= tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps",
+					  100, 0., 0.5);
+    fStepSize         	= tfs->make<TH1F>("stepSize", ";Step Size (CLHEP::cm);Steps",
+					  500, 0., 0.2);
     fElectronsPerLength = tfs->make<TH1F>("electronsPerLength", ";Electrons #times 10^{3}/CLHEP::cm;Steps",
 					  1000, 0., 1000.);
     fPhotonsPerLength   = tfs->make<TH1F>("photonsPerLength", ";Photons #times 10^{3}/CLHEP::cm;Steps",
@@ -94,7 +94,7 @@ namespace larg4 {
 					  1000, 0., 1000.);
     fPhotonsPerEDep     = tfs->make<TH1F>("photonsPerEDep", ";Photons #times 10^{3}/MeV;Steps",
 					  1000, 0., 1000.);
-					  
+
     fElectronsVsPhotons = tfs->make<TH2F>("electronsVsPhotons", ";Photons;Electrons",
 					  500, 0., 5000., 500, 0., 5000.);
 
@@ -102,7 +102,7 @@ namespace larg4 {
   }
 
   //......................................................................
-  IonizationAndScintillation::~IonizationAndScintillation() 
+  IonizationAndScintillation::~IonizationAndScintillation()
   {
     if(fISCalc) delete fISCalc;
   }
@@ -114,8 +114,8 @@ namespace larg4 {
 
     if(fStepNumber==step->GetTrack()->GetCurrentStepNumber() && fTrkID==step->GetTrack()->GetTrackID())
       return;
-    
-    fStepNumber=step->GetTrack()->GetCurrentStepNumber(); 
+
+    fStepNumber=step->GetTrack()->GetCurrentStepNumber();
     fTrkID=step->GetTrack()->GetTrackID();
 
     fStep = step;
@@ -129,9 +129,9 @@ namespace larg4 {
     // double check that the energy deposit is non-zero
     // then do the calculation if it is
     if( step->GetTotalEnergyDeposit() > 0 ){
- 
+
       fISCalc->CalculateIonizationAndScintillation(fStep);
-    
+
       MF_LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
 					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
 					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
@@ -139,13 +139,13 @@ namespace larg4 {
 
       G4ThreeVector totstep = fStep->GetPostStepPoint()->GetPosition();
       totstep -= fStep->GetPreStepPoint()->GetPosition();
-      
+
       // Fill the histograms
       fStepSize          ->Fill(totstep.mag()/CLHEP::cm);
       fEnergyPerStep     ->Fill(fISCalc->EnergyDeposit());
       fElectronsPerStep  ->Fill(fISCalc->NumberIonizationElectrons());
       fPhotonsPerStep    ->Fill(fISCalc->NumberScintillationPhotons());
-      fElectronsVsPhotons->Fill(fISCalc->NumberScintillationPhotons(), 
+      fElectronsVsPhotons->Fill(fISCalc->NumberScintillationPhotons(),
 				fISCalc->NumberIonizationElectrons());
       double const stepSize = totstep.mag()/CLHEP::cm;
       if (stepSize > 0.0) {

@@ -4,7 +4,7 @@
  *
  * Description:
  * Alg to put properties of collection of MCTracks in a tree.
- * 
+ *
  */
 
 #include "lardataobj/MCBase/MCTrack.h"
@@ -79,7 +79,7 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
     fTree->Fill();
     return;
   }
-    
+
 
   std::vector<double> y_vals;
   std::vector<double> z_vals;
@@ -111,7 +111,7 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
       z_vals.push_back(thisz);
       x_vals.push_back(thisx);
       stepL_vals.push_back(stepL);
-      
+
       mct_length[i_p] += stepL;
 
       if(thisy > fMaxY) fMaxY = thisy;
@@ -136,11 +136,11 @@ void sim::MCTrackCollectionAnaAlg::FillTree(unsigned int run, unsigned int event
     sumz += stepL_vals[i_step]*z_vals[i_step];
     sumx += stepL_vals[i_step]*x_vals[i_step];
   }
-  
+
   fCollectionY = sumy/totalL;
   fCollectionZ = sumz/totalL;
   fCollectionX = sumx/totalL;
-  
+
   double sumy2=0,sumz2=0,sumx2=0;
   for(size_t i_step=0; i_step<stepL_vals.size(); i_step++){
     sumy2 += stepL_vals[i_step]*(y_vals[i_step]-fCollectionY)*(y_vals[i_step]-fCollectionY);

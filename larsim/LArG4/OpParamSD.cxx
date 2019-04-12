@@ -35,7 +35,7 @@ namespace larg4{
   {
     // Register self with sensitive detector manager
     G4SDManager::GetSDMpointer()->AddNewDetector(this);
-    
+
     if(ModelName == "OverlaidWireplanes")
       fOpa = new OverlaidWireplanesAction(ModelParameters, Orientation);
 
@@ -45,26 +45,26 @@ namespace larg4{
 //     else if(ModelName == "SimpleWireplane")
 //       fOpa = new SimpleWireplaneAction(ModelParameters, Orientation);
 
-    
+
     //   else if( your model here )
-    
+
     else
       {
         throw cet::exception("OpParamSD")<<"Error: Optical parameterization model " << ModelName <<" not found.\n";
       }
-    
+
   }
 
-  
+
   //--------------------------------------------------------
 
   G4bool OpParamSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
   {
-  
-    const G4Track*           aTrack    = aStep->GetTrack(); 
+
+    const G4Track*           aTrack    = aStep->GetTrack();
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
-  
-    
+
+
     G4ThreeVector mom = aParticle->GetMomentumDirection();
     G4ThreeVector pos = aStep->GetPostStepPoint()->GetPosition();
     if(!fPhotonAlreadyCrossed[aTrack->GetTrackID()])
@@ -84,7 +84,7 @@ namespace larg4{
   }
 
   //--------------------------------------------------------
-  
+
   void OpParamSD::Initialize(G4HCofThisEvent *)
   {
     fPhotonAlreadyCrossed.clear();

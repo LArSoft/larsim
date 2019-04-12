@@ -5,7 +5,7 @@
  * @date   March 20, 2019
  * @see    `larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h`
  *         larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingXMirrorTransformations_tool.cc
- * 
+ *
  */
 
 

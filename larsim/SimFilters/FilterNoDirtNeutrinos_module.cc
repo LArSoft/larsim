@@ -39,16 +39,16 @@ namespace sim{
   class ParticleList;
 }
 
-///Geant4 interface 
-namespace simfilter {  
- 
-  class FilterNoDirtNeutrinos : public art::EDFilter 
-  {  
-  // explicit EDFilter(ParameterSet const&)  
+///Geant4 interface
+namespace simfilter {
+
+  class FilterNoDirtNeutrinos : public art::EDFilter
+  {
+  // explicit EDFilter(ParameterSet const&)
   public:
 
     explicit FilterNoDirtNeutrinos(fhicl::ParameterSet const &pset);
-    
+
     bool filter(art::Event&) ;
     /*
     virtual void endJob()  ;
@@ -79,7 +79,7 @@ namespace simfilter {
   }
 
   //-----------------------------------------------------------------------
-  bool FilterNoDirtNeutrinos::filter(art::Event& evt) 
+  bool FilterNoDirtNeutrinos::filter(art::Event& evt)
   {
     bool interactionDesired(false);
     //get the list of particles from this event
@@ -95,11 +95,11 @@ namespace simfilter {
     if (evt.getByLabel(fGenModuleLabel,mctruthListHandle))
       art::fill_ptr_vector(mclist, mctruthListHandle);
     evt.getByLabel(fLArG4ModuleLabel,mcpHandle);
-    
+
     //    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
-    
+
   std::set<art::Ptr<simb::MCTruth> > mctSetGENIE;
-  for(size_t i=0; i<mctruthListHandle->size(); ++i) 
+  for(size_t i=0; i<mctruthListHandle->size(); ++i)
     {
       art::Ptr<simb::MCTruth> mct_ptr(mctruthListHandle,i);
       if( mctSetGENIE.find(mct_ptr) == mctSetGENIE.end() ) mctSetGENIE.insert(mct_ptr);
@@ -137,13 +137,13 @@ namespace simfilter {
   }
 
   //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
-  // Now let's loop over G4 MCParticle list and track back MCTruth    
+  // Now let's loop over G4 MCParticle list and track back MCTruth
   bool inTPC (false);
-  for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i) 
+  for(size_t i=0; i < mcpHandle->size() && !inTPC; ++i)
     {
       const art::Ptr<simb::MCParticle> mcp_ptr(mcpHandle,i);
       const art::Ptr<simb::MCTruth> &mct = assMCT.at(i);
-      if( mctSetGENIE.find(mct) == mctSetGENIE.end() ) 
+      if( mctSetGENIE.find(mct) == mctSetGENIE.end() )
 	{
 	  // This is non-genie
 	  continue;
@@ -160,21 +160,21 @@ namespace simfilter {
 	  //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
 	  // Now walk through trajectory and see if it enters the TPC
 	  int n = part->NumberTrajectoryPoints();
-	  for(int j = 0; j < n && !inTPC; ++j) 
+	  for(int j = 0; j < n && !inTPC; ++j)
 	    {
-	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;		
-	      
+	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;
+
 	      TVector3 pos = part->Position(j).Vect();
 	      if(pos.X() >= xmin &&
 		 pos.X() <= xmax &&
 		 pos.Y() >= ymin &&
 		 pos.Y() <= ymax &&
 		 pos.Z() >= zmin &&
-		 pos.Z() <= zmax) 
+		 pos.Z() <= zmax)
 		{
 		  interactionDesired = true;
-		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;		
-		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;		
+		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;
+		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;
 		  inTPC=true;
 		}
 	    } // trajectory loop
@@ -182,7 +182,7 @@ namespace simfilter {
     } // loop on MCPHandle
 
   return interactionDesired;
-    
+
   } // end FilterNoDirtNeutrinos()function
 
 } // namespace simfilter

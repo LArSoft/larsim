@@ -12,12 +12,12 @@ namespace evwgh {
   const std::string& WeightManager::Name() const
   { return _name; }
 
- 
-  // 
+
+  //
   // CORE FUNCTION
   //
   MCEventWeight WeightManager::Run(art::Event & e, const int inu)
-  {     
+  {
 
     if (!_configured)
       throw cet::exception(__PRETTY_FUNCTION__) << "Have not configured yet!" << std::endl;
@@ -27,16 +27,16 @@ namespace evwgh {
     //
     MCEventWeight mcwgh;
     for (auto it = fWeightCalcMap.begin() ;it != fWeightCalcMap.end(); it++) {
-      
+
       auto const & weights = it->second->GetWeight(e);
-      
+
       if(weights.size() == 0){
         std::vector<double> empty;
         std::pair<std::string, std::vector <double> > p("empty",empty);
         mcwgh.fWeight.insert(p);
-      } 
+      }
       else{
-        std::pair<std::string, std::vector<double> > 
+        std::pair<std::string, std::vector<double> >
           p(it->first+"_"+it->second->fWeightCalcType,
             weights[inu]);
         mcwgh.fWeight.insert(p);
@@ -49,8 +49,8 @@ namespace evwgh {
 
 
   void WeightManager::PrintConfig() {
-    
-    return; 
+
+    return;
   }
 
 }

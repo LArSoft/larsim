@@ -5,22 +5,22 @@
 // EMail:  jason.stock@mines.sdsmt.edu
 // 2017-09-12
 //
-// Maintinence Notes: When the ParticleInventory is initialized, none of the prep work (previously 
-// the BackTracker rebuild stage) will be done. Each function needs to check and make sure the 
-// needed data products have been loaded. To see what objects a function uses, you will have to 
+// Maintinence Notes: When the ParticleInventory is initialized, none of the prep work (previously
+// the BackTracker rebuild stage) will be done. Each function needs to check and make sure the
+// needed data products have been loaded. To see what objects a function uses, you will have to
 // check the appropriate part of ParticleInventory. After this, you will need to manually write the check
 // into whatever function you are writing. You will also want to include a call to prepare the needed items
-// if your check fails. 
+// if your check fails.
 //
 // Example:
 // std::set<int> ParticleInventoryService::GetSetOfTrackIds(){
-//   if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();} //The GetTrackIds in ParticleInventory needs the ParticleList. 
+//   if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();} //The GetTrackIds in ParticleInventory needs the ParticleList.
 //                                                                         So, we check if it's ready, and if it isn't we ready it.
 //   return ParticleInventory::GetSetOfTrackIds();
 // }
 //
 // If you have any questions about how to incorperate something in here, let me know. I know this is a rather odd
-// use model. The rationale is to allow the BackTracker service to be lazy, while at the same time allowing gallery 
+// use model. The rationale is to allow the BackTracker service to be lazy, while at the same time allowing gallery
 // to use backtracker functions (the gallery implimentation is not lazy).
 ////////////////////////////////////////////////////////////////////////////
 
@@ -108,20 +108,20 @@ namespace cheat{
     //try{    ParticleInventory::PrepMCTruthList(*fEvt); }
     catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
     //ToDo. Find out exactly which exception is thrown and catch only that.
-                         
+
   }//End PrepMCTruthList
 
 
   //Loop Event and grab MCTruths. Quick and clean as possible.
 
   //deliverables
-  
+
   const sim::ParticleList& ParticleInventoryService::ParticleList() const {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non lazy functions
-    return ParticleInventory::ParticleList(); 
+    return ParticleInventory::ParticleList();
   } //This should be replaced with a public struct so we can get away from the nutools dependency.
-  
+
   const std::vector< art::Ptr<simb::MCTruth> >& ParticleInventoryService::MCTruthVector_Ps() const {
     //if(!this->priv_MCTruthListReady()){priv_PrepMCTruthList();}
     // Not used for non-lazy mode
@@ -138,7 +138,7 @@ namespace cheat{
 
 
   const simb::MCParticle* ParticleInventoryService::TrackIdToMotherParticle_P(int const id) const
-  {   
+  {
 //    if(!this->priv_ParticleListReady()){this->priv_PrepParticleList();}
 //    Not used for non-lazy mode
     return ParticleInventory::TrackIdToMotherParticle_P(id);
@@ -152,7 +152,7 @@ namespace cheat{
   }
 
   int ParticleInventoryService::TrackIdToEveTrackId(const int tid) const
-  { 
+  {
     return ParticleInventory::TrackIdToEveTrackId(tid);
   }
 

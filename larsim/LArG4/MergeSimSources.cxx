@@ -2,7 +2,7 @@
  * Title:   MergeSimSources Utility Class
  * Author:  Wes Ketchum (wketchum@lanl.gov)
  *
- * Description: 
+ * Description:
  * Class that merges different simulation sources together to created a combined sim list.
  * Typically just merges vectors/maps/etc together. But, if anything as a G4 trackID, applies
  * a user-defined offset to those IDs.
@@ -49,9 +49,9 @@ void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle
 
     fMCParticleListMap[source_index][i_p] = merged_vector.size() - 1;
 
-    if(merged_vector.back().TrackId() < range_trackID.first) 
+    if(merged_vector.back().TrackId() < range_trackID.first)
       range_trackID.first = merged_vector.back().TrackId();
-    if(merged_vector.back().TrackId() > range_trackID.second) 
+    if(merged_vector.back().TrackId() > range_trackID.second)
       range_trackID.second = merged_vector.back().TrackId();
 
   }
@@ -70,7 +70,7 @@ void sim::MergeSimSourcesUtility::MergeSimChannels(std::vector<sim::SimChannel>&
 
   std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
 				   std::numeric_limits<int>::min());
-  
+
   for(auto const& simchannel : input_vector){
     std::vector<sim::SimChannel>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simchannel);
 
@@ -98,7 +98,7 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
 
   std::pair<int,int> range_trackID(std::numeric_limits<int>::max(),
 				   std::numeric_limits<int>::min());
-  
+
   for(auto const& simchannel : input_vector){
     std::vector<sim::AuxDetSimChannel>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simchannel);
 
@@ -106,12 +106,12 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
       merged_vector.emplace_back(simchannel.AuxDetID(), simchannel.AuxDetSensitiveID());
       it = merged_vector.end() - 1;
     }
-    
+
     std::pair<int,int> thisrange = it->MergeAuxDetSimChannel(simchannel,fG4TrackIDOffsets[source_index]);
     if(thisrange.first < range_trackID.first) range_trackID.first = thisrange.first;
     if(thisrange.second > range_trackID.second) range_trackID.second = thisrange.second;
   }
-  
+
   UpdateG4TrackIDRange(range_trackID,source_index);
 }
 
@@ -141,12 +141,12 @@ void sim::MergeSimSourcesUtility::MergeSimPhotonsLite( std::vector<sim::SimPhoto
 
   for(auto const& simphotons : input_vector){
     std::vector<sim::SimPhotonsLite>::iterator it = std::find(merged_vector.begin(),merged_vector.end(),simphotons);
-    
+
     if(it==merged_vector.end()){
       merged_vector.emplace_back(simphotons.OpChannel);
       it = merged_vector.end() - 1;
     }
-    
+
     *it += simphotons;
   }
 }
@@ -159,7 +159,7 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
   if( newrange.first >= fG4TrackIDRanges[source_index].first &&
       newrange.second <= fG4TrackIDRanges[source_index].second)
     return;
-  
+
   for(size_t i=0; i<fG4TrackIDRanges.size(); i++){
     if(i==source_index) continue;
 
@@ -178,6 +178,6 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
     fG4TrackIDRanges[source_index].first = newrange.first;
   if(newrange.second > fG4TrackIDRanges[source_index].second)
     fG4TrackIDRanges[source_index].second = newrange.second;
-  
+
 
 }

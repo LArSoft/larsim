@@ -56,7 +56,7 @@ namespace evgen {
    *
    * Note on random number generator
    * --------------------------------
-   * 
+   *
    * GENIE uses a TRandom generator for its purposes.
    * Since art's RandomNumberGenerator service only provides
    * `CLHEP::HepRandomEngine`, the standard LArSoft/art mechanism for handling
@@ -67,17 +67,17 @@ namespace evgen {
    * are inherited from the art module (that is, `GENIEGen`) configuration.
    * LArSoft meddles with this mechanism to provide support for the standard
    * "Seed" parameter and NuRandomService service.
-   * 
+   *
    * Configuration parameters
    * -------------------------
-   * 
+   *
    * - *RandomSeed* (integer, optional): if specified, this value is used as
    *   seed for GENIE random number generator engine
    * - *Seed* (unsigned integer, optional): if specified, this value is used as
    *   seed for GENIE random number generator engine; if *RandomSeed* is also
    *   specified, this value is ignored (but in the future this could turn into
    *   a configuration error)
-   * 
+   *
    * As custom, if the random seed is not provided by the configuration, one is
    * fetched from `NuRandomService` (if available), with the behaviour in
 	* lar::util::FetchRandomSeed().
@@ -85,9 +85,9 @@ namespace evgen {
   class GENIEGen : public art::EDProducer {
   public:
     explicit GENIEGen(fhicl::ParameterSet const &pset);
-    virtual ~GENIEGen();                        
+    virtual ~GENIEGen();
 
-    void produce(art::Event& evt);  
+    void produce(art::Event& evt);
     void beginJob();
     void beginRun(art::Run& run);
     void beginSubRun(art::SubRun& sr);
@@ -97,12 +97,12 @@ namespace evgen {
 
     std::string ParticleStatus(int StatusCode);
     std::string ReactionChannel(int ccnc,int mode);
-    
+
     void FillHistograms(simb::MCTruth mc);
 
     evgb::GENIEHelper  *fGENIEHelp;       ///< GENIEHelper object
     bool 		fDefinedVtxHistRange;///use defined hist range; it is useful to have for asymmetric ranges like in DP FD.
-    std::vector< double > fVtxPosHistRange; 
+    std::vector< double > fVtxPosHistRange;
 
     int                 fPassEmptySpills; ///< whether or not to kill evnets with no interactions
     TStopwatch          fStopwatch;       ///keep track of how long it takes to run the job
@@ -159,7 +159,7 @@ namespace evgen{
     , fGlobalTimeOffset(pset.get< double >("GlobalTimeOffset",0))
     , fRandomTimeOffset(pset.get< double >("RandomTimeOffset",1600.)) // BNB default value
     , fBeamType(::sim::kBNB)
-  {  
+  {
     fStopwatch.Start();
 
     produces< std::vector<simb::MCTruth> >();
@@ -173,11 +173,11 @@ namespace evgen{
 
     std::string beam_type_name = pset.get<std::string>("BeamName");
 
-    if(beam_type_name == "numi") 
+    if(beam_type_name == "numi")
 
       fBeamType = ::sim::kNuMI;
 
-    else if(beam_type_name == "booster") 
+    else if(beam_type_name == "booster")
 
       fBeamType = ::sim::kBNB;
 
@@ -196,23 +196,23 @@ namespace evgen{
       unsigned int seed;
       if (!GENIEconfig.get_if_present("Seed", seed))
         seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
-      
+
       // The seed is not passed to RandomNumberGenerator,
       // since GENIE uses a TRandom generator that is owned by the GENIEHelper.
       // Instead, we explicitly configure the random seed for GENIEHelper:
       GENIEconfig.put("RandomSeed", seed);
     } // if no RandomSeed present
-    
-    fGENIEHelp = new evgb::GENIEHelper(GENIEconfig, 
+
+    fGENIEHelp = new evgb::GENIEHelper(GENIEconfig,
 				       geo->ROOTGeoManager(),
 				       geo->ROOTFile(),
 				       geo->TotalMass(pset.get< std::string>("TopVolume").c_str()));
-    
+
   }
 
   //____________________________________________________________________________
   GENIEGen::~GENIEGen()
-  {  
+  {
     if(fGENIEHelp) delete fGENIEHelp;
     fStopwatch.Stop();
     mf::LogInfo("GENIEProductionTime") << "real time to produce file: " << fStopwatch.RealTime();
@@ -234,7 +234,7 @@ namespace evgen{
     fGenerated[3] = tfs->make<TH1F>("fGenerated_nmbcc","", 100, 0.0, 20.0);
     fGenerated[4] = tfs->make<TH1F>("fGenerated_nnc","",   100, 0.0, 20.0);
     fGenerated[5] = tfs->make<TH1F>("fGenerated_nbnc","",  100, 0.0, 20.0);
-    
+
     fDCosX = tfs->make<TH1F>("fDCosX", ";dx/ds", 200, -1., 1.);
     fDCosY = tfs->make<TH1F>("fDCosY", ";dy/ds", 200, -1., 1.);
     fDCosZ = tfs->make<TH1F>("fDCosZ", ";dz/ds", 200, -1., 1.);
@@ -263,7 +263,7 @@ namespace evgen{
     fNCMode->GetXaxis()->SetBinLabel(4, "Coh");
     fNCMode->GetXaxis()->CenterLabels();
 
-    fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.); 
+    fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.);
     fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
     art::ServiceHandle<geo::Geometry const> geo;
@@ -279,7 +279,7 @@ namespace evgen{
     	fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, -0.1*x, x);
     	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, -y,     y);
     	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.1*z, z);
-    
+
     	fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, -0.1*x, x, ydiv,     -y, y);
     	fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -0.1*x, x);
     	fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv,     -y, y);
@@ -289,7 +289,7 @@ namespace evgen{
         fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, fVtxPosHistRange[0], fVtxPosHistRange[1]);
     	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, fVtxPosHistRange[2], fVtxPosHistRange[3]);
     	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5]);
-    
+
     	fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, fVtxPosHistRange[0], fVtxPosHistRange[1], ydiv,     fVtxPosHistRange[2], fVtxPosHistRange[3]);
     	fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5], xdiv,     fVtxPosHistRange[0], fVtxPosHistRange[1]);
     	fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5], ydiv,     fVtxPosHistRange[2], fVtxPosHistRange[3]);
@@ -325,7 +325,7 @@ namespace evgen{
   {
 
     auto p = std::make_unique<sumdata::POTSummary>();
-    
+
     p->totpot = fGENIEHelp->TotalExposure() - fPrevTotPOT;
     p->totgoodpot = fGENIEHelp->TotalExposure() - fPrevTotGoodPOT;
 
@@ -346,25 +346,25 @@ namespace evgen{
 
     while(truthcol->size() < 1){
       while(!fGENIEHelp->Stop()){
-	
+
 	simb::MCTruth truth;
 	simb::MCFlux  flux;
 	simb::GTruth  gTruth;
 
-	// GENIEHelper returns a false in the sample method if 
+	// GENIEHelper returns a false in the sample method if
 	// either no neutrino was generated, or the interaction
 	// occurred beyond the detector's z extent - ie something we
 	// would never see anyway.
 	if(fGENIEHelp->Sample(truth, flux, gTruth)){
 
-	  truthcol ->push_back(truth);  
+	  truthcol ->push_back(truth);
 	  fluxcol  ->push_back(flux);
 	  gtruthcol->push_back(gTruth);
 	  util::CreateAssn(*this, evt, *truthcol, *fluxcol, *tfassn, fluxcol->size()-1, fluxcol->size());
 	  util::CreateAssn(*this, evt, *truthcol, *gtruthcol, *tgtassn, gtruthcol->size()-1, gtruthcol->size());
-	  
+
 	  FillHistograms(truth);
-	  
+
 	  // check that the process code is not unsupported by GENIE
 	  // (see issue #18025 for reference);
 	  // if it is, print all the information we can about this truth record
@@ -380,12 +380,12 @@ namespace evgen{
 	      "\n"
 	      ;
 	    sim::dump::DumpGTruth(log, gTruth);
-	  } // if 
-	  
+	  } // if
+
 	}// end if genie was able to make an event
 
       }// end event generation loop
-      
+
       // check to see if we are to pass empty spills
       if(truthcol->size() < 1 && fPassEmptySpills){
 	MF_LOG_DEBUG("GENIEGen") << "no events made for this spill but "
@@ -401,7 +401,7 @@ namespace evgen{
     // beam gate within a simulated time window.
     gateCollection->push_back(sim::BeamGateInfo( fGlobalTimeOffset, fRandomTimeOffset, fBeamType ));
 
-    // put the collections in the event 
+    // put the collections in the event
     evt.put(std::move(truthcol));
     evt.put(std::move(fluxcol));
     evt.put(std::move(gtruthcol));
@@ -502,11 +502,11 @@ namespace evgen{
       else                                     id = 5;
     }
     if (id==-1) abort();
-  
+
     // Fill the specta histograms
     fGenerated[id]->Fill(mc.GetNeutrino().Nu().E() );
-      
-    ///< fill the vertex histograms from the neutrino - that is always 
+
+    ///< fill the vertex histograms from the neutrino - that is always
     ///< particle 0 in the list
     simb::MCNeutrino       mcnu = mc.GetNeutrino();
     const simb::MCParticle nu   = mcnu.Nu();
@@ -527,14 +527,14 @@ namespace evgen{
     }
 
 
-    MF_LOG_DEBUG("GENIEInteractionInformation") 
+    MF_LOG_DEBUG("GENIEInteractionInformation")
       << std::endl
-      << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) 
+      << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode())
       << std::endl
       << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl
-      << std::setiosflags(std::ios::left) 
+      << std::setiosflags(std::ios::left)
       << std::setw(20) << "PARTICLE"
-      << std::setiosflags(std::ios::left) 
+      << std::setiosflags(std::ios::left)
       << std::setw(32) << "STATUS"
       << std::setw(18) << "E (GeV)"
       << std::setw(18) << "m (GeV/c2)"
@@ -543,33 +543,33 @@ namespace evgen{
 
     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
 
-    // Loop over the particle stack for this event 
+    // Loop over the particle stack for this event
     for(int i = 0; i < mc.NParticles(); ++i){
       simb::MCParticle part(mc.GetParticle(i));
       std::string name = databasePDG->GetParticle(part.PdgCode())->GetName();
       int code = part.StatusCode();
       std::string status = ParticleStatus(code);
       double mass = part.Mass();
-      double energy = part.E(); 
+      double energy = part.E();
       double Ek = (energy-mass); // Kinetic Energy (GeV)
       if(status=="kIStStableFinalState"||status=="kIStHadronInTheNucleus")
-	MF_LOG_DEBUG("GENIEFinalState") 
+	MF_LOG_DEBUG("GENIEFinalState")
 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
 	  << std::setw(18)<< energy
 	  << std::setw(18)<< mass
 	  << std::setw(18)<< Ek <<std::endl;
-      else 
+      else
 	MF_LOG_DEBUG("GENIEFinalState")
 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
 	  << std::setw(18) << energy
-	  << std::setw(18) << mass <<std::endl; 
+	  << std::setw(18) << mass <<std::endl;
     }
 
 
     if(mc.GetNeutrino().CCNC() == simb::kCC){
-  
+
       ///look for the outgoing lepton in the particle stack
       ///just interested in the first one
       for(int i = 0; i < mc.NParticles(); ++i){

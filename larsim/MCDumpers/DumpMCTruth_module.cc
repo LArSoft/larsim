@@ -3,7 +3,7 @@
  * @brief  Module dumping MCTruth information on screen.
  * @date   February 22nd, 2017
  * @author Gianluca Petrillo (petrillo@fnal.gov)
- * 
+ *
  * Dedication: to the memory of DumpMCTruth Sr., whose untimely departure by a
  * rogue `rm -R` deprived us of a useful tool, and the author of a good deal of
  * good karma.
@@ -36,62 +36,62 @@ namespace sim {
 
 class sim::DumpMCTruth: public art::EDAnalyzer {
     public:
-  
+
   /// Collection of configuration parameters for the module
   struct Config {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
-    
+
     fhicl::OptionalSequence<art::InputTag> InputTruth {
       Name("InputTruth"),
       Comment("data product with the collection of MC truth to be dumped")
       };
-    
+
     fhicl::Atom<std::string> OutputCategory {
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpMCTruth" /* default value */
       };
-    
+
     fhicl::Atom<unsigned int> PointsPerLine {
       Name("PointsPerLine"),
       Comment("trajectory points printed per line (default: 2; 0 = skip them)"),
       2 /* default value */
       };
-    
+
   }; // struct Config
-  
+
   /// Type to enable module parameters description by _art_.
   using Parameters = art::EDAnalyzer::Table<Config>;
-  
+
   /// Configuration-checking constructor.
   explicit DumpMCTruth(Parameters const& config);
-  
+
   // Plugins should not be copied or assigned.
   DumpMCTruth(DumpMCTruth const&) = delete;
   DumpMCTruth(DumpMCTruth &&) = delete;
   DumpMCTruth& operator = (DumpMCTruth const&) = delete;
   DumpMCTruth& operator = (DumpMCTruth &&) = delete;
-  
-  
+
+
   // Operates on the event
   void analyze(art::Event const& event) override;
-  
-  
+
+
   /// Returns the name of the product in the form `"module_instance_process"`.
   template <typename Handle>
   static std::string productName(Handle const& handle);
-  
-  
+
+
     private:
-  
+
   std::vector<art::InputTag> fInputTruth; ///< Name of MCTruth data products.
   std::string fOutputCategory; ///< Name of the stream for output.
   bool bAllTruth = false; ///< Whether to process all MCTruth collections.
-  
+
   unsigned int fPointsPerLine; ///< trajectory points per output line
-  
-  
+
+
 }; // class sim::DumpMCTruth
 
 
@@ -110,7 +110,7 @@ sim::DumpMCTruth::DumpMCTruth(Parameters const& config)
 
 //------------------------------------------------------------------------------
 void sim::DumpMCTruth::analyze(art::Event const& event) {
-  
+
   //
   // prepare the data products to be dumped
   //
@@ -118,7 +118,7 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
     using Thruths_t = std::vector<simb::MCTruth>;
     Thruths_t const* truths;
     std::string name;
-    
+
     ProductInfo_t(art::Handle<Thruths_t> const& handle)
       : truths(handle.provenance()->isPresent()? handle.product(): nullptr)
       , name(sim::DumpMCTruth::productName(handle))
@@ -126,9 +126,9 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
     ProductInfo_t(art::ValidHandle<Thruths_t> const& handle)
       : truths(handle.product()), name(sim::DumpMCTruth::productName(handle))
       {}
-    
+
   }; // ProductInfo_t
-  
+
   std::vector<ProductInfo_t> AllTruths;
   if (bAllTruth) {
     std::vector<art::Handle<std::vector<simb::MCTruth>>> handles;
@@ -141,7 +141,7 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
         (event.getValidHandle<std::vector<simb::MCTruth>>(inputTag));
     } // for
   }
-  
+
   //
   // sanity check
   //
@@ -149,7 +149,7 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
     throw art::Exception(art::errors::ProductNotFound)
       << "No MC truth found to be dumped!\n";
   }
-  
+
   //
   // print an introduction
   //
@@ -158,7 +158,7 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
     [](unsigned int total, auto const& info)
       { return total + (info.truths? info.truths->size(): 0); }
     );
-  
+
   if (bAllTruth) {
     mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
       << " contains " << nTruths << " MC truth blocks in "
@@ -172,22 +172,22 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
       << " MC truth blocks from " << AllTruths.size()
       << " collections in event " << event.id();
   }
-  
+
   //
   // dump data product by data product
   //
   unsigned int nParticles = 0, nNeutrinos = 0;
   for (ProductInfo_t const& truths_info: AllTruths) {
-    
+
     auto const* truths = truths_info.truths;
     std::string productName = truths_info.name;
-    
+
     if (!truths) {
       mf::LogVerbatim(fOutputCategory)
         << "Data product '" << productName
         << "' has been dropped. No information available.";
     }
-    
+
     if (AllTruths.size() > 1) {
       mf::LogVerbatim(fOutputCategory)
         << "Data product '" << productName
@@ -197,36 +197,36 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
       mf::LogVerbatim(fOutputCategory)
         << truths->size() << " truth blocks:";
     }
-    
+
     //
     // dump each MC truth in the data product
     //
     unsigned int iTruth = 0;
     for (auto const& truth: *truths) {
-      
+
       mf::LogVerbatim log (fOutputCategory);
-      
+
       if (truths->size() > 1) log << "(#" << iTruth << ") ";
       sim::dump::DumpMCTruth(log, truth, "  ", "");
-      
+
       //
       // update counters
       //
       ++iTruth;
       nParticles += truth.NParticles();
       if (truth.NeutrinoSet()) ++nNeutrinos;
-      
+
     } // for each truth in data product
-    
+
   } // for truth data products
-  
+
   //
   // all done
   //
   mf::LogVerbatim(fOutputCategory) << nNeutrinos
     << " neutrinos generated, " << nParticles
     << " generated particles to be simulated downstream.";
-  
+
 } // sim::DumpMCTruth::analyze()
 
 

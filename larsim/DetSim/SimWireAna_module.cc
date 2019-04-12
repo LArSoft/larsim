@@ -46,13 +46,13 @@
 ///Detector simulation of raw signals on wires
 namespace detsim {
 
-  /// Base class for creation of raw signals on wires. 
+  /// Base class for creation of raw signals on wires.
   class SimWireAna : public art::EDAnalyzer {
-    
+
   public:
-        
-    explicit SimWireAna(fhicl::ParameterSet const& pset); 
-    
+
+    explicit SimWireAna(fhicl::ParameterSet const& pset);
+
     /// read/write access to event
     void analyze (const art::Event& evt);
     void beginJob();
@@ -62,13 +62,13 @@ namespace detsim {
     std::string            fDetSimModuleLabel;///< name of module that produced the digits
     TH1F*                  fDiffs;            ///< histogram of Raw tdc to tdc differences
 
-    TH1F*                  fCompressErr;      ///< histogram of difference between original 
+    TH1F*                  fCompressErr;      ///< histogram of difference between original
                                               ///<tdc value and compressesed value
-    TH1F*                  fCompressFactor;   ///< compression factor 
+    TH1F*                  fCompressFactor;   ///< compression factor
 
     TH2F*                  fRawVsCompress;    ///< histogram of original tdc value vs compressesed value
     TH2F*                  fCompressErr2D;    ///< histogram of original tdc value vs compressesed value
-    
+
 
   }; // class SimWire
 
@@ -77,13 +77,13 @@ namespace detsim {
 namespace detsim{
 
   //-------------------------------------------------
-  SimWireAna::SimWireAna(fhicl::ParameterSet const& pset) 
+  SimWireAna::SimWireAna(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
     , fDetSimModuleLabel{pset.get< std::string >("DetSimModuleLabel")}
   {}
 
   //-------------------------------------------------
-  void SimWireAna::beginJob() 
+  void SimWireAna::beginJob()
   {
     // get access to the TFile service
     art::ServiceHandle<art::TFileService const> tfs;
@@ -94,7 +94,7 @@ namespace detsim{
 
     fCompressErr2D  = tfs->make<TH2F>("compressErr2D",       ";Raw;Raw-Compressed", 100, -50., 50., 1000,  -495.5, 500.5);
     fRawVsCompress  = tfs->make<TH2F>("rawVsCompress",       ";Raw;Compressed",     100, -50., 50.,  100,   -50.,  50.);
-  
+
     return;
 
   }
@@ -123,31 +123,31 @@ namespace detsim{
 	fDiffs->Fill(rdvec[rd]->ADC(t) - rdvec[rd]->ADC(t-1));
 	adc.push_back(rdvec[rd]->ADC(t-1));
       }
-    
+
       //get the last one for the adc vector
       adc.push_back(rdvec[rd]->ADC(rdvec[rd]->Samples()-1));
-    
+
       raw::Compress(adc, raw::kHuffman);
-    
+
       fCompressFactor->Fill((1.*adc.size())/(1.*rdvec[rd]->Samples()));
-    
+
       raw::Uncompress(adc, uncompressed, raw::kHuffman);
-    
-      if(uncompressed.size() != rdvec[rd]->Samples()){ 
-	cet::exception("WrongSizeUncompress") 
-	  << "uncompression does not produce same size vector as original: " 
-	  << "original = " << rdvec[rd]->Samples() << " uncompress = " 
+
+      if(uncompressed.size() != rdvec[rd]->Samples()){
+	cet::exception("WrongSizeUncompress")
+	  << "uncompression does not produce same size vector as original: "
+	  << "original = " << rdvec[rd]->Samples() << " uncompress = "
 	  << uncompressed.size() << "\n";
       }
-    
+
       for(unsigned int t = 0; t <  uncompressed.size(); ++t){
 	//std::cout << t << " " << rdFE->ADC(t) << " " << uncompressed[t] << std::endl;
-	if(uncompressed[t]-rdvec[rd]->ADC(t) > 1) 
+	if(uncompressed[t]-rdvec[rd]->ADC(t) > 1)
 	  mf::LogWarning("SimWireAna") << "problem with event "
-				       << " time " << t << " ADC " << rdvec[rd]->ADC(t) 
-				       << " uncompress " << uncompressed[t] 
+				       << " time " << t << " ADC " << rdvec[rd]->ADC(t)
+				       << " uncompress " << uncompressed[t]
 				       << " channel " << rdvec[rd]->Channel();
-	
+
 	fCompressErr->Fill(uncompressed[t]-rdvec[rd]->ADC(t));
 	fCompressErr2D->Fill(rdvec[rd]->ADC(t), uncompressed[t]-rdvec[rd]->ADC(t));
 	fRawVsCompress->Fill(rdvec[rd]->ADC(t), uncompressed[t]);

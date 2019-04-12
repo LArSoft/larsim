@@ -18,9 +18,9 @@ namespace sim {
     _debug_mode = pset.get<bool>("DebugMode");
   }
 
-  //----------------------------------------------------------------------------------------------- 
+  //-----------------------------------------------------------------------------------------------
   void MCShowerRecoPart::ConstructShower(const MCRecoPart& part_v)
-  //----------------------------------------------------------------------------------------------- 
+  //-----------------------------------------------------------------------------------------------
   {
     _shower_id.clear();
     _shower_id.resize(part_v.size(),-1);
@@ -50,13 +50,13 @@ namespace sim {
         if( part_v.at(mom_index)._pdgcode == 22 || part_v.at(mom_index)._pdgcode == 11 || part_v.at(mom_index)._pdgcode == -11 )
 
           candidate_mom_index = mom_index;
-	
+
         mom_iter = part_v._track_index.find(part_v.at(mom_index)._mother);
 
       }
 
       if(candidate_mom_index >= 0) {
-	
+
 	auto candidate_mom_iter = _shower_index.find(candidate_mom_index);
 	if(candidate_mom_iter == _shower_index.end()) {
 	  _shower_index.insert(std::make_pair((unsigned int)candidate_mom_index, (unsigned int)_shower_index.size()));
@@ -65,7 +65,7 @@ namespace sim {
 	unsigned int shower_index = (*_shower_index.find(candidate_mom_index)).second;
 	daughter_map.at(shower_index).insert(std::make_pair((double)(mcp._start_vtx[3]),(unsigned int)i));
 	_shower_id.at(i) = shower_index;
-	
+
       } else if(_debug_mode) {
 
 	std::cout
@@ -100,8 +100,8 @@ namespace sim {
 	_shower_daughters.at(mom.second).push_back(part_index.second);
 
       auto const& mcp = part_v.at(mom.first);
-      if(_debug_mode) 
-	std::cout 
+      if(_debug_mode)
+	std::cout
 	  << Form("PDGID: %d ... Track %d @ (%g,%g,%g,%g) with (%g,%g,%g,%g) ... %zu daughters!",
 		  mcp._pdgcode,
 		  mcp._track_id,
@@ -120,5 +120,5 @@ namespace sim {
     if(_debug_mode)
       std::cout<<std::endl;
   }
-  
+
 }

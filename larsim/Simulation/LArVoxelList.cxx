@@ -42,7 +42,7 @@ namespace sim {
   //----------------------------------------------------------------------------
   /// Just in case: define the result of "scalar * LArVoxelList" to be
   /// the same as "LArVoxelList * scalar".
-  const LArVoxelList operator*(const double& value, const LArVoxelList& list) 
+  const LArVoxelList operator*(const double& value, const LArVoxelList& list)
   {
     return LArVoxelList(list) *= value;
   }
@@ -60,8 +60,8 @@ namespace sim {
 
     // Add each ID that fails the cut to the list.
     for ( const_iterator i = m_voxelList.begin(); i != m_voxelList.end(); ++i ){
-      if ( (*i).second.Energy() < cut ) { 
-	keyList.push_back( (*i).first ); 
+      if ( (*i).second.Energy() < cut ) {
+	keyList.push_back( (*i).first );
       }
     }
 
@@ -96,18 +96,18 @@ namespace sim {
 
     // A simple header.
     output.width( numberOfDigits );
-    output << "#" << ": < ID, energy >" << std::endl; 
+    output << "#" << ": < ID, energy >" << std::endl;
 
     // Write each voxel on a separate line.
     LArVoxelList::size_type nVoxel = 0;
     for ( LArVoxelList::const_iterator voxel = list.begin(); voxel != list.end(); ++voxel, ++nVoxel ){
       output.width( numberOfDigits );
-      output << nVoxel << ": " 
-	     << "< " << (*voxel).first 
-	     << ", " << (*voxel).second 
+      output << nVoxel << ": "
+	     << "< " << (*voxel).first
+	     << ", " << (*voxel).second
 	     << " >\n";
     }
-    
+
     return output;
   }
 

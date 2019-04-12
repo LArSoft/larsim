@@ -4,20 +4,20 @@
 /// \author  bjpjones@mit.edu
 //  Eddited by JStock <jason.stock@mines.sdsmt.edu>
 ////////////////////////////////////////////////////////////////////////
-// 
+//
 // This class holds a collection of PMT hits to be stored
 // into an event as produced by the fast scintillation process.
 //
 // When a scintillating particle is stepped, it may generate
-// one or more detected photons in each optical detector, 
+// one or more detected photons in each optical detector,
 // depending upon its location.
 //
 // For the fast scintillation process, the likelihood of generating
 // a detected photo given a position in the detector is looked up.
 // If one is detected, a hit in the relevant optical detector at
-// an appropriate time (with ~20ns error bars for flight time) is 
+// an appropriate time (with ~20ns error bars for flight time) is
 // stored in this table, which is eventually read out at the end
-// of the event by LArG4_module and stored in the event. 
+// of the event by LArG4_module and stored in the event.
 //
 // For slow scintillation / cerenkov processes, photons are
 // generated and stepped about the detector, and if one steps
@@ -47,7 +47,7 @@
 
 namespace sim
 {
-  class OnePhoton; 
+  class OnePhoton;
   class SimPhotons;
   class SimPhotonsLite;
   class SimEnergyDeposit;
@@ -92,14 +92,14 @@ namespace larg4 {
 			    std::string const& vol="EMPTY");
       std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > const& GetSimEnergyDeposits() const;
       //std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
-            
+
     protected:
       OpDetPhotonTable();
 
     private:
 
-      void AddOpDetBacktrackerRecord(std::vector< sim::OpDetBacktrackerRecord > & RecordsCol, 
-                                     std::map<int, int> &ChannelMap, 
+      void AddOpDetBacktrackerRecord(std::vector< sim::OpDetBacktrackerRecord > & RecordsCol,
+                                     std::map<int, int> &ChannelMap,
                                      sim::OpDetBacktrackerRecord soc);
 
 

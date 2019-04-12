@@ -44,7 +44,7 @@ namespace larg4{
     fEfield       = detprop->Efield();
     fScintByParticleType = larp->ScintByParticleType();
     fGeVToElectrons      = lgpHandle->GeVToElectrons();
-    
+
     // \todo get scintillation yield from LArG4Parameters or LArProperties
     fScintYieldFactor  = 1.;
 
@@ -56,9 +56,9 @@ namespace larg4{
     fRecombk             = lgpHandle->Recombk()/density;
     fModBoxA             = lgpHandle->ModBoxA();
     fModBoxB             = lgpHandle->ModBoxB()/density;
-    fUseModBoxRecomb     = lgpHandle->UseModBoxRecomb();  
+    fUseModBoxRecomb     = lgpHandle->UseModBoxRecomb();
 
-    // Use Birks Correction in the Scintillation process    
+    // Use Birks Correction in the Scintillation process
     fEMSaturation = G4LossTableManager::Instance()->EmSaturation();
 
     // determine the step size using the voxel sizes
@@ -115,9 +115,9 @@ namespace larg4{
 	double Xi = fModBoxB * dEdx / EFieldStep;
 	recomb = log(fModBoxA + Xi) / Xi;
       }
-      else 
+      else
 	recomb = 0;
-    } 
+    }
     else{
       recomb = fRecombA/(1. + dEdx * fRecombk / EFieldStep);
     }
@@ -126,13 +126,13 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
 
-    MF_LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
-				       << " MeV deposited with "     << recomb 
+    MF_LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit
+				       << " MeV deposited with "     << recomb
 				       << " recombination: "         << fNumIonElectrons;
 
     // Now do the scintillation
     G4MaterialPropertiesTable* mpt = step->GetTrack()->GetMaterial()->GetMaterialPropertiesTable();
-    if( !mpt) 
+    if( !mpt)
       throw cet::exception("ISCalculationSeparate") << "Cannot find materials property table"
 						    << " for this step! "
 						    << step->GetTrack()->GetMaterial() << "\n";
@@ -151,7 +151,7 @@ namespace larg4{
       // Obtain the G4MaterialPropertyVectory containing the
       // scintillation light yield as a function of the deposited
       // energy for the current particle type
-      
+
       // Protons
       if(pDef == G4Proton::ProtonDefinition()){
 	scintYield = mpt->GetConstProperty("PROTONSCINTILLATIONYIELD");
@@ -180,18 +180,18 @@ namespace larg4{
       else if(pDef == G4Electron::ElectronDefinition() ||
 	      pDef == G4Gamma::GammaDefinition()){
 	scintYield = mpt->GetConstProperty("ELECTRONSCINTILLATIONYIELD");
-      }       
+      }
       // Default for particles not enumerated/listed above
       else{
 	scintYield = mpt->GetConstProperty("ELECTRONSCINTILLATIONYIELD");
       }
 
       // If the user has not specified yields for (p,d,t,a,carbon)
-      // then these unspecified particles will default to the 
+      // then these unspecified particles will default to the
       // electron's scintillation yield
-	   
+
       // Throw an exception if no scintillation yield is found
-      if (!scintYield) 
+      if (!scintYield)
 	throw cet::exception("ISCalculationSeparate") << "Request for scintillation yield for energy "
 						      << "deposit and particle type without correct "
 						      << "entry in MaterialPropertiesTable\n"
@@ -220,9 +220,9 @@ namespace larg4{
       fVisibleEnergyDeposition = 0.0; //This is set to zero because I have not made a correct implimentation of this value for anything but EMSaturation.
     }
 
-    MF_LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
+    MF_LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
-				       << " saturation: " 
+				       << " saturation: "
 				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)
 				       << " step length: "   << step->GetStepLength()/CLHEP::cm;
 

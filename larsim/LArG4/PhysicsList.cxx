@@ -17,7 +17,7 @@
 #include "Geant4/G4VModularPhysicsList.hh"
 #include "Geant4/G4ParallelWorldScoringProcess.hh"
 #include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleTable.hh" 
+#include "Geant4/G4ParticleTable.hh"
 
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4ChargeExchange.hh"
@@ -45,7 +45,7 @@ namespace larg4 {
     // We don't need to modify G4VModularPhysicsList's
     // AddTransportation method.  Just invoke it directly.
     G4VModularPhysicsList::AddTransportation();
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////
     // This is the "new" code that has to be added to
     // G4VModularPhysicsList::ConstructProcess() to handle the
@@ -85,7 +85,7 @@ namespace larg4 {
 	pmanager->SetProcessOrdering(OpDetParallelWorldScoringProcess, idxAlongStep, 1);
 	pmanager->SetProcessOrderingToLast(OpDetParallelWorldScoringProcess, idxPostStep);
       }
-      
+
       // Only apply voxel processing in the LAr TPC if the particles are
       // charged and they have a significant life-time.
       else if(particle->GetPDGCharge() != 0  &&  !particle->IsShortLived()){
@@ -96,7 +96,7 @@ namespace larg4 {
 	  pmanager->SetProcessOrdering(LArVoxelParallelWorldScoringProcess, idxAlongStep, 1);
 	  pmanager->SetProcessOrderingToLast(LArVoxelParallelWorldScoringProcess, idxPostStep);
 	}
-	
+
 	// Do secondary biasing under control of K0Bias switch.
 	G4bool genSecondaries(false);
 	G4bool cE(false);
@@ -115,7 +115,7 @@ namespace larg4 {
 	     )
 	    ){
 	  std::vector<std::string> EnabledPhysics = lgp->EnabledPhysics();
-	  for(std::vector<std::string>::const_iterator it = EnabledPhysics.begin(); 
+	  for(std::vector<std::string>::const_iterator it = EnabledPhysics.begin();
 	      it != EnabledPhysics.end(); it++){
 	    std::string PhysicsName=(*it);
 	    if (!PhysicsName.compare("SynchrotronAndGN") && lgp->K0Bias()){
@@ -126,7 +126,7 @@ namespace larg4 {
 	    }
 	  }// end loop over enabled physics
 	}// end if using custom physics
-	
+
 	if (genSecondaries){
 	  G4int nSecondaries(lgp->K0Bias());
 	  G4int fXSBias(lgp->MNXSBias());
@@ -136,7 +136,7 @@ namespace larg4 {
 				       << "s with " << nSecondaries
 				       << " appropriately weighted secondaries."
 				       << " XSBias is set to "
-				       << xSBias 
+				       << xSBias
 				       << " and the cross-section is increased by a factor of "
 				       << fXSBias << ".";
 	  G4MuonNuclearProcess* g4MNI = new G4MuonNuclearProcess();
@@ -151,20 +151,20 @@ namespace larg4 {
 	  if (xSBias&&(fXSBias>1)) pmanager->AddProcess(munuclSplitting,-1,1,1);
 	  else pmanager->AddProcess(munuclSplitting,-1,-1,1);
 	}// end if generating secondaries
-	
+
 	if (cE){
 	  mf::LogInfo("PhysicsList: ") << "Turning on ChargeExchange for "
 				       << particle->GetParticleName() << "s.";
 	  G4ChargeExchange* model = new G4ChargeExchange();
 	  G4ChargeExchangeProcess* p = new G4ChargeExchangeProcess();
-	  
+
 	  p->RegisterMe(model);
 	  pmanager->AddDiscreteProcess(p);
-	  
+
 	}// end if doing charge exchange
       }// end if short lived particle
     }// end loop over particles
-    
+
     // End of code "added" to G4VModularPhysicsList::ConstructProcess()
     ////////////////////////////////////////////////////////////////////////////////////////
 

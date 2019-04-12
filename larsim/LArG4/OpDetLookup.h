@@ -15,7 +15,7 @@
 //
 // The main function of this class is to provide a link between the
 // unlabelled G4PhysicalVolumes, and the OpDet objects organized into
-// vectors in the Geomtry/CryostatGeo objects, accessible through the 
+// vectors in the Geomtry/CryostatGeo objects, accessible through the
 // geo::Geometry service.
 //
 // Any physical volume in the gdml which has the specified opdet
@@ -46,20 +46,20 @@ namespace larg4 {
     public:
       ~OpDetLookup(){}
       static OpDetLookup * Instance();
-   
+
       void AddPhysicalVolume(G4VPhysicalVolume *);
       int GetOpDet(G4VPhysicalVolume *);
       int GetOpDet(std::string);
       int GetN();
       int FindClosestOpDet(G4VPhysicalVolume* vol,  double& Distance);
-      
+
     protected:
       OpDetLookup();
 
     private:
       std::map<std::string, int> fTheOpDetMap;
       int fTheTopOpDet;
-      
+
     };
 
 }

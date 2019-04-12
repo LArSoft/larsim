@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef LARG4_MNXS_H
-#define LARG4_MNXS_H 
+#define LARG4_MNXS_H
 
 #include "Geant4/globals.hh"
 #include "Geant4/G4ParticleDefinition.hh"
@@ -21,26 +21,26 @@
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialTable.hh"
 #include "Geant4/G4ios.hh"
-#include <iomanip>   
+#include <iomanip>
 
 #include "Geant4/G4DataQuestionaire.hh"
 
 namespace larg4 {
 
 class MuNuclearSplittingProcessXSecBias : public G4WrapperProcess {
-// Override PostStepDoIt method 
+// Override PostStepDoIt method
   public:
     MuNuclearSplittingProcessXSecBias() {};
     ~MuNuclearSplittingProcessXSecBias() {};
-    
+
     void SetNSplit(G4int nTrx, G4int xB=0, G4double xFac=1) {fNSplit = nTrx, eFactor = (G4double) xFac, xBiasMode = xB;};
-    void SetIsActive(G4bool doIt) {fActive = doIt;}; 
+    void SetIsActive(G4bool doIt) {fActive = doIt;};
 
     G4VParticleChange* PostStepDoIt(const G4Track& track, const G4Step& step);
     G4VParticleChange* AlongStepDoIt(const G4Track& track, const G4Step& step);
   //////////////////////////
   // GPIL    //////////////
-  /////////////////////////  
+  /////////////////////////
       virtual G4double AlongStepGetPhysicalInteractionLength(
                                                  const G4Track& track,
                                                  G4double  previousStepSize,
@@ -54,32 +54,32 @@ class MuNuclearSplittingProcessXSecBias : public G4WrapperProcess {
 						 G4ForceCondition* condition
 						 );
   protected:
-    
+
       virtual void ResetNumberOfInteractionLengthLeft()
       {
 	G4VProcess::theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
 	theInitialNumberOfInteractionLength = G4VProcess::theNumberOfInteractionLengthLeft;
       }
 
-    
+
   private:
 // Data members
       G4int fNSplit;
-      G4bool fActive; 
+      G4bool fActive;
       G4int xBiasMode;
       G4double eFactor; // enhancement factor to the cross-setion
-      
+
       G4VParticleChange fParticleChange;
       // weight change applied at AlongStepDoIt()
       G4double wc;
-      G4double theInitialNumberOfInteractionLength; 
+      G4double theInitialNumberOfInteractionLength;
 
       G4double XBiasSurvivalProbability();
       G4double XBiasSecondaryWeight();
       G4double GetTotalNumberOfInteractionLengthTraversed();
 
 
-}; 
+};
 
 
 }// end namespace

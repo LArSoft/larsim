@@ -6,7 +6,7 @@
 ///
 /// This class defines the parallel geometry that will be divided into
 /// the three-dimensional voxels for the detector read-out.
-/// 
+///
 /// Why define a parallel geometry?  Here are some reasons:
 ///
 /// - The regular LAr TPC is one large volume of liquid argon.  When
@@ -49,13 +49,13 @@ namespace larg4 {
 
     void FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
 			   unsigned int depth,
-			   G4Transform3D DepthToWorld);    
+			   G4Transform3D DepthToWorld);
 
     void FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
 				    unsigned int depth,
-				    G4Transform3D DepthToWorld);    
+				    G4Transform3D DepthToWorld);
 
-    art::ServiceHandle<geo::Geometry const> fGeo;             ///< Handle to the geometry    
+    art::ServiceHandle<geo::Geometry const> fGeo;             ///< Handle to the geometry
     uint32_t                          fNumSensitiveVol; ///< number of sensitive volumes
 
   };

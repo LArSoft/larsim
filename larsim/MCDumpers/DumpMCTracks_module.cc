@@ -31,26 +31,26 @@ namespace sim {
 
 namespace {
   using namespace fhicl;
-  
+
   /// Collection of configuration parameters for the module
   struct Config {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
-    
+
     fhicl::Atom<art::InputTag> InputTracks {
       Name("InputTracks"),
       Comment("data product with the MC tracks to be dumped")
       };
-    
+
     fhicl::Atom<std::string> OutputCategory {
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpMCTracks" /* default value */
       };
-    
+
   }; // struct Config
-  
-  
+
+
   /// Returns a string describing the type of origin
   std::string OriginDescription(simb::Origin_t origin) {
     switch (origin) {
@@ -66,7 +66,7 @@ namespace {
       << "Unexpected origin type #" << ((int) origin) << "\n";
   } // OriginDescription()
 
-  
+
   /// Prints a MC step into a stream
   template <typename Stream>
   void PrintMCStep(Stream&& out, sim::MCStep const& step) {
@@ -85,21 +85,21 @@ class sim::DumpMCTracks: public art::EDAnalyzer {
     public:
   // type to enable module parameters description by art
   using Parameters = art::EDAnalyzer::Table<Config>;
-  
+
   /// Configuration-checking constructor
   explicit DumpMCTracks(Parameters const& config);
-  
+
   // Plugins should not be copied or assigned.
   DumpMCTracks(DumpMCTracks const&) = delete;
   DumpMCTracks(DumpMCTracks &&) = delete;
   DumpMCTracks& operator = (DumpMCTracks const&) = delete;
   DumpMCTracks& operator = (DumpMCTracks &&) = delete;
-  
-  
+
+
   // Operates on the event
   virtual void analyze(art::Event const& event) override;
-  
-  
+
+
   /**
    * @brief Dumps the content of the specified particle in the output stream
    * @tparam Stream the type of output stream
@@ -107,10 +107,10 @@ class sim::DumpMCTracks: public art::EDAnalyzer {
    * @param particle the particle to be dumped
    * @param indent base indentation string (default: none)
    * @param bIndentFirst if first output line should be indented (default: yes)
-   * 
+   *
    * The indent string is prepended to every line of output, with the possible
    * exception of the first one, in case bIndentFirst is true.
-   * 
+   *
    * The output starts on the current line, and the last line is NOT broken.
    */
   template <typename Stream>
@@ -118,13 +118,13 @@ class sim::DumpMCTracks: public art::EDAnalyzer {
     Stream&& out, sim::MCTrack const& track,
     std::string indent = "", bool bIndentFirst = true
     ) const;
-  
-  
+
+
     private:
-  
+
   art::InputTag fInputTracks; ///< name of MCTrack's data product
   std::string fOutputCategory; ///< name of the stream for output
-  
+
 }; // class sim::DumpMCTracks
 
 
@@ -156,7 +156,7 @@ void sim::DumpMCTracks::DumpMCTrack(
   out << "\n" << indent
     << "  ending at ";
   ::PrintMCStep(out, track.End());
-  
+
   std::vector<std::vector<double>> const& dQdx = track.dQdx(); // dQdx[MCStep][plane]
   std::vector<double> const& dEdx = track.dEdx(); // dEdx[MCStep]
   size_t const nQSteps = dQdx.size(), nESteps = dEdx.size();
@@ -182,7 +182,7 @@ void sim::DumpMCTracks::DumpMCTrack(
     } // for iStep
   }
   else out << "no energy or charge information available";
-  
+
   out << "\n" << indent
     << "mother ID=" << track.MotherTrackID()
     << " PDG ID=" << track.MotherPdgCode()
@@ -193,7 +193,7 @@ void sim::DumpMCTracks::DumpMCTrack(
   out << "\n" << indent
     << "  ending at ";
   ::PrintMCStep(out, track.MotherEnd());
-  
+
   out << "\n" << indent
     << "ancestor ID=" << track.AncestorTrackID()
     << " PDG ID=" << track.AncestorPdgCode()
@@ -210,27 +210,27 @@ void sim::DumpMCTracks::DumpMCTrack(
 
 //------------------------------------------------------------------------------
 void sim::DumpMCTracks::analyze(art::Event const& event) {
-  
+
   // get the particles from the event
   auto const& Tracks
     = *(event.getValidHandle<std::vector<sim::MCTrack>>(fInputTracks));
-  
+
   mf::LogVerbatim(fOutputCategory)
     << "Event " << event.id() << ": data product '"
     << fInputTracks.encode() << "' contains "
     << Tracks.size() << " MCTrack objects";
-  
+
   unsigned int iTrack = 0;
   mf::LogVerbatim log(fOutputCategory);
   for (sim::MCTrack const& track: Tracks) {
-    
+
     // a bit of a header
     log << "\n[#" << (iTrack++) << "] ";
     DumpMCTrack(log, track, "  ", false);
-    
+
   } // for
   log << "\n";
-  
+
 } // sim::DumpMCTracks::analyze()
 
 

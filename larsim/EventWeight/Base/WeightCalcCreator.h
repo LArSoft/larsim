@@ -12,7 +12,7 @@ namespace evwgh {
 
     virtual WeightCalc* Create() = 0;
   };
-  
+
   template <class T>
     class WeightCalcImpl : public WeightCalcCreator
   {

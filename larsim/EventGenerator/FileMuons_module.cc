@@ -60,11 +60,11 @@ namespace evgen {
 
   private:
 
-    void ReadEvents(simb::MCTruth &mct);        
+    void ReadEvents(simb::MCTruth &mct);
 
     int                      fEventNumberOffset;  // Where in file to start.
-    std::vector<int>         fPDG;           
-    std::vector<double>      fXYZ_Off;           
+    std::vector<int>         fPDG;
+    std::vector<double>      fXYZ_Off;
     std::string              fFileName;
     std::string              fMuonsFileType;
     std::string              fTreeName;
@@ -77,26 +77,26 @@ namespace evgen {
 
     Float_t                  xtmp, ytmp, ztmp;
     Float_t                  pxtmp, pytmp, pztmp;
-    Float_t                  charge;        
-    Float_t     	     E;		   
-    Float_t     	     costheta;	   
-    Float_t     	     phi;	   
-    Float_t     	     xdet;	   
-    Float_t     	     ydet;	   
-    Float_t     	     zdet;	   
-			                    
-    TBranch     	    *b_x;   //!	   
-    TBranch     	    *b_y;   //!	   
-    TBranch     	    *b_z;   //!	   
-    TBranch     	    *b_E;   //!	   
+    Float_t                  charge;
+    Float_t     	     E;
+    Float_t     	     costheta;
+    Float_t     	     phi;
+    Float_t     	     xdet;
+    Float_t     	     ydet;
+    Float_t     	     zdet;
+
+    TBranch     	    *b_x;   //!
+    TBranch     	    *b_y;   //!
+    TBranch     	    *b_z;   //!
+    TBranch     	    *b_E;   //!
     TBranch     	    *b_costheta;   //!
-    TBranch     	    *b_phi;   //!   
-    TBranch     	    *b_xdet;   //!  
-    TBranch     	    *b_ydet;   //!  
-    TBranch     	    *b_zdet;   //!  
-    TBranch     	    *b_px;   //!	   
-    TBranch     	    *b_py;   //!	   
-    TBranch     	    *b_pz;   //!	   
+    TBranch     	    *b_phi;   //!
+    TBranch     	    *b_xdet;   //!
+    TBranch     	    *b_ydet;   //!
+    TBranch     	    *b_zdet;   //!
+    TBranch     	    *b_px;   //!
+    TBranch     	    *b_py;   //!
+    TBranch     	    *b_pz;   //!
     TBranch     	    *b_charge;   //!
 
 
@@ -111,11 +111,11 @@ namespace evgen{
   FileMuons::FileMuons(fhicl::ParameterSet const& pset)
      : EDProducer{pset}
      , fEventNumberOffset(pset.get<      int                 >("EventNumberOffset"))
-     , fPDG              (pset.get< std::vector<int>	     >("PDG")              )	       
-     , fXYZ_Off          (pset.get< std::vector<double>	     >("InitialXYZOffsets"))	       
-     , fFileName         (pset.get< std::string     	     >("FileName")         )      
+     , fPDG              (pset.get< std::vector<int>	     >("PDG")              )
+     , fXYZ_Off          (pset.get< std::vector<double>	     >("InitialXYZOffsets"))
+     , fFileName         (pset.get< std::string     	     >("FileName")         )
      , fMuonsFileType    (pset.get< std::string              >("MuonsFileType")    )
-     , fTreeName         (pset.get< std::string   	     >("TreeName")         )      
+     , fTreeName         (pset.get< std::string   	     >("TreeName")         )
      , fBranchNames      (pset.get< std::vector<std::string> >("BranchNames")      )
   {
 
@@ -130,25 +130,25 @@ namespace evgen{
     countFile=fEventNumberOffset;
     mf::LogInfo("FileMuons : starting at event ")  << countFile <<std::endl;
 
-    if (fMuonsFileType.compare("source")==0) 
+    if (fMuonsFileType.compare("source")==0)
       {
-	std::cout << "FileMuons: Not yet equipped to walk through muons with TFS mojo."<< std::endl; 
+	std::cout << "FileMuons: Not yet equipped to walk through muons with TFS mojo."<< std::endl;
       }
-    else if (fMuonsFileType.compare("root")==0) 
+    else if (fMuonsFileType.compare("root")==0)
       {
-	std::cout << "FileMuons: You have chosen to read muons from Root File " << fFileName << std::endl; 
+	std::cout << "FileMuons: You have chosen to read muons from Root File " << fFileName << std::endl;
       }
-    else if (fMuonsFileType.compare("text")==0) 
+    else if (fMuonsFileType.compare("text")==0)
       {
-	std::cout << "FileMuons: You have chosen to read muons from " << fFileName << "." << std::endl; 
+	std::cout << "FileMuons: You have chosen to read muons from " << fFileName << "." << std::endl;
       }
-    else 
+    else
       {
-	std::cout << "FileMuons: You must specify one of source/text/root file to read for muons."<< std::endl; 
+	std::cout << "FileMuons: You must specify one of source/text/root file to read for muons."<< std::endl;
 
       }
 
-    if (fMuonsFileType.compare("text")==0) 
+    if (fMuonsFileType.compare("text")==0)
       {
 	fMuonFile = new std::ifstream(fFileName.c_str());
 	long begin = fMuonFile->tellg();
@@ -164,10 +164,10 @@ namespace evgen{
 	  }
 	if (!fMuonFile->good())
 	  {
-	    std::cout << "FileMuons: Problem reading muon file header."<< std::endl; 
+	    std::cout << "FileMuons: Problem reading muon file header."<< std::endl;
 	  }
       }  // fMuonsFileType is a text file.
-    else if (fMuonsFileType.compare("root")==0) 
+    else if (fMuonsFileType.compare("root")==0)
       {
 	fMuonFileR = new TFile(fFileName.c_str(),"READ");
 	TNtuple = (TTree*)(fMuonFileR->Get(fTreeName.c_str()));
@@ -187,15 +187,15 @@ namespace evgen{
 	TNtuple->SetBranchAddress("charge", &charge, &b_charge);
 
       }  // fMuonsFileType is a root file.
-    
+
   }
 
   //____________________________________________________________________________
   void FileMuons::endJob()
   {
-    if (fMuonsFileType.compare("text")==0) 
+    if (fMuonsFileType.compare("text")==0)
       fMuonFile->close();
-    if (fMuonsFileType.compare("root")==0) 
+    if (fMuonsFileType.compare("root")==0)
       fMuonFileR->Close();
   }
 
@@ -233,14 +233,14 @@ namespace evgen{
   }
 
   //____________________________________________________________________________
-  void FileMuons::ReadEvents(simb::MCTruth &mct) 
+  void FileMuons::ReadEvents(simb::MCTruth &mct)
   {
 
 //     std::cout << "size of particle vector is " << fPDG.size() << std::endl;
 
     ///every event will have one of each particle species in the fPDG array
     for (unsigned int i=0; i<fPDG.size(); ++i) {
-      
+
       // Choose momentum
       //double p = 0.0;
       double m(0.108);
@@ -249,7 +249,7 @@ namespace evgen{
       TVector3 p;
       Double_t q = 0.;
       Int_t pdgLocal;
-      
+
       if (fMuonsFileType.compare("text")==0)
 	{
 
@@ -261,13 +261,13 @@ namespace evgen{
 	    }
 	  else
 	    {
-	      //	  std::cout << "FileMuons: getline() gives "<< line << " for event " << countFile << std::endl; 
+	      //	  std::cout << "FileMuons: getline() gives "<< line << " for event " << countFile << std::endl;
 	    }
 	  countFile++;
-	  
+
 	  MF_LOG_DEBUG("FileMuons: countFile is ") << countFile <<std::endl;
 	  char * cstr, *ptok;
-	  
+
       // Split this line into tokens
 	  cstr = new char [line.size()+1];
 	  strcpy (cstr, line.c_str());
@@ -287,19 +287,19 @@ namespace evgen{
 		}
 	      if (fieldCount==6 || fieldCount==7 || fieldCount==8)
 		{
-		  x[posIndex] = atof(ptok); 
+		  x[posIndex] = atof(ptok);
 		  // make the z axis point up for x, as with p
 		  if (posIndex==2) {x[posIndex] = -1.0*x[posIndex];}
 		  posIndex++;
 		}
 	      if (fieldCount==12)
 		{
-		  q = atof(ptok); 
+		  q = atof(ptok);
 		}
 	      fieldCount++;
 	    }
-	  
-	  delete[] cstr;  
+
+	  delete[] cstr;
 
 	}
       else if (fMuonsFileType.compare("root")==0) // from root file
@@ -308,7 +308,7 @@ namespace evgen{
 	      // Don't use this yet. Keep the specific branch-by-branch identification.
 	      for (unsigned int ii=0;ii<fBranchNames.size();ii++)
 	      {
-	       TNtuple->SetBranchAddress(fBranchNames[ii], x+ii); 
+	       TNtuple->SetBranchAddress(fBranchNames[ii], x+ii);
 	      }
 	    */
 	  //	  TNtuple->ResetBranchAddresses();
@@ -324,18 +324,18 @@ namespace evgen{
 	  countFile++;
 
 	} // End read.
-      
+
       static TDatabasePDG  pdgt;
       pdgLocal = -q*fPDG[i];
-      
+
       TParticlePDG* pdgp = pdgt.GetParticle(pdgLocal);
       if (pdgp) m = pdgp->Mass();
 
 
       //       std::cout << "set the position "<<std::endl;
-      // This gives coordinates at the center of the 300mx300m plate that is 3m above top of 
+      // This gives coordinates at the center of the 300mx300m plate that is 3m above top of
       // cavern. Got these by histogramming deJong's xdet,ydet,zdet.
-      const double cryoGap = 15.0; 
+      const double cryoGap = 15.0;
       x[0] -= fXYZ_Off[0];
       x[1] -= fXYZ_Off[1];
       x[2] -= fXYZ_Off[2]; // 3 for plate height above top of cryostat.
@@ -355,18 +355,18 @@ namespace evgen{
       std::cout << "x[m] and p [TeV] are " << std::endl;
       x.Print();
       p.Print();
-    
+
       int trackid = -1*(i+1); // set track id to -i as these are all primary particles and have id <= 0
       std::string primary("primary");
       simb::MCParticle part(trackid, pdgLocal, primary);
       part.AddTrajectoryPoint(pos, pvec);
-      
+
       //       std::cout << "add the particle to the primary" << std::endl;
-      
+
       mct.Add(part);
 
     }//end loop over particles
-    
+
     return;
   }
 

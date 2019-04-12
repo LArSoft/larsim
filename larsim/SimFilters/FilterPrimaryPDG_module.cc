@@ -35,16 +35,16 @@ namespace sim{
   class ParticleList;
 }
 
-///Geant4 interface 
-namespace simfilter {  
- 
-  class FilterPrimaryPDG : public art::EDFilter 
-  {  
-  // explicit EDFilter(ParameterSet const&)  
+///Geant4 interface
+namespace simfilter {
+
+  class FilterPrimaryPDG : public art::EDFilter
+  {
+  // explicit EDFilter(ParameterSet const&)
   public:
 
     explicit FilterPrimaryPDG(fhicl::ParameterSet const &pset);
-    
+
     bool filter(art::Event&) ;
     /*
     virtual void endJob()  ;
@@ -58,10 +58,10 @@ namespace simfilter {
     std::string fG4ModuleLabel;
     std::vector<int> fPrimaryVec;
     /*
-  virtual void respondToOpenInputFile(FileBlock const& fb)  
-  virtual void respondToCloseInputFile(FileBlock const& fb)  
-  virtual void respondToOpenOutputFiles(FileBlock const& fb)  
-  virtual void respondToCloseOutputFiles(FileBlock const& fb)  
+  virtual void respondToOpenInputFile(FileBlock const& fb)
+  virtual void respondToCloseInputFile(FileBlock const& fb)
+  virtual void respondToOpenOutputFiles(FileBlock const& fb)
+  virtual void respondToCloseOutputFiles(FileBlock const& fb)
     */
   };
 
@@ -76,7 +76,7 @@ namespace simfilter {
   {}
 
   //-----------------------------------------------------------------------
-  bool FilterPrimaryPDG::filter(art::Event& evt) 
+  bool FilterPrimaryPDG::filter(art::Event& evt)
   {
 
     //get the list of particles from this event
@@ -98,10 +98,10 @@ namespace simfilter {
 	for (int pdg : fPrimaryVec)
 	  {
 	    const std::string sprim("primary");
-	    if(pvec[i]->PdgCode() == pdg) 
+	    if(pvec[i]->PdgCode() == pdg)
 	      {
 		Char_t tProcess[50];
-		for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s) 
+		for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s)
 		  *(tProcess+s) = pvec[i]->Process()[s];
 		std::string sProcess(tProcess);
 		if (!sProcess.compare(sprim))

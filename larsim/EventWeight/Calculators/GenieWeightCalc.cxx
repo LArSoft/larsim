@@ -3,7 +3,7 @@
 // Handles event weights for GENIE systematics studies
 //
 // Updated by Marco Del Tutto on Feb 18 2017
-// Ported from uboonecode to larsim on Feb 14 2017 
+// Ported from uboonecode to larsim on Feb 14 2017
 //   by Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
 
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
@@ -25,7 +25,7 @@ namespace evwgh {
     void Configure(fhicl::ParameterSet const& pset,
                    CLHEP::HepRandomEngine& engine) override;
     std::vector<std::vector<double> > GetWeight(art::Event & e) override;
-    
+
   private:
     // The reweighting utility class:
     std::vector<rwgt::NuReweight> reweightVector;
@@ -33,9 +33,9 @@ namespace evwgh {
     std::string fGenieModuleLabel;
 
     // What follows is the list of sereighting parameters present in LArSoft.
-    // Parameters with a (*) contains more that one reweighing parameter at the same time. 
+    // Parameters with a (*) contains more that one reweighing parameter at the same time.
     // They can only be modified changing the relative method in $NUTOOLS_DIR/source/NuReweight/GENIEReweight.cxx
-      
+
     enum EReweight {kNCELaxial,        // Axial mass for NC elastic
                     kNCELeta,          // Strange axial form factor for NC elastic
                     kQEMA,             // Axial mass for CC quasi-elastic
@@ -78,7 +78,7 @@ namespace evwgh {
                     kIntraNukePIabs,   // Pi absorption probability
                     kIntraNukePIpi,    // Pi pi-production probability
                     kNReWeights};      // ?
-    
+
     DECLARE_WEIGHTCALC(GenieWeightCalc)
   };
 
@@ -102,7 +102,7 @@ namespace evwgh {
             << "::Bad fcl configuration. parameter_list and parameter_sigma need to have same number of parameters." << std::endl;
 
     auto number_of_multisims = pset.get<int>("number_of_multisims");
-      
+
     std::vector<EReweight> erwgh;
     for (auto const& s : pars) {
       if      (s == "NCELaxial") erwgh.push_back(kNCELaxial);
@@ -151,11 +151,11 @@ namespace evwgh {
               << "::Physical process " << s << " you requested is not available to reweight." << std::endl;
       }
     }
-      
+
     //Prepare sigmas
     std::vector<std::vector<float>> reweightingSigmas(erwgh.size());
 
-    if (mode.find("pm1sigma") != std::string::npos ) { 
+    if (mode.find("pm1sigma") != std::string::npos ) {
       number_of_multisims = 2; // only +-1 sigma if pm1sigma is specified
     }
     for (unsigned int i = 0; i < reweightingSigmas.size(); ++i) {
@@ -171,7 +171,7 @@ namespace evwgh {
     }
 
     reweightVector.resize(number_of_multisims);
-    
+
     for (unsigned weight_point = 0, e = reweightVector.size(); weight_point != e; ++weight_point) {
       auto& driver = reweightVector[weight_point];
       for (unsigned int i_reweightingKnob = 0; i_reweightingKnob<erwgh.size(); ++i_reweightingKnob) {
@@ -186,18 +186,18 @@ namespace evwgh {
         case kNCELeta:
           driver.ReweightNCEL(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-            
+
 	case kQEMA:
           driver.ReweightQEMA(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
-        
+
 	case kQEVec:
           driver.ReweightQEVec(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
-        
+
 	case kResGanged:
 	  break;
-        
+
 	case kCCResAxial:
           driver.ReweightCCRes(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
@@ -211,15 +211,15 @@ namespace evwgh {
         case kNCResVector:
           driver.ReweightNCRes(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
 	case kCohMA:
           driver.ReweightCoh(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kCohR0:
           driver.ReweightCoh(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
-        
+
+
 	case kNonResRvp1pi:
           driver.ReweightNonResRvp1pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
@@ -232,7 +232,7 @@ namespace evwgh {
 	case kNonResRvbarp2pi:
           driver.ReweightNonResRvbarp2pi(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
-        
+
 	case kResDecayGamma:
           driver.ReweightResDecay(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0.);
 	  break;
@@ -242,11 +242,11 @@ namespace evwgh {
         case kResDecayTheta:
           driver.ReweightResDecay(0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
 	case kNC:
           driver.ReweightNC(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
-        
+
 	case kDISAth:
           driver.ReweightDIS(reweightingSigmas[i_reweightingKnob][weight_point], 0., 0., 0.);
 	  break;
@@ -259,29 +259,29 @@ namespace evwgh {
         case kDISCv2u:
           driver.ReweightDIS(0., 0., 0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
 	case kDISnucl:
           driver.ReweightDISnucl(reweightingSigmas[i_reweightingKnob][weight_point]);
 	  break;
-        
+
 	case kAGKYxF:
           driver.ReweightAGKY(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
 	  break;
         case kAGKYpT:
           driver.ReweightAGKY(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-      
+
         case kFormZone:
           driver.ReweightFormZone(reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
         case kFermiGasModelKf:
           driver.ReweightFGM(reweightingSigmas[i_reweightingKnob][weight_point], 0.);
           break;
         case kFermiGasModelSf:
           driver.ReweightFGM(0., reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
         case kIntraNukeNmfp:
           driver.ReweightIntraNuke(rwgt::fReweightMFP_N, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
@@ -318,7 +318,7 @@ namespace evwgh {
         case kIntraNukePIpi:
           driver.ReweightIntraNuke(rwgt::fReweightFrPiProd_pi, reweightingSigmas[i_reweightingKnob][weight_point]);
           break;
-        
+
 	case kNReWeights:
 	  break;
 	}
@@ -334,12 +334,12 @@ namespace evwgh {
   }
 
   std::vector<std::vector<double> > GenieWeightCalc::GetWeight(art::Event & e)
-  { 
+  {
     // Returns a vector of weights for each neutrino interaction in the event
 
-    // Get the MC generator information out of the event       
+    // Get the MC generator information out of the event
     // These are all handles to mc information.
-    art::Handle< std::vector<simb::MCTruth> > mcTruthHandle;  
+    art::Handle< std::vector<simb::MCTruth> > mcTruthHandle;
     art::Handle< std::vector<simb::MCFlux> > mcFluxHandle;
     art::Handle< std::vector<simb::GTruth> > gTruthHandle;
 
@@ -354,12 +354,12 @@ namespace evwgh {
     std::vector<art::Ptr<simb::GTruth > > glist;
     art::fill_ptr_vector(glist, gTruthHandle);
 
-    // Calculate weight(s) here 
+    // Calculate weight(s) here
     std::vector<std::vector<double> >weight(mclist.size());
     for ( unsigned int inu=0; inu<mclist.size();inu++) {
-      weight[inu].resize(reweightVector.size());    
-      for (unsigned int i_weight = 0; 
-	   i_weight < reweightVector.size(); 
+      weight[inu].resize(reweightVector.size());
+      for (unsigned int i_weight = 0;
+	   i_weight < reweightVector.size();
 	   i_weight ++){
         weight[inu][i_weight]= reweightVector[i_weight].CalcWeight(*mclist[inu],*glist[inu]);
       }

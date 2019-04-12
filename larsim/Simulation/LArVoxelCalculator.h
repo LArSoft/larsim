@@ -6,7 +6,7 @@
 
 /// This class encapsulates the calculations associated with
 /// computing the LArVoxelID, and provides access to the any LArVoxel
-/// parameters from the input file(s).  
+/// parameters from the input file(s).
 
 /// It is to be called using art::ServiceHandle<sim::LArVoxelCalculator const> lvx;
 /// The service makes it act like a singleton, but it knows about the
@@ -33,7 +33,7 @@
 
 namespace sim {
 
-  class LArVoxelCalculator 
+  class LArVoxelCalculator
   {
   public:
 

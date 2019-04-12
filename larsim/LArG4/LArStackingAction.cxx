@@ -50,7 +50,7 @@ LArStackingAction::LArStackingAction(G4int dum)
  , freqIsoMuon(0)
  , freqIso(10)
  , fangRoI(30.*CLHEP::deg)
-{ 
+{
   //theMessenger = new LArStackingActionMessenger(this);
   fStack = dum;
     // Positive values effect action in this routine. Negative values
@@ -59,10 +59,10 @@ LArStackingAction::LArStackingAction(G4int dum)
 }
 
 LArStackingAction::~LArStackingAction()
-{ //delete theMessenger; 
+{ //delete theMessenger;
 }
 
-G4ClassificationOfNewTrack 
+G4ClassificationOfNewTrack
 LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 {
   G4ClassificationOfNewTrack classification = fWaiting;
@@ -86,31 +86,31 @@ LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 	  || (particleType==G4MuonMinus::MuonMinusDefinition())
 	   )
 	  && !volName.Contains("unknown")
-	  ){ 
-	classification = fUrgent; 
+	  ){
+	classification = fUrgent;
       }
     }
     if (volName.Contains("unknown"))   classification = fKill;
     break;
-    
+
   case 1: // Stage 1 : K0,Lambda,n's made urgent here.
           //           Suspended tracks will be sent to the waiting stack
     if(aTrack->GetTrackStatus()==fSuspend) { break; }
 
     if ((aTrack->GetDefinition()->GetPDGEncoding()==2112 || aTrack->GetDefinition()->GetPDGEncoding()==130 || aTrack->GetDefinition()->GetPDGEncoding()==310 || aTrack->GetDefinition()->GetPDGEncoding()==311 || aTrack->GetDefinition()->GetPDGEncoding()==3122 ) && (aTrack->GetParentID()==1) && !volName.Contains("unknown"))
       {
-	
+
 	const G4ThreeVector tr4Pos = aTrack->GetPosition();
 	// G4 returns positions in mm, have to convert to cm for LArSoft coordinate systems
 	const TVector3 trPos(tr4Pos.x()/CLHEP::cm,tr4Pos.y()/CLHEP::cm,tr4Pos.z()/CLHEP::cm);
 	//double locNeut = trPos.Mag();
-	classification = fUrgent; 
+	classification = fUrgent;
 	// std::cout << "LArStackingAction: DetHalfWidth, Height, FullLength: " << geom->DetHalfWidth() << ", " << geom->DetHalfHeight() << ", " << geom->DetLength() << std::endl;
-	
+
 	if (
 	    trPos.X() < (geom->DetHalfWidth()*2.0 + buffer) && trPos.X() > (-buffer) &&
 	    trPos.Y() < (geom->DetHalfHeight()*2.0 + buffer) && trPos.Y() > (-geom->DetHalfHeight()*2.0 - buffer) &&
-	    trPos.Z() < (geom->DetLength() + buffer) && trPos.Z() > (-buffer) 
+	    trPos.Z() < (geom->DetLength() + buffer) && trPos.Z() > (-buffer)
 	    )
 
 	  { classification = fUrgent; break; }
@@ -118,30 +118,30 @@ LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 	// might get to the LAr.
 	else
 	  { classification = fKill; break; }
-	
-	
+
+
       }
-    
+
 	//    if(aTrack->GetDefinition()->GetPDGCharge()==0.) { break; }
     if (volName.Contains("unknown"))   classification = fKill;
     break;
 
-  default: 
+  default:
     // Track all other Primaries. Accept all secondaries in TPC.
     // Kill muon ionization electrons outside TPC
     // ignore primaries since they have no creator process
-    
-    if(aTrack->GetParentID() == 0 && !volName.Contains("unknown")){ 
+
+    if(aTrack->GetParentID() == 0 && !volName.Contains("unknown")){
       classification = fUrgent;
       break;
     }
-       
+
     if(volName.Contains(geom->GetLArTPCVolumeName()) && aTrack->GetParentID()!=0)
-      { 
+      {
 	classification = fUrgent;
-	if (fStack & 0x4 && 
+	if (fStack & 0x4 &&
 	    aTrack->GetCreatorProcess()->GetProcessName().contains("muIoni")
-	    ) 
+	    )
 	  {
 	    classification = fKill;
 	  }
@@ -152,7 +152,7 @@ LArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       break;
     }
     // Leave this here, even though I claim we've Killed these in stage 2.
-    if(aTrack->GetDefinition()->GetPDGEncoding()==11 
+    if(aTrack->GetDefinition()->GetPDGEncoding()==11
        && aTrack->GetCreatorProcess()->GetProcessName().contains("muIoni") )
       {
 	classification = fKill;
@@ -218,10 +218,10 @@ void LArStackingAction::NewStage()
     stackManager->ReClassify();
   }
 }
-    
+
 void LArStackingAction::PrepareNewEvent()
-{ 
-  fstage = 0; 
+{
+  fstage = 0;
   //trkHits = 0;
   //muonHits = 0;
 }

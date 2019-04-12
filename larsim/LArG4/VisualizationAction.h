@@ -40,10 +40,10 @@ namespace larg4 {
     VisualizationAction();
     virtual ~VisualizationAction();
 
-    virtual void BeginOfRunAction(const G4Run*); 
-    virtual void EndOfRunAction(const G4Run*); 
-    virtual void BeginOfEventAction(const G4Event*); 
-    virtual void EndOfEventAction(const G4Event*); 
+    virtual void BeginOfRunAction(const G4Run*);
+    virtual void EndOfRunAction(const G4Run*);
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void EndOfEventAction(const G4Event*);
 
     /// Acessors, if we need them:
     G4double GetTrackEnergyCutoff() const {return m_energyCutoff;}

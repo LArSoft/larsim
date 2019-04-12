@@ -9,9 +9,9 @@ namespace evwgh {
   {
   public:
     static WeightCalc* Create(const std::string& classname);
-    static void Register(const std::string& wghcalcname, 
+    static void Register(const std::string& wghcalcname,
 			 WeightCalcCreator* creator);
-  
+
   private:
     static std::map<std::string, WeightCalcCreator*>& GetTable();
   };

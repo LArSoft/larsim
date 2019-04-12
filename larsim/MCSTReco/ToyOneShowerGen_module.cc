@@ -73,7 +73,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // Momentum distribution
   //
-  
+
   // Read-in formula
   fShapeMomentum = std::make_unique<TF1>("fShapeMomentum",
                                          p.get<std::string>("MomentumShapeFormula").c_str(),
@@ -81,7 +81,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
 			   p.get<double>("MomentumUpperBound"));
   // Check formula
   if(!fShapeMomentum)
-    throw cet::exception(__PRETTY_FUNCTION__) 
+    throw cet::exception(__PRETTY_FUNCTION__)
       << "Failed making momentum spectrum shape from provided formula!" << std::endl;
 
   // Read-in parameter values
@@ -99,7 +99,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
   //
   // Angular distribution
   //
-  
+
   // Read-in formula
   fShapeTheta = std::make_unique<TF1>("fShapeTheta",
                                       p.get<std::string>("ThetaShapeFormula").c_str(),
@@ -107,7 +107,7 @@ ToyOneShowerGen::ToyOneShowerGen(fhicl::ParameterSet const & p)
 			p.get<double>("ThetaUpperBound"));
   // Check formula
   if(!fShapeTheta) {
-    throw cet::exception(__PRETTY_FUNCTION__) 
+    throw cet::exception(__PRETTY_FUNCTION__)
       << "Failed making momentum spectrum shape from provided formula!" << std::endl;
   }
 
@@ -185,7 +185,7 @@ void ToyOneShowerGen::produce(art::Event & e)
   truth.Add(part);
 
   mctArray->push_back(truth);
-  
+
   e.put(std::move(mctArray));
 }
 

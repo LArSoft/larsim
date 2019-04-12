@@ -24,7 +24,7 @@ namespace larg4 {
 
   //----------------------------------------------
   void MaterialPropertyLoader::SetMaterialProperty(std::string Material,
-                                                   std::string Property, 
+                                                   std::string Property,
                                                    std::map<double, double> PropertyVector,
                                                    double Unit)
   {
@@ -37,52 +37,52 @@ namespace larg4 {
       }
     fPropertyList[Material][Property]=PropVectorWithUnit;
     // replace with MF_LOGDEBUG()
-    mf::LogInfo("MaterialPropertyLoader")<<"Added property " 
-                                         << Material<< "  " 
+    mf::LogInfo("MaterialPropertyLoader")<<"Added property "
+                                         << Material<< "  "
                                          << Property;
   }
-  
+
   //----------------------------------------------
-  void MaterialPropertyLoader::SetMaterialConstProperty(std::string Material, 
-                                                        std::string Property, 
+  void MaterialPropertyLoader::SetMaterialConstProperty(std::string Material,
+                                                        std::string Property,
                                                         double PropertyValue,
                                                         double Unit)
   {
     fConstPropertyList[Material][Property]=PropertyValue*Unit;
     // replace with MF_LOGDEBUG()
-    mf::LogInfo("MaterialPropertyLoader") << "Added const property " 
-                                          << Material << "  " 
+    mf::LogInfo("MaterialPropertyLoader") << "Added const property "
+                                          << Material << "  "
                                           << Property << " = " << PropertyValue;
   }
-  
+
   //----------------------------------------------
-  void MaterialPropertyLoader::SetBirksConstant(std::string Material, 
+  void MaterialPropertyLoader::SetBirksConstant(std::string Material,
                                                 double PropertyValue,
                                                 double Unit)
   {
-    fBirksConstants[Material]=PropertyValue*Unit;        
+    fBirksConstants[Material]=PropertyValue*Unit;
     // replace with MF_LOGDEBUG()
-    mf::LogInfo("MaterialPropertyLoader") << "Set Birks constant " 
+    mf::LogInfo("MaterialPropertyLoader") << "Set Birks constant "
                                           << Material;
   }
 
-  //----------------------------------------------  
+  //----------------------------------------------
   void MaterialPropertyLoader::UpdateGeometry(G4LogicalVolumeStore * lvs)
   {
     std::map<std::string,G4MaterialPropertiesTable*> MaterialTables;
     std::map<std::string,bool> MaterialsSet;
-    
+
     // TODO replace console output with messagefacility output
     mf::LogInfo("MaterialPropertyLoader") << "UPDATING GEOMETRY";
-    
+
     // Loop over each material with a property vector and create a new material table for it
     for(std::map<std::string,std::map<std::string,std::map<double,double> > >::const_iterator i=fPropertyList.begin(); i!=fPropertyList.end(); i++){
       std::string Material=i->first;
       MaterialsSet[Material]=true;
       MaterialTables[Material]=new G4MaterialPropertiesTable;
     }
-    
-    // Loop over each material with a const property, 
+
+    // Loop over each material with a const property,
     // if material table does not exist, create one
     for(std::map<std::string,std::map<std::string,double> >::const_iterator i=fConstPropertyList.begin(); i!=fConstPropertyList.end(); i++){
       std::string Material=i->first;
@@ -91,47 +91,47 @@ namespace larg4 {
         MaterialTables[Material]=new G4MaterialPropertiesTable;
       }
     }
-    
-    // For each property vector, convert to an array of g4doubles and 
-    // feed to materials table Lots of firsts and seconds!  See annotation 
+
+    // For each property vector, convert to an array of g4doubles and
+    // feed to materials table Lots of firsts and seconds!  See annotation
     // in MaterialPropertyLoader.h to follow what each element is
-    
+
     for(std::map<std::string,std::map<std::string,std::map<double,double> > >::const_iterator i=fPropertyList.begin(); i!=fPropertyList.end(); i++){
       std::string Material=i->first;
       for(std::map<std::string,std::map<double,double> >::const_iterator j = i->second.begin(); j!=i->second.end(); j++){
         std::string Property=j->first;
         std::vector<G4double> g4MomentumVector;
         std::vector<G4double> g4PropertyVector;
-        
+
         for(std::map<double,double>::const_iterator k=j->second.begin(); k!=j->second.end(); k++){
           g4MomentumVector.push_back(k->first);
           g4PropertyVector.push_back(k->second);
         }
         int NoOfElements=g4MomentumVector.size();
-        MaterialTables[Material]->AddProperty(Property.c_str(),&g4MomentumVector[0], &g4PropertyVector[0],NoOfElements); 
+        MaterialTables[Material]->AddProperty(Property.c_str(),&g4MomentumVector[0], &g4PropertyVector[0],NoOfElements);
         // replace with mf::LogVerbatim()
         mf::LogInfo("MaterialPropertyLoader") << "Added property "
                                               <<Property
-                                              <<" to material table " 
+                                              <<" to material table "
                                               << Material;
       }
     }
-    
+
     //Add each const property element
     for(std::map<std::string,std::map<std::string,double > >::const_iterator i = fConstPropertyList.begin(); i!=fConstPropertyList.end(); i++){
       std::string Material=i->first;
       for(std::map<std::string,double>::const_iterator j = i->second.begin(); j!=i->second.end(); j++){
         std::string Property=j->first;
         G4double PropertyValue=j->second;
-        MaterialTables[Material]->AddConstProperty(Property.c_str(), PropertyValue); 
+        MaterialTables[Material]->AddConstProperty(Property.c_str(), PropertyValue);
         // replace with mf::LogVerbatim()
         mf::LogInfo("MaterialPropertyLoader") << "Added const property "
                                               <<Property
-                                              <<" to material table " 
+                                              <<" to material table "
                                               << Material;
       }
     }
-    
+
     //Loop through geometry elements and apply relevant material table where materials match
     for ( G4LogicalVolumeStore::iterator i = lvs->begin(); i != lvs->end(); ++i ){
       G4LogicalVolume* volume = (*i);
@@ -142,7 +142,7 @@ namespace larg4 {
       // create reflective surfaces corresponding to the volumes made of some
       // selected materials
       //
-      
+
       //--------------------------> FIXME <-----------------(parameters from fcl files(?))
       G4MaterialPropertyVector* PropertyPointer = 0;
       if(MaterialTables[Material])
@@ -233,7 +233,7 @@ namespace larg4 {
   {
     std::map<double, double> ReflectanceToStore;
     std::map<double, double> DiffuseToStore;
-    
+
     for(std::map<std::string,std::map<double,double> >::const_iterator itMat=Reflectances.begin();
         itMat!=Reflectances.end();
         ++itMat)
@@ -242,10 +242,10 @@ namespace larg4 {
         ReflectanceToStore.clear();
         for(std::map<double,double>::const_iterator itEn=itMat->second.begin();
             itEn!=itMat->second.end();
-            ++itEn)          
+            ++itEn)
           {
             ReflectanceToStore[itEn->first]=itEn->second;
-          }    
+          }
         SetMaterialProperty("LAr", ReflectancePropName, ReflectanceToStore,1);
       }
 
@@ -257,15 +257,15 @@ namespace larg4 {
         DiffuseToStore.clear();
         for(std::map<double,double>::const_iterator itEn=itMat->second.begin();
             itEn!=itMat->second.end();
-            ++itEn)          
+            ++itEn)
           {
             DiffuseToStore[itEn->first]=itEn->second;
-          }    
+          }
         SetMaterialProperty("LAr", DiffusePropName, DiffuseToStore,1);
       }
-    
-  } 
-  
+
+  }
+
 
   void MaterialPropertyLoader::SetReflectances(std::map<std::string,std::map<double, double> > Reflectances)
   {
@@ -291,7 +291,7 @@ namespace larg4 {
   {
     const detinfo::LArProperties* LarProp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* DetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     // wavelength dependent quantities
 
     SetMaterialProperty( "LAr", "FASTCOMPONENT", LarProp->FastScintSpectrum(), 1  );
@@ -311,7 +311,7 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "ELECTRICFIELD",       DetProp->Efield(),               CLHEP::kilovolt/CLHEP::cm);
 
     SetBirksConstant("LAr",LarProp->ScintBirksConstant(), CLHEP::cm/CLHEP::MeV);
-    if(DetProp->SimpleBoundary())    
+    if(DetProp->SimpleBoundary())
       SetReflectances("LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
     else
       SetReflectances(LarProp->SurfaceReflectances());

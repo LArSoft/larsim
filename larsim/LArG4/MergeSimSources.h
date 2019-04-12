@@ -5,7 +5,7 @@
  * Title:   MergeSimSources Utility Class
  * Author:  Wes Ketchum (wketchum@lanl.gov)
  *
- * Description: 
+ * Description:
  * Class that merges different simulation sources together to created a combined sim list.
  * Typically just merges vectors/maps/etc together. But, if anything as a G4 trackID, applies
  * a user-defined offset to those IDs.
@@ -27,7 +27,7 @@ namespace sim{
     MergeSimSourcesUtility(std::vector<int> const&);
 
     void Reset();
-    
+
     void MergeMCParticles( std::vector<simb::MCParticle>&,
 			   const std::vector<simb::MCParticle>&,
 			   size_t);
@@ -47,7 +47,7 @@ namespace sim{
 			      const std::vector<sim::SimPhotonsLite>&);
 
     const std::vector< std::vector<size_t> >& GetMCParticleListMap() { return fMCParticleListMap; }
-    
+
   private:
 
     std::vector<int>                   fG4TrackIDOffsets;
@@ -56,7 +56,7 @@ namespace sim{
     std::vector< std::vector<size_t> > fMCParticleListMap;
 
     void UpdateG4TrackIDRange(std::pair<int,int>,size_t);
-    
+
   }; //end MergeSimSourcesUtility class
 
 } //end namespace sim

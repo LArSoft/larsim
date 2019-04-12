@@ -38,7 +38,7 @@ namespace larg4 {
     : G4VUserParallelWorld(name)
     , fNumSensitiveVol(0)
   {}
-  AuxDetReadoutGeometry::~AuxDetReadoutGeometry() 
+  AuxDetReadoutGeometry::~AuxDetReadoutGeometry()
   {}
 
   ////////////////////////////////////////////////////////////////////
@@ -54,20 +54,20 @@ namespace larg4 {
     unsigned int MaxDepth = 8; // should be plenty
     std::vector<const G4VPhysicalVolume*> path(MaxDepth);
     path[0] = g4b::DetectorConstruction::GetWorld();
-    G4Transform3D InitTransform( path[0]->GetObjectRotationValue(),    
+    G4Transform3D InitTransform( path[0]->GetObjectRotationValue(),
 				 path[0]->GetObjectTranslation()    );
 
-    // first try to make sensitive volumes, if those are not in 
-    // the gdml file (ie file was made before the introduction of 
+    // first try to make sensitive volumes, if those are not in
+    // the gdml file (ie file was made before the introduction of
     // sensitive volumes) fall back to looking for the aux dets
     this->FindAndMakeAuxDetSensitive(path, 0, InitTransform);
     if(fNumSensitiveVol < 1)
       this->FindAndMakeAuxDet(path, 0, InitTransform);
-    
+
 
     return;
   }// end Construct
-  
+
   //---------------------------------------------------------------
   void AuxDetReadoutGeometry::FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
 							 unsigned int depth,
@@ -77,7 +77,7 @@ namespace larg4 {
     G4LogicalVolume* LogicalVolumeAtDepth = path[depth]->GetLogicalVolume();
 
     std::string volName(path[depth]->GetName());
-    if( volName.find("volAuxDet") != std::string::npos && 
+    if( volName.find("volAuxDet") != std::string::npos &&
 	volName.find("Sensitive") != std::string::npos){
 
       // find world coordinate of the AuxDet origin in cm
@@ -89,15 +89,15 @@ namespace larg4 {
       size_t svNum = 0;
       fGeo->FindAuxDetSensitiveAtPosition(worldPos, adNum, svNum);
       //  N.B. This name is expected by code in LArG4:
-      std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_" + std::to_string(svNum); 
+      std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_" + std::to_string(svNum);
       AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, svNum);
 
-      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName()
 					 << ", number " << adNum << ":" << svNum;
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
-      LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
+      LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);
       ++fNumSensitiveVol;
       return;
     }
@@ -109,7 +109,7 @@ namespace larg4 {
       throw cet::exception("AuxDetReadoutGeometry") << "exceeded maximum TGeoNode depth\n";
     }
 
-    // Note that there will be nd different branches off of path[depth] 
+    // Note that there will be nd different branches off of path[depth]
     G4int nd = LogicalVolumeAtDepth->GetNoDaughters();
     for(int d = 0; d < nd; ++d){
 
@@ -117,7 +117,7 @@ namespace larg4 {
       path[deeper] = LogicalVolumeAtDepth->GetDaughter(d);
 
       // keep track of the transform to world coordinates for PositionToAuxDet
-      G4Transform3D DeeperToMother( path[deeper]->GetObjectRotationValue(),    
+      G4Transform3D DeeperToMother( path[deeper]->GetObjectRotationValue(),
 				    path[deeper]->GetObjectTranslation()    );
       G4Transform3D DeeperToWorld = DepthToWorld * DeeperToMother;
       this->FindAndMakeAuxDetSensitive(path, deeper, DeeperToWorld);
@@ -144,15 +144,15 @@ namespace larg4 {
       unsigned int adNum;
       fGeo->PositionToAuxDet(worldPos, adNum);
       //  N.B. This name is expected by code in LArG4:
-      std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_0"; 
+      std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_0";
       AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, 0);
 
-      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName()
 					 << ", number " << adNum << ":0";
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
-      LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
+      LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);
       ++fNumSensitiveVol;
       return;
     }
@@ -164,7 +164,7 @@ namespace larg4 {
       throw cet::exception("AuxDetReadoutGeometry") << "exceeded maximum TGeoNode depth\n";
     }
 
-    // Note that there will be nd different branches off of path[depth] 
+    // Note that there will be nd different branches off of path[depth]
     G4int nd = LogicalVolumeAtDepth->GetNoDaughters();
     for(int d = 0; d < nd; ++d){
 
@@ -172,7 +172,7 @@ namespace larg4 {
       path[deeper] = LogicalVolumeAtDepth->GetDaughter(d);
 
       // keep track of the transform to world coordinates for PositionToAuxDet
-      G4Transform3D DeeperToMother( path[deeper]->GetObjectRotationValue(),    
+      G4Transform3D DeeperToMother( path[deeper]->GetObjectRotationValue(),
 				    path[deeper]->GetObjectTranslation()    );
       G4Transform3D DeeperToWorld = DepthToWorld * DeeperToMother;
       this->FindAndMakeAuxDet(path, deeper, DeeperToWorld);

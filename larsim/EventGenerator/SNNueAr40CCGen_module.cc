@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// \file  SNNueAr40CCGen_module.cc
 /// \brief Supernova Nue-Ar CC interaction generator
-/// 
+///
 /// Module that produces MC particles from supernova electron neutrinos
 /// interacting via charge current with Ar40
-/// 
+///
 /// \author  gleb.sinev@duke.edu
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,8 +32,8 @@
 // C++ includes
 
 namespace evgen {
-  
-  /// Module producing electrons and gammas from supernova neutrino 
+
+  /// Module producing electrons and gammas from supernova neutrino
   /// interactions with liquid argon (based on SingleGen)
   class SNNueAr40CCGen : public art::EDProducer {
     public:

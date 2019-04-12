@@ -50,12 +50,12 @@
 //
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
-// 
+//
 ////////////////////////////////////////////////////////////////////////
-// Scintillation Light Class Definition 
+// Scintillation Light Class Definition
 ////////////////////////////////////////////////////////////////////////
 //
-// File:        OpFastScintillation.hh  
+// File:        OpFastScintillation.hh
 // Description:	Discrete Process - Generation of Scintillation Photons
 // Version:     1.0
 // Created:     1998-11-07
@@ -93,7 +93,7 @@
 #include "Geant4/G4VRestDiscreteProcess.hh"
 #include "Geant4/G4OpticalPhoton.hh"
 #include "Geant4/G4DynamicParticle.hh"
-#include "Geant4/G4Material.hh" 
+#include "Geant4/G4Material.hh"
 #include "Geant4/G4PhysicsTable.hh"
 #include "Geant4/G4MaterialPropertiesTable.hh"
 #include "Geant4/G4PhysicsOrderedFreeVector.hh"
@@ -122,19 +122,19 @@ private:
         //////////////
         // Operators
         //////////////
-  
+
         // OpFastScintillation& operator=(const OpFastScintillation &right);
-  
+
 public: // Without description
-  
+
 	////////////////////////////////
 	// Constructors and Destructor
 	////////////////////////////////
 
-        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
+        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);
         OpFastScintillation(const OpFastScintillation &right);
 
-	~OpFastScintillation();	
+	~OpFastScintillation();
 
         ////////////
         // Methods
@@ -142,7 +142,7 @@ public: // Without description
 
 public: // With description
 
-        // OpFastScintillation Process has both PostStepDoIt (for energy 
+        // OpFastScintillation Process has both PostStepDoIt (for energy
         // deposition of particles in flight) and AtRestDoIt (for energy
         // given to the medium by particles at rest)
 
@@ -154,17 +154,17 @@ public: // With description
 				       G4double ,
                                        G4ForceCondition* );
         // Returns infinity; i. e. the process does not limit the step,
-        // but sets the 'StronglyForced' condition for the DoIt to be 
+        // but sets the 'StronglyForced' condition for the DoIt to be
         // invoked at every step.
 
- 
+
         G4double GetMeanLifeTime(const G4Track& aTrack,
                                  G4ForceCondition* );
         // Returns infinity; i. e. the process does not limit the time,
         // but sets the 'StronglyForced' condition for the DoIt to be
         // invoked at every step.
 
-	virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, 
+	virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
 			                const G4Step&  aStep);
         virtual G4VParticleChange* AtRestDoIt (const G4Track& aTrack,
                                        const G4Step& aStep);
@@ -173,7 +173,7 @@ public: // With description
 
 	void SetTrackSecondariesFirst(const G4bool state);
         // If set, the primary particle tracking is interrupted and any
-        // produced scintillation photons are tracked next. When all 
+        // produced scintillation photons are tracked next. When all
         // have been tracked, the tracking of the primary resumes.
 
         void SetFiniteRiseTime(const G4bool state);
@@ -185,7 +185,7 @@ public: // With description
 
         G4bool GetFiniteRiseTime() const;
         // Returns the boolean flag for a finite scintillation rise time.
-	
+
         void SetScintillationYieldFactor(const G4double yieldfactor);
         // Called to set the scintillation photon yield factor, needed when
         // the yield is different for different types of particles. This
@@ -232,12 +232,12 @@ public: // With description
 
         std::vector<double> GetVUVTime(double, int);
         std::vector<double> GetVisibleTimeOnlyCathode(double, int);
-  	// old timings -- to be deleted       
-  
+  	// old timings -- to be deleted
+
         std::vector<double> getVUVTime(double, int);
 	void generateparam(int index);
         // Functions for vuv component Landau + Exponential timing parameterisation, updated method
-        
+
 	std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
 	// Visible component timing parameterisation
 
@@ -250,10 +250,10 @@ public: // With description
 protected:
 
         void BuildThePhysicsTable();
-        // It builds either the fast or slow scintillation integral table; 
-        // or both. 
+        // It builds either the fast or slow scintillation integral table;
+        // or both.
 
-  
+
         bool RecordPhotonsProduced(const G4Step& aStep, double N);
         // Note the production of N photons in at point xyz.
 	//  pass on to generate detector response, etc.
@@ -284,7 +284,7 @@ private:
                             G4double ScintillationTime,
                             G4double ScintillationRiseTime) const;
   std::vector<double> propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected=false); //const;
-   
+
         // emission time distribution when there is a finite rise time
         G4double sample_time(G4double tau1, G4double tau2) const;
 
@@ -294,14 +294,14 @@ private:
         CLHEP::RandGeneral *rgen0;
 
         void average_position(G4Step const& aStep, double *xzyPos) const;
-  
+
         G4EmSaturation* emSaturation;
         // functions and parameters for the propagation time parametrization
         phot::MappedFunctions_t ParPropTimeTF1;
         phot::MappedT0s_t ReflT0s;
 
         TF1 const* functions_vuv[8];
-        TF1 const* functions_vis[5];                     
+        TF1 const* functions_vis[5];
         double fd_break;
         double fd_max;
         double ftf1_sampling_factor;
@@ -315,13 +315,13 @@ private:
         // vector containing min and max range VUV timing parameterisations are sampled to
         std::vector<double> VUV_max;
         std::vector<double> VUV_min;
-       
+
 	// For new VIS time parameterisation
 	double fvis_vmean, fn_LAr_vis, fn_LAr_vuv;
 	std::vector<double> fdistances_refl;
         std::vector<std::vector<double>> fcut_off_pars;
 	std::vector<std::vector<double>> ftau_pars;
- 
+
 	//For VUV semi-analytic hits
 	//array of correction for the VUV Nhits estimation
 	std::vector<std::vector<double> > fGHvuvpars;
@@ -333,24 +333,24 @@ private:
 	TF1* VIS_pol[9];
 	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
 	std::vector<double>  fcathode_centre;
-        
+
 	// Optical detector properties for semi-analytic hits
-	int foptical_detector_type; 
+	int foptical_detector_type;
         double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
 
-        //double fGlobalTimeOffset;  
+        //double fGlobalTimeOffset;
 
         void ProcessStep( const G4Step& step);
-        
+
         bool bPropagate; ///< Whether propagation of photons is enabled.
-        
+
 };
 
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);
-  //For new VUV time parametrization    
+  //For new VUV time parametrization
   double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate );
   double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
 		       std::vector<double> &yData3, double x, bool extrapolate);
@@ -358,9 +358,9 @@ private:
   double model_far(double*, double*);
   // gaisser-hillas function
   double GaisserHillas(double *x, double *par);
-  // structure definition for solid angle of rectangle function                                                                                                                                     
+  // structure definition for solid angle of rectangle function
   struct acc{
-    // ax,ay,az = centre of rectangle; w = width; h = height                                                                                                                                
+    // ax,ay,az = centre of rectangle; w = width; h = height
     double ax, ay, az, w, h;
   };
   // solid angle of rectangular aperture calculation functions
@@ -375,7 +375,7 @@ private:
 // Inline methods
 ////////////////////
 
-inline 
+inline
 G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
        if (aParticleType.GetParticleName() == "opticalphoton") return false;
@@ -384,8 +384,8 @@ G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleTy
        return true;
 }
 
-inline 
-void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state) 
+inline
+void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
 {
 	fTrackSecondariesFirst = state;
 }
@@ -402,7 +402,7 @@ G4bool OpFastScintillation::GetTrackSecondariesFirst() const
         return fTrackSecondariesFirst;
 }
 
-inline 
+inline
 G4bool OpFastScintillation::GetFiniteRiseTime() const
 {
         return fFiniteRiseTime;

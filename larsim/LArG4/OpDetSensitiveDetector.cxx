@@ -30,17 +30,17 @@ namespace larg4{
     // Get instances of singleton classes
     fTheOpDetLookup        = OpDetLookup::Instance();
     fThePhotonTable        = OpDetPhotonTable::Instance();
-    
+
   }
 
-  
+
   //--------------------------------------------------------
 
   G4bool OpDetSensitiveDetector::ProcessHits(G4Step * aStep, G4TouchableHistory *)
   {
     sim::OnePhoton ThePhoton;
-    
-    
+
+
     // Get photon data to store in the hit
 
     ThePhoton.SetInSD      = true;
@@ -48,12 +48,12 @@ namespace larg4{
     ThePhoton.InitialPosition     = TVector3(
 					      aStep->GetTrack()->GetVertexPosition().x(),
 					      aStep->GetTrack()->GetVertexPosition().y(),
-					      aStep->GetTrack()->GetVertexPosition().z()	
+					      aStep->GetTrack()->GetVertexPosition().z()
 					      );
-    
+
     //ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
     ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime();
-    
+
 
     ThePhoton.Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();
 
@@ -66,21 +66,21 @@ namespace larg4{
     G4ThreeVector worldPosition  = preStepPoint->GetPosition();
     G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
     ThePhoton.FinalLocalPosition = TVector3(localPosition.x()/CLHEP::cm, localPosition.y()/CLHEP::cm, localPosition.z()/CLHEP::cm);
-    
+
 
     // Add this photon to the detected photons table
     fThePhotonTable->AddPhoton(OpDet, std::move(ThePhoton));
-    
+
     // Kill this photon track
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);
 
     return true;
-    
+
 
   }
 
   //--------------------------------------------------------
-  
+
   void OpDetSensitiveDetector::Initialize(G4HCofThisEvent *)
   {
 

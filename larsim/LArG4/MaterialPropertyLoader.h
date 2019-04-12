@@ -17,10 +17,10 @@
 #include <map>
 
 namespace larg4 {
-  
+
   /**
    * @brief Stores material properties and sends them to GEANT4 geometry.
-   * 
+   *
    * Class to set material properties for different materials in the detector.
    * Currently mainly used to set optical properties for LAr and other optical
    * components.
@@ -45,40 +45,40 @@ namespace larg4 {
   class MaterialPropertyLoader
   {
   public:
-    
+
     // TODO use type aliases
-    
+
     // TODO remove default constructor
     MaterialPropertyLoader() {}
     // TODO remove default destructor
     ~MaterialPropertyLoader() {}
-    
-    
+
+
     // TODO remove duplicate "public" label
   public:
-    
+
     // TODO turn arguments into constant references
     //Accessors
-    std::map<double,double> GetMaterialProperty(std::string Material,std::string Property) 
+    std::map<double,double> GetMaterialProperty(std::string Material,std::string Property)
       {return fPropertyList[Material][Property];}
-    
+
     // TODO turn arguments into constant references
     double GetMaterialConstProperty(std::string Material, std::string Property)
       {return fConstPropertyList[Material][Property];}
-    
+
     // TODO turn argument into constant reference
     std::map<std::string,double> GetMaterialConstProperties(std::string Material)
       {return fConstPropertyList[Material];}
-    
+
     // TODO turn argument into constant reference
     std::map<std::string,std::map<double,double> >  GetMaterialProperties(std::string Material)
       {return fPropertyList[Material];}
-    
-    
+
+
     // --- BEGIN Methods to set material properties ----------------------------
     /// @name Methods to set material properties
     /// @{
-    
+
     /**
      * @brief Stores the specified emergy-dependent material property.
      * @param Material name of the material to set the property of
@@ -86,17 +86,17 @@ namespace larg4 {
      * @param Values table of property values (see below)
      * @param Unit unit of the property values (CLHEP)
      * @see `SetMaterialConstProperty()`
-     * 
+     *
      * The property is stored internally and _not_ propagated to GEANT4
      * (use `UpdateGeometry()` to that purpose).
      * The previous value of the property is silently overwritten.
-     * 
+     *
      * The table of values is in form of (`energy`, `value`) pairs, where
      * `value` is measured in `Units` and `energy` is measured in electronvolt.
      */
     // TODO turn arguments into constant references
     void SetMaterialProperty(       std::string Material, std::string Property, std::map<double,double> Values, double Unit);
-    
+
     /**
      * @brief Stores the specified material property.
      * @param Material name of the material to set the property of
@@ -104,42 +104,42 @@ namespace larg4 {
      * @param Value the value of the property
      * @param Unit unit of the property value (CLHEP)
      * @see `SetMaterialProperty()`
-     * 
+     *
      * The property is stored internally and _not_ propagated to GEANT4
      * (use `UpdateGeometry()` to that purpose).
      * The previous value of the property is silently overwritten.
      */
     // TODO turn arguments into constant references
     void SetMaterialConstProperty(  std::string Material, std::string Property, double Value,                   double Unit);
-    
+
     /// @}
     // --- END Methods to set material properties ------------------------------
-    
+
     // --- BEGIN Setting of specific properties --------------------------------
     /// @name Setting of specific properties
     /// @{
-    
+
     // Method to set LArG4 Birks constant
     void SetBirksConstant( std::string, double, double );
-    
-    
+
+
     /**
-     * @brief 
+     * @brief
      */
     // TODO turn the arguments into constant references (using type aliases)
     void SetReflectances( std::string, std::map<std::string, std::map<double,double> >, std::map<std::string, std::map<double, double> >);
     // TODO turn the argument into constant reference (using type aliases)
-    void SetReflectances( std::map<std::string, std::map<double,double> >);    
+    void SetReflectances( std::map<std::string, std::map<double,double> >);
 
     /// @}
     // --- END Setting of specific properties ----------------------------------
-    
-    
+
+
     /**
      * @brief Imports properties from LArSoft services
-     * 
+     *
      * The properties imported include:
-     * 
+     *
      * * material `"LAr"`:
      *     * fast scintillation light spectrum (`"FASTCOMPONENT"`) from `detinfo::LArProperties::FastScintSpectrum()`
      *     * slow scintillation light spectrum (`"SLOWCOMPONENT"`) from `detinfo::LArProperties::SlowScintSpectrum()`
@@ -174,12 +174,12 @@ namespace larg4 {
      *
      */
     void GetPropertiesFromServices();
-    
+
     // TODO make this method constant
     /**
      * @brief Updates the material properties with the collected values.
      * @param lvs the store of logical volumes to be updated
-     * 
+     *
      * Before calling this function, properties for some materials (mostly
      * liquid argon, but not only: see e.g. `GetPropertiesFromServices()`) are
      * collected and updated.
@@ -188,7 +188,7 @@ namespace larg4 {
      * updated to reflect the values we have collected.
      */
     void UpdateGeometry( G4LogicalVolumeStore* lvs );
-    
+
 
 
   private:
@@ -200,13 +200,13 @@ namespace larg4 {
     std::map < std::string , std::map < std::string , std::map < double ,  double > > > fPropertyList;
 
     std::map<std::string, double> fBirksConstants;
-    
-    
 
-    
+
+
+
   }; // clas MaterialPropertyLoader
-  
-  
+
+
 } // namespace larg4
 
 

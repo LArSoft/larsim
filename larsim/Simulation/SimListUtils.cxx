@@ -2,7 +2,7 @@
 /// \file SimListUtils.cxx
 //
 /// \author  brebel@fnal.gov
-/// 
+///
 /// this class is designed to hold methods that access the event handle
 /// to make the various simulation lists, ie ParticleList, LArVoxelList, etc
 ////////////////////////////////////////////////////////////////////////
@@ -22,14 +22,14 @@ namespace sim{
   SimListUtils::SimListUtils()
   {
   }
-  
+
   //----------------------------------------------------------------------
   SimListUtils::~SimListUtils()
   {
   }
-  
+
   //----------------------------------------------------------------------
-  // moduleLabel is the label of the module that created the voxels you 
+  // moduleLabel is the label of the module that created the voxels you
   // are putting into the list
   sim::LArVoxelList SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
@@ -44,7 +44,7 @@ namespace sim{
 
     // loop over the voxels and put them into the list
     for(auto itr = sccol.begin(); itr != sccol.end(); ++itr){
-      
+
       // get all sim::IDE associated with this channel
       const auto &idemap = (*itr)->TDCIDEMap();
       //std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
@@ -54,12 +54,12 @@ namespace sim{
 
 	double time = (*mitr).first - detprop->TriggerOffset();
 	time *= detprop->SamplingRate();
-	
+
 	// loop over the sim::IDE objects
 	const std::vector<sim::IDE> &ide = (*mitr).second;
 	for(size_t i = 0; i < ide.size(); ++i){
 
-	  sim::LArVoxelID larVoxelID(ide[i].x, 
+	  sim::LArVoxelID larVoxelID(ide[i].x,
 				     ide[i].y,
 				     ide[i].z,
 				     time);
@@ -78,7 +78,7 @@ namespace sim{
   }
 
   //----------------------------------------------------------------------
-  // moduleLabel is the label of the module that created the pmthits you 
+  // moduleLabel is the label of the module that created the pmthits you
   // are putting into the list
   sim::SimPhotonsCollection SimListUtils::GetSimPhotonsCollection(const art::Event& evt, std::string moduleLabel)
   {
@@ -104,12 +104,12 @@ namespace sim{
 	new_photons.reserve((*itr).size());
 	pmtList.insert(std::pair<int,sim::SimPhotons>(ch,new_photons));
       }
-      
+
       /// add the photons to the entry
       for(auto pitr = (*itr).begin(); pitr != (*itr).end(); ++pitr)
 	pmtList[ch].push_back(sim::OnePhoton((*pitr)));
     }
-    
+
     return pmtList;
     //return std::move(pmtList);
   }

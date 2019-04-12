@@ -68,10 +68,10 @@ sim::MergeSimSources::MergeSimSources(fhicl::ParameterSet const & p)
 
   art::ServiceHandle<sim::LArG4Parameters const> lgp;
   fUseLitePhotons = lgp->UseLitePhotons();
-  
+
   if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
   else                 produces< std::vector<sim::SimPhotonsLite> >();
-  
+
   produces< std::vector<simb::MCParticle> >();
   produces< std::vector<sim::SimChannel>  >();
   produces< std::vector<sim::AuxDetSimChannel> >();
@@ -90,7 +90,7 @@ void sim::MergeSimSources::produce(art::Event & e)
   std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
 
   fMergeUtility.Reset();
-  
+
   for(size_t i_source=0; i_source<fInputSourcesLabels.size(); i_source++){
 
     std::string const& input_label = fInputSourcesLabels[i_source];
@@ -106,8 +106,8 @@ void sim::MergeSimSources::produce(art::Event & e)
       util::CreateAssn(*this,e,
 		       *(partCol.get()),mctAssn.at(i_p),*(tpassn.get()),
 		       assocVectorPrimitive[i_source][i_p]);
-    
-        
+
+
     art::Handle< std::vector<sim::SimChannel> > input_scCol;
     e.getByLabel(input_label,input_scCol);
     fMergeUtility.MergeSimChannels(*scCol,*input_scCol,i_source);
@@ -137,7 +137,7 @@ void sim::MergeSimSources::produce(art::Event & e)
   if(!fUseLitePhotons) e.put(std::move(PhotonCol));
   else                 e.put(std::move(LitePhotonCol));
   e.put(std::move(tpassn));
-  
+
 }
 
 DEFINE_ART_MODULE(sim::MergeSimSources)

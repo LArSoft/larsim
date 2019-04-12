@@ -29,7 +29,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  // With every step, calculate the number of ionization electrons and 
+  // With every step, calculate the number of ionization electrons and
   // scintillation photons using the IonizationAndScintillation singleton.
   void IonizationAndScintillationAction::SteppingAction(const G4Step* step)
   {

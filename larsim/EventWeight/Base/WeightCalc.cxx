@@ -13,7 +13,7 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-namespace evwgh { 
+namespace evwgh {
   std::vector<std::vector<double> > WeightCalc::MultiGaussianSmearing(std::vector<double> const& centralValue,std::vector< std::vector<double> > const& inputCovarianceMatrix,int n_multisims,CLHEP::RandGaussQ& GaussRandom)
   {
 
@@ -21,7 +21,7 @@ namespace evwgh {
 
     //Check that covarianceMatrix is of compatible dimension with the central values
     unsigned int covarianceMatrix_dim = centralValue.size();
- 
+
     if (inputCovarianceMatrix.size() != covarianceMatrix_dim)
       {
 	throw art::Exception(art::errors::Configuration)
@@ -73,10 +73,10 @@ namespace evwgh {
 
     	//get a gaussian random number for every central value element
 	int dim = centralValue.size();
-      
+
 	std::vector<double> rands(dim);
 	GaussRandom.fireArray(dim, rands.data());
-      
+
 	//compute the smeared central values
 	std::vector<double> smearedCentralValues;
 	for(int col = 0; col < dim; ++col)
@@ -111,7 +111,7 @@ namespace evwgh {
     //
     //perform Choleskey Decomposition
     //
-    // Best description I have found 
+    // Best description I have found
     //     is in the PDG (Monte Carlo techniques, Algorithms, Gaussian distribution)
     //
     //  http://pdg.lbl.gov/2016/reviews/rpp2016-rev-monte-carlo-techniques.pdf (Page 5)
@@ -129,12 +129,12 @@ namespace evwgh {
     //covariance matrix, but simplifies the structure.
     TMatrixD U = dc.GetU();
 
- 
+
     for(unsigned int col = 0; col < centralValue.size(); ++col)
       {
 	//find the weight of each col of the upper triangular cov. matrix
 	double weightFromU = 0.;
-	
+
 	for(unsigned int row = 0; row < col+1; ++row)
 	  {
 	    weightFromU += U(row,col)*rand[row];
@@ -161,23 +161,23 @@ namespace evwgh {
   ////////
   std::vector<double> WeightCalc::MultiGaussianSmearing(std::vector<double> const& centralValue, TMatrixD* const& LowerTriangleCovarianceMatrix, bool isDecomposed, std::vector< double > rand)
   {
-    
+
     //compute the smeared central values
     std::vector<double> smearedCentralValues;
-    
-    // This guards against accidentally 
+
+    // This guards against accidentally
     if(!isDecomposed){
       throw art::Exception(art::errors::StdException)
 	<< "Must supply the decomposed lower triangular covariance matrix.";
-      return smearedCentralValues;      
-    } 
+      return smearedCentralValues;
+    }
 
-     
+
     for(unsigned int col = 0; col < centralValue.size(); ++col)
       {
 	//find the weight of each col of the upper triangular cov. matrix
 	double weightFromU = 0.;
-	
+
 	for(unsigned int row = 0; row < col+1; ++row)
 	  {
 	    weightFromU += LowerTriangleCovarianceMatrix[0][row][col]*rand[row];
@@ -194,4 +194,4 @@ namespace evwgh {
 
 
 } // namespace evwgh
- 
+

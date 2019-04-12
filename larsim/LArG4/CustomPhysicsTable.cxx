@@ -20,14 +20,14 @@ namespace larg4 {
   CustomPhysicsTable::CustomPhysicsTable(CustomPhysicsFactoryBase * Factory)
   {
     if(!TheCustomPhysicsTable){
-      TheCustomPhysicsTable = new CustomPhysicsTable;  
+      TheCustomPhysicsTable = new CustomPhysicsTable;
       TheCustomPhysicsTable->AddPhysics(Factory);
     }
     else{
       TheCustomPhysicsTable->AddPhysics(Factory);
     }
   }
-  
+
   //-----------------------------------------------------------------
   std::vector<std::string> CustomPhysicsTable::GetAvailablePhysicsList()
   {
@@ -37,7 +37,7 @@ namespace larg4 {
     }
     return ReturnVector;
   }
-  
+
   //-----------------------------------------------------------------
   bool CustomPhysicsTable::IsPhysicsAvailable(std::string PhysicsName)
   {
@@ -46,7 +46,7 @@ namespace larg4 {
     else
       return true;
   }
-    
+
   //-----------------------------------------------------------------
   G4VPhysicsConstructor * CustomPhysicsTable::GetPhysicsConstructor(std::string PhysicsName)
   {
@@ -58,21 +58,21 @@ namespace larg4 {
       G4VPhysicsConstructor * G4VPC=0;
       return G4VPC;
     }
-    
+
   }
 
   //-----------------------------------------------------------------
   void CustomPhysicsTable::AddPhysics(CustomPhysicsFactoryBase * Factory)
   {
-    
-    if(IsPhysicsAvailable(Factory->GetName())) 
+
+    if(IsPhysicsAvailable(Factory->GetName()))
       mf::LogWarning("CustomPhysicsTable") << "Physics constructor being overwritten"
 					   << " in CustomPhysicsTable";
     TheCustomPhysicsTable->theTable[Factory->GetName()]=Factory;
-    MF_LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics " 
+    MF_LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics "
 				   << Factory->GetName();
   }
-  
+
 }
 
 

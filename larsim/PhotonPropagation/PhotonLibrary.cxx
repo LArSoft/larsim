@@ -15,9 +15,9 @@
 #include "TF1.h"
 
 namespace phot{
-  
+
   std::string const PhotonLibrary::OpChannelBranchName = "OpChannel";
-  
+
   //------------------------------------------------------------
 
   void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming) const
@@ -27,8 +27,8 @@ namespace phot{
     art::ServiceHandle<art::TFileService const> tfs;
 
     TTree *tt = tfs->make<TTree>("PhotonLibraryData","PhotonLibraryData");
- 
-    
+
+
     Int_t     Voxel          = 0;
     Int_t     OpChannel      = 0;
     Float_t   Visibility     = 0;
@@ -85,7 +85,7 @@ namespace phot{
 	if(storeTiming!=0)
 	{
 	  for (size_t i =0; i<storeTiming; i++) timing_par[i] = uncheckedAccessTimingPar(ivox, ichan, i);
-	  
+
 	}
         if (Visibility > 0 || ReflVisibility > 0)
         {
@@ -94,7 +94,7 @@ namespace phot{
           // visibility(ies) is(are) already set
           tt->Fill();
         }
-      }	
+      }
     }
   }
 
@@ -104,7 +104,7 @@ namespace phot{
   void PhotonLibrary::CreateEmptyLibrary(
     size_t NVoxels, size_t NOpChannels,
     bool storeReflected /* = false */,
-    bool storeReflT0 /* = false */, 
+    bool storeReflT0 /* = false */,
     size_t storeTiming /* = false */
   ) {
     fLookupTable.clear();
@@ -126,7 +126,7 @@ namespace phot{
     {
       fTimingParLookupTable.resize(LibrarySize());
       fTimingParTF1LookupTable.resize(LibrarySize());
-    }	
+    }
   }
 
 
@@ -144,14 +144,14 @@ namespace phot{
 
     TFile *f = nullptr;
     TTree *tt = nullptr;
-      
+
     try
       {
 	f  =  TFile::Open(LibraryFile.c_str());
 	tt =  (TTree*)f->Get("PhotonLibraryData");
         if (!tt) { // Library not in the top directory
             TKey *key = f->FindKeyAny("PhotonLibraryData");
-            if (key) 
+            if (key)
                 tt = (TTree*)key->ReadObj();
             else {
                 mf::LogError("PhotonLibrary") << "PhotonLibraryData not found in file" <<LibraryFile;
@@ -163,7 +163,7 @@ namespace phot{
         throw cet::exception("PhotonLibrary") << "Error in ttree load, reading photon library: " << LibraryFile << "\n";
       }
 
-    
+
     Int_t     Voxel;
     Int_t     OpChannel;
     Float_t   Visibility;
@@ -183,10 +183,10 @@ namespace phot{
     fHasReflectedT0 = getReflT0;
     if(getReflT0)
       tt->SetBranchAddress("ReflTfirst", &ReflTfirst);
-    
+
     fNVoxels     = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
-    
+
     // with STL vectors, where `resize()` directly controls the allocation of
     // memory, reserving the space is redundant; not so with `util::LazyVector`,
     // where `resize()` never increases the memory; `data_init()` allocates
@@ -215,7 +215,7 @@ namespace phot{
       fReflTLookupTable.resize(LibrarySize());
       fReflTLookupTable.data_init(LibrarySize());
     }
-    
+
     size_t NEntries = tt->GetEntries();
 
     for(size_t i=0; i!=NEntries; ++i) {
@@ -229,7 +229,7 @@ namespace phot{
       if(fHasReflected)
 	uncheckedAccessRefl(Voxel, OpChannel) = ReflVisibility;
       if(fHasReflectedT0)
-	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst; 
+	uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst;
       if(fHasTiming!=0)
       {
         // TODO: use TF1::Copy
@@ -243,7 +243,7 @@ namespace phot{
 	uncheckedAccessTimingTF1(Voxel,OpChannel) = timingfunction;
       }
     } // for entries
-    
+
     mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
 
     try
@@ -260,11 +260,11 @@ namespace phot{
   //----------------------------------------------------
 
   float PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) const
-  { 
+  {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
-      return 0;   
+      return 0;
     else
-      return uncheckedAccess(Voxel, OpChannel); 
+      return uncheckedAccess(Voxel, OpChannel);
   }
   //----------------------------------------------------
 
@@ -295,21 +295,21 @@ namespace phot{
 
   //----------------------------------------------------
 
-  void PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count) 
-  { 
+  void PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count)
+  {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
-      mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range"; 
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set count in voxel " << Voxel<<" which is out of range";
     else
-      uncheckedAccess(Voxel, OpChannel) = Count; 
+      uncheckedAccess(Voxel, OpChannel) = Count;
   }
   //----------------------------------------------------
 
-  void PhotonLibrary::SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum) 
-  { 
+  void PhotonLibrary::SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum)
+  {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
-      mf::LogError("PhotonLibrary")<<"Error - attempting to set timing t0 count in voxel " << Voxel<<" which is out of range"; 
+      mf::LogError("PhotonLibrary")<<"Error - attempting to set timing t0 count in voxel " << Voxel<<" which is out of range";
     else
-      uncheckedAccessTimingPar(Voxel, OpChannel, parnum) = Count; 
+      uncheckedAccessTimingPar(Voxel, OpChannel, parnum) = Count;
   }
   //----------------------------------------------------
 
@@ -343,7 +343,7 @@ namespace phot{
   //----------------------------------------------------
 
   float const* PhotonLibrary::GetCounts(size_t Voxel) const
-  { 
+  {
     if (Voxel >= fNVoxels) return nullptr;
     else return fLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
@@ -351,7 +351,7 @@ namespace phot{
   //----------------------------------------------------
 
   const std::vector<float>* PhotonLibrary::GetTimingPars(size_t Voxel) const
-  { 
+  {
     if (Voxel >= fNVoxels) return nullptr;
     else return fTimingParLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
@@ -375,9 +375,9 @@ namespace phot{
      * Plus I opened JIRA ROOT-9549
      * (https://sft.its.cern.ch/jira/browse/ROOT-9549).
      * After that is solved, this method should become:
-     * 
+     *
      * TF1 const* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
-     * 
+     *
      * and the users should update their code accordingly.
      */
     else return const_cast<TF1*>(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, 0)));
@@ -400,35 +400,35 @@ namespace phot{
   }
 
   //----------------------------------------------------
-  
+
   size_t PhotonLibrary::ExtractNOpChannels(TTree* tree) {
     TBranch* channelBranch = tree->GetBranch(OpChannelBranchName.c_str());
     if (!channelBranch) {
       throw art::Exception(art::errors::NotFound)
         << "Tree '" << tree->GetName() << "' has no branch 'OpChannel'";
     }
-    
+
     // fix a new local address for the branch
     char* oldAddress = channelBranch->GetAddress();
     Int_t channel;
     channelBranch->SetAddress(&channel);
     Int_t maxChannel = -1;
-    
+
     // read all the channel values and pick the largest one
     Long64_t iEntry = 0;
     while (channelBranch->GetEntry(iEntry++)) {
       if (channel > maxChannel) maxChannel = channel;
     } // while
-    
+
     MF_LOG_DEBUG("PhotonLibrary")
       << "Detected highest channel to be " << maxChannel << " from " << iEntry
       << " tree entries";
-    
+
     // restore the old branch address
     channelBranch->SetAddress(oldAddress);
-    
+
     return size_t(maxChannel + 1);
-    
+
   } // PhotonLibrary::ExtractNOpChannels()
 
 

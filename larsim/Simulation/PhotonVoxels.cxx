@@ -22,14 +22,14 @@ namespace sim {
   //----------------------------------------------------------------------------
   // PhotonVoxelDef class
   //----------------------------------------------------------------------------
-  PhotonVoxelDef::PhotonVoxelDef(double xMin, 
-                                 double xMax, 
-                                 int xN, 
-                                 double yMin, 
-                                 double yMax, 
-                                 int yN, 
-                                 double zMin, 
-                                 double zMax, 
+  PhotonVoxelDef::PhotonVoxelDef(double xMin,
+                                 double xMax,
+                                 int xN,
+                                 double yMin,
+                                 double yMax,
+                                 int yN,
+                                 double zMin,
+                                 double zMax,
                                  int zN)
     : fLowerCorner(xMin, yMin, zMin)
     , fUpperCorner(xMax, yMax, zMax)
@@ -70,12 +70,12 @@ namespace sim {
   PhotonVoxelDef::GetNeighboringVoxelIDsImpl(geo::Point_t const& v) const
   {
     if (!isInside(v)) return {};
-    
+
     std::array<sim::PhotonVoxelDef::NeiInfo, 8U> ret;
 
     // Position in voxel coordinates including floating point part
     auto const rStepD = GetVoxelStepCoordsUnchecked(v);
-    
+
     // The neighbours are the 8 corners of a cube around this point
     std::size_t iNeigh = 0U;
     for(int dx: { 0, 1 }) {
@@ -153,7 +153,7 @@ namespace sim {
     double const zMax = VoxelSize.Z() * (zStep+1) + fLowerCorner.Z();
 
 
-   
+
     return PhotonVoxel(xMin, xMax, yMin, yMax, zMin, zMax);
   }
 
@@ -171,15 +171,15 @@ namespace sim {
     ReturnVector[2] =  ((ID - ReturnVector[0] - (ReturnVector[1] * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
     return ReturnVector;
   }
-  
+
   //----------------------------------------------------------------------------
   std::array<double, 3U> PhotonVoxelDef::GetVoxelStepCoordsUnchecked
     (geo::Point_t const& p) const
   {
-    
+
     auto const span = fUpperCorner - fLowerCorner;
     auto const relPos = p - fLowerCorner;
-    
+
     // BUG the double brace syntax is required to work around clang bug 21629
     // (https://bugs.llvm.org/show_bug.cgi?id=21629)
     return {{
@@ -188,13 +188,13 @@ namespace sim {
       (relPos.Z() / span.Z()) * fzSteps
       }};
   } // PhotonVoxelDef::GetVoxelStepCoordsUnchecked()
-  
+
   //----------------------------------------------------------------------------
   int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const {
     if (!isInside(p)) return -1;
-    
+
     auto const stepCoords = GetVoxelStepCoordsUnchecked(p);
-    
+
     // figure out how many steps this point is in the x,y,z directions;
     // `p` is guaranteed to be in the mapped volume by the previous check
     int xStep = static_cast<int>(stepCoords[0]);
@@ -206,7 +206,7 @@ namespace sim {
             + yStep * (fxSteps)
             + zStep * (fxSteps * fySteps));
   }
-  
+
   //----------------------------------------------------------------------------
   bool PhotonVoxelDef::isInsideVolume(
     geo::Point_t const& point,
@@ -219,15 +219,15 @@ namespace sim {
       && isInsideRange(point.Z(), lower.Z(), upper.Z())
       ;
   }
-  
+
   bool PhotonVoxelDef::isInsideRange(double value, double lower, double upper) {
-    
+
     return (value >= lower) && (value < upper);
-    
+
   } // PhotonVoxelDef::isInsideRange()
-  
-  
+
+
   //----------------------------------------------------------------------------
-  
-  
+
+
 } // namespace sim

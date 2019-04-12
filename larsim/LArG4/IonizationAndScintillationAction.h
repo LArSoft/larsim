@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  IonizationAndScintillationAction.h
 /// \brief this UserAction derived class is to provide a hook
-///        during G4 stepping in which to call the code that 
+///        during G4 stepping in which to call the code that
 ///        calculates the number of ionization electrons and scintillation
 ///        photons produced by each step
 ///

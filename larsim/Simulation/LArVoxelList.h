@@ -17,7 +17,7 @@
 ///   the lists are merged.  Usage:
 ///      sim::LArVoxelList a,b;
 ///      a.Add(b);
-///   There's even an operator+ so you can write "a += b", but be 
+///   There's even an operator+ so you can write "a += b", but be
 ///   careful about wasting memory if you write "a = a+b".  Of
 ///   course, you can do:
 ///      sim:LArVoxelList c = a + b;
@@ -97,18 +97,18 @@ namespace sim {
     // The arithmetic methods "advertised" in the class description
     // above.
     void Add( const LArVoxelList& );
-    LArVoxelList& operator+=( const LArVoxelList& other ) 
-    { 
-      this->Add(other); 
-      return *this; 
+    LArVoxelList& operator+=( const LArVoxelList& other )
+    {
+      this->Add(other);
+      return *this;
     }
-    const LArVoxelList operator+(const LArVoxelList& other) const 
+    const LArVoxelList operator+(const LArVoxelList& other) const
     {
       return LArVoxelList(*this) += other;
     }
 
     LArVoxelList&      operator*=( const double& value );
-    const LArVoxelList operator* (const double& value) const 
+    const LArVoxelList operator* (const double& value) const
     {
       return LArVoxelList(*this) *= value;
     }
@@ -167,7 +167,7 @@ namespace sim {
     list_type m_voxelList; ///< A sorted list of <LArVoxelID,double> pairs = (voxel ID, energy)
 
   };
-  
+
 } // namespace sim
 
 #endif // LARVOXELLIST_H

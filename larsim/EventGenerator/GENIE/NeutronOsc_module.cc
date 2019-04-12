@@ -8,8 +8,8 @@
 //
 //  Neutron-antineutron oscillation mode ID:
 // ---------------------------------------------------------
-//  ID |   Decay Mode                     
-//     |                                  
+//  ID |   Decay Mode
+//     |
 // ---------------------------------------------------------
 //   0 |    Random oscillation mode
 //   1 |    p + nbar --> \pi^{+} + \pi^{0}
@@ -115,14 +115,14 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   mcgen =
     dynamic_cast<const genie::EventRecordVisitorI *> (algf->GetAlgorithm(sname,sconfig));
   if(!mcgen) {
-    throw cet::exception("NeutronOsc") << "Couldn't instantiate the neutron-antineutron oscillation generator"; 
+    throw cet::exception("NeutronOsc") << "Couldn't instantiate the neutron-antineutron oscillation generator";
   }
   int fDecayMode = p.get<int>("DecayMode");
   gOptDecayMode = (genie::NeutronOscMode_t) fDecayMode;
 
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();
-  
+
   unsigned int seed = art::ServiceHandle<rndm::NuRandomService>()->getSeed();
   genie::utils::app_init::RandGen(seed);
 }
@@ -135,8 +135,8 @@ void evgen::NeutronOsc::produce(art::Event & e)
   int decay  = SelectAnnihilationMode(target);
   genie::Interaction * interaction = genie::Interaction::NOsc(target,decay);
   event->AttachSummary(interaction);
-  
-  // Simulate decay     
+
+  // Simulate decay
   mcgen->ProcessEventRecord(event);
 
 //  genie::Interaction *inter = event->Summary();
@@ -149,7 +149,7 @@ void evgen::NeutronOsc::produce(art::Event & e)
 
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
   simb::MCTruth truth;
-  
+
   art::ServiceHandle<geo::Geometry const> geo;
 
   // Find boundary of active volume
@@ -181,16 +181,16 @@ void evgen::NeutronOsc::produce(art::Event & e)
   // add the vertex X/Y/Z to the V_i for status codes 0 and 1
   int trackid = 0;
   std::string primary("primary");
-  
+
   while( (part = dynamic_cast<genie::GHepParticle *>(partitr.Next())) ){
-    
-    simb::MCParticle tpart(trackid, 
+
+    simb::MCParticle tpart(trackid,
                            part->Pdg(),
                            primary,
                            part->FirstMother(),
-                           part->Mass(), 
+                           part->Mass(),
                            part->Status());
-    
+
     TLorentzVector pos(X0, Y0, Z0, 0);
     TLorentzVector mom(part->Px(), part->Py(), part->Pz(), part->E());
     tpart.AddTrajectoryPoint(pos,mom);
@@ -200,12 +200,12 @@ void evgen::NeutronOsc::produce(art::Event & e)
       tpart.SetPolarization(polz);
     }
     truth.Add(tpart);
-    
-    ++trackid;        
+
+    ++trackid;
   }// end loop to convert GHepParticles to MCParticles
   truth.SetOrigin(simb::kUnknown);
   truthcol->push_back(truth);
-  //FillHistograms(truth);  
+  //FillHistograms(truth);
   e.put(std::move(truthcol));
 
   delete event;
@@ -215,13 +215,13 @@ void evgen::NeutronOsc::produce(art::Event & e)
 
 void evgen::NeutronOsc::beginRun(art::Run& run)
 {
-    
+
   // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry const> geo;
   auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
-  
+
   run.put(std::move(runcol));
-  
+
   return;
 }
 

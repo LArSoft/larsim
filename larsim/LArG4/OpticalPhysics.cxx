@@ -46,7 +46,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleTable.hh" 
+#include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmProcessOptions.hh"
@@ -107,7 +107,7 @@
 
 namespace larg4 {
 
-  CustomPhysicsFactory<OpticalPhysics> optical_factory("Optical"); 
+  CustomPhysicsFactory<OpticalPhysics> optical_factory("Optical");
 
   //-----------------------------------------------------------
   OpticalPhysics::OpticalPhysics(G4int ver, const G4String& name)
@@ -116,38 +116,38 @@ namespace larg4 {
     G4LossTableManager::Instance();
     mf::LogInfo("OpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
-  
-   
+
+
   //-----------------------------------------------------------
   OpticalPhysics::~OpticalPhysics()
   {}
-  
-  //-----------------------------------------------------------  
+
+  //-----------------------------------------------------------
   void OpticalPhysics::ConstructParticle()
   {
     MF_LOG_DEBUG("OpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     // optical photon
     G4OpticalPhoton::OpticalPhotonDefinition();
-    
+
     // gamma
     G4Gamma::Gamma();
-    
+
     // leptons
     G4Electron::Electron();
     G4Positron::Positron();
     G4MuonPlus::MuonPlus();
     G4MuonMinus::MuonMinus();
-    
+
     // mesons
     G4PionPlus::PionPlusDefinition();
     G4PionMinus::PionMinusDefinition();
     G4KaonPlus::KaonPlusDefinition();
     G4KaonMinus::KaonMinusDefinition();
-    
+
     // barions
     G4Proton::Proton();
     G4AntiProton::AntiProton();
-    
+
     // ions
     G4Deuteron::Deuteron();
     G4Triton::Triton();
@@ -155,8 +155,8 @@ namespace larg4 {
     G4Alpha::Alpha();
     G4GenericIon::GenericIonDefinition();
   }
-    
-  //-----------------------------------------------------------  
+
+  //-----------------------------------------------------------
   void OpticalPhysics::ConstructProcess()
   {
 
@@ -165,7 +165,7 @@ namespace larg4 {
 
     // Add standard EM Processes
     MF_LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
-    
+
     fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
     fTheScintillationProcess       = new G4Scintillation("Scintillation");
     fTheAbsorptionProcess          = new G4OpAbsorption();
@@ -175,24 +175,24 @@ namespace larg4 {
     else
       fTheBoundaryProcess_g4       = new G4OpBoundaryProcess();
     fTheWLSProcess                 = new G4OpWLS();
-    
-    
-    
+
+
+
     fTheCerenkovProcess->SetMaxNumPhotonsPerStep(700);
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
     fTheCerenkovProcess->SetTrackSecondariesFirst(false);
-    
+
     fTheScintillationProcess->SetScintillationYieldFactor(1.);
     fTheScintillationProcess->SetTrackSecondariesFirst(false);
-    
+
     // Use Birks Correction in the Scintillation process
-    
+
     G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
     fTheScintillationProcess->AddSaturation(emSaturation);
-    
-    
+
+
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
-    
+
     mf::LogInfo("OpticalPhysics")<<"Cerenkov light enabled : " << CerenkovLightEnabled;
     static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
@@ -214,7 +214,7 @@ namespace larg4 {
 	pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
 	//	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Scintillation applicable : " << particleName;
       }
-  
+
      if (particleName == "opticalphoton") {
        mf::LogInfo("OpticalPhysics") << " AddDiscreteProcess to OpticalPhoton ";
 	pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
@@ -226,6 +226,6 @@ namespace larg4 {
 	pmanager->AddDiscreteProcess(fTheWLSProcess);
       }
     }
-    
+
   }
 }

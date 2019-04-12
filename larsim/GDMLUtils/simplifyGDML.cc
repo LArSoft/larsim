@@ -3,14 +3,14 @@
  * @brief  Reprocesses a GDML file via GEANT4.
  * @author Gianluca Petrillo (petrillo@fnal.gov)
  * @date   June 13, 2017
- * 
+ *
  * Run with `--help` argument for usage instructions.
- * 
+ *
  * This program needs to be linked to:
  * - GEANT4
  * - CLHEP
  * - XERCES (C)
- * 
+ *
  * Example of build command in UPS environment:
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * g++ -Wall -pedantic -std=c++14 \
@@ -19,10 +19,10 @@
  *   -L"$XERCES_C_LIB" -lxerces-c \
  *   -o simplifyGDML.exe simplifyGDML.cc
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * 
+ *
  * Note that this program is a glorified 3-line code: parse XML file, get
  * the world volume, write it.
- * 
+ *
  */
 
 // GEANT4
@@ -41,28 +41,28 @@
 //------------------------------------------------------------------------------
 // argument parsing
 struct ConfigurationParameters {
-  
+
   static const unsigned int StartingDebugLevel = 0;
   static std::string const DefaultSetupName;
   static std::string const DefaultSchemaURL;
-  
+
   std::string sourcePath; ///< GDML input file name.
   std::string destPath; ///< GDML output file name.
-  
+
   /// Name of the chosen setup in the GDML source.
   std::string setupName = DefaultSetupName;
-  
+
   /// URL of the schema used while writing GDML.
   std::string schemaPath = DefaultSchemaURL;
-  
+
   bool validate = false; ///< Ask Geant4 to validate the source.
   bool overwrite = false; ///< Overwrite the output file if already present.
   bool dontWrite = false; ///< Do not write the output file.
   bool help = false; ///< Print usage instructions and exit.
   unsigned int debugLevel = StartingDebugLevel; ///< Debug level.
-  
+
   void print() const;
-  
+
 }; // struct ConfigurationParameters
 
 std::string const ConfigurationParameters::DefaultSetupName = "Default";
@@ -70,7 +70,7 @@ std::string const ConfigurationParameters::DefaultSchemaURL
   = G4GDML_DEFAULT_SCHEMALOCATION;
 
 void ConfigurationParameters::print() const {
-  
+
   std::cout << "Configuration:"
     "\n  input file:  '" << sourcePath << "'"
     "\n  output file: '" << destPath << "'"
@@ -82,15 +82,15 @@ void ConfigurationParameters::print() const {
     "\n  print help:   " << std::boolalpha << help <<
     "\n  debug level:  " << debugLevel <<
     std::endl;
-  
+
 } // ConfigurationParameters::print()
 
 
 
 struct ConfigurationParser {
-  
+
   static const unsigned int DefaultDebugLevel = 1;
-  
+
   typedef enum {
     Success,
     InvalidNumber,
@@ -99,16 +99,16 @@ struct ConfigurationParser {
     ExtraArguments,
     MissingArgument
   } error;
-  
+
   static error parse
     (ConfigurationParameters& params, unsigned int argc, char** argv);
-  
+
   static void printHelp
     (int exitCode = 0, const char* progName = "simplifyGDML");
-  
+
     private:
   struct opt; // single letter options namespace
-  
+
 }; // struct ConfigurationParameters
 
 
@@ -186,7 +186,7 @@ ConfigurationParser::error ConfigurationParser::parse
 //    { "two",      no_argument,       &value, 2 },
     { NULL,        0,                 NULL, 0 }
   }; // longopts
-  
+
   // automatically build the short option string from the long one
   std::string shortopts = ":"; // this means no error printout
   for (auto const& longopt: longopts) {
@@ -196,7 +196,7 @@ ConfigurationParser::error ConfigurationParser::parse
     if (longopt.has_arg != no_argument) shortopts += ':';
     if (longopt.has_arg == optional_argument) shortopts += ':';
   } // for
-  
+
   // ----------------------------------------------------------------------
   // options
   error res = error::Success;
@@ -255,7 +255,7 @@ ConfigurationParser::error ConfigurationParser::parse
         continue;
      } // switch
   } // while
-  
+
   // ----------------------------------------------------------------------
   // arguments
   if (optind >= (int) argc) {
@@ -264,7 +264,7 @@ ConfigurationParser::error ConfigurationParser::parse
   }
   params.sourcePath = argv[optind++];
   if (optind < (int) argc) params.destPath = argv[optind++];
-  
+
   if (optind < (int) argc) {
     if (!forgiving) {
       std::cerr << "Spurious arguments: '" << argv[optind] << "'";
@@ -274,7 +274,7 @@ ConfigurationParser::error ConfigurationParser::parse
     }
     return error::ExtraArguments;
   }
-  
+
   // ----------------------------------------------------------------------
   return res;
 } // ConfigurationParser::parse()
@@ -304,7 +304,7 @@ G4VPhysicalVolume* readWorldVolume
 } // readWorldVolume()
 
 int writeWorld(G4GDMLParser& parser, ConfigurationParameters const& params) {
-  
+
   std::cout << std::string(80, '-')
     << "\nFetching the world volume for setup '" << params.setupName << "'..."
     << std::endl;
@@ -314,7 +314,7 @@ int writeWorld(G4GDMLParser& parser, ConfigurationParameters const& params) {
       << params.setupName << "'" << std::endl;
     return 1;
   }
-  
+
   if (exists(params.destPath)) {
     if (params.overwrite) {
       std::cout << "Overwriting the destination file..." << std::endl;
@@ -326,59 +326,59 @@ int writeWorld(G4GDMLParser& parser, ConfigurationParameters const& params) {
       return 2;
     }
   }
-  
+
   std::cout  << std::string(80, '-')
     << "\nWriting '" << params.destPath << "'..." << std::endl;
   parser.Write
     (params.destPath, worldVolume, false /* do not add references to names*/);
-  
+
   std::cout  << std::string(80, '-')
     << "\n'" << params.sourcePath << "' => [" << params.setupName << "] => '"
     << params.destPath << "': done."
     << std::endl;
-  
+
   return 0;
 } // writeVolume()
 
 
 //------------------------------------------------------------------------------
 int main(int argc, char** argv) {
-  
+
   //
   // argument parsing
   //
   ConfigurationParameters params;
-  
+
   auto parseRes = ConfigurationParser::parse(params, argc, argv);
-  
+
   if (params.destPath.empty() && !params.dontWrite)
     params.destPath = addNameSuffix(params.sourcePath, "-simplified");
-  
+
   if (params.debugLevel > 0) params.print();
-  
+
   // print usage instructions before exiting
   if (params.help) {
     ConfigurationParser::printHelp(0, argv[0]);
     return 0;
   }
   if (parseRes != ConfigurationParser::Success) return (int) parseRes;
-  
+
   //
   // the magic
   //
   G4GDMLParser parser;
-  
+
   std::cout << std::string(80, '-')
     << "\nReading '" << params.sourcePath << "'..." << std::endl;
   parser.Read(params.sourcePath, params.validate);
-  
+
   std::cout << std::string(80, '-')
     << "\nFetching the world volume for setup '" << params.setupName << "'..."
     << std::endl;
   // for c2: worldVolume is unused here
   //decltype(auto) worldVolume = parser.GetWorldVolume(params.setupName);
   parser.GetWorldVolume(params.setupName);
-  
+
   if (params.dontWrite) {
     if (!params.destPath.empty()) {
       std::cerr << "Output path ignored since we don't write anything."
@@ -389,7 +389,7 @@ int main(int argc, char** argv) {
     int res = writeWorld(parser, params);
     if (res != 0) return res;
   }
-  
+
   //
   // the missing error code
   //

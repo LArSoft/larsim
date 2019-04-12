@@ -13,7 +13,7 @@
 #include <fstream>
 #include <bitset>
 // Framework includes
-#include "art/Framework/Core/ModuleMacros.h" 
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -40,13 +40,13 @@ namespace geo { class Geometry; }
 ///Detector simulation of raw signals on wires
 namespace larg {
 
-  /// Base class for creation of raw signals on wires. 
+  /// Base class for creation of raw signals on wires.
   class LArSimChannelAna : public art::EDAnalyzer {
-    
+
   public:
-        
-    explicit LArSimChannelAna(fhicl::ParameterSet const& pset); 
-    
+
+    explicit LArSimChannelAna(fhicl::ParameterSet const& pset);
+
     /// read/write access to event
     void analyze (const art::Event& evt);
 
@@ -66,9 +66,9 @@ namespace larg {
     // database...
     bool initDone;
 
-    TH1D * fChargeXpos;   ///< position of the MC Truth charge deposition 
-    TH1D * fChargeYpos;   ///< position of the MC Truth charge deposition 
-    TH1D * fChargeZpos;   ///< position of the MC Truth charge deposition 
+    TH1D * fChargeXpos;   ///< position of the MC Truth charge deposition
+    TH1D * fChargeYpos;   ///< position of the MC Truth charge deposition
+    TH1D * fChargeZpos;   ///< position of the MC Truth charge deposition
 
     TH1D * fTDC;          ///< Which TDCs have activity
 
@@ -81,7 +81,7 @@ namespace larg {
     TH1D * fElectronsPerTDC;
     TH1D * fEnergyPerTDC;
 
-    TH1D * fElectronsPerIDE; 
+    TH1D * fElectronsPerIDE;
     TH1D * fEnergyPerIDE;
 
 
@@ -116,14 +116,14 @@ namespace larg {
     // get access to the TFile service
     art::ServiceHandle<art::TFileService const> tfs;
     // geometry data.
-    art::ServiceHandle<geo::Geometry const> geom; 
+    art::ServiceHandle<geo::Geometry const> geom;
     // detector specific properties
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     // assumes all TPCs are the same
-    double width  = 2 * geom->TPC(0).HalfWidth(); 
-    double halfHeight = geom->TPC(0).HalfHeight(); 
-    double length = geom->TPC(0).Length(); 
+    double width  = 2 * geom->TPC(0).HalfWidth();
+    double halfHeight = geom->TPC(0).HalfHeight();
+    double length = geom->TPC(0).Length();
 
     // Assumes microboone dimensions. Ideally we'd fix this later...
     fChargeXpos  = tfs->make<TH1D>("hChargeXpos",
@@ -174,10 +174,10 @@ namespace larg {
     if (evt.isRealData()) {
       throw cet::exception("LArSimChannelAna") << "Not for use on Data yet...\n";
     }
-    
+
     ensureHists();
 
-    art::ServiceHandle<geo::Geometry const> geom; 
+    art::ServiceHandle<geo::Geometry const> geom;
 
     art::Handle< std::vector<sim::SimChannel> > chanHandle;
     evt.getByLabel(fLArG4ModuleLabel,chanHandle);
@@ -207,7 +207,7 @@ namespace larg {
 	  totalEnergy    += ide.energy;
 	  tdcElectrons   += ide.numElectrons;
 	  tdcEnergy      += ide.energy;
-	  
+
 	  fChargeXpos->Fill(ide.x);
 	  fChargeYpos->Fill(ide.y);
 	  fChargeZpos->Fill(ide.z);

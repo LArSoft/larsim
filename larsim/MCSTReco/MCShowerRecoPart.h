@@ -47,7 +47,7 @@ namespace sim
     void ConstructShower(const MCRecoPart& part_v);
 
     /**
-       Returns a list ot daughter particle index numbers for the specified shower 
+       Returns a list ot daughter particle index numbers for the specified shower
        with the shower index number as an input
      */
     const std::vector<unsigned int>& ShowerDaughters(const unsigned int shower_id) const
@@ -97,6 +97,6 @@ namespace sim
     std::vector<std::vector<unsigned int> > _shower_daughters;
 
   }; // class MCShowerRecoPart
-  
+
 } //namespace cluster
 #endif

@@ -98,7 +98,7 @@ namespace phot {
 
 /**
  * @brief Fast simulation of propagating the photons created from SimEnergyDeposits.
- * 
+ *
  * This module does a fast simulation of propagating the photons created from SimEnergyDeposits,
  * which is the Geant4 output after each step, to each of the optical detectors.
  * This simulation is done using the PhotonLibrary,

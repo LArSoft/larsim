@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  G4BadIdeaAction.h
 /// \brief this UserAction derived class is to implement catches to known bugs
-///        in Geant4 that require grabbing const G4 objects and altering them - 
+///        in Geant4 that require grabbing const G4 objects and altering them -
 ///        a very bad idea in general.  Please do not add to this class without
 ///        discussing with the LArSoft Conveners
 ///

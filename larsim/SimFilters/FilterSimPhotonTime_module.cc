@@ -50,10 +50,10 @@ private:
   std::vector< std::vector<float> > const fTimeWindows;
   float                             const fMinTotalEnergy;
   float                             const fMinPhotonEnergy;
-  bool                              const fDebug; 
+  bool                              const fDebug;
 
   std::vector<float>                fSumEnergyArray;
-  
+
   void CheckTimeWindows();
 };
 
@@ -76,7 +76,7 @@ void simfilter::FilterSimPhotonTime::CheckTimeWindows(){
   if(fDebug)
     std::cout << "\tFilterSimPhotonTime: TimeWindows size is "
 	      << fTimeWindows.size() << std::endl;
-  
+
   for(auto const& tw : fTimeWindows){
 
 
@@ -84,18 +84,18 @@ void simfilter::FilterSimPhotonTime::CheckTimeWindows(){
       throw cet::exception("FilterSimPhotonTime::CheckTimeWindows")
 	<< "Bad time window initialization: time window has wrong size (not 2)."
 	<< std::endl;
-    
+
     if(fDebug)
       std::cout << "\t\tTimeWindow "
 		<< "[" << tw[0] << "," << tw[1] << "]"
 		<< std::endl;
-    
+
     if(tw[0]>tw[1])
       throw cet::exception("FilterSimPhotonTime::CheckTimeWindows")
 	<< "Bad time window initialization: tw[0]>tw[1]. Reverse the order!"
 	<< std::endl;
-    
-    
+
+
   }
 
 }
@@ -118,12 +118,12 @@ bool simfilter::FilterSimPhotonTime::filter(art::Event & e)
       for(size_t i_tw=0; i_tw<fTimeWindows.size(); ++i_tw){
 	auto const& tw(fTimeWindows[i_tw]);
 	if(photon.Time>=tw[0] && photon.Time<=tw[1] && photon.Energy>fMinPhotonEnergy){
-	  
+
 	  if(fDebug)
 	    std::cout << "\t\tPhoton with time " << photon.Time << " detected. "
 		      << "Energy is  " << photon.Energy << "."
 		      << std::endl;
-	  
+
 	  fSumEnergyArray[i_tw] += photon.Energy;
 
 	  if(fDebug)
@@ -143,7 +143,7 @@ bool simfilter::FilterSimPhotonTime::filter(art::Event & e)
 		<< std::endl;
     }
   }
-  
+
   //if(sum_energy > fMinTotalEnergy) return true;
 
   return false;

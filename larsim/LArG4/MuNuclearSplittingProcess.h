@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef LARG4_MNSP_H
-#define LARG4_MNSP_H 
+#define LARG4_MNSP_H
 
 #include "Geant4/globals.hh"
 #include "Geant4/G4ParticleDefinition.hh"
@@ -27,21 +27,21 @@
 namespace larg4 {
 
 class MuNuclearSplittingProcess : public G4WrapperProcess {
-// Override PostStepDoIt method 
+// Override PostStepDoIt method
   public:
     MuNuclearSplittingProcess() {};
     ~MuNuclearSplittingProcess() {};
-    
+
     void SetNSplit(G4int nTrx) {fNSplit = nTrx;};
-    void SetIsActive(G4bool doIt) {fActive = doIt;}; 
-    
+    void SetIsActive(G4bool doIt) {fActive = doIt;};
+
   private:
 // Data members
     G4int fNSplit;
-    G4bool fActive; 
+    G4bool fActive;
     G4VParticleChange* PostStepDoIt(const G4Track& track, const G4Step& step);
 
-}; 
+};
 
 
 }// end namespace

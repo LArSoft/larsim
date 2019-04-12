@@ -11,7 +11,7 @@ namespace sim {
   //--------------------------------------------------------------------------------------------
   MCRecoPart::MCRecoPart(fhicl::ParameterSet const& pset)
   //--------------------------------------------------------------------------------------------
-  { 
+  {
     this->clear();
     _track_index.clear();
     _pdg_list.clear();
@@ -36,17 +36,17 @@ namespace sim {
   //--------------------------------------------------------------------------------------------
   {
     if(this->size() <= part_index) return ::sim::kINVALID_UINT;
-    
+
     unsigned int result = this->at(part_index)._mother;
-    
+
     if(!result) return this->at(part_index)._track_id;
 
     if(TrackToParticleIndex(result) != ::sim::kINVALID_UINT) return result;
-    
+
     //std::cout<< "\033[95mWarning:\033[00m Mother particle not in the particle list!"<<std::endl;
-    // Do brute search 
+    // Do brute search
     unsigned int daughter_id = this->at(part_index)._track_id;
-    
+
     for(auto const& part : *this) {
 
       if(part._daughters.find(daughter_id) != part._daughters.end())
@@ -84,11 +84,11 @@ namespace sim {
 	result = new_result;
 
       }else{
-	
+
 	// Look for a particle that has a daughter = this mother
 	auto const old_result = result;
 	for(auto const& p : *this) {
-	  
+
 	  if(p._daughters.find(result) != p._daughters.end()) {
 	    result = p._track_id;
 	    break;
@@ -112,8 +112,8 @@ namespace sim {
 			      const double& z) const
   //--------------------------------------------------------------------------------------------
   {
-    return !( x > _x_max || x < _x_min || 
-	      z > _z_max || z < _z_min || 
+    return !( x > _x_max || x < _x_min ||
+	      z > _z_max || z < _z_min ||
 	      y > _y_max || y < _y_min );
   }
 
@@ -128,7 +128,7 @@ namespace sim {
     _track_index.clear();
 
     for(size_t i=0; i < mcp_v.size(); ++i) {
-      
+
       auto const& mcp = mcp_v[i];
 
       //std::cout<<" Track ID : "<<mcp.TrackId()<<" ... Index : " <<this->size()<<std::endl;
@@ -171,7 +171,7 @@ namespace sim {
 	std::set<size_t> det_path_index;
 
 	for(size_t i=0; i<mcp.NumberTrajectoryPoints(); ++i) {
-	  
+
 	  if(InDetector(mcp.Vx(i),mcp.Vy(i),mcp.Vz(i)))
 
 	    det_path_index.insert(i);
@@ -179,10 +179,10 @@ namespace sim {
 	}
 
 	if(det_path_index.size()) {
-	  if( (*det_path_index.begin()) ) 
+	  if( (*det_path_index.begin()) )
 	    det_path_index.insert( (*det_path_index.begin())-1 );
 	  if( det_path_index.size()>1 ) {
-	    if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() ) 
+	    if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() )
 	      det_path_index.insert( (*det_path_index.rbegin())+1 );
 	  }
 	  mini_mcp._det_path.reserve(det_path_index.size());

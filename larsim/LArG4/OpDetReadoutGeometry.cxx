@@ -24,7 +24,7 @@ namespace larg4 {
   OpDetReadoutGeometry::OpDetReadoutGeometry(G4String OpDetSensitiveName, const G4String name) :
     G4VUserParallelWorld(name)
   {
-    fOpDetSensitiveName = OpDetSensitiveName;   
+    fOpDetSensitiveName = OpDetSensitiveName;
   }
 
   OpDetReadoutGeometry::~OpDetReadoutGeometry()
@@ -32,16 +32,16 @@ namespace larg4 {
 
   void OpDetReadoutGeometry::Construct()
   {
-    mf::LogInfo("OpDetReadoutGeometry") << "constructing parallel world, looking for " 
+    mf::LogInfo("OpDetReadoutGeometry") << "constructing parallel world, looking for "
 				      << fOpDetSensitiveName;
 
     // Get an empty parallel world volume
     G4VPhysicalVolume * ParallelWorld = GetWorld();
-    
+
     // Start with empty vectors
     std::vector<G4LogicalVolume*>  OpDetVolumes;
     std::vector<G4Transform3D>     OpDetTransformations;
-    
+
     // Get the primary world volume
     G4VPhysicalVolume * WorldPhysical = g4b::DetectorConstruction::GetWorld();
 
@@ -63,8 +63,8 @@ namespace larg4 {
     if(OpDetVolumes.size()>0)
       {
 
-	
-	
+
+
 	// Make placements
 	for(unsigned int i=0; i!=OpDetVolumes.size(); i++)
 	{
@@ -72,24 +72,24 @@ namespace larg4 {
 	  VolumeName.flush();
 	  VolumeName.str("OpDetVolume_");
 	  VolumeName<<i;
-	  
+
 	  G4Transform3D      TheTransform = OpDetTransformations.at(i);
 
 	  G4VSolid * TheSolid = OpDetVolumes.at(i)->GetSolid();
 	  G4Material * TheMaterial = OpDetVolumes.at(i)->GetMaterial();
 	  G4LogicalVolume * TheLogVolume = new G4LogicalVolume(TheSolid,TheMaterial,VolumeName.str().c_str());
-	  
-	  TheLogVolume->SetSensitiveDetector(TheSD   );
-	 
 
-	  G4PVPlacement * ThePlacement 
+	  TheLogVolume->SetSensitiveDetector(TheSD   );
+
+
+	  G4PVPlacement * ThePlacement
 	    = new G4PVPlacement( TheTransform,
 				 VolumeName.str().c_str(),
 				 TheLogVolume,
 				 ParallelWorld,
-				 false,          
-				 0);             
-	  
+				 false,
+				 0);
+
 	  //	  CLHEP::Hep3Vector trans = ThePlacement->GetTranslation();
 
 	  TheOpDetLookup->AddPhysicalVolume(ThePlacement);
@@ -102,37 +102,37 @@ namespace larg4 {
 
     std::vector<G4LogicalVolume*>  OpParamVolumesFound;
     std::vector<G4Transform3D>     OpParamTransformationsFound;
-    
+
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
-    
+
     std::vector<std::string> OpParamModels       = lgp->OpticalParamModels();
     std::vector<std::string> OpParamVolumes      = lgp->OpticalParamVolumes();
     std::vector<int>         OpParamOrientations = lgp->OpticalParamOrientations();;
     std::vector<std::vector<std::vector<double > > > OpParamParameters    = lgp->OpticalParamParameters();
-    
+
     if((OpParamModels.size()!=OpParamVolumes.size())||
        (OpParamModels.size()!=OpParamOrientations.size())||
        (OpParamModels.size()!=OpParamParameters.size()))
       {
         throw cet::exception("OpDetReadoutGeometry")<<"sizes of OpParam specification vectors do not match\n";
       }
-    
+
     for(size_t imodel=0; imodel!=OpParamVolumes.size(); ++imodel)
       {
 	EmptyVector.clear();
 	FindVolumes(WorldPhysical, OpParamVolumes.at(imodel), EmptyVector, OpParamVolumesFound, OpParamTransformationsFound );
 	mf::LogInfo("OpDetReadoutGeometry")<< "Found " << OpParamVolumesFound.size()<< " volumes of name " << OpParamVolumes.at(imodel)<< " to attach optical parameterization " << OpParamModels.at(imodel)<<std::endl;
-	
-	
+
+
 	// Since the same named model may be instantiated more than once with
 	//  different parameters,  create a unique sensitive detector name for this
 	//  instance
-	
+
 	std::stringstream SDName("");
 	SDName<<OpParamModels.at(imodel)<<"_"<<imodel;
-	
+
 	OpParamSD * ParamSD = new OpParamSD(SDName.str().c_str(), OpParamModels.at(imodel), OpParamOrientations.at(imodel), OpParamParameters.at(imodel));
-	
+
 
 	if(OpParamVolumesFound.size()>0)
 	  {
@@ -142,51 +142,51 @@ namespace larg4 {
 		VolumeName.flush();
 		VolumeName.str("OpParamVolume_");
 		VolumeName<<ivol;
-		
+
 		G4Transform3D      TheTransform = OpParamTransformationsFound.at(ivol);
-		
+
 		G4VSolid * TheSolid = OpParamVolumesFound.at(ivol)->GetSolid();
 		G4Material * TheMaterial = OpParamVolumesFound.at(ivol)->GetMaterial();
 		G4LogicalVolume * TheLogVolume = new G4LogicalVolume(TheSolid,TheMaterial,VolumeName.str().c_str());
-		
 
-		G4PVPlacement * ThePlacement 
+
+		G4PVPlacement * ThePlacement
 		  = new G4PVPlacement( TheTransform,
 				       VolumeName.str().c_str(),
 				       TheLogVolume,
 				       ParallelWorld,
-				       false,          
-				       0);             
-		
-		TheLogVolume->SetSensitiveDetector(ParamSD   );	  
-		
+				       false,
+				       0);
+
+		TheLogVolume->SetSensitiveDetector(ParamSD   );
+
 
 		// This line just suppressed a compiler warning
-		ThePlacement->GetTranslation();		
-		
+		ThePlacement->GetTranslation();
+
 
 	      }
-	    
+
 	  }
       }
   }
-  
+
 
 
   void OpDetReadoutGeometry::FindVolumes(G4VPhysicalVolume * PhysicalVolume, G4String OpDetName, std::vector<G4Transform3D> TransformSoFar, std::vector<G4LogicalVolume*>& OpDetVolumes, std::vector<G4Transform3D>& OpDetTransformations)
   {
-    
+
     // Add the next layer of transformation to the vector
     G4ThreeVector Translation = PhysicalVolume->GetObjectTranslation();
     G4RotationMatrix Rotation = PhysicalVolume->GetObjectRotationValue();
     G4Transform3D NextTransform( Rotation, Translation );
-    
+
     TransformSoFar.push_back(NextTransform);
 
 
     // Check if this volume is a OpDet
     G4String OpDetNameUnderscore = OpDetName+"_";
-    G4String VolumeName = PhysicalVolume->GetName();   
+    G4String VolumeName = PhysicalVolume->GetName();
     if( ( VolumeName == OpDetName ) ||
 	( VolumeName.find( OpDetNameUnderscore,0,OpDetNameUnderscore.length() )==0 )
 	)
@@ -198,7 +198,7 @@ namespace larg4 {
 	G4Transform3D TotalTransform(Rot,Trans);
 	//for ( std::vector<G4Transform3D>::reverse_iterator it = TransformSoFar.rbegin();
 	//     it != TransformSoFar.rend(); ++it )
-	
+
 
 
 	for ( std::vector<G4Transform3D>::iterator it = TransformSoFar.begin();
@@ -209,7 +209,7 @@ namespace larg4 {
 	    TotalTransform =  TotalTransform * (*it);
 	  }
 
-	OpDetVolumes.push_back(PhysicalVolume->GetLogicalVolume());	
+	OpDetVolumes.push_back(PhysicalVolume->GetLogicalVolume());
 	OpDetTransformations.push_back(TotalTransform);
 
       }
@@ -217,18 +217,18 @@ namespace larg4 {
       {
 	// We did not find a OpDet.  Keep looking through daughters.
 	G4LogicalVolume * LogicalVolume = PhysicalVolume->GetLogicalVolume();
-		
+
 	// Loop through the daughters of the volume
 	G4int NumberDaughters = LogicalVolume->GetNoDaughters();
 	for(G4int i=0; i!=NumberDaughters; ++i)
 	  {
 	    // Get the ith daughter volume
 	    G4VPhysicalVolume * Daughter = LogicalVolume->GetDaughter(i);
-	    
+
 	    // Recursively step into this volume
 	    FindVolumes(Daughter, OpDetName, TransformSoFar, OpDetVolumes, OpDetTransformations);
 	  }
       }
   }
-    
+
 }

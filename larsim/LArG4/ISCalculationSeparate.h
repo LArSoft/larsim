@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 /// \file  ISCalculationSeparate.h
-/// \brief Interface to algorithm class for a specific calculation of 
+/// \brief Interface to algorithm class for a specific calculation of
 ///        ionization electrons and scintillation photons assuming there
 ///        is no correlation between the two
 ///
@@ -34,17 +34,17 @@ namespace larg4 {
 
  private:
 
-   double                fStepSize;            ///< maximum step to take				  
+   double                fStepSize;            ///< maximum step to take
    double                fEfield;              ///< value of electric field from LArProperties service
-   double 	   	 fGeVToElectrons;      ///< conversion factor from LArProperties service	  
-   double 	   	 fRecombA;             ///< from LArG4Parameters service			  
-   double 	   	 fRecombk;             ///< from LArG4Parameters service			  
-   double 	   	 fModBoxA;             ///< from LArG4Parameters service			  
-   double 	   	 fModBoxB;             ///< from LArG4Parameters service			  
-   bool   	   	 fUseModBoxRecomb;     ///< from LArG4Parameters service			  
-   bool   	   	 fScintByParticleType; ///< from LArProperties service			  
-   double 	   	 fScintYieldFactor;    ///< scintillation yield factor                             
-   G4EmSaturation* 	 fEMSaturation;        ///< pointer to EM saturation                            
+   double 	   	 fGeVToElectrons;      ///< conversion factor from LArProperties service
+   double 	   	 fRecombA;             ///< from LArG4Parameters service
+   double 	   	 fRecombk;             ///< from LArG4Parameters service
+   double 	   	 fModBoxA;             ///< from LArG4Parameters service
+   double 	   	 fModBoxB;             ///< from LArG4Parameters service
+   bool   	   	 fUseModBoxRecomb;     ///< from LArG4Parameters service
+   bool   	   	 fScintByParticleType; ///< from LArProperties service
+   double 	   	 fScintYieldFactor;    ///< scintillation yield factor
+   G4EmSaturation* 	 fEMSaturation;        ///< pointer to EM saturation
  };
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H

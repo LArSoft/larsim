@@ -5,9 +5,9 @@
 
 namespace trigdata {
 
-  /// A unit of time used in trigger logic. 
+  /// A unit of time used in trigger logic.
   typedef uint64_t TrigTimeSlice_t;
 
 } // namespace trigger
 
-#endif 
+#endif

@@ -44,7 +44,7 @@ namespace larg4 {
   void G4BadIdeaAction::SteppingAction(const G4Step* step)
   {
     ////////////////////////////////////////////////////////////////////
-    ///\todo Do not copy the code below. Contact Brian Rebel, Eric Church, 
+    ///\todo Do not copy the code below. Contact Brian Rebel, Eric Church,
     ///\todo Bill Seligman and Andrzej Szelc for reasons why not to!
     ////////////////////////////////////////////////////////////////////////
 
@@ -54,8 +54,8 @@ namespace larg4 {
     const double stepSize  = step->GetStepLength();
     G4Track* nonConstTrack = const_cast<G4Track*>( step->GetTrack() );
 
-    if (step->GetTrack()->GetCurrentStepNumber() > 5e4 
-	&&  stepSize < epsilon 
+    if (step->GetTrack()->GetCurrentStepNumber() > 5e4
+	&&  stepSize < epsilon
 	&& (step->GetTrack()->GetCurrentStepNumber()%1000) == 1  ){
 
       // Cast away the const-ness of the pointer to G4Step.
@@ -64,24 +64,24 @@ namespace larg4 {
       // The need to do this is the result of a bug in Geant4 v4.9.4.p02
       // We should no longer call this code when we move beyond that version
       const double kick = 0.001;
-      
+
       G4ThreeVector aValue = nonConstTrack->GetPosition();
-      
+
       mf::LogWarning("G4BadIdeaAction") << "##### In endless loop. Kicking particle by "
 					<< " (+0.001,+0.001,+0.001) --- "
 					<< " PDG and encoding "
-					<< step->GetTrack()->GetDynamicParticle()->GetPDGcode()  
+					<< step->GetTrack()->GetDynamicParticle()->GetPDGcode()
 					<< " "
-					<<  step->GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName() 
-					<<  " current step number: " 
-					<< step->GetTrack()->GetCurrentStepNumber() 
-					<<  " stepsize: "  << stepSize 
-					<<  " x,y,z  " 
+					<<  step->GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName()
+					<<  " current step number: "
+					<< step->GetTrack()->GetCurrentStepNumber()
+					<<  " stepsize: "  << stepSize
+					<<  " x,y,z  "
 					<< aValue.x() << " " << aValue.y() << " " << aValue.z();
-      
+
       G4ThreeVector  translate(kick,kick,kick);
       aValue+=translate;
-      
+
       nonConstTrack->SetPosition(aValue);
     }
 
@@ -89,21 +89,21 @@ namespace larg4 {
     if (fNoIncomingMuons<0)
       {
 	// This is for overlays of, say, rock muons, which we have
-	G4StepPoint * thePrePoint = step->GetPreStepPoint(); 
-	G4VPhysicalVolume * thePrePV = thePrePoint->GetPhysicalVolume(); 
+	G4StepPoint * thePrePoint = step->GetPreStepPoint();
+	G4VPhysicalVolume * thePrePV = thePrePoint->GetPhysicalVolume();
 	G4String thePrePVname = thePrePV->GetName();
-	G4StepPoint * thePostPoint = step->GetPostStepPoint(); 
-	G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume(); 
+	G4StepPoint * thePostPoint = step->GetPostStepPoint();
+	G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume();
 	G4String thePostPVname("null");
 	if (thePostPV) thePostPVname = thePostPV->GetName();
-	
+
 	if (abs(step->GetTrack()->GetDynamicParticle()->GetPDGcode()) == 13
 	    && thePostPVname.contains("volTPCActive")
 	    && !thePrePVname.contains("volTPCActive")
 	    )
 	  ((G4Track*)nonConstTrack)->SetTrackStatus(fStopAndKill);
       }
-    
+
     return;
   }
 

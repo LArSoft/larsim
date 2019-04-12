@@ -41,7 +41,7 @@ namespace larg4{
   }
 
   //----------------------------------------------------------------------------
-  void ISCalcSeparate::Initialize(const detinfo::LArProperties* larp,   
+  void ISCalcSeparate::Initialize(const detinfo::LArProperties* larp,
 					 const detinfo::DetectorProperties* detp,
 					 const sim::LArG4Parameters* lgp,
 					 const spacecharge::SpaceCharge* sce)
@@ -52,7 +52,7 @@ namespace larg4{
     fSCE = sce;
     fDetProp = detp;
     fLArG4Prop = lgp;
-    
+
     // \todo get scintillation yield from LArG4Parameters or LArProperties
     fScintYieldFactor  = 1.;
 
@@ -64,14 +64,14 @@ namespace larg4{
     fRecombk             = lgp->Recombk()/detp->Density(detp->Temperature());
     fModBoxA             = lgp->ModBoxA();
     fModBoxB             = lgp->ModBoxB()/detp->Density(detp->Temperature());
-    fUseModBoxRecomb     = (bool)lgp->UseModBoxRecomb();  
+    fUseModBoxRecomb     = (bool)lgp->UseModBoxRecomb();
     fGeVToElectrons      = lgp->GeVToElectrons();
 
     this->Reset();
-    
+
     //TRACEN(TNAME,3,"Initialize: RecombA=%f, Recombk=%f, ModBoxA=%f, ModBoxB=%f, UseModBoxRecomb=%d",
     //	   fRecombA, fRecombk, fModBoxA, fModBoxB, fUseModBoxRecomb);
-    
+
     return;
   }
 
@@ -98,35 +98,35 @@ namespace larg4{
     double recomb = 0.;
     double dEdx   = (ds<=0.0)? 0.0: e/ds;
     double EFieldStep = EFieldAtStep(fDetProp->Efield(),x,y,z);
-    
+
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if(dEdx < 1.) dEdx = 1.;
-    
+
     //TRACEN(TNAME,3,"dEdx=%f, EFieldStep=%f",dEdx,EFieldStep);
-    
+
     if(fUseModBoxRecomb) {
       if(ds>0){
 	double Xi = fModBoxB * dEdx / EFieldStep;
 	recomb = log(fModBoxA + Xi) / Xi;
       }
-      else 
+      else
 	recomb = 0;
     }
     else{
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
-    
+
     //TRACEN(TNAME,3,"recomb=%f",recomb);
-    
+
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
-    
+
     //TRACEN(TNAME,3,"n_electrons=%f",fNumIonElectrons);
-    
-    MF_LOG_DEBUG("ISCalcSeparate") 
-      << " Electrons produced for " << fEnergyDeposit 
-      << " MeV deposited with "     << recomb 
-      << " recombination: "         << fNumIonElectrons << std::endl; 
+
+    MF_LOG_DEBUG("ISCalcSeparate")
+      << " Electrons produced for " << fEnergyDeposit
+      << " MeV deposited with "     << recomb
+      << " recombination: "         << fNumIonElectrons << std::endl;
   }
 
 
@@ -135,7 +135,7 @@ namespace larg4{
     CalculateIonization(edep.Energy(),edep.StepLength(),
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
-  
+
   //----------------------------------------------------------------------------
   void ISCalcSeparate::CalculateScintillation(float e, int pdg)
   {
@@ -178,7 +178,7 @@ namespace larg4{
     }
     else
       fNumScintPhotons = fScintYieldFactor * scintYield * e;
-    
+
   }
 
   //----------------------------------------------------------------------------
@@ -200,7 +200,7 @@ namespace larg4{
     return EFieldAtStep(efield,
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
-  
+
   double ISCalcSeparate::EFieldAtStep(double efield, float x, float y, float z)
   {
     double EField = efield;

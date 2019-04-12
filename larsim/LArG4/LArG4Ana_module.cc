@@ -45,16 +45,16 @@ namespace sim{
   class ParticleList;
 }
 
-///Geant4 interface 
-namespace larg4 {  
- 
+///Geant4 interface
+namespace larg4 {
+
   class LArG4Ana : public art::EDAnalyzer{
   public:
- 
+
     /// Standard constructor and destructor for an FMWK module.
     explicit LArG4Ana(fhicl::ParameterSet const& pset);
 
-    void analyze (const art::Event& evt); 
+    void analyze (const art::Event& evt);
     void beginJob();
 
   private:
@@ -73,7 +73,7 @@ namespace larg4 {
     TH1D *fEventEnergy; ///< Energy collected per event
     TProfile *fChannelCharge; ///< Charge per channel.
     TProfile *fChannelEnergy; ///< Energy per channel.
-    
+
     //    Int_t stringDim = 35;
 
     TTree *fTree;
@@ -93,7 +93,7 @@ namespace larg4 {
     Char_t fTTVolume[35]; // Termination Volume
     Char_t fTMaterial[35];
     Char_t fTDProcess[200][35];
-    Int_t fTParentID; 
+    Int_t fTParentID;
     Int_t fTStatus;
     Float_t fTWeight;
     Float_t* fT4Origin;
@@ -122,7 +122,7 @@ namespace larg4 {
   {
     art::ServiceHandle<art::TFileService const> tfs;
     art::ServiceHandle<geo::Geometry const> geo;
-    
+
     fPDGCodes    = tfs->make<TH1D>("pdgcodes", ";PDG Code;",               5000, -2500, 2500);
     fPi0Momentum = tfs->make<TH1D>("pi0mom",   ";#pi^{0} Momentum (GeV);", 1000, 0.,    1000.);
 
@@ -133,27 +133,27 @@ namespace larg4 {
 
     // Some histograms relating to drift electrons, active detector
     // channels and charge/energy on channels
-    fnumChannels = tfs->make<TH1D>("fnumChannels", 
+    fnumChannels = tfs->make<TH1D>("fnumChannels",
 				   "Active channels;Active channels;# events",
-				   256, 0, geo->Nchannels()); 
-    fnumIDEs = tfs->make<TProfile>("fnumIDEs", 
+				   256, 0, geo->Nchannels());
+    fnumIDEs = tfs->make<TProfile>("fnumIDEs",
 				   "Drift Electrons per channel;Channel;Drift electrons",
 				   geo->Nchannels()+1, 0, geo->Nchannels(),
-				   0, 1e4); 
-    fEventCharge = tfs->make<TH1D>("fEventCharge", 
+				   0, 1e4);
+    fEventCharge = tfs->make<TH1D>("fEventCharge",
 				   "Charge in event;Total charge per event;# events",
-				   100, 0, 2.5e8); 
-    fEventEnergy = tfs->make<TH1D>("fEventEnergy", 
+				   100, 0, 2.5e8);
+    fEventEnergy = tfs->make<TH1D>("fEventEnergy",
 				   "Energy in event;Total energy per event;# events",
-				   100, 0, 1e4); 
-    fChannelCharge = tfs->make<TProfile>("fChannelCharge", 
+				   100, 0, 1e4);
+    fChannelCharge = tfs->make<TProfile>("fChannelCharge",
 					 "Charge on channel;Channel;Total charge per channel",
 					 geo->Nchannels()+1,0,geo->Nchannels(),
-					 0,1e5); 
-    fChannelEnergy = tfs->make<TProfile>("fChannelEnergy", 
+					 0,1e5);
+    fChannelEnergy = tfs->make<TProfile>("fChannelEnergy",
 					 "Energy on channel;Channel;Total energy per channel",
 					 geo->Nchannels()+1,0,geo->Nchannels(),
-					 0, 1e3); 
+					 0, 1e3);
 
 
     fT4Origin = new Float_t[4];
@@ -189,11 +189,11 @@ namespace larg4 {
     fTree->Branch("MCTermination", fT4Termination, "MCTermination[4]/F");
     fTree->Branch("MCMomentum", fT4Momentum, "MCMomentum[4]/F");
     fTree->Branch("MCDMomentum", fT4DMomentum, "MCDMomentum[MCNumDs4]/F");
-  
+
   }
 
   //-----------------------------------------------------------------------
-  void LArG4Ana::analyze(const art::Event& evt) 
+  void LArG4Ana::analyze(const art::Event& evt)
   {
 
     //get the list of particles from this event
@@ -219,8 +219,8 @@ namespace larg4 {
 	numIDEs += idevec.size();
 	for(size_t iv = 0; iv < idevec.size(); ++iv){
 	  if(plist.find( idevec[iv].trackID ) == plist.end()
-	     && idevec[iv].trackID != sim::NoParticleId) 
-	  mf::LogWarning("LArG4Ana") << idevec[iv].trackID << " is not in particle list"; 
+	     && idevec[iv].trackID != sim::NoParticleId)
+	  mf::LogWarning("LArG4Ana") << idevec[iv].trackID << " is not in particle list";
 	  totalCharge +=idevec[iv].numElectrons;
 	  scCharge += idevec[iv].numElectrons;
 	  totalEnergy +=idevec[iv].energy;
@@ -248,18 +248,18 @@ namespace larg4 {
     int numpi0gamma = 0;
     for(unsigned int i = 0; i < pvec.size(); ++i){
       if(pvec[i]->PdgCode() == 111) pi0loc = i;
-      if(pvec[i]->Mother() == pi0loc+1 && 
-	 pi0loc > 0 && 
+      if(pvec[i]->Mother() == pi0loc+1 &&
+	 pi0loc > 0 &&
 	 pvec[i]->PdgCode() == 22){
 	mf::LogInfo("LArG4Ana") << pvec[i]->E() << " gamma energy ";
 	++numpi0gamma;
       }
-      
+
       // n,Lambda,K0s,K0L,K0
-      if (pvec[i]->PdgCode() == 2112 || 
-	  pvec[i]->PdgCode() == 3122 || 
-	  pvec[i]->PdgCode() == 130  || 
-	  pvec[i]->PdgCode() == 310  || 
+      if (pvec[i]->PdgCode() == 2112 ||
+	  pvec[i]->PdgCode() == 3122 ||
+	  pvec[i]->PdgCode() == 130  ||
+	  pvec[i]->PdgCode() == 310  ||
 	  pvec[i]->PdgCode() == 311 ) {
 	fnEnergy->Fill(pvec[i]->E(),pvec[i]->Weight());
 	fnDist->Fill(pvec[i]->Vx(),pvec[i]->Weight());
@@ -269,30 +269,30 @@ namespace larg4 {
       fTID = pvec[i]->TrackId();
       // 0 out strings, else there may be cruft in here from prev evt.
       for (unsigned int s = 0; s < 35; ++s){
-	  *(fTProcess+s)  = 0; 
 	  *(fTProcess+s)  = 0;
-	  *(fTMaterial+s) = 0; 
+	  *(fTProcess+s)  = 0;
+	  *(fTMaterial+s) = 0;
 	  *(fTMaterial+s) = 0;
 	  *(fTVolume+s)   = 0;
 	  *(fTVolume+s)   = 0;
-	  *(fTTVolume+s)  = 0; 
+	  *(fTTVolume+s)  = 0;
 	  *(fTTVolume+s)  = 0;
       }
-      
+
       for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s) *(fTProcess+s) = pvec[i]->Process()[s];
 
       TVector3 dum = pvec[i]->Position().Vect();
 
-      for (unsigned int s = 0; s < geom->MaterialName(pvec[i]->Position().Vect()).length(); ++s) 
+      for (unsigned int s = 0; s < geom->MaterialName(pvec[i]->Position().Vect()).length(); ++s)
 	*(fTMaterial+s) = geom->MaterialName(pvec[i]->Position().Vect())[s];
 
-      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->Position().Vect()).length(); ++s) 
+      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->Position().Vect()).length(); ++s)
 	*(fTVolume+s) = geom->VolumeName(pvec[i]->Position().Vect())[s];
 
-      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->EndPosition().Vect()).length(); ++s) 
+      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->EndPosition().Vect()).length(); ++s)
 	*(fTTVolume+s) = geom->VolumeName(pvec[i]->EndPosition().Vect())[s];
 
-      fTEvt = evt.id().event(); 
+      fTEvt = evt.id().event();
       fTSub = evt.subRun();
       fTRun = evt.run();
       fTParentID = pvec[i]->Mother();
@@ -301,28 +301,28 @@ namespace larg4 {
       fTNds = TMath::Min(pvec[i]->NumberDaughters(),fTNdsOriginal);
       for( int d = 0; d < fTNds; d++ ){
 	daughter = pvec[i]->Daughter(d);
-	fTDID[d] = daughter; 
+	fTDID[d] = daughter;
 	// zero it out.
-	for (unsigned int s = 0; s < 35; ++s) *(fTDProcess[d]+s) = 0; 
-	
+	for (unsigned int s = 0; s < 35; ++s) *(fTDProcess[d]+s) = 0;
+
 	for(unsigned int jj = i; jj < pvec.size(); ++jj){ // Don't look below i.
-       
+
 	  if (fTDID[d] == pvec[jj]->TrackId()){
-	    fTDPdg[d] = pvec[jj]->PdgCode(); // get the pointer,  
+	    fTDPdg[d] = pvec[jj]->PdgCode(); // get the pointer,
 	    fTDWt[d]  = pvec[jj]->Weight();
-	    
-	    for (unsigned int s = 0; s < pvec[jj]->Process().length(); ++s) 
+
+	    for (unsigned int s = 0; s < pvec[jj]->Process().length(); ++s)
 	      *(fTDProcess[d]+s) = pvec[jj]->Process()[s];
-		
+
 	    for (unsigned int kk = 0; kk < 4; ++kk){
 	      fT4DOrigin[d*4+kk] = pvec[jj]->Position()[kk];
 	      fT4DMomentum[d*4+kk] = pvec[jj]->Momentum()[kk];
 	    }
 	    break;
-	  }	      
+	  }
 	}
       }//end loop over d
-      
+
       for (unsigned int ii = 0; ii < 4; ++ii){
 	fT4Termination[ii] = 1e9;
 	fT4Origin[ii] = pvec[i]->Position()[ii];
@@ -333,8 +333,8 @@ namespace larg4 {
 
       fTWeight = pvec[i]->Weight();
       fTree->Fill();
-      
-    } // end loop on particles in list 
+
+    } // end loop on particles in list
     if(numpi0gamma == 2 && pi0loc > 0){
       mf::LogInfo("LArG4Ana") << pvec[pi0loc]->E();
       fPi0Momentum->Fill(pvec[pi0loc]->E());

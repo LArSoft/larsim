@@ -22,10 +22,10 @@ namespace sim{
   public:
     SimListUtils();
     virtual ~SimListUtils();
-    
-    static sim::LArVoxelList         GetLArVoxelList        (const art::Event& evt, std::string moduleLabel); 
+
+    static sim::LArVoxelList         GetLArVoxelList        (const art::Event& evt, std::string moduleLabel);
     static sim::SimPhotonsCollection GetSimPhotonsCollection(const art::Event& evt, std::string moduleLabel);
-    
+
   }; // class SimListUtils
 } //namespace sim
 #endif // SIMLISTUTILS_H

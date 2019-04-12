@@ -7,7 +7,7 @@
  *
  * Description:
  * Alg to put properties of collection of MCTracks in a tree.
- * 
+ *
  */
 
 class TTree;
@@ -26,7 +26,7 @@ namespace sim{
 
     void FillTree(unsigned int, unsigned int,
 		  const std::vector<sim::MCTrack>&);
-    
+
   private:
 
     TTree* fTree;
@@ -70,9 +70,9 @@ namespace sim{
     float        fMaxZ;
 
     void         FillDominantParticleInfo(const sim::MCTrack&);
-    
+
   };
-  
+
 }
 
 #endif

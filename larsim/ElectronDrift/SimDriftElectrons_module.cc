@@ -379,7 +379,7 @@ namespace detsim {
 	avegagetransversePos1 = xyz[transversecoordinate1] + posOffsetxyz[transversecoordinate1];
 	avegagetransversePos2 = xyz[transversecoordinate2] + posOffsetxyz[transversecoordinate2];
 
-	
+
 	// Space charge distortion could push the energy deposit beyond the wire
 	// plane (see issue #15131). Given that we don't have any subtlety in the
 	// simulation of this region, bringing the deposit exactly on the plane
@@ -432,7 +432,7 @@ namespace detsim {
 	      }
 	    nClus = (int) std::ceil(nElectrons / electronclsize);
 	  }
-      	
+
 	// Empty and resize the electron-cluster vectors.
 	fLongDiff.clear();
 	fTransDiff1.clear();
@@ -471,7 +471,7 @@ namespace detsim {
 
 	// make a collection of electrons for each plane
 	for(size_t p = 0; p < tpcGeo.Nplanes(); ++p){
-	
+
 	  fDriftClusterPos[driftcoordinate] = tpcGeo.PlaneLocation(p)[driftcoordinate];
 
 	  // Drift nClus electron clusters to the induction plane
@@ -487,7 +487,7 @@ namespace detsim {
 	    }
 
 	    fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
-	    fDriftClusterPos[transversecoordinate2] = fTransDiff2[k];  
+	    fDriftClusterPos[transversecoordinate2] = fTransDiff2[k];
 
 	    /// \todo think about effects of drift between planes
 
@@ -521,7 +521,7 @@ namespace detsim {
 	      // Find whether we already have this channel in our map.
 	      ChannelMap_t& channelDataMap = fChannelMaps[cryostat][tpc];
 	      auto search = channelDataMap.find(channel);
-	
+
 	      // We will find (or create) the pointer to a
 	      // sim::SimChannel.
 	      //sim::SimChannel* channelPtr = NULL;
@@ -534,7 +534,7 @@ namespace detsim {
 		  // We haven't. Initialize the bookkeeping information
 		  // for this channel.
 		  ChannelBookKeeping_t bookKeeping;
-		
+
 		  // Add a new channel to the end of the list we'll
 		  // write out after we've processed this event.
 		  bookKeeping.channelIndex = channels->size();
@@ -544,7 +544,7 @@ namespace detsim {
 		  // Initialize a vector with the index of the step that
 		  // created this channel.
 		  bookKeeping.stepList.push_back( edIndex );
-		
+
 		  // Save the bookkeeping information for this channel.
 		  channelDataMap[channel] = bookKeeping;
 		}
@@ -554,7 +554,7 @@ namespace detsim {
 
 		auto& bookKeeping = search->second;
 		channelIndex = bookKeeping.channelIndex;
-		
+
 		// Has this step contributed to this channel before?
 		auto& stepList = bookKeeping.stepList;
 		auto stepSearch = std::find(stepList.begin(), stepList.end(), edIndex );

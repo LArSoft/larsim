@@ -44,6 +44,6 @@ namespace sim
     bool             fDebugMode;
 
   }; // class MCShowerHitRecoAlg
-  
+
 } //namespace cluster
 #endif

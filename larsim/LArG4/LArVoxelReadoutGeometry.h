@@ -7,7 +7,7 @@
 ///
 /// This class defines the parallel geometry that will be divided into
 /// the three-dimensional voxels for the detector read-out.
-/// 
+///
 /// Why define a parallel geometry?  Here are some reasons:
 ///
 /// - The regular LAr TPC is one large volume of liquid argon.  When
@@ -42,16 +42,16 @@ namespace larg4 {
   class LArVoxelReadoutGeometry : public G4VUserParallelWorld
   {
   public:
-    
+
     /// Collection of all it takes to set up this object.
     struct Setup_t {
-      
+
       /// Set up data for `LArVoxelReadout`.
       larg4::LArVoxelReadout::Setup_t readoutSetup;
-      
+
     }; // struct Setup_t
-    
-    
+
+
     /// Constructor: sets up all its LArVoxelReadout instances.
     LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
 
@@ -68,13 +68,13 @@ namespace larg4 {
 					std::string&       daughterName,
 					unsigned int       expectedNum);
 
-    art::ServiceHandle<geo::Geometry const> fGeo;       ///< Handle to the geometry    
-    std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management, 
+    art::ServiceHandle<geo::Geometry const> fGeo;       ///< Handle to the geometry
+    std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management,
                                                   ///< so we have to
-    
+
     /// Data for `LArVoxelReadout` setup.
     larg4::LArVoxelReadout::Setup_t fReadoutSetupData;
-    
+
   };
 
 } // namespace larg4

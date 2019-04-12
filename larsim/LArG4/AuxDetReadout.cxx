@@ -19,8 +19,8 @@
 #include <ctime>
 
 namespace larg4 {
-  
-  AuxDetReadout::AuxDetReadout(std::string const& name, 
+
+  AuxDetReadout::AuxDetReadout(std::string const& name,
 			       unsigned int       adNum,
 			       unsigned int       svNum)
   : G4VSensitiveDetector(name)
@@ -28,10 +28,10 @@ namespace larg4 {
   , fAuxDetSensitive(svNum)
   {
   }
-  
+
   //----------------------------------------------------------------------
   AuxDetReadout::~AuxDetReadout() {}
-  
+
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
   void AuxDetReadout::Initialize(G4HCofThisEvent*)
@@ -56,28 +56,28 @@ namespace larg4 {
 		// collect the info for this step
 
     const int trackID = ParticleListAction::GetCurrentTrackID();
-    
+
     G4double energyDeposited = step->GetTotalEnergyDeposit()/CLHEP::GeV;
-    
+
     G4ThreeVector startG4(step->GetPreStepPoint()->GetPosition() );
     double startWorld[3] = {startG4.getX()/CLHEP::cm,
                             startG4.getY()/CLHEP::cm,
                             startG4.getZ()/CLHEP::cm};
-    
+
     double startTime = step->GetPreStepPoint()->GetGlobalTime()/CLHEP::ns;
-    
+
     G4ThreeVector stopG4( step->GetPostStepPoint()->GetPosition());
     double stopWorld[3] = {stopG4.getX()/CLHEP::cm,
                            stopG4.getY()/CLHEP::cm,
                            stopG4.getZ()/CLHEP::cm};
-    
+
     G4ThreeVector stopG4Momentum( step->GetPostStepPoint()->GetMomentum());
     double stopWorldMomVector[3] = {stopG4Momentum.getX()/CLHEP::GeV,
                                     stopG4Momentum.getY()/CLHEP::GeV,
                                     stopG4Momentum.getZ()/CLHEP::GeV};
-    
+
     double stopTime = step->GetPostStepPoint()->GetGlobalTime()/CLHEP::ns;
-    
+
     this->AddParticleStep( trackID,
                            energyDeposited,
                            startWorld[0],
@@ -92,7 +92,7 @@ namespace larg4 {
                            stopWorldMomVector[1],
                            stopWorldMomVector[2]
                            );
-    
+
     return true;
   }
 
@@ -145,10 +145,10 @@ namespace larg4 {
       fAuxDetIDEs.push_back(std::move(auxDetIDE));
     }//else
   }//AddParticleStep
-  
+
   //---------------------------------------------------------------------------------------
   // Never used but still have to be defined for G4
   void AuxDetReadout::DrawAll()  {}
   void AuxDetReadout::PrintAll() {}
-  
+
 } // namespace larg4

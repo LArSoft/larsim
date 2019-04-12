@@ -54,7 +54,7 @@ class LArStackingAction : public G4UserStackingAction
     //G4bool InsideRoI(const G4Track * aTrack,G4double ang);
     std::string InsideTPC(const G4Track * aTrack);
     //G4VHitsCollection* GetCollection(G4String colName);
-    
+
     //ExN04TrackerHitsCollection* trkHits;
     //ExN04MuonHitsCollection* muonHits;
     //LArStackingActionMessenger* theMessenger;
@@ -66,7 +66,7 @@ class LArStackingAction : public G4UserStackingAction
     G4double fangRoI;
 
 
-  
+
   public:
     inline void     SetNRequestMuon(G4int val)          { freqMuon = val;     }
     inline G4int    GetNRequestMuon()             const { return freqMuon;    }

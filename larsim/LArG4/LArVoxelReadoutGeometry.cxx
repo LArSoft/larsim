@@ -50,14 +50,14 @@ constexpr bool DisableVoxelCaching = false;
 template <typename T>
 std::string demangle_cxx_symbol(const T& obj) {
 	int status = -4; // some arbitrary value to eliminate the compiler warning
-	
+
 	std::string name = typeid(obj).name();
-	
+
 	// __cxa_demangle() allocates with malloc(), so we ask unique_ptr to
 	// deallocate by free()
 	std::unique_ptr<char, void(*)(void*)> res
 		{ abi::__cxa_demangle(name.c_str(), NULL, NULL, &status), std::free };
-	
+
 	return (status == 0)? res.get(): name;
 } // demangle_cxx_symbol()
 
@@ -73,24 +73,24 @@ template <class STREAM>
 int DumpPhysicalVolume
 	(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
 {
-	
+
 	const G4ThreeVector& pos = PV.GetTranslation();
 	const G4LogicalVolume* LV = PV.GetLogicalVolume();
-	
+
 	int count = 1;
 	out << indentstr << PV.GetName() << " [" << demangle_cxx_symbol(PV) << "]"
 		<< " at (" << pos.x() << ", " << pos.y() << ", " << pos.z() << ")";
 	if (LV) {
 		out << ", a " << LV->GetName();
-		
+
 		const G4VSolid* Solid = LV->GetSolid();
 		if (Solid) {
 			out << " shaped as " << Solid->GetName();
 			const G4Box* pBox;
-			
+
 			try { pBox = dynamic_cast<const G4Box*>(Solid); }
 			catch (std::bad_cast&) { pBox = nullptr; }
-			
+
 			if (pBox) {
 				out << ", a (" << (2.*pBox->GetXHalfLength())
 					<< " x " << (2.*pBox->GetYHalfLength())
@@ -103,7 +103,7 @@ int DumpPhysicalVolume
 		else {
 			out << " with no shape (!?!)";
 		}
-		
+
 		G4int nDaughters = LV->GetNoDaughters();
 		if (nDaughters > 0) {
 			out << " with " << nDaughters << " subvolumes:\n";
@@ -114,7 +114,7 @@ int DumpPhysicalVolume
 		else out << '\n';
 	}
 	else out << " with no logical volume (!?)\n";
-	
+
 	return count;
 } // DumpPhysicalVolume()
 
@@ -165,7 +165,7 @@ namespace larg4 {
     struct VoxelSpecs_t {
       double w, h, d; ///< sizes of the volume
       unsigned int nw, nh, nd; ///< divisions in each volume
-      
+
       /// have some sorting...
       bool operator< (const VoxelSpecs_t& vs) const
         {
@@ -183,18 +183,18 @@ namespace larg4 {
           return false;
         } // operator<
     }; // VoxelSpecs_t
-    
+
     // TODO we don't need to cache the cell any more: a simple map will suffice
     struct VoxelVolumes_t {
       G4LogicalVolume* pBox;
       G4LogicalVolume* pCell;
-      
+
       VoxelVolumes_t
         (G4LogicalVolume* box = nullptr, G4LogicalVolume* cell = nullptr):
         pBox(box), pCell(cell) {}
     }; // VoxelVolumes_t
-    
-    
+
+
     // Define the sensitive detector for the voxel readout.  This class
     // routines will be called every time a particle deposits energy in
     // a voxel that overlaps the LAr TPC.
@@ -211,7 +211,7 @@ namespace larg4 {
     // hope hashing doubles is reliable...
     typedef std::map<VoxelSpecs_t, VoxelVolumes_t> VoxelCache_t;
     VoxelCache_t VoxelCache;
-    
+
     for(unsigned int c = 0; c < fGeo->Ncryostats(); ++c){
 
       // next get the cryostat
@@ -226,17 +226,17 @@ namespace larg4 {
       for(unsigned int t = 0; t < fGeo->Cryostat(c).NTPC(); ++t){
 
         // now for the TPC
-        daughterName = "volTPC";    
+        daughterName = "volTPC";
         G4Transform3D       tpcTransform;
-        G4VPhysicalVolume*  tpcVolume = this->FindNestedVolume(cryostatVolume, 
+        G4VPhysicalVolume*  tpcVolume = this->FindNestedVolume(cryostatVolume,
                                                                cryostatTransform,
                                                                tpcTransform,
                                                                daughterName,
                                                                t);
 
-        daughterName = "volTPCActive";    
+        daughterName = "volTPCActive";
         G4Transform3D       transform;
-        G4VPhysicalVolume*  larTPCPhysical = this->FindNestedVolume(tpcVolume, 
+        G4VPhysicalVolume*  larTPCPhysical = this->FindNestedVolume(tpcVolume,
                                                                     tpcTransform,
                                                                     transform,
                                                                     daughterName,
@@ -247,7 +247,7 @@ namespace larg4 {
         larTPCLogical->SetUserLimits(fStepLimit.get());
 
         G4VSolid* larTPCShape = larTPCLogical->GetSolid();
-        
+
         // We're not going to exactly duplicate the LAr TPC in our
         // parallel world.  We're going to construct a box of voxels.
         // What should the size and position of that box be?
@@ -303,7 +303,7 @@ namespace larg4 {
         MF_LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelOffsetX=" << voxelOffsetX
                                              << ", voxelOffsetY=" << voxelOffsetY
                                              << ", voxelOffsetZ=" << voxelOffsetZ;
-        
+
         // We want our voxelization region to be an integer multiple of
         // the voxel sizes in all directions; if we didn't do this, we
         // might get into trouble when we start playing with replicas.
@@ -317,7 +317,7 @@ namespace larg4 {
         numberXvoxels = trunc(numberXvoxels) + 1.;
         numberYvoxels = trunc(numberYvoxels) + 1.;
         numberZvoxels = trunc(numberZvoxels) + 1.;
-        
+
         MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "Active volume of cryo #" << c << " TPC #" << t
           << " will be split in " << numberXvoxels << " x " << numberYvoxels << " x " << numberZvoxels
           << " = " << (numberXvoxels * numberYvoxels * numberZvoxels)
@@ -332,7 +332,7 @@ namespace larg4 {
           /* nh */ (unsigned int) numberYvoxels,
           /* nd */ (unsigned int) numberZvoxels
         };
-        
+
         VoxelCache_t::iterator iVoxelVol = DisableVoxelCaching?
           VoxelCache.end(): VoxelCache.find(VoxelSpecs);
         if (iVoxelVol == VoxelCache.end()) {
@@ -341,7 +341,7 @@ namespace larg4 {
             << " cm, "
             << VoxelSpecs.nw << " x " << VoxelSpecs.nh << " x " << VoxelSpecs.nd
             << " voxels";
-          
+
           G4double voxelBoxHalfX = numberXvoxels * voxelSizeX / 2.;
           G4double voxelBoxHalfY = numberYvoxels * voxelSizeY / 2.;
           G4double voxelBoxHalfZ = numberZvoxels * voxelSizeZ / 2.;
@@ -349,7 +349,7 @@ namespace larg4 {
           MF_LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelBoxHalfX=" << voxelBoxHalfX
                                                << ", voxelBoxHalfY=" << voxelBoxHalfY
                                                << ", voxelBoxHalfZ=" << voxelBoxHalfZ;
-          
+
           // Now we have a box that will include an integer number of voxels
           // in each direction.  Note that the material is irrelevant for a
           // "parallel world."
@@ -357,29 +357,29 @@ namespace larg4 {
           G4LogicalVolume* voxelBoxLogical = new G4LogicalVolume(voxelBox,
                                                                  0,
                                                                  "VoxelizationLogicalVolume" );
-          
+
           // If we generate an event display within Geant4, we won't want to
           // see this box.
           G4VisAttributes* invisible = new G4VisAttributes();
           invisible->SetVisibility(false);
           voxelBoxLogical->SetVisAttributes(invisible);
-          
+
           //MF_LOG_DEBUG("LArVoxelReadoutGeometry") << ": transform = \n";
           //for ( G4int i = 0; i < 3; ++i ){
-          //  for ( G4int j = 0; j < 4; ++j ){ 
+          //  for ( G4int j = 0; j < 4; ++j ){
           //    MF_LOG_DEBUG("LArVoxelReadoutGeometry") << transform[i][j] << " ";
           //  }
           //  MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "\n";
           //}
-          
+
           // Now we've fill our "box of voxels" with the voxels themselves.
           // We'll do this by sub-dividing the volume in x, then y, then z.
-          
+
           // Create an "x-slice".
           G4Box* xSlice = new G4Box("xSlice",voxelSizeX/2.,voxelBoxHalfY,voxelBoxHalfZ);
           G4LogicalVolume* xSliceLogical = new G4LogicalVolume( xSlice, 0, "xLArVoxelSlice" );
           xSliceLogical->SetVisAttributes(invisible);
-          
+
           // Use replication to slice up the "box of voxels" along the x-axis.
           new G4PVReplica( "VoxelSlicesInX",
                            xSliceLogical,
@@ -387,7 +387,7 @@ namespace larg4 {
                            kXAxis,
                            G4int( numberXvoxels ),
                            voxelSizeX );
-          
+
           // Now do the same thing, dividing that x-slice along the y-axis.
           G4Box* ySlice = new G4Box("ySlice",voxelSizeX/2.,voxelSizeY/2., voxelBoxHalfZ);
           G4LogicalVolume* ySliceLogical = new G4LogicalVolume( ySlice, 0, "yLArVoxelSlice" );
@@ -398,7 +398,7 @@ namespace larg4 {
                            kYAxis,
                            G4int( numberYvoxels ),
                            voxelSizeY );
-          
+
           // Now divide the y-slice along the z-axis, giving us our actual voxels.
           G4Box* zSlice = new G4Box("zSlice",voxelSizeX/2.,voxelSizeY/2., voxelSizeZ/2.);
           G4LogicalVolume* voxelLogical = new G4LogicalVolume( zSlice, 0, "LArVoxel" );
@@ -409,7 +409,7 @@ namespace larg4 {
                            kZAxis,
                            G4int( numberZvoxels ),
                            voxelSizeZ );
-          
+
           iVoxelVol = VoxelCache.emplace(VoxelSpecs,
             VoxelVolumes_t(voxelBoxLogical, voxelLogical)
             ).first; // iterator to the inserted element
@@ -417,10 +417,10 @@ namespace larg4 {
           // Set the sensitive detector of this LAr TPC (logical) volume
           // to be the voxel readout.
           voxelLogical->SetSensitiveDetector(larVoxelReadout);
-          
+
         } // if not cached yet
         G4LogicalVolume* voxelBoxLogical = iVoxelVol->second.pBox;
-        
+
         // We have a "box of voxels" that's the right dimensions, but we
         // have to know exactly where to put it.  The user has the option
         // to offset the voxel co-ordinate system.  We want to place our
@@ -428,7 +428,7 @@ namespace larg4 {
         // system.  In effect, we want to offset our "box of voxels" by
         // the user's offsets, modulo the size of the voxel in each
         // direction.
-        
+
         G4double offsetInVoxelsX = voxelOffsetX / voxelSizeX;
         G4double offsetInVoxelsY = voxelOffsetY / voxelSizeY;
         G4double offsetInVoxelsZ = voxelOffsetZ / voxelSizeZ;
@@ -438,20 +438,20 @@ namespace larg4 {
         G4double offsetX         = fractionOffsetX * voxelSizeX;
         G4double offsetY         = fractionOffsetY * voxelSizeY;
         G4double offsetZ         = fractionOffsetZ * voxelSizeZ;
-        
+
         // Now we know how much to offset the "box of voxels".  Include
         // that in the transformation of the co-ordinates from world
         // volume to LAr TPC volume.
         transform = G4Translate3D( offsetX, offsetY, offsetZ ) * transform;
-        
+
         MF_LOG_DEBUG("LArVoxelReadoutGeometry") << ": offsetX=" << offsetX
                                              << ", offsetY=" << offsetY
                                              << ", offsetZ=" << offsetZ;
-        
+
         // suffix representing this TPC
         std::ostringstream nums;
         nums << "_Cryostat" << c << "_TPC" << t;
-        
+
         // Place the box of voxels, with the accumulated transformations
         // computed above.
         new G4PVPlacementInTPC( transform,
@@ -463,7 +463,7 @@ namespace larg4 {
           false,                                             // No surface check
           { (unsigned short int) c, (unsigned short int) t } // TPC ID
           );
-        
+
       } // end loop over tpcs
     } // end loop over cryostats
 
@@ -481,10 +481,10 @@ namespace larg4 {
 
   //---------------------------------------------------------------
   ////////////////////////////////////////////////////////////////////
-  // We know the ordering of the volumes in the Geometry, 
+  // We know the ordering of the volumes in the Geometry,
   // see https://cdcvs.fnal.gov/redmine/projects/larsoftsvn/wiki/Geometry
-  // Make use of that knowledge to efficiently get the desired volumes and 
-  // their total transforms.  
+  // Make use of that knowledge to efficiently get the desired volumes and
+  // their total transforms.
   // the daughterTransform is the total transform to the world coordinate system
   G4VPhysicalVolume* LArVoxelReadoutGeometry::FindNestedVolume(G4VPhysicalVolume* mother,
                                                                G4Transform3D&     motherTransform,
@@ -508,14 +508,14 @@ namespace larg4 {
         daughterTransform = motherTransform * transform;
 
 
-        // take the origin of the volume and transform it to 
+        // take the origin of the volume and transform it to
         // world coordinated
         G4Point3D local(0., 0., 0.);
         G4Point3D world = daughterTransform * local;
 
 
-        MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "current " << daughterName 
-                                             << " origin is at (" 
+        MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "current " << daughterName
+                                             << " origin is at ("
                                              << world.x() / CLHEP::cm << ","
                                              << world.y() / CLHEP::cm << ","
                                              << world.z() / CLHEP::cm << ")";
@@ -530,7 +530,7 @@ namespace larg4 {
           fGeo->PositionToCryostat(worldPos, daughterNum);
         else if(daughterName.compare("volTPC") == 0)
           fGeo->PositionToTPC(worldPos, daughterNum, extra);
-        else if(daughterName.compare("volTPCActive") == 0 || 
+        else if(daughterName.compare("volTPCActive") == 0 ||
                 daughterName.compare("volDetEnclosure") == 0){
           // for either of these volumes, we know there is only 1 in the mother volume
           MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "found the desired " << daughterName;
@@ -548,7 +548,7 @@ namespace larg4 {
     throw cet::exception("LArVoxelReadoutGeometry") << "could not find the desired "
                                                     << daughterName
                                                     << " to make LArVoxelReadoutGeometry\n";
-    
+
     return 0;
   }
 

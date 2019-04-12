@@ -77,28 +77,28 @@ namespace larg4 {
   // Possible statuses of a particle after each step.
   enum OpBoundaryProcessSimpleStatus {  Undefined, NotAtBoundary, SimpleAbsorbedNoRefl,
           SimpleAbsorbed, SimpleDiffuse, SimpleSpecular, StepTooSmall, NoRINDEX };
-  
+
   /**
    * @brief Discrete process for reflection and diffusion at optical interfaces.
    * @see `G4VDiscreteProcess`
-   * 
+   *
    * This class invokes a simplified model of optical reflections at
    * boundaries between different materials.  The relevant reflectivities
    * are ultimately read from `detinfo::LArProperties` via
    * `larg4::MaterialPropertiesLoader`.
-   * 
+   *
    * The required parameters are total reflectance
    * (`detinfo::LArProperties::SurfaceReflectances()`)
    * and ratio of diffuse to specular reflectance
    * (`detinfo::LArProperties::SurfaceReflectanceDiffuseFractions()`). Each
    * photon crossing a boundary with a defined reflectance is randomly either
    * reflected or absorbed and killed according to the supplied probability.
-   * 
+   *
    * Every reflected photon with a defined diffuse reflection fraction
    * is then randomly either diffusely or specularly reflected according
    * to the supplied probability.  All materials with no defined
    * reflectance are assumed to be black and absorb all incident photons.
-   * 
+   *
    * This physics process is loaded in `larg4::OpticalPhysics` physics
    * constructor.
    *
