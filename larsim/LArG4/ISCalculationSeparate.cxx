@@ -217,7 +217,6 @@ namespace larg4{
     }
     else{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
-      fVisibleEnergyDeposition = 0.0; //This is set to zero because I have not made a correct implimentation of this value for anything but EMSaturation.
     }
 
     MF_LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons

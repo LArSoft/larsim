@@ -810,7 +810,17 @@ namespace larg4{
             int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
             double xyzPos[3];
             average_position(aStep, xyzPos);
-            double Edeposited  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
+            double Edeposited  = 0;
+            if(scintillationByParticleType){
+              //We use this when it is the only sensical information. It may be of limited use to end users.
+              Edeposited = aStep.GetTotalEnergyDeposit();
+            }else if(emSaturation){
+              //If Birk Coefficient used, log VisibleEnergies.
+            Edeposited = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
+            }else{
+              //We use this when it is the only sensical information. It may be of limited use to end users.
+              Edeposited = aStep.GetTotalEnergyDeposit();
+            }
 
             // Get the transport time distribution
 	    std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
@@ -824,6 +834,7 @@ namespace larg4{
 
               // Always store the BTR
               tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
+              Edeposited=0; //Don't add duplicates many times.
 
               // Store as lite photon or as OnePhoton
               if(lgp->UseLitePhotons())
