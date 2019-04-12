@@ -1,101 +1,49 @@
-#include "larsim/Simulation/PhotonVoxels.h"
+/**
+ * @file  larsim/Simulation/PhotonVoxels.cxx
+ * @brief Definitions of voxel data structures: implementation.
+ * @see   larsim/Simulation/PhotonVoxels.h
+ */
 
-#include <cmath> // std::floor()
-#include <iostream>
+// library header
+#include "larsim/Simulation/PhotonVoxels.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h"
+
+// C++ standard libraries
+#include <vector>
+#include <string>
+#include <algorithm> // std::min(), std::max()
+#include <stdexcept> // std::runtime_error
+#include <cmath> // std::abs(), std::floor()
+
 
 namespace sim {
 
 
-  // PhotonVoxel class
   //----------------------------------------------------------------------------
-  PhotonVoxel::PhotonVoxel(double xMin, 
-			   double xMax, 
-			   double yMin, 
-			   double yMax, 
-			   double zMin, 
-			   double zMax, 
-			   int N)
-  {
-    xVoxelMin = xMin;
-    xVoxelMax = xMax;
-    yVoxelMin = yMin;
-    yVoxelMax = yMax;
-    zVoxelMin = zMin;
-    zVoxelMax = zMax;
-    NPhotons = N;
-  }
-
-  //----------------------------------------------------------------------------
-  PhotonVoxel::PhotonVoxel()
-  {
-  }
-  
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetLowerCorner() const
-  {
-    TVector3 LowerCorner = TVector3(xVoxelMin, yVoxelMin, zVoxelMin);
-    return LowerCorner;
-  }
-
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetUpperCorner() const
-  {
-    TVector3 UpperCorner = TVector3(xVoxelMax, yVoxelMax, zVoxelMax);
-    return UpperCorner;
-  }
-
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxel::GetCenter() const
-  {
-    TVector3 Center = TVector3((xVoxelMin+xVoxelMax)/2.0, (yVoxelMin+yVoxelMax)/2.0, (zVoxelMin+zVoxelMax)/2.0);
-    return Center;
-  }
-
-
+  // PhotonVoxelDef class
   //----------------------------------------------------------------------------
   PhotonVoxelDef::PhotonVoxelDef(double xMin, 
-				 double xMax, 
-				 int xN, 
-				 double yMin, 
-				 double yMax, 
-				 int yN, 
-				 double zMin, 
-				 double zMax, 
-				 int zN)
-  {
-    fxSteps = xN;
-    fySteps = yN;
-    fzSteps = zN;
-    
-    
-    fLowerCorner = TVector3(xMin,yMin,zMin);
-    fUpperCorner = TVector3(xMax,yMax,zMax);
-  }
+                                 double xMax, 
+                                 int xN, 
+                                 double yMin, 
+                                 double yMax, 
+                                 int yN, 
+                                 double zMin, 
+                                 double zMax, 
+                                 int zN)
+    : fLowerCorner(xMin, yMin, zMin)
+    , fUpperCorner(xMax, yMax, zMax)
+    , fxSteps(xN)
+    , fySteps(yN)
+    , fzSteps(zN)
+    {}
 
   //----------------------------------------------------------------------------
-  PhotonVoxelDef::PhotonVoxelDef()
+  std::array<unsigned int, 3U> PhotonVoxelDef::GetSteps() const
   {
-  }
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetRegionLowerCorner() const
-  {
-    return fLowerCorner;
-  }
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetRegionUpperCorner() const
-  {
-    return fUpperCorner;
-  }
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetSteps() const
-  {
-    TVector3 Steps = TVector3(fxSteps, fySteps, fzSteps);
-    return Steps;
+    // BUG the double brace syntax is required to work around clang bug 21629
+    // (https://bugs.llvm.org/show_bug.cgi?id=21629)
+    return {{ fxSteps, fySteps, fzSteps }};
   }
 
   //----------------------------------------------------------------------------
@@ -107,62 +55,32 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetNVoxels() const
+  unsigned int PhotonVoxelDef::GetNVoxels() const
   {
     return fxSteps * fySteps * fzSteps;
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(const TVector3& p) const
-  {
-    const double xyz[3] = {p.X(), p.Y(), p.Z()};
-    return GetVoxelID(xyz);
+  int PhotonVoxelDef::GetVoxelID(double const* Position) const {
+    return GetVoxelIDImpl(geo::vect::makeFromCoords<geo::Point_t>(Position));
   }
 
   //----------------------------------------------------------------------------
-  int PhotonVoxelDef::GetVoxelID(double const* Position) const
+  std::optional<std::array<sim::PhotonVoxelDef::NeiInfo, 8U>>
+  PhotonVoxelDef::GetNeighboringVoxelIDsImpl(geo::Point_t const& v) const
   {
-    // figure out how many steps this point is in the x,y,z directions
-    int xStep = int( std::floor((Position[0]-fLowerCorner[0]) / (fUpperCorner[0]-fLowerCorner[0]) * fxSteps ));
-    int yStep = int( std::floor((Position[1]-fLowerCorner[1]) / (fUpperCorner[1]-fLowerCorner[1]) * fySteps ));
-    int zStep = int( std::floor((Position[2]-fLowerCorner[2]) / (fUpperCorner[2]-fLowerCorner[2]) * fzSteps ));
-
-    // check if point lies within the voxelized region
-    if((0 <= xStep) && (xStep < fxSteps) &&
-       (0 <= yStep) && (yStep < fySteps) &&
-       (0 <= zStep) && (zStep < fzSteps) ){
-      // if within bounds, generate the voxel ID
-      return (xStep
-              + yStep * (fxSteps)
-              + zStep * (fxSteps * fySteps));
-      }
-    else{
-      // out of bounds
-      return -1;
-    }
-  }
-
-  //----------------------------------------------------------------------------
-  void PhotonVoxelDef::
-  GetNeighboringVoxelIDs(const TVector3& v, std::vector<NeiInfo>& ret) const
-  {
-    ret.clear();
-    ret.reserve(8);
+    if (!isInside(v)) return {};
+    
+    std::array<sim::PhotonVoxelDef::NeiInfo, 8U> ret;
 
     // Position in voxel coordinates including floating point part
-    double rStepD[3];
-    for(int i = 0; i < 3; ++i){
-      // If we're outside the cuboid we have values for, return empty vector,
-      // ie failure.
-      if(v[i] < fLowerCorner[i] || v[i] > fUpperCorner[i]) return;// {};
-      // Figure out our position wrt to the centres of the voxels
-      rStepD[i] = ((v[i]-fLowerCorner[i]) / (fUpperCorner[i]-fLowerCorner[i]) * GetSteps()[i] ) - 0.5;
-    }
-
+    auto const rStepD = GetVoxelStepCoordsUnchecked(v);
+    
     // The neighbours are the 8 corners of a cube around this point
-    for(int dx = 0; dx <= 1; ++dx){
-      for(int dy = 0; dy <= 1; ++dy){
-        for(int dz = 0; dz <= 1; ++dz){
+    std::size_t iNeigh = 0U;
+    for(int dx: { 0, 1 }) {
+      for(int dy: { 0, 1 }) {
+        for(int dz: { 0, 1 }) {
           // The full 3D step
           const int dr[3] = {dx, dy, dz};
 
@@ -192,7 +110,7 @@ namespace sim {
                           rStepI[1] * (fxSteps) +
                           rStepI[2] * (fxSteps * fySteps));
 
-          ret.emplace_back(id, w);
+          ret[iNeigh++] = { id, w };
         }
       }
     }
@@ -200,25 +118,19 @@ namespace sim {
     // Sanity check the weights sum to 1
     double wSum = 0;
     for(const NeiInfo& n: ret) wSum += n.weight;
-    if(fabs(wSum-1) > 1e-3){
-      std::cout << "PhotonVoxelDef::GetNeighboringVoxelIDs(): "
-                << "Weights sum to " << wSum << " (should be 1). "
-                << "Weights are:";
-      for(const NeiInfo& n: ret) std::cout << " " << n.weight;
-      std::cout << " Aborting." << std::endl;
-      abort();
+    if(std::abs(wSum-1) > 1e-3){
+      std::string msg
+        = "PhotonVoxelDef::GetNeighboringVoxelIDs():"
+          " Weights sum to " + std::to_string(wSum) + " (should be 1)."
+          " Weights are:";
+      for(const NeiInfo& n: ret) {
+        msg += ' ';
+        msg += std::to_string(n.weight);
+      }
+      throw std::runtime_error(msg);
     }
+    return { ret };
   }
-
-  //----------------------------------------------------------------------------
-  TVector3 PhotonVoxelDef::GetVoxelSize() const
-  {
-    TVector3 TheSize = TVector3((GetRegionUpperCorner()[0]-GetRegionLowerCorner()[0]) / fxSteps,
-                                (GetRegionUpperCorner()[1]-GetRegionLowerCorner()[1]) / fySteps,
-                                (GetRegionUpperCorner()[2]-GetRegionLowerCorner()[2]) / fzSteps);
-    return TheSize;
-  }
-
 
   //----------------------------------------------------------------------------
   PhotonVoxel PhotonVoxelDef::GetPhotonVoxel(int ID) const
@@ -231,14 +143,14 @@ namespace sim {
     int zStep =  ((ID - xStep - (yStep * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
 
 
-    TVector3 VoxelSize = GetVoxelSize();
+    auto const VoxelSize = GetVoxelSize<geo::Vector_t>();
 
-    double xMin = VoxelSize[0] * (xStep)   + fLowerCorner[0];
-    double xMax = VoxelSize[0] * (xStep+1) + fLowerCorner[0];
-    double yMin = VoxelSize[1] * (yStep)   + fLowerCorner[1];
-    double yMax = VoxelSize[1] * (yStep+1) + fLowerCorner[1];
-    double zMin = VoxelSize[2] * (zStep)   + fLowerCorner[2];
-    double zMax = VoxelSize[2] * (zStep+1) + fLowerCorner[2];
+    double const xMin = VoxelSize.X() * (xStep)   + fLowerCorner.X();
+    double const xMax = VoxelSize.X() * (xStep+1) + fLowerCorner.X();
+    double const yMin = VoxelSize.Y() * (yStep)   + fLowerCorner.Y();
+    double const yMax = VoxelSize.Y() * (yStep+1) + fLowerCorner.Y();
+    double const zMin = VoxelSize.Z() * (zStep)   + fLowerCorner.Z();
+    double const zMax = VoxelSize.Z() * (zStep+1) + fLowerCorner.Z();
 
 
    
@@ -248,17 +160,74 @@ namespace sim {
   //----------------------------------------------------------------------------
   bool PhotonVoxelDef::IsLegalVoxelID(int ID) const
   {
-    return (( ID > -1) && (ID<GetNVoxels()));
+    return (( ID >= 0) && (static_cast<unsigned int>(ID) < GetNVoxels()));
   }
 
-  std::vector<int> PhotonVoxelDef::GetVoxelCoords(int ID) const
+  std::array<int, 3U> PhotonVoxelDef::GetVoxelCoords(int ID) const
   {
-    std::vector<int> ReturnVector;
-    ReturnVector.resize(3);
-    ReturnVector.at(0) =  ID % fxSteps ;
-    ReturnVector.at(1) =  ((ID - ReturnVector.at(0) ) / fxSteps) % fySteps ;
-    ReturnVector.at(2) =  ((ID - ReturnVector.at(0) - (ReturnVector.at(1) * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
+    std::array<int, 3U> ReturnVector;
+    ReturnVector[0] =  ID % fxSteps ;
+    ReturnVector[1] =  ((ID - ReturnVector[0] ) / fxSteps) % fySteps ;
+    ReturnVector[2] =  ((ID - ReturnVector[0] - (ReturnVector[1] * fxSteps)) / (fySteps * fxSteps)) % fzSteps ;
     return ReturnVector;
-    
   }
-}
+  
+  //----------------------------------------------------------------------------
+  std::array<double, 3U> PhotonVoxelDef::GetVoxelStepCoordsUnchecked
+    (geo::Point_t const& p) const
+  {
+    
+    auto const span = fUpperCorner - fLowerCorner;
+    auto const relPos = p - fLowerCorner;
+    
+    // BUG the double brace syntax is required to work around clang bug 21629
+    // (https://bugs.llvm.org/show_bug.cgi?id=21629)
+    return {{
+      (relPos.X() / span.X()) * fxSteps,
+      (relPos.Y() / span.Y()) * fySteps,
+      (relPos.Z() / span.Z()) * fzSteps
+      }};
+  } // PhotonVoxelDef::GetVoxelStepCoordsUnchecked()
+  
+  //----------------------------------------------------------------------------
+  int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const {
+    if (!isInside(p)) return -1;
+    
+    auto const stepCoords = GetVoxelStepCoordsUnchecked(p);
+    
+    // figure out how many steps this point is in the x,y,z directions;
+    // `p` is guaranteed to be in the mapped volume by the previous check
+    int xStep = static_cast<int>(stepCoords[0]);
+    int yStep = static_cast<int>(stepCoords[1]);
+    int zStep = static_cast<int>(stepCoords[2]);
+
+    // if within bounds, generate the voxel ID
+    return (xStep
+            + yStep * (fxSteps)
+            + zStep * (fxSteps * fySteps));
+  }
+  
+  //----------------------------------------------------------------------------
+  bool PhotonVoxelDef::isInsideVolume(
+    geo::Point_t const& point,
+    geo::Point_t const& lower, geo::Point_t const& upper
+    )
+  {
+    return
+         isInsideRange(point.X(), lower.X(), upper.X())
+      && isInsideRange(point.Y(), lower.Y(), upper.Y())
+      && isInsideRange(point.Z(), lower.Z(), upper.Z())
+      ;
+  }
+  
+  bool PhotonVoxelDef::isInsideRange(double value, double lower, double upper) {
+    
+    return (value >= lower) && (value < upper);
+    
+  } // PhotonVoxelDef::isInsideRange()
+  
+  
+  //----------------------------------------------------------------------------
+  
+  
+} // namespace sim

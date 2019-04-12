@@ -64,6 +64,9 @@ namespace phot{
 
     virtual int NOpChannels() const override { return fNOpChannels; }
     virtual int NVoxels() const override { return fNVoxels; }
+    
+    virtual bool isVoxelValid(size_t Voxel) const override { return isVoxelValidImpl(Voxel); }
+
 
   private:
     
@@ -85,6 +88,8 @@ namespace phot{
 
     size_t fNOpChannels;
     size_t fNVoxels;
+    
+    bool isVoxelValidImpl(size_t Voxel) const { return Voxel < fNVoxels; }
     
     /// Returns the index of visibility of specified voxel and cell
     size_t uncheckedIndex(size_t Voxel, size_t OpChannel) const

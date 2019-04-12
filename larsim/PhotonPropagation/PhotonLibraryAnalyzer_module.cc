@@ -19,6 +19,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/PhotonVoxels.h"
+#include "larcorealg/CoreUtils/DumpUtils.h" // lar::dump::vector3D()
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -75,23 +76,20 @@ namespace phot {
     int NOpDet = pvs->NOpChannels();
 
     sim::PhotonVoxelDef TheVoxelDef = pvs->GetVoxelDef();
-    TVector3 Steps = TheVoxelDef.GetSteps();
-    TVector3 UpperCorner = TheVoxelDef.GetRegionUpperCorner();
-    TVector3 LowerCorner = TheVoxelDef.GetRegionLowerCorner();
+    auto const& UpperCorner = TheVoxelDef.GetRegionUpperCorner();
+    auto const& LowerCorner = TheVoxelDef.GetRegionLowerCorner();
 
-    mf::LogInfo("PhotonLibraryAnalyzer") << "UpperCorner: " << UpperCorner[0] << " " << UpperCorner[1] << " " << UpperCorner[2] << "\n"
-                                         << "LowerCorner: " << LowerCorner[0] << " " << LowerCorner[1] << " " << LowerCorner[2];
+    mf::LogInfo("PhotonLibraryAnalyzer") << "UpperCorner: " << lar::dump::vector3D(UpperCorner) << "\n"
+                                         << "LowerCorner: " << lar::dump::vector3D(LowerCorner);
 
-    int XSteps = int(Steps[0]);
-    int YSteps = int(Steps[1]);
-    int ZSteps = int(Steps[2]);
+    auto const [ XSteps, YSteps, ZSteps ] = TheVoxelDef.GetSteps(); // unsigned int
 
     // for c2: FullVolume is unused, just call tfs->make
     // TH3D *FullVolume = tfs->make<TH3D>("FullVolume","FullVolume", 
     tfs->make<TH3D>("FullVolume","FullVolume", 
-                    XSteps,LowerCorner[0],UpperCorner[0],
-                    YSteps,LowerCorner[1],UpperCorner[1],
-                    ZSteps,LowerCorner[2],UpperCorner[2]);
+                    XSteps,LowerCorner.X(),UpperCorner.X(),
+                    YSteps,LowerCorner.Y(),UpperCorner.Y(),
+                    ZSteps,LowerCorner.Z(),UpperCorner.Z());
 
     
     int reportnum=10000;
@@ -136,7 +134,7 @@ namespace phot {
     if (fEachSlice) {
 
     
-      for(int i=0; i!=XSteps; ++i)
+      for(unsigned int i=0; i!=XSteps; ++i)
       {
         std::stringstream ss("");
         ss.flush();
@@ -149,7 +147,7 @@ namespace phot {
 
       }
 
-      for(int i=0; i!=YSteps; ++i)
+      for(unsigned int i=0; i!=YSteps; ++i)
       {
         std::stringstream ss("");
         ss.flush();
@@ -158,7 +156,7 @@ namespace phot {
 
       }
 
-      for(int i=0; i!=ZSteps; ++i)
+      for(unsigned int i=0; i!=ZSteps; ++i)
       {
         std::stringstream ss("");
         ss.flush();
@@ -199,11 +197,11 @@ namespace phot {
     mf::LogInfo("PhotonLibraryAnalyzer")<<"Analyzing photon library - running through voxels "<< std::endl;
 
 
-    for(int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
+    for(unsigned int i=0; i!=TheVoxelDef.GetNVoxels(); ++i)
     {
       if(i%reportnum==0) std::cout<<"Photon library analyzer at voxel " << i<<std::endl;
     
-      std::vector<int> Coords = TheVoxelDef.GetVoxelCoords(i);
+      auto const Coords = TheVoxelDef.GetVoxelCoords(i);
                 
       const float* Visibilities = pvs->GetLibraryEntries(i);
       size_t NOpChannels = pvs->NOpChannels();

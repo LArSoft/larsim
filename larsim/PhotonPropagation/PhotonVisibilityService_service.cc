@@ -21,13 +21,11 @@
 //  between the library and the service instance for sensible results.
 // 
 //
-// Framework includes
 
 // LArSoft includes
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/Simulation/PhotonVoxels.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
@@ -35,9 +33,16 @@
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
 
+// framework libraries
+#include "art/Utilities/make_tool.h"
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+
+// ROOT libraries
 #include "TF1.h"
 
+// C/C++ standard libraries
 #include <math.h>
+
 
 namespace phot{
 
@@ -111,6 +116,31 @@ namespace phot{
     fVoxelDef()
   {
     this->reconfigure(pset);
+    
+    if (pset.has_key("ReflectOverZeroX")) { // legacy parameter warning
+      if (pset.has_key("Mapping")) {
+        throw art::Exception(art::errors::Configuration) <<
+          "`PhotonVisbilityService` configuration specifies both `Mapping` and `ReflectOverZeroX`."
+          " Please remove the latter (and use `PhotonMappingXMirrorTransformations` tool)."
+          ;
+      }
+      else {
+        mf::LogWarning("PhotonVisbilityService")
+          << "Please update the configuration of `PhotonVisbilityService` service"
+          " replacing `ReflectOverZeroX` with tool configuration:"
+          "\n  Mapping: { tool_type: \"PhotonMappingXMirrorTransformations\" }"
+          ;
+      }
+    } // if 
+    fhicl::ParameterSet mapDefaultSet;
+    mapDefaultSet.put("tool_type",
+      fReflectOverZeroX
+        ? "PhotonMappingXMirrorTransformations"
+        : "PhotonMappingIdentityTransformations"
+      );
+    fMapping = art::make_tool<phot::IPhotonMappingTransformations>
+      (pset.get<fhicl::ParameterSet>("Mapping", mapDefaultSet));
+    
     mf::LogInfo("PhotonVisibilityService")<<"PhotonVisbilityService initializing"<<std::endl;
   }
 
@@ -377,16 +407,16 @@ namespace phot{
 	{
         // VIS
       	fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-	fCATHODE_height = p.get<double>("CATHODE_height");
-	fCATHODE_width = p.get<double>("CATHODE_width");
+	fCATHODE_ydimension = p.get<double>("CATHODE_height");
+	fCATHODE_zdimension = p.get<double>("CATHODE_width");
 	fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
 	fPlane_Depth = fCATHODE_centre[0];
 	}
       	
 	// Optical channel dimensions
 	fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
-      	fAPERTURE_height = p.get<double>("APERTURE_height");
-      	fAPERTURE_width = p.get<double>("APERTURE_width");
+      	fAPERTURE_ydimension = p.get<double>("APERTURE_height");
+      	fAPERTURE_zdimension = p.get<double>("APERTURE_width");
       	fPMT_radius = p.get<double>("PMT_radius");
     }
 
@@ -411,30 +441,40 @@ namespace phot{
   //------------------------------------------------------
 
   // Get a vector of the relative visibilities of each OpDet
-  //  in the event to a point xyz
+  //  in the event to a point p
 
-  float const* PhotonVisibilityService::GetAllVisibilities(double const* xyz, bool wantReflected) const
+  auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const -> MappedCounts_t
   {
+    phot::IPhotonLibrary::Counts_t data{};
+    
+    // first we fill a container of visibilities in the library index space
+    // (it is directly the values of the library unless interpolation is
+    //  requested)
     if(fInterpolate){
+      // this is a punch into multithreading face:
       static std::vector<float> ret;
-      if(ret.size() != NOpChannels()) ret.resize(NOpChannels());
-      for(unsigned int i = 0; i < NOpChannels(); ++i) ret[i] = GetVisibility(xyz, i, wantReflected);
-      return &ret.front();
+      ret.resize(fMapping->libraryMappingSize(p));
+      for(std::size_t libIndex = 0; libIndex < ret.size(); ++libIndex) {
+        ret[libIndex]
+          = doGetVisibilityOfOpLib(p, LibraryIndex_t(libIndex), wantReflected);
+      }
+      data = &ret.front();
     }
     else{
-      size_t VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
-      return GetLibraryEntries(VoxID, wantReflected);
+      auto const VoxID = VoxelAt(p);
+      data = GetLibraryEntries(VoxID, wantReflected);
     }
+    return fMapping->applyOpDetMapping(p, data);
   }
 
 
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double PhotonVisibilityService::DistanceToOpDet( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::DistanceToOpDetImpl( geo::Point_t const& p, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
-    return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(xyz);
+    return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(p);
       
   }
 
@@ -443,37 +483,48 @@ namespace phot{
 
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double PhotonVisibilityService::SolidAngleFactor( double const* xyz, unsigned int OpDet )
+  double PhotonVisibilityService::SolidAngleFactorImpl( geo::Point_t const& p, unsigned int OpDet )
   {
     art::ServiceHandle<geo::Geometry> geom;
-    return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(xyz);
+    return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(p);
   }
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetVisibility(double const* xyz, unsigned int OpChannel, bool wantReflected) const
+  float PhotonVisibilityService::doGetVisibilityOfOpLib
+    (geo::Point_t const& p, LibraryIndex_t libIndex, bool wantReflected /* = false */) const
   {
-    // Static to avoid reallocating this buffer between calls
-    // (GetNeighbouringVoxelIDs makes sure to clear it).
-    static std::vector<sim::PhotonVoxelDef::NeiInfo> neis;
-
-    if(fInterpolate){
-      // In case we're outside the bounding box we'll get an empty vector here
-      // and return visibility 0, which seems OK.
-      fVoxelDef.GetNeighboringVoxelIDs(LibLocation(xyz), neis);
+    if(!fInterpolate) {
+      return GetLibraryEntry(VoxelAt(p), libIndex, wantReflected);
     }
-    else{
-      // For no interpolation, use a single entry with weight 1
-      neis.clear();
-      neis.emplace_back(fVoxelDef.GetVoxelID(LibLocation(xyz)), 1);
-    }
-
+    
+    // In case we're outside the bounding box we'll get a empty optional list.
+    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(p));
+    if (!neis) return 0.0;
+    
     // Sum up all the weighted neighbours to get interpolation behaviour
-    float vis = 0;
-    for(const sim::PhotonVoxelDef::NeiInfo& n: neis){
-      vis += n.weight * GetLibraryEntry(n.id, OpChannel, wantReflected);
+    float vis = 0.0;
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value()) {
+      if (n.id < 0) continue;
+      vis += n.weight * GetLibraryEntry(n.id, libIndex, wantReflected);
     }
     return vis;
+  }
+
+
+  //------------------------------------------------------
+
+  bool PhotonVisibilityService::doHasVisibility
+    (geo::Point_t const& p, bool wantReflected /* = false */) const
+    { return HasLibraryEntries(VoxelAt(p), wantReflected); }
+  
+  //------------------------------------------------------
+
+  float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p, unsigned int OpChannel, bool wantReflected) const
+  {
+    // here we quietly confuse op. det. channel (interface) and op. det. (library)
+    LibraryIndex_t const libIndex = fMapping->opDetToLibraryIndex(p, OpChannel);
+    return doGetVisibilityOfOpLib(p, libIndex, wantReflected);
   }
 
 
@@ -517,7 +568,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float const* PhotonVisibilityService::GetLibraryEntries(int VoxID, bool wantReflected) const
+  phot::IPhotonLibrary::Counts_t PhotonVisibilityService::GetLibraryEntries(int VoxID, bool wantReflected) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
@@ -530,31 +581,41 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetLibraryEntry(int VoxID, int Channel, bool wantReflected) const
+  bool PhotonVisibilityService::HasLibraryEntries(int VoxID, bool /* wantReflected */ /* = false */) const
+  {
+    if (!fTheLibrary) LoadLibrary();
+    return fTheLibrary->isVoxelValid(VoxID);
+  }
+  
+  //------------------------------------------------------
+
+  float PhotonVisibilityService::GetLibraryEntry(int VoxID, OpDetID_t libOpChannel, bool wantReflected) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
 
     if(!wantReflected)
-      return fTheLibrary->GetCount(VoxID, Channel);
+      return fTheLibrary->GetCount(VoxID, libOpChannel);
     else
-      return fTheLibrary->GetReflCount(VoxID, Channel);
+      return fTheLibrary->GetReflCount(VoxID, libOpChannel);
   }
   // Methodes to handle the extra library parameter refl T0
   //------------------------------------------------------
 
   // Get a vector of the refl <tfirst> of each OpDet
-  //  in the event to a point xyz
+  //  in the event to a point p
 
-  float const* PhotonVisibilityService::GetReflT0s(double const* xyz) const
+  auto PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const -> MappedT0s_t
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
-    return GetLibraryReflT0Entries(VoxID);
+    // both the input and the output go through mapping to apply needed symmetries.
+    int const VoxID = VoxelAt(p);
+    phot::IPhotonLibrary::Counts_t const& data = GetLibraryReflT0Entries(VoxID);
+    return fMapping->applyOpDetMapping(p, data);
   }
 
   //------------------------------------------------------
 
-  float const* PhotonVisibilityService::GetLibraryReflT0Entries(int VoxID) const
+  phot::IPhotonLibrary::Counts_t PhotonVisibilityService::GetLibraryReflT0Entries(int VoxID) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
@@ -577,12 +638,12 @@ namespace phot{
 
   //------------------------------------------------------      
 
-  float PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, int Channel) const
+  float PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, OpDetID_t libOpChannel) const
   {
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return fTheLibrary->GetReflT0(VoxID, Channel);
+    return fTheLibrary->GetReflT0(VoxID, libOpChannel);
   }
 
   //------------------------------------------------------
@@ -590,22 +651,24 @@ namespace phot{
 
 /////////////****////////////
 
-  const std::vector<float>* PhotonVisibilityService::GetTimingPar(double const* xyz) const
+  auto PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const -> MappedParams_t
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
-    return GetLibraryTimingParEntries(VoxID);
+    int const VoxID = VoxelAt(p);
+    phot::IPhotonLibrary::Params_t const& params = GetLibraryTimingParEntries(VoxID);
+    return fMapping->applyOpDetMapping(p, params);
   }
 
-  TF1* PhotonVisibilityService::GetTimingTF1(double const* xyz) const
+  auto PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const -> MappedFunctions_t
   {
-    int VoxID = fVoxelDef.GetVoxelID(LibLocation(xyz));
-    return GetLibraryTimingTF1Entries(VoxID);
+    int const VoxID = VoxelAt(p);
+    phot::IPhotonLibrary::Functions_t const& functions = GetLibraryTimingTF1Entries(VoxID);
+    return fMapping->applyOpDetMapping(p, functions);
   }
 
 
   //------------------------------------------------------
 
-  const std::vector<float>* PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
+  phot::IPhotonLibrary::Params_t PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
@@ -616,7 +679,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  TF1* PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID) const
+  phot::IPhotonLibrary::Functions_t PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
@@ -640,7 +703,7 @@ namespace phot{
 
   //------------------------------------------------------
 
-  void PhotonVisibilityService::SetLibraryTimingTF1Entry(int VoxID, int OpChannel, TF1 func)
+  void PhotonVisibilityService::SetLibraryTimingTF1Entry(int VoxID, int OpChannel, TF1 const& func)
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
@@ -654,13 +717,13 @@ namespace phot{
 
   //------------------------------------------------------
 
-  float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID, int Channel, size_t npar) const
+  float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID, OpDetID_t libOpChannel, size_t npar) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if(fTheLibrary == 0)
       LoadLibrary();
 
-    return lib->GetTimingPar(VoxID, Channel,npar);
+    return lib->GetTimingPar(VoxID, libOpChannel, npar);
   }
 
   //------------------------------------------------------
@@ -742,28 +805,28 @@ namespace phot{
   }
 
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& w, double& h, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& zdim, double& ydim, double& r, int& op_det_type) const
   {
     v = fGH_PARS;    
  
     op_det_type = fOptical_Detector_Type;
-    h = fAPERTURE_height;
-    w = fAPERTURE_width;
+    ydim = fAPERTURE_ydimension;
+    zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
 
   }
 
-  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& w_cathode, double& h_cathode, std::vector<double>& cntr_cathode, double& w, double& h, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const
   {
     v = fVIS_PARS;
     plane_depth = fPlane_Depth;
-    w_cathode = fCATHODE_width;
-    h_cathode = fCATHODE_height;
+    zdim_cathode = fCATHODE_zdimension;
+    ydim_cathode = fCATHODE_ydimension;
     cntr_cathode = fCATHODE_centre;
 
     op_det_type = fOptical_Detector_Type;
-    h = fAPERTURE_height;
-    w = fAPERTURE_width;
+    ydim = fAPERTURE_ydimension;
+    zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
 
   }
@@ -774,15 +837,9 @@ namespace phot{
    * Preform any necessary transformations on the coordinates before trying to access
    * a voxel ID.
    **/
-  const TVector3 PhotonVisibilityService::LibLocation(const double * xyz) const
+  geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
-    TVector3 location(xyz);
-    
-    // Always use postive X coordinate if set
-    if (fReflectOverZeroX && location.x() < 0) {
-      location.SetX( fabs(location.x() ) );
-    }
-    return location;
+    return fMapping->detectorToLibrary(p);
   }
 
 } // namespace

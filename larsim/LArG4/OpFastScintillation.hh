@@ -83,6 +83,8 @@
 // Includes
 /////////////
 
+#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
+
 #include "Geant4/globals.hh"
 #include "Geant4/templates.hh"
 #include "Geant4/G4ThreeVector.hh"
@@ -295,8 +297,8 @@ private:
   
         G4EmSaturation* emSaturation;
         // functions and parameters for the propagation time parametrization
-        TF1* ParPropTimeTF1;
-        float const* ReflT0s;
+        phot::MappedFunctions_t ParPropTimeTF1;
+        phot::MappedT0s_t ReflT0s;
 
         TF1 const* functions_vuv[8];
         TF1 const* functions_vis[5];                     
@@ -329,12 +331,12 @@ private:
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
 	TF1* VIS_pol[9];
-	double fplane_depth, fcathode_width, fcathode_height;
+	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
 	std::vector<double>  fcathode_centre;
         
 	// Optical detector properties for semi-analytic hits
 	int foptical_detector_type; 
-        double fheight, fwidth, fradius;
+        double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
 
