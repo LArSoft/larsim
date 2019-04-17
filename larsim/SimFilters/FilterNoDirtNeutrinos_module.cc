@@ -63,7 +63,7 @@ namespace simfilter {
 
   //-----------------------------------------------------------------------
   // Constructor
-  FilterNoDirtNeutrinos::FilterNoDirtNeutrinos(fhicl::ParameterSet const& pset) :
+  FilterNoDirtNeutrinos::FilterNoDirtNeutrinos(fhicl::ParameterSet const& pset) : EDFilter{pset},
     fLArG4ModuleLabel    (pset.get< std::string > ("LArG4ModuleLabel"   , "NoLabel")       )
     , fGenModuleLabel    (pset.get< std::string > ("GenModuleLabel"  , "NoLabel")       )
     , fKeepCryostatNeutrinos    (pset.get< bool > ("KeepCryostatNeutrinos", false)      )
