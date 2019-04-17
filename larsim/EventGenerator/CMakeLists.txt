@@ -20,8 +20,8 @@ art_make(LIB_LIBRARIES nusimdata_SimulationBase
                            larsim_EventGenerator
                            nusimdata_SimulationBase
                            ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                           ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                            art_Persistency_Provenance
                            ${MF_MESSAGELOGGER}
                            ${CLHEP}

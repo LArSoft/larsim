@@ -90,7 +90,7 @@ simple_plugin(CheckBackTracking "module"
   lardataobj_Simulation
   ${MF_MESSAGELOGGER}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+  ${ART_ROOT_IO_TFILESERVICE_SERVICE}
   )
 
 simple_plugin(RecoCheckAna "module"
@@ -103,8 +103,8 @@ simple_plugin(RecoCheckAna "module"
   nusimdata_SimulationBase
   ${MF_MESSAGELOGGER}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-  ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+  ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+  ${ART_ROOT_IO_TFILESERVICE_SERVICE}
   art_Persistency_Provenance
   ${ROOT_TREE}
   ${ROOT_HIST}

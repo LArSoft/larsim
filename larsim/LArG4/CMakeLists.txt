@@ -13,8 +13,8 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         nutools_RandomUtils_NuRandomService_service
                         nutools_G4Base
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                        ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                         canvas
                         ${MF_MESSAGELOGGER}
                         ${FHICLCPP}
@@ -39,8 +39,8 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         nutools_RandomUtils_NuRandomService_service
                         nusimdata_SimulationBase
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                        ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                         ${MF_MESSAGELOGGER}
                         ${ROOT_GENVECTOR}
                         nutools_G4Base
