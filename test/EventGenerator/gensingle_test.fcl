@@ -31,6 +31,12 @@ services:
   ChannelStatusService:  @local::standard_channelstatus
 }
 
+# remove services we don't need for generation
+services.LArFFT:                   @erase
+services.BackTrackerService:       @erase
+services.ParticleInventoryService: @erase
+services.ChannelStatusService:     @erase
+
 
 #Start each new event with an empty event.
 source:
