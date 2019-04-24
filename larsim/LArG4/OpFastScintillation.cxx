@@ -824,6 +824,8 @@ namespace larg4{
 
             // Get the transport time distribution
 	    std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
+      //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
+            Edeposited = Edeposited / double(NPhotons);
             // Loop through the photons
             for (G4int i = 0; i < NPhotons; ++i)
             {
@@ -834,7 +836,6 @@ namespace larg4{
 
               // Always store the BTR
               tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
-              Edeposited=0; //Don't add duplicates many times.
 
               // Store as lite photon or as OnePhoton
               if(lgp->UseLitePhotons())
