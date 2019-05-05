@@ -85,7 +85,7 @@ namespace cheat{
     if( !this->priv_CanRun(evt)) { this->priv_PrepFailed(); }
     if( this->priv_SimChannelsReady()){ return; }
     try{BackTracker::PrepSimChannels(evt);}
-    catch(...){ mf::LogWarning("BackTrackerService") << "Rebuild failed to get the SimChannels. This is expected when running on a gernation or simulation step.";}
+    catch(...){ mf::LogWarning("BackTrackerService") << "Rebuild failed to get the SimChannels. This is expected when running on a generation or simulation step.";}
   }
 
   //---------------------------------------------------------------------

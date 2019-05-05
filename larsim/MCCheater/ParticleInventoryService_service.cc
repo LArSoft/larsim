@@ -87,7 +87,7 @@ namespace cheat{
     if(this->priv_ParticleListReady()){ return; }
     //try{ParticleInventory::PrepParticleList(*fEvt);}
     try{ParticleInventory::PrepParticleList(evt);}
-    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a generation or simulation step.";}
   }
 
 
@@ -97,7 +97,7 @@ namespace cheat{
     if( this->priv_TrackIdToMCTruthReady()){ return; }
     //try{ParticleInventory::PrepTrackIdToMCTruthIndex(*fEvt);}
     try{ParticleInventory::PrepTrackIdToMCTruthIndex(evt);}
-    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a generation or simulation step.";}
   }//End priv_PrepTrackIdToMCTruthIndexList
 
   void ParticleInventoryService::priv_PrepMCTruthList(const art::Event& evt ){
@@ -106,7 +106,7 @@ namespace cheat{
     if(this->priv_MCTruthListReady( ) ){ return;} //If the event is data or if the truth list is already built there is nothing for us to do.
     try{    ParticleInventory::PrepMCTruthList(evt); }
     //try{    ParticleInventory::PrepMCTruthList(*fEvt); }
-    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a gernation or simulation step.";}
+    catch(...){ mf::LogWarning("ParticleInventory") << "Rebuild failed to get the MCParticles. This is expected when running on a generation or simulation step.";}
     //ToDo. Find out exactly which exception is thrown and catch only that.
 
   }//End PrepMCTruthList
