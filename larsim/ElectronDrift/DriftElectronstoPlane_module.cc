@@ -61,7 +61,7 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "larsim/ElectronDrift/ISCalculation.h"
+#include "larsim/ElectronDrift/ISCalculationSeparate.h"
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -161,7 +161,7 @@ namespace detsim {
 
 
     //IS calculationg
-    ISCalculation* fISAlg;
+    ISCalculationSeparate* fISAlg;
 
   }; // class DriftElectronstoPlane
 
@@ -185,7 +185,7 @@ namespace detsim {
     , fModBoxB                     {pset.get< double >("ModBoxB",0.212)}
     , fUseModBoxRecomb             {pset.get< bool   >("UseModBoxRecomb",true)}
   {
-    fISAlg=new ISCalculation(pset);
+    fISAlg=new ISCalculationSeparate(pset);
     if(fStoreDriftedElectronClusters) {
       produces< std::vector<sim::SimDriftedElectronCluster> >();
     }

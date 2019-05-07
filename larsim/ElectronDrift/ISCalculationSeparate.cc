@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "larsim/ElectronDrift/ISCalculation.h"
+#include "larsim/ElectronDrift/ISCalculationSeparate.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
@@ -27,7 +27,7 @@
 namespace detsim{
 
   //----------------------------------------------------------------------------
-  ISCalculation::ISCalculation(fhicl::ParameterSet const& pset)
+  ISCalculationSeparate::ISCalculationSeparate(fhicl::ParameterSet const& pset)
     : fRecombA                     {pset.get< double >("RecombA")}
     , fRecombk                     {pset.get< double >("Recombk")}
     , fModBoxA                     {pset.get< double >("ModBoxA")}
@@ -50,13 +50,13 @@ namespace detsim{
    }
 
   //----------------------------------------------------------------------------
-  ISCalculation::~ISCalculation()
+  ISCalculationSeparate::~ISCalculationSeparate()
   {
   }
  
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculation::CalculateIonization(sim::SimEnergyDeposit const& edep){
+  void ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep){
     float e  = edep.Energy();
     float ds = edep.StepLength();
     float x  = edep.MidPointX();
@@ -88,21 +88,21 @@ namespace detsim{
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
 
 
-    MF_LOG_DEBUG("ISCalculation")
+    MF_LOG_DEBUG("ISCalculationSeparate")
       << " Electrons produced for " << fEnergyDeposit
       << " MeV deposited with "     << recomb
       << " recombination: "         << fNumIonElectrons << std::endl;
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculation::CalculateScintillation(sim::SimEnergyDeposit const& edep)
+  void ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep)
   {
     float e = edep.Energy();
     int pdg = edep.PdgCode();
     double scintYield = fLArProp->ScintYield(true);
     if(fLArProp->ScintByParticleType()){
 
-      MF_LOG_DEBUG("ISCalculation") << "scintillating by particle type";
+      MF_LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
 
       switch(pdg) {
 
@@ -141,20 +141,20 @@ namespace detsim{
 
   }
   //----------------------------------------------------------------------------
-  void ISCalculation::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep)
+  void ISCalculationSeparate::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep)
   {
     fEnergyDeposit = edep.Energy();
     CalculateIonization(edep);
     CalculateScintillation(edep);
   }
 
-  double ISCalculation::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  double ISCalculationSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     return EFieldAtStep(efield,
 			edep.MidPointX(),edep.MidPointY(),edep.MidPointZ());
   }
 
-  double ISCalculation::EFieldAtStep(double efield, float x, float y, float z)
+  double ISCalculationSeparate::EFieldAtStep(double efield, float x, float y, float z)
   {
     double EField = efield;
     if (fSCE->EnableSimEfieldSCE())

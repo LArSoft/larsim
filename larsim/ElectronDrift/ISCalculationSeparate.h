@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculation.h
+/// \file  ISCalculationSeparate.h
 /// \brief Calculation of ionization electrons and scintillation photons 
 ///        assuming there is no correlation between the two
 ///
@@ -21,12 +21,12 @@ namespace spacecharge { class SpaceCharge; }
 
 namespace detsim {
 
- class ISCalculation{
+ class ISCalculationSeparate{
 
  public:
 
-   explicit ISCalculation(fhicl::ParameterSet const& pset);
-   virtual ~ISCalculation();
+   explicit ISCalculationSeparate(fhicl::ParameterSet const& pset);
+   virtual ~ISCalculationSeparate();
 
    //   void   Initialize(const detinfo::LArProperties* larp,
    // 		     const detinfo::DetectorProperties* detp,
