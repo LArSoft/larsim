@@ -481,7 +481,7 @@ namespace detsim {
 	    fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
 	    fDriftClusterPos[transversecoordinate2] = fTransDiff2[k];
 	    auto const simTime = energyDeposit.Time();
-	    unsigned int tdc = fClock.Ticks(fTimeService->G4ToElecTime(TDiff + simTime));
+	    // unused unsigned int tdc = fClock.Ticks(fTimeService->G4ToElecTime(TDiff + simTime));
 	    /// \todo think about effects of drift between planes
 	    SimDriftedElectronClusterCollection->emplace_back(fnElDiff[k],
 							      TDiff + simTime,		// timing
