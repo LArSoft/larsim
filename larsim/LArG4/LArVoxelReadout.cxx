@@ -133,7 +133,7 @@ namespace larg4 {
   // Called at the end of each event.
   void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
-    mf::LogWarning("LArVoxelReadout") << "Total number of steps was " << fNSteps << std::endl;
+    MF_LOG_DEBUG("LArVoxelReadout") << "Total number of steps was " << fNSteps << std::endl;
 
   } // LArVoxelReadout::EndOfEvent()
 
@@ -529,7 +529,7 @@ namespace larg4 {
             DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
           }
           catch(cet::exception &e){
-            mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
+            MF_LOG_DEBUG("LArVoxelReadout") << "unable to drift electrons from point ("
                                               << xyz[0] << "," << xyz[1] << "," << xyz[2]
                                               << ") with exception " << e;
           }
@@ -569,7 +569,7 @@ namespace larg4 {
 
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
-      mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"
+      MF_LOG_DEBUG("LArVoxelReadout") << "step cannot be found in a TPC\n"
                                         << e;
     }
 
