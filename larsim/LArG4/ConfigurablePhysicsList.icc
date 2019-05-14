@@ -5,10 +5,10 @@
 //
 // Based on the QGSP_BERT physics list supplied with geant 4, but with
 // options to switch on and off different physics processed from the config
-// file. 
+// file.
 //
 // To include a new physics process, create a new physics builder registering
-// the relevant particles and interactions.  Then add the builder to the 
+// the relevant particles and interactions.  Then add the builder to the
 // GetPhysicsBuilders and GetDefaultSettings functions in this class,
 // using the name by which the builder will be referenced in the config
 // file.  Physics builders to be enabled are specified in the LArG4 config.
@@ -28,7 +28,7 @@
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialTable.hh"
 #include "Geant4/G4ios.hh"
-#include <iomanip>   
+#include <iomanip>
 
 #include "Geant4/G4DataQuestionaire.hh"
 
@@ -37,71 +37,63 @@
 #include "larsim/LArG4/MuNuclearSplittingProcessXSecBias.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace larg4 {
 
   static CustomPhysicsTable * TheCustomPhysicsTable;
- 
 
-  template<class T> TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int ver):  T()
+
+  template<class T> TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int ver) : T()
   {
-
-    mf::LogWarning("ConfigurablePhysics") <<"Setting up Configurable Physics List";
-
+    mf::LogWarning logmsg{"ConfigurablePhysics"};
+    logmsg  << "Setting up Configurable Physics List.\n";
     // note - not sure exact purpose of these commands, but left in from QGSP_BERT list
-    this->defaultCutValue = 0.7*CLHEP::mm;  
+    this->defaultCutValue = 0.7 * CLHEP::mm;
     this->SetVerboseLevel(ver);
     G4DataQuestionaire it(photon);
-
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-    if(lgp->UseCustomPhysics()){                
-      mf::LogWarning("ConfigurablePhysics") <<"Custom physics list enabled.  Loading from config";
+    if (lgp->UseCustomPhysics()) {
       EnabledPhysics = lgp->EnabledPhysics();
-      for(std::vector<std::string>::const_iterator it=EnabledPhysics.begin(); it!=EnabledPhysics.end(); it++)
-      mf::LogWarning("ConfigurablePhysics")<<"Configurable Physics List enabling : "<< (*it);
+      logmsg << "Custom physics list enabled, contents:\n";
+      for (auto const& val : EnabledPhysics) {
+        logmsg << "  " << val << '\n';
+        if (!TheCustomPhysicsTable->IsPhysicsAvailable(val)) {
+          logmsg << "\nERROR: physics not available: " << val << '\n';
+          std::vector<std::string> availablePhysics(TheCustomPhysicsTable->GetAvailablePhysicsList());
+          logmsg << "\n-- Available physics:\n";
+          for (auto const& nm : availablePhysics) {
+            if (TheCustomPhysicsTable->IsPhysicsAvailable(nm)) {
+              logmsg << "  " << nm << '\n';
+            }
+          }
+          logmsg << "--\n";
+          logmsg << "\nERROR: Throwing exception!\n";
+          throw cet::exception("ConfigurablePhysics") << "Physics not available: " << val;
+        }
+      }
     }
-    else
-    {
-      mf::LogWarning("ConfigurablePhysics") <<"Custom physics list disabled - using"
-                                            <<" default QGSP_BERT configuration";
+    else {
+      logmsg << "Custom physics list disabled, using default QGSP_BERT configuration.\n";
       EnabledPhysics = GetDefaultSettings();
     }
-
-    // loop through vector of enabled physics and switch on relevant processes 
-    for(std::vector<std::string>::const_iterator it = EnabledPhysics.begin(); it!=EnabledPhysics.end(); it++){
-       std::string PhysicsName=(*it);
-       if(TheCustomPhysicsTable->IsPhysicsAvailable(PhysicsName))
-       {
-         mf::LogWarning("ConfigurablePhysics") <<"ConfigurablePhysicsList Registering physics : " 
-                                               << PhysicsName;
-         G4VPhysicsConstructor* g4v = TheCustomPhysicsTable->GetPhysicsConstructor(PhysicsName); 
-         if (!PhysicsName.compare("SynchrotronAndGN")) 
-         {
-            mf::LogWarning("ConfigurablePhysics") <<"ConfigurablePhysicsList : " 
-                                                  << PhysicsName 
-                                                  << ": Turning on GammaNuclear, Synchrotron.";
-            G4String on("on");
-            ((G4EmExtraPhysics*)g4v)->GammaNuclear(on);
-            ((G4EmExtraPhysics*)g4v)->Synch(on);
-
-            // We want MuonNuclear off, since we're gonna activate it
-            // within a Wrapped Process. This would double count these evts.
-            //  EC, 23-May-2011!
-            if (!lgp->K0Bias()) {
-               mf::LogWarning("ConfigurablePhysics") <<"ConfigurablePhysicsList : "
-                                                     << PhysicsName
-                                                     << ": Turning on MuNuclear.";
-               ((G4EmExtraPhysics*)g4v)->MuonNuclear(on);
-            }
-         }
-       this->RegisterPhysics(g4v);
-       } 
-       else
-       {
-         mf::LogWarning("ConfigurablePhysics") <<"ConfigurablePhysicsList Error : "
-                                                << "Physics Module Unavailable - " << PhysicsName;
-       }
+    for (auto const& PhysicsName : EnabledPhysics) {
+      logmsg << "Registering physics: " << PhysicsName << '\n';
+      G4VPhysicsConstructor* g4v = TheCustomPhysicsTable->GetPhysicsConstructor(PhysicsName);
+      if (PhysicsName == "SynchrotronAndGN") {
+        logmsg << PhysicsName << ": Turning on GammaNuclear, Synchrotron.\n";
+        G4String on("on");
+        ((G4EmExtraPhysics*)g4v)->GammaNuclear(on);
+        ((G4EmExtraPhysics*)g4v)->Synch(on);
+        // We want MuonNuclear off, since we're gonna activate it
+        // within a Wrapped Process. This would double count these evts.
+        if (!lgp->K0Bias()) {
+          logmsg << PhysicsName << ": Turning on MuNuclear.\n";
+          ((G4EmExtraPhysics*)g4v)->MuonNuclear(on);
+        }
+      }
+      this->RegisterPhysics(g4v);
     }
   }
 
@@ -117,7 +109,7 @@ namespace larg4 {
 
     if(this->verboseLevel >1) G4cout << "ConfigurablePhysicsList::SetCuts:";
     this->SetCutsWithDefault();
- 
+
     // Set Proton Cut to  0, particularly important when using High Precision Packages
     // D.R. 02/25/19
     bool ModifyProtonCut = lg4p->ModifyProtonCut();
