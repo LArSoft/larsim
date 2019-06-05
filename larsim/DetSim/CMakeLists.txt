@@ -36,10 +36,6 @@ simple_plugin(WienerFilterAna "module"
                               ${MF_MESSAGELOGGER}
                               ${ROOT_HIST})
 
-simple_plugin(RecompressRawDigits "module"
-              lardataobj_RawData
-              art_Persistency_Provenance)
-
 install_headers()
 install_fhicl()
 install_source()
