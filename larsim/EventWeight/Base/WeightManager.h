@@ -17,7 +17,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 #include "lardataobj/Simulation/sim.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "fhiclcpp/ParameterSet.h"

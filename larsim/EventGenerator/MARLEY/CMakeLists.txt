@@ -9,7 +9,7 @@ art_make(
                         nusimdata_SimulationBase
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nutools_RandomUtils_NuRandomService_service
+                        nurandom_RandomUtils_NuRandomService_service
                         ${MARLEY}
                         ${MARLEY_ROOT}
                         ${FHICLCPP}
@@ -26,7 +26,7 @@ art_make(
                         larcoreobj_SummaryData
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nutools_RandomUtils_NuRandomService_service
+                        nurandom_RandomUtils_NuRandomService_service
                         ${MARLEY}
                         ${MARLEY_ROOT}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}

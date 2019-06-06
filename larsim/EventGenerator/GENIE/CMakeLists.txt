@@ -43,10 +43,11 @@ cet_find_library( GMUELOSS NAMES GMuELoss PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GREWEIGHT NAMES GReWeight PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GNUCLEONDECAY NAMES GNucleonDecay PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
 cet_find_library( GNEUTRONOSC NAMES GNeutronOsc PATHS ENV GENIE_LIB NO_DEFAULT_PATH )
+
 # prior to GENIE R-2_9_0 Sehgal's name was spelled incorrectly
 # so if minor version # is 8 or less use GReinSeghal, otherwise GReinSehgal
 # parse_ups_version returns VMAJ, VMIN, and VPRJ
-parse_ups_version( ${GENIE_VERSION} )
+parse_ups_version( $ENV{GENIE_VERSION} )
 set ( GRSSPELLING GReinSehgal )
 if ( ${VMAJ} EQUAL 2 AND ${VMIN} LESS 9 )
   set ( GRSSPELLING GReinSeghal )
@@ -61,8 +62,8 @@ art_make(MODULE_LIBRARIES
          larcoreobj_SummaryData
          larcorealg_Geometry
          larcore_Geometry_Geometry_service
-         nutools_RandomUtils_NuRandomService_service
-         nutools_EventGeneratorBase_GENIE
+         nurandom_RandomUtils_NuRandomService_service
+         nugen_EventGeneratorBase_GENIE
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
          ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
