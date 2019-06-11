@@ -188,6 +188,7 @@ void sim::DumpSimPhotons::DumpOnePhoton
     << ", " << onephoton.FinalLocalPosition.Z() << ") cm"
     ;
   if (onephoton.SetInSD) out << " [in SD]"; // in sensitive detector?
+  out << " from track ID=" << onephoton.MotherTrackID;
 } // sim::DumpSimPhotons::DumpOnePhoton()
 
 
