@@ -326,7 +326,9 @@ private:
 	//array of correction for the VUV Nhits estimation
 	std::vector<std::vector<double> > fGHvuvpars;
 	TF1* GHvuv[9];
-
+        //To account for the border effects
+        std::vector<double> fborder_corr;
+        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
 	// For VIS semi-analytic hits
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
@@ -339,7 +341,9 @@ private:
         double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
-
+        std::vector<int>  fOpDetType;
+        std::vector<double>  fOpDetLength;
+        std::vector<double>  fOpDetHeight;
         //double fGlobalTimeOffset;
 
         void ProcessStep( const G4Step& step);

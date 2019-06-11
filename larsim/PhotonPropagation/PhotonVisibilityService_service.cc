@@ -402,7 +402,8 @@ namespace phot{
     if(fUseNhitsModel) {
         // VUV
         fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
-
+	std::vector<double> v0(2,0.0);
+	fBORDER_correction = p.get<std::vector<double>>("BORDER_correction", v0);
         if (fStoreReflected)
         {
         // VIS
@@ -412,12 +413,6 @@ namespace phot{
         fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
         fPlane_Depth = fCATHODE_centre[0];
         }
-
-        // Optical channel dimensions
-        fOptical_Detector_Type = p.get<double>("Optical_Detector_Type");
-        fAPERTURE_ydimension = p.get<double>("APERTURE_height");
-        fAPERTURE_zdimension = p.get<double>("APERTURE_width");
-        fPMT_radius = p.get<double>("PMT_radius");
     }
 
 
@@ -804,14 +799,11 @@ namespace phot{
   }
 
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& zdim, double& ydim, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border) const
   {
-    v = fGH_PARS;
 
-    op_det_type = fOptical_Detector_Type;
-    ydim = fAPERTURE_ydimension;
-    zdim = fAPERTURE_zdimension;
-    r = fPMT_radius;
+    v = fGH_PARS;
+    border = fBORDER_correction;
 
   }
 

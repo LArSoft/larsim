@@ -1,4 +1,4 @@
-// Class ageodapted for LArSoft by Ben Jones, MIT 10/10/12
+// Class adapted for LArSoft by Ben Jones, MIT 10/10/12
 //
 // This class is a physics process based on the standard Geant4
 // scintillation process.
@@ -138,6 +138,9 @@
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
 
+#include <chrono>
+#include <ctime>
+
 namespace larg4{
 
 /////////////////////////
@@ -190,6 +193,31 @@ namespace larg4{
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
+      auto start = std::chrono::system_clock::now();
+
+      double driftLen = geo->TPC(0,0).DriftDistance();
+      double apaLen = geo->TPC(0,0).Width() - geo->TPC(0,0).ActiveWidth();
+      std::cout << "Information related with the TPC dimensions:" << std::endl;
+      std::cout << "TPC Drift Length:" <<driftLen<< std::endl;
+      std::cout << "TPC Width:" <<geo->TPC(0,0).Width()<< std::endl;
+      std::cout << "TPC Active Width:" <<geo->TPC(0,0).ActiveWidth()<< std::endl;
+      std::cout << "TPC Length:" <<geo->TPC(0,0).Length()<< std::endl;
+      std::cout << "TPC Active Length:" <<geo->TPC(0,0).ActiveLength()<< std::endl;
+      std::cout << "TPC Height:" <<geo->TPC(0,0).Height()<< std::endl;
+      std::cout << "TPC Active Height:" <<geo->TPC(0,0).ActiveHeight()<< std::endl;
+      TVector3 Cathode_centre = geo->TPC(0,0).GetCathodeCenter();
+      std::cout<<"Cathode_centre: "<<Cathode_centre.X()<<"  "<<Cathode_centre.Y()<<"  "<<Cathode_centre.Z()<<std::endl;
+      
+      auto end = std::chrono::system_clock::now();
+ 
+      std::chrono::duration<double> elapsed_seconds = end-start;
+      std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+ 
+      std::cout << "finished computation at " << std::ctime(&end_time)
+		<< "elapsed time: " << elapsed_seconds.count() << "s\n";
+
+
+
       for(size_t i = 0; i != pvs->NOpChannels(); i++)
 	{
 	  double OpDetCenter_i[3];
@@ -197,7 +225,36 @@ namespace larg4{
 	  geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
 	  OpDetCenter_v.assign(OpDetCenter_i, OpDetCenter_i +3);
 	  fOpDetCenter.push_back(OpDetCenter_v);
+	  int type_i = -1;
+	  if(strcmp(geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName(), "TGeoBBox") == 0) {
+	    type_i = 0;//Arapucas
+	    fOpDetLength.push_back(geo->OpDetGeoFromOpDet(i).Length());
+	    fOpDetHeight.push_back(geo->OpDetGeoFromOpDet(i).Height());
+	  }
+	  else {
+	    type_i = 1;//PMTs
+	    //    std::cout<<"Radio: "<<geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
+	    fOpDetLength.push_back(-1);
+	    fOpDetHeight.push_back(-1);
+	  }
+	  fOpDetType.push_back(type_i);
+	  
+	  /*std::cout <<"Shape pues: "<<geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName()<<"  "<<geo->OpDetGeoFromOpADet(i).Shape()->IsValidBox()<<std::endl;
+	  std::cout <<i<<"  ID: "<<geo->OpDetGeoFromOpDet(i).ID()<<"   Is Bar? : "<< geo->OpDetGeoFromOpDet(i).isBar()<<"   Is Tube? : "<< geo->OpDetGeoFromOpDet(i).isTube()<<std::endl;
+	  std::cout <<"RMin: "<< geo->OpDetGeoFromOpDet(i).RMin()<<std::endl;
+	  std::cout <<"RMax: "<< geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
+	  std::cout <<"Length: "<< geo->OpDetGeoFromOpDet(i).Length()<<std::endl;
+	  std::cout <<"Width: "<< geo->OpDetGeoFromOpDet(i).Width()<<std::endl;
+	  std::cout <<"Height: "<< geo->OpDetGeoFromOpDet(i).Height()<<std::endl;
+	  std::cout <<"ThetaZ: "<< geo->OpDetGeoFromOpDet(i).ThetaZ()<<std::endl;*/
+
+
 	}
+
+      // for(size_t i = 0; i != pvs->NOpChannels(); i++)
+      // std::cout <<"OpChannel"<<i<<": "<<fOpDetType.at(i)<<"  "<<fOpDetLength.at(i)<<"  "<<fOpDetHeight.at(i)<<std::endl;
+
+
 
       if(pvs->IncludePropTime()) {
 	std::cout << "Using parameterisation of timings." << std::endl;
@@ -240,10 +297,21 @@ namespace larg4{
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
 	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, fzdimension, fydimension, fradius, foptical_detector_type);
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr);
         fdelta_angulo = 10.; // angle bin size
+	fradius = 8*2.54/2;  //8" PMT windows
+	//Needed for Nhits-model border corrections (in cm)
+	fYactive_corner = geo->TPC(0,0).Height()/2;
+	fZactive_corner = geo->TPC(0,0).Length()/2;
+	fYcathode = Cathode_centre.Y();
+	fZcathode = Cathode_centre.Z();
+	double z_dist = abs(fZcathode - fZactive_corner) - fZactive_corner;
+	double y_dist = abs(fYcathode) - fYactive_corner;
+	fReference_to_corner = sqrt(y_dist*y_dist + z_dist*z_dist);
 
-	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
+	std::cout<<"For border corrections: "<<fborder_corr[0]<<"  "<<fborder_corr[1]<<std::endl;
+	std::cout<<"Photocathode-plane centre (z,y) = ("<<fZcathode<<", "<<fYcathode<<") and corner (z, y) = ("<<fZactive_corner<<", "<<fYactive_corner<<")"<<std::endl;
+	/*// initialise gaisser hillas functions for VUV Rayleigh scattering correction
 	double pars_ini[4] = {0,0,0,0};
 	std::cout << "Initalising Gaisser-Hillas parameters" << std::endl;
 	for(int bin = 0; bin < 9; bin++) {
@@ -253,7 +321,7 @@ namespace larg4{
 	    pars_ini[j] = fGHvuvpars[j][bin];
 	  }
 	  GHvuv[bin]->SetParameters(pars_ini);
-	}
+	  }*/
 
 	if(pvs->StoreReflected()) {
 	  // Load corrections for VIS semi-anlytic hits
@@ -275,15 +343,15 @@ namespace larg4{
       }
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const int nbins=tpbemission.size();
-    double * parent=new double[nbins];
+    const int nbins = tpbemission.size();
+    double * parent = new double[nbins];
     int ii=0;
     for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter)
     {
       parent[ii++]=(*iter).second;
     }
     rgen0 = new CLHEP::RandGeneral(parent,nbins);
-
+    delete [] parent;
   }
 
 
@@ -749,7 +817,9 @@ namespace larg4{
 	  else {
 	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
-	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
+	    fydimension = fOpDetLength.at(OpDet);
+	    fzdimension = fOpDetHeight.at(OpDet);
+	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
 
 	  }
 
@@ -1371,6 +1441,7 @@ namespace larg4{
       }
       delete fint;
       double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
+      delete pars_landau;
       fVUVTiming->SetParameters(parsfinal);
     }
 
@@ -1614,8 +1685,20 @@ namespace larg4{
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     int j = (theta/fdelta_angulo);
-    double hits_rec = gRandom->Poisson( GHvuv[j]->Eval(distance)*hits_geo/cosine );
 
+    //Accounting for border effects
+    double z_to_corner = abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
+    double y_to_corner = abs(ScintPoint[1]) - fYactive_corner;
+    double distance_to_corner = sqrt(y_to_corner*y_to_corner + z_to_corner*z_to_corner);// in the ph-cathode plane
+    double pars_ini_[4] = {fGHvuvpars[0][j] + fborder_corr[0] * (distance_to_corner - fReference_to_corner),
+			   fGHvuvpars[1][j] + fborder_corr[1] * (distance_to_corner - fReference_to_corner),
+			   fGHvuvpars[2][j],
+			   fGHvuvpars[3][j]};
+    TF1* GH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
+    GH_tmp->SetParameters(pars_ini_);
+
+    double hits_rec = gRandom->Poisson( GH_tmp->Eval(distance)*hits_geo/cosine );
+    delete GH_tmp;
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
 

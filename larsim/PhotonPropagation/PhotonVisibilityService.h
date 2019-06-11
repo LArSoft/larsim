@@ -103,7 +103,7 @@ namespace phot{
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
     void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const;
-    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& zdim, double& ydim, double& r, int& op_det_type) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border) const;
     void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const;
 
     bool IsBuildJob() const { return fLibraryBuildJob; }
@@ -184,6 +184,8 @@ namespace phot{
     //for the semi-analytic vuv/direct light signal (number of hits) correction
     //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)
     std::vector<std::vector<double> > fGH_PARS;
+    //parameters to correct for border effects
+    std::vector<double> fBORDER_correction;
     // for the semi-analytic visible/reflection light hits correction
     // parameters exist for DUNE SP only currently
     std::vector<std::vector<double>> fVIS_PARS;
