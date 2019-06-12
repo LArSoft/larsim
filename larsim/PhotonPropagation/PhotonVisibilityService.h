@@ -105,6 +105,7 @@ namespace phot{
     void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const;
     void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border) const;
     void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const;
+   void LoadParsForVISBorderCorrection(std::vector<double>& border_distances_x, std::vector<double>& border_distances_r, std::vector<std::vector<std::vector<double>>>& border_correction) const;
 
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
@@ -116,6 +117,8 @@ namespace phot{
 
     bool IncludePropTime() const { return fIncludePropTime; }
     bool UseNhitsModel() const { return fUseNhitsModel; }
+    bool ApplyVISBorderCorrection() const { return fApplyVISBorderCorrection; }
+    std::string VISBorderCorrectionType() const {return fVISBorderCorrectionType; }
 
     const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
@@ -142,6 +145,8 @@ namespace phot{
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
     bool                 fUseNhitsModel;
+    bool 		 fApplyVISBorderCorrection;
+    std::string          fVISBorderCorrectionType;		
 
     bool                 fParPropTime;
     size_t               fParPropTime_npar;
@@ -187,8 +192,11 @@ namespace phot{
     //parameters to correct for border effects
     std::vector<double> fBORDER_correction;
     // for the semi-analytic visible/reflection light hits correction
-    // parameters exist for DUNE SP only currently
+    // parameterization exists for DUNE-SP and SBND
     std::vector<std::vector<double>> fVIS_PARS;
+    std::vector<double> fVIS_BORDER_distances_x;
+    std::vector<double> fVIS_BORDER_distances_r;
+    std::vector<std::vector<std::vector<double>>> fVIS_BORDER_correction;
     double fPlane_Depth, fCATHODE_ydimension, fCATHODE_zdimension;
     std::vector<double> fCATHODE_centre;
 

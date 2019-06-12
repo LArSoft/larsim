@@ -327,18 +327,28 @@ namespace larg4{
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
 	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_zdimension, fcathode_ydimension, fcathode_centre, fzdimension,fydimension,fradius, foptical_detector_type);
-	 std::cout << "fzdimension = " << fzdimension << ", fydimension = " << fydimension << ", fcathode_ydimension = " << fcathode_ydimension << ", fcathode_zdimension = " << fcathode_zdimension << std::endl;
+          	
 	  // initialise vis correction functions
 	  double pars_ini_vis[6] = {0,0,0,0,0,0};
 	  std::cout << "Initialising visible correction parameters" << std::endl;
 	  for (int bin = 0; bin < 9; bin++) {
 	    VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
 	    for (int j = 0; j < 6; j++){
-	      // loads paramter set read in from fcl
+	      // loads parameter set read in from fcl
 	      pars_ini_vis[j] = fvispars[j][bin];
 	    }
 	    VIS_pol[bin]->SetParameters(pars_ini_vis);
 	  }
+	  
+	  if (pvs->ApplyVISBorderCorrection()) {
+            // load border corrections
+            std::cout << "Loading vis border corrections" << std::endl;
+            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x, fvis_border_distances_r, fvis_border_correction); 
+            fApplyVisBorderCorrection = true;
+            fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
+          }
+          else fApplyVisBorderCorrection = false;
+
 	}
       }
     }
@@ -840,7 +850,7 @@ namespace larg4{
 	    else {
 	      TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	      TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
-	      ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
+              ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
 	    }
 
             if(ReflDetThisPMT>0)
@@ -1729,31 +1739,31 @@ namespace larg4{
      acc cathode_plane;
      cathode_plane.ax = plane_depth; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];       	// centre coordinates of cathode plane
      cathode_plane.w = fcathode_ydimension; cathode_plane.h = fcathode_zdimension;                        				// width and height in cm
-
      // get scintpoint coords relative to centre of cathode plane
      TVector3 cathodeCentrePoint(plane_depth,fcathode_centre[1],fcathode_centre[2]);
      TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint;
-
      // calculate solid angle of cathode from the scintillation point
      double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
-
      // calculate distance and angle between ScintPoint and hotspot
      // vast majority of hits in hotspot region directly infront of scintpoint,therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
      double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
      double cosine_cathode = 1;
      double theta_cathode = 0;
-
      // calculate hits on cathode plane via geometric acceptance
      double cathode_hits_geo = exp(-1.*distance_cathode/fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
-
      // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
      // offset angle bin
-     int j = (theta_cathode/fdelta_angulo);
-     double cathode_hits_rec = GHvuv[j]->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
-
+     int j = (theta_cathode/fdelta_angulo);          
+     double  pars_ini_[4] = {fGHvuvpars[0][j],
+                           fGHvuvpars[1][j],
+                           fGHvuvpars[2][j],
+                           fGHvuvpars[3][j]};
+     TF1* GH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
+     GH_tmp->SetParameters(pars_ini_);
+     double cathode_hits_rec = GH_tmp->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
+     delete GH_tmp;
 
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
-
      // hotspot coordinates
      TVector3 hotspot(plane_depth, ScintPoint[1], ScintPoint[2]);
 
@@ -1795,13 +1805,42 @@ namespace larg4{
      //  angle between hotspot and optical detector
      double cosine_vis = sqrt(pow(hotspot[0] - OpDetPoint[0],2)) / distance_vis;
      double theta_vis = acos(cosine_vis)*180./CLHEP::pi;
-
-     // apply correction
      int k = (theta_vis/fdelta_angulo);
+     
      double hits_rec = gRandom->Poisson(VIS_pol[k]->Eval(distance_vuv)*hits_geo/cosine_vis);
 
-     // round final result, number of hits integer
-     int hits_vis = std::round(hits_rec);
+     // apply border correction
+     int hits_vis = 0;
+     if (fApplyVisBorderCorrection){
+       // calculate distance for interpolation depending on model
+       double r = 0;
+       if (fVisBorderCorrectionType == "Radial"){
+         r = sqrt (pow(ScintPoint[1] - fcathode_ydimension,2) + pow (ScintPoint[2] - fcathode_zdimension,2));
+       }
+       else if (fVisBorderCorrectionType == "Vertical") {
+         r = std::abs(ScintPoint[1]);
+       }
+       else {
+         std::cout << "Invalid border correction type - defaulting to using central value" << std::endl;
+       }
+       // interpolate in x for each r bin
+       int nbins_r = fvis_border_correction[k].size();
+       std::vector<double> interp_vals(nbins_r, 0.0);
+       for (int i = 0; i < nbins_r; i++){
+        interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i], std::abs(ScintPoint[0]), false);
+       }
+       // interpolate in r
+       double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
+       // apply border correction
+       double hits_rec_borders = border_correction * hits_rec / cosine_vis;
+       
+       // round final result
+       hits_vis = std::round(hits_rec_borders);
+     }
+     else {
+       // round final result
+       hits_vis = std::round(hits_rec);
+     }
 
      return hits_vis;
   }

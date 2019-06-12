@@ -236,6 +236,9 @@ namespace phot{
     // Parametrizations (time and Nhits)
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
     fUseNhitsModel        = p.get< bool        >("UseNhitsModel", false);
+    fApplyVISBorderCorrection = p.get< bool    >("ApplyVISBorderCorrection", false);
+    fVISBorderCorrectionType = p.get< std::string >("VIS_BORDER_correction_type","");
+
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary", false);
     fInterpolate          = p.get< bool        >("Interpolate", false);
@@ -412,6 +415,13 @@ namespace phot{
         fCATHODE_zdimension = p.get<double>("CATHODE_width");
         fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
         fPlane_Depth = fCATHODE_centre[0];
+	// VIS border correction
+	if (fApplyVISBorderCorrection)
+	{
+	fVIS_BORDER_distances_x = p.get< std::vector<double> > ("VIS_BORDER_distances_x");
+        fVIS_BORDER_distances_r = p.get< std::vector<double> > ("VIS_BORDER_distances_r");
+	fVIS_BORDER_correction  = p.get< std::vector<std::vector<std::vector<double>>> > ("VIS_BORDER_correction");
+        }
         }
     }
 
@@ -810,6 +820,7 @@ namespace phot{
   void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const
   {
     v = fVIS_PARS;
+
     plane_depth = fPlane_Depth;
     zdim_cathode = fCATHODE_zdimension;
     ydim_cathode = fCATHODE_ydimension;
@@ -819,8 +830,14 @@ namespace phot{
     ydim = fAPERTURE_ydimension;
     zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
-
   }
+  
+  void PhotonVisibilityService::LoadParsForVISBorderCorrection(std::vector<double>& border_distances_x, std::vector<double>& border_distances_r, std::vector<std::vector<std::vector<double>>>& border_correction) const
+ {
+    border_distances_x = fVIS_BORDER_distances_x;
+    border_distances_r = fVIS_BORDER_distances_r;
+    border_correction = fVIS_BORDER_correction;
+ }
 
 
   //------------------------------------------------------

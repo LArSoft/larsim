@@ -333,6 +333,12 @@ private:
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
 	TF1* VIS_pol[9];
+        std::vector<double> fvis_border_distances_x;
+        std::vector<double> fvis_border_distances_r;
+        std::vector<std::vector<std::vector<double>>> fvis_border_correction;
+        bool fApplyVisBorderCorrection;
+        std::string fVisBorderCorrectionType;
+
 	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
 	std::vector<double>  fcathode_centre;
 
