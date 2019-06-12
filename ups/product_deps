@@ -8,7 +8,7 @@ fwdir   product_dir G4
 #
 product         version
 larevt          v08_05_01
-nugen           v1_01_00
+nugen           v1_01_01
 nurandom        v1_00_00
 nutools         v3_00_01
 marley          v1_1_0a
