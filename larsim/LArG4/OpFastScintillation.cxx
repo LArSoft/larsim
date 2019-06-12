@@ -190,15 +190,17 @@ namespace larg4{
 
     if (bPropagate) {
       art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
+      
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
       auto start = std::chrono::system_clock::now();
 
-      double driftLen = geo->TPC(0,0).DriftDistance();
+      fDriftLen = std::abs(geo->TPC(0,0).DriftDistance());
+      
       double apaLen = geo->TPC(0,0).Width() - geo->TPC(0,0).ActiveWidth();
       std::cout << "Information related with the TPC dimensions:" << std::endl;
-      std::cout << "TPC Drift Length:" <<driftLen<< std::endl;
+      std::cout << "TPC Drift Length:" <<fDriftLen<< std::endl;
       std::cout << "TPC Width:" <<geo->TPC(0,0).Width()<< std::endl;
       std::cout << "TPC Active Width:" <<geo->TPC(0,0).ActiveWidth()<< std::endl;
       std::cout << "TPC Length:" <<geo->TPC(0,0).Length()<< std::endl;
@@ -279,13 +281,13 @@ namespace larg4{
         // VIS time parameterisation
         if (pvs->StoreReflected()) {
 	  // load parameters
-	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);
+	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
 	}
 
       }
       if(pvs->UseNhitsModel()) {
 	std::cout << "Using semi-analytic model for number of hits:" << std::endl;
-
+	fUseNhitsModel = true;
 	// LAr absorption length in cm
 	std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
 	std::vector<double> x_v, y_v;
@@ -297,9 +299,9 @@ namespace larg4{
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
 	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr);
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
+	fGH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
         fdelta_angulo = 10.; // angle bin size
-	fradius = 8*2.54/2;  //8" PMT windows
 	//Needed for Nhits-model border corrections (in cm)
 	fYactive_corner = geo->TPC(0,0).Height()/2;
 	fZactive_corner = geo->TPC(0,0).Length()/2;
@@ -323,11 +325,11 @@ namespace larg4{
 	  GHvuv[bin]->SetParameters(pars_ini);
 	  }*/
 
-	if(pvs->StoreReflected()) {
+	if(pvs->StoreReflected()) {	
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
-	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_zdimension, fcathode_ydimension, fcathode_centre, fzdimension,fydimension,fradius, foptical_detector_type);
-          	
+	  pvs->LoadParsForVISCorrection(fvispars,fradius);  
+        	
 	  // initialise vis correction functions
 	  double pars_ini_vis[6] = {0,0,0,0,0,0};
 	  std::cout << "Initialising visible correction parameters" << std::endl;
@@ -339,6 +341,8 @@ namespace larg4{
 	    }
 	    VIS_pol[bin]->SetParameters(pars_ini_vis);
 	  }
+	
+	  fStoreReflected = true;
 	  
 	  if (pvs->ApplyVISBorderCorrection()) {
             // load border corrections
@@ -347,10 +351,16 @@ namespace larg4{
             fApplyVisBorderCorrection = true;
             fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
           }
-          else fApplyVisBorderCorrection = false;
+          else fApplyVisBorderCorrection = false;         
 
+	  // cathode dimensions required for corrections
+	  fcathode_centre = geo->TPC(0,0).GetCathodeCenter();
+          fcathode_ydimension = geo->TPC(0,0).Height();
+	  fcathode_zdimension = geo->TPC(0,0).Length();
+	  fplane_depth = std::abs(fcathode_centre[0]);
 	}
-      }
+	else fStoreReflected = false;
+      } else fUseNhitsModel = false;
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
     const int nbins = tpbemission.size();
@@ -397,6 +407,15 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
+
+   if (fUseNhitsModel){
+      delete fGH_tmp;
+      if (fStoreReflected){
+        for (int bin = 0; bin < 9; bin++) {
+           delete  VIS_pol[bin];
+        }
+      }
+   }
   }
 
   ////////////
@@ -1654,6 +1673,15 @@ namespace larg4{
       return 0;
     }
 
+
+    //semi-analytic approach only works in the active volume
+    if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
+         (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
+         (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
+      //std::cout<<"dedx in (x,y,z): ("<<ScintPoint[0]<<", "<<ScintPoint[1]<<", "<<ScintPoint[2]<<"), so no semi-analytic prediction here"<<std::endl;
+      return 0;
+    }
+
     // distance and angle between ScintPoint and OpDetPoint
     double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2) + pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
     double cosine = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2)) / distance;
@@ -1704,11 +1732,10 @@ namespace larg4{
 			   fGHvuvpars[1][j] + fborder_corr[1] * (distance_to_corner - fReference_to_corner),
 			   fGHvuvpars[2][j],
 			   fGHvuvpars[3][j]};
-    TF1* GH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
-    GH_tmp->SetParameters(pars_ini_);
+    fGH_tmp->SetParameters(pars_ini_);
 
-    double hits_rec = gRandom->Poisson( GH_tmp->Eval(distance)*hits_geo/cosine );
-    delete GH_tmp;
+    double hits_rec = gRandom->Poisson( fGH_tmp->Eval(distance)*hits_geo/cosine );
+    
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
 
@@ -1723,6 +1750,14 @@ namespace larg4{
      if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10){
        return 0;
      }
+
+    //semi-analytic approach only works in the active volume
+    if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
+         (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
+         (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
+      //std::cout<<"dedx in (x,y,z): ("<<ScintPoint[0]<<", "<<ScintPoint[1]<<", "<<ScintPoint[2]<<"), so no semi-analytic prediction here"<<std::endl;
+      return 0;
+    }
 
     // set plane_depth for correct TPC:
      double plane_depth;
@@ -1758,10 +1793,9 @@ namespace larg4{
                            fGHvuvpars[1][j],
                            fGHvuvpars[2][j],
                            fGHvuvpars[3][j]};
-     TF1* GH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
-     GH_tmp->SetParameters(pars_ini_);
-     double cathode_hits_rec = GH_tmp->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
-     delete GH_tmp;
+     fGH_tmp->SetParameters(pars_ini_);
+
+     double cathode_hits_rec = fGH_tmp->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
 
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
      // hotspot coordinates

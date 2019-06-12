@@ -323,13 +323,15 @@ private:
 	std::vector<std::vector<double>> ftau_pars;
 
 	//For VUV semi-analytic hits
+	bool fUseNhitsModel;
 	//array of correction for the VUV Nhits estimation
 	std::vector<std::vector<double> > fGHvuvpars;
-	TF1* GHvuv[9];
+	TF1* fGH_tmp;
         //To account for the border effects
         std::vector<double> fborder_corr;
-        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
+        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode, fDriftLen;
 	// For VIS semi-analytic hits
+	bool fStoreReflected;
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
 	TF1* VIS_pol[9];
@@ -340,7 +342,7 @@ private:
         std::string fVisBorderCorrectionType;
 
 	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-	std::vector<double>  fcathode_centre;
+	TVector3  fcathode_centre;
 
 	// Optical detector properties for semi-analytic hits
 	int foptical_detector_type;

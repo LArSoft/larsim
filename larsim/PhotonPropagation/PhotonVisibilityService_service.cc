@@ -316,93 +316,12 @@ namespace phot{
           fvis_vmean = p.get<double> ("vis_vmean");
           fn_LAr_VUV = p.get<double> ("n_LAr_VUV");
           fn_LAr_vis = p.get<double> ("n_LAr_vis");
-          fPlane_Depth = p.get<double>("Plane_Depth");
 
         }
-        //ALL BELOW IS OLD PARAMETRIZATION. TO BE REMOVED SOON (reflected component time needs to be updated too)
-        // Construct parameterized model parameter functions.
-        /*std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
-        std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
-        //range of distances where the parametrization is valid
-        fD_break = p.get<double>("D_break");
-        fD_max = p.get<double>("D_max");
-
-        fTF1_sampling_factor = p.get<double>("TF1_sampling_factor");
-
-        std::vector<double> direct_landauNormpars = p.get<std::vector<double> >("Direct_landauNormpars");
-        fparslogNorm = new TF1("fparslogNorm", direct_functions[0].c_str(), 0., fD_break);
-        for(unsigned int i=0; i<direct_landauNormpars.size(); ++i)
-          fparslogNorm->SetParameter(i, direct_landauNormpars[i]);
-
-        std::vector<double> direct_landauMPVpars = p.get<std::vector<double> >("Direct_landauMPVpars");
-        fparsMPV = new TF1("fparsMPV", direct_functions[1].c_str(), 0., fD_break);
-        for(unsigned int i=0; i<direct_landauMPVpars.size(); ++i)
-          fparsMPV->SetParameter(i, direct_landauMPVpars[i]);
-
-        std::vector<double> direct_landauWidthpars = p.get<std::vector<double> >("Direct_landauWidthpars");
-        fparsWidth = new TF1("fparsWidth", direct_functions[2].c_str(), 0., fD_break);
-        for(unsigned int i=0; i<direct_landauWidthpars.size(); ++i)
-          fparsWidth->SetParameter(i, direct_landauWidthpars[i]);
-
-        std::vector<double> direct_expoCtepars = p.get<std::vector<double> >("Direct_expoCtepars");
-        fparsCte = new TF1("fparsCte", direct_functions[3].c_str(), 0., fD_break);
-        for(unsigned int i=0; i<direct_expoCtepars.size(); ++i)
-          fparsCte->SetParameter(i, direct_expoCtepars[i]);
-
-        std::vector<double> direct_expoSlopepars = p.get<std::vector<double> >("Direct_expoSlopepars");
-        fparsSlope = new TF1("fparsSlope", direct_functions[4].c_str(), 0., fD_break);
-        for(unsigned int i=0; i<direct_expoSlopepars.size(); ++i)
-          fparsSlope->SetParameter(i, direct_expoSlopepars[i]);
-
-        std::vector<double> direct_landauNormpars_far = p.get<std::vector<double> >("Direct_landauNormpars_far");
-        fparslogNorm_far = new TF1("fparslogNorm_far", direct_functions[5].c_str(), fD_break, fD_max);
-        for(unsigned int i=0; i<direct_landauNormpars_far.size(); ++i)
-          fparslogNorm_far->SetParameter(i, direct_landauNormpars_far[i]);
-
-        std::vector<double> direct_landauMPVpars_far = p.get<std::vector<double> >("Direct_landauMPVpars_far");
-        fparsMPV_far = new TF1("fparsMPV_far", direct_functions[6].c_str(), fD_break, fD_max);
-        for(unsigned int i=0; i<direct_landauMPVpars_far.size(); ++i)
-          fparsMPV_far->SetParameter(i, direct_landauMPVpars_far[i]);
-
-        std::vector<double> direct_expoCtepars_far = p.get<std::vector<double> >("Direct_expoCtepars_far");
-        fparsCte_far = new TF1("fparsCte_far", direct_functions[7].c_str(), fD_break - 50., fD_max);
-        for(unsigned int i=0; i<direct_expoCtepars_far.size(); ++i)
-          fparsCte_far->SetParameter(i, direct_expoCtepars_far[i]);
-
-        std::vector<std::string> reflected_functions = p.get<std::vector<std::string> >("Reflected_functions");
-        //times where the parametrizations are valid or change
-        fT0_max = p.get<double>("T0_max");
-        fT0_break_point = p.get<double>("T0_break_point");
-
-        std::vector<double> reflected_landauNormpars = p.get<std::vector<double> >("Reflected_landauNormpars");
-        fparslogNorm_refl = new TF1("fparslogNorm_refl", reflected_functions[0].c_str(), 0., fT0_max);
-        for(unsigned int i=0; i<reflected_landauNormpars.size(); ++i)
-          fparslogNorm_refl->SetParameter(i, reflected_landauNormpars[i]);
-
-        std::vector<double> reflected_landauMPVpars = p.get<std::vector<double> >("Reflected_landauMPVpars");
-        fparsMPV_refl = new TF1("fparsMPV_refl", reflected_functions[1].c_str(), 0., fT0_max);
-        for(unsigned int i=0; i<reflected_landauMPVpars.size(); ++i)
-          fparsMPV_refl->SetParameter(i, reflected_landauMPVpars[i]);
-
-        std::vector<double> reflected_landauWidthpars = p.get<std::vector<double> >("Reflected_landauWidthpars");
-        fparsWidth_refl = new TF1("fparsWidth_refl", reflected_functions[2].c_str(), 0., fT0_max);
-        for(unsigned int i=0; i<reflected_landauWidthpars.size(); ++i)
-          fparsWidth_refl->SetParameter(i, reflected_landauWidthpars[i]);
-
-        std::vector<double> reflected_expoCtepars = p.get<std::vector<double> >("Reflected_expoCtepars");
-        fparsCte_refl = new TF1("fparsCte_refl", reflected_functions[3].c_str(), 0., fT0_max);
-        for(unsigned int i=0; i<reflected_expoCtepars.size(); ++i)
-          fparsCte_refl->SetParameter(i, reflected_expoCtepars[i]);
-
-        std::vector<double> reflected_expoSlopepars = p.get<std::vector<double> >("Reflected_expoSlopepars");
-        fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
-        for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
-          fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
-        */
-
       }
 
     if(fUseNhitsModel) {
+        std::cout << "Loading semi-analytic mode models" << std::endl;
         // VUV
         fGH_PARS = p.get<std::vector<std::vector<double> > >("GH_PARS");
 	std::vector<double> v0(2,0.0);
@@ -411,10 +330,6 @@ namespace phot{
         {
         // VIS
         fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-        fCATHODE_ydimension = p.get<double>("CATHODE_height");
-        fCATHODE_zdimension = p.get<double>("CATHODE_width");
-        fCATHODE_centre = p.get<std::vector<double>>("CATHODE_centre");
-        fPlane_Depth = fCATHODE_centre[0];
 	// VIS border correction
 	if (fApplyVISBorderCorrection)
 	{
@@ -423,8 +338,9 @@ namespace phot{
 	fVIS_BORDER_correction  = p.get< std::vector<std::vector<std::vector<double>>> > ("VIS_BORDER_correction");
         }
         }
+	// optical detector information
+	fPMT_radius = p.get<double>("PMT_radius");
     }
-
 
     return;
 
@@ -795,7 +711,7 @@ namespace phot{
   }
 
   void PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau,
-                                                                                 double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const
+                                                                                 double& vis_vmean, double& n_vis, double& n_vuv) const
   {
   distances = fDistances_refl;
   cut_off = fCut_off;
@@ -804,31 +720,22 @@ namespace phot{
   vis_vmean = fvis_vmean;
   n_vis = fn_LAr_vis;
   n_vuv = fn_LAr_VUV;
-  plane_depth = fPlane_Depth;
 
   }
 
 
-  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border) const
+  void PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border, double& r) const
   {
 
     v = fGH_PARS;
     border = fBORDER_correction;
+    r = fPMT_radius;
 
   }
 
-  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const
+  void PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r) const
   {
     v = fVIS_PARS;
-
-    plane_depth = fPlane_Depth;
-    zdim_cathode = fCATHODE_zdimension;
-    ydim_cathode = fCATHODE_ydimension;
-    cntr_cathode = fCATHODE_centre;
-
-    op_det_type = fOptical_Detector_Type;
-    ydim = fAPERTURE_ydimension;
-    zdim = fAPERTURE_zdimension;
     r = fPMT_radius;
   }
   

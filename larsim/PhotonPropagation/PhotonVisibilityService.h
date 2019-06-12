@@ -102,9 +102,9 @@ namespace phot{
     void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
-    void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const;
-    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border) const;
-    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const;
+    void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border, double& r_pmt) const;
+    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r_pmt) const;
    void LoadParsForVISBorderCorrection(std::vector<double>& border_distances_x, std::vector<double>& border_distances_r, std::vector<std::vector<std::vector<double>>>& border_correction) const;
 
     bool IsBuildJob() const { return fLibraryBuildJob; }
@@ -197,11 +197,8 @@ namespace phot{
     std::vector<double> fVIS_BORDER_distances_x;
     std::vector<double> fVIS_BORDER_distances_r;
     std::vector<std::vector<std::vector<double>>> fVIS_BORDER_correction;
-    double fPlane_Depth, fCATHODE_ydimension, fCATHODE_zdimension;
-    std::vector<double> fCATHODE_centre;
-
-    double fAPERTURE_ydimension, fAPERTURE_zdimension, fPMT_radius;
-    int fOptical_Detector_Type;
+    // optical detector information, rest using geometry service
+    double fPMT_radius;
 
     std::string          fLibraryFile;
     mutable IPhotonLibrary* fTheLibrary;
