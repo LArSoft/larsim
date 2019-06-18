@@ -318,20 +318,7 @@ namespace larg4{
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
 	  pvs->LoadParsForVISCorrection(fvispars,fradius);  
-        	
-	  // initialise vis correction functions
-	  double pars_ini_vis[6] = {0,0,0,0,0,0};
-	  std::cout << "Initialising visible correction parameters" << std::endl;
-	  for (int bin = 0; bin < 9; bin++) {
-	    VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
-	    for (int j = 0; j < 6; j++){
-	      // loads parameter set read in from fcl
-	      pars_ini_vis[j] = fvispars[j][bin];
-	    }
-	    VIS_pol[bin]->SetParameters(pars_ini_vis);
-	  }
-	
-	  fStoreReflected = true;
+       	  fStoreReflected = true;
 	  
 	  if (pvs->ApplyVISBorderCorrection()) {
             // load border corrections
@@ -395,14 +382,6 @@ namespace larg4{
     if (theSlowIntegralTable != NULL) {
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
-    }
-
-    if (fUseNhitsModel){
-      if (fStoreReflected){
-        for (int bin = 0; bin < 9; bin++) {
-	  delete  VIS_pol[bin];
-        }
-      }
     }
   }
 
@@ -1415,7 +1394,7 @@ namespace larg4{
     const double signal_t_range = 5000.;
 
     // parameterisation TF1
-    TF1* fVUVTiming;
+    TF1 fVUVTiming;
 
     // For very short distances the time correction is just a shift
     double t_direct_mean = distance_in_cm/fvuv_vgroup_mean;
@@ -1429,12 +1408,12 @@ namespace larg4{
     if(distance_in_cm >= finflexion_point_distance) {
       double pars_far[4] = {t_direct_min, pars_landau[0], pars_landau[1], pars_landau[2]};
       // Set model: Landau
-      fVUVTiming =  new TF1("fVUVTiming",model_far,0,signal_t_range,4);
-      fVUVTiming->SetParameters(pars_far);
+      fVUVTiming = TF1("fVUVTiming",model_far,0,signal_t_range,4);
+      fVUVTiming.SetParameters(pars_far);
     }
     else {
       // Set model: Landau + Exponential
-      fVUVTiming =  new TF1("fVUVTiming",model_close,0,signal_t_range,7);
+      fVUVTiming = TF1("fVUVTiming",model_close,0,signal_t_range,7);
       // Exponential parameters
       double pars_expo[2];
       // Getting the exponential parameters from the time parametrization
@@ -1446,37 +1425,36 @@ namespace larg4{
       pars_expo[0] *= pars_landau[2];
       pars_expo[0] = log(pars_expo[0]);
       // this is to find the intersection point between the two functions:
-      TF1* fint = new TF1("fint",finter_d,pars_landau[0],4*t_direct_mean,5);
+      TF1 fint = TF1("fint",finter_d,pars_landau[0],4*t_direct_mean,5);
       double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
-      fint->SetParameters(parsInt);
-      double t_int = fint->GetMinimumX();
-      double minVal = fint->Eval(t_int);
+      fint.SetParameters(parsInt);
+      double t_int = fint.GetMinimumX();
+      double minVal = fint.Eval(t_int);
       // the functions must intersect - output warning if they don't
       if(minVal>0.015) {
 	std::cout<<"WARNING: Parametrization of VUV light discontinuous for distance = " << distance_in_cm << std::endl;
 	std::cout<<"WARNING: This shouldn't be happening " << std::endl;
       }
-      delete fint;
       double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
+      fVUVTiming.SetParameters(parsfinal);
       delete pars_landau;
-      fVUVTiming->SetParameters(parsfinal);
     }
 
     // set the number of points used to sample parameterisation
-    // for shorter distances, peak is sharper so more sensitive sampling required - values could be optimised, but since these are only generate once difference is not significant
+    // for shorter distances, peak is sharper so more sensitive sampling required
     int f_sampling;
     if (distance_in_cm < 50) { f_sampling = 10000; }
     else if (distance_in_cm < 100){ f_sampling = 5000; }
     else { f_sampling = 1000; }
-    fVUVTiming->SetNpx(f_sampling);
+    fVUVTiming.SetNpx(f_sampling);
 
     // calculate max and min distance relevant to sample parameterisation
     // max
     const int nq_max=1;
     double xq_max[nq_max];
     double yq_max[nq_max];
-    xq_max[0] = 0.99;   // include 99%, 95% cuts out a lot of tail and time difference is negligible extending this
-    fVUVTiming->GetQuantiles(nq_max,yq_max,xq_max);
+    xq_max[0] = 0.99;   // include 99%
+    fVUVTiming.GetQuantiles(nq_max,yq_max,xq_max);
     double max = yq_max[0];
     // min
     double min = t_direct_min;
@@ -1484,13 +1462,11 @@ namespace larg4{
     // generate the sampling
     // the first call of GetRandom generates the timing sampling and stores it in the TF1 object, this is the slow part
     // all subsequent calls check if it has been generated previously and are ~100+ times quicker
-    //double arrival_time = fVUVTiming->GetRandom(min,max);
     // add timing to the vector of timings and range to vectors of ranges
-    VUV_timing[index] = *fVUVTiming;
+    VUV_timing[index] = fVUVTiming;
     VUV_max[index] = max;
     VUV_min[index] = min;
 
-    delete fVUVTiming;
   }
 
   // VUV arrival times calculation function
@@ -1661,12 +1637,10 @@ namespace larg4{
       return 0;
     }
 
-
     //semi-analytic approach only works in the active volume
     if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
          (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
          (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
-      //std::cout<<"dedx in (x,y,z): ("<<ScintPoint[0]<<", "<<ScintPoint[1]<<", "<<ScintPoint[2]<<"), so no semi-analytic prediction here"<<std::endl;
       return 0;
     }
 
@@ -1741,7 +1715,6 @@ namespace larg4{
     if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
          (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
          (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
-      //std::cout<<"dedx in (x,y,z): ("<<ScintPoint[0]<<", "<<ScintPoint[1]<<", "<<ScintPoint[2]<<"), so no semi-analytic prediction here"<<std::endl;
       return 0;
     }
 
@@ -1825,8 +1798,11 @@ namespace larg4{
      double cosine_vis = sqrt(pow(hotspot[0] - OpDetPoint[0],2)) / distance_vis;
      double theta_vis = acos(cosine_vis)*180./CLHEP::pi;
      int k = (theta_vis/fdelta_angulo);
-     
-     double hits_rec = gRandom->Poisson(VIS_pol[k]->Eval(distance_vuv)*hits_geo/cosine_vis);
+
+     // apply geometric correction
+     double pars_ini_vis[6] = { fvispars[0][k], fvispars[1][k], fvispars[2][k], fvispars[3][k], fvispars[4][k], fvispars[5][k] };
+     double geo_correction = Pol_5(distance_vuv, pars_ini_vis);     
+     double hits_rec = gRandom->Poisson(geo_correction*hits_geo/cosine_vis);
 
      // apply border correction
      int hits_vis = 0;

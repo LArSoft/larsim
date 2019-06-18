@@ -331,6 +331,7 @@ private:
         std::vector<double> fborder_corr;
         double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode, fDriftLen;
 	// For VIS semi-analytic hits
+	G4double Pol_5(double x, double *par);
 	bool fStoreReflected;
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
@@ -502,6 +503,12 @@ G4double OpFastScintillation::Gaisser_Hillas(double x,double *par) {
   double Exponential=std::exp((par[1]-x)/par[2]);
 
   return (Normalization*Term*Exponential);
+}
+
+inline
+G4double OpFastScintillation::Pol_5(double x, double *par) {
+  // 5th order polynomial function
+  return par[0] + par[1] * x + par[2] * pow(x,2) + par[3] * pow(x,3) + par[4] * pow(x,4) + par[5] * pow(x,5);
 }
 
 } //namespace
