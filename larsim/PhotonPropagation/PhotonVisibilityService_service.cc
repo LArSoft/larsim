@@ -333,9 +333,13 @@ namespace phot{
 	// VIS border correction
 	if (fApplyVISBorderCorrection)
 	{
-	fVIS_BORDER_distances_x = p.get< std::vector<double> > ("VIS_BORDER_distances_x");
-        fVIS_BORDER_distances_r = p.get< std::vector<double> > ("VIS_BORDER_distances_r");
-	fVIS_BORDER_correction  = p.get< std::vector<std::vector<std::vector<double>>> > ("VIS_BORDER_correction");
+	std::vector<double> vx(19,0.0);
+	std::vector<double> vr(5,0.0);
+	std::vector<std::vector<double>> vxr(5,vx);
+	std::vector<std::vector<std::vector<double>>> vc(9,vxr);
+	fVIS_BORDER_distances_x = p.get< std::vector<double> > ("VIS_BORDER_distances_x", vx);
+        fVIS_BORDER_distances_r = p.get< std::vector<double> > ("VIS_BORDER_distances_r", vr);
+	fVIS_BORDER_correction  = p.get< std::vector<std::vector<std::vector<double>>> > ("VIS_BORDER_correction", vc);
         }
         }
 	// optical detector information

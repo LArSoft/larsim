@@ -261,8 +261,8 @@ namespace larg4{
       if(pvs->IncludePropTime()) {
 	std::cout << "Using parameterisation of timings." << std::endl;
         //OLD VUV time parapetrization (to be removed soon)
-        pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-        pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+        //pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+        //pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
 	//New VUV time parapetrization
 	pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
 
@@ -300,7 +300,6 @@ namespace larg4{
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
 	std::cout<<"Loading the GH corrections"<<std::endl;
 	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
-	fGH_tmp = new TF1("GH_tmp",GaisserHillas,0.,2000,4);
         fdelta_angulo = 10.; // angle bin size
 	//Needed for Nhits-model border corrections (in cm)
 	fYactive_corner = geo->TPC(0,0).Height()/2;
@@ -313,17 +312,7 @@ namespace larg4{
 
 	std::cout<<"For border corrections: "<<fborder_corr[0]<<"  "<<fborder_corr[1]<<std::endl;
 	std::cout<<"Photocathode-plane centre (z,y) = ("<<fZcathode<<", "<<fYcathode<<") and corner (z, y) = ("<<fZactive_corner<<", "<<fYactive_corner<<")"<<std::endl;
-	/*// initialise gaisser hillas functions for VUV Rayleigh scattering correction
-	double pars_ini[4] = {0,0,0,0};
-	std::cout << "Initalising Gaisser-Hillas parameters" << std::endl;
-	for(int bin = 0; bin < 9; bin++) {
-	  GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
-	  for(int j=0; j < 4; j++) {
-	    // loads parameter set read in from fcl
-	    pars_ini[j] = fGHvuvpars[j][bin];
-	  }
-	  GHvuv[bin]->SetParameters(pars_ini);
-	  }*/
+       
 
 	if(pvs->StoreReflected()) {	
 	  // Load corrections for VIS semi-anlytic hits
@@ -408,14 +397,13 @@ namespace larg4{
       delete theSlowIntegralTable;
     }
 
-   if (fUseNhitsModel){
-      delete fGH_tmp;
+    if (fUseNhitsModel){
       if (fStoreReflected){
         for (int bin = 0; bin < 9; bin++) {
-           delete  VIS_pol[bin];
+	  delete  VIS_pol[bin];
         }
       }
-   }
+    }
   }
 
   ////////////
@@ -1279,7 +1267,7 @@ namespace larg4{
 
 
 //                         ======TIMING PARAMETRIZATION=====           //
-
+/*
 // Parametrization of the VUV light timing (result from direct transport + Rayleigh scattering ONLY)
 // using a landau + expo function.The function below returns the arrival time distribution given the
 // distance IN CENTIMETERS between the scintillation/ionization point and the optical detectotr.
@@ -1319,7 +1307,7 @@ namespace larg4{
     TF1 *fexpo = new TF1("fexpo","expo",0, signal_t_range/2);
     fexpo->SetParameters(pars_expo);
     //this is to find the intersection point between the two functions:
-    TF1 *fint = new TF1("fint",finter_d,flandau->GetMaximumX(),3*t_direct,5);
+    TF1 *fint = new TF1("fint","finter_d",flandau->GetMaximumX(),3*t_direct,5);
     double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
     fint->SetParameters(parsInt);
     double t_int = fint->GetMinimumX();
@@ -1328,7 +1316,7 @@ namespace larg4{
     if(minVal>0.015)
       G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
 
-    TF1 *fVUVTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+    TF1 *fVUVTiming =  new TF1("fTiming","LandauPlusExpoFinal",0,signal_t_range,6);
     double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
     fVUVTiming->SetParameters(parsfinal);
     // Set the number of points used to sample the function
@@ -1415,7 +1403,7 @@ namespace larg4{
     delete fVisTiming;
     //G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
     return arrival_time_distrb;
-  }
+  }*/
 
   // New Parametrization code
   // parameterisation generation function
@@ -1732,10 +1720,8 @@ namespace larg4{
 			   fGHvuvpars[1][j] + fborder_corr[1] * (distance_to_corner - fReference_to_corner),
 			   fGHvuvpars[2][j],
 			   fGHvuvpars[3][j]};
-    fGH_tmp->SetParameters(pars_ini_);
-
-    double hits_rec = gRandom->Poisson( fGH_tmp->Eval(distance)*hits_geo/cosine );
-    
+    double GH_correction = Gaisser_Hillas(distance, pars_ini_);
+    double hits_rec = gRandom->Poisson( GH_correction*hits_geo/cosine );
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
 
@@ -1793,9 +1779,8 @@ namespace larg4{
                            fGHvuvpars[1][j],
                            fGHvuvpars[2][j],
                            fGHvuvpars[3][j]};
-     fGH_tmp->SetParameters(pars_ini_);
-
-     double cathode_hits_rec = fGH_tmp->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
+     double GH_correction = Gaisser_Hillas(distance_cathode,pars_ini_);
+     double cathode_hits_rec = GH_correction*cathode_hits_geo/cosine_cathode;  
 
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
      // hotspot coordinates
@@ -1942,17 +1927,7 @@ namespace larg4{
 
     return y;
   }
-  double GaisserHillas(double *x,double *par) {
-    //This is the Gaisser-Hillas function
-    double X_mu_0=par[3];
-    double Normalization=par[0];
-    double Diff=par[1]-X_mu_0;
-    double Term=pow((*x-X_mu_0)/Diff,Diff/par[2]);
-    double Exponential=TMath::Exp((par[1]-*x)/par[2]);
-
-    return (Normalization*Term*Exponential);
-  }
-
+ 
   //======================================================================
 
   //   Returns interpolated value at x from parallel arrays ( xData, yData )
