@@ -138,9 +138,6 @@
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
 
-#include <chrono>
-#include <ctime>
-
 namespace larg4{
 
 /////////////////////////
@@ -194,11 +191,8 @@ namespace larg4{
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
-      auto start = std::chrono::system_clock::now();
-
       fDriftLen = std::abs(geo->TPC(0,0).DriftDistance());
       
-      double apaLen = geo->TPC(0,0).Width() - geo->TPC(0,0).ActiveWidth();
       std::cout << "Information related with the TPC dimensions:" << std::endl;
       std::cout << "TPC Drift Length:" <<fDriftLen<< std::endl;
       std::cout << "TPC Width:" <<geo->TPC(0,0).Width()<< std::endl;
@@ -210,16 +204,6 @@ namespace larg4{
       TVector3 Cathode_centre = geo->TPC(0,0).GetCathodeCenter();
       std::cout<<"Cathode_centre: "<<Cathode_centre.X()<<"  "<<Cathode_centre.Y()<<"  "<<Cathode_centre.Z()<<std::endl;
       
-      auto end = std::chrono::system_clock::now();
- 
-      std::chrono::duration<double> elapsed_seconds = end-start;
-      std::time_t end_time = std::chrono::system_clock::to_time_t(end);
- 
-      std::cout << "finished computation at " << std::ctime(&end_time)
-		<< "elapsed time: " << elapsed_seconds.count() << "s\n";
-
-
-
       for(size_t i = 0; i != pvs->NOpChannels(); i++)
 	{
 	  double OpDetCenter_i[3];
@@ -241,21 +225,7 @@ namespace larg4{
 	  }
 	  fOpDetType.push_back(type_i);
 	  
-	  /*std::cout <<"Shape pues: "<<geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName()<<"  "<<geo->OpDetGeoFromOpADet(i).Shape()->IsValidBox()<<std::endl;
-	  std::cout <<i<<"  ID: "<<geo->OpDetGeoFromOpDet(i).ID()<<"   Is Bar? : "<< geo->OpDetGeoFromOpDet(i).isBar()<<"   Is Tube? : "<< geo->OpDetGeoFromOpDet(i).isTube()<<std::endl;
-	  std::cout <<"RMin: "<< geo->OpDetGeoFromOpDet(i).RMin()<<std::endl;
-	  std::cout <<"RMax: "<< geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
-	  std::cout <<"Length: "<< geo->OpDetGeoFromOpDet(i).Length()<<std::endl;
-	  std::cout <<"Width: "<< geo->OpDetGeoFromOpDet(i).Width()<<std::endl;
-	  std::cout <<"Height: "<< geo->OpDetGeoFromOpDet(i).Height()<<std::endl;
-	  std::cout <<"ThetaZ: "<< geo->OpDetGeoFromOpDet(i).ThetaZ()<<std::endl;*/
-
-
 	}
-
-      // for(size_t i = 0; i != pvs->NOpChannels(); i++)
-      // std::cout <<"OpChannel"<<i<<": "<<fOpDetType.at(i)<<"  "<<fOpDetLength.at(i)<<"  "<<fOpDetHeight.at(i)<<std::endl;
-
 
 
       if(pvs->IncludePropTime()) {
@@ -286,6 +256,8 @@ namespace larg4{
 
       }
       if(pvs->UseNhitsModel()) {
+       	std::chrono::time_point<std::chrono::system_clock> start1, end1;
+	start1 = std::chrono::system_clock::now();
 	std::cout << "Using semi-analytic model for number of hits:" << std::endl;
 	fUseNhitsModel = true;
 	// LAr absorption length in cm
@@ -336,6 +308,10 @@ namespace larg4{
 	  fplane_depth = std::abs(fcathode_centre[0]);
 	}
 	else fStoreReflected = false;
+	end1 = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds1 = end1-start1;
+	ftime1 += elapsed_seconds1;
+	std::cout << "elapsed time loading the semi-analytic mode: " << ftime1.count() << "s\n";
       } else fUseNhitsModel = false;
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
@@ -375,6 +351,7 @@ namespace larg4{
 
   OpFastScintillation::~OpFastScintillation()
   {
+  
    if (theFastIntegralTable != NULL) {
       theFastIntegralTable->clearAndDestroy();
       delete theFastIntegralTable;
@@ -383,8 +360,14 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
+    if(fUseNhitsModel) {
+      std::cout << "elapsed time loading the semi-analytic parameters: " << ftime1.count() << "s\n"; 
+      std::cout << "elapsed time in the Full loop VUVHits: "<< ftime3.count() <<"s\n";
+      std::cout << "elapsed time in the propagation_time: " << ftime4.count() << "s\n";  
+      std::cout << "elapsed time in the loop filling Op-objects: " << ftime5.count() << "s\n";  
+    }
   }
-
+  
   ////////////
   // Methods
   ////////////
@@ -804,6 +787,7 @@ namespace larg4{
 
         std::map<int, int> ReflDetectedNum;
 
+	auto start3 = std::chrono::system_clock::now();
         for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
         {
           G4int DetThisPMT = 0.;
@@ -815,8 +799,11 @@ namespace larg4{
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
 	    fydimension = fOpDetLength.at(OpDet);
 	    fzdimension = fOpDetHeight.at(OpDet);
+	    //auto start2 = std::chrono::system_clock::now();
 	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
-
+	    //auto end2 = std::chrono::system_clock::now();
+	    //std::chrono::duration<double> elapsed_seconds2 = end2-start2;
+	    //std::cout << "elapsed time in VUVHits for Channel "<<OpDet<<" : " << elapsed_seconds2.count() << "s\n";
 	  }
 
           if(DetThisPMT>0)
@@ -847,7 +834,11 @@ namespace larg4{
           }
 
         }
-
+	auto end3 = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds3 = end3-start3;
+	ftime3 += elapsed_seconds3;
+	//std::cout.precision(10);
+	//std::cout << "elapsed time in the Full loop VUVHits: "<< elapsed_seconds3.count() <<"  --->  "<< ftime3.count() <<"s\n";
 
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
@@ -889,9 +880,17 @@ namespace larg4{
             }
 
             // Get the transport time distribution
+	    auto start4 = std::chrono::system_clock::now();
 	    std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
+	    auto end4 = std::chrono::system_clock::now();
+	    std::chrono::duration<double> elapsed_seconds4 = end4-start4;
+	    ftime4 += elapsed_seconds4;
+	    //std::cout << "elapsed time in the propagation_time: " << ftime4.count() << "s\n";
+
       //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
             Edeposited = Edeposited / double(NPhotons);
+
+	    auto start5 = std::chrono::system_clock::now();
             // Loop through the photons
             for (G4int i = 0; i < NPhotons; ++i)
             {
@@ -927,6 +926,12 @@ namespace larg4{
                 fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
               }
             }
+
+	    auto end5 = std::chrono::system_clock::now();
+	    std::chrono::duration<double> elapsed_seconds5 = end5-start5;
+	    ftime5 += elapsed_seconds5;
+	    //std::cout << "elapsed time in the loop filling Op-objects: " << ftime5.count() << "s\n";
+
             fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
         }

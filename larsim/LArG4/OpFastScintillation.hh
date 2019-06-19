@@ -103,6 +103,9 @@
 #include "TF1.h"
 #include "TVector3.h"
 
+#include <chrono>
+#include <ctime>
+
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
 // Class inherits publicly from G4VRestDiscreteProcess.
@@ -323,6 +326,7 @@ private:
 	std::vector<std::vector<double>> ftau_pars;
 
 	//For VUV semi-analytic hits
+        std::chrono::duration<double> ftime1, ftime2, ftime3, ftime4, ftime5; 
         G4double Gaisser_Hillas(double x, double *par);
 	bool fUseNhitsModel;
 	//array of correction for the VUV Nhits estimation

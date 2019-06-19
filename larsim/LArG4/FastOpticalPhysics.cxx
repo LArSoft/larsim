@@ -125,7 +125,9 @@ namespace larg4 {
 
   //-----------------------------------------------------------
   FastOpticalPhysics::~FastOpticalPhysics()
-  {}
+  {
+    delete fTheScintillationProcess;
+  }
 
   //-----------------------------------------------------------
   void FastOpticalPhysics::ConstructParticle()
