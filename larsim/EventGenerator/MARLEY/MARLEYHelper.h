@@ -29,7 +29,7 @@
 #include "fhiclcpp/types/detail/TableBase.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"

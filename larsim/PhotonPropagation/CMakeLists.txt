@@ -41,7 +41,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
                         ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                        nutools_RandomUtils_NuRandomService_service
+                        nurandom_RandomUtils_NuRandomService_service
                         art_Persistency_Provenance
                         ${MF_MESSAGELOGGER}
                         ${CLHEP}

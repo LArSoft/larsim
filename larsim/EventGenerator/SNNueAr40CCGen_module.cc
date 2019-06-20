@@ -17,7 +17,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"

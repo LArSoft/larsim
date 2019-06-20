@@ -75,7 +75,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // External libraries
 #include "CLHEP/Random/RandGauss.h"

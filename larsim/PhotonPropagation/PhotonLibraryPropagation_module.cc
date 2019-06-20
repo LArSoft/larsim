@@ -21,7 +21,7 @@
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 #include <cmath>
 #include <memory>

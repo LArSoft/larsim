@@ -16,7 +16,7 @@ art_make(LIB_LIBRARIES nusimdata_SimulationBase
                            larcoreobj_SummaryData
                            larcorealg_Geometry
                            larcore_Geometry_Geometry_service
-                           nutools_RandomUtils_NuRandomService_service
+                           nurandom_RandomUtils_NuRandomService_service
                            larsim_EventGenerator
                            nusimdata_SimulationBase
                            ${ART_FRAMEWORK_SERVICES_REGISTRY}

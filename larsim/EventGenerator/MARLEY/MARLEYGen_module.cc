@@ -22,7 +22,7 @@
 #include "cetlib_except/exception.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
