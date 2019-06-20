@@ -7,7 +7,7 @@ fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt          v08_05_01
+larevt          v08_06_00
 nugen           v1_00_00
 nurandom        v1_00_00
 nutools         v3_00_00
