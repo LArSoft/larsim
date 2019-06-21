@@ -326,7 +326,6 @@ private:
 	std::vector<std::vector<double>> ftau_pars;
 
 	//For VUV semi-analytic hits
-        std::chrono::duration<double> ftime1, ftime2, ftime3, ftime4, ftime5; 
         G4double Gaisser_Hillas(double x, double *par);
 	bool fUseNhitsModel;
 	//array of correction for the VUV Nhits estimation
