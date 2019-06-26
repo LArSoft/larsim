@@ -233,6 +233,23 @@ void evgen::MARLEYHelper::reconfigure(
     }
   }
 
+  // Convert the neutrino direction 3-vector into the JSON object expected by
+  // MARLEY
+  if ( json.has_key("direction") ) {
+    // Get the vector components from the length-3 array
+    marley::JSON& dir_object = json.at("direction");
+
+    double x = dir_object.at(0).to_double();
+    double y = dir_object.at(1).to_double();
+    double z = dir_object.at(2).to_double();
+
+    // Replace the array with an equivalent JSON object
+    dir_object = marley::JSON();
+    dir_object["x"] = x;
+    dir_object["y"] = y;
+    dir_object["z"] = z;
+  }
+
   // Create a new MARLEY configuration based on the JSON parameters
   MF_LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
     " the JSON configuration\n" << json.dump_string() << '\n';
