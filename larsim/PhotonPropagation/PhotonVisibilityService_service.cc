@@ -343,7 +343,7 @@ namespace phot{
         }
         }
 	// optical detector information
-	fPMT_radius = p.get<double>("PMT_radius");
+	fPMT_radius = p.get<double>("PMT_radius", 10.16);
     }
 
     return;

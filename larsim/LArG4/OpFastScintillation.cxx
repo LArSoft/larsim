@@ -224,7 +224,7 @@ namespace larg4{
 	    fOpDetHeight.push_back(-1);
 	  }
 	  fOpDetType.push_back(type_i);
-	  
+	  std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "<<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
 	}
 
 
