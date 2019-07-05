@@ -191,19 +191,30 @@ namespace larg4{
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
-      fDriftLen = std::abs(geo->TPC(0,0).DriftDistance());
-      
-      std::cout << "Information related with the TPC dimensions:" << std::endl;
-      std::cout << "TPC Drift Length:" <<fDriftLen<< std::endl;
-      std::cout << "TPC Width:" <<geo->TPC(0,0).Width()<< std::endl;
-      std::cout << "TPC Active Width:" <<geo->TPC(0,0).ActiveWidth()<< std::endl;
-      std::cout << "TPC Length:" <<geo->TPC(0,0).Length()<< std::endl;
-      std::cout << "TPC Active Length:" <<geo->TPC(0,0).ActiveLength()<< std::endl;
-      std::cout << "TPC Height:" <<geo->TPC(0,0).Height()<< std::endl;
-      std::cout << "TPC Active Height:" <<geo->TPC(0,0).ActiveHeight()<< std::endl;
-      TVector3 Cathode_centre = geo->TPC(0,0).GetCathodeCenter();
+      // Find boundary of active volume      
+      fminx = 1e9;
+      fmaxx = -1e9;
+      fminy = 1e9;
+      fmaxy = -1e9;
+      fminz = 1e9;
+      fmaxz = -1e9;
+      for (size_t i = 0; i<geo->NTPC(); ++i){
+	const geo::TPCGeo &tpc = geo->TPC(i);
+	if (fminx>tpc.MinX()) fminx = tpc.MinX();
+	if (fmaxx<tpc.MaxX()) fmaxx = tpc.MaxX();
+	if (fminy>tpc.MinY()) fminy = tpc.MinY();
+	if (fmaxy<tpc.MaxY()) fmaxy = tpc.MaxY();
+	if (fminz>tpc.MinZ()) fminz = tpc.MinZ();
+	if (fmaxz<tpc.MaxZ()) fmaxz = tpc.MaxZ();
+      }
+      std::cout << "Active volume boundaries:" << std::endl;
+      std::cout << "minx: " <<fminx<<"  maxx: "<<fmaxx<< std::endl;
+      std::cout << "miny: " <<fminy<<"  maxy: "<<fmaxy<< std::endl;
+      std::cout << "minz: " <<fminz<<"  maxz: "<<fmaxz<< std::endl;
+ 
+      TVector3 Cathode_centre(geo->TPC(0,0).GetCathodeCenter().X(), (fminy + fmaxy)/2, (fminz + fmaxz)/2);
       std::cout<<"Cathode_centre: "<<Cathode_centre.X()<<"  "<<Cathode_centre.Y()<<"  "<<Cathode_centre.Z()<<std::endl;
-      
+
       for(size_t i = 0; i != pvs->NOpChannels(); i++)
 	{
 	  double OpDetCenter_i[3];
@@ -224,7 +235,8 @@ namespace larg4{
 	    fOpDetHeight.push_back(-1);
 	  }
 	  fOpDetType.push_back(type_i);
-	  std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "<<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
+	  //std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "
+	  //	    <<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
 	}
 
 
@@ -272,17 +284,16 @@ namespace larg4{
 	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
         fdelta_angulo = 10.; // angle bin size
 	//Needed for Nhits-model border corrections (in cm)
-	fYactive_corner = geo->TPC(0,0).Height()/2;
-	fZactive_corner = geo->TPC(0,0).Length()/2;
+	fYactive_corner = (fmaxy - fminy)/2;
+	fZactive_corner = (fmaxz - fminz)/2;
+
 	fYcathode = Cathode_centre.Y();
 	fZcathode = Cathode_centre.Z();
-	double z_dist = abs(fZcathode - fZactive_corner) - fZactive_corner;
-	double y_dist = abs(fYcathode) - fYactive_corner;
-	fReference_to_corner = sqrt(y_dist*y_dist + z_dist*z_dist);
+        fReference_to_corner = sqrt(pow(fYactive_corner,2) + pow(fZactive_corner,2));
 
 	std::cout<<"For border corrections: "<<fborder_corr[0]<<"  "<<fborder_corr[1]<<std::endl;
 	std::cout<<"Photocathode-plane centre (z,y) = ("<<fZcathode<<", "<<fYcathode<<") and corner (z, y) = ("<<fZactive_corner<<", "<<fYactive_corner<<")"<<std::endl;
-       
+	std::cout<<"Reference_to_corner: "<<fReference_to_corner<<std::endl;
 
 	if(pvs->StoreReflected()) {	
 	  // Load corrections for VIS semi-anlytic hits
@@ -1611,9 +1622,9 @@ namespace larg4{
     }
 
     //semi-analytic approach only works in the active volume
-    if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
-         (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
-         (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
     }
 
@@ -1685,9 +1696,9 @@ namespace larg4{
      }
 
     //semi-analytic approach only works in the active volume
-    if(  (ScintPoint[0] < -1*fDriftLen) || (ScintPoint[0] > fDriftLen) || 
-         (ScintPoint[1] < fYcathode - fYactive_corner) || (ScintPoint[1] > fYcathode + fYactive_corner) ||
-         (ScintPoint[2] < fZcathode - fZactive_corner) || (ScintPoint[2] > fZcathode + fZactive_corner)) {
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
     }
 

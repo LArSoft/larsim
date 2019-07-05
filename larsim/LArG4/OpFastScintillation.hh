@@ -332,7 +332,8 @@ private:
 	std::vector<std::vector<double> > fGHvuvpars;
         //To account for the border effects
         std::vector<double> fborder_corr;
-        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode, fDriftLen;
+        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
+        double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
 	// For VIS semi-analytic hits
 	G4double Pol_5(double x, double *par);
 	bool fStoreReflected;
