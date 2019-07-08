@@ -16,7 +16,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 #include "lardataobj/Simulation/sim.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "canvas/Persistency/Common/Assns.h"

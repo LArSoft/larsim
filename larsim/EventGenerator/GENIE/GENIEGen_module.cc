@@ -35,7 +35,7 @@
 #include "art/Framework/Core/EDProducer.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
@@ -46,7 +46,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
-#include "nutools/EventGeneratorBase/GENIE/GENIEHelper.h"
+#include "nugen/EventGeneratorBase/GENIE/GENIEHelper.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 ///Event Generation using GENIE, cosmics or single particles

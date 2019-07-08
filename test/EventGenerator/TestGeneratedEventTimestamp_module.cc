@@ -26,7 +26,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // artextensions libraries
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 class TestGeneratedEventTimestamp: public art::EDAnalyzer {
     public:

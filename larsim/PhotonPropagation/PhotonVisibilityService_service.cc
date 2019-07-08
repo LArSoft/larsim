@@ -654,10 +654,9 @@ namespace phot{
 
   size_t PhotonVisibilityService::NOpChannels() const
   {
-    if(fTheLibrary == 0)
-      LoadLibrary();
-
-    return fTheLibrary->NOpChannels();
+    // the last word about the number of channels belongs to the mapping;
+    // this should be also the same answer as `geo::GeometryCore::NOpDets()`.
+    return fMapping->opDetMappingSize();
   }
 
   //------------------------------------------------------

@@ -1,5 +1,5 @@
 art_make(LIB_LIBRARIES
-         nutools_RandomUtils_NuRandomService_service
+         nurandom_RandomUtils_NuRandomService_service
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
          canvas
          cetlib_except

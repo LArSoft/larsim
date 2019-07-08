@@ -10,7 +10,7 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
-                        nutools_RandomUtils_NuRandomService_service
+                        nurandom_RandomUtils_NuRandomService_service
                         nutools_G4Base
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
@@ -36,7 +36,7 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nutools_RandomUtils_NuRandomService_service
+                        nurandom_RandomUtils_NuRandomService_service
                         nusimdata_SimulationBase
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}

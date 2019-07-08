@@ -25,7 +25,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
                            larcoreobj_SummaryData
                            lardata_Utilities
                            lardataobj_MCBase
-                           nutools_RandomUtils_NuRandomService_service
+                           nurandom_RandomUtils_NuRandomService_service
                            art_Persistency_Provenance
                            ${MF_MESSAGELOGGER}
                            ${ROOT_GEOM}

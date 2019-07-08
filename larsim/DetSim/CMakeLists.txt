@@ -14,7 +14,7 @@ simple_plugin(SimWire "module"
                       larcore_Geometry_Geometry_service
                       lardata_Utilities_LArFFT_service
                       lardata_Utilities
-                      nutools_RandomUtils_NuRandomService_service
+                      nurandom_RandomUtils_NuRandomService_service
                       ${ART_FRAMEWORK_SERVICES_REGISTRY}
                       ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
                       ${ART_ROOT_IO_TFILESERVICE_SERVICE}
@@ -35,10 +35,6 @@ simple_plugin(WienerFilterAna "module"
                               art_Persistency_Provenance
                               ${MF_MESSAGELOGGER}
                               ${ROOT_HIST})
-
-simple_plugin(RecompressRawDigits "module"
-              lardataobj_RawData
-              art_Persistency_Provenance)
 
 install_headers()
 install_fhicl()

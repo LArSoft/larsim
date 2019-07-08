@@ -38,12 +38,12 @@
 #include "cetlib/search_path.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nutools/EventGeneratorBase/evgenbase.h"
+#include "nugen/EventGeneratorBase/evgenbase.h"
 
 // lar includes
 //#include "larcore/Geometry/Geometry.h"
@@ -484,6 +484,7 @@ namespace evgen{
     , fSigmaT       (config().SigmaT())
     , fPosDist      (selectOption(config().PosDist(), DistributionNames))
     , fTDist        (selectOption(config().TDist(), DistributionNames))
+    , fSingleVertex (config().SingleVertex())
     , fTheta0XZ     (config().Theta0XZ())
     , fTheta0YZ     (config().Theta0YZ())
     , fSigmaThetaXZ (config().SigmaThetaXZ())
