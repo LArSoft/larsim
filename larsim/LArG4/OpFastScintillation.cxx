@@ -311,7 +311,8 @@ namespace larg4{
           else fApplyVisBorderCorrection = false;         
 
 	  // cathode dimensions required for corrections
-	  fcathode_centre[0] = std::abs(fmaxx); fcathode_centre[1] = (fmaxy + fminy)/2; fcathode_centre[2] = (fmaxz + fminz)/2;
+	  fcathode_centre = geo->TPC(0,0).GetCathodeCenter();
+	  fcathode_centre[1] = (fmaxy + fminy)/2; fcathode_centre[2] = (fmaxz + fminz)/2; // to get full cathode dimension rather than just single tpc
           fcathode_ydimension = fmaxy - fminy;
 	  fcathode_zdimension = fmaxz - fminz;
 	  fplane_depth = std::abs(fcathode_centre[0]);
