@@ -1,13 +1,9 @@
 art_make(LIB_LIBRARIES
-         nurandom_RandomUtils_NuRandomService_service
-         ${ART_FRAMEWORK_SERVICES_REGISTRY}
          canvas
          cetlib_except
-         ${FHICLCPP}
          ${CLHEP}
          ${ROOT_CORE}
-         ${ROOT_MATRIX}
-         ${Boost_SYSTEM_LIBRARY})
+         ${ROOT_MATRIX})
 
 install_headers()
 install_fhicl()

@@ -27,6 +27,7 @@
 #define CUSTOMPHYSICSTABLE_hh 1
 
 #include <map>
+#include <vector>
 
 class G4VPhysicsConstructor;
 

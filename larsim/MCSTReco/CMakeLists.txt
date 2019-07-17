@@ -1,40 +1,22 @@
 add_subdirectory(job)
 
-art_make(LIB_LIBRARIES larcorealg_Geometry
-                       larcore_Geometry_Geometry_service
-                       larsim_Simulation
-                       nug4_ParticleNavigation
-                       lardataobj_Simulation
-                       nusimdata_SimulationBase
-                       larcoreobj_SummaryData
-                       lardata_Utilities
-                       lardataobj_MCBase
-                       canvas
-                       ${MF_MESSAGELOGGER}
-                       ${FHICLCPP}
-                       ${ROOT_GEOM}
-                       ${ROOT_XMLIO}
-                       ${ROOT_GDML}
-          MODULE_LIBRARIES larsim_MCSTReco
-                           larcorealg_Geometry
-                           larcore_Geometry_Geometry_service
-                           larsim_Simulation
-                           nug4_ParticleNavigation
-                           lardataobj_Simulation
-                           nusimdata_SimulationBase
-                           larcoreobj_SummaryData
-                           lardata_Utilities
-                           lardataobj_MCBase
-                           nurandom_RandomUtils_NuRandomService_service
-                           art_Persistency_Provenance
-                           ${MF_MESSAGELOGGER}
-                           ${ROOT_GEOM}
-                           ${ROOT_XMLIO}
-                           ${ROOT_GDML}
-                           ${ROOT_EG}
-                           ${ROOT_HIST}
-                           ${CLHEP}
-                        )
+art_make(LIB_LIBRARIES
+           larcorealg_Geometry
+           ${ART_FRAMEWORK_SERVICES_REGISTRY}
+           nusimdata_SimulationBase
+           lardataobj_MCBase
+           canvas
+           cetlib_except
+           ${MF_MESSAGELOGGER}
+           ${FHICLCPP}
+           ${ROOT_CORE}
+           ${ROOT_PHYSICS}
+         MODULE_LIBRARIES
+           larsim_MCSTReco
+           ${MF_MESSAGELOGGER}
+           ${ROOT_CORE}
+           ${ROOT_PHYSICS}
+         )
 
 install_headers()
 install_fhicl()
