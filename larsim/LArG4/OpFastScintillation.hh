@@ -103,6 +103,9 @@
 #include "TF1.h"
 #include "TVector3.h"
 
+#include <chrono>
+#include <ctime>
+
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
 // Class inherits publicly from G4VRestDiscreteProcess.
@@ -230,8 +233,8 @@ public: // With description
         void DumpPhysicsTable() const;
         // Prints the fast and slow scintillation integral tables.
 
-        std::vector<double> GetVUVTime(double, int);
-        std::vector<double> GetVisibleTimeOnlyCathode(double, int);
+        /*std::vector<double> GetVUVTime(double, int);
+	  std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
   	// old timings -- to be deleted
 
         std::vector<double> getVUVTime(double, int);
@@ -300,12 +303,12 @@ private:
         phot::MappedFunctions_t ParPropTimeTF1;
         phot::MappedT0s_t ReflT0s;
 
-        TF1 const* functions_vuv[8];
+       /*TF1 const* functions_vuv[8];
         TF1 const* functions_vis[5];
         double fd_break;
         double fd_max;
         double ftf1_sampling_factor;
-        double ft0_max, ft0_break_point;
+        double ft0_max, ft0_break_point;*/
 
         //For new VUV time parametrization
         double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
@@ -323,23 +326,37 @@ private:
 	std::vector<std::vector<double>> ftau_pars;
 
 	//For VUV semi-analytic hits
+        G4double Gaisser_Hillas(double x, double *par);
+	bool fUseNhitsModel;
 	//array of correction for the VUV Nhits estimation
 	std::vector<std::vector<double> > fGHvuvpars;
-	TF1* GHvuv[9];
-
+        //To account for the border effects
+        std::vector<double> fborder_corr;
+        double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
+        double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
 	// For VIS semi-analytic hits
+	G4double Pol_5(double x, double *par);
+	bool fStoreReflected;
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
 	TF1* VIS_pol[9];
+        std::vector<double> fvis_border_distances_x;
+        std::vector<double> fvis_border_distances_r;
+        std::vector<std::vector<std::vector<double>>> fvis_border_correction;
+        bool fApplyVisBorderCorrection;
+        std::string fVisBorderCorrectionType;
+
 	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-	std::vector<double>  fcathode_centre;
+	TVector3  fcathode_centre;
 
 	// Optical detector properties for semi-analytic hits
 	int foptical_detector_type;
         double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
-
+        std::vector<int>  fOpDetType;
+        std::vector<double>  fOpDetLength;
+        std::vector<double>  fOpDetHeight;
         //double fGlobalTimeOffset;
 
         void ProcessStep( const G4Step& step);
@@ -356,8 +373,6 @@ private:
 		       std::vector<double> &yData3, double x, bool extrapolate);
   double model_close(double*, double*);
   double model_far(double*, double*);
-  // gaisser-hillas function
-  double GaisserHillas(double *x, double *par);
   // structure definition for solid angle of rectangle function
   struct acc{
     // ax,ay,az = centre of rectangle; w = width; h = height
@@ -480,6 +495,24 @@ inline
 G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
 {
          return std::exp(-1.0*t/tau2)*(1-std::exp(-1.0*t/tau1))/tau2/tau2*(tau1+tau2);
+}
+
+inline
+G4double OpFastScintillation::Gaisser_Hillas(double x,double *par) {
+  //This is the Gaisser-Hillas function                                                                                                                         
+  double X_mu_0=par[3];
+  double Normalization=par[0];
+  double Diff=par[1]-X_mu_0;
+  double Term=pow((x-X_mu_0)/Diff,Diff/par[2]);
+  double Exponential=std::exp((par[1]-x)/par[2]);
+
+  return (Normalization*Term*Exponential);
+}
+
+inline
+G4double OpFastScintillation::Pol_5(double x, double *par) {
+  // 5th order polynomial function
+  return par[0] + par[1] * x + par[2] * pow(x,2) + par[3] * pow(x,3) + par[4] * pow(x,4) + par[5] * pow(x,5);
 }
 
 } //namespace
