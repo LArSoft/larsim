@@ -16,7 +16,6 @@
 #include <string>
 #include <cmath>
 #include <memory>
-#include <iterator>
 #include <utility>
 #include <sys/stat.h>
 #include <exception>
@@ -27,10 +26,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -41,7 +38,6 @@
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
@@ -49,19 +45,14 @@
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
-#include "TMath.h"
 #include "TF2.h"
 #include "TH1.h"
-#include "TString.h"
 #include "TFile.h"
 #include "TAxis.h"
 #include "TTree.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
-
-
-namespace simb { class MCTruth; }
 
 namespace evgen {
 

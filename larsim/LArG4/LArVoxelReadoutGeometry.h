@@ -31,11 +31,10 @@
 #include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
 #include "Geant4/G4UserLimits.hh"
 
 // Forward declarations
-namespace CLHEP { class HepRandomEngine; }
+class G4PhysicalVolume;
 
 namespace larg4 {
 

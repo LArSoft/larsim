@@ -1,11 +1,12 @@
 #ifndef _WEIGHTCALC_H_
 #define _WEIGHTCALC_H_
-#include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandGaussQ.h"
+#include "art/Framework/Principal/fwd.h"
+namespace fhicl { class ParameterSet; }
+namespace CLHEP {
+  class HepRandomEngine;
+  class RandGaussQ;
+}
 
 #include "TMatrixD.h"
 #include <string>

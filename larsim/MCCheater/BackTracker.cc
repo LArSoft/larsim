@@ -10,16 +10,13 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-//Includes
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "BackTracker.h"
 #include "lardataobj/Simulation/sim.h"
-#include "larsim/Simulation/SimListUtils.h"
 
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "larcore/Geometry/Geometry.h"
+#include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "larcorealg/Geometry/GeometryCore.h"
-#include "larcorealg/Geometry/TPCGeo.h"
-#include "larcorealg/Geometry/WireGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
 

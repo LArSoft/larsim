@@ -8,9 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes
-#include <algorithm>
-#include <fstream>
-#include <bitset>
 #include <string>
 
 // Framework includes
@@ -21,31 +18,16 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardataobj/Simulation/sim.h"
-#include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
-#include "lardataobj/RecoBase/Wire.h"
 #include "lardata/Utilities/LArFFT.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // ROOT includes
-#include <TMath.h>
 #include <TH1.h>
-#include <TH2.h>
-#include <TGraph.h>
-#include <TFile.h>
-
-class TH2F;
-class TH1F;
-class TH1;
-
-namespace geo { class Geometry; }
 
 namespace detsim {
 

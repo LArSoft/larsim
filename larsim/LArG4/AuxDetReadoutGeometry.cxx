@@ -14,22 +14,9 @@
 #include "larsim/LArG4/AuxDetReadout.h"
 
 // G4 includes
-#include "Geant4/G4PVPlacement.hh"
-#include "Geant4/G4PVReplica.hh"
 #include "Geant4/G4LogicalVolume.hh"
-#include "Geant4/G4VisAttributes.hh"
-#include "Geant4/G4VSolid.hh"
-#include "Geant4/G4Box.hh"
-#include "Geant4/G4Tubs.hh"
-#include "Geant4/G4ThreeVector.hh"
-#include "Geant4/G4RotationMatrix.hh"
-#include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4SDManager.hh"
-#include "Geant4/G4Material.hh"
 #include "Geant4/G4Point3D.hh"
-#include "Geant4/globals.hh"
-
-#include <cmath>
 
 namespace larg4 {
 

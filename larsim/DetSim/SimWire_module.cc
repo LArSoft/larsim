@@ -11,16 +11,10 @@
 
 // ROOT includes
 #include <TMath.h>
-#include <TH1D.h>
-#include <TFile.h>
 #include "TComplex.h"
-#include "TString.h"
-#include "TH2.h"
 
 // C++ includes
 #include <algorithm>
-#include <fstream>
-#include <bitset>
 #include <string>
 
 
@@ -28,10 +22,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/search_path.h"
@@ -40,28 +32,17 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGaussQ.h"
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardataobj/Simulation/sim.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/LArFFT.h"
 
-namespace art {
-  class Event;
-  class ParameterSet;
-}
-
-namespace geo { class Geometry; }
-
-///Detector simulation of raw signals on wires
+// Detector simulation of raw signals on wires
 namespace detsim {
 
   // Base class for creation of raw signals on wires.

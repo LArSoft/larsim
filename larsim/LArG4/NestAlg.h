@@ -1,12 +1,14 @@
 #ifndef NESTALG_H
 #define NESTALG_H
 
-#include "Geant4/globals.hh"
-#include "Geant4/G4Step.hh"
-#include "Geant4/G4Track.hh"
+#include "Geant4/G4Types.hh"
 #include "Geant4/G4VParticleChange.hh"
+#include <map>
 
-// forward declarations
+class G4MaterialPropertiesTable;
+class G4Step;
+class G4Track;
+
 namespace CLHEP { class HepRandomEngine; }
 
 class NestAlg {

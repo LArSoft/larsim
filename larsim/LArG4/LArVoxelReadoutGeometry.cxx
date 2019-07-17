@@ -12,7 +12,6 @@
 #include <map>
 #include <memory> // std::unique_ptr()
 #include <sstream> // std::ostringstream
-#include <iostream> // std::endl
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -21,10 +20,10 @@
 // LArSoft includes
 #include "larsim/LArG4/LArVoxelReadoutGeometry.h"
 #include "larsim/LArG4/LArVoxelReadout.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
 // G4 includes
-#include "Geant4/G4PVPlacement.hh"
 #include "Geant4/G4PVReplica.hh"
 #include "Geant4/G4LogicalVolume.hh"
 #include "Geant4/G4VisAttributes.hh"
@@ -33,12 +32,8 @@
 #include "Geant4/G4Tubs.hh"
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4RotationMatrix.hh"
-#include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4SDManager.hh"
-#include "Geant4/G4Material.hh"
 #include "Geant4/G4Point3D.hh"
-#include "Geant4/globals.hh"
-
 
 constexpr bool DisableVoxelCaching = false;
 

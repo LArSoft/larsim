@@ -7,23 +7,17 @@
  * Generated using artmod from cetpkgsupport v1_08_02.
  */
 
-// C/C++ standard libraries
-#include <algorithm> // std::generate()
-#include <iomanip> // std::setw()
-
 // CLHEP libraries
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandFlat.h"
 
 // framework libraries
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+namespace fhicl { class ParameterSet; }
 
 // artextensions libraries
 #include "nurandom/RandomUtils/NuRandomService.h"

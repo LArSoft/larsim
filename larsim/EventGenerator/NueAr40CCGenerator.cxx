@@ -9,8 +9,11 @@
 // Framework includes
 #include "cetlib/search_path.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // nutools includes
+#include "nusimdata/SimulationBase/MCNeutrino.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
@@ -23,7 +26,6 @@
 #include "CLHEP/Random/RandPoisson.h"
 
 // C++ includes
-#include <fstream>
 #include <cmath>
 
 namespace evgen {

@@ -26,12 +26,13 @@
 #ifndef CUSTOMPHYSICSTABLE_hh
 #define CUSTOMPHYSICSTABLE_hh 1
 
+#include <map>
+
+class G4VPhysicsConstructor;
+
 #ifndef CUSTOMPHYSICSFACTORY_hh
 namespace larg4 { class CustomPhysicsFactoryBase; }
 #endif
-
-#include "Geant4/G4VPhysicsConstructor.hh"
-
 
 namespace larg4 {
   class CustomPhysicsTable

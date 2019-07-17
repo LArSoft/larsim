@@ -8,7 +8,15 @@
 
 #include "MCTrackRecoAlg.h"
 #include <iostream>
-#include <fstream>
+
+#include "fhiclcpp/ParameterSet.h"                         // for ParameterSet
+
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"  // for PlaneID
+#include "lardataobj/MCBase/MCLimits.h"                    // for kINVALID_UINT
+#include "lardataobj/MCBase/MCStep.h"                      // for MCStep
+#include "lardataobj/MCBase/MCTrack.h"                     // for MCTrack
+#include "larsim/MCSTReco/MCRecoEdep.h"                    // for MCEdep
+#include "larsim/MCSTReco/MCRecoPart.h"                    // for MCMiniPart
 
 namespace sim {
 

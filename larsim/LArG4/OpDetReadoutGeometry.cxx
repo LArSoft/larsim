@@ -5,18 +5,26 @@
 ////////////////////////////////////////////////////////////////////////
 #include "nug4/G4Base/DetectorConstruction.h"
 
-#include "cetlib_except/exception.h"
+#include "CLHEP/Geometry/Transform3D.h"
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Types.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/LArG4/OpDetReadoutGeometry.h"
 #include "larsim/LArG4/OpDetLookup.h"
 #include "larsim/LArG4/OpDetSensitiveDetector.h"
 #include "larsim/LArG4/OpParamSD.h"
-#include "Geant4/G4PVPlacement.hh"
-#include "Geant4/G4VSolid.hh"
-#include "Geant4/G4SDManager.hh"
+
 #include <sstream>
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace larg4 {

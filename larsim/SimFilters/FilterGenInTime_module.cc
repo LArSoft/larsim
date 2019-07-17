@@ -8,30 +8,24 @@
 /// Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDFilter.h"
-
-// Framework includes
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-#include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/FindOneP.h"
+#include "canvas/Utilities/Exception.h"
 
 // LArSoft Includes
-#include "nug4/ParticleNavigation/ParticleList.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
 #include <cstring>
-#include <sys/stat.h>
 
 // Root includes
-#include <TMath.h>
+#include "TLorentzVector.h"
+#include "TMath.h"
 
 namespace simfilter {
 
@@ -78,7 +72,7 @@ namespace simfilter {
   void FilterGenInTime::beginJob(){
     auto const& geom = *art::ServiceHandle<geo::Geometry const>();
 
-	  geom.CryostatBoundaries(fbounds, 0);
+          geom.CryostatBoundaries(fbounds, 0);
   }
 
 
@@ -92,28 +86,28 @@ namespace simfilter {
     bool intersects_cryo = false;
     for (int bnd=0; bnd!=6; ++bnd) {
       if (bnd<2) {
-	double p2[3] = {fbounds[bnd],  x0[1] + (dx[1]/dx[0])*(fbounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(fbounds[bnd] - x0[0])};
-	if ( p2[1] >= fbounds[2] && p2[1] <= fbounds[3] &&
-	     p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+        double p2[3] = {fbounds[bnd],  x0[1] + (dx[1]/dx[0])*(fbounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(fbounds[bnd] - x0[0])};
+        if ( p2[1] >= fbounds[2] && p2[1] <= fbounds[3] &&
+             p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
+          intersects_cryo = true;
+          break;
+        }
       }
       else if (bnd>=2 && bnd<4) {
-	double p2[3] = {x0[0] + (dx[0]/dx[1])*(fbounds[bnd] - x0[1]), fbounds[bnd], x0[2] + (dx[2]/dx[1])*(fbounds[bnd] - x0[1])};
-	if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
-	     p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+        double p2[3] = {x0[0] + (dx[0]/dx[1])*(fbounds[bnd] - x0[1]), fbounds[bnd], x0[2] + (dx[2]/dx[1])*(fbounds[bnd] - x0[1])};
+        if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
+             p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
+          intersects_cryo = true;
+          break;
+        }
       }
       else if (bnd>=4) {
-	double p2[3] = {x0[0] + (dx[0]/dx[2])*(fbounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(fbounds[bnd] - x0[2]), fbounds[bnd]};
-	if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
-	     p2[1] >= fbounds[2] && p2[1] <= fbounds[3] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+        double p2[3] = {x0[0] + (dx[0]/dx[2])*(fbounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(fbounds[bnd] - x0[2]), fbounds[bnd]};
+        if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
+             p2[1] >= fbounds[2] && p2[1] <= fbounds[3] ) {
+          intersects_cryo = true;
+          break;
+        }
       }
     }
 
@@ -148,27 +142,27 @@ namespace simfilter {
     for(size_t mcl = 0; mcl < allmclists.size(); ++mcl){
       art::Handle< std::vector<simb::MCTruth> > mclistHandle = allmclists[mcl];
       for(size_t m = 0; m < mclistHandle->size(); ++m){
-	art::Ptr<simb::MCTruth> mct(mclistHandle, m);
+        art::Ptr<simb::MCTruth> mct(mclistHandle, m);
 
-	for(int ipart=0;ipart<mct->NParticles();ipart++){
-	  bool kp=KeepParticle(mct->GetParticle(ipart));
+        for(int ipart=0;ipart<mct->NParticles();ipart++){
+          bool kp=KeepParticle(mct->GetParticle(ipart));
 
-	  if(kp
-	     && (!fKeepOnlyMuons || abs(mct->GetParticle(ipart).PdgCode())==13 )
-	     && mct->GetParticle(ipart).E()-mct->GetParticle(ipart).Mass()>fMinKE){
-	    keepEvent = true;
-	    if(!fSortParticles) break;
-	  }
+          if(kp
+             && (!fKeepOnlyMuons || abs(mct->GetParticle(ipart).PdgCode())==13 )
+             && mct->GetParticle(ipart).E()-mct->GetParticle(ipart).Mass()>fMinKE){
+            keepEvent = true;
+            if(!fSortParticles) break;
+          }
 
-	  if(fSortParticles){
-	    simb::MCParticle particle = mct->GetParticle(ipart);
-	    if(kp) truthInTime.Add(particle);
-	    if(!kp) truthOutOfTime.Add(particle);
-	  }
+          if(fSortParticles){
+            simb::MCParticle particle = mct->GetParticle(ipart);
+            if(kp) truthInTime.Add(particle);
+            if(!kp) truthOutOfTime.Add(particle);
+          }
 
-	}//end loop over particles
+        }//end loop over particles
 
-	if(!fSortParticles && keepEvent) break;
+        if(!fSortParticles && keepEvent) break;
 
       }//end loop over mctruth col
 

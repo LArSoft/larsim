@@ -9,17 +9,16 @@
 
 #include "larsim/MCCheater/PhotonBackTrackerService.h"
 
-//CPP includes
-
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larsim/Simulation/SimListUtils.h"
-
-//#include "lardata/Utilities/AssociationUtil.h"
-//#include "lardataobj/Simulation/sim.h"
+#include "larcore/CoreUtils/ServiceUtil.h"                     // for provid...
+#include "larcore/Geometry/Geometry.h"                         // for Geometry
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"      // for View_t
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"      // for SDP (p...
+#include "larsim/MCCheater/ParticleInventoryService.h"         // for Partic...
+#include "larsim/MCCheater/PhotonBackTracker.h"                // for Photon...
 
 namespace cheat{
 
@@ -368,4 +367,3 @@ namespace cheat{
   DEFINE_ART_SERVICE(PhotonBackTrackerService)
     //-------------------------------------------------------------------
   } // namespace
-

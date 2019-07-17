@@ -11,27 +11,20 @@
 #ifndef CHEAT_BACKTRACKER_H
 #define CHEAT_BACKTRACKER_H
 
-//Includes
 #include <vector>
 
-#include "larsim/MCCheater/ParticleInventory.h"
-
-
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Table.h"
 
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larcorealg/CoreUtils/ProviderPack.h"
-#include "lardataalg/DetectorInfo/DetectorClocks.h"
+#include "larsim/MCCheater/ParticleInventory.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/RecoBase/Hit.h"
-#include "lardataobj/RecoBase/SpacePoint.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
-/*namespace recob{
-  class SpacePoint;
-  }*/
-
+namespace fhicl { class ParameterSet; }
+namespace detinfo { class DetectorClocks; }
+namespace geo { class GeometryCore; }
+namespace recob { class SpacePoint; }
 
 namespace cheat{
 

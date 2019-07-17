@@ -27,22 +27,25 @@
 #include "larsim/LArG4/LArStackingAction.h"
 #include "larcore/Geometry/Geometry.h"
 
-#include "Geant4/G4SDManager.hh"
-#include "Geant4/G4RunManager.hh"
-#include "Geant4/G4Event.hh"
-#include "Geant4/G4HCofThisEvent.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
+
+#include "Geant4/G4MuonMinus.hh"
+#include "Geant4/G4MuonPlus.hh"
+#include "Geant4/G4StackManager.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4Track.hh"
 #include "Geant4/G4TrackStatus.hh"
 #include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleTypes.hh"
-#include "Geant4/G4ios.hh"
+#include "Geant4/G4VProcess.hh"
+
+// ROOT includes
+#include "RtypesCore.h"
+#include "TString.h"
+#include "TVector3.h"
 
 // Framework includes
-#include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "cetlib_except/exception.h"
 
 LArStackingAction::LArStackingAction(G4int dum)
  : fstage(0)
@@ -225,5 +228,3 @@ void LArStackingAction::PrepareNewEvent()
   //trkHits = 0;
   //muonHits = 0;
 }
-
-

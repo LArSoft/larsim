@@ -43,7 +43,6 @@
 #include "larsim/LArG4/FastOpticalPhysics.h"
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
-#include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -53,32 +52,7 @@
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4ProcessManager.hh"
-#include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4LossTableManager.hh"
-#include "Geant4/G4EmProcessOptions.hh"
-
-#include "Geant4/G4ComptonScattering.hh"
-#include "Geant4/G4GammaConversion.hh"
-#include "Geant4/G4PhotoElectricEffect.hh"
-
-#include "Geant4/G4AdjointhMultipleScattering.hh"
-#include "Geant4/G4eMultipleScattering.hh"
-#include "Geant4/G4hMultipleScattering.hh"
-#include "Geant4/G4MuMultipleScattering.hh"
-#include "Geant4/G4VMultipleScattering.hh"
-
-#include "Geant4/G4eIonisation.hh"
-#include "Geant4/G4eBremsstrahlung.hh"
-#include "Geant4/G4eplusAnnihilation.hh"
-
-#include "Geant4/G4MuIonisation.hh"
-#include "Geant4/G4MuBremsstrahlung.hh"
-#include "Geant4/G4MuPairProduction.hh"
-#include "Geant4/G4hBremsstrahlung.hh"
-#include "Geant4/G4hPairProduction.hh"
-
-#include "Geant4/G4hIonisation.hh"
-#include "Geant4/G4ionIonisation.hh"
 
 #include "Geant4/G4Gamma.hh"
 #include "Geant4/G4Electron.hh"
@@ -99,14 +73,9 @@
 #include "Geant4/G4OpticalPhoton.hh"
 
 #include "Geant4/G4Cerenkov.hh"
-#include "Geant4/G4Scintillation.hh"
 #include "Geant4/G4OpAbsorption.hh"
 #include "Geant4/G4OpWLS.hh"
 #include "Geant4/G4OpRayleigh.hh"
-
-#include "Geant4/G4LossTableManager.hh"
-#include "Geant4/G4EmSaturation.hh"
-#include "Geant4/G4PhysicsListHelper.hh"
 
 //Register optical physics in custom physics list
 

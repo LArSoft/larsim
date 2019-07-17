@@ -25,35 +25,25 @@
 // Ben Jones, MIT,2013
 //
 
-
-// LArSoft includes
-
-#include "Geant4/G4VSensitiveDetector.hh"
-#include "lardataobj/Simulation/sim.h"
-#include "larsim/LArG4/OpParamAction.h"
-
-
-// Geant4 includes
-
-#include "Geant4/Randomize.hh"
-#include "Geant4/G4RandomTools.hh"
-
-
 #ifndef OpParamSD_h
 #define OpParamSD_h 1
 
-class G4HCofThisEvent;
-class G4TOuchableHistory;
-class G4Step;
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
+#include "Geant4/Randomize.hh"
 
-namespace sim{
-  class SimPhotonsCollection;
-}
+#include <map>
+#include <string>
+#include <vector>
+
+class G4HCofThisEvent;
+class G4Step;
+class G4TouchableHistory;
 
 namespace larg4 {
 
-  class OpDetLookup;
-  class OpDetPhotonTable;
+  class OpParamAction;
 
   class OpParamSD : public G4VSensitiveDetector
   {

@@ -8,21 +8,12 @@
 #ifndef LARG4_MNSP_H
 #define LARG4_MNSP_H
 
-#include "Geant4/globals.hh"
-#include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleWithCuts.hh"
-#include "Geant4/G4ProcessManager.hh"
-#include "Geant4/G4ProcessVector.hh"
-#include "Geant4/G4ParticleTypes.hh"
-#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4Types.hh"
 #include "Geant4/G4WrapperProcess.hh"
 
-#include "Geant4/G4MuonNuclearProcess.hh"
-#include "Geant4/G4Material.hh"
-#include "Geant4/G4MaterialTable.hh"
-#include "Geant4/G4ios.hh"
-
-#include "Geant4/G4DataQuestionaire.hh"
+class G4Step;
+class G4Track;
+class G4VParticleChange;
 
 namespace larg4 {
 

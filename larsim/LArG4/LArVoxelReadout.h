@@ -42,28 +42,24 @@
 #ifndef LArG4_LArVoxelReadout_h
 #define LArG4_LArVoxelReadout_h
 
-#include <stdint.h>
+#include <stddef.h>
 #include <vector>
 #include <algorithm> // std::max()
 
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4PVPlacement.hh"
-#include "Geant4/globals.hh"
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/TPCGeo.h"
 #include "larsim/Simulation/LArG4Parameters.h"
-#include "larsim/LArG4/IonizationAndScintillation.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+#include "lardataalg/DetectorInfo/ElecClock.h"
 
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
-namespace CLHEP { class HEPRandomEngine; }
 
 namespace larg4 {
 

@@ -24,15 +24,12 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larsim/Simulation/SimListUtils.h"
 #include "larsim/MCCheater/PhotonBackTracker.h"
+#include "lardataobj/RecoBase/OpHit.h"
+
 //Larsoft Services
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
-
-
-//#include "lardata/Utilities/AssociationUtil.h"
-#include "lardataobj/RecoBase/OpHit.h"
-//#include "lardataobj/Simulation/sim.h"
 
 namespace cheat{
   class PhotonBackTrackerService: private PhotonBackTracker

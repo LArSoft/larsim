@@ -1,18 +1,17 @@
-
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-
-#include "larcore/Geometry/Geometry.h"
 
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
-#include "larsim/Simulation/PhotonVoxels.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "RtypesCore.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TKey.h"
 #include "TF1.h"
+#include "TBranch.h"
+#include "TNamed.h"
+#include "TString.h"
 
 namespace phot{
 

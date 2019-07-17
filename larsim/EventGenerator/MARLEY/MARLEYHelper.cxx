@@ -12,6 +12,7 @@
 
 // LArSoft includes
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // ROOT includes
 #include "TInterpreter.h"

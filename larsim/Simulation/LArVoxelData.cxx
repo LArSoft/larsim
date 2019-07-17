@@ -7,6 +7,8 @@
 
 #include "larsim/Simulation/LArVoxelData.h"
 
+#include <ostream>
+
 namespace sim {
 
   //----------------------------------------------------------------------------

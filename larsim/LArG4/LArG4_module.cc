@@ -19,7 +19,6 @@
 /// - Pass the truth information to the DetSim branch of the FMWK event.
 
 #include "nug4/G4Base/G4Helper.h"
-#include "nug4/G4Base/ConvertMCTruthToG4.h"
 
 // C++ Includes
 #include <sstream>
@@ -47,10 +46,8 @@
 
 // LArSoft Includes
 #include "larsim/LArG4/LArVoxelReadoutGeometry.h"
-#include "larsim/LArG4/PhysicsList.h"
 #include "larsim/LArG4/ParticleListAction.h"
-#include "larsim/LArG4/G4BadIdeaAction.h"
-#include "larsim/LArG4/IonizationAndScintillationAction.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpDetSensitiveDetector.h"
 #include "larsim/LArG4/OpDetReadoutGeometry.h"
 #include "larsim/LArG4/LArStackingAction.h"
@@ -70,44 +67,21 @@
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
-#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
-#include "nug4/G4Base/DetectorConstruction.h"
 #include "nug4/G4Base/UserActionManager.h"
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"
-#include "Geant4/G4UImanager.hh"
 #include "Geant4/G4VUserDetectorConstruction.hh"
-#include "Geant4/G4VUserPrimaryGeneratorAction.hh"
-#include "Geant4/G4VUserPhysicsList.hh"
-#include "Geant4/G4UserRunAction.hh"
-#include "Geant4/G4UserEventAction.hh"
-#include "Geant4/G4UserTrackingAction.hh"
-#include "Geant4/G4UserSteppingAction.hh"
-#include "Geant4/G4UserStackingAction.hh"
-#include "Geant4/G4VisExecutive.hh"
-#include "Geant4/G4VUserPhysicsList.hh"
-#include "Geant4/G4SDManager.hh"
 #include "Geant4/G4LogicalVolumeStore.hh"
-#include "Geant4/Randomize.hh"
 #include "Geant4/G4SDManager.hh"
 #include "Geant4/G4VSensitiveDetector.hh"
-#include "Geant4/globals.hh"
-
-// ROOT Includes
-#include "TGeoManager.h"
 
 //For energy depositions
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 // Boost includes
 #include "boost/algorithm/string.hpp"
-
-// Forward declarations
-class G4RunManager;
-class G4UImanager;
-class G4VisExecutive;
 
 #if defined __clang__
   #pragma clang diagnostic push
@@ -119,7 +93,6 @@ namespace larg4 {
 
   // Forward declarations within namespace.
   class LArVoxelListAction;
-  class ParticleListAction;
 
   /**
    * @brief Runs Geant4 simulation and propagation of electrons and photons to readout

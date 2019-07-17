@@ -17,18 +17,18 @@
 
 
 //Includes
+#include "larsim/MCCheater/ParticleInventory.h"
 #include "larsim/MCCheater/PhotonBackTracker.h"
 
 //CPP
 #include <map>
+
 //Framework
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 //LArSoft
 #include "lardataobj/Simulation/sim.h"
-#include "larsim/Simulation/SimListUtils.h"
 #include "larcorealg/Geometry/GeometryCore.h"
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "larcore/Geometry/Geometry.h"
 
 namespace cheat{
 
@@ -754,4 +754,3 @@ namespace cheat{
 
   //----------------------------------------------------------------------
 } // namespace
-

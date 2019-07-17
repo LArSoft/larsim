@@ -23,14 +23,13 @@
 //    to model the optical transmission of wireplanes in MicroBooNE.
 //
 
-#include "TVector3.h"
-#include "Geant4/G4ThreeVector.hh"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-
-
 #ifndef OPPARAMACTION_H
 #define OPPARAMACTION_H
+
+#include "TVector3.h"
+#include "Geant4/G4ThreeVector.hh"
+
+#include <vector>
 
 namespace larg4
 {

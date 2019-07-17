@@ -14,8 +14,6 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 
-#include <algorithm>
-
 namespace larg4 {
 
   //----------------------------------------------------------------------------

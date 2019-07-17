@@ -14,10 +14,14 @@
 #include "larsim/LArG4/MaterialPropertyLoader.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialPropertiesTable.hh"
 #include "Geant4/G4LogicalSkinSurface.hh"
 #include "Geant4/G4OpticalSurface.hh"
+
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace larg4 {

@@ -6,10 +6,10 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geant4/G4LossTableManager.hh"
-#include "Geant4/G4EmSaturation.hh"
+#include "Geant4/G4Step.hh"
 
 #include "larsim/LArG4/ISCalculationNEST.h"
+#include "larsim/LArG4/NestAlg.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

@@ -9,8 +9,7 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
-// Framework includes
-#include "cetlib_except/exception.h"
+#include "Geant4/G4Step.hh"
 
 namespace larg4 {
 

@@ -18,21 +18,15 @@
 // Ben Jones, MIT, 06/04/2010
 //
 
-
-#include "Geant4/G4VSensitiveDetector.hh"
-#include "lardataobj/Simulation/sim.h"
-
-
 #ifndef OpDetSensitiveDetector_h
 #define OpDetSensitiveDetector_h 1
 
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
 class G4HCofThisEvent;
-class G4TOuchableHistory;
 class G4Step;
-
-namespace sim{
-  class SimPhotonsCollection;
-}
+class G4TouchableHistory;
 
 namespace larg4 {
 

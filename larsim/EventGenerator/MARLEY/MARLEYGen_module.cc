@@ -16,10 +16,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Table.h"
-#include "cetlib_except/exception.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -28,12 +25,11 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
+
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 #include "larsim/EventGenerator/MARLEY/ActiveVolumeVertexSampler.h"
 
 // ROOT includes
-#include "TFile.h"
 #include "TTree.h"
 
 namespace evgen {

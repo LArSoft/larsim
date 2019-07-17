@@ -14,9 +14,6 @@
 #include <cassert>
 
 // GEANT
-#include "Geant4/G4HCofThisEvent.hh"
-#include "Geant4/G4TouchableHistory.hh"
-#include "Geant4/G4TouchableHandle.hh"
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
@@ -31,11 +28,16 @@
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorClocks.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "larevt/SpaceCharge/SpaceCharge.h"
+#include "larsim/LArG4/IonizationAndScintillation.h"
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
-#include "CLHEP/Random/RandPoisson.h"
-#include "CLHEP/Random/RandFlat.h"
 
 namespace larg4 {
 

@@ -8,7 +8,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // standard library includes
-#include <cmath>
 #include <fstream>
 #include <limits>
 #include <memory>
@@ -40,14 +39,12 @@
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 #include "larsim/EventGenerator/MARLEY/ActiveVolumeVertexSampler.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TTree.h"
-#include "TVectorD.h"
 
 // MARLEY includes
 #include "marley/marley_root.hh"

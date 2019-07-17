@@ -12,9 +12,10 @@
 #ifndef LArG4_MaterialPropertyLoader_h
 #define LArG4_MaterialPropertyLoader_h
 
-// TODO add <string> header
-#include "Geant4/G4LogicalVolumeStore.hh"
 #include <map>
+#include <string>
+
+class G4LogicalVolumeStore;
 
 namespace larg4 {
 

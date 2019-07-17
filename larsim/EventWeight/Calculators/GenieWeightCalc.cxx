@@ -6,6 +6,8 @@
 // Ported from uboonecode to larsim on Feb 14 2017
 //   by Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
 
+#include "art/Framework/Principal/Event.h"
+
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
 #include "larsim/EventWeight/Base/WeightCalc.h"
 

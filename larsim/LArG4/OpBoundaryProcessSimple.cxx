@@ -49,18 +49,17 @@
 // Optical Photon Boundary Process Class Implementation
 ////////////////////////////////////////////////////////////////////////
 
-#include "TH1.h"
-
 #include "Geant4/G4ios.hh"
 #include "Geant4/G4OpProcessSubType.hh"
 #include "Geant4/G4GeometryTolerance.hh"
+#include "Geant4/G4Navigator.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4RandomTools.hh"
 
 #include "larsim/LArG4/OpBoundaryProcessSimple.hh"
 #include "larsim/Simulation/LArG4Parameters.h"
 
 //#define G4DEBUG_OPTICAL
-
-
 
 namespace larg4 {
 

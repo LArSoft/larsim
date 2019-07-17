@@ -94,16 +94,32 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-//#include "Geant4/g4ios.hh"
-#include "TLorentzVector.h"
-
 #include "Geant4/globals.hh"
-#include "Geant4/G4ParticleTypes.hh"
-#include "Geant4/G4EmProcessSubType.hh"
 #include "Geant4/Randomize.hh"
 #include "Geant4/G4Poisson.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
-
+#include "Geant4/G4Alpha.hh"
+#include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4Electron.hh"
+#include "Geant4/G4ExceptionSeverity.hh"
+#include "Geant4/G4Gamma.hh"
+#include "Geant4/G4KaonMinus.hh"
+#include "Geant4/G4KaonPlus.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4MaterialPropertiesTable.hh"
+#include "Geant4/G4MaterialPropertyVector.hh"
+#include "Geant4/G4MaterialTable.hh"
+#include "Geant4/G4MuonMinus.hh"
+#include "Geant4/G4MuonPlus.hh"
+#include "Geant4/G4ParticleChange.hh"
+#include "Geant4/G4PhysicsVector.hh"
+#include "Geant4/G4PionMinus.hh"
+#include "Geant4/G4PionPlus.hh"
+#include "Geant4/G4Proton.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4StepPoint.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4ios.hh"
 
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
@@ -111,29 +127,19 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larsim/Simulation/LArG4Parameters.h"
-
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // support libraries
 #include "cetlib_except/exception.h"
 
 #include "TRandom3.h"
 #include "TMath.h"
-#include "TFormula.h"
-//#include "Math/SpecFuncMathMore.h"
-#include "TSystem.h"
 #include <cmath>
-
-#include "boost/algorithm/string.hpp"
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
