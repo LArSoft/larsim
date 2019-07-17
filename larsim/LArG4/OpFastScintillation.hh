@@ -339,7 +339,7 @@ private:
 	bool fStoreReflected;
 	// array of corrections for VIS Nhits estimation
 	std::vector<std::vector<double>> fvispars;
-	TF1* VIS_pol[9];
+	//TF1* VIS_pol[9]; // unused
         std::vector<double> fvis_border_distances_x;
         std::vector<double> fvis_border_distances_r;
         std::vector<std::vector<std::vector<double>>> fvis_border_correction;
@@ -350,7 +350,7 @@ private:
 	TVector3  fcathode_centre;
 
 	// Optical detector properties for semi-analytic hits
-	int foptical_detector_type;
+	// int foptical_detector_type;  // unused
         double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
