@@ -19,7 +19,7 @@
 
 // LArSoft Includes
 #include "larsim/MCCheater/ParticleInventoryService.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 

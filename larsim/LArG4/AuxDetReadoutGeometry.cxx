@@ -4,7 +4,7 @@
 /// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "nutools/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/DetectorConstruction.h"
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"

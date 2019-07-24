@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/LArG4/ParticleListAction.h"
-#include "nutools/G4Base/PrimaryParticleInformation.h"
+#include "nug4/G4Base/PrimaryParticleInformation.h"
 #include "lardataobj/Simulation/sim.h" // sim::NoParticleId
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

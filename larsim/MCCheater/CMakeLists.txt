@@ -5,7 +5,7 @@ cet_make_library(
   canvas
   lardata_Utilities
   larsim_Simulation
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   nusimdata_SimulationBase
   ${MF_MESSAGELOGGER}
@@ -20,7 +20,7 @@ cet_make_library(
   larsim_Simulation
   larsim_MCCheater_ParticleInventory
   larcorealg_Geometry
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   lardataobj_RawData
   nusimdata_SimulationBase
@@ -35,7 +35,7 @@ cet_make_library(
   larsim_Simulation
   larsim_MCCheater_ParticleInventory
   larcorealg_Geometry
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   nusimdata_SimulationBase
   )
@@ -44,7 +44,7 @@ simple_plugin(ParticleInventoryService "service"
   larsim_MCCheater_ParticleInventory
   larsim_Simulation
   lardata_Utilities
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   nusimdata_SimulationBase
   ${MF_MESSAGELOGGER}
@@ -56,7 +56,7 @@ simple_plugin(PhotonBackTrackerService "service"
   larsim_MCCheater_ParticleInventoryService_service
   lardata_Utilities
   larsim_Simulation
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   lardataobj_RecoBase
   lardataobj_RawData
@@ -72,7 +72,7 @@ simple_plugin(BackTrackerService "service"
   larsim_MCCheater_ParticleInventoryService_service
   lardata_Utilities
   larsim_Simulation
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   lardataobj_RecoBase
   larcorealg_Geometry
@@ -86,7 +86,7 @@ simple_plugin(CheckBackTracking "module"
   larsim_MCCheater_ParticleInventoryService_service
   lardataobj_RecoBase
   larsim_Simulation
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   ${MF_MESSAGELOGGER}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -98,7 +98,7 @@ simple_plugin(RecoCheckAna "module"
   larsim_MCCheater_ParticleInventoryService_service
   lardataobj_RecoBase
   larsim_Simulation
-  nutools_ParticleNavigation
+  nug4_ParticleNavigation
   lardataobj_Simulation
   nusimdata_SimulationBase
   ${MF_MESSAGELOGGER}
