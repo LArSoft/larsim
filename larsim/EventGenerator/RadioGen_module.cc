@@ -953,7 +953,7 @@ namespace evgen{
     auto const& detInfo
       = *(lar::providerFrom<detinfo::DetectorPropertiesService>());
     
-    TPCelectronics_tick const startTick { -detInfo.ReadOutWindowSize() };
+    TPCelectronics_tick const startTick { -int(detInfo.ReadOutWindowSize()) };
     TPCelectronics_tick const endTick { detInfo.NumberTimeSamples() };
     
     return {
