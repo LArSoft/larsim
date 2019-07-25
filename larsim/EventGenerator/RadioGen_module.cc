@@ -192,62 +192,6 @@ namespace {
 }
 
 
-#ifndef LARCOREALG_GEOMETRY_ROOTGEOMETRYNAVIGATOR_H
-namespace geo { // FIXME this is going to be into larcorealg/Geometry/ROOTGeometryNavigator.h
-  
-  class ROOTGeometryNavigator {
-    
-    TGeoManager const* manager = nullptr;
-    
-      public:
-    ROOTGeometryNavigator(TGeoManager const& manager): manager(&manager) {}
-    
-    template <typename Op>
-    bool apply(geo::GeoNodePath& path, Op&& op) const;
-    
-    template <typename Op>
-    bool apply(Op&& op) const;
-    
-  }; // ROOTGeometryNavigator
-  
-  
-  template <typename Op>
-  bool ROOTGeometryNavigator::apply
-    (geo::GeoNodePath& path, Op&& op) const
-  {
-    if (!op(path)) return false;
-    
-    TGeoNode const& node = path.current();
-    TGeoVolume const* pVolume = node.GetVolume();
-    if (pVolume) { // is it even possible not to?
-      int const nDaughters = pVolume->GetNdaughters();
-      for (int iDaughter: util::counter<int>(nDaughters)) {
-        TGeoNode const* pDaughter = pVolume->GetNode(iDaughter);
-        if (!pDaughter) continue; // fishy...
-        
-        path.append(*pDaughter);
-        if (!apply(path, std::forward<Op>(op))) return false;
-        path.pop();
-      } // for
-    } // if we have a volume
-    
-    return true;
-    
-  } // ROOTGeometryNavigator::apply()
-  
-  
-  template <typename Op>
-  bool ROOTGeometryNavigator::apply(Op&& op) const {
-    assert(manager);
-    geo::GeoNodePath path { manager->GetTopNode() };
-    return apply(path, std::forward<Op>(op));
-    
-  } // ROOTGeometryNavigator::apply()
-  
-  
-} // namespace geo
-#endif // LARCOREALG_GEOMETRY_ROOTGEOMETRYNAVIGATOR_H
-
 namespace evgen{
 
   //____________________________________________________________________________
