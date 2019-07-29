@@ -47,7 +47,7 @@ private:
   float const fMinPhotonEnergy;
   bool const fDebug;
   std::size_t const fN;
-  bool fUseReflected;
+  bool fUseReflectedPhotons;
   std::string fReflectedLabel;
 
   void CheckTimeWindows() const;
@@ -63,7 +63,7 @@ simfilter::FilterSimPhotonTime::FilterSimPhotonTime(
   , fMinPhotonEnergy(p.get<float>("MinPhotonEnergy", -1))
   , fDebug(p.get<bool>("Debug", false))
   , fN(fTimeWindows.size())
-  , fUseReflected(p.get<bool>("UseReflected", false))
+  , fUseReflectedPhotons(p.get<bool>("UseReflectedPhotons", false))
   , fReflectedLabel(p.get<std::string>("fReflectedLabel", "Reflected"))
 {
   CheckTimeWindows();
@@ -113,7 +113,7 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e,
 
   std::vector<double> sumEnergyArray(fN, 0.0);
 
-  const std::vector<sim::SimPhotons> &simPhotonsCollectionReflected = fUseReflected ?
+  const std::vector<sim::SimPhotons> &simPhotonsCollectionReflected = fUseReflectedPhotons ?
     *e.getValidHandle<std::vector<sim::SimPhotons>>({fSimPhotonsCollectionLabel, fReflectedLabel}) : std::vector<sim::SimPhotons>();
 
   size_t n_sim_photons = simPhotonsCollection.size() + simPhotonsCollectionReflected.size();
@@ -132,9 +132,11 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e,
         if (photon.Time >= tw[0] && photon.Time <= tw[1] &&
             photon.Energy > fMinPhotonEnergy) {
 
-          if (fDebug)
-            std::cout << "\t\tPhoton with time " << photon.Time << " detected. "
+          if (fDebug) {
+            std::string photon_string = (i_pc < simPhotonsCollection.size()) ? "Photon" : "Reflected Photon";
+            std::cout << "\t\t" << photon_string << " with time " << photon.Time << " detected. "
                       << "Energy is  " << photon.Energy << "." << std::endl;
+          }
 
           sumEnergyArray[i_tw] += photon.Energy;
 
