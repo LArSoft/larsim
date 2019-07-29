@@ -69,7 +69,6 @@ namespace simfilter {
     , fMaxT    (pset.get< double > ("MaxT")      )
     , fSortParticles ( pset.get< bool > ("SortParticles",false) )
     , fAlwaysPass (pset.get<bool>("AlwaysPass",false))
-    , fParticleIndex(0)
   {
     if(fSortParticles) {
       produces< std::vector<simb::MCTruth> >("intime");
