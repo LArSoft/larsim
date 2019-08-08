@@ -17,11 +17,15 @@ larsoft_data    v1_02_01
 cetbuildtools   v7_12_01    -   only_for_build
 end_product_list
 
-qualifier  larevt     nutools    nug4       nugen      nurandom   marley     larsoft_data  notes
-e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  -nq-
-e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   -nq-
-c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   -nq-
-c2:prof	   c2:prof    c2:prof    c2:prof    c2:prof    c2:prof    c2:prof    -nq-
+qualifier      larevt         nutools        nug4           nugen          nurandom       marley         larsoft_data
+e17:py3:debug  e17:py3:debug  e17:py3:debug  e17:py3:debug  e17:py3:debug  e17:py3:debug  e17:py3:debug  -nq-
+e17:py3:prof   e17:py3:prof   e17:py3:prof   e17:py3:prof   e17:py3:prof   e17:py3:prof   e17:py3:prof   -nq-
+c2:py3:debug   c2:py3:debug   c2:py3:debug   c2:py3:debug   c2:py3:debug   c2:py3:debug   c2:py3:debug   -nq-
+c2:py3:prof    c2:py3:prof    c2:py3:prof    c2:py3:prof    c2:py3:prof    c2:py3:prof    c2:py3:prof    -nq-
+e17:debug      e17:debug      e17:debug      e17:debug      e17:debug      e17:debug      e17:debug      -nq-
+e17:prof       e17:prof       e17:prof       e17:prof       e17:prof       e17:prof       e17:prof       -nq-
+c2:debug       c2:debug       c2:debug       c2:debug       c2:debug       c2:debug       c2:debug       -nq-
+c2:prof	       c2:prof        c2:prof        c2:prof        c2:prof        c2:prof        c2:prof        -nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
