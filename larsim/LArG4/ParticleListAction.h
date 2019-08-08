@@ -18,11 +18,11 @@
 
 #include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "lardataobj/Simulation/sim.h" // sim::GeneratorIndex_t, ...
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
-#include "nutools/G4Base/UserAction.h"
+#include "nug4/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>

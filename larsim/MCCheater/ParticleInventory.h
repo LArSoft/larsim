@@ -166,12 +166,12 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "nutools/ParticleNavigation/EmEveIdCalculator.h"
-#include "nutools/ParticleNavigation/EveIdCalculator.h"
+#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
+#include "nug4/ParticleNavigation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-
+#include "lardataobj/Simulation/GeneratedParticleInfo.h"
 
 
 namespace cheat{

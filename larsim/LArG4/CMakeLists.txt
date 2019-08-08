@@ -6,12 +6,12 @@ include_directories ( $ENV{XERCES_C_INC} )
 art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         lardata_Utilities
-                        larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+                        larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nusimdata_SimulationBase
                         nurandom_RandomUtils_NuRandomService_service
-                        nutools_G4Base
+                        nug4_G4Base
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
                         ${ART_ROOT_IO_TFILESERVICE_SERVICE}
@@ -33,7 +33,7 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
            MODULE_LIBRARIES larsim_LArG4
                         larsim_MCCheater_ParticleInventoryService_service
                         lardataalg_MCDumpers
-                        larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+                        larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nurandom_RandomUtils_NuRandomService_service
@@ -43,7 +43,7 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                         ${MF_MESSAGELOGGER}
                         ${ROOT_GENVECTOR}
-                        nutools_G4Base
+                        nug4_G4Base
                         ${CLHEP}
                         ${G4_LIB_LIST}
                 )

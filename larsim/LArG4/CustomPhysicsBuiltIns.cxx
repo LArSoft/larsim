@@ -11,6 +11,8 @@ namespace larg4 {
   SynchrotronAndGN              f2;
   DecayPhysicsFactory           f3;
   HadronElasticPhysicsFactory   f4;
+  HadronElasticHPPhysicsFactory   f44;
+  HadronElasticPHPPhysicsFactory  f45;
   HadronPhysicsFactory          f5;
   HadronHPPhysicsFactory        f55;
   StoppingPhysicsFactory        f6;

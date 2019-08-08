@@ -102,9 +102,10 @@ namespace phot{
     void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     void LoadTimingsForVUVPar(std::vector<double> v[9], double& step_size, double& max_d, double& vuv_vgroup_mean, double& vuv_vgroup_max, double& inflexion_point_distance) const;
-    void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv, double& plane_depth) const;
-    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, double& zdim, double& ydim, double& r, int& op_det_type) const;
-    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& plane_depth, double& zdim_cathode, double& ydim_cathode, std::vector<double>& cntr_cathode, double& zdim, double& ydim, double& r, int& op_det_type) const;
+    void LoadTimingsForVISPar(std::vector<double>& distances, std::vector<std::vector<double>>& cut_off, std::vector<std::vector<double>>& tau, double& vis_vmean, double& n_vis, double& n_vuv) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v, std::vector<double>& border, double& r_pmt) const;
+    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r_pmt) const;
+   void LoadParsForVISBorderCorrection(std::vector<double>& border_distances_x, std::vector<double>& border_distances_r, std::vector<std::vector<std::vector<double>>>& border_correction) const;
 
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
@@ -116,6 +117,8 @@ namespace phot{
 
     bool IncludePropTime() const { return fIncludePropTime; }
     bool UseNhitsModel() const { return fUseNhitsModel; }
+    bool ApplyVISBorderCorrection() const { return fApplyVISBorderCorrection; }
+    std::string VISBorderCorrectionType() const {return fVISBorderCorrectionType; }
 
     const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
@@ -142,6 +145,8 @@ namespace phot{
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
     bool                 fUseNhitsModel;
+    bool 		 fApplyVISBorderCorrection;
+    std::string          fVISBorderCorrectionType;		
 
     bool                 fParPropTime;
     size_t               fParPropTime_npar;
@@ -184,14 +189,16 @@ namespace phot{
     //for the semi-analytic vuv/direct light signal (number of hits) correction
     //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)
     std::vector<std::vector<double> > fGH_PARS;
+    //parameters to correct for border effects
+    std::vector<double> fBORDER_correction;
     // for the semi-analytic visible/reflection light hits correction
-    // parameters exist for DUNE SP only currently
+    // parameterization exists for DUNE-SP and SBND
     std::vector<std::vector<double>> fVIS_PARS;
-    double fPlane_Depth, fCATHODE_ydimension, fCATHODE_zdimension;
-    std::vector<double> fCATHODE_centre;
-
-    double fAPERTURE_ydimension, fAPERTURE_zdimension, fPMT_radius;
-    int fOptical_Detector_Type;
+    std::vector<double> fVIS_BORDER_distances_x;
+    std::vector<double> fVIS_BORDER_distances_r;
+    std::vector<std::vector<std::vector<double>>> fVIS_BORDER_correction;
+    // optical detector information, rest using geometry service
+    double fPMT_radius;
 
     std::string          fLibraryFile;
     mutable IPhotonLibrary* fTheLibrary;

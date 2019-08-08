@@ -19,7 +19,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${ROOT_GENVECTOR}
           SERVICE_LIBRARIES larsim_PhotonPropagation
                        larsim_Simulation
-                       nutools_ParticleNavigation
+                       nug4_ParticleNavigation
                        lardataobj_Simulation
                        larevt_Filters
                        lardataobj_RawData
@@ -34,7 +34,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                         larsim_IonizationScintillation
                         lardataobj_Simulation
                         larsim_Simulation
-                        nutools_ParticleNavigation
+                        nug4_ParticleNavigation
                         lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service

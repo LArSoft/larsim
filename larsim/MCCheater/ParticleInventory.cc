@@ -13,7 +13,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 //LArSoft includes
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "nutools/ParticleNavigation/EmEveIdCalculator.h"
+#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "larsim/Simulation/SimListUtils.h"
 #include "lardataobj/Simulation/sim.h"

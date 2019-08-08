@@ -25,9 +25,9 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // int
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
-#include "nutools/ParticleNavigation/EveIdCalculator.h"
+#include "nug4/ParticleNavigation/EveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larsim/Simulation/LArVoxelList.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
