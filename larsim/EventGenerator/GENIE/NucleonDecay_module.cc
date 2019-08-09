@@ -21,14 +21,14 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // GENIE includes
-#include "Algorithm/AlgFactory.h"
-#include "EVGCore/EventRecordVisitorI.h"
-#include "EVGCore/EventRecord.h"
-#include "NucleonDecay/NucleonDecayMode.h"
-#include "NucleonDecay/NucleonDecayUtils.h"
-#include "PDG/PDGLibrary.h"
-#include "GHEP/GHepParticle.h"
-#include "Utils/AppInit.h"
+#include "Framework/Algorithm/AlgFactory.h"
+#include "Framework/EventGen/EventRecordVisitorI.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Physics/NucleonDecay/NucleonDecayMode.h"
+#include "Physics/NucleonDecay/NucleonDecayUtils.h"
+#include "Framework/ParticleData/PDGLibrary.h"
+#include "Framework/GHEP/GHepParticle.h"
+#include "Framework/Utils/AppInit.h"
 
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
