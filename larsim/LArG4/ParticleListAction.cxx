@@ -12,8 +12,6 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Geant4/G4Event.hh"
-//#include <G4RunManager.hh>
 #include "Geant4/G4Track.hh"
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4ParticleDefinition.hh"
@@ -26,7 +24,6 @@
 #include "Geant4/G4String.hh"
 
 #include <TLorentzVector.h>
-#include <TString.h>
 
 #include <algorithm>
 

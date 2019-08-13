@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////
 //
 //  MCShowerRecoAlg source
@@ -6,8 +5,25 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-
 #include "MCShowerRecoAlg.h"
+
+#include "RtypesCore.h"
+#include "TLorentzVector.h"
+#include "TMath.h"
+#include "TString.h"
+#include "TVector3.h"
+
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "canvas/Utilities/Exception.h"
+
+#include "larcore/Geometry/Geometry.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardataobj/MCBase/MCLimits.h"
+#include "lardataobj/MCBase/MCShower.h"
+#include "lardataobj/MCBase/MCStep.h"
+#include "larsim/MCSTReco/MCRecoEdep.h"
+#include "larsim/MCSTReco/MCRecoPart.h"
+#include "larsim/MCSTReco/MCShowerRecoPart.h"
 
 namespace sim {
 
@@ -452,5 +468,3 @@ namespace sim {
     return result;
   }
 }
-
-

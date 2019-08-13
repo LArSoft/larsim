@@ -4,6 +4,13 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "fhiclcpp/ParameterSet.h"
+
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+
 #include "MCRecoPart.h"
 
 namespace sim {

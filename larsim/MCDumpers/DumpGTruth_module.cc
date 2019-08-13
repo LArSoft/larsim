@@ -29,7 +29,6 @@
 #include <string>
 #include <iterator> // std::back_inserter()
 #include <algorithm> // std::copy()
-#include <utility> // std::forward()
 
 namespace sim {
   class DumpGTruth;

@@ -8,14 +8,13 @@
 
 #include <string>
 
-// ROOT includes
-
 // LArSoft includes
-#include "larcore/Geometry/Geometry.h"
 #include "larsim/MCCheater/BackTrackerService.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/RecoBase/Hit.h"
-
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardataobj/Simulation/SimChannel.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 
 // Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -23,11 +22,9 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/ModuleMacros.h"
-
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace cheat {
   class CheckBackTracking : public art::EDAnalyzer {

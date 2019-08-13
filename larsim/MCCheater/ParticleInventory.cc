@@ -10,14 +10,11 @@
 //STL includes
 //ROOT includes
 //Framework includes
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 //LArSoft includes
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsim/Simulation/SimListUtils.h"
-#include "lardataobj/Simulation/sim.h"
-#include "lardata/Utilities/AssociationUtil.h"
 
 
 namespace cheat{

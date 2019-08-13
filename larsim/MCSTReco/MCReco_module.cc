@@ -12,18 +12,16 @@
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
 
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
+#include "MCRecoEdep.h"
 #include "MCShowerRecoAlg.h"
 #include "MCTrackRecoAlg.h"
+#include "lardataobj/MCBase/MCTrack.h"
 
 #include <memory>
-
-class MCReco;
 
 class MCReco : public art::EDProducer {
 public:

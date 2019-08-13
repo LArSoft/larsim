@@ -4,7 +4,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "fhiclcpp/ParameterSet.h"
+
 #include "MCShowerRecoPart.h"
+#include "larsim/MCSTReco/MCRecoPart.h"
 
 namespace sim {
 

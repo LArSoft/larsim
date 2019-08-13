@@ -29,16 +29,10 @@
 //Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/View.h"
 
 //LArSoft includes
 #include "larsim/MCCheater/ParticleInventoryService.h"
-#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "larsim/Simulation/SimListUtils.h"
-#include "lardataobj/Simulation/sim.h"
-#include "lardata/Utilities/AssociationUtil.h"
-
 
 namespace cheat{
 

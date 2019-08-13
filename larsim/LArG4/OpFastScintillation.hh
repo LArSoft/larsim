@@ -85,26 +85,24 @@
 
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 
-#include "Geant4/globals.hh"
-#include "Geant4/templates.hh"
 #include "Geant4/G4ThreeVector.hh"
-#include "Geant4/G4ParticleMomentum.hh"
-#include "Geant4/G4Step.hh"
 #include "Geant4/G4VRestDiscreteProcess.hh"
-#include "Geant4/G4OpticalPhoton.hh"
-#include "Geant4/G4DynamicParticle.hh"
-#include "Geant4/G4Material.hh"
 #include "Geant4/G4PhysicsTable.hh"
-#include "Geant4/G4MaterialPropertiesTable.hh"
 #include "Geant4/G4PhysicsOrderedFreeVector.hh"
-#include "Geant4/G4EmSaturation.hh"
+#include "Geant4/G4ForceCondition.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ProcessType.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
 
-#include "fhiclcpp/ParameterSet.h"
 #include "TF1.h"
 #include "TVector3.h"
 
-#include <chrono>
-#include <ctime>
+class G4EmSaturation;
+class G4Step;
+class G4Track;
+class G4VParticleChange;
+namespace CLHEP { class RandGeneral; }
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -130,14 +128,14 @@ private:
 
 public: // Without description
 
-	////////////////////////////////
-	// Constructors and Destructor
-	////////////////////////////////
+        ////////////////////////////////
+        // Constructors and Destructor
+        ////////////////////////////////
 
         OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);
         OpFastScintillation(const OpFastScintillation &right);
 
-	~OpFastScintillation();
+        ~OpFastScintillation();
 
         ////////////
         // Methods
@@ -153,8 +151,8 @@ public: // With description
         // Returns true -> 'is applicable', for any particle type except
         // for an 'opticalphoton' and for short-lived particles
 
-	G4double GetMeanFreePath(const G4Track& aTrack,
-				       G4double ,
+        G4double GetMeanFreePath(const G4Track& aTrack,
+                                       G4double ,
                                        G4ForceCondition* );
         // Returns infinity; i. e. the process does not limit the step,
         // but sets the 'StronglyForced' condition for the DoIt to be
@@ -167,14 +165,14 @@ public: // With description
         // but sets the 'StronglyForced' condition for the DoIt to be
         // invoked at every step.
 
-	virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
-			                const G4Step&  aStep);
+        virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
+                                        const G4Step&  aStep);
         virtual G4VParticleChange* AtRestDoIt (const G4Track& aTrack,
                                        const G4Step& aStep);
 
         // These are the methods implementing the scintillation process.
 
-	void SetTrackSecondariesFirst(const G4bool state);
+        void SetTrackSecondariesFirst(const G4bool state);
         // If set, the primary particle tracking is interrupted and any
         // produced scintillation photons are tracked next. When all
         // have been tracked, the tracking of the primary resumes.
@@ -234,21 +232,21 @@ public: // With description
         // Prints the fast and slow scintillation integral tables.
 
         /*std::vector<double> GetVUVTime(double, int);
-	  std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
-  	// old timings -- to be deleted
+          std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
+        // old timings -- to be deleted
 
         std::vector<double> getVUVTime(double, int);
-	void generateparam(int index);
+        void generateparam(int index);
         // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
-	std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
-	// Visible component timing parameterisation
+        std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
+        // Visible component timing parameterisation
 
         int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
-	// Calculates semi-analytic model number of hits for vuv component
+        // Calculates semi-analytic model number of hits for vuv component
 
- 	int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
-	// Calculates semi-analytic model number of hits for visible component
+        int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+        // Calculates semi-analytic model number of hits for visible component
 
 protected:
 
@@ -259,7 +257,7 @@ protected:
 
         bool RecordPhotonsProduced(const G4Step& aStep, double N);
         // Note the production of N photons in at point xyz.
-	//  pass on to generate detector response, etc.
+        //  pass on to generate detector response, etc.
 
 
         ///////////////////////
@@ -319,38 +317,38 @@ private:
         std::vector<double> VUV_max;
         std::vector<double> VUV_min;
 
-	// For new VIS time parameterisation
-	double fvis_vmean, fn_LAr_vis, fn_LAr_vuv;
-	std::vector<double> fdistances_refl;
+        // For new VIS time parameterisation
+        double fvis_vmean, fn_LAr_vis, fn_LAr_vuv;
+        std::vector<double> fdistances_refl;
         std::vector<std::vector<double>> fcut_off_pars;
-	std::vector<std::vector<double>> ftau_pars;
+        std::vector<std::vector<double>> ftau_pars;
 
-	//For VUV semi-analytic hits
+        //For VUV semi-analytic hits
         G4double Gaisser_Hillas(double x, double *par);
-	bool fUseNhitsModel;
-	//array of correction for the VUV Nhits estimation
-	std::vector<std::vector<double> > fGHvuvpars;
+        bool fUseNhitsModel;
+        //array of correction for the VUV Nhits estimation
+        std::vector<std::vector<double> > fGHvuvpars;
         //To account for the border effects
         std::vector<double> fborder_corr;
         double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
         double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
-	// For VIS semi-analytic hits
-	G4double Pol_5(double x, double *par);
-	bool fStoreReflected;
-	// array of corrections for VIS Nhits estimation
-	std::vector<std::vector<double>> fvispars;
-	//TF1* VIS_pol[9]; // unused
+        // For VIS semi-analytic hits
+        G4double Pol_5(double x, double *par);
+        bool fStoreReflected;
+        // array of corrections for VIS Nhits estimation
+        std::vector<std::vector<double>> fvispars;
+        //TF1* VIS_pol[9]; // unused
         std::vector<double> fvis_border_distances_x;
         std::vector<double> fvis_border_distances_r;
         std::vector<std::vector<std::vector<double>>> fvis_border_correction;
         bool fApplyVisBorderCorrection;
         std::string fVisBorderCorrectionType;
 
-	double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-	TVector3  fcathode_centre;
+        double fplane_depth, fcathode_zdimension, fcathode_ydimension;
+        TVector3  fcathode_centre;
 
-	// Optical detector properties for semi-analytic hits
-	// int foptical_detector_type;  // unused
+        // Optical detector properties for semi-analytic hits
+        // int foptical_detector_type;  // unused
         double fydimension, fzdimension, fradius;
         int fdelta_angulo, fL_abs_vuv;
         std::vector<std::vector<double> > fOpDetCenter;
@@ -370,7 +368,7 @@ private:
   //For new VUV time parametrization
   double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate );
   double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
-		       std::vector<double> &yData3, double x, bool extrapolate);
+                       std::vector<double> &yData3, double x, bool extrapolate);
   double model_close(double*, double*);
   double model_far(double*, double*);
   // structure definition for solid angle of rectangle function
@@ -402,7 +400,7 @@ G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleTy
 inline
 void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
 {
-	fTrackSecondariesFirst = state;
+        fTrackSecondariesFirst = state;
 }
 
 inline
@@ -468,8 +466,8 @@ void OpFastScintillation::DumpPhysicsTable() const
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-        	v = (G4PhysicsOrderedFreeVector*)(*theFastIntegralTable)[i];
-        	v->DumpValues();
+                v = (G4PhysicsOrderedFreeVector*)(*theFastIntegralTable)[i];
+                v->DumpValues();
            }
          }
 
@@ -499,7 +497,7 @@ G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) c
 
 inline
 G4double OpFastScintillation::Gaisser_Hillas(double x,double *par) {
-  //This is the Gaisser-Hillas function                                                                                                                         
+  //This is the Gaisser-Hillas function
   double X_mu_0=par[3];
   double Normalization=par[0];
   double Diff=par[1]-X_mu_0;

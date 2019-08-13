@@ -11,16 +11,15 @@
 // C++ includes
 #include <vector>
 #include <map>
-#include <iostream>
 #include <string>
 
+namespace CLHEP { class HepRandomEngine; }
+
 // Framework includes
-#include "fhiclcpp/ParameterSet.h"
+namespace fhicl { class ParameterSet; }
 
 // nutools includes
-#include "nusimdata/SimulationBase/MCTruth.h"
-
-#include "CLHEP/Random/RandomEngine.h"
+namespace simb { class MCTruth; }
 
 namespace evgen {
 

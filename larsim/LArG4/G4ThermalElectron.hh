@@ -39,8 +39,6 @@
 #ifndef G4ThermalElectron_h
 #define G4ThermalElectron_h 1
 
-#include "Geant4/globals.hh"
-#include "Geant4/G4ios.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 
 // ######################################################################
@@ -61,14 +59,3 @@ class G4ThermalElectron : public G4ParticleDefinition
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-

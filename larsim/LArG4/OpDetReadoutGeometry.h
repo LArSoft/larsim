@@ -20,16 +20,17 @@
 // which is very well commented.  See that file for further reference.
 //
 
-#include "Geant4/G4PhysicalVolumeStore.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
-#include "Geant4/G4VUserParallelWorld.hh"
-#include "sstream"
-#include "Geant4/G4Transform3D.hh"
-
-
 #ifndef OpDetReadoutGeometry_h
 #define OpDetReadoutGeometry_h
 
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Transform3D.hh"
+#include "Geant4/G4VUserParallelWorld.hh"
+
+#include <vector>
+
+class G4LogicalVolume;
+class G4VPhysicalVolume;
 
 namespace larg4
 {

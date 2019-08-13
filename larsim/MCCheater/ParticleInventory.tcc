@@ -1,3 +1,9 @@
+#include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+
+#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
+#include "nug4/ParticleNavigation/EveIdCalculator.h"
+
 namespace cheat{
 
   //--------------------------------------------------------------------

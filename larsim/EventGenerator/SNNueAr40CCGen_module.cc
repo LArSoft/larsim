@@ -27,8 +27,6 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/EventGenerator/NueAr40CCGenerator.h"
 
-#include "CLHEP/Random/RandomEngine.h"
-
 // C++ includes
 
 namespace evgen {

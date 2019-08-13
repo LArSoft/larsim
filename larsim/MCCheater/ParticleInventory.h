@@ -156,18 +156,11 @@
 
 #include <vector>
 
-#include "art/Framework/Principal/Handle.h"
-
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "canvas/Persistency/Common/Assns.h"
-#include "canvas/Persistency/Common/FindOneP.h"
-#include "canvas/Persistency/Provenance/ProductToken.h"
-
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
-#include "nug4/ParticleNavigation/EveIdCalculator.h"
+namespace fhicl { class ParameterSet; }
+
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"

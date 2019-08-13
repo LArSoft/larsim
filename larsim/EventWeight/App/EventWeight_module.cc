@@ -13,13 +13,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "canvas/Utilities/InputTag.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
-#include "lardataobj/Simulation/sim.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "canvas/Persistency/Common/Assns.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -29,8 +22,6 @@
 
 #include "larsim/EventWeight/Base/Weight_t.h"
 #include "larsim/EventWeight/Base/MCEventWeight.h"
-#include "larsim/EventWeight/Base/WeightCalc.h"
-#include "larsim/EventWeight/Base/WeightCalcFactory.h"
 #include "larsim/EventWeight/Base/WeightManager.h"
 
 #include "nusimdata/SimulationBase/MCTruth.h"

@@ -18,6 +18,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include <TLorentzVector.h>
 
+#include <ostream>
 
 namespace sim {
 

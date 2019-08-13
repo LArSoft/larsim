@@ -15,29 +15,17 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 
 // LArSoft Includes
-#include "nug4/ParticleNavigation/ParticleList.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
 
 // C++ Includes
 #include <iostream>
 #include <cstring>
-#include <sys/stat.h>
-
-namespace simb{
-  class MCTruth;
-}
-
-namespace sim{
-  class ParticleList;
-}
 
 ///Geant4 interface
 namespace simfilter {
@@ -136,41 +124,41 @@ namespace simfilter {
       const art::Ptr<simb::MCParticle> mcp_ptr(mcpHandle,i);
       const art::Ptr<simb::MCTruth> &mct = assMCT.at(i);
       if( mctSetGENIE.find(mct) == mctSetGENIE.end() )
-	{
-	  // This is non-genie
-	  continue;
-	}
+        {
+          // This is non-genie
+          continue;
+        }
       else
-	{
-	// This is genie
+        {
+        // This is genie
 
-	  const simb::MCParticle* part(&mcpHandle->at(i));
-	  // for c2: pdg and trackID no longer used
-	  //int pdg = part->PdgCode();
-	  //int trackID = part->TrackId();
+          const simb::MCParticle* part(&mcpHandle->at(i));
+          // for c2: pdg and trackID no longer used
+          //int pdg = part->PdgCode();
+          //int trackID = part->TrackId();
 
-	  //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
-	  // Now walk through trajectory and see if it enters the TPC
-	  int n = part->NumberTrajectoryPoints();
-	  for(int j = 0; j < n && !inTPC; ++j)
-	    {
-	      //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;
+          //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
+          // Now walk through trajectory and see if it enters the TPC
+          int n = part->NumberTrajectoryPoints();
+          for(int j = 0; j < n && !inTPC; ++j)
+            {
+              //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;
 
-	      TVector3 pos = part->Position(j).Vect();
-	      if(pos.X() >= xmin &&
-		 pos.X() <= xmax &&
-		 pos.Y() >= ymin &&
-		 pos.Y() <= ymax &&
-		 pos.Z() >= zmin &&
-		 pos.Z() <= zmax)
-		{
-		  interactionDesired = true;
-		  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;
-		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;
-		  inTPC=true;
-		}
-	    } // trajectory loop
-	} // end Genie particle
+              TVector3 pos = part->Position(j).Vect();
+              if(pos.X() >= xmin &&
+                 pos.X() <= xmax &&
+                 pos.Y() >= ymin &&
+                 pos.Y() <= ymax &&
+                 pos.Z() >= zmin &&
+                 pos.Z() <= zmax)
+                {
+                  interactionDesired = true;
+                  //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;
+                  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << std::endl ;
+                  inTPC=true;
+                }
+            } // trajectory loop
+        } // end Genie particle
     } // loop on MCPHandle
 
   return interactionDesired;

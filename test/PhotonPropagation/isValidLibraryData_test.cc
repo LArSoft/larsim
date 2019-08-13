@@ -13,14 +13,11 @@
 
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
-#include "larcorealg/CoreUtils/MetaUtils.h"
 
 // C/C++ standard libraries
+#include <array>
 #include <vector>
 #include <memory> // std::unique_ptr<>
-#include <functional> // std::reference_wrapper
-#include <type_traits>
-
 
 //------------------------------------------------------------------------------
 class SizedContainer {

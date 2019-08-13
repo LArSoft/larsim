@@ -5,11 +5,10 @@
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#include "CLHEP/Vector/ThreeVector.h"
 
-#include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmSaturation.hh"
+#include "Geant4/G4ParticleTypes.hh"
 
 #include "larsim/LArG4/ISCalculationSeparate.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"

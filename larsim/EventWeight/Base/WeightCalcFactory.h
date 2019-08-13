@@ -1,10 +1,13 @@
 #ifndef _WEIGHTCALCFACTORY_H_
 #define _WEIGHTCALCFACTORY_H_
 
-#include "WeightCalc.h"
-#include "WeightCalcCreator.h"
+#include <map>
+#include <string>
 
 namespace evwgh {
+  class WeightCalc;
+  class WeightCalcCreator;
+
   class WeightCalcFactory
   {
   public:

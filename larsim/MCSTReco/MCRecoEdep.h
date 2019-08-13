@@ -1,30 +1,19 @@
 #ifndef MCRECOEDEP_H
 #define MCRECOEDEP_H
 
-// ART includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-
 // LArSoft
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "lardataobj/Simulation/SimChannel.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "larcore/Geometry/Geometry.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+namespace sim {
+  class SimChannel;
+  class SimEnergyDeposit;
+}
+
+// Framework includes
+namespace fhicl { class ParameterSet; }
+
 // STL
 #include <map>
-#include <set>
 #include <vector>
-#include <sstream>
-
-// ROOT
-#include <TString.h>
-#include <TTree.h>
 
 namespace sim
 {

@@ -10,30 +10,15 @@
 #include "art/Framework/Core/EDFilter.h"
 
 // Framework includes
-#include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
 // LArSoft Includes
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
-
-// C++ Includes
-#include <cstring>
-#include <sys/stat.h>
-
-namespace simb{
-  class MCTruth;
-}
-
-namespace sim{
-  class ParticleList;
-}
 
 ///Geant4 interface
 namespace simfilter {
@@ -81,22 +66,22 @@ namespace simfilter {
     bool pdgDesired(false);
     for(unsigned int i = 0; i < pvec.size(); ++i)
       {
-	for (int pdg : fPrimaryVec)
-	  {
-	    const std::string sprim("primary");
-	    if(pvec[i]->PdgCode() == pdg)
-	      {
-		Char_t tProcess[50];
-		for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s)
-		  *(tProcess+s) = pvec[i]->Process()[s];
-		std::string sProcess(tProcess);
-		if (!sProcess.compare(sprim))
-		  {
-		    mf::LogInfo("FilterPrimaryPDG") << " Found a primary " << pdg << " in event.";
-		    pdgDesired = true;
-		  }
-	      }
-	  }
+        for (int pdg : fPrimaryVec)
+          {
+            const std::string sprim("primary");
+            if(pvec[i]->PdgCode() == pdg)
+              {
+                Char_t tProcess[50];
+                for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s)
+                  *(tProcess+s) = pvec[i]->Process()[s];
+                std::string sProcess(tProcess);
+                if (!sProcess.compare(sprim))
+                  {
+                    mf::LogInfo("FilterPrimaryPDG") << " Found a primary " << pdg << " in event.";
+                    pdgDesired = true;
+                  }
+              }
+          }
 
       }
 

@@ -2,15 +2,12 @@
 
 // art libraries
 #include "canvas/Utilities/Exception.h"
-//#include "art/Utilities/Exception.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // ROOT libraries
 #include "TMatrixD.h"
 #include "TDecompChol.h"
 
 // CLHEP libraries
-#include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
 namespace evwgh {
@@ -194,4 +191,3 @@ namespace evwgh {
 
 
 } // namespace evwgh
-

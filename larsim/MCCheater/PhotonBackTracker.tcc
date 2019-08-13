@@ -1,3 +1,7 @@
+#include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 namespace cheat{
 
 
@@ -107,4 +111,3 @@ namespace cheat{
         this->PrepOpFlashToOpHits(evt);
       } 
     }
-

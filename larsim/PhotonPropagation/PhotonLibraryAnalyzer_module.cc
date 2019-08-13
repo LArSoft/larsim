@@ -8,14 +8,13 @@
 #include <iostream>
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/Utilities/AssociationUtil.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/CoreUtils/DumpUtils.h" // lar::dump::vector3D()

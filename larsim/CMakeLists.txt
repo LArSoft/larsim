@@ -1,4 +1,3 @@
-
 add_subdirectory(TriggerAlgo)
 add_subdirectory(Simulation)
 add_subdirectory(SimFilters)

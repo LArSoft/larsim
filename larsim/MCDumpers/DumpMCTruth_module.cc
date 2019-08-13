@@ -15,7 +15,6 @@
 
 // nutools libraries
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -24,7 +23,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

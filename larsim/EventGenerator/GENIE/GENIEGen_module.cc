@@ -12,13 +12,11 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
-#include <unistd.h>
 
 // ROOT includes
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
-#include "TSystem.h"
 #include "TStopwatch.h"
 
 // Framework includes
@@ -26,10 +24,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "art/Framework/Core/EDProducer.h"

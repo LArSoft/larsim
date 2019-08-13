@@ -9,11 +9,6 @@
 #include "larsim/LArG4/IonizationAndScintillationAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 
-
-#include "Geant4/G4Step.hh"
-
-#include <algorithm>
-
 namespace larg4 {
 
   //----------------------------------------------------------------------------

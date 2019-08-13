@@ -6,7 +6,6 @@
 #pragma once
 
 // Geant4 includes
-#include "Geant4/globals.hh"
 #include "Geant4/G4VPhysicsConstructor.hh"
 
 class NeutronHPphysics : public G4VPhysicsConstructor

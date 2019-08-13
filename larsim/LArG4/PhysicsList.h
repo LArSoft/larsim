@@ -49,12 +49,10 @@
 #ifndef LArG4_PhysicsList_h
 #define LArG4_PhysicsList_h
 
-#include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4VModularPhysicsList.hh"
-#include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/G4String.hh"
-#include "Geant4/globals.hh"
 #include "larsim/LArG4/ConfigurablePhysicsList.hh"
+class G4VPhysicsConstructor;
 
 namespace larg4 {
 

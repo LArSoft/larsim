@@ -7,10 +7,7 @@
 #ifndef LARG4_ISCALCULATION_H
 #define LARG4_ISCALCULATION_H
 
-#include "Geant4/G4Step.hh"
-#include "Geant4/G4UserLimits.hh"
-
-#include "larsim/LArG4/OpFastScintillation.hh"
+class G4Step;
 
 namespace larg4{
 
@@ -44,4 +41,3 @@ namespace larg4{
  };
 }
 #endif // LARG4_ISCALCULATION_H
-

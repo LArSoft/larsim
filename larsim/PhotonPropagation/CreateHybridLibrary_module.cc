@@ -4,10 +4,7 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 
 #include <iostream>
@@ -17,17 +14,15 @@
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraph.h"
-#include "TGraphErrors.h"
 #include "TH1.h"
-#include "TH2.h"
-#include "TPad.h"
 #include "TTree.h"
-#include "TVectorD.h"
 #include "TCanvas.h"
 #include "TStyle.h"
-#include "TMultiGraph.h"
+#include "TVectorD.h"
 
 #define PI 3.14159265
+
+namespace fhicl { class ParameterSet; }
 
 namespace phot
 {

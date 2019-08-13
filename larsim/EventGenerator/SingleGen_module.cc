@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <cmath>
@@ -22,18 +21,15 @@
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Name.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
-#include "cetlib/exempt_ptr.h"
 #include "cetlib/filesystem.h"
 #include "cetlib/search_path.h"
 
@@ -43,23 +39,15 @@
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
-
-// lar includes
-//#include "larcore/Geometry/Geometry.h"
-//#include "larcoreobj/SummaryData/RunData.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
-#include "TMath.h"
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
-
-namespace simb { class MCTruth; }
 
 namespace evgen {
 

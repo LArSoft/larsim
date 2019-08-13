@@ -32,13 +32,13 @@
 // Ben Jones, MIT, 06/04/2010
 //
 
-#include "Geant4/G4PhysicalVolumeStore.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
-#include <map>
-
 #ifndef OpDetLOOKUP_h
 #define OpDetLOOKUP_h 1
 
+#include <map>
+#include <string>
+
+class G4VPhysicalVolume;
 
 namespace larg4 {
   class OpDetLookup

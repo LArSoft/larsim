@@ -8,14 +8,13 @@
 #ifndef LARG4_IONIZATIONANDSCINTILLATION_H
 #define LARG4_IONIZATIONANDSCINTILLATION_H
 
-#include <cstring>
+#include <string>
 
 #include "larsim/LArG4/ISCalculation.h"
 
-#include "Geant4/G4Step.hh"
-
-#include "TH1.h"
-#include "TH2.h"
+class G4Step;
+class TH1F;
+class TH2F;
 
 namespace CLHEP { class HepRandomEngine; }
 

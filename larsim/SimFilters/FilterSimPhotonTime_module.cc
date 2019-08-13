@@ -11,12 +11,9 @@
 #include "art/Framework/Core/SharedFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <memory>
-
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>

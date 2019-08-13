@@ -10,11 +10,7 @@
 // Ben Jones, MIT, 11/12/12
 //
 
-
 #include "larsim/LArG4/OpDetPhotonTable.h"
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/OpDetGeo.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 

@@ -57,17 +57,15 @@
 #ifndef OpticalPhysics_h
 #define OpticalPhysics_h 1
 
-
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
 #include "Geant4/G4VPhysicsConstructor.hh"
-#include "Geant4/globals.hh"
-#include "Geant4/G4OpBoundaryProcess.hh"
-
-
 class G4Cerenkov;
-class G4Scintillation;
 class G4OpAbsorption;
-class G4OpWLS;
+class G4OpBoundaryProcess;
 class G4OpRayleigh;
+class G4OpWLS;
+class G4Scintillation;
 
 #if defined __clang__
   #pragma clang diagnostic push
@@ -104,9 +102,3 @@ namespace larg4 {
 #endif
 
 #endif
-
-
-
-
-
-

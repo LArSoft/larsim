@@ -13,7 +13,6 @@
 #ifndef IS_ISCALCSEPARATE_H
 #define IS_ISCALCSEPARATE_H
 
-#include <vector>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
 // forward declaration
@@ -74,4 +73,3 @@ namespace larg4 {
  };
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H
-
