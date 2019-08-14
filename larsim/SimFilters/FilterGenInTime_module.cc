@@ -114,8 +114,8 @@ namespace simfilter {
       std::array<double, 3> candidatePlane {};
       std::array<double, 3> coord {};
 
-      std::array<double, 3> bound_lo = {bound[0], bound[2], bound[4]};
-      std::array<double, 3> bound_hi = {bound[1], bound[3], bound[5]};
+      std::array<double, 3> bound_lo = {{bound[0], bound[2], bound[4]}};
+      std::array<double, 3> bound_hi = {{bound[1], bound[3], bound[5]}};
 
       // First check if origin is inside box
       // Also check which of the two planes in each dimmension is the 
