@@ -1,5 +1,6 @@
 art_make(LIB_LIBRARIES
            ${ART_UTILITIES}
+	   ${MF_MESSAGELOGGER}
          MODULE_LIBRARIES
            larsim_IonizationScintillation
            ${ART_FRAMEWORK_SERVICES_REGISTRY}

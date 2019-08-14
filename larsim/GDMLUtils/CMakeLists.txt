@@ -4,4 +4,5 @@ include_directories($ENV{XERCES_C_INC})
 art_make_exec(NAME simplifyGDML
               LIBRARIES
               ${G4PERSISTENCY}
+	      ${G4GEOMETRY}
               ${XERCESC})

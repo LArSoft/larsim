@@ -2,6 +2,7 @@ art_make(LIB_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            canvas
            cetlib_except
+	   ${MF_MESSAGELOGGER}
            ${FHICLCPP}
          MODULE_LIBRARIES
            larsim_ElectronDrift
