@@ -18,8 +18,8 @@
 ///
 /// - Pass the truth information to the DetSim branch of the FMWK event.
 
-#include "nutools/G4Base/G4Helper.h"
-#include "nutools/G4Base/ConvertMCTruthToG4.h"
+#include "nug4/G4Base/G4Helper.h"
+#include "nug4/G4Base/ConvertMCTruthToG4.h"
 
 // C++ Includes
 #include <sstream>
@@ -64,7 +64,7 @@
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
@@ -72,8 +72,8 @@
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larcore/Geometry/Geometry.h"
-#include "nutools/G4Base/DetectorConstruction.h"
-#include "nutools/G4Base/UserActionManager.h"
+#include "nug4/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/UserActionManager.h"
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"

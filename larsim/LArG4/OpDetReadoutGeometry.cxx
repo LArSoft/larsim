@@ -3,7 +3,7 @@
 //
 /// \author  bjpjones@mit.edu
 ////////////////////////////////////////////////////////////////////////
-#include "nutools/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/DetectorConstruction.h"
 
 #include "cetlib_except/exception.h"
 

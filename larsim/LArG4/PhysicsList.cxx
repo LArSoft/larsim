@@ -22,7 +22,7 @@
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4ChargeExchange.hh"
 #include "Geant4/G4ChargeExchangeProcess.hh"
-#include "nutools/G4Base/G4PhysListFactorySingleton.hh"
+#include "nug4/G4Base/G4PhysListFactorySingleton.hh"
 
 PHYSLISTREG3(larg4,PhysicsList,larg4::PhysicsList)
 #define G4MT_physicsVector ((G4VMPLsubInstanceManager.offset[g4vmplInstanceID]).physicsVector)

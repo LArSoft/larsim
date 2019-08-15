@@ -21,7 +21,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-#include "nutools/ParticleNavigation/EmEveIdCalculator.h"
+#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larsim/Simulation/SimListUtils.h"

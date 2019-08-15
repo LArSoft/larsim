@@ -3,7 +3,7 @@ add_subdirectory(job)
 art_make(LIB_LIBRARIES larcorealg_Geometry
                        larcore_Geometry_Geometry_service
                        larsim_Simulation
-                       nutools_ParticleNavigation
+                       nug4_ParticleNavigation
                        lardataobj_Simulation
                        nusimdata_SimulationBase
                        larcoreobj_SummaryData
@@ -19,7 +19,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
                            larcorealg_Geometry
                            larcore_Geometry_Geometry_service
                            larsim_Simulation
-                           nutools_ParticleNavigation
+                           nug4_ParticleNavigation
                            lardataobj_Simulation
                            nusimdata_SimulationBase
                            larcoreobj_SummaryData

@@ -1,26 +1,27 @@
 # The parent line must be the first non-comment line in the file 
 # This line defines the product name and version
-parent	larsim	v08_09_02
+parent	larsim	v08_11_01
 defaultqual	e17
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 #
 product         version
-larevt          v08_06_01
+larevt          v08_06_04
+nug4            v1_00_00
 nugen           v1_00_01
 nurandom        v1_00_01
-nutools         v3_00_02
-marley          v1_1_0a
+nutools         v3_02_00
+marley          v1_1_1
 larsoft_data    v1_02_01
 cetbuildtools   v7_12_01    -   only_for_build
 end_product_list
 
-qualifier  larevt     nutools    nugen      nurandom   marley     larsoft_data  notes
-e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  -nq-
-e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   -nq-
-c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   -nq-
-c2:prof	   c2:prof    c2:prof    c2:prof    c2:prof    c2:prof    -nq-
+qualifier  larevt     nutools    nug4       nugen      nurandom   marley     larsoft_data  notes
+e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  e17:debug  -nq-
+e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   e17:prof   -nq-
+c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   c2:debug   -nq-
+c2:prof	   c2:prof    c2:prof    c2:prof    c2:prof    c2:prof    c2:prof    -nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

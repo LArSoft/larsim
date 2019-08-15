@@ -1,4 +1,4 @@
-// Class ageodapted for LArSoft by Ben Jones, MIT 10/10/12
+// Class adapted for LArSoft by Ben Jones, MIT 10/10/12
 //
 // This class is a physics process based on the standard Geant4
 // scintillation process.
@@ -187,8 +187,33 @@ namespace larg4{
 
     if (bPropagate) {
       art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
+      
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
+
+      // Find boundary of active volume      
+      fminx = 1e9;
+      fmaxx = -1e9;
+      fminy = 1e9;
+      fmaxy = -1e9;
+      fminz = 1e9;
+      fmaxz = -1e9;
+      for (size_t i = 0; i<geo->NTPC(); ++i){
+	const geo::TPCGeo &tpc = geo->TPC(i);
+	if (fminx>tpc.MinX()) fminx = tpc.MinX();
+	if (fmaxx<tpc.MaxX()) fmaxx = tpc.MaxX();
+	if (fminy>tpc.MinY()) fminy = tpc.MinY();
+	if (fmaxy<tpc.MaxY()) fmaxy = tpc.MaxY();
+	if (fminz>tpc.MinZ()) fminz = tpc.MinZ();
+	if (fmaxz<tpc.MaxZ()) fmaxz = tpc.MaxZ();
+      }
+      std::cout << "Active volume boundaries:" << std::endl;
+      std::cout << "minx: " <<fminx<<"  maxx: "<<fmaxx<< std::endl;
+      std::cout << "miny: " <<fminy<<"  maxy: "<<fmaxy<< std::endl;
+      std::cout << "minz: " <<fminz<<"  maxz: "<<fmaxz<< std::endl;
+ 
+      TVector3 Cathode_centre(geo->TPC(0,0).GetCathodeCenter().X(), (fminy + fmaxy)/2, (fminz + fmaxz)/2);
+      std::cout<<"Cathode_centre: "<<Cathode_centre.X()<<"  "<<Cathode_centre.Y()<<"  "<<Cathode_centre.Z()<<std::endl;
 
       for(size_t i = 0; i != pvs->NOpChannels(); i++)
 	{
@@ -197,13 +222,29 @@ namespace larg4{
 	  geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
 	  OpDetCenter_v.assign(OpDetCenter_i, OpDetCenter_i +3);
 	  fOpDetCenter.push_back(OpDetCenter_v);
+	  int type_i = -1;
+	  if(strcmp(geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName(), "TGeoBBox") == 0) {
+	    type_i = 0;//Arapucas
+	    fOpDetLength.push_back(geo->OpDetGeoFromOpDet(i).Length());
+	    fOpDetHeight.push_back(geo->OpDetGeoFromOpDet(i).Height());
+	  }
+	  else {
+	    type_i = 1;//PMTs
+	    //    std::cout<<"Radio: "<<geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
+	    fOpDetLength.push_back(-1);
+	    fOpDetHeight.push_back(-1);
+	  }
+	  fOpDetType.push_back(type_i);
+	  //std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "
+	  //	    <<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
 	}
+
 
       if(pvs->IncludePropTime()) {
 	std::cout << "Using parameterisation of timings." << std::endl;
         //OLD VUV time parapetrization (to be removed soon)
-        pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-        pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+        //pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+        //pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
 	//New VUV time parapetrization
 	pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
 
@@ -222,13 +263,13 @@ namespace larg4{
         // VIS time parameterisation
         if (pvs->StoreReflected()) {
 	  // load parameters
-	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv, fplane_depth);
+	  pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
 	}
 
       }
       if(pvs->UseNhitsModel()) {
 	std::cout << "Using semi-analytic model for number of hits:" << std::endl;
-
+	fUseNhitsModel = true;
 	// LAr absorption length in cm
 	std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
 	std::vector<double> x_v, y_v;
@@ -240,50 +281,55 @@ namespace larg4{
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
 	std::cout<<"Loading the GH corrections"<<std::endl;
-	pvs->LoadGHForVUVCorrection(fGHvuvpars, fzdimension, fydimension, fradius, foptical_detector_type);
+	pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
         fdelta_angulo = 10.; // angle bin size
+	//Needed for Nhits-model border corrections (in cm)
+	fYactive_corner = (fmaxy - fminy)/2;
+	fZactive_corner = (fmaxz - fminz)/2;
 
-	// initialise gaisser hillas functions for VUV Rayleigh scattering correction
-	double pars_ini[4] = {0,0,0,0};
-	std::cout << "Initalising Gaisser-Hillas parameters" << std::endl;
-	for(int bin = 0; bin < 9; bin++) {
-	  GHvuv[bin] =  new TF1("GH",GaisserHillas,0.,2000,4);
-	  for(int j=0; j < 4; j++) {
-	    // loads parameter set read in from fcl
-	    pars_ini[j] = fGHvuvpars[j][bin];
-	  }
-	  GHvuv[bin]->SetParameters(pars_ini);
-	}
+	fYcathode = Cathode_centre.Y();
+	fZcathode = Cathode_centre.Z();
+        fReference_to_corner = sqrt(pow(fYactive_corner,2) + pow(fZactive_corner,2));
 
-	if(pvs->StoreReflected()) {
+	std::cout<<"For border corrections: "<<fborder_corr[0]<<"  "<<fborder_corr[1]<<std::endl;
+	std::cout<<"Photocathode-plane centre (z,y) = ("<<fZcathode<<", "<<fYcathode<<") and corner (z, y) = ("<<fZactive_corner<<", "<<fYactive_corner<<")"<<std::endl;
+	std::cout<<"Reference_to_corner: "<<fReference_to_corner<<std::endl;
+
+	if(pvs->StoreReflected()) {	
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
-	  pvs->LoadParsForVISCorrection(fvispars, fplane_depth, fcathode_zdimension, fcathode_ydimension, fcathode_centre, fzdimension,fydimension,fradius, foptical_detector_type);
-	 std::cout << "fzdimension = " << fzdimension << ", fydimension = " << fydimension << ", fcathode_ydimension = " << fcathode_ydimension << ", fcathode_zdimension = " << fcathode_zdimension << std::endl;
-	  // initialise vis correction functions
-	  double pars_ini_vis[6] = {0,0,0,0,0,0};
-	  std::cout << "Initialising visible correction parameters" << std::endl;
-	  for (int bin = 0; bin < 9; bin++) {
-	    VIS_pol[bin] = new TF1 ("pol", "pol5", 0, 2000);
-	    for (int j = 0; j < 6; j++){
-	      // loads paramter set read in from fcl
-	      pars_ini_vis[j] = fvispars[j][bin];
-	    }
-	    VIS_pol[bin]->SetParameters(pars_ini_vis);
-	  }
+	  pvs->LoadParsForVISCorrection(fvispars,fradius);  
+       	  fStoreReflected = true;
+	  
+	  if (pvs->ApplyVISBorderCorrection()) {
+            // load border corrections
+            std::cout << "Loading vis border corrections" << std::endl;
+            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x, fvis_border_distances_r, fvis_border_correction); 
+            fApplyVisBorderCorrection = true;
+            fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
+          }
+          else fApplyVisBorderCorrection = false;         
+
+	  // cathode dimensions required for corrections
+	  fcathode_centre = geo->TPC(0,0).GetCathodeCenter();
+	  fcathode_centre[1] = (fmaxy + fminy)/2; fcathode_centre[2] = (fmaxz + fminz)/2; // to get full cathode dimension rather than just single tpc
+          fcathode_ydimension = fmaxy - fminy;
+	  fcathode_zdimension = fmaxz - fminz;
+	  fplane_depth = std::abs(fcathode_centre[0]);
 	}
-      }
+	else fStoreReflected = false;
+      } else fUseNhitsModel = false;
     }
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const int nbins=tpbemission.size();
-    double * parent=new double[nbins];
+    const int nbins = tpbemission.size();
+    double * parent = new double[nbins];
     int ii=0;
     for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter)
     {
       parent[ii++]=(*iter).second;
     }
     rgen0 = new CLHEP::RandGeneral(parent,nbins);
-
+    delete [] parent;
   }
 
 
@@ -311,6 +357,7 @@ namespace larg4{
 
   OpFastScintillation::~OpFastScintillation()
   {
+  
    if (theFastIntegralTable != NULL) {
       theFastIntegralTable->clearAndDestroy();
       delete theFastIntegralTable;
@@ -319,8 +366,9 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
+  
   }
-
+  
   ////////////
   // Methods
   ////////////
@@ -749,8 +797,9 @@ namespace larg4{
 	  else {
 	    TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	    TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
-	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
-
+	    fydimension = fOpDetLength.at(OpDet);
+	    fzdimension = fOpDetHeight.at(OpDet);
+	    DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
 	  }
 
           if(DetThisPMT>0)
@@ -770,7 +819,7 @@ namespace larg4{
 	    else {
 	      TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
 	      TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
-	      ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, foptical_detector_type);
+              ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
 	    }
 
             if(ReflDetThisPMT>0)
@@ -781,8 +830,7 @@ namespace larg4{
           }
 
         }
-
-
+     
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
           // Only do the reflected loop if we have reflected visibilities
@@ -824,8 +872,10 @@ namespace larg4{
 
             // Get the transport time distribution
 	    std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
-      //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
+
+	    //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
             Edeposited = Edeposited / double(NPhotons);
+
             // Loop through the photons
             for (G4int i = 0; i < NPhotons; ++i)
             {
@@ -861,6 +911,7 @@ namespace larg4{
                 fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
               }
             }
+
             fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
         }
@@ -1180,7 +1231,7 @@ namespace larg4{
 
 
 //                         ======TIMING PARAMETRIZATION=====           //
-
+/*
 // Parametrization of the VUV light timing (result from direct transport + Rayleigh scattering ONLY)
 // using a landau + expo function.The function below returns the arrival time distribution given the
 // distance IN CENTIMETERS between the scintillation/ionization point and the optical detectotr.
@@ -1220,7 +1271,7 @@ namespace larg4{
     TF1 *fexpo = new TF1("fexpo","expo",0, signal_t_range/2);
     fexpo->SetParameters(pars_expo);
     //this is to find the intersection point between the two functions:
-    TF1 *fint = new TF1("fint",finter_d,flandau->GetMaximumX(),3*t_direct,5);
+    TF1 *fint = new TF1("fint","finter_d",flandau->GetMaximumX(),3*t_direct,5);
     double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
     fint->SetParameters(parsInt);
     double t_int = fint->GetMinimumX();
@@ -1229,7 +1280,7 @@ namespace larg4{
     if(minVal>0.015)
       G4cout<<"WARNING: Parametrization of Direct Light discontinuous (landau + expo)!!!!!!"<<G4endl;
 
-    TF1 *fVUVTiming =  new TF1("fTiming",LandauPlusExpoFinal,0,signal_t_range,6);
+    TF1 *fVUVTiming =  new TF1("fTiming","LandauPlusExpoFinal",0,signal_t_range,6);
     double parsfinal[6] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
     fVUVTiming->SetParameters(parsfinal);
     // Set the number of points used to sample the function
@@ -1316,7 +1367,7 @@ namespace larg4{
     delete fVisTiming;
     //G4cout<<"Timing distribution BEAMAUS!"<<G4endl;
     return arrival_time_distrb;
-  }
+  }*/
 
   // New Parametrization code
   // parameterisation generation function
@@ -1328,7 +1379,7 @@ namespace larg4{
     const double signal_t_range = 5000.;
 
     // parameterisation TF1
-    TF1* fVUVTiming;
+    TF1 fVUVTiming;
 
     // For very short distances the time correction is just a shift
     double t_direct_mean = distance_in_cm/fvuv_vgroup_mean;
@@ -1342,12 +1393,12 @@ namespace larg4{
     if(distance_in_cm >= finflexion_point_distance) {
       double pars_far[4] = {t_direct_min, pars_landau[0], pars_landau[1], pars_landau[2]};
       // Set model: Landau
-      fVUVTiming =  new TF1("fVUVTiming",model_far,0,signal_t_range,4);
-      fVUVTiming->SetParameters(pars_far);
+      fVUVTiming = TF1("fVUVTiming",model_far,0,signal_t_range,4);
+      fVUVTiming.SetParameters(pars_far);
     }
     else {
       // Set model: Landau + Exponential
-      fVUVTiming =  new TF1("fVUVTiming",model_close,0,signal_t_range,7);
+      fVUVTiming = TF1("fVUVTiming",model_close,0,signal_t_range,7);
       // Exponential parameters
       double pars_expo[2];
       // Getting the exponential parameters from the time parametrization
@@ -1359,36 +1410,36 @@ namespace larg4{
       pars_expo[0] *= pars_landau[2];
       pars_expo[0] = log(pars_expo[0]);
       // this is to find the intersection point between the two functions:
-      TF1* fint = new TF1("fint",finter_d,pars_landau[0],4*t_direct_mean,5);
+      TF1 fint = TF1("fint",finter_d,pars_landau[0],4*t_direct_mean,5);
       double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
-      fint->SetParameters(parsInt);
-      double t_int = fint->GetMinimumX();
-      double minVal = fint->Eval(t_int);
+      fint.SetParameters(parsInt);
+      double t_int = fint.GetMinimumX();
+      double minVal = fint.Eval(t_int);
       // the functions must intersect - output warning if they don't
       if(minVal>0.015) {
 	std::cout<<"WARNING: Parametrization of VUV light discontinuous for distance = " << distance_in_cm << std::endl;
 	std::cout<<"WARNING: This shouldn't be happening " << std::endl;
       }
-      delete fint;
       double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
-      fVUVTiming->SetParameters(parsfinal);
+      fVUVTiming.SetParameters(parsfinal);
+      delete pars_landau;
     }
 
     // set the number of points used to sample parameterisation
-    // for shorter distances, peak is sharper so more sensitive sampling required - values could be optimised, but since these are only generate once difference is not significant
+    // for shorter distances, peak is sharper so more sensitive sampling required
     int f_sampling;
     if (distance_in_cm < 50) { f_sampling = 10000; }
     else if (distance_in_cm < 100){ f_sampling = 5000; }
     else { f_sampling = 1000; }
-    fVUVTiming->SetNpx(f_sampling);
+    fVUVTiming.SetNpx(f_sampling);
 
     // calculate max and min distance relevant to sample parameterisation
     // max
     const int nq_max=1;
     double xq_max[nq_max];
     double yq_max[nq_max];
-    xq_max[0] = 0.99;   // include 99%, 95% cuts out a lot of tail and time difference is negligible extending this
-    fVUVTiming->GetQuantiles(nq_max,yq_max,xq_max);
+    xq_max[0] = 0.99;   // include 99%
+    fVUVTiming.GetQuantiles(nq_max,yq_max,xq_max);
     double max = yq_max[0];
     // min
     double min = t_direct_min;
@@ -1396,13 +1447,11 @@ namespace larg4{
     // generate the sampling
     // the first call of GetRandom generates the timing sampling and stores it in the TF1 object, this is the slow part
     // all subsequent calls check if it has been generated previously and are ~100+ times quicker
-    //double arrival_time = fVUVTiming->GetRandom(min,max);
     // add timing to the vector of timings and range to vectors of ranges
-    VUV_timing[index] = *fVUVTiming;
+    VUV_timing[index] = fVUVTiming;
     VUV_max[index] = max;
     VUV_min[index] = min;
 
-    delete fVUVTiming;
   }
 
   // VUV arrival times calculation function
@@ -1573,6 +1622,13 @@ namespace larg4{
       return 0;
     }
 
+    //semi-analytic approach only works in the active volume
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+      return 0;
+    }
+
     // distance and angle between ScintPoint and OpDetPoint
     double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2) + pow(ScintPoint[1] - OpDetPoint[1],2) + pow(ScintPoint[2] - OpDetPoint[2],2));
     double cosine = sqrt(pow(ScintPoint[0] - OpDetPoint[0],2)) / distance;
@@ -1614,8 +1670,17 @@ namespace larg4{
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     int j = (theta/fdelta_angulo);
-    double hits_rec = gRandom->Poisson( GHvuv[j]->Eval(distance)*hits_geo/cosine );
 
+    //Accounting for border effects
+    double z_to_corner = abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
+    double y_to_corner = abs(ScintPoint[1]) - fYactive_corner;
+    double distance_to_corner = sqrt(y_to_corner*y_to_corner + z_to_corner*z_to_corner);// in the ph-cathode plane
+    double pars_ini_[4] = {fGHvuvpars[0][j] + fborder_corr[0] * (distance_to_corner - fReference_to_corner),
+			   fGHvuvpars[1][j] + fborder_corr[1] * (distance_to_corner - fReference_to_corner),
+			   fGHvuvpars[2][j],
+			   fGHvuvpars[3][j]};
+    double GH_correction = Gaisser_Hillas(distance, pars_ini_);
+    double hits_rec = gRandom->Poisson( GH_correction*hits_geo/cosine );
     // round to integer value, cannot have non-integer number of hits
     int hits_vuv = std::round(hits_rec);
 
@@ -1630,6 +1695,13 @@ namespace larg4{
      if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10){
        return 0;
      }
+
+    //semi-analytic approach only works in the active volume
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+      return 0;
+    }
 
     // set plane_depth for correct TPC:
      double plane_depth;
@@ -1646,31 +1718,29 @@ namespace larg4{
      acc cathode_plane;
      cathode_plane.ax = plane_depth; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];       	// centre coordinates of cathode plane
      cathode_plane.w = fcathode_ydimension; cathode_plane.h = fcathode_zdimension;                        				// width and height in cm
-
      // get scintpoint coords relative to centre of cathode plane
      TVector3 cathodeCentrePoint(plane_depth,fcathode_centre[1],fcathode_centre[2]);
      TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint;
-
      // calculate solid angle of cathode from the scintillation point
      double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
-
      // calculate distance and angle between ScintPoint and hotspot
      // vast majority of hits in hotspot region directly infront of scintpoint,therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
      double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
      double cosine_cathode = 1;
      double theta_cathode = 0;
-
      // calculate hits on cathode plane via geometric acceptance
      double cathode_hits_geo = exp(-1.*distance_cathode/fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
-
      // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
      // offset angle bin
-     int j = (theta_cathode/fdelta_angulo);
-     double cathode_hits_rec = GHvuv[j]->Eval(distance_cathode)*cathode_hits_geo/cosine_cathode;
-
+     int j = (theta_cathode/fdelta_angulo);          
+     double  pars_ini_[4] = {fGHvuvpars[0][j],
+                           fGHvuvpars[1][j],
+                           fGHvuvpars[2][j],
+                           fGHvuvpars[3][j]};
+     double GH_correction = Gaisser_Hillas(distance_cathode,pars_ini_);
+     double cathode_hits_rec = GH_correction*cathode_hits_geo/cosine_cathode;  
 
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
-
      // hotspot coordinates
      TVector3 hotspot(plane_depth, ScintPoint[1], ScintPoint[2]);
 
@@ -1712,13 +1782,45 @@ namespace larg4{
      //  angle between hotspot and optical detector
      double cosine_vis = sqrt(pow(hotspot[0] - OpDetPoint[0],2)) / distance_vis;
      double theta_vis = acos(cosine_vis)*180./CLHEP::pi;
-
-     // apply correction
      int k = (theta_vis/fdelta_angulo);
-     double hits_rec = gRandom->Poisson(VIS_pol[k]->Eval(distance_vuv)*hits_geo/cosine_vis);
 
-     // round final result, number of hits integer
-     int hits_vis = std::round(hits_rec);
+     // apply geometric correction
+     double pars_ini_vis[6] = { fvispars[0][k], fvispars[1][k], fvispars[2][k], fvispars[3][k], fvispars[4][k], fvispars[5][k] };
+     double geo_correction = Pol_5(distance_vuv, pars_ini_vis);     
+     double hits_rec = gRandom->Poisson(geo_correction*hits_geo/cosine_vis);
+
+     // apply border correction
+     int hits_vis = 0;
+     if (fApplyVisBorderCorrection){
+       // calculate distance for interpolation depending on model
+       double r = 0;
+       if (fVisBorderCorrectionType == "Radial"){
+         r = sqrt (pow(ScintPoint[1] - fcathode_ydimension,2) + pow (ScintPoint[2] - fcathode_zdimension,2));
+       }
+       else if (fVisBorderCorrectionType == "Vertical") {
+         r = std::abs(ScintPoint[1]);
+       }
+       else {
+         std::cout << "Invalid border correction type - defaulting to using central value" << std::endl;
+       }
+       // interpolate in x for each r bin
+       int nbins_r = fvis_border_correction[k].size();
+       std::vector<double> interp_vals(nbins_r, 0.0);
+       for (int i = 0; i < nbins_r; i++){
+        interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i], std::abs(ScintPoint[0]), false);
+       }
+       // interpolate in r
+       double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
+       // apply border correction
+       double hits_rec_borders = border_correction * hits_rec / cosine_vis;
+       
+       // round final result
+       hits_vis = std::round(hits_rec_borders);
+     }
+     else {
+       // round final result
+       hits_vis = std::round(hits_rec);
+     }
 
      return hits_vis;
   }
@@ -1786,17 +1888,7 @@ namespace larg4{
 
     return y;
   }
-  double GaisserHillas(double *x,double *par) {
-    //This is the Gaisser-Hillas function
-    double X_mu_0=par[3];
-    double Normalization=par[0];
-    double Diff=par[1]-X_mu_0;
-    double Term=pow((*x-X_mu_0)/Diff,Diff/par[2]);
-    double Exponential=TMath::Exp((par[1]-*x)/par[2]);
-
-    return (Normalization*Term*Exponential);
-  }
-
+ 
   //======================================================================
 
   //   Returns interpolated value at x from parallel arrays ( xData, yData )
