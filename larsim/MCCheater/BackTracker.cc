@@ -32,20 +32,20 @@ namespace cheat{
      fGeom     (geom),
      fDetClocks(detClock),
      fG4ModuleLabel(config.G4ModuleLabel()),
+     fSimChannelModuleLabel(config.SimChannelModuleLabel()),
      fHitLabel(config.DefaultHitModuleLabel()),
      fMinHitEnergyFraction(config.MinHitEnergyFraction()),
      fOverrideRealData(config.OverrideRealData())
   {
      //D.R. 8/15/19 -- patch for compatibility with larg4 refactorization
-     if ( !config.SimChannelModuleLabel(fSimChannelModuleLabel) ) {
-       mf::LogInfo("BackTracker") << "No SimChannelModuleLabel provided. Will use the G4ModuleLabel. This is expected for the Legacy version of LArG4\n";
-       fSimChannelModuleLabel = config.G4ModuleLabel();
-       mf::LogInfo("BackTracker") << "SimChannelModuleLabel = G4ModuleLabel = " << fSimChannelModuleLabel;
-     } else {
-       mf::LogInfo("BackTracker") << "SimChannelModuleLabel provided. This message is expected for the refactored version of larg4\n"
-                 << "SimChannelModuleLabel = " << fSimChannelModuleLabel << std::endl;
-     }
-
+//     if ( !config.SimChannelModuleLabel(fSimChannelModuleLabel) ) {
+//       mf::LogInfo("BackTracker") << "No SimChannelModuleLabel provided. Will use the G4ModuleLabel. This is expected for the Legacy version of LArG4\n";
+//       fSimChannelModuleLabel = config.G4ModuleLabel();
+//       mf::LogInfo("BackTracker") << "SimChannelModuleLabel = G4ModuleLabel = " << fSimChannelModuleLabel;
+//     } else {
+//       mf::LogInfo("BackTracker") << "SimChannelModuleLabel provided. This message is expected for the refactored version of larg4\n"
+//                 << "SimChannelModuleLabel = " << fSimChannelModuleLabel << std::endl;
+//     }
   }
 
   //-----------------------------------------------------------------------

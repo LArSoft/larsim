@@ -44,7 +44,7 @@ namespace cheat{
       //Structure for configuration parameters. (fhicl validation)
       struct fhiclConfig{
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4   module used to produce the art file we will be using."), "largeant"};
-        fhicl::OptionalAtom<art::InputTag> SimChannelModuleLabel{fhicl::Name("SimChannelModuleLabel"), fhicl::Comment("The label of the module containing the sim::SimChannel product.") }; // -- D.R. not required
+        fhicl::Atom<art::InputTag> SimChannelModuleLabel{fhicl::Name("SimChannelModuleLabel"), fhicl::Comment("The label of the module containing the sim::SimChannel product."), G4ModuleLabel()}; // -- D.R. not required
         fhicl::Atom<art::InputTag> DefaultHitModuleLabel{fhicl::Name("DefaultHitModuleLabel"), fhicl::Comment("The label  of the module used to produce the hits in the art file we will default to when no hitlist is provided."), "hitfd"};
         fhicl::Atom<double> MinHitEnergyFraction{fhicl::Name("MinHitEnergyFraction"), fhicl::Comment("The minimum     contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
         fhicl::Atom<bool> OverrideRealData{fhicl::Name("OverrideRealData"),fhicl::Comment("Option when overlaying simulation on real data, to tell the backtracker to continue even if event looks like data."),false};
@@ -160,7 +160,7 @@ namespace cheat{
       const geo::GeometryCore* fGeom;
       const detinfo::DetectorClocks* fDetClocks;
       const art::InputTag       fG4ModuleLabel;
-      art::InputTag       fSimChannelModuleLabel;
+      const art::InputTag       fSimChannelModuleLabel;
       const art::InputTag       fHitLabel;
       const double              fMinHitEnergyFraction;
       const bool                fOverrideRealData;
