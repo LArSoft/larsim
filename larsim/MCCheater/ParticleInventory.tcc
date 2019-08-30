@@ -100,6 +100,10 @@ namespace cheat{
 
   template<typename Evt>
     bool ParticleInventory::CanRun(const Evt& evt) const{
+      if(fOverrideRealData)
+      {
+        return true;
+      }
       return !(evt.isRealData());
     }
 
