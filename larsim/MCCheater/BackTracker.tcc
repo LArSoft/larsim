@@ -27,7 +27,6 @@ namespace cheat{
     void BackTracker::PrepSimChannels (const Evt& evt){
       if(this->SimChannelsReady()){ return;}
       //The SimChannels list needs to be built.
-      //<--const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fG4ModuleLabel);
       const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fSimChannelModuleLabel);
       //failedToGet for a valid handle will always be false.
 //      if(simChannelsHandle.failedToGet()){
