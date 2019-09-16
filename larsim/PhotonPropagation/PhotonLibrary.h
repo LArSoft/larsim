@@ -6,9 +6,8 @@
 
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 
-#include "TTree.h"
 #include "TF1.h"
-#include "larsim/Simulation/PhotonVoxels.h"
+class TTree;
 
 #include "lardataobj/Utilities/LazyVector.h"
 

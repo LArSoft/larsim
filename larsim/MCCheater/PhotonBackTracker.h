@@ -16,28 +16,27 @@
 
 //CPP
 #include <map>
+#include <unordered_set>
 #include <vector>
 
 //Framework
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Table.h"
 
 //LArSoft
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/FindOneP.h"
-#include "canvas/Persistency/Common/FindMany.h"
-#include "canvas/Persistency/Common/FindOne.h"
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larcorealg/CoreUtils/ProviderPack.h"
-#include "lardata/Utilities/AssociationUtil.h"
-#include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataobj/RecoBase/OpHit.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardataobj/RecoBase/OpFlash.h"
-#include "lardataobj/RawData/OpDetWaveform.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
-#include "larsim/MCCheater/ParticleInventory.h"
 
-
+namespace cheat { class ParticleInventory; }
+namespace fhicl { class ParameterSet; }
+namespace geo { class GeometryCore; }
+namespace sim {
+  struct SDP;
+  struct TrackSDP;
+}
 
 namespace cheat{
   class PhotonBackTracker
@@ -258,4 +257,3 @@ namespace cheat{
 #include "PhotonBackTracker.tcc"
 
 #endif
-

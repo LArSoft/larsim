@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <sstream>
 #include <memory>
-#include <unistd.h>
 #include <stdio.h>
 #include <fstream>
 
@@ -20,7 +19,6 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
-#include "TSystem.h"
 
 #include "CLHEP/Random/RandFlat.h"
 
@@ -28,11 +26,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -42,19 +37,12 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
 #include "art/Framework/Core/EDProducer.h"
 
 #include "TStopwatch.h"
-
-class TH1F;
-class TH2F;
-
-namespace simb { class MCTruth;     }
-
 
 namespace evgen {
   /// A module to check the results from the Monte Carlo generator

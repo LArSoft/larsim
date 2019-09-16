@@ -43,30 +43,18 @@
 #ifndef OpBoundaryProcessSimple_h
 #define OpBoundaryProcessSimple_h 1
 
-
-#include "Geant4/globals.hh"
-#include "Geant4/templates.hh"
-#include "Geant4/geomdefs.hh"
+#include "Geant4/G4ForceCondition.hh"
+#include "Geant4/G4OpticalPhoton.hh"
+#include "Geant4/G4ProcessType.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
+#include "Geant4/G4VDiscreteProcess.hh"
 #include "Geant4/Randomize.hh"
 
-#include "Geant4/G4RandomTools.hh"
-#include "Geant4/G4RandomDirection.hh"
-
-#include "Geant4/G4Step.hh"
-#include "Geant4/G4VDiscreteProcess.hh"
-#include "Geant4/G4DynamicParticle.hh"
-#include "Geant4/G4Material.hh"
-#include "Geant4/G4LogicalBorderSurface.hh"
-#include "Geant4/G4LogicalSkinSurface.hh"
-#include "Geant4/G4OpticalSurface.hh"
-#include "Geant4/G4OpticalPhoton.hh"
-#include "Geant4/G4TransportationManager.hh"
-
-
-#include "TH1.h"
-#include "TTree.h"
-
-
+class G4ParticleDefinition;
+class G4Step;
+class G4Track;
+class G4VParticleChange;
 
 /////////////////////
 // Class Definition

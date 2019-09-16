@@ -7,6 +7,11 @@
 /// \author Steven Gardiner <sjgardiner@ucdavis.edu>
 //////////////////////////////////////////////////////////////////////////////
 
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/TPCGeo.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
+
 #include "ActiveVolumeVertexSampler.h"
 
 namespace {

@@ -65,10 +65,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/Exception.h"
@@ -80,11 +78,9 @@
 // nutools includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/Simulation/PhotonVoxels.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "larsim/Simulation/PhotonVoxels.h"

@@ -47,7 +47,7 @@
 
 #include <vector>
 #include <functional> // so we can redefine less<> below
-#include <iostream>
+#include <iosfwd>
 
 namespace sim {
 

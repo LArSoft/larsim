@@ -27,10 +27,8 @@
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 
-#include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
 
 // framework libraries
@@ -41,8 +39,6 @@
 #include "TF1.h"
 
 // C/C++ standard libraries
-#include <math.h>
-
 
 namespace phot{
 

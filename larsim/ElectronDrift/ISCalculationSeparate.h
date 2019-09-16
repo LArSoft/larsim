@@ -10,12 +10,11 @@
 #ifndef IS_ISCALCULATION_H
 #define IS_ISCALCULATION_H
 
-#include <vector>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
-#include "fhiclcpp/ParameterSet.h"
 
 // forward declaration
 namespace detinfo { class LArProperties; class DetectorProperties; }
+namespace fhicl { class ParameterSet; }
 namespace sim { class SimEnergyDeposit; class LArG4Parameters; }
 namespace spacecharge { class SpaceCharge; }
 
@@ -71,4 +70,3 @@ namespace detsim {
  };
 }
 #endif // LARG4_ISCALCULATION_H
-

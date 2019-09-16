@@ -9,7 +9,6 @@
 /// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
@@ -20,13 +19,13 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
-
 
 // Wes did this for TRACE debugging
 //#include "trace.h"
 //#define TNAME "ISCalcSeparate"
 
+#include <cmath>
+#include <ostream>
 
 namespace larg4{
 

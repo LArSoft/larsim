@@ -16,17 +16,12 @@
 #include "larsim/LArG4/VisualizationAction.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
-#include "Geant4/G4Run.hh"
-#include "Geant4/G4RunManager.hh"
 #include "Geant4/G4Event.hh"
 #include "Geant4/G4UImanager.hh"
 #include "Geant4/G4VVisManager.hh"
 #include "Geant4/G4TrajectoryContainer.hh"
-#include "Geant4/G4Trajectory.hh"
 #include "Geant4/G4ios.hh"
 
-#include <cmath>
-#include <cstring>
 
 namespace larg4 {
 

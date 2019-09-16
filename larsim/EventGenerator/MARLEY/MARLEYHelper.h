@@ -29,7 +29,7 @@
 #include "fhiclcpp/types/detail/TableBase.h"
 
 // art extensions
-#include "nurandom/RandomUtils/NuRandomService.h"
+namespace rndm { class NuRandomService; }
 
 // LArSoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -41,7 +41,10 @@
 // MARLEY includes
 #include "marley/Generator.hh"
 #include "marley/JSON.hh"
-#include "marley/Particle.hh"
+namespace marley {
+  class Event;
+  class Particle;
+}
 
 namespace evgen {
 

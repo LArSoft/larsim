@@ -15,17 +15,10 @@
 
 // LArSoft Includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardataobj/Simulation/sim.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // C++ Includes
-#include <cstring>
 #include <iostream>
-#include <sys/stat.h>
-
-namespace simb {
-  class MCTruth;
-}
 
 namespace {
 

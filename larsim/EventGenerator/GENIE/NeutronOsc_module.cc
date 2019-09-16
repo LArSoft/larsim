@@ -35,27 +35,22 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // GENIE includes
-#include "Algorithm/AlgFactory.h"
-#include "EVGCore/EventRecordVisitorI.h"
-#include "EVGCore/EventRecord.h"
-#include "NeutronOsc/NeutronOscMode.h"
-#include "PDG/PDGLibrary.h"
-#include "GHEP/GHepParticle.h"
-#include "Utils/AppInit.h"
+#include "Framework/Algorithm/AlgFactory.h"
+#include "Framework/EventGen/EventRecordVisitorI.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Physics/NNBarOscillation/NNBarOscMode.h"
+#include "Framework/ParticleData/PDGLibrary.h"
+#include "Framework/GHEP/GHepParticle.h"
+#include "Framework/Utils/AppInit.h"
 
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nusimdata/SimulationBase/MCNeutrino.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -95,7 +90,7 @@ private:
 
   // Declare member data here.
   const genie::EventRecordVisitorI * mcgen;
-  genie::NeutronOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
+  genie::NNBarOscMode_t gOptDecayMode    = genie::kNONull;             // neutron-antineutron oscillation mode
   CLHEP::RandFlat flatDist;
 
 };
@@ -118,7 +113,7 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
     throw cet::exception("NeutronOsc") << "Couldn't instantiate the neutron-antineutron oscillation generator";
   }
   int fDecayMode = p.get<int>("DecayMode");
-  gOptDecayMode = (genie::NeutronOscMode_t) fDecayMode;
+  gOptDecayMode = (genie::NNBarOscMode_t) fDecayMode;
 
   produces< std::vector<simb::MCTruth> >();
   produces< sumdata::RunData, art::InRun >();

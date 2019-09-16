@@ -49,7 +49,7 @@ namespace simfilter {
   private:
     bool KeepParticle(simb::MCParticle const& part) const;
 
-    double fbounds[6] = {0.};
+    std::vector<std::array<double, 6>> fCryostatBoundaries; //!< boundaries of each cryostat
     double fMinKE; //<only keep based on particles with greater than this energy
     bool   fKeepOnlyMuons; //keep based only on muons if enabled
     double fMinT,fMaxT; //<time range in which to keep particles
@@ -72,60 +72,150 @@ namespace simfilter {
   {
     if(fSortParticles) {
       produces< std::vector<simb::MCTruth> >("intime");
-      produces< std::vector<simb::MCTruth> >("outtime"); }
+      produces< std::vector<simb::MCTruth> >("outtime"); 
+    }
+    std::cout << "New Filter!\n";
+
   }
 
   void FilterGenInTime::beginJob(){
     auto const& geom = *art::ServiceHandle<geo::Geometry const>();
-
-	  geom.CryostatBoundaries(fbounds, 0);
+    for (auto const &cryo: geom.IterateCryostats()) {
+      std::array<double, 6> this_cryo_boundaries {};
+      cryo.Boundaries(&this_cryo_boundaries[0]);
+      fCryostatBoundaries.push_back(this_cryo_boundaries);
+    }
   }
 
 
   bool FilterGenInTime::KeepParticle(simb::MCParticle const& part) const {
     const TLorentzVector& v4 = part.Position();
     const TLorentzVector& p4 = part.Momentum();
+    // origin of particle
     double x0[3] = {v4.X(),  v4.Y(),  v4.Z() };
-    double dx[3] = {p4.Px(), p4.Py(), p4.Pz()};
+    // normalized direction of particle
+    double dx[3] = {p4.Px() / p4.Vect().Mag(), p4.Py() / p4.Vect().Mag(), p4.Pz() / p4.Vect().Mag()};
 
-    //check to see if particle crosses boundary of cryostat within appropriate time window
-    bool intersects_cryo = false;
-    for (int bnd=0; bnd!=6; ++bnd) {
-      if (bnd<2) {
-	double p2[3] = {fbounds[bnd],  x0[1] + (dx[1]/dx[0])*(fbounds[bnd] - x0[0]), x0[2] + (dx[2]/dx[0])*(fbounds[bnd] - x0[0])};
-	if ( p2[1] >= fbounds[2] && p2[1] <= fbounds[3] &&
-	     p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+    // tolernace for treating number as "zero"
+    double eps = 1e-5;
+
+    //check to see if particle crosses boundary of any cryostat within appropriate time window
+    std::vector<bool> intersects_cryo(fCryostatBoundaries.size(), false);
+    std::vector<bool> inside_cryo(fCryostatBoundaries.size(), false);
+    std::vector<double> distance_to_cryo(fCryostatBoundaries.size(), 0.);
+
+    // Check to see if particle intersects any cryostat
+    //
+    // Algorithmically, this is looking for ray-box intersection. This is a common problem in 
+    // computer graphics. The algorithm below is taken from "Graphics Gems", Academic Press, 1990
+    for (size_t i_cryo = 0; i_cryo < fCryostatBoundaries.size(); i_cryo++) {
+      auto const &bound = fCryostatBoundaries[i_cryo];
+      std::array<int, 3> quadrant {}; // 0 == RIGHT, 1 == LEFT, 2 == MIDDLE
+      std::array<double, 3> candidatePlane {};
+      std::array<double, 3> coord {};
+
+      std::array<double, 3> bound_lo = {{bound[0], bound[2], bound[4]}};
+      std::array<double, 3> bound_hi = {{bound[1], bound[3], bound[5]}};
+
+      // First check if origin is inside box
+      // Also check which of the two planes in each dimmension is the 
+      // "candidate" for the ray to hit
+      bool inside = true;
+      for (int i = 0; i < 3; i++) {
+        if (x0[i] < bound_lo[i]) {
+          quadrant[i] = 1; // LEFT
+          candidatePlane[i] = bound_lo[i];
+          inside = false;
+        }
+        else if (x0[i] > bound_hi[i]) {
+          quadrant[i] = 0; // RIGHT
+          candidatePlane[i] = bound_hi[i];
+          inside = false;
+        }
+        else {
+          quadrant[i] = 2; // MIDDLE
+        }
       }
-      else if (bnd>=2 && bnd<4) {
-	double p2[3] = {x0[0] + (dx[0]/dx[1])*(fbounds[bnd] - x0[1]), fbounds[bnd], x0[2] + (dx[2]/dx[1])*(fbounds[bnd] - x0[1])};
-	if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
-	     p2[2] >= fbounds[4] && p2[2] <= fbounds[5] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+
+      if (inside) {
+        inside_cryo[i_cryo] = true;
+        // if we're inside the cryostat, then we do intersect it
+        intersects_cryo[i_cryo] = true;
+        continue;
       }
-      else if (bnd>=4) {
-	double p2[3] = {x0[0] + (dx[0]/dx[2])*(fbounds[bnd] - x0[2]), x0[1] + (dx[1]/dx[2])*(fbounds[bnd] - x0[2]), fbounds[bnd]};
-	if ( p2[0] >= fbounds[0] && p2[0] <= fbounds[1] &&
-	     p2[1] >= fbounds[2] && p2[1] <= fbounds[3] ) {
-	  intersects_cryo = true;
-	  break;
-	}
+
+      // ray origin is outside the box -- calculate the distance to the cryostat and see if it intersects
+      
+      // calculate distances to candidate planes
+      std::array<double, 3> maxT {};
+      for (int i = 0; i < 3; i++) {
+        if (quadrant[i] != 2 /* MIDDLE */ && abs(dx[i]) > eps) {
+          maxT[i] = (candidatePlane[i] - x0[i]) / dx[i];
+        }
+        // if a ray origin is between two the two planes in a dimmension, it would never hit that plane first
+        else {
+          maxT[i] = -1;
+        }
+      }
+
+      // The plane on the box that the ray hits is the one with the largest distance
+      int whichPlane = 0;
+      for (int i = 1; i < 3; i++) {
+        if (maxT[whichPlane] < maxT[i]) whichPlane = i;
+      }
+
+      // check if the candidate intersection point is inside the box
+
+      // no intersection
+      if (maxT[whichPlane] < 0.) {
+        intersects_cryo[i_cryo] = false;
+        continue;
+      }
+
+      for (int i = 0; i < 3; i++) {
+        if (whichPlane != i) {
+          coord[i] = x0[i] + maxT[whichPlane] * dx[i];
+        }
+        else {
+          coord[i] = candidatePlane[i];
+        }
+      }
+
+
+      // check if intersection is in box
+      intersects_cryo[i_cryo] = true;
+      for (int i = 0; i < 3; i++) {
+        if (coord[i] < bound_lo[i] || coord[i] > bound_hi[i]) {
+          intersects_cryo[i_cryo] = false;
+        }
+      }
+
+      if (intersects_cryo[i_cryo]) {
+        distance_to_cryo[i_cryo] = maxT[whichPlane];
       }
     }
 
-    if (intersects_cryo){
-      //check its arrival time at the origin(base time + propagation time)
-      double d=sqrt((x0[0]*x0[0] + x0[1]*x0[1] + x0[2]*x0[2]));
-      double ptime=d/(100.*TMath::C()*sqrt(1-pow(part.Mass()/part.E(),2)));
-      double totT=part.T()+ptime*1e9;
-      if(totT>fMinT && totT<fMaxT){
+    // check if any cryostats are intersected in-time
+    for (size_t i_cryo = 0; i_cryo < fCryostatBoundaries.size(); i_cryo++) {
+
+      // If the particle originates inside the cryostat, then
+      // we can't really say when it will leave. Thus, accept
+      // the particle
+      if (inside_cryo[i_cryo]) {
         return true;
       }
+      // otherwise check arrival time at boundary of cryostat
+      if (intersects_cryo[i_cryo]){
+        double ptime = (distance_to_cryo[i_cryo] * 1e-2 /* cm -> m */) / (TMath::C()*sqrt(1-pow(part.Mass()/part.E(),2))) /* velocity */;
+        double totT=part.T()+ptime*1e9 /* s -> ns */;
+        if(totT>fMinT && totT<fMaxT){
+          return true;
+        }
+      }
     }
+
+
+
     return false;
   }
 

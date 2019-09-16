@@ -27,9 +27,10 @@
 #ifndef LArStackingAction_H
 #define LArStackingAction_H
 
-#include "Geant4/globals.hh"
 #include "Geant4/G4UserStackingAction.hh"
-#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Types.hh"
+
+#include <string>
 
 class G4Track;
 
@@ -79,4 +80,3 @@ class LArStackingAction : public G4UserStackingAction
 };
 
 #endif
-

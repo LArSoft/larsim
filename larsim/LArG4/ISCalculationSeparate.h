@@ -9,13 +9,11 @@
 #ifndef LARG4_ISCALCULATIONSEPARATE_H
 #define LARG4_ISCALCULATIONSEPARATE_H
 
-#include <map>
-
-#include "Geant4/G4EmSaturation.hh"
-
 #include "larsim/LArG4/ISCalculation.h"
 
-// forward declaration
+// forward declarations
+class G4EmSaturation;
+class G4Step;
 namespace CLHEP { class HepRandomEngine; }
 
 namespace larg4 {
@@ -48,4 +46,3 @@ namespace larg4 {
  };
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H
-

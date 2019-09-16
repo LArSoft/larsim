@@ -15,7 +15,6 @@
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/GeometryCore.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 

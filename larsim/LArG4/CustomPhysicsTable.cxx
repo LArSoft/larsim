@@ -10,8 +10,6 @@
 #include "larsim/LArG4/CustomPhysicsTable.hh"
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 
-#include "Geant4/G4VPhysicsConstructor.hh"
-
 namespace larg4 {
 
   static CustomPhysicsTable * TheCustomPhysicsTable;
@@ -67,10 +65,10 @@ namespace larg4 {
 
     if(IsPhysicsAvailable(Factory->GetName()))
       mf::LogWarning("CustomPhysicsTable") << "Physics constructor being overwritten"
-					   << " in CustomPhysicsTable";
+                                           << " in CustomPhysicsTable";
     TheCustomPhysicsTable->theTable[Factory->GetName()]=Factory;
     MF_LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics "
-				   << Factory->GetName();
+                                   << Factory->GetName();
   }
 
 }

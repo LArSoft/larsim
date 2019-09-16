@@ -31,27 +31,17 @@
 //
 //
 //Changes have been made to this object to include the OpDetBacktrackerRecords for use in the photonbacktracker
-
-#include "Geant4/G4PhysicalVolumeStore.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
-#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
-#include <map>
-#include <unordered_map>
-#include <string>
-#include <memory>
-#include <exception>
 #ifndef OPDETPHOTONTABLE_h
 #define OPDETPHOTONTABLE_h 1
 
-//#include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include <map>
+#include <unordered_map>
+#include <vector>
+#include <string>
 
-namespace sim
-{
-  class OnePhoton;
-  class SimPhotons;
-  class SimPhotonsLite;
-  class SimEnergyDeposit;
-}
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/SimPhotons.h"
 
 namespace larg4 {
   class OpDetPhotonTable

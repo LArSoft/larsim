@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 // ROOT includes
-#include "TRandom3.h"
 #include "TDatabasePDG.h"
 #include "TString.h"
 #include "TSystem.h" //need BaseName and DirName
@@ -16,8 +15,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -27,10 +24,7 @@
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nugen/EventGeneratorBase/evgenbase.h"
-#include "larcorealg/Geometry/geo.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
 #include <sqlite3.h>

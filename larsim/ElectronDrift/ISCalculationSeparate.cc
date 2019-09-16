@@ -9,7 +9,9 @@
 /// \version $Id:  $
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#include "CLHEP/Vector/ThreeVector.h"
+
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "larsim/ElectronDrift/ISCalculationSeparate.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
@@ -17,12 +19,12 @@
 #include "larevt/SpaceCharge/SpaceCharge.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
+#include <cmath>
+#include <ostream>
 
 namespace detsim{
 

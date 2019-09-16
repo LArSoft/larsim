@@ -9,9 +9,7 @@
 ////////////////////////////////////////////////////////////////////////
 // C++ std library includes
 #include <string>
-#include <algorithm>
-#include <fstream>
-#include <bitset>
+
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -20,22 +18,15 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+
 // Root Includes
-#include "TMath.h"
-#include "TGraph.h"
-#include "TFile.h"
-#include "TLine.h"
-#include "TComplex.h"
-#include "TString.h"
-#include "TGraph.h"
 #include "TH1.h"
+
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
-namespace geo { class Geometry; }
 
 ///Detector simulation of raw signals on wires
 namespace larg {

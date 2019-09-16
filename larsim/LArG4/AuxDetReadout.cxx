@@ -7,16 +7,12 @@
 #include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleListAction.h"
 
-
-#include "Geant4/G4HCofThisEvent.hh"
-#include "Geant4/G4TouchableHistory.hh"
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
 #include "Geant4/G4ThreeVector.hh"
 
 #include <utility> // std::move()
 #include <algorithm> // std::find()
-#include <ctime>
 
 namespace larg4 {
 

@@ -10,22 +10,17 @@
 // Ben Jones, MIT, 2013
 //
 
-// LArSoft includes
-
+#include "cetlib_except/exception.h"
+#include "larsim/LArG4/OpParamAction.h"
 #include "larsim/LArG4/OpParamSD.h"
 
-#include "cetlib_except/exception.h"
-
-#include "larsim/LArG4/OpDetPhotonTable.h"
-#include "larsim/LArG4/OpDetLookup.h"
-#include "lardataobj/Simulation/SimPhotons.h"
-
-// Geant4 includes
-
+#include "Geant4/G4DynamicParticle.hh"
 #include "Geant4/G4SDManager.hh"
-#include "Geant4/Randomize.hh"
-#include "Geant4/G4RandomTools.hh"
-
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4StepPoint.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4TrackStatus.hh"
 
 namespace larg4{
 

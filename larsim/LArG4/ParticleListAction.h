@@ -16,18 +16,14 @@
 #ifndef LArG4_ParticleListAction_h
 #define LArG4_ParticleListAction_h
 
-#include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
-#include "lardataobj/Simulation/sim.h" // sim::GeneratorIndex_t, ...
-#include "nug4/ParticleNavigation/ParticleList.h"
+#include "Geant4/G4Types.hh"
+#include "TLorentzVector.h"
 
-#include "nusimdata/SimulationBase/MCParticle.h"
+#include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
 #include "nug4/G4Base/UserAction.h"
 
-#include "Geant4/globals.hh"
 #include <map>
-#include <limits> // std::numeric_limits<>
-#include <cstddef> // std::size_t
 
 // Forward declarations.
 class G4Event;
@@ -36,6 +32,10 @@ class G4Step;
 
 namespace sim {
   class ParticleList;
+}
+
+namespace simb {
+  class MCParticle;
 }
 
 namespace larg4 {
@@ -81,10 +81,10 @@ namespace larg4 {
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
     virtual void             BeginOfEventAction(const G4Event*);
-    virtual void     	     EndOfEventAction  (const G4Event*);
-    virtual void     	     PreTrackingAction (const G4Track*);
-    virtual void     	     PostTrackingAction(const G4Track*);
-    virtual void     	     SteppingAction    (const G4Step* );
+    virtual void             EndOfEventAction  (const G4Event*);
+    virtual void             PreTrackingAction (const G4Track*);
+    virtual void             PostTrackingAction(const G4Track*);
+    virtual void             SteppingAction    (const G4Step* );
 
     /// Grabs a particle filter
     void ParticleFilter(std::unique_ptr<util::PositionInVolumeFilter>&& filter)
@@ -118,7 +118,7 @@ namespace larg4 {
 
     // this method will loop over the fParentIDMap to get the
     // parentage of the provided trackid
-    int               	     GetParentage(int trackid) const;
+    int                      GetParentage(int trackid) const;
 
     G4double                 fenergyCut;             ///< The minimum energy for a particle to
                                                      ///< be included in the list.

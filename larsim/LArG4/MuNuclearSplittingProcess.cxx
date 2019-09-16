@@ -16,21 +16,18 @@
 
 #include <stdexcept> // std::runtime_error
 
-#include "Geant4/G4WrapperProcess.hh"
 #include "Geant4/G4VParticleChange.hh"
 
-#include "Geant4/G4SDManager.hh"
-#include "Geant4/G4RunManager.hh"
-#include "Geant4/G4Event.hh"
-#include "Geant4/G4HCofThisEvent.hh"
 #include "Geant4/G4Track.hh"
-#include "Geant4/G4Step.hh"
-#include "Geant4/G4TrackStatus.hh"
 #include "Geant4/G4ParticleDefinition.hh"
-#include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/Randomize.hh"
 #include "Geant4/G4KaonZeroLong.hh"
-#include "Geant4/G4ios.hh"
+#include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4KaonZeroShort.hh"
+#include "Geant4/G4LorentzVector.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4VProcess.hh"
 
 #include <TMath.h>
 

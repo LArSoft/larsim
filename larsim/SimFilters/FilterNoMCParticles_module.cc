@@ -13,13 +13,9 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // LArSoft Includes
-#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 #include <vector>
-
-namespace simb {
-  class MCTruth;
-}
 
 /// Geant4 interface
 namespace simfilter {

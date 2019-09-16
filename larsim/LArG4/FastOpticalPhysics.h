@@ -62,7 +62,8 @@
 
 
 #include "Geant4/G4VPhysicsConstructor.hh"
-#include "Geant4/globals.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Types.hh"
 
 #if defined __clang__
   #pragma clang diagnostic push
@@ -104,9 +105,3 @@ namespace larg4 {
 #endif
 
 #endif
-
-
-
-
-
-

@@ -27,7 +27,6 @@
 #define Density_LNe 1.207
 #define Density_LKr 2.413
 
-#include "Geant4/Randomize.hh"
 #include "Geant4/G4Ions.hh"
 #include "Geant4/G4OpticalPhoton.hh"
 #include "Geant4/G4VProcess.hh"
@@ -1267,4 +1266,3 @@ G4double UnivScreenFunc ( G4double E, G4double Z, G4double A ) {
 					  (a*m_N*pow(CLHEP::eplus,2.)));
   return 1.38e5*0.5*(1+tanh(50*epsilon-0.25))*epsilon*(s_e/s_n);
 }
-

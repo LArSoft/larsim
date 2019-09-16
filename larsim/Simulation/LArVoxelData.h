@@ -62,8 +62,8 @@
 #include "lardataobj/Utilities/SumSecondFunction.h"
 #include "larsim/Simulation/LArVoxelID.h"
 
+#include <iosfwd>
 #include <numeric>
-#include <iostream>
 
 namespace sim {
 

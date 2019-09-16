@@ -1,17 +1,11 @@
 // OpParamAction class implementation : Ben Jones, MIT 2013
 // See header file for detailed description.
 
-
-
 #include "larsim/LArG4/OpParamAction.h"
 
 #include "cetlib_except/exception.h"
 
-#include "Geant4/G4Material.hh"
 #include <cmath>
-
-
-
 
 namespace larg4
 {

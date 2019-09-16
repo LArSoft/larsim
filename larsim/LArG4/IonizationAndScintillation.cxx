@@ -11,16 +11,19 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 
 // ROOT includes
+#include "TH1F.h"
+#include "TH2F.h"
 
 // Framework includes
-#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 
 // C/C++ standard libraries
 #include <cassert>
+
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "Geant4/G4Step.hh"
 
 namespace larg4 {
 

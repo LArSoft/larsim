@@ -156,22 +156,15 @@
 
 #include <vector>
 
-#include "art/Framework/Principal/Handle.h"
-
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "canvas/Persistency/Common/Assns.h"
-#include "canvas/Persistency/Common/FindOneP.h"
-#include "canvas/Persistency/Provenance/ProductToken.h"
-
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
-#include "nug4/ParticleNavigation/EveIdCalculator.h"
+namespace fhicl { class ParameterSet; }
+
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-
+#include "lardataobj/Simulation/GeneratedParticleInfo.h"
 
 
 namespace cheat{
@@ -181,12 +174,16 @@ namespace cheat{
       struct ParticleInventoryConfig{
         fhicl::Atom<art::InputTag> G4ModuleLabel{
           fhicl::Name("G4ModuleLabel"),
-          fhicl::Comment("The label of the LArG4 module used to produce the art file we will be examining"),
-          "largeant"};
+            fhicl::Comment("The label of the LArG4 module used to produce the art file we will be examining"),
+            "largeant"};
         fhicl::Atom<std::string> EveIdCalculator{
           fhicl::Name("EveIdCalculator"),
-          fhicl::Comment("For selecting which EveID caclulator to use at initialization."),
-          "EmEveIdCalculator"};
+            fhicl::Comment("For selecting which EveID caclulator to use at initialization."),
+            "EmEveIdCalculator"};
+        fhicl::Atom<bool> OverrideRealData{
+          fhicl::Name("OverrideRealData"),
+            fhicl::Comment("Option when overlaying simulation on real data, to tell the backtracker to continue even if event looks like data."),
+            false};
       };
 
       //using provider_type = ParticleInventory;
@@ -269,6 +266,7 @@ namespace cheat{
       //  EveIdCalculator
       //}
       std::string fEveIdCalculator;
+      bool fOverrideRealData;
 
 
 

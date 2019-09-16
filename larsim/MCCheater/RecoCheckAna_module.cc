@@ -7,6 +7,7 @@
 // from art v0_07_04.
 ////////////////////////////////////////////////////////////////////////
 
+#include <map>
 #include <utility> // std::move()
 
 #include "TH1.h"
@@ -17,8 +18,15 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Provenance/EventID.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Shower.h"
@@ -29,13 +37,12 @@
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardataobj/Simulation/SimChannel.h"
 
 namespace cheat {
   class RecoCheckAna;
 }
-
-class TH1D;
-class TTree;
 
 class cheat::RecoCheckAna : public art::EDAnalyzer {
 public:
@@ -50,73 +57,73 @@ public:
 private:
 
   void CheckReco        (int                                                 const& colID,
-			 std::vector< art::Ptr<recob::Hit> > 	 	     const& allhits,
-			 std::vector< art::Ptr<recob::Hit> > 	 	     const& colHits,
-			 std::map<std::pair<int, int>, std::pair<double, double> >& g4RecoBaseIDToPurityEfficiency);
+                         std::vector< art::Ptr<recob::Hit> >                 const& allhits,
+                         std::vector< art::Ptr<recob::Hit> >                 const& colHits,
+                         std::map<std::pair<int, int>, std::pair<double, double> >& g4RecoBaseIDToPurityEfficiency);
   void CheckRecoClusters(art::Event                                 const& evt,
-			 std::string                                const& label,
-			 art::Handle< std::vector<recob::Cluster> > const& clscol,
-			 std::vector< art::Ptr<recob::Hit> >        const& allhits);
+                         std::string                                const& label,
+                         art::Handle< std::vector<recob::Cluster> > const& clscol,
+                         std::vector< art::Ptr<recob::Hit> >        const& allhits);
   void CheckRecoTracks  (art::Event                                 const& evt,
-			 std::string                                const& label,
-			 art::Handle< std::vector<recob::Track> >   const& tcol,
-			 std::vector< art::Ptr<recob::Hit> >        const& allhits);
+                         std::string                                const& label,
+                         art::Handle< std::vector<recob::Track> >   const& tcol,
+                         std::vector< art::Ptr<recob::Hit> >        const& allhits);
   void CheckRecoShowers (art::Event                                const& evt,
-			 std::string                               const& label,
-			 art::Handle< std::vector<recob::Shower> > const& scol,
-			 std::vector< art::Ptr<recob::Hit> >       const& allhits);
+                         std::string                               const& label,
+                         art::Handle< std::vector<recob::Shower> > const& scol,
+                         std::vector< art::Ptr<recob::Hit> >       const& allhits);
   void CheckRecoVertices(art::Event                                 const& evt,
-			 std::string                                const& label,
-			 art::Handle< std::vector<recob::Vertex> >  const& vtxcol,
-			 std::vector< art::Ptr<recob::Hit> >        const& allhits);
+                         std::string                                const& label,
+                         art::Handle< std::vector<recob::Vertex> >  const& vtxcol,
+                         std::vector< art::Ptr<recob::Hit> >        const& allhits);
   void CheckRecoEvents  (art::Event                                 const& evt,
-		         std::string                                const& label,
-		         art::Handle< std::vector<recob::Event> >   const& evtcol,
-		         std::vector< art::Ptr<recob::Hit> >        const& allhits);
+                         std::string                                const& label,
+                         art::Handle< std::vector<recob::Event> >   const& evtcol,
+                         std::vector< art::Ptr<recob::Hit> >        const& allhits);
   // method to fill the histograms and TTree
   void FillResults(std::vector< art::Ptr<recob::Hit> > const& allhits);
 
   // helper method to the above for clusters, showers and tracks
   void FlattenMap(std::map<std::pair<int, int>,  std::pair<double, double> > const& g4RecoBaseIDToPurityEfficiency,
-		  std::map<int, std::vector<std::pair<int, std::pair<double, double> > > >& g4IDToRecoBasePurityEfficiency,
+                  std::map<int, std::vector<std::pair<int, std::pair<double, double> > > >& g4IDToRecoBasePurityEfficiency,
                   TH1D*                                                            purity,
-		  TH1D*                                                            efficiency,
-		  TH1D*                                                            purityEfficiency,
-		  TH2D*                                                            purityEfficiency2D);
+                  TH1D*                                                            efficiency,
+                  TH1D*                                                            purityEfficiency,
+                  TH2D*                                                            purityEfficiency2D);
 
   art::ServiceHandle<cheat::BackTrackerService const> fBT; ///< the back tracker service
   art::ServiceHandle<cheat::ParticleInventoryService const> fPI; ///< the back tracker service
 
   std::string fHitModuleLabel;		 ///< label for module making the hits
   std::string fClusterModuleLabel;	 ///< label for module making the clusters
-  std::string fShowerModuleLabel; 	 ///< label for module making the showers
-  std::string fTrackModuleLabel;  	 ///< label for module making the tracks
-  std::string fVertexModuleLabel; 	 ///< label for module making the vertices
-  std::string fEventModuleLabel;  	 ///< label for module making the events
+  std::string fShowerModuleLabel;        ///< label for module making the showers
+  std::string fTrackModuleLabel;         ///< label for module making the tracks
+  std::string fVertexModuleLabel;        ///< label for module making the vertices
+  std::string fEventModuleLabel;         ///< label for module making the events
 
-  bool        fCheckClusters;     	 ///< should we check the reconstruction of clusters?
-  bool        fCheckShowers;      	 ///< should we check the reconstruction of showers?
-  bool        fCheckTracks;       	 ///< should we check the reconstruction of tracks?
-  bool        fCheckVertices;     	 ///< should we check the reconstruction of vertices?
-  bool        fCheckEvents;       	 ///< should we check the reconstruction of events?
+  bool        fCheckClusters;            ///< should we check the reconstruction of clusters?
+  bool        fCheckShowers;             ///< should we check the reconstruction of showers?
+  bool        fCheckTracks;              ///< should we check the reconstruction of tracks?
+  bool        fCheckVertices;            ///< should we check the reconstruction of vertices?
+  bool        fCheckEvents;              ///< should we check the reconstruction of events?
 
-  TH1D*       fClusterPurity;     	 ///< histogram of cluster purity
-  TH1D*       fClusterEfficiency; 	 ///< histogram of cluster efficiency
+  TH1D*       fClusterPurity;            ///< histogram of cluster purity
+  TH1D*       fClusterEfficiency;        ///< histogram of cluster efficiency
   TH1D*       fClusterPurityEfficiency;  ///< histogram of cluster efficiency times purity
   TH2D*       fClusterPurityEfficiency2D;///< scatter histogram of cluster purity and efficiency
   TH1D*       fShowerPurity;		 ///< histogram of shower purity
-  TH1D*       fShowerEfficiency;  	 ///< histogram of shower efficiency
+  TH1D*       fShowerEfficiency;         ///< histogram of shower efficiency
   TH1D*       fShowerPurityEfficiency;   ///< histogram of shower efficiency times purity
   TH2D*       fShowerPurityEfficiency2D; ///< scatter histogram of cluster purity and efficiency
-  TH1D*       fTrackPurity;       	 ///< histogram of track purity
-  TH1D*       fTrackEfficiency;   	 ///< histogram of track efficiency
+  TH1D*       fTrackPurity;              ///< histogram of track purity
+  TH1D*       fTrackEfficiency;          ///< histogram of track efficiency
   TH1D*       fTrackPurityEfficiency;    ///< histogram of track efficiency times purity
   TH2D*       fTrackPurityEfficiency2D;  ///< scatter histogram of cluster purity and efficiency
-  TH1D*       fVertexPurity;      	 ///< histogram of vertex purity
-  TH1D*       fVertexEfficiency;  	 ///< histogram of vertex efficiency
+  TH1D*       fVertexPurity;             ///< histogram of vertex purity
+  TH1D*       fVertexEfficiency;         ///< histogram of vertex efficiency
   TH1D*       fVertexPurityEfficiency;   ///< histogram of vertex efficiency times purity
-  TH1D*       fEventPurity;       	 ///< histogram of event purity
-  TH1D*       fEventEfficiency;   	 ///< histogram of event efficiency
+  TH1D*       fEventPurity;              ///< histogram of event purity
+  TH1D*       fEventEfficiency;          ///< histogram of event efficiency
   TH1D*       fEventPurityEfficiency;    ///< histogram of event efficiency times purity
 
   // The following maps have a pair of the G4 track id and RecoBase object
@@ -170,7 +177,7 @@ void cheat::RecoCheckAna::analyze(art::Event const &e)
   // check that this is MC, stop if it isn't
   if(e.isRealData()){
     mf::LogWarning("RecoVetter") << "attempting to run MC truth check on "
-				 << "real data, bail";
+                                 << "real data, bail";
     return;
   }
 
@@ -224,23 +231,23 @@ void cheat::RecoCheckAna::beginRun(art::Run const &/*r*/)
 
   if(fCheckEvents){
     fEventPurity	     = tfs->make<TH1D>("eventPurity",       ";Purity;Events",       100, 0., 1.1);
-    fEventEfficiency  	     = tfs->make<TH1D>("eventEfficiency",   ";Efficiency;Events",   100, 0., 1.1);
+    fEventEfficiency         = tfs->make<TH1D>("eventEfficiency",   ";Efficiency;Events",   100, 0., 1.1);
     fEventPurityEfficiency   = tfs->make<TH1D>("eventPurityEfficiency", ";purityEfficiency;Events", 110, 0., 1.1);
   }
   if(fCheckVertices){
-    fVertexPurity     	     = tfs->make<TH1D>("vertexPurity",      ";Purity;Vertices",     100, 0., 1.1);
-    fVertexEfficiency 	     = tfs->make<TH1D>("vertexEfficiency",  ";Efficiency;Vertices", 100, 0., 1.1);
+    fVertexPurity            = tfs->make<TH1D>("vertexPurity",      ";Purity;Vertices",     100, 0., 1.1);
+    fVertexEfficiency        = tfs->make<TH1D>("vertexEfficiency",  ";Efficiency;Vertices", 100, 0., 1.1);
     fVertexPurityEfficiency  = tfs->make<TH1D>("vertexPurityEfficiency", ";purityEfficiency;Vertex", 110, 0., 1.1);
   }
   if(fCheckTracks){
-    fTrackPurity      	     = tfs->make<TH1D>("trackPurity",       ";Purity;Tracks",       100, 0., 1.1);
-    fTrackEfficiency  	     = tfs->make<TH1D>("trackEfficiency",   ";Efficiency;Tracks",   100, 0., 1.1);
+    fTrackPurity             = tfs->make<TH1D>("trackPurity",       ";Purity;Tracks",       100, 0., 1.1);
+    fTrackEfficiency         = tfs->make<TH1D>("trackEfficiency",   ";Efficiency;Tracks",   100, 0., 1.1);
     fTrackPurityEfficiency   = tfs->make<TH1D>("trackPurityEfficiency", ";purityEfficiency;Tracks", 110, 0., 1.1);
     fTrackPurityEfficiency2D = tfs->make<TH2D>("trackPurityEfficiency2D", ";purity;efficiency", 110, 0., 1.1, 110, 0., 1.1);
   }
   if(fCheckShowers){
-    fShowerPurity     	     = tfs->make<TH1D>("showerPurity",      ";Purity;Showers",      100, 0., 1.1);
-    fShowerEfficiency 	     = tfs->make<TH1D>("showerEfficiency",  ";Efficiency;Showers",  100, 0., 1.1);
+    fShowerPurity            = tfs->make<TH1D>("showerPurity",      ";Purity;Showers",      100, 0., 1.1);
+    fShowerEfficiency        = tfs->make<TH1D>("showerEfficiency",  ";Efficiency;Showers",  100, 0., 1.1);
     fShowerPurityEfficiency  = tfs->make<TH1D>("showerPurityEfficiency", ";purityEfficiency;Showers", 110, 0., 1.1);
     fShowerPurityEfficiency2D= tfs->make<TH2D>("showerPurityEfficiency2D", ";purity;efficiency", 110, 0., 1.1, 110, 0., 1.1);
   }
@@ -278,9 +285,9 @@ void cheat::RecoCheckAna::beginRun(art::Run const &/*r*/)
 // colID is the ID of the RecoBase object and colHits are the recob::Hits
 // associated with it
 void cheat::RecoCheckAna::CheckReco(int                                 const& colID,
-				    std::vector< art::Ptr<recob::Hit> > const& allhits,
-				    std::vector< art::Ptr<recob::Hit> > const& colHits,
-				    std::map<std::pair<int, int>, std::pair<double, double> >& g4RecoBaseIDToPurityEfficiency)
+                                    std::vector< art::Ptr<recob::Hit> > const& allhits,
+                                    std::vector< art::Ptr<recob::Hit> > const& colHits,
+                                    std::map<std::pair<int, int>, std::pair<double, double> >& g4RecoBaseIDToPurityEfficiency)
 {
 
   // grab the set of track IDs for these hits
@@ -318,9 +325,9 @@ void cheat::RecoCheckAna::CheckReco(int                                 const& c
 
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::CheckRecoClusters(art::Event                                 const& evt,
-					    std::string                                const& label,
-					    art::Handle< std::vector<recob::Cluster> > const& clscol,
-					    std::vector< art::Ptr<recob::Hit> >        const& allhits)
+                                            std::string                                const& label,
+                                            art::Handle< std::vector<recob::Cluster> > const& clscol,
+                                            std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
 
   art::FindManyP<recob::Hit> fmh(clscol, evt, label);
@@ -339,9 +346,9 @@ void cheat::RecoCheckAna::CheckRecoClusters(art::Event                          
 
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::CheckRecoTracks(art::Event                                 const& evt,
-					  std::string                                const& label,
-					  art::Handle< std::vector<recob::Track> >   const& tcol,
-					  std::vector< art::Ptr<recob::Hit> >        const& allhits)
+                                          std::string                                const& label,
+                                          art::Handle< std::vector<recob::Track> >   const& tcol,
+                                          std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
 
   art::FindManyP<recob::Hit> fmh(tcol, evt, label);
@@ -360,9 +367,9 @@ void cheat::RecoCheckAna::CheckRecoTracks(art::Event                            
 
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::CheckRecoShowers(art::Event                                const& evt,
-					   std::string                               const& label,
-					   art::Handle< std::vector<recob::Shower> > const& scol,
-					   std::vector< art::Ptr<recob::Hit> >       const& allhits)
+                                           std::string                               const& label,
+                                           art::Handle< std::vector<recob::Shower> > const& scol,
+                                           std::vector< art::Ptr<recob::Hit> >       const& allhits)
 {
 
   art::FindManyP<recob::Hit> fmh(scol, evt, label);
@@ -383,9 +390,9 @@ void cheat::RecoCheckAna::CheckRecoShowers(art::Event                           
 //a true vertex will either consist of primary particles originating from
 //the interaction vertex, or a primary particle decaying to make daughters
 void cheat::RecoCheckAna::CheckRecoVertices(art::Event                                 const& evt,
-					    std::string                                const& label,
-					    art::Handle< std::vector<recob::Vertex> >  const& vtxcol,
-					    std::vector< art::Ptr<recob::Hit> >        const& allhits)
+                                            std::string                                const& label,
+                                            art::Handle< std::vector<recob::Vertex> >  const& vtxcol,
+                                            std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
   const sim::ParticleList& plist = fPI->ParticleList();
 
@@ -441,9 +448,9 @@ void cheat::RecoCheckAna::CheckRecoVertices(art::Event                          
 // MCTruth collection
 /// \todo need to divy it up in the case where there is more than 1 true interaction in a spill
 void cheat::RecoCheckAna::CheckRecoEvents(art::Event                                 const& evt,
-					  std::string                                const& label,
-					  art::Handle< std::vector<recob::Event> >   const& evtcol,
-					  std::vector< art::Ptr<recob::Hit> >        const& allhits)
+                                          std::string                                const& label,
+                                          art::Handle< std::vector<recob::Event> >   const& evtcol,
+                                          std::vector< art::Ptr<recob::Hit> >        const& allhits)
 {
   const sim::ParticleList& plist = fPI->ParticleList();
 
@@ -483,11 +490,11 @@ void cheat::RecoCheckAna::CheckRecoEvents(art::Event                            
 
 //-------------------------------------------------------------------
 void cheat::RecoCheckAna::FlattenMap(std::map<std::pair<int, int>, std::pair<double, double> > const& g4RecoBaseIDToPurityEfficiency,
-				     std::map<int, std::vector<std::pair<int, std::pair<double, double> > > >& g4IDToRecoBasePurityEfficiency,
-				     TH1D*                                                            purity,
-				     TH1D*                                                            efficiency,
-				     TH1D*                                                            purityEfficiency,
-				     TH2D*                                                            purityEfficiency2D)
+                                     std::map<int, std::vector<std::pair<int, std::pair<double, double> > > >& g4IDToRecoBasePurityEfficiency,
+                                     TH1D*                                                            purity,
+                                     TH1D*                                                            efficiency,
+                                     TH1D*                                                            purityEfficiency,
+                                     TH2D*                                                            purityEfficiency2D)
 {
 
   std::map<std::pair<int, int>, std::pair<double, double> >::const_iterator rbItr = g4RecoBaseIDToPurityEfficiency.begin();

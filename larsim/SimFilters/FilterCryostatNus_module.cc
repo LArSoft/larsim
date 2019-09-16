@@ -13,9 +13,8 @@
 // Framework includes
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "cetlib_except/exception.h"
+#include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft Includes
 #include "larcore/Geometry/Geometry.h"

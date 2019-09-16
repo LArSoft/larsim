@@ -1,3 +1,9 @@
+#include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+
+#include "nug4/ParticleNavigation/EmEveIdCalculator.h"
+#include "nug4/ParticleNavigation/EveIdCalculator.h"
+
 namespace cheat{
 
   //--------------------------------------------------------------------
@@ -56,7 +62,7 @@ namespace cheat{
       if( this->TrackIdToMCTruthReady() && this->MCTruthListReady( ) ){ return;} 
       this->PrepParticleList( evt); //Make sure we have built the particle list for this event
       //const auto& mcpmctAssnsIn = *( evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth>>(fG4ModuleLabel));
-      const auto& mcpmctAssnsHandle =  evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth>>(fG4ModuleLabel);
+      const auto& mcpmctAssnsHandle =  evt.template getValidHandle<art::Assns<simb::MCParticle,simb::MCTruth,sim::GeneratedParticleInfo>>(fG4ModuleLabel);
       const auto& mcpmctAssnsIn = *mcpmctAssnsHandle;
       for( const auto& mcpmctAssnIn : mcpmctAssnsIn){    //Assns are themselves a container. Loop over entries.
         const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
@@ -94,6 +100,10 @@ namespace cheat{
 
   template<typename Evt>
     bool ParticleInventory::CanRun(const Evt& evt) const{
+      if(fOverrideRealData)
+      {
+        return true;
+      }
       return !(evt.isRealData());
     }
 

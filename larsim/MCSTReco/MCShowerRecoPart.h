@@ -2,31 +2,13 @@
 #define MCSHOWERRECOPART_H
 
 // ART includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
+namespace fhicl { class ParameterSet; }
 
 // LArSoft
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larcore/Geometry/Geometry.h"
 #include "MCRecoPart.h"
 
 // STL
-#include <set>
 #include <vector>
-#include <sstream>
-
-// ROOT
-#include <TString.h>
-#include <TTree.h>
 
 namespace sim
 {

@@ -25,11 +25,14 @@
 #ifndef LArG4_AuxDetReadoutGeometry_h
 #define LArG4_AuxDetReadoutGeometry_h
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "larcore/Geometry/Geometry.h"
 #include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
+
+class G4VPhysicalVolume;
 
 namespace larg4 {
 

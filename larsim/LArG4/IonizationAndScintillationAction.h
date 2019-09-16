@@ -13,9 +13,6 @@
 
 #include "nug4/G4Base/UserAction.h"
 
-#include "Geant4/globals.hh"
-#include <map>
-
 // Forward declarations.
 class G4Step;
 

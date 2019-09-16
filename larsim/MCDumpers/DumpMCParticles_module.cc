@@ -13,7 +13,6 @@
 // nutools libraries
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nusimdata/SimulationBase/simb.h" // simb::NoGeneratedParticleIndex
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -23,7 +22,6 @@
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -31,8 +29,6 @@
 // C/C++ standard libraries
 #include <memory> // std::unique_ptr<>
 #include <string>
-#include <cstddef> // std::size_t
-
 
 namespace sim {
   class DumpMCParticles;

@@ -16,18 +16,18 @@
 #include <string>
 
 // framework includes
-#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "cetlib_except/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+namespace fhicl { class ParameterSet; }
 
 // art extensions
+namespace rndm { class NuRandomService; }
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
-#include "larcore/Geometry/Geometry.h"
+namespace geo { class Geometry; }
 
 // ROOT includes
 #include "TLorentzVector.h"

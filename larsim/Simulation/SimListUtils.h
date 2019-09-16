@@ -9,8 +9,8 @@
 #ifndef SIMLISTUTILS_H
 #define SIMLISTUTILS_H
 
-#include <vector>
 #include <string>
+
 #include "larsim/Simulation/LArVoxelList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 

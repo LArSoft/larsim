@@ -7,17 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-// ROOT includes
-#include <TMath.h>
-#include <TH1F.h>
-#include <TGraph.h>
-#include <TFile.h>
-
-// C++ includes
-#include <algorithm>
-#include <fstream>
-#include <bitset>
-
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -25,20 +14,14 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
+#include "art/Framework/Core/EDAnalyzer.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
-#include "lardata/Utilities/LArFFT.h"
 
-#include "TComplex.h"
-#include "TString.h"
-#include "TGraph.h"
 #include "TH2.h"
-
-#include "art/Framework/Core/EDAnalyzer.h"
 
 #include <string>
 

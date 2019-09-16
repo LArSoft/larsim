@@ -9,7 +9,6 @@
 #include "larcorealg/Geometry/geo_vectors_utils.h"
 
 // C++ standard libraries
-#include <vector>
 #include <string>
 #include <algorithm> // std::min(), std::max()
 #include <stdexcept> // std::runtime_error

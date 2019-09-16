@@ -11,12 +11,9 @@
 #include "art/Framework/Core/SharedFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <memory>
-
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -47,6 +44,8 @@ private:
   float const fMinPhotonEnergy;
   bool const fDebug;
   std::size_t const fN;
+  bool fUseReflectedPhotons;
+  std::string fReflectedLabel;
 
   void CheckTimeWindows() const;
 };
@@ -61,6 +60,8 @@ simfilter::FilterSimPhotonTime::FilterSimPhotonTime(
   , fMinPhotonEnergy(p.get<float>("MinPhotonEnergy", -1))
   , fDebug(p.get<bool>("Debug", false))
   , fN(fTimeWindows.size())
+  , fUseReflectedPhotons(p.get<bool>("UseReflectedPhotons", false))
+  , fReflectedLabel(p.get<std::string>("fReflectedLabel", "Reflected"))
 {
   CheckTimeWindows();
 
@@ -108,7 +109,16 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e,
     *e.getValidHandle<std::vector<sim::SimPhotons>>(fSimPhotonsCollectionLabel);
 
   std::vector<double> sumEnergyArray(fN, 0.0);
-  for (auto const& simphotons : simPhotonsCollection) {
+
+  const std::vector<sim::SimPhotons> &simPhotonsCollectionReflected = fUseReflectedPhotons ?
+    *e.getValidHandle<std::vector<sim::SimPhotons>>({fSimPhotonsCollectionLabel, fReflectedLabel}) : std::vector<sim::SimPhotons>();
+
+  size_t n_sim_photons = simPhotonsCollection.size() + simPhotonsCollectionReflected.size();
+    
+  for (size_t i_pc = 0; i_pc < n_sim_photons; i_pc++) {
+    const sim::SimPhotons &simphotons = (i_pc < simPhotonsCollection.size()) ? 
+      simPhotonsCollection[i_pc] : simPhotonsCollectionReflected[i_pc - simPhotonsCollection.size()];
+
     if (fDebug)
       std::cout << "\tFilterSimPhotonTime: Processing simphotons channel "
                 << simphotons.OpChannel() << std::endl;
@@ -119,9 +129,11 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e,
         if (photon.Time >= tw[0] && photon.Time <= tw[1] &&
             photon.Energy > fMinPhotonEnergy) {
 
-          if (fDebug)
-            std::cout << "\t\tPhoton with time " << photon.Time << " detected. "
+          if (fDebug) {
+            std::string photon_string = (i_pc < simPhotonsCollection.size()) ? "Photon" : "Reflected Photon";
+            std::cout << "\t\t" << photon_string << " with time " << photon.Time << " detected. "
                       << "Energy is  " << photon.Energy << "." << std::endl;
+          }
 
           sumEnergyArray[i_tw] += photon.Energy;
 

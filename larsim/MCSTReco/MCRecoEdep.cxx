@@ -4,10 +4,17 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "MCRecoEdep.h"
 
-// #include "Utilities/DetectorProperties.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/TPCGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
+#include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+
+#include "MCRecoEdep.h"
 
 namespace sim {
 

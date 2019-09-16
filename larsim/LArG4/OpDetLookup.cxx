@@ -11,10 +11,12 @@
 //
 
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
+#include "Geant4/G4VPhysicalVolume.hh"
+
 #include "larsim/LArG4/OpDetLookup.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 
 

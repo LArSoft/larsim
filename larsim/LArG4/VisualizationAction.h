@@ -25,7 +25,7 @@
 #define LArG4_VisualizationAction_H
 
 #include "nug4/G4Base/UserAction.h"
-#include "Geant4/globals.hh"
+#include "Geant4/G4Types.hh"
 
 // Forward declarations of G4 classes that are arguments to
 // UserAction methods.

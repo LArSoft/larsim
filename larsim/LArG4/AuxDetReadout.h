@@ -7,13 +7,13 @@
 #ifndef LARG4_AUXDETREADOUT_H
 #define LARG4_AUXDETREADOUT_H
 
+#include "Geant4/G4Types.hh"
 #include "Geant4/G4VSensitiveDetector.hh"
-#include "Geant4/globals.hh"
 
-#include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/AuxDetGeo.h"
-#include "larcorealg/Geometry/AuxDetSensitiveGeo.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 
 #include <vector>
 

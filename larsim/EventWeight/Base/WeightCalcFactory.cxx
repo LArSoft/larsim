@@ -1,4 +1,5 @@
 #include "WeightCalcFactory.h"
+#include "WeightCalcCreator.h"
 
 namespace evwgh {
 

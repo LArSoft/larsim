@@ -9,9 +9,10 @@
 #define LARG4_ISCALCULATIONNEST_H
 
 #include "larsim/LArG4/ISCalculation.h"
-#include "larsim/LArG4/NestAlg.h"
 
-// forward declaration
+// forward declarations
+class G4Step;
+class NestAlg;
 namespace CLHEP { class HepRandomEngine; }
 
 namespace larg4 {
@@ -36,4 +37,3 @@ namespace larg4 {
  };
 }
 #endif // LARG4_ISCALCULATIONNEST_H
-

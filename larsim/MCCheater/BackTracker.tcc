@@ -5,6 +5,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+
 namespace cheat{
 
   //--------------------------------------------------------------------
