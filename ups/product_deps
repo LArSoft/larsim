@@ -8,11 +8,11 @@ fwdir   product_dir G4
 #
 product         version
 larevt          v08_06_09
-nug4            v1_00_03
-nugen           v1_04_01
-nurandom        v1_00_01
-nutools         v3_03_01
-marley          v1_1_1
+nug4            v1_01_01
+nugen           v1_05_01
+nurandom        v1_01_01
+nutools         v3_04_02
+marley          v1_1_1b
 larsoft_data    v1_02_01
 cetbuildtools   v7_12_01    -   only_for_build
 end_product_list
