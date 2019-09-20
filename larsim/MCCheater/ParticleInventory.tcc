@@ -1,6 +1,5 @@
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "art/Framework/Principal/Handle.h"
 
 #include "nug4/ParticleNavigation/EmEveIdCalculator.h"
 #include "nug4/ParticleNavigation/EveIdCalculator.h"
@@ -63,9 +62,10 @@ namespace cheat{
       if( this->TrackIdToMCTruthReady() && this->MCTruthListReady( ) ){ return;} 
       this->PrepParticleList( evt); //Make sure we have built the particle list for this event
 
-      art::Handle< art::Assns<simb::MCParticle,simb::MCTruth> > mcpmctAssnsHandle;
+      // relaxed Assns lookup
+      typename Evt::template HandleT< art::Assns<simb::MCParticle,simb::MCTruth> > mcpmctAssnsHandle;
       if (evt.getByLabel(fG4ModuleLabel, mcpmctAssnsHandle)) { // Product fetch successful
-        for( const auto& mcpmctAssnIn : *mcpmctAssnsHandle){    //Assns are themselves a container. Loop over entries.
+        for( const auto& mcpmctAssnIn : *mcpmctAssnsHandle){   //Assns are themselves a container. Loop over entries.
           const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
           const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
           unsigned short mctruth_idx = USHRT_MAX;
@@ -83,32 +83,34 @@ namespace cheat{
             fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), mctruth_idx );
           }
         }
-        return;
-      }
+      } else {
 
-      // for compatibility with gallery
-      art::Handle< art::Assns<simb::MCParticle,simb::MCTruth,sim::GeneratedParticleInfo> > mcpmctAssnsHandle_g;
-      if (evt.getByLabel(fG4ModuleLabel, mcpmctAssnsHandle_g)) { // Product fetch successfull
-        for( const auto& mcpmctAssnIn_g : *mcpmctAssnsHandle_g){    //Assns are themselves a container. Loop over entries.
-          const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn_g.first;
-          const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn_g.second;
-          unsigned short mctruth_idx = USHRT_MAX;
-          for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
-            if (fMCTObj.fMCTruthList[i] == mct){
-              mctruth_idx = i;
-              break;
+        // with more strict Assns lookup requiring the GeneratedParticleInfo
+        typename Evt::template HandleT< art::Assns<simb::MCParticle,simb::MCTruth,sim::GeneratedParticleInfo> > mcpmctAssnsHandle;
+        if (evt.getByLabel(fG4ModuleLabel, mcpmctAssnsHandle)) { // Product fetch successful
+          for( const auto& mcpmctAssnIn : *mcpmctAssnsHandle){   //Assns are themselves a container. Loop over entries.
+            const art::Ptr<simb::MCParticle>& part=mcpmctAssnIn.first;
+            const art::Ptr<simb::MCTruth>&    mct =mcpmctAssnIn.second;
+            unsigned short mctruth_idx = USHRT_MAX;
+            for (size_t i = 0; i<fMCTObj.fMCTruthList.size(); ++i){
+              if (fMCTObj.fMCTruthList[i] == mct){
+                mctruth_idx = i;
+                break;
+              }
+            }
+            if (mctruth_idx == USHRT_MAX){
+              fMCTObj.fMCTruthList.push_back(mct);
+              fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size() - 1);
+            }
+            else{
+              fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), mctruth_idx );
             }
           }
-          if (mctruth_idx == USHRT_MAX){
-            fMCTObj.fMCTruthList.push_back(mct);
-            fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), fMCTObj.fMCTruthList.size() - 1);
-          }
-          else{
-            fMCTObj.fTrackIdToMCTruthIndex.emplace(part->TrackId(), mctruth_idx );
-          }
+        } else { 
+          throw cet::exception("PrepMCTruthListAndTrackIdToMCTruthIndex") 
+            << "Could not get valid MCTruth, MCParticle Assciations!"; 
         }
       }
-      return;
     }
 
   //--------------------------------------------------------------------
