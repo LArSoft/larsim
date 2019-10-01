@@ -226,10 +226,11 @@ namespace detsim {
       fNTPCs[n] = fGeometry->NTPC(n);
 
 
-    fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-		      detprop,
-		      &(*paramHandle),
-		      lar::providerFrom<spacecharge::SpaceChargeService>());
+//    fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+//		      detprop,
+//		      &(*paramHandle),
+//		      lar::providerFrom<spacecharge::SpaceChargeService>());
+    fISAlg.Initialize();
 
 
     return;
@@ -393,11 +394,11 @@ namespace detsim {
 	}
 
 	fISAlg.Reset();
-	fISAlg.CalculateIonizationAndScintillation(energyDeposit);
+	fISAlg.CalcIonAndScint(energyDeposit);
 	//std::cout << "Got " << fISAlg.NumberIonizationElectrons() << "." << std::endl;
 
 	const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
-	const int    nIonizedElectrons  = fISAlg.NumberIonizationElectrons();
+	const int    nIonizedElectrons  = fISAlg.NumOfElectrons();
 	const double energy             = energyDeposit.Energy();
 
 	// if we have no electrons (too small energy or too large recombination)

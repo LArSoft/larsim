@@ -196,7 +196,8 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
   CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
   auto const nOpChannels = pvs->NOpChannels();
-  fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
+//  fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
+  fISAlg.Initialize();
   unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
   auto& photonCollection{*photCol};
   photonCollection.resize(nOpChannels);
@@ -223,9 +224,9 @@ void PhotonLibraryPropagation::produce(art::Event& e)
              "Position: " << edep.MidPoint();
       }
       fISAlg.Reset();
-      fISAlg.CalculateIonizationAndScintillation(edep);
+      fISAlg.CalcIonAndScint(edep);
       //total amount of scintillation photons
-      double nphot = static_cast<int>(fISAlg.NumberScintillationPhotons());
+      double nphot = static_cast<int>(fISAlg.NumOfPhotons());
       //amount of scintillated photons created via the fast scintillation process
       double nphot_fast = static_cast<int>(GetScintYield(edep, *larp) * nphot);
       //amount of scintillated photons created via the slow scintillation process
