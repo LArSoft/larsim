@@ -6,7 +6,8 @@
 // Converted from gNucleonDecayEvGen.cxx by
 // tjyang@fnal.gov
 //
-// 2016 PDG numbering scheme in pp.8-10 of http://www-pdg.lbl.gov/2016/listings/rpp2016-list-p.pdf (tau1 through tau60)
+// 2016 PDG numbering scheme in pp.8-10 of
+// http://www-pdg.lbl.gov/2016/listings/rpp2016-list-p.pdf (tau1 through tau60)
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +31,9 @@
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
+
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -82,6 +86,9 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const & p)
 
   string sname   = "genie::EventGenerator";
   string sconfig = "NucleonDecay";
+  // GENIE v3 needs a tune (even if irrelevant)
+  evgb::SetEventGeneratorListAndTune("Default","Default");
+
   genie::AlgFactory * algf = genie::AlgFactory::Instance();
   mcgen =
     dynamic_cast<const genie::EventRecordVisitorI *> (algf->GetAlgorithm(sname,sconfig));
