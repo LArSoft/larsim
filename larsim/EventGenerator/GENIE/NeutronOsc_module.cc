@@ -51,6 +51,9 @@
 // larsoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
+
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -105,7 +108,11 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const & p)
   genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
   string sname   = "genie::EventGenerator";
-  string sconfig = "NeutronOsc";
+  // GENIE v2 // string sconfig = "NeutronOsc";
+  string sconfig = "NNBarOsc";
+  // GENIE v3 needs a tune (even if irrelevant)
+  evgb::SetEventGeneratorListAndTune("Default","Default");
+
   genie::AlgFactory * algf = genie::AlgFactory::Instance();
   mcgen =
     dynamic_cast<const genie::EventRecordVisitorI *> (algf->GetAlgorithm(sname,sconfig));

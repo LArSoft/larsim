@@ -1,8 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// \file BackTracker.tcc
-// \brief Template functions needed by the BackTracker service in order to connect truth information with reconstruction. Templates are for functions that require the event (as the "event" is different for art and Gallery).
-//
+///////////////////////////////////////////////////////////////////////////
 // \author jason.stock@mines.sdsmt.edu
 //
 // Based on the original BackTracker by brebel@fnal.gov
@@ -34,7 +30,7 @@ namespace cheat{
     void BackTracker::PrepSimChannels (const Evt& evt){
       if(this->SimChannelsReady()){ return;}
       //The SimChannels list needs to be built.
-      const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fG4ModuleLabel);
+      const auto& simChannelsHandle = evt.template getValidHandle<std::vector<sim::SimChannel>>(fSimChannelModuleLabel);
       //failedToGet for a valid handle will always be false.
 //      if(simChannelsHandle.failedToGet()){
 //        /*  mf::LogWarning("BackTracker") << "failed to get handle to simb::MCParticle from "

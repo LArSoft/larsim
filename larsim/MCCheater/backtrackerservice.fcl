@@ -3,7 +3,8 @@
 BEGIN_PROLOG
 
 providerBKConf:{
- G4ModuleLabel:            "largeant" # module that produced the sim::Particle and sim::SimChannel objects
+ G4ModuleLabel:            "largeant" # module that produced the sim::Particle objects
+ SimChannelModuleLabel:    "largeant" # module that produced the sim::SimChannel objects, if not provided defaults to using the G4ModuleLabel
  MinimumHitEnergyFraction: 0.1        # minimum fraction of energy a G4 trackID contributes to a hit to be 
                                       # counted in hit based efficiency and purity calculations
 }

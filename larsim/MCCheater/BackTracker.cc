@@ -28,6 +28,7 @@ namespace cheat{
      fGeom     (geom),
      fDetClocks(detClock),
      fG4ModuleLabel(config.G4ModuleLabel()),
+     fSimChannelModuleLabel(config.SimChannelModuleLabel()),
      fHitLabel(config.DefaultHitModuleLabel()),
      fMinHitEnergyFraction(config.MinHitEnergyFraction()),
      fOverrideRealData(config.OverrideRealData())
@@ -39,10 +40,11 @@ namespace cheat{
     :fPartInv  (partInv),
      fGeom     (geom),
      fDetClocks(detClock),
-     fG4ModuleLabel       (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
-     fHitLabel            (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
-     fMinHitEnergyFraction(pSet.get<double>       ("MinHitEnergyFraction", 0.010)),
-     fOverrideRealData    (pSet.get<bool>         ("OverrideRealData",false))
+     fG4ModuleLabel        (pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
+     fSimChannelModuleLabel(pSet.get<art::InputTag>("SimChannelModuleLabel", fG4ModuleLabel)), // -- D.R. if not provided, default behavior is to use the G4ModuleLabel
+     fHitLabel             (pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd")),
+     fMinHitEnergyFraction (pSet.get<double>       ("MinHitEnergyFraction", 0.010)),
+     fOverrideRealData     (pSet.get<bool>         ("OverrideRealData",false))
   {
   }
 
