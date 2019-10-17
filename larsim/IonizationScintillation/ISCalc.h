@@ -28,16 +28,16 @@ namespace larg4
         double             EnergyDeposit() const                       {return fEnergyDeposit;}
         double             NumOfElectrons() const                      {return fNumIonElectrons;}
         double             NumOfPhotons() const                        {return fNumScintPhotons;}
-        double             NumOfFastPhotons() const                    {return fNumFastScintPhotons;}
-        double             NumOfSlowPhotons() const                    {return fNumSlowScintPhotons;}
+//        double             NumOfFastPhotons() const                    {return fNumFastScintPhotons;}
+//        double             NumOfSlowPhotons() const                    {return fNumSlowScintPhotons;}
         double             ScintillationYieldRatio() const             {return fScintillationYieldRatio;}
         
     protected:
         double  fEnergyDeposit;             // total energy deposited in the step
         double  fNumIonElectrons;           // number of ionization electrons for this step
         double  fNumScintPhotons;           // number of scintillation photons for this step
-        double  fNumFastScintPhotons;       // number of fast scintillation photons for this step
-        double  fNumSlowScintPhotons;       // number of slow scintillation photons for this step
+//        double  fNumFastScintPhotons;       // number of fast scintillation photons for this step
+//        double  fNumSlowScintPhotons;       // number of slow scintillation photons for this step
         double  fScintillationYieldRatio;   // liquid argon scintillation yield ratio
     };
 }

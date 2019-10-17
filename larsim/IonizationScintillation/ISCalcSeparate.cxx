@@ -51,9 +51,12 @@ namespace larg4
     //----------------------------------------------------------------------------
     void ISCalcSeparate::Reset()
     {
-        fEnergyDeposit   = 0.;
-        fNumScintPhotons = 0.;
-        fNumIonElectrons = 0.;
+        fEnergyDeposit           = 0.;
+        fNumScintPhotons         = 0.;
+        fNumIonElectrons         = 0.;
+//        fNumFastScintPhotons     = 0.;
+//        fNumSlowScintPhotons     = 0.;
+        fScintillationYieldRatio = 0.;
         
         return;
     }
@@ -64,7 +67,6 @@ namespace larg4
     {
         float e           = edep.Energy();
         float ds          = edep.StepLength();
-//        geo::Point_t pos  = edep.MidPoint();
         
         double recomb     = 0.;
         double dEdx       = (ds<=0.0)? 0.0: e/ds;
@@ -151,9 +153,8 @@ namespace larg4
         }
         
         fScintillationYieldRatio = GetScintYieldRatio(edep);
-        fNumFastScintPhotons     = fNumScintPhotons * fScintillationYieldRatio;
-        fNumSlowScintPhotons     = fNumScintPhotons - fNumScintPhotons;
-        
+//        fNumFastScintPhotons     = fNumScintPhotons * fScintillationYieldRatio;
+//        fNumSlowScintPhotons     = fNumScintPhotons - fNumFastScintPhotons;
         return;
     }
     

@@ -31,6 +31,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Utilities/make_tool.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -46,7 +47,7 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
-
+#include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
@@ -99,46 +100,6 @@ using namespace std;
 
 namespace
 {
-    
-    //......................................................................    
-    double single_exp(double t, double tau2)
-    {
-        return exp((-1.0 * t) / tau2) / tau2;
-    }
-
-    double bi_exp(double t, double tau1, double tau2)
-    {
-        return (((exp((-1.0 * t) / tau2) * (1.0 - exp((-1.0 * t) / tau1))) / tau2) / tau2) * (tau1 + tau2);
-    }
-
-    
-    //......................................................................    
-    // Returns the time within the time distribution of the scintillation process, when the photon was created.
-    // Scintillation light has an exponential decay which is given by the decay time, tau2,
-    // and an exponential increase, which here is given by the rise time, tau1.
-    // randflatscinttime is passed to use the saved seed from the RandomNumberSaver in order to be able to reproduce the same results.
-    double GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
-    {
-        // tau1: rise time (originally defaulted to -1) and tau2: decay time
-        //ran1, ran2 = random numbers for the algorithm
-        if ((tau1 == 0.0) || (tau1 == -1.0))
-        {
-            return -tau2 * log(randflatscinttime());
-        }
-        while (1)
-        {
-            auto ran1 = randflatscinttime();
-            auto ran2 = randflatscinttime();
-            auto d = (tau1 + tau2) / tau2;
-            auto t = -tau2 * log(1 - ran1);
-            auto g = d * single_exp(t, tau2);
-            if (ran2 <= bi_exp(t, tau1, tau2) / g)
-            {
-                return t;
-            }
-        }
-    }
-    
     //......................................................................    
     double finter_d(double *x, double *par)
     {
@@ -423,7 +384,7 @@ namespace phot
         int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
         int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
         
-        std::vector<double> propgationtime(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected);
+        std::vector<double> propagationtime(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected);
         std::vector<double> getVUVTime(double distance, int number_photons);
         std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int number_photons);
         
@@ -433,13 +394,12 @@ namespace phot
                               std::map<int, int> & ChannelMap,
                               sim::OpDetBacktrackerRecord btr);
     private:
-        double                  fRiseTimeFast;
-        double                  fRiseTimeSlow;
-        bool                    fDoSlowComponent;
-        art::InputTag           simTag;
-        CLHEP::HepRandomEngine& fPhotonEngine;
-        CLHEP::HepRandomEngine& fScintTimeEngine;
-        std::map<int, int>      PDChannelToSOCMap; //Where each OpChan is.
+        bool                          fDoSlowComponent;
+        art::InputTag                 simTag;
+        std::unique_ptr<ScintTime>    fScintTime;        // Tool to retrive timinig of scintillation        
+        CLHEP::HepRandomEngine&       fPhotonEngine;
+        CLHEP::HepRandomEngine&       fScintTimeEngine;
+        std::map<int, int>            PDChannelToSOCMap; //Where each OpChan is.
         
         //For new VUV time parametrization
         double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
@@ -493,10 +453,9 @@ namespace phot
     //......................................................................    
     PDFastSimPAR::PDFastSimPAR(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
-    , fRiseTimeFast{pset.get<double>("RiseTimeFast", 0.0)}
-    , fRiseTimeSlow{pset.get<double>("RiseTimeSlow", 0.0)}
     , fDoSlowComponent{pset.get<bool>("DoSlowComponent")}
     , simTag{pset.get<art::InputTag>("SimulationLabel")}
+    , fScintTime{art::make_tool<ScintTime>(pset.get<fhicl::ParameterSet>("ScintTimeTool"))}    
     , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", pset, "SeedScintTime"))
     {
@@ -577,7 +536,8 @@ namespace phot
                     for (long i = 0; i < n; ++i) 
                     {
                         //calculates the time at which the photon was produced
-                        auto time = static_cast<int>(edepi.StartT() + GetScintTime(fRiseTimeFast, larp->ScintFastTimeConst(), randflatscinttime));
+                        fScintTime->GenScintTime(true, fScintTimeEngine);
+                        auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                         ++ photonLiteCollection[channel].DetectedPhotons[time];
                         tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);                        
                     }
@@ -589,7 +549,8 @@ namespace phot
                     num_slowdp += n;
                     for (long i = 0; i < n; ++i) 
                     {
-                        auto time = static_cast<int>(edepi.StartT() + GetScintTime(fRiseTimeSlow, larp->ScintSlowTimeConst(), randflatscinttime));
+                        fScintTime->GenScintTime(false, fScintTimeEngine);
+                        auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                         ++ photonLiteCollection[channel].DetectedPhotons[time];
                         tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
                     }
@@ -993,7 +954,7 @@ namespace phot
     }
         
     //......................................................................    
-    std::vector<double> PDFastSimPAR::propgationtime(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected)
+    std::vector<double> PDFastSimPAR::propagationtime(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected)
     {
     
         static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;

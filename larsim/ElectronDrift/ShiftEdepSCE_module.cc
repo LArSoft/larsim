@@ -118,8 +118,8 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
     fISAlg.Reset();
     fISAlg.CalcIonAndScint(edep);
     outEdepVec.emplace_back(fISAlg.NumOfPhotons(),
-                0,
-                0,
+//                0,
+//                0,
 			    fISAlg.NumOfElectrons(),
 			    0.0,
 			    edep.Energy(),

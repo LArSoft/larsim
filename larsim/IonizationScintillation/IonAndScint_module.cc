@@ -29,6 +29,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Core/EDProducer.h"
 
+
+#include <stdio.h>
+
 namespace larg4
 {
     class IonAndScint : public art::EDProducer
@@ -53,9 +56,15 @@ namespace larg4
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
     {
-        std::cout << "IonAndScint Module Construct" << std::endl;
+        std::cout << "IonAndScint Module Construct" << std::endl;        
+        produces< std::vector<sim::SimEnergyDeposit> >();        
+    }
+    
+    //......................................................................    
+    void IonAndScint::beginJob()
+    {
+        std::cout << "IonAndScint beginJob." << std::endl;
         std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
-        
         if(calcTag.label().compare("NEST") == 0)
         {
             fISAlg = new ISCalcNESTLAr(fEngine);
@@ -69,23 +78,16 @@ namespace larg4
             mf::LogWarning("ISCalcAna") << "No ISCalculation set, this can't be good.";
         }
         
-        produces< std::vector<sim::SimEnergyDeposit> >(calcTag.label());        
-    }
-    
-    //......................................................................    
-    void IonAndScint::beginJob()
-    {
-        std::cout << "IonAndScint beginJob." << std::endl;
-        
-        fISAlg->Reset();
         fISAlg->Initialize();
+        fISAlg->Reset();
         
         return;
     }
+    
     //......................................................................    
     void IonAndScint::endJob()
     {
-        std::cout << "ISCalcAna endJob." << std::endl;
+        std::cout << "IonAndScint endJob." << std::endl;
         
         if(fISAlg)
         {
@@ -94,6 +96,7 @@ namespace larg4
         
         return;
     }
+    
     //......................................................................    
     void IonAndScint::produce(art::Event& event)
     {
@@ -113,10 +116,10 @@ namespace larg4
         {
             fISAlg->CalcIonAndScint(edepi);
             
-            int           ph_num        = fISAlg->NumOfPhotons();
-            int           fph_num       = fISAlg->NumOfFastPhotons();
-            int           sph_num       = fISAlg->NumOfSlowPhotons();
-            int           ion_num       = fISAlg->NumOfElectrons();
+            int           ph_num        = round(fISAlg->NumOfPhotons());
+//            int           fph_num       = round(fISAlg->NumOfFastPhotons());
+//            int           sph_num       = round(fISAlg->NumOfSlowPhotons());
+            int           ion_num       = round(fISAlg->NumOfElectrons());
             float         scintyield    = fISAlg->ScintillationYieldRatio();
             float         edep_tmp      = edepi.Energy();
             geo::Point_t  startPos_tmp  = edepi.Start();
@@ -126,13 +129,17 @@ namespace larg4
             int           trackID_tmp   = edepi.TrackID();
             int           pdgCode_tmp   = edepi.PdgCode();
             
-            simedep->emplace_back(ph_num, fph_num, sph_num, ion_num, scintyield, edep_tmp,
+//            simedep->emplace_back(ph_num, fph_num, sph_num, ion_num, scintyield, edep_tmp,
+//                                  startPos_tmp, endPos_tmp,
+//                                  startTime_tmp, endTime_tmp,
+//                                  trackID_tmp, pdgCode_tmp);
+            simedep->emplace_back(ph_num, ion_num, scintyield, edep_tmp,
                                   startPos_tmp, endPos_tmp,
                                   startTime_tmp, endTime_tmp,
                                   trackID_tmp, pdgCode_tmp);
         }
         
-        event.put(std::move(simedep), calcTag.label());
+        event.put(std::move(simedep));
         
         return;
     }   

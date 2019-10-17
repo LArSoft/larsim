@@ -30,9 +30,11 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/make_tool.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // LArSoft libraries
 #include "larcore/Geometry/Geometry.h"
@@ -41,56 +43,12 @@
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 
 // Random number engine
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 //#include "CLHEP/Random/RandGauss.h"
-
-using namespace std;
-
-namespace
-{
-    
-    //......................................................................    
-    double single_exp(double t, double tau2)
-    {
-        return exp((-1.0 * t) / tau2) / tau2;
-    }
-
-    double bi_exp(double t, double tau1, double tau2)
-    {
-        return (((exp((-1.0 * t) / tau2) * (1.0 - exp((-1.0 * t) / tau1))) / tau2) / tau2) * (tau1 + tau2);
-    }
-
-    
-    //......................................................................    
-    // Returns the time within the time distribution of the scintillation process, when the photon was created.
-    // Scintillation light has an exponential decay which is given by the decay time, tau2,
-    // and an exponential increase, which here is given by the rise time, tau1.
-    // randflatscinttime is passed to use the saved seed from the RandomNumberSaver in order to be able to reproduce the same results.
-    double GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
-    {
-        // tau1: rise time (originally defaulted to -1) and tau2: decay time
-        //ran1, ran2 = random numbers for the algorithm
-        if ((tau1 == 0.0) || (tau1 == -1.0))
-        {
-            return -tau2 * log(randflatscinttime());
-        }
-        while (1)
-        {
-            auto ran1 = randflatscinttime();
-            auto ran2 = randflatscinttime();
-            auto d = (tau1 + tau2) / tau2;
-            auto t = -tau2 * log(1 - ran1);
-            auto g = d * single_exp(t, tau2);
-            if (ran2 <= bi_exp(t, tau1, tau2) / g)
-            {
-                return t;
-            }
-        }
-    }
-} // namespace std
 
 namespace phot
 {
@@ -103,22 +61,20 @@ namespace phot
                              std::map<int, int> & ChannelMap,
                              sim::OpDetBacktrackerRecord btr);
     private:
-        double                  fRiseTimeFast;
-        double                  fRiseTimeSlow;
-        bool                    fDoSlowComponent;
-        art::InputTag           simTag;
-        CLHEP::HepRandomEngine& fPhotonEngine;
-        CLHEP::HepRandomEngine& fScintTimeEngine;
-        std::map<int, int>      PDChannelToSOCMap; //Where each OpChan is.
+        bool                          fDoSlowComponent;
+        art::InputTag                 simTag;
+        std::unique_ptr<ScintTime>    fScintTime;        // Tool to retrive timinig of scintillation        
+        CLHEP::HepRandomEngine&       fPhotonEngine;
+        CLHEP::HepRandomEngine&       fScintTimeEngine;
+        std::map<int, int>            PDChannelToSOCMap; //Where each OpChan is.
     };
     
     //......................................................................    
     PDFastSimPVS::PDFastSimPVS(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
-    , fRiseTimeFast{pset.get<double>("RiseTimeFast", 0.0)}
-    , fRiseTimeSlow{pset.get<double>("RiseTimeSlow", 0.0)}
     , fDoSlowComponent{pset.get<bool>("DoSlowComponent")}
     , simTag{pset.get<art::InputTag>("SimulationLabel")}
+    , fScintTime{art::make_tool<ScintTime>(pset.get<fhicl::ParameterSet>("ScintTimeTool"))}
     , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", pset, "SeedScintTime"))
     {
@@ -138,7 +94,7 @@ namespace phot
         auto const nOpChannels = pvs->NOpChannels();
         
         CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
-        CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
+//        CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
         
         std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr  (new std::vector<sim::OpDetBacktrackerRecord>);
         std::unique_ptr< std::vector< sim::SimPhotonsLite> >          phlit  (new std::vector<sim::SimPhotonsLite>);
@@ -163,6 +119,7 @@ namespace phot
         int num_points    = 0;
         int num_fastph    = 0;
         int num_slowph    = 0;
+        int num_tot       = 0;
         int num_fastdp    = 0;
         int num_slowdp    = 0;
         
@@ -184,13 +141,14 @@ namespace phot
             }
             
             int trackID       = edepi.TrackID();
-            double nphot      = edepi.NumPhotons();
+            int nphot         = edepi.NumPhotons();
             double edeposit   = edepi.Energy()/nphot;
             double pos[3]     = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
             
-            double nphot_fast = edepi.NumFPhotons();
-            double nphot_slow = edepi.NumSPhotons();
-            
+            int nphot_fast    = edepi.NumFPhotons();
+            int nphot_slow    = edepi.NumSPhotons();
+
+            num_tot    += nphot;
             num_fastph += nphot_fast;
             num_slowph += nphot_slow;
             
@@ -213,7 +171,8 @@ namespace phot
                     for (long i = 0; i < n; ++i) 
                     {
                         //calculates the time at which the photon was produced
-                        auto time = static_cast<int>(edepi.StartT() + GetScintTime(fRiseTimeFast, larp->ScintFastTimeConst(), randflatscinttime));
+                        fScintTime->GenScintTime(true, fScintTimeEngine);
+                        auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                         ++ photonLiteCollection[channel].DetectedPhotons[time];
                         tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);                        
                     }
@@ -225,7 +184,8 @@ namespace phot
                     num_slowdp += n;                    
                     for (long i = 0; i < n; ++i) 
                     {
-                        auto time = static_cast<int>(edepi.StartT() + GetScintTime(fRiseTimeSlow, larp->ScintSlowTimeConst(), randflatscinttime));
+                        fScintTime->GenScintTime(false, fScintTimeEngine);
+                        auto time = static_cast<int>(edepi.StartT()+ fScintTime->GetScintTime());
                         ++ photonLiteCollection[channel].DetectedPhotons[time];
                         tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);                    }
                 }
@@ -234,8 +194,8 @@ namespace phot
             }
         }
         
-        std::cout << "Total points: " << num_points << ", total fast photons: " << num_fastph << ", total slow photons: " << num_slowph << std::endl;
-        std::cout << "detected fast photons: " << num_fastdp << ", detected slow photons: " << num_slowdp << std::endl;
+        std::cout << "Total points: " << num_points << ", total fast photons: " << num_fastph << ", total slow photons: " << num_slowph << ", total photon: " << num_tot << std::endl;
+        std::cout << "Detected fast photons: " << num_fastdp << ", detected slow photons: " << num_slowdp << std::endl;
         
         PDChannelToSOCMap.clear();
         event.put(move(phlit), "pvs");
@@ -276,6 +236,125 @@ namespace phot
             }
         }    
     }  
+
+/*
+template <typename Point> MappedCounts_t GetAllVisibilities(Point const& p, bool wantReflected=false ) const
+{
+    return doGetAllVisibilities(geo::vect::toPoint(p), wantReflected); 
+}
+auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const -> MappedCounts_t
+{
+    phot::IPhotonLibrary::Counts_t data{};
+    
+    // first we fill a container of visibilities in the library index space
+    // (it is directly the values of the library unless interpolation is
+    //  requested)
+    if(fInterpolate)
+    {
+        // this is a punch into multithreading face:
+        static std::vector<float> ret;
+        ret.resize(fMapping->libraryMappingSize(p));
+        for(std::size_t libIndex = 0; libIndex < ret.size(); ++libIndex) 
+        {
+            ret[libIndex] = doGetVisibilityOfOpLib(p, LibraryIndex_t(libIndex), wantReflected);
+        }
+        data = &ret.front();
+    }
+    else
+    {
+        auto const VoxID = VoxelAt(p);
+        data = GetLibraryEntries(VoxID, wantReflected);
+    }
+    return fMapping->applyOpDetMapping(p, data);
+}
+
+float PhotonVisibilityService::doGetVisibilityOfOpLib(geo::Point_t const& p, LibraryIndex_t libIndex, bool wantReflected ) const
+{
+    if(!fInterpolate) 
+    {
+        return GetLibraryEntry(VoxelAt(p), libIndex, wantReflected);
+    }
+    
+    // In case we're outside the bounding box we'll get a empty optional list.
+    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(p));
+    if (!neis) return 0.0;
+    
+    // Sum up all the weighted neighbours to get interpolation behaviour
+    float vis = 0.0;
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value()) 
+    {
+        if (n.id < 0) continue;
+        vis += n.weight * GetLibraryEntry(n.id, libIndex, wantReflected);
+    }
+    
+    return vis;
+}
+
+float PhotonVisibilityService::GetLibraryEntry(int VoxID, OpDetID_t libOpChannel, bool wantReflected) const
+{
+    if(fTheLibrary == 0)
+    LoadLibrary();
+    
+    if(!wantReflected)
+    return fTheLibrary->GetCount(VoxID, libOpChannel);
+    else
+    return fTheLibrary->GetReflCount(VoxID, libOpChannel);
+}
+
+void PhotonVisibilityService::LoadLibrary() const
+{
+// Don't do anything if the library has already been loaded.
+
+if(fTheLibrary == 0) {
+
+if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
+std::string LibraryFileWithPath;
+cet::search_path sp("FW_SEARCH_PATH");
+
+if( !sp.find_file(fLibraryFile, LibraryFileWithPath) )
+throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string() << "\n";
+
+if(!fParameterization) {
+art::ServiceHandle<geo::Geometry const> geom;
+
+mf::LogInfo("PhotonVisibilityService") << "PhotonVisibilityService Loading photon library from file "
+                       << LibraryFileWithPath
+                       << " for "
+                       << GetVoxelDef().GetNVoxels()
+                       << " voxels and "
+                       << geom->NOpDets()
+                       << " optical detectors."
+                       << std::endl;
+
+if(fHybrid){
+fTheLibrary = new PhotonLibraryHybrid(LibraryFileWithPath,
+                        GetVoxelDef());
+}
+else{
+PhotonLibrary* lib = new PhotonLibrary;
+fTheLibrary = lib;
+
+size_t NVoxels = GetVoxelDef().GetNVoxels();
+lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar, fParPropTime_MaxRange);
+}
+}
+}
+else {
+art::ServiceHandle<geo::Geometry const> geom;
+
+size_t NOpDets = geom->NOpDets();
+size_t NVoxels = GetVoxelDef().GetNVoxels();
+mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure "
+                     << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
+PhotonLibrary* lib = new PhotonLibrary;
+fTheLibrary = lib;
+
+lib->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0, fParPropTime_npar);
+}
+
+}
+}
+*/
 } // namespace
 
 DEFINE_ART_MODULE(phot::PDFastSimPVS)

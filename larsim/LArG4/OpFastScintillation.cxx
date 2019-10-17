@@ -513,8 +513,6 @@ namespace larg4{
     OpDetPhotonTable::Instance()->AddEnergyDeposit
       (-1,
        -1,
-       -1,
-       -1,
        1.0,  //scintillation yield
        (double)(step.GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
        (float)(step.GetPreStepPoint()->GetPosition().x()/CLHEP::cm),

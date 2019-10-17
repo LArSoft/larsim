@@ -37,10 +37,13 @@ namespace larg4
     
     //----------------------------------------------------------------------------
     void ISCalcNESTLAr::Reset()
-    {
-        fEnergyDeposit   = 0.;
-        fNumScintPhotons = 0.;
-        fNumIonElectrons = 0.;
+    {        
+        fEnergyDeposit           = 0.;
+        fNumScintPhotons         = 0.;
+        fNumIonElectrons         = 0.;
+//        fNumFastScintPhotons     = 0.;
+//        fNumSlowScintPhotons     = 0.;
+        fScintillationYieldRatio = 0.;
         
         return;
     }
@@ -213,8 +216,8 @@ namespace larg4
         fNumIonElectrons          = NumElectrons;
         fNumScintPhotons          = NumPhotons;
         fScintillationYieldRatio  = GetScintYieldRatio(edep);
-        fNumFastScintPhotons      = fNumScintPhotons * fScintillationYieldRatio;
-        fNumSlowScintPhotons      = fNumScintPhotons - fNumFastScintPhotons;
+//        fNumFastScintPhotons      = fNumScintPhotons * fScintillationYieldRatio;
+//        fNumSlowScintPhotons      = fNumScintPhotons - fNumFastScintPhotons;
         
         return;
     }    

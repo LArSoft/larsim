@@ -48,9 +48,9 @@ namespace larg4
         void endJob()                              override;
         
     private:
-        std::string              fISCalculator;       ///< name of calculator to use, NEST or Separate
         ISCalc*                  fISAlg;
         art::InputTag            fEDepTag;
+        art::InputTag            calcTag;             // name of calculator to use, NEST or Separate
         CLHEP::HepRandomEngine&  fEngine;
         TNtuple*                 fNtuple;
     };
@@ -58,6 +58,7 @@ namespace larg4
     ISCalcAna::ISCalcAna(fhicl::ParameterSet const & pset)
     : EDAnalyzer(pset)
     , fEDepTag{pset.get<art::InputTag>("SimulationLabel")}
+    , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
     {
         std::cout << "ISCalcAna constructor." << std::endl;
@@ -65,18 +66,14 @@ namespace larg4
     
     void ISCalcAna::beginJob()
     {
-        std::cout << "ISCalcAna beginJob." << std::endl;
+        std::cout << "ISCalcAna beginJob." << std::endl;       
+        std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
         
-        art::ServiceHandle<sim::LArG4Parameters const> LArG4P;
-        fISCalculator = LArG4P->IonAndScintCalculator();
-        
-        std::cout << "Using " << fISCalculator << " algorithm to calculate IS." << std::endl;
-        
-        if(fISCalculator.compare("NEST") == 0)
+        if(calcTag.label().compare("NEST") == 0)
         {
             fISAlg = new ISCalcNESTLAr(fEngine);
         }
-        else if(fISCalculator.compare("Separate") == 0)
+        else if(calcTag.label().compare("Separate") == 0)
         {
             fISAlg = new ISCalcSeparate();
         }
@@ -91,7 +88,7 @@ namespace larg4
         art::ServiceHandle<art::TFileService const> tfs;
         fNtuple = tfs->make<TNtuple>("nt_is",
                                      "EDep IS Calc Ntuple",
-                                     "run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon:n_fphoton:n_sphoton"); //:scintyield");
+                                     "run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon:scintyield");
         return;
     }
     void ISCalcAna::endJob()
@@ -124,9 +121,9 @@ namespace larg4
                           fISAlg->EnergyDeposit(),
                           fISAlg->NumOfElectrons(),
                           fISAlg->NumOfPhotons(),
-                          fISAlg->NumOfFastPhotons(),
-                          fISAlg->NumOfSlowPhotons());
-//                          ,fISAlg->ScintillationYieldRatio());
+//                          fISAlg->NumOfFastPhotons(),
+//                          fISAlg->NumOfSlowPhotons());
+                          fISAlg->ScintillationYieldRatio());
         }
         
         std::cout << "ISCalcAna analyze completed." << std::endl;
