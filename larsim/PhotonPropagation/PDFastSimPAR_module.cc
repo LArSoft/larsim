@@ -472,7 +472,7 @@ namespace phot
         std::cout << "PDFastSimPAR Module Producer" << std::endl;
         
         art::ServiceHandle<PhotonVisibilityService const> pvs;
-        auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+        //unused auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
         auto const nOpChannels = pvs->NOpChannels();
         
         CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
