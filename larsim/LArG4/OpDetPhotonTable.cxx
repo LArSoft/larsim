@@ -199,7 +199,7 @@ namespace larg4 {
 
 
   //--------------------------------------------------
-  void OpDetPhotonTable::AddEnergyDeposit(int n_elec,int n_photon,
+  void OpDetPhotonTable::AddEnergyDeposit(int n_photon, int n_elec, double scint_yield, 
 					  double energy,
 					  float start_x,float start_y, float start_z,
 					  float end_x,float end_y,float end_z,
@@ -207,7 +207,7 @@ namespace larg4 {
 					  int trackid,int pdgcode,
 					  std::string const& vol)
   {
-    fSimEDepCol[vol].emplace_back(n_elec,n_photon,
+    fSimEDepCol[vol].emplace_back(n_photon, n_elec, scint_yield,
 				  energy,
 				  geo::Point_t{start_x,start_y,start_z},
 				  geo::Point_t{end_x,end_y,end_z},

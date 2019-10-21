@@ -73,7 +73,7 @@ namespace larg4 {
 
 
       void ClearEnergyDeposits();
-      void AddEnergyDeposit(int n_elec,int n_photon,
+      void AddEnergyDeposit(int n_photon, int n_elec, double scint_yield,
 			    double energy,
 			    float start_x,float start_y, float start_z,
 			    float end_x,float end_y,float end_z,

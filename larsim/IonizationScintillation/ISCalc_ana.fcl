@@ -1,0 +1,42 @@
+#include "services_refactored_pdune.fcl"
+
+process_name: iscalcana
+
+services:
+{
+    TFileService:          { fileName: "iscalc_hist.root" }
+    TimeTracker:           {}
+    MemoryTracker:         {} # default is one
+    RandomNumberGenerator: {} #ART native random number generator
+    message:      @local::standard_info
+    @table::protodune_simulation_services
+    
+}
+//services.LArG4Parameters.IonAndScintCalculator: "NEST"
+//services.LArG4Parameters.IonAndScintCalculator: "Separate"
+
+source:
+{
+    module_type: RootInput
+    maxEvents:  30000 
+    fileNames: ["gen_protoDUNE.root"]
+}
+
+physics:
+{
+    
+    analyzers: 
+    {
+        ISCalcAna:
+        {
+            module_type:       ISCalcAna
+            SimulationLabel:   "IonAndScint:NEST"
+//           SimulationLabel:   "IonAndScint:Seperate"
+        }
+    }
+    
+    
+    stream1:    [ ISCalcAna ]
+    end_paths: [ stream1  ]
+    
+}
