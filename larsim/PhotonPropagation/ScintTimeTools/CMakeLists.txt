@@ -10,7 +10,7 @@ art_make(NO_PLUGINS
     cetlib_except
     fhiclcpp
     ${CLHEP}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    ${ART_UTILITIES}
   )
 
 

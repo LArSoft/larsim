@@ -93,5 +93,5 @@ namespace sim {
 
 } // namespace sim
 
-DECLARE_ART_SERVICE(sim::LArVoxelCalculator, GLOBAL)
+DECLARE_ART_SERVICE(sim::LArVoxelCalculator, SHARED)
 #endif //  sim_LArVoxelCalculator_H
