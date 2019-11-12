@@ -122,5 +122,5 @@ namespace sim {
 }
 
 
-DECLARE_ART_SERVICE(sim::LArG4Parameters, GLOBAL)
+DECLARE_ART_SERVICE(sim::LArG4Parameters, SHARED)
 #endif

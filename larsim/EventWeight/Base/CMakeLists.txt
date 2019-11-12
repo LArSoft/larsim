@@ -3,7 +3,8 @@ art_make(LIB_LIBRARIES
          cetlib_except
          ${CLHEP}
          ${ROOT_CORE}
-         ${ROOT_MATRIX})
+         ${ROOT_MATRIX}
+         ${ART_UTILITIES})
 
 install_headers()
 install_fhicl()
