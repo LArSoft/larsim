@@ -116,7 +116,7 @@ namespace larg4 {
    *   order
    *
    * For each `simb::MCTruth`, a Geant4 run is started.
-   * The interface with Geant4 is via a helper class provided by _nutools_.
+   * The interface with Geant4 is via a helper class provided by _nug4_.
    * Only the particles in the truth record which have status code
    * (`simb::MCParticle::StatusCode()`) equal to `1` are processed.
    * These particles are called, in `LArG4` jargon, _primaries_.
@@ -152,7 +152,7 @@ namespace larg4 {
    * * all and the particles in the truth record (`simb::MCTruth`) which have
    *   status code (`simb::MCParticle::StatusCode()`) equal to `1` are passed
    *   to Geant4. These particles are called, in `LArG4` jargon, _primaries_.
-   *   The interface with Geant4 is via a helper class provided by _nutools_.
+   *   The interface with Geant4 is via a helper class provided by _nug4_.
    * * normally, information about each particle that Geant4 propagates (which
    *   Geant4 calls _tracks_), primary or not, is saved as an individual
    *   `simb::MCParticle` object into the output particle list. Each

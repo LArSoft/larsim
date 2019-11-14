@@ -57,7 +57,7 @@ namespace evgen {
    * Since art's RandomNumberGenerator service only provides
    * `CLHEP::HepRandomEngine`, the standard LArSoft/art mechanism for handling
    * the random stream can't be used.
-   * GENIEHelper, interface to GENIE provided by nutools, creates a TRandom
+   * GENIEHelper, interface to GENIE provided by nugen, creates a TRandom
    * that GENIE can use. It initializes it with a random seed read from
    * *RandomSeed* configuration parameter. This and all the other parameters
    * are inherited from the art module (that is, `GENIEGen`) configuration.

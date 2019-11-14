@@ -33,10 +33,10 @@
 #include "cetlib/filesystem.h"
 #include "cetlib/search_path.h"
 
-// art extensions
+// nurandom includes
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-// nutools includes
+//  nusimdata includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 

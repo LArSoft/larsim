@@ -18,7 +18,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// nutools includes
+// nusimdata includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 

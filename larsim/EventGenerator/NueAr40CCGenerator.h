@@ -18,7 +18,7 @@ namespace CLHEP { class HepRandomEngine; }
 // Framework includes
 namespace fhicl { class ParameterSet; }
 
-// nutools includes
+// nusimdata includes
 namespace simb { class MCTruth; }
 
 namespace evgen {
