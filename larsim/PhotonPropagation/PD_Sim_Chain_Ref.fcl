@@ -1,0 +1,135 @@
+#include "services_refactored_pdune.fcl"
+#include "services_dune.fcl"
+
+#include "scintillationtime_tool.fcl"
+
+process_name: PDSIMCHAINREF
+
+services:
+{
+    TFileService:            { fileName: "pd_ref.root" }
+    TimeTracker:             {}
+    MemoryTracker:           {} # default is one
+    RandomNumberGenerator: {} #ART native random number generator
+    message:                 @local::standard_info
+    @table::protodune_simulation_services
+    
+    DetectorHolder:        {}
+    ActionHolder:          {}
+    PhysicsListHolder:     {} 
+    
+    PhysicsList:
+    { 
+        PhysicsListName: "QGSP_BERT"
+        DumpList:                    true
+        enableCerenkov:              false
+        enableScintillation:         true
+        ScintillationByParticleType: false
+        enableAbsorption:            false
+        enableRayleigh:              false
+        enableMieHG:                 false
+        enableBoundary:              false
+        enableWLS:                   false
+    }
+    
+    LArG4Detector : 
+    {
+        category:      "world"
+        gdmlFileName_ : "protodune_v5_refactored_nowires.gdml"
+    }
+    
+    MCTruthEventAction: {service_type: "MCTruthEventActionService"}
+    ParticleListAction:   {service_type: "ParticleListActionService"}
+}
+
+source:
+{
+    module_type: RootInput
+    maxEvents:    3000000
+    fileNames:    ["muon.root"]
+    firstRun:     1             //Run number to use for this file
+    firstEvent:   1             //number of first event in the file
+}
+
+services.PhotonVisibilityService:                              @local::protodunev4_photonvisibilityservice
+services.LArG4Parameters.UseLitePhotons:                       true
+physics:
+{   
+    producers:
+    {
+        //retain largeant name for compatibility
+        largeant:
+        {
+            module_type:            "larg4Main"
+            enableVisualization:     false
+            macroPath:               ".:./macros"
+            visMacro:                "vis.mac"
+        }
+        
+        IonAndScint:
+        {
+            module_type:            "IonAndScint"
+            SimulationLabel:         "largeant:LArG4DetectorServicevolTPCActive"
+//            ISCalcAlg:               "NEST"
+            ISCalcAlg:               "Separate"
+        }
+        
+        PDFastSim:
+        {
+           module_type:             "PDFastSimPVS"
+//           module_type:              "PDFastSimPAR"
+           
+           SimulationLabel:          "IonAndScint"
+           
+           DoSlowComponent:          true
+           ScintTimeTool:            @local::ScintTimeLAr
+        }
+        
+        rns:
+        {
+            module_type:            "RandomNumberSaver"
+        }
+    
+    }
+    
+    analyzers:
+    {
+        ISCalcAna:
+        {
+            module_type:             ISCalcAna
+            SimulationLabel:         "largeant:LArG4DetectorServicevolTPCActive"
+            ISCalcAlg:               "NEST"
+//            ISCalcAlg:               "Separate"
+        }
+        
+        SimPh:
+        {
+            module_type:             "SimPhotonCounter"
+            Verbosity:               5
+            InputModule:             "PDFastSim:pvs" 
+            MakeAllPhotonsTree:      true
+            MakeDetectedPhotonsTree: true
+            MakeOpDetsTree:          true
+            MakeOpDetEventsTree:     true
+        }
+    }
+    
+    simulate:      [  rns, largeant, IonAndScint, PDFastSim  ] 
+//    simulate:      [  rns, largeant, IonAndScint  ] 
+    stream1:       [  out1, ISCalcAna, SimPh   ]
+//    stream1:       [  out1, SimPh ]
+    end_paths:     [  stream1  ]  
+    
+}
+
+outputs:
+{
+    out1:
+    {
+        module_type:      RootOutput
+        fileName:         "%ifb_pd_ref.root"
+        dataTier:         "simulated"
+        compressionLevel: 1
+//        outputCommands:   ["keep *", "drop sim::SimEnergyD*_*_*_*"]
+    }
+}

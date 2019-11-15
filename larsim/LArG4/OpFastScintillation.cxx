@@ -513,6 +513,7 @@ namespace larg4{
     OpDetPhotonTable::Instance()->AddEnergyDeposit
       (-1,
        -1,
+       1.0,  //scintillation yield
        (double)(step.GetTotalEnergyDeposit()/CLHEP::MeV), //energy in MeV
        (float)(step.GetPreStepPoint()->GetPosition().x()/CLHEP::cm),
        (float)(step.GetPreStepPoint()->GetPosition().y()/CLHEP::cm),
@@ -1801,7 +1802,7 @@ namespace larg4{
        // calculate distance for interpolation depending on model
        double r = 0;
        if (fVisBorderCorrectionType == "Radial"){
-         r = sqrt (pow(ScintPoint[1] - fcathode_ydimension,2) + pow (ScintPoint[2] - fcathode_zdimension,2));
+         r = sqrt (pow(ScintPoint[1] - fcathode_centre[1],2) + pow (ScintPoint[2] - fcathode_centre[2],2));
        }
        else if (fVisBorderCorrectionType == "Vertical") {
          r = std::abs(ScintPoint[1]);
