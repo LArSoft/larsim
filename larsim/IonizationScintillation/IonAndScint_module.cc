@@ -13,6 +13,9 @@
 //At the end of this module the numPhotons and numElectrons of sim:SimEnergyDeposit have been updated.
 
 // Aug.18 by Mu Wei
+//
+// 10/28/2019 Wenqiang Gu (wgu@bnl.gov)
+//            Add the Space Charge Effect (SCE) if the option is enabled
 ////////////////////////////////////////////////////////////////////////
 
 // LArSoft includes
@@ -20,6 +23,7 @@
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -111,6 +115,10 @@ namespace larg4
             return;
         }
         
+        auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
+        // geo::Vector_t posOffsetsStart{0.0,0.0,0.0};
+        // geo::Vector_t posOffsetsEnd{0.0,0.0,0.0};
+
         auto const& edeps = edepHandle;
         for (sim::SimEnergyDeposit const& edepi: *edeps)
         {
@@ -133,6 +141,16 @@ namespace larg4
 //                                  startPos_tmp, endPos_tmp,
 //                                  startTime_tmp, endTime_tmp,
 //                                  trackID_tmp, pdgCode_tmp);
+            if(sce->EnableSimSpatialSCE()) {
+                auto posOffsetsStart = sce->GetPosOffsets({edepi.StartX(),edepi.StartY(),edepi.StartZ()});
+                auto posOffsetsEnd = sce->GetPosOffsets({edepi.EndX(),edepi.EndY(),edepi.EndZ()});
+                startPos_tmp = geo::Point_t{(float)(edepi.StartX()-posOffsetsStart.X()), //x should be subtracted
+                               (float)(edepi.StartY()+posOffsetsStart.Y()),
+                               (float)(edepi.StartZ()+posOffsetsStart.Z())};
+                endPos_tmp   = geo::Point_t{(float)(edepi.EndX()-posOffsetsEnd.X()), //x should be subtracted
+                               (float)(edepi.EndY()+posOffsetsEnd.Y()),
+                               (float)(edepi.EndZ()+posOffsetsEnd.Z())};
+            }
             simedep->emplace_back(ph_num, ion_num, scintyield, edep_tmp,
                                   startPos_tmp, endPos_tmp,
                                   startTime_tmp, endTime_tmp,
