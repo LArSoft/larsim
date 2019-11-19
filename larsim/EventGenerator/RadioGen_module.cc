@@ -897,12 +897,21 @@ namespace evgen{
     auto const& detInfo
       = *(lar::providerFrom<detinfo::DetectorPropertiesService>());
     
-    TPCelectronics_tick const startTick { -int(detInfo.ReadOutWindowSize()) };
-    TPCelectronics_tick const endTick { detInfo.NumberTimeSamples() };
+    //
+    // we take a number of (TPC electronics) ticks before the trigger time,
+    // and we go to a number of ticks after the trigger time;
+    // that shift is one readout window size
+    //
+    
+    auto const trigTimeTick
+      = timings.toTick<electronics_tick>(timings.TriggerTime());
+    electronics_time_ticks const beforeTicks
+      { -int(detInfo.ReadOutWindowSize()) };
+    electronics_time_ticks const afterTicks { detInfo.NumberTimeSamples() };
     
     return {
-      double(timings.toTimeScale<simulation_time>(startTick)),
-      double(timings.toTimeScale<simulation_time>(endTick))
+      double(timings.toTimeScale<simulation_time>(trigTimeTick + beforeTicks)),
+      double(timings.toTimeScale<simulation_time>(trigTimeTick + afterTicks))
       };
   } // RadioGen::defaulttimewindow()
 
