@@ -23,6 +23,8 @@ namespace phot
     {
     public:
         ScintTime();
+        virtual ~ScintTime() = default;
+
         virtual void GenScintTime(bool is_fast, CLHEP::HepRandomEngine& engine)      = 0;
         double GetScintTime() const        {return timing;}
         
