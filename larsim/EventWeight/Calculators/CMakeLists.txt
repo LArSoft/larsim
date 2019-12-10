@@ -1,11 +1,13 @@
-include_directories ( $ENV{GENIE_INC}/GENIE )
+include_directories ( $ENV{GENIE_INC} )
+
+# Build against extra reweighting functionality in GENIE v3.0.4 MicroBooNE patch 01
+add_definitions(-DGENIE_UB_PATCH)
 
 art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
          LIB_LIBRARIES
                        larsim_EventWeight_Base
 		       lardata_Utilities
-                       nutools_NuReweight_art   
-                       nutools_NuReweight       
+                       nutools_EventGeneratorBase_GENIE
 		       larsim_Simulation
                        nutools_RandomUtils_NuRandomService_service
 		       nusimdata_SimulationBase
@@ -17,6 +19,7 @@ art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
                        art_Persistency_Provenance canvas canvas
                        art_Utilities canvas canvas
                        cetlib cetlib_except
+                       ${GENIE_LIB_LIST}
 		       ${FHICLCPP}
 		       ${CLHEP}
                        ${ROOT_BASIC_LIB_LIST}
