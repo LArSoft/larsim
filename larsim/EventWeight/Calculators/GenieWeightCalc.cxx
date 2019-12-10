@@ -2,17 +2,21 @@
 //
 // Handles event weights for GENIE systematics studies
 //
-// Heavily refactored on Dec 9 2019
+// Heavily rewritten on Dec 9 2019
 //   by Steven Gardiner <gardiner@fnal.gov>
 // Updated by Marco Del Tutto on Feb 18 2017
 // Ported from uboonecode to larsim on Feb 14 2017
 //   by Marco Del Tutto <marco.deltutto@physics.ox.ac.uk>
 
+// Standard library includes
 #include <map>
 #include <memory>
 #include <set>
 
+// Framework includes
 #include "art/Framework/Principal/Event.h"
+#include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
 #include "larsim/EventWeight/Base/WeightCalc.h"
@@ -50,7 +54,6 @@
 #include "GENIE/RwCalculators/GReWeightNuXSecNC.h"
 #include "GENIE/RwCalculators/GReWeightXSecEmpiricalMEC.h"
 
-// TODO: define this
 #ifdef GENIE_UB_PATCH
   // New weight calculator in GENIE v3.0.4 MicroBooNE patch 01
   #include "GENIE/RwCalculators/GReWeightXSecMEC.h"
@@ -170,6 +173,28 @@ namespace {
     } }
   };
 
+
+  // Helper function that checks whether a string storing a GENIE knob name is
+  // valid. Also stores the corresponding GSyst_t enum value for the knob.
+  bool valid_knob_name( const std::string& knob_name, genie::rew::GSyst_t& knob ) {
+    knob = genie::rew::GSyst::FromString( knob_name );
+    if ( knob != kNullSystematic && knob != kNTwkDials ) {
+      if ( UNIMPLEMENTED_GENIE_KNOBS.count(knob) ) {
+        MF_LOG_WARNING("GENIEWeightCalc") << "Ignoring unimplemented GENIE"
+          << " knob " << knob_name;
+        return false;
+      }
+    }
+    else {
+      // TODO: consider changing this to an exception
+      MF_LOG_WARNING("GENIEWeightCalc") << "Ignoring unrecognized GENIE"
+        << " knob " << knob_name;
+      return false;
+    }
+    return true;
+  }
+
+
 } // anonymous namespace
 
 namespace evwgh {
@@ -204,36 +229,54 @@ namespace evwgh {
   {
     // Global Config
     fGenieModuleLabel = p.get<std::string>( "genie_module_label" );
-    const fhicl::ParameterSet& pset = p.get<fhicl::ParameterSet>( GetName() );
+
+    // Parameter central values from a table in the global config
+    // Keys are GENIE knob names, values are knob settings that correspond to a tuned CV
+    const fhicl::ParameterSet& param_CVs = p.get<fhicl::ParameterSet>( "genie_central_values", fhicl::ParameterSet() );
+    std::vector< std::string > CV_knob_names = param_CVs.get_all_keys();
+
+    // Map to store the CV knob settings
+    std::map< genie::rew::GSyst_t, double > gsyst_to_cv_map;
+    genie::rew::GSyst_t temp_knob;
+
+    if ( !CV_knob_names.empty() ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
+      << " non-default GENIE knob central values from input FHiCL parameter set";
+
+    for ( const auto& knob_name : CV_knob_names ) {
+      double CV_knob_value = param_CVs.get<double>( knob_name );
+      if ( valid_knob_name(knob_name, temp_knob) ) {
+        if ( gsyst_to_cv_map.count( temp_knob ) ) {
+          throw cet::exception(__PRETTY_FUNCTION__) << "Duplicate central values"
+            << " were configured for the " << knob_name << " GENIE knob.";
+        }
+        gsyst_to_cv_map[ temp_knob ] = CV_knob_value;
+        MF_LOG_INFO("GENIEWeightCalc") << "Central value for the " << knob_name
+          << " knob was set to " << CV_knob_value;
+      }
+    }
 
     // Calc Config
+    const fhicl::ParameterSet& pset = p.get<fhicl::ParameterSet>( GetName() );
     auto const pars = pset.get< std::vector<std::string> >( "parameter_list" );
     auto const par_sigmas = pset.get< std::vector<double> >( "parameter_sigma" );
     auto const mode = pset.get<std::string>( "mode" );
 
-    // TODO: add parsing of CVs
-
-    if ( pars.size() != par_sigmas.size() )
+    if ( pars.size() != par_sigmas.size() ) {
       throw cet::exception(__PRETTY_FUNCTION__) << GetName()
         << "::Bad fcl configuration. parameter_list and parameter_sigma"
         << " need to have same number of parameters.";
+    }
+
+    if ( !pars.empty() ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
+      << " GENIE systematic knobs to be varied from the input FHiCL parameter set";
 
     size_t num_universes = pset.get<size_t>( "number_of_multisims" );
 
     // Convert the list of GENIE knob names from the input FHiCL configuration
     // into a vector of genie::rew::GSyst_t labels
     std::vector< genie::rew::GSyst_t > knobs_to_use;
-    for ( const auto& s : pars ) {
-      genie::rew::GSyst_t knob = genie::rew::GSyst::FromString( s );
-      if ( knob != kNullSystematic && knob != kNTwkDials ) {
-        if ( UNIMPLEMENTED_GENIE_KNOBS.count(knob) ) {
-          // TODO: log warning message that we'll skip an unimplemented knob
-        }
-        else knobs_to_use.push_back( knob );
-      }
-      else {
-        // TODO: log warning message that we'll skip an unrecognized knob
-      }
+    for ( const auto& knob_name : pars ) {
+      if ( valid_knob_name(knob_name, temp_knob) ) knobs_to_use.push_back( temp_knob );
     }
 
     // Check that the enabled knobs are all compatible with each other. The
@@ -260,16 +303,26 @@ namespace evwgh {
     for ( size_t k = 0u; k < num_usable_knobs; ++k ) {
       reweightingSigmas[k].resize( num_universes );
       for ( size_t u = 0u; u < num_universes; ++u ) {
-	if ( mode.find("multisim") != std::string::npos )
+	if ( mode.find("multisim") != std::string::npos ) {
           reweightingSigmas[k][u] = par_sigmas[k] * CLHEP::RandGaussQ::shoot(&engine, 0., 1.);
-        else if ( mode.find("pm1sigma") != std::string::npos )
+        }
+        else if ( mode.find("pm1sigma") != std::string::npos ) {
           reweightingSigmas[k][u] = ( u == 0 ? 1. : -1. ); // u == 0 => 1; u == 1 => -1 if pm1sigma is specified
-	else
+        }
+	else {
 	  reweightingSigmas[k][u] = par_sigmas[k];
+        }
+
+        // Add an offset if the central value for the current knob has been
+        // configured (and is thus probably nonzero)
+        genie::rew::GSyst_t current_knob = knobs_to_use.at( k );
+        auto iter = gsyst_to_cv_map.find( current_knob );
+        if ( iter != gsyst_to_cv_map.end() ) reweightingSigmas[k][u] += iter->second;
       }
     }
 
-    // TODO: revisit the above for CV weighting, possibly new modes
+    // TODO: deal with parameters that have a priori bounds (e.g., FFCCQEVec,
+    // which can vary on the interval [0,1])
 
     // Set up the knob values for each universe
     for ( size_t u = 0; u < reweightVector.size(); ++u ) {
@@ -278,10 +331,14 @@ namespace evwgh {
       genie::rew::GSystSet& syst = rwght.Systematics();
 
       for ( unsigned int k = 0; k < knobs_to_use.size(); ++k ) {
-        // TODO: Log message (universe #, knob #, knob name, tweak dial value)
         genie::rew::GSyst_t knob = knobs_to_use.at( k );
+
         double twk_dial_value = reweightingSigmas.at( k ).at( u );
         syst.Set( knob, twk_dial_value );
+
+        MF_LOG_INFO("GENIEWeightCalc") << "In universe #" << u << ", knob #" << k
+          << " (" << genie::rew::GSyst::AsString( knob ) << ") was set to"
+          << " the value " << twk_dial_value;
       } // loop over tweaked knobs
 
       rwght.Reconfigure();
@@ -398,7 +455,9 @@ namespace evwgh {
       int mode = pair.second;
 
       genie::rew::GReWeightI* calc = rw.WghtCalc( calc_name );
-      if ( !calc ) {} // TODO throw exception
+      if ( !calc ) throw cet::exception(__PRETTY_FUNCTION__)
+        << "Failed to retrieve the GENIE weight calculator labeled \""
+        << calc_name << '\"';
 
       // The GReWeightI base class doesn't have a SetMode(int) function,
       // so we'll just try dynamic casting until we get the right one.
@@ -413,7 +472,9 @@ namespace evwgh {
       else if ( calc_ccres ) calc_ccres->SetMode( mode );
       else if ( calc_ncres ) calc_ncres->SetMode( mode );
       else if ( calc_dis ) calc_dis->SetMode( mode );
-      else {} // TODO throw exception
+      else throw cet::exception(__PRETTY_FUNCTION__)
+        << "Request to set the mode of and unrecognized GENIE weight calculator \""
+        << calc_name << '\"';
     }
   }
 
