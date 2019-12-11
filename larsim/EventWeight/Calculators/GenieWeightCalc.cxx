@@ -32,7 +32,12 @@
 // GENIE includes
 // TODO: add legacy support for GENIE v2 (mostly changes to header file
 // locations would be needed)
+#include "GENIE/Framework/Conventions/KineVar.h"
 #include "GENIE/Framework/EventGen/EventRecord.h"
+#include "GENIE/Framework/Interaction/Interaction.h"
+#include "GENIE/Framework/Interaction/Kinematics.h"
+#include "GENIE/Framework/Messenger/Messenger.h"
+
 #include "GENIE/RwFramework/GSystSet.h"
 #include "GENIE/RwFramework/GSyst.h"
 #include "GENIE/RwFramework/GReWeight.h"
@@ -230,6 +235,16 @@ namespace evwgh {
   void GenieWeightCalc::Configure(const fhicl::ParameterSet& p,
     CLHEP::HepRandomEngine& engine)
   {
+    // Manually silence a couple of annoying GENIE logging messages
+    // that appear a lot when running reweighting
+    genie::Messenger* messenger = genie::Messenger::Instance();
+    messenger->SetPriorityLevel( "TransverseEnhancementFFModel",
+      log4cpp::Priority::WARN );
+    messenger->SetPriorityLevel( "Nieves", log4cpp::Priority::WARN );
+
+    // Also print detailed debug logging messages for GENIE reweighting
+    //messenger->SetPriorityLevel( "ReW", log4cpp::Priority::DEBUG );
+
     // Global Config
     fGenieModuleLabel = p.get<std::string>( "genie_module_label" );
 
@@ -262,6 +277,12 @@ namespace evwgh {
     const fhicl::ParameterSet& pset = p.get<fhicl::ParameterSet>( GetName() );
     auto const pars = pset.get< std::vector<std::string> >( "parameter_list" );
     auto const par_sigmas = pset.get< std::vector<double> >( "parameter_sigma" );
+
+    // Parameter limits (currently only used in minmax mode)
+    // TODO: Revisit this. Could be useful for other modes.
+    auto const par_mins = pset.get< std::vector<double> >( "parameter_min", std::vector<double>() );
+    auto const par_maxes = pset.get< std::vector<double> >( "parameter_max", std::vector<double>() );
+
     auto const mode = pset.get<std::string>( "mode" );
 
     if ( pars.size() != par_sigmas.size() ) {
@@ -288,6 +309,19 @@ namespace evwgh {
     std::map< std::string, int >
       modes_to_use = this->CheckForIncompatibleSystematics( knobs_to_use );
 
+    // If we're working in "pm1sigma" or "minmax" mode, there should only be two
+    // universes regardless of user input.
+    if ( mode.find("pm1sigma") != std::string::npos
+      || mode.find("minmax") != std::string::npos )
+    {
+      num_universes = 2u;
+    }
+    // If we're working in "central_value" mode, only a single universe (with
+    // a tweaked central value) should be used
+    else if ( mode.find("central_value") != std::string::npos ) {
+      num_universes = 1u;
+    }
+
     // Create one default-constructed genie::rew::GReWeight object per universe
     reweightVector.resize( num_universes );
 
@@ -300,9 +334,6 @@ namespace evwgh {
     size_t num_usable_knobs = knobs_to_use.size();
     std::vector< std::vector<double> > reweightingSigmas( num_usable_knobs );
 
-    if ( mode.find("pm1sigma") != std::string::npos ) {
-      num_universes = 2; // Only ±1-sigma if pm1sigma is specified
-    }
     for ( size_t k = 0u; k < num_usable_knobs; ++k ) {
       reweightingSigmas[k].resize( num_universes );
       for ( size_t u = 0u; u < num_universes; ++u ) {
@@ -312,15 +343,24 @@ namespace evwgh {
         else if ( mode.find("pm1sigma") != std::string::npos ) {
           reweightingSigmas[k][u] = ( u == 0 ? 1. : -1. ); // u == 0 => 1; u == 1 => -1 if pm1sigma is specified
         }
+        else if ( mode.find("minmax") != std::string::npos ) {
+          reweightingSigmas[k][u] = ( u == 0 ? par_maxes.at(k) : par_mins.at(k) ); // u == 0 => max; u == 1 => min if minmax is specified
+        }
+        else if ( mode.find("central_value") != std::string::npos ) {
+          reweightingSigmas[k][u] = 0.; // we'll correct for a modified CV below if needed
+        }
 	else {
 	  reweightingSigmas[k][u] = par_sigmas[k];
         }
 
         // Add an offset if the central value for the current knob has been
-        // configured (and is thus probably nonzero)
-        genie::rew::GSyst_t current_knob = knobs_to_use.at( k );
-        auto iter = gsyst_to_cv_map.find( current_knob );
-        if ( iter != gsyst_to_cv_map.end() ) reweightingSigmas[k][u] += iter->second;
+        // configured (and is thus probably nonzero). Ignore this for minmax mode
+        // (the limits should be chosen to respect a modified central value)
+        if ( mode.find("minmax") == std::string::npos ) {
+          genie::rew::GSyst_t current_knob = knobs_to_use.at( k );
+          auto iter = gsyst_to_cv_map.find( current_knob );
+          if ( iter != gsyst_to_cv_map.end() ) reweightingSigmas[k][u] += iter->second;
+        }
       }
     }
 
@@ -381,6 +421,31 @@ namespace evwgh {
       std::unique_ptr< genie::EventRecord >
         genie_event( evgb::RetrieveGHEP(*mclist[v], *glist[v]) );
 
+      // Set the final lepton kinetic energy and scattering cosine
+      // in the owned GENIE kinematics object. This is done during
+      // event generation but is not reproduced by evgb::RetrieveGHEP().
+      // Several new CCMEC weight calculators developed for MicroBooNE
+      // expect the variables to be set in this way (so that differential
+      // cross sections can be recomputed). Failing to set them results
+      // in inf and NaN weights.
+      // TODO: update evgb::RetrieveGHEP to do this instead.
+      genie::Interaction* interaction = genie_event->Summary();
+      genie::Kinematics* kine_ptr = interaction->KinePtr();
+
+      // Final lepton mass
+      double ml = interaction->FSPrimLepton()->Mass();
+      // Final lepton 4-momentum
+      const TLorentzVector& p4l = kine_ptr->FSLeptonP4();
+      // Final lepton kinetic energy
+      double Tl = p4l.E() - ml;
+      // Final lepton scattering cosine
+      double ctl = p4l.CosTheta();
+
+      kine_ptr->SetKV( kKVTl, Tl );
+      kine_ptr->SetKV( kKVctl, ctl );
+
+      // All right, the event record is fully ready. Now ask the GReWeight
+      // objects to compute the weights.
       weights[v].resize( num_knobs );
       for (size_t k = 0u; k < num_knobs; ++k ) {
         weights[v][k] = reweightVector.at( k ).CalcWeight( *genie_event );
