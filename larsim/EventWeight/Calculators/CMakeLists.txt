@@ -1,4 +1,5 @@
 include_directories ( $ENV{GENIE_INC} )
+include_directories ( $ENV{LOG4CPP_INC} )
 
 # Build against extra reweighting functionality in GENIE v3.0.4 MicroBooNE patch 01
 add_definitions(-DGENIE_UB_PATCH)
@@ -22,6 +23,7 @@ art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
                        ${GENIE_LIB_LIST}
 		       ${FHICLCPP}
 		       ${CLHEP}
+		       ${LOG4CPP}
                        ${ROOT_BASIC_LIB_LIST}
                        ${Boost_SYSTEM_LIBRARY}
 	) 
