@@ -240,6 +240,26 @@ namespace larg4 {
    * Simulation details
    * ===================
    *
+   * Source of the operational parameters
+   * -------------------------------------
+   * 
+   * @anchor LArG4_MaterialProperties
+   * 
+   * Some of the physical properties have their values set in FHiCL
+   * configuration (e.g. `detinfo::LArParameters`). Then, GEANT4 is informed
+   * of them via `larg4::MaterialPropertyLoader`. The material property table
+   * in GEANT4 is then used by other LArSoft components to discover the
+   * parameter values.
+   * 
+   * Among the parameters registered to GEANT4, the scintillation yields, i.e.
+   * how many scintillation photons are produced on average by 1 MeV of
+   * deposited energy, are also stored by type of ioniziong particle.
+   * These scintillation yields _do include a prescale factor_ (that may
+   * include, for example, the photomultiplier quantum efficiency), from the
+   * `ScintPreScale` parameter of `detinfo::LArPropertiesStandard`
+   * or equivalent.
+   * 
+   * 
    * Reflectivity to optical photons
    * --------------------------------
    *
@@ -261,7 +281,32 @@ namespace larg4 {
    * The price is a detailed simulation that includes among others refraction
    * and wavelength shifting.
    *
-   *
+   * 
+   * Scintillation
+   * --------------
+   * 
+   * When using the fast optical simulation, which is the "standard" running
+   * mode, energy depositions from GEANT4 are "converted" into a number of
+   * scintillation photons by the global `larg4::IonizationAndScintillation`
+   * object instance, which internally utilizes the algorithm set up via
+   * configuration parameter `IonAndScintCalculator` in `LArG4Parameters`
+   * service (at the time of writing, `"Separate"` is supported and `"NEST"` is
+   * accepted too).
+   * The number of scintillation photons per energy unit is read from GEANT4
+   * @ref LArG4_MaterialProperties "material properties table". It includes
+   * already quantum efficiency ("prescale") and it may depend on the type of
+   * ionizing particle, depending on the configuration (`LArPropertiesStandard`
+   * parameter `ScintByParticleType`). This value ("yield") is used as
+   * the average of a Poisson distribution from which the actual number of
+   * scintillation photons is extracted case by case.
+   * The implementation `larg4::ISCalculationSeparate` may also include medium
+   * saturation effects as well, if configured, but only if the scintillation
+   * yield is set not to depend on the type of ionizing particle.
+   * The number of scintillation photons is then distributed between the fast
+   * and slow component by a yield ratio also set in the material parameters,
+   * and the single photons are distributed in time accordingly to their
+   * component.
+   * 
    */
   class LArG4 : public art::EDProducer{
   public:
