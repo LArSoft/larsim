@@ -7,7 +7,7 @@
  */
 
 
-// nutools libraries
+// lardataobj libraries
 #include "lardataobj/Simulation/SimChannel.h"
 
 // framework libraries

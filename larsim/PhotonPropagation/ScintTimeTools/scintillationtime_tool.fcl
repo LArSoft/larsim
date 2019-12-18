@@ -1,0 +1,22 @@
+// scinitllationtime_tool.fcl
+// Oct. 10 2019 Wei Mu
+BEGIN_PROLOG
+
+ScintTimeLAr:
+{
+    tool_type: ScintTimeLAr
+    LogLevel:         1
+    FastRisingTime:   0.0            // rising time of fast scintillation
+    FastDecayTime:    6.0            // decay time of fast scintillation
+    SlowRisingTime:   0.0            // rising time of slow scintillation
+    SlowDecayTime:    1600.0         // decay time of slow scintillation
+}
+
+ScintTimeXeDopedLAr:
+{
+    tool_type: ScintTimeXeDopedLAr
+    LogLevel:   1
+}
+
+
+END_PROLOG

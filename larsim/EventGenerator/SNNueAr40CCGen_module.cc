@@ -16,10 +16,10 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
-// art extensions
+// nurandom includes
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-// nutools includes
+// nusimdata includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 // LArSoft includes

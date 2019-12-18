@@ -117,6 +117,8 @@ namespace phot {
 
       public:
 
+    virtual ~IPhotonMappingTransformations() = default;
+
     // --- BEGIN Data types ----------------------------------------------------
     using OpDetID_t = int; ///< Type describing a optical detector ID.
 

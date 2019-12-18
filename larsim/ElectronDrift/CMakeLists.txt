@@ -1,5 +1,6 @@
 art_make(LIB_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
+           larsim_IonizationScintillation
            canvas
            cetlib_except
 	   ${MF_MESSAGELOGGER}

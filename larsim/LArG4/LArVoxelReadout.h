@@ -61,6 +61,8 @@ class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
 
+namespace CLHEP { class HepRandomEngine; }
+
 namespace larg4 {
 
   /// Simple structure holding a TPC and cryostat number

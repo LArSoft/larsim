@@ -52,10 +52,10 @@
 #include "cetlib/search_path.h"
 #include "cetlib/exempt_ptr.h"
 
-// art extensions
+// nurandom includes
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-// nutools includes
+// nusimdata, nugen includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nugen/EventGeneratorBase/evgenbase.h"

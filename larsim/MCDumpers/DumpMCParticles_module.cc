@@ -10,7 +10,7 @@
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 
-// nutools libraries
+// nusimdata libraries
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 

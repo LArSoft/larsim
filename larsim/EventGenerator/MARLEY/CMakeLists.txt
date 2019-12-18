@@ -13,6 +13,7 @@ art_make(LIB_LIBRARIES
            ${ROOT_CORE}
            ${ROOT_GEOM}
            ${ROOT_PHYSICS}
+           ${ART_UTILITIES}
          MODULE_LIBRARIES
            larsim_EventGenerator_MARLEY
            larcoreobj_SummaryData

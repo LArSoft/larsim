@@ -163,7 +163,7 @@
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-// nutools includes
+// nusimdata includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 

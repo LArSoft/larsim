@@ -74,21 +74,22 @@ void spacecharge::ShiftEdepSCE::beginJob()
   }
 
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-		    &(*lg4paramHandle),
-		    lar::providerFrom<spacecharge::SpaceChargeService>());
+//  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+//		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+//		    &(*lg4paramHandle),
+//		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  fISAlg.Initialize();
 
 }
 
 void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 {
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-		    &(*lg4paramHandle),
-		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  /*
+//  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+//		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+//		    &(*lg4paramHandle),
+//		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  fISAlg.Initialize();  /*
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
@@ -115,9 +116,12 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
       posOffsetsEnd = sce->GetPosOffsets({edep.EndX(),edep.EndY(),edep.EndZ()});
     }
     fISAlg.Reset();
-    fISAlg.CalculateIonizationAndScintillation(edep);
-    outEdepVec.emplace_back(fISAlg.NumberScintillationPhotons(),
-			    fISAlg.NumberIonizationElectrons(),
+    fISAlg.CalcIonAndScint(edep);
+    outEdepVec.emplace_back(fISAlg.NumOfPhotons(),
+//                0,
+//                0,
+			    fISAlg.NumOfElectrons(),
+			    0.0,
 			    edep.Energy(),
 			    geo::Point_t{(float)(edep.StartX()-posOffsetsStart.X()), //x should be subtracted
 				(float)(edep.StartY()+posOffsetsStart.Y()),

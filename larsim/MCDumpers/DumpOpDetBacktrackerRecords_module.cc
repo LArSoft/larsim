@@ -7,7 +7,7 @@
  */
 
 
-// nutools libraries
+// lardataobj libraries
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 
 // framework libraries

@@ -157,7 +157,7 @@ namespace cheat{
         tSDPs.push_back(info);
       }
     }
-    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
+    catch(cet::exception const& e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
       mf::LogWarning("PhotonBackTracker")<<"Exception caught\n"
         <<e;
     }

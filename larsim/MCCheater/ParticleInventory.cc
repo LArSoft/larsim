@@ -21,14 +21,16 @@ namespace cheat{
 
   ParticleInventory::ParticleInventory(const ParticleInventoryConfig& config )
     :fG4ModuleLabel(config.G4ModuleLabel()),
-    fEveIdCalculator(config.EveIdCalculator())
+    fEveIdCalculator(config.EveIdCalculator()),
+    fOverrideRealData(config.OverrideRealData())
   {
   }
 
   //----------------------------------------------------------------------
   ParticleInventory::ParticleInventory(const fhicl::ParameterSet& pSet )
     :fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
-    fEveIdCalculator(pSet.get<std::string>("EveIdCalculator", "EmEveIdCalculator"))
+    fEveIdCalculator(pSet.get<std::string>("EveIdCalculator", "EmEveIdCalculator")),
+    fOverrideRealData(pSet.get<bool>("OverrideRealData", false))
   {
   }
 
