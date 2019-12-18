@@ -11,8 +11,8 @@ jp250L_particleinventoryservice:     @local::standard_particleinventoryservice
 bo_particleinventoryservice:         @local::standard_particleinventoryservice
 argoneut_particleinventoryservice:   @local::standard_particleinventoryservice
 microboone_particleinventoryservice: @local::standard_particleinventoryservice
-dune35t_particleinventoryservice:    @local::standard_particleinventoryservice
-dunefd_particleinventoryservice:     @local::standard_particleinventoryservice
+#dune35t_particleinventoryservice:    @local::standard_particleinventoryservice
+#dunefd_particleinventoryservice:     @local::standard_particleinventoryservice
 
 END_PROLOG
 
