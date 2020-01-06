@@ -11,7 +11,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
-// nutools includes
+// nusimdata includes
 #include "nusimdata/SimulationBase/MCNeutrino.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"

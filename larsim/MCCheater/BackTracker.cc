@@ -149,7 +149,7 @@ namespace cheat{
 
       }
     }// end try
-    catch(cet::exception e){
+    catch(cet::exception const& e){
       mf::LogWarning("BackTracker") << "caught exception \n"
         << e;
     }

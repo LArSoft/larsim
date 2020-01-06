@@ -7,7 +7,7 @@
  */
 
 
-// nutools libraries
+// lar libraries
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larcorealg/CoreUtils/SortByPointers.h" // util::makePointerVector()
 

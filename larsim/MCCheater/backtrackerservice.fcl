@@ -23,9 +23,9 @@ argoneut_backtrackerservice:   @local::standard_backtrackerservice
 
 microboone_backtrackerservice: @local::standard_backtrackerservice
 
-dune35t_backtrackerservice:    @local::standard_backtrackerservice
+#dune35t_backtrackerservice:    @local::standard_backtrackerservice
 
-dunefd_backtrackerservice:     @local::standard_backtrackerservice
+#dunefd_backtrackerservice:     @local::standard_backtrackerservice
 
 END_PROLOG
 

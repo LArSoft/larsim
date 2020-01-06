@@ -88,7 +88,7 @@ namespace cheat{
     if( this->priv_OpDetBTRsReady()){ return; }
     try{PhotonBackTracker::PrepOpDetBTRs(evt);}
     //catch(...){ mf::LogWarning("PhotonBackTrackerService")//This needs to go. Catch all should not be used.
-    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
+    catch(cet::exception const&){//This needs to go. Make it specific if there is a really an exception we would like to catch.
       mf::LogWarning("PhotonBackTrackerService")
         <<"Rebuild failed to get the OpDetBTRs. This is expected when "
         <<"running on a generation or simulation step.";}
@@ -99,7 +99,7 @@ namespace cheat{
     if( this->priv_OpFlashToOpHitsReady()){ return; }
     try{PhotonBackTracker::PrepOpFlashToOpHits(evt);}
     //catch(...){ //This needs to go. Catch all should not be used.
-    catch(cet::exception e){//This needs to go. Make it specific if there is a really an exception we would like to catch.
+    catch(cet::exception const&){//This needs to go. Make it specific if there is a really an exception we would like to catch.
       mf::LogWarning("PhotonBackTrackerService")
         <<"Rebuild failed to get the OpFlashToOpHits. This is expected when "
         <<"running on a generation or simulation stage.";
