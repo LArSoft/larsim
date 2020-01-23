@@ -753,7 +753,7 @@ void evgen::MarleyTimeGen::produce(art::Event& e)
     // Associate the last entries in each of the truth object vectors (the
     // truth objects that were just created for the current neutrino vertex)
     // with each other
-    util::CreateAssn(*this, e, *truthcol, *sn_truthcol, *truth_assns,
+    util::CreateAssn(e, *truthcol, *sn_truthcol, *truth_assns,
       truthcol->size() - 1, truthcol->size()/*, sn_truthcol->size() - 1*/);
   }
 

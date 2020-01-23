@@ -350,8 +350,8 @@ namespace evgen{
 	  truthcol ->push_back(truth);
 	  fluxcol  ->push_back(flux);
 	  gtruthcol->push_back(gTruth);
-	  util::CreateAssn(*this, evt, *truthcol, *fluxcol, *tfassn, fluxcol->size()-1, fluxcol->size());
-	  util::CreateAssn(*this, evt, *truthcol, *gtruthcol, *tgtassn, gtruthcol->size()-1, gtruthcol->size());
+	  util::CreateAssn(evt, *truthcol, *fluxcol, *tfassn, fluxcol->size()-1, fluxcol->size());
+	  util::CreateAssn(evt, *truthcol, *gtruthcol, *tgtassn, gtruthcol->size()-1, gtruthcol->size());
 
 	  FillHistograms(truth);
 
