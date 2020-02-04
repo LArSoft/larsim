@@ -27,6 +27,7 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Table.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Persistency/Common/PtrMaker.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -34,7 +35,6 @@
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/Simulation/SupernovaTruth.h"
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 #include "larsim/EventGenerator/MARLEY/ActiveVolumeVertexSampler.h"
@@ -753,8 +753,8 @@ void evgen::MarleyTimeGen::produce(art::Event& e)
     // Associate the last entries in each of the truth object vectors (the
     // truth objects that were just created for the current neutrino vertex)
     // with each other
-    util::CreateAssn(*this, e, *truthcol, *sn_truthcol, *truth_assns,
-      truthcol->size() - 1, truthcol->size()/*, sn_truthcol->size() - 1*/);
+    truth_assns->addSingle(art::PtrMaker<simb::MCTruth>{e}(truthcol->size() - 1),
+                           art::PtrMaker<sim::SupernovaTruth>{e}(sn_truthcol->size() - 1));
   }
 
   // Load the completed truth object vectors and associations into the event

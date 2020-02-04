@@ -29,6 +29,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Persistency/Common/PtrMaker.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
@@ -43,7 +44,6 @@
 #include "larcoreobj/SummaryData/RunData.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
 #include "nugen/EventGeneratorBase/GENIE/GENIEHelper.h"
-#include "lardata/Utilities/AssociationUtil.h"
 
 ///Event Generation using GENIE, cosmics or single particles
 namespace evgen {
@@ -350,8 +350,9 @@ namespace evgen{
 	  truthcol ->push_back(truth);
 	  fluxcol  ->push_back(flux);
 	  gtruthcol->push_back(gTruth);
-	  util::CreateAssn(*this, evt, *truthcol, *fluxcol, *tfassn, fluxcol->size()-1, fluxcol->size());
-	  util::CreateAssn(*this, evt, *truthcol, *gtruthcol, *tgtassn, gtruthcol->size()-1, gtruthcol->size());
+          auto const truthPtr = art::PtrMaker<simb::MCTruth>{evt}(truthcol->size() - 1);
+          tfassn->addSingle(truthPtr, art::PtrMaker<simb::MCFlux>{evt}(fluxcol->size() - 1));
+          tgtassn->addSingle(truthPtr, art::PtrMaker<simb::GTruth>{evt}(gtruthcol->size() - 1));
 
 	  FillHistograms(truth);
 
