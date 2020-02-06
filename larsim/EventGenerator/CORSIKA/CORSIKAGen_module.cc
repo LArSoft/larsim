@@ -179,7 +179,7 @@ namespace evgen {
    *     use wildcards (`*`) to specify a set of files to choose among.
    *     Paths and wildcards are processed by IFDH.
    * * `ShowerFluxConstants` (list of real numbers; mandatory): for each entry
-   * *   @f$ A @f$ in `ShowerInputFiles`, specify the normalization factor
+   *     @f$ A @f$ in `ShowerInputFiles`, specify the normalization factor
    *     @f$ K_{A} @f$ of their distribution [@f$ m^{-2}s^{-1} @f$]
    * * `ProjectToHeight` (real, default: `0`): the generated particles will
    *     appear to come from this height [cm]
