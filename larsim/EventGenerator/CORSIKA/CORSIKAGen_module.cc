@@ -36,22 +36,22 @@ namespace evgen {
 
   /**
    * @brief LArSoft interface to CORSIKA event generator.
-   * 
+   *
    * @note A presentation on this module by the original author is archived at:
    *       https://indico.fnal.gov/event/10893/contribution/3/material/slides
-   * 
+   *
    * In CORSIKA jargon, a "shower" is the cascade of particles resulting from
    * a primary cosmic ray interaction.
    * This module creates a single `simb::MCTruth` object (stored as data product
    * into a `std::vector<simb::MCTruth>` with a single entry) containing all
    * the particles from cosmic ray showers crossing a _surface_ above the
    * detector.
-   * 
+   *
    * The generation procedure consists of selecting showers from a database of
    * *pregenerated* events, and then to adapt them to the parameters requested
    * in the module configuration. Pregenerated showers are "observed" at a
    * altitude set in CORSIKA configuration.
-   * 
+   *
    * Databases need to be stored as files in SQLite3 format. Multiple file
    * sources can be specified (`ShowerInputFiles` configuration parameter).
    * From each source, one database file is selected and copied locally via
@@ -62,20 +62,20 @@ namespace evgen {
    * The actual number of showers per event and per source is extracted
    * according to a Poisson distribution around the predicted average number of
    * primary cosmic rays for that source.
-   * 
-   * 
+   *
+   *
    * Flux normalization
    * -------------------
-   * 
+   *
    * @anchor CORSIKAGen_Normalization
-   * 
+   *
    * CORSIKA generates showers from each specific cosmic ray type @f$ A @f$
    * (e.g. iron, proton, etc.) according to a power law distribution
    * @f$ \Phi_{A}(E) \propto E^{-\gamma_{A}} @f$ of the primary
    * particle energy @f$ E @f$ [GeV]. When sampling pregenerated events, we
    * bypass the normalization imposed by CORSIKA and gain complete
    * control on it.
-   * 
+   *
    * Within CORSIKAGen, for each source (usually each on a different primary
    * cosmic ray type, e.g. iron, proton, etc.), the average number of generated
    * showers is
@@ -87,7 +87,7 @@ namespace evgen {
    * This is the flux of primary cosmic rays, not of the observed particles
    * from their showers. Note that it depends on an area and a time interval,
    * but it is uniform with respect to translations and constant in time.
-   * 
+   *
    * As explained @ref CORSIKAGen_Coverage "below", we consider only the
    * secondary particles that cross an "observation" surface.
    * After cosmic ray primary particles cross the flux surface (@f$ S_{\Phi} @f$
@@ -112,22 +112,22 @@ namespace evgen {
    * the particles landing outside @f$ S_{o} @f$ need to be recovered to
    * preserve the correct normalization, which is described in the
    * @ref CORSIKAGen_Coverage "next section".
-   * 
-   * 
+   *
+   *
    * Surface coverage, position and timing
    * --------------------------------------
-   * 
+   *
    * @anchor CORSIKAGen_Coverage
-   * 
+   *
    * The surface we detect the particles through (let's call it @f$ S_{d} @f$)
    * is defined by the smallest _rectangle_ including all cryostats in the
    * detector, and located at the height of the ceiling of the tallest cryostat.
    * This surface can be increased by specifying a positive value for
    * `ShowerAreaExtension` configuration parameter, in which case each side of
    * the rectangle will be extended by that amount.
-   * 
+   *
    * Showers are extracted one by one from the pregenerated samples and treated
-   * independently. 
+   * independently.
    * Ideally, the detection surface @f$ S_{d} @f$ would be at the same exact
    * altitude as the observation surface set in CORSIKA (called @f$ S_{o} @f$
    * above). In practice, we go the other way around, with the assumption that
@@ -135,9 +135,9 @@ namespace evgen {
    * actually generated at @f$ S_{o} @f$, and teleport the generated particles
    * on @f$ S_{d} @f$. Since the cryostats may be just meters from the earth
    * surface @f$ S_{o} @f$ lies on, this is an acceptable approximation.
-   * 
+   *
    * All the particles of one shower are compelled within surface @f$ S_{d} @f$
-   * as a first step. As explained when describing the 
+   * as a first step. As explained when describing the
    * @anchor CORSIKAGen_Normalization "normalization", we need to keep all the
    * shower particles, one way or the other.
    * So, particles of the shower that fell out of @f$ S_{d} @f$ are repackaged
@@ -148,16 +148,16 @@ namespace evgen {
    * independent and uncorrelated, they are assigned a random time different
    * than the main shower, leveraging the assumption of constantness of the
    * flux.
-   * 
+   *
    * As for the azimuth, this module uses an approximation by setting north
    * direction to match the _z_ axis of LArSoft geometry (typically assumed
    * to be the direction of the beam particle).
-   * 
+   *
    * The particles so manipulated are then back-propagated from the observation
    * surface to an absolute height defined by `ProjectToHeight` (although for
    * particular combination of position and direction, the particles might be
    * propagated back to the edge of the world, or even outside it).
-   * 
+   *
    * As a final filter, only the particles whose straight projections cross any
    * of the cryostats (with some buffer volume around, defined by `BufferBox`)
    * are stored, while the other ones are discarded. Note that the actual
@@ -166,14 +166,14 @@ namespace evgen {
    * have been filtered out because shooting off the cryostats might have been
    * subsequently deviated to actually cross them. This effect is not corrected
    * for at this time.
-   * 
+   *
    * The time of the showers is uniformly distributed within the configured
    * time interval, defined by `SampleTime` starting from `TimeOffset`.
-   * 
-   * 
+   *
+   *
    * Configuration parameters
    * =========================
-   * 
+   *
    * * `ShowerInputFiles` (list of paths; mandatory): a list of file paths to
    *     pregenerated CORSIKA shower files. Each entry can be a single file or
    *     use wildcards (`*`) to specify a set of files to choose among.
@@ -193,7 +193,7 @@ namespace evgen {
    *     by this much [cm]; e.g. 1000 will extend 10 m on each side
    * * `RandomXZShift` (real; default: `0`): the original position of each
    *     shower is randomly shifted within a square with this length as side
-   *     [cm]  
+   *     [cm]
    * * `BufferBox` (list of six lengths, all `0` by default):
    *     extension to the volume of each cryostat for the purpose of filtering
    *     out the particles which do not cross the detector; each cryostat volume
@@ -206,16 +206,16 @@ namespace evgen {
    * * `SeedPoisson` (integer): force random number generator for number of
    *     showers to the specified value
    * * `Seed`: alias for `SeedGenerator`
-   * 
-   * 
+   *
+   *
    * Random engines
    * ---------------
-   * 
+   *
    * Currently two random engines are used:
    * * a generator engine (driven by `SeedGenerator`), of general use
    * * a "Poisson" engine (driven by `SeedPoisson`), only used to determine the
    *     number of showers to be selected on each event
-   * 
+   *
    */
   class CORSIKAGen : public art::EDProducer {
   public:
@@ -244,7 +244,7 @@ namespace evgen {
      * @param zlo lower _z_ coordinate of the target box
      * @param zhi upper _z_ coordinate of the target box
      * @param xyzout _(output, room for at least 3 numbers)_ propagated point
-     * 
+     *
      * The point `xyz`, assumed to be inside the box, is propagated at the level
      * of _the closest among the sides of the box_. Note that this means the
      * propagated point might still be not on the surface of the box, even if it
