@@ -16,8 +16,8 @@ art_make(LIB_LIBRARIES
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${CLHEP}
            ${MF_MESSAGELOGGER}
-           ${ROOT_CORE}
-           ${ROOT_TREE}
+           ROOT::Core
+           ROOT::Tree
          )
 
 

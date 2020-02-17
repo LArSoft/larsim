@@ -17,11 +17,11 @@ art_make(LIB_LIBRARIES
            canvas
            ${MF_MESSAGELOGGER}
            cetlib_except
-           ${ROOT_CORE}
-           ${ROOT_HIST}
-           ${ROOT_PHYSICS}
-           ${ROOT_GEOM}
-           ${ROOT_MATHCORE}
+           ROOT::Core
+           ROOT::Hist
+           ROOT::Physics
+           ROOT::Geom
+           ROOT::MathCore
            ${CLHEP}
            ${G4DIGITS_HITS}
            ${G4EVENT}
@@ -44,9 +44,9 @@ art_make(LIB_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ROOT_HIST}
-           ${ROOT_CORE}
-           ${ROOT_TREE}
+           ROOT::Hist
+           ROOT::Core
+           ROOT::Tree
          )
 
 install_headers()

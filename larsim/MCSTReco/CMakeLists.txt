@@ -9,13 +9,14 @@ art_make(LIB_LIBRARIES
            cetlib_except
            ${MF_MESSAGELOGGER}
            ${FHICLCPP}
-           ${ROOT_CORE}
-           ${ROOT_PHYSICS}
+           ROOT::Core
+           ROOT::Physics
+           ${ART_UTILITIES}
          MODULE_LIBRARIES
            larsim_MCSTReco
            ${MF_MESSAGELOGGER}
-           ${ROOT_CORE}
-           ${ROOT_PHYSICS}
+           ROOT::Core
+           ROOT::Physics
          )
 
 install_headers()

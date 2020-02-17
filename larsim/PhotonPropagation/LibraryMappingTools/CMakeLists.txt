@@ -4,10 +4,11 @@ art_make(NO_PLUGINS
     PhotonMappingIdentityTransformations_tool.cc
     PhotonMappingXMirrorTransformations_tool.cc
   LIB_LIBRARIES
-    ${ROOT_CORE}
+    ROOT::Core
     larcorealg_Geometry
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${CANVAS}
+    ${ART_UTILITIES}
   )
 
 simple_plugin(PhotonMappingIdentityTransformations "tool"

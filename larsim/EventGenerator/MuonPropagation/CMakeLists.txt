@@ -10,12 +10,12 @@ art_make(MODULE_LIBRARIES
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${MF_MESSAGELOGGER}
            ${CLHEP}
-           ${ROOT_CORE}
-           ${ROOT_EG}
-           ${ROOT_HIST}
-           ${ROOT_PHYSICS}
-           ${ROOT_RIO}
-           ${ROOT_TREE}
+           ROOT::Core
+           ROOT::EG
+           ROOT::Hist
+           ROOT::Physics
+           ROOT::RIO
+           ROOT::Tree
          )
 
 install_headers()
