@@ -1,0 +1,10 @@
+# This is an example of alternative macro file to replace LArG4.mac
+# for debugging purposes.  It prints out a dump of the Geant4
+# geometry in text form.
+
+/run/initialize
+/vis/open ATree
+# If we want to see even the invisible volumes in the list.
+#/vis/set/culling off
+/vis/ASCIITree/verbose 4
+/vis/drawTree
