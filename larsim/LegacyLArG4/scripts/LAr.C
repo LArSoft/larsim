@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------------------------------------
-// Formulas and numbers are based on 
+// Formulas and numbers are based on
 // arXiv:1502.04213
 // and private communication with one of the authors Emily Grace:
 // emilygrace.k@gmail.com
@@ -42,7 +42,7 @@ const double alngth    = 66.;                 // LAr attenuation length in cm at
                                               // from N. Ishida et al :
                                               // Nuclear Instruments and Methods in Physics Research Section A: Accelerators,
                                               // Spectrometers, Detectors and Associated Equipment 384 (23) (1997) 380 - 386.
-// refractive index at triple point LAr from 
+// refractive index at triple point LAr from
 // A. C. Sinnock, B. L. Smith, Refractive indices of the condensed inert gases, Phys. Rev. 181 (1969) 1297-1307.
 const Int_t nr= 9;
 const Double_t Lambda[nr]= {361.2,
@@ -65,7 +65,7 @@ const Double_t R[nr]= {1.2395,
 		       1.2328,
 		       1.2321
 };
-// Liquid Argon 
+// Liquid Argon
 // sellmeier coefficient from arXiv:1502.04213
 // for different temperatures T
 //
@@ -82,12 +82,12 @@ void init()
 for (int i=0;i<4;i++)
   {
     density[i]  = rho[i] *aw;  // g/cm3
-    kbTrhokT[i] = kb*T[i]*kT*density[i]*density[i]; 
+    kbTrhokT[i] = kb*T[i]*kT*density[i]*density[i];
   }
 }
 double lambdatoe(double lambda)
 {
-  // input   photon wavelength in nm 
+  // input   photon wavelength in nm
   // return  energy in eV
  double   E  = (h*c)/(lambda*1.e-9);
  return E;
@@ -95,7 +95,7 @@ double lambdatoe(double lambda)
 double etolambda(double E)
 {
   // input  photon energy in eV
-  // return   wavelength in nm 
+  // return   wavelength in nm
  double   lambda  = (h*c)/(E*1.e-9);
  return lambda;
 }
@@ -107,16 +107,16 @@ double sellmeier_LAr(double * x,double *p)
   double lambda =x[0]*1e-7;   // convert from nm to cm
   double nsquare = la0
     +(laUV*lambda*lambda)/(lambda*lambda-lambdaUV*lambdaUV)
-    +(laIR*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);  
-  return  sqrt(nsquare); 
+    +(laIR*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);
+  return  sqrt(nsquare);
 }
 double sellmeier_LAr(double  lambda,int index)
 {
   lambda=lambda*1e-7;
   double nsquare = a0[index]
     +(aUV[index]*lambda*lambda)/(lambda*lambda-lambdaUV*lambdaUV)
-    +(aIR[index]*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);  
-  return sqrt(nsquare); 
+    +(aIR[index]*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);
+  return sqrt(nsquare);
 }
 double sellmeierpe_LAr(double * x,double *p)
 {
@@ -128,8 +128,8 @@ double sellmeierpe_LAr(double * x,double *p)
   lambda =lambda*1e-7;   // convert from nm to cm
   double nsquare = la0
     +(laUV*lambda*lambda)/(lambda*lambda-lambdaUV*lambdaUV)
-    +(laIR*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);  
-  double nord =  sqrt(nsquare); 
+    +(laIR*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);
+  double nord =  sqrt(nsquare);
   return nord;
 }
 double sellmeierpe_LAr(double x,int index)
@@ -138,8 +138,8 @@ double sellmeierpe_LAr(double x,int index)
   lambda =lambda*1e-7;   // convert from nm to cm
   double nsquare = a0[index]
     +(aUV[index]*lambda*lambda)/(lambda*lambda-lambdaUV*lambdaUV)
-    +(aIR[index]*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);  
-  double nord =  sqrt(nsquare); 
+    +(aIR[index]*lambda*lambda)/(lambda*lambda-lambdaIR*lambdaIR);
+  double nord =  sqrt(nsquare);
   return nord;
 }
 
@@ -157,7 +157,7 @@ void sellmeierLAr(double emin=110, double emax=700)
   TF1 *sm0  = new TF1("sm0", sellmeier_LAr,emin,emax,3);
   sm0-> SetTitle("T=83.81 K");
   sm0->SetParameters(a0[0],aUV[0],aIR[0]);
-  sm0->SetLineWidth(2); 
+  sm0->SetLineWidth(2);
   sm0->SetLineColor(2);
   sm0->GetXaxis()->SetTitle("#lambda [nm]");
   sm0->GetYaxis()->SetTitle("Index of Refraction");
@@ -165,19 +165,19 @@ void sellmeierLAr(double emin=110, double emax=700)
   TF1 *sm1  = new TF1("sm1", sellmeier_LAr,emin,emax,3);
   sm1-> SetTitle("T=86. K");
   sm1->SetParameters(a0[1],aUV[1],aIR[1]);
-  sm1->SetLineWidth(2); 
+  sm1->SetLineWidth(2);
   sm1->SetLineColor(3);
   sm1->Draw("SAME");
   TF1 *sm2  = new TF1("sm2", sellmeier_LAr,emin,emax,3);
   sm2-> SetTitle("T=88. K");
   sm2->SetParameters(a0[2],aUV[2],aIR[2]);
-  sm2->SetLineWidth(2); 
+  sm2->SetLineWidth(2);
   sm2->SetLineColor(4);
   sm2->Draw("SAME");
   TF1 *sm3  = new TF1("sm3", sellmeier_LAr,emin,emax,3);
   sm3-> SetTitle("T=90. K");
   sm3->SetParameters(a0[3],aUV[3],aIR[3]);
-  sm3->SetLineWidth(2); 
+  sm3->SetLineWidth(2);
   sm3->SetLineColor(8);
   sm3->Draw("SAME");
   //
@@ -196,7 +196,7 @@ void sellmeierpeLAr()
 {
   TF1 *sm  = new TF1("npe", sellmeierpe_LAr,1.9,11.3,3);
   sm->SetParameters(a0[0],aUV[0],aIR[0]);
-  sm->SetLineWidth(2); 
+  sm->SetLineWidth(2);
   sm->SetLineColor(2);
   sm->GetXaxis()->SetTitle("photon energy [eV]");
   sm->GetYaxis()->SetTitle("Index of Refraction");
@@ -239,7 +239,7 @@ void rayleigh(double emin=110, double emax=400)
   TCanvas *canvas = new TCanvas("canvas", "rayleigh scattering length", 200, 10, 1000, 800);
   TF1 *vp0  = new TF1("vp0",lrayleigh,emin,emax,1);
   vp0->SetParameters(0.,0.);
-  vp0->SetLineWidth(2); 
+  vp0->SetLineWidth(2);
   vp0->SetLineColor(2);
   vp0->SetTitle("T=83.81K");
   vp0->GetXaxis()->SetTitle("#lambda [nm]");
@@ -247,19 +247,19 @@ void rayleigh(double emin=110, double emax=400)
   vp0->Draw();
   TF1 *vp1  = new TF1("vp1",lrayleigh,emin,emax,1);
   vp1->SetParameters(1.,0.);
-  vp1->SetLineWidth(2); 
+  vp1->SetLineWidth(2);
   vp1->SetLineColor(3);
   vp1->SetTitle("T=86.K");
   vp1->Draw("SAME");
   TF1 *vp2  = new TF1("vp2",lrayleigh,emin,emax,1);
   vp2->SetParameters(2.,0.);
-  vp2->SetLineWidth(2); 
+  vp2->SetLineWidth(2);
   vp2->SetLineColor(4);
   vp2->SetTitle("T=88.K");
   vp2->Draw("SAME");
   TF1 *vp3  = new TF1("vp3",lrayleigh,emin,emax,1);
   vp3->SetParameters(3.,0.);
-  vp3->SetLineWidth(2); 
+  vp3->SetLineWidth(2);
   vp3->SetLineColor(8);
   vp3->SetTitle("T=90.K");
   vp3->Draw("SAME");
@@ -281,7 +281,7 @@ void rayleightable(double emin=110, double emax=700, int nsteps=100,int index=0)
       cout <<" variables out of range: "<< minlambda<<" - "<< maxlambda<<endl;
       return;
     }
-  double stepsize = (emax-emin)/nsteps; 
+  double stepsize = (emax-emin)/nsteps;
   double pe       = emax;
   double n        = lrayleigh(pe,index);
   double photone  = lambdatoe(pe);

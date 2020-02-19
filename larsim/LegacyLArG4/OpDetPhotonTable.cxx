@@ -199,7 +199,7 @@ namespace larg4 {
 
 
   //--------------------------------------------------
-  void OpDetPhotonTable::AddEnergyDeposit(int n_photon, int n_elec, double scint_yield, 
+  void OpDetPhotonTable::AddEnergyDeposit(int n_photon, int n_elec, double scint_yield,
 					  double energy,
 					  float start_x,float start_y, float start_z,
 					  float end_x,float end_y,float end_z,

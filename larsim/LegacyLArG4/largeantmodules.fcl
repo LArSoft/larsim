@@ -9,10 +9,10 @@ standard_largeant:
  DumpLArVoxelList:       false
  DebugVoxelAccumulation: 0
  VisualizeEvents:        false
- SmartStacking:          0	# non-0 turns it on. The 0x4 bit 
+ SmartStacking:          0	# non-0 turns it on. The 0x4 bit
 	                        # will shut off primary showering.
  KeepParticlesInVolumes:  [] #this will keep particles in all volumes
- 
+
 # The following variables are not used anywhere in LArG4_module.cc.
 # They has been moved to the LArG4Parameters_service and so should
 # not be included here.

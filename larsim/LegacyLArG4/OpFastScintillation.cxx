@@ -193,11 +193,11 @@ namespace larg4{
 
     if (bPropagate) {
       art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-      
+
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
-      // Find boundary of active volume      
+      // Find boundary of active volume
       fminx = 1e9;
       fmaxx = -1e9;
       fminy = 1e9;
@@ -217,7 +217,7 @@ namespace larg4{
       std::cout << "minx: " <<fminx<<"  maxx: "<<fmaxx<< std::endl;
       std::cout << "miny: " <<fminy<<"  maxy: "<<fmaxy<< std::endl;
       std::cout << "minz: " <<fminz<<"  maxz: "<<fmaxz<< std::endl;
- 
+
       TVector3 Cathode_centre(geo->TPC(0,0).GetCathodeCenter().X(), (fminy + fmaxy)/2, (fminz + fmaxz)/2);
       std::cout<<"Cathode_centre: "<<Cathode_centre.X()<<"  "<<Cathode_centre.Y()<<"  "<<Cathode_centre.Z()<<std::endl;
 
@@ -301,20 +301,20 @@ namespace larg4{
 	std::cout<<"Photocathode-plane centre (z,y) = ("<<fZcathode<<", "<<fYcathode<<") and corner (z, y) = ("<<fZactive_corner<<", "<<fYactive_corner<<")"<<std::endl;
 	std::cout<<"Reference_to_corner: "<<fReference_to_corner<<std::endl;
 
-	if(pvs->StoreReflected()) {	
+	if(pvs->StoreReflected()) {
 	  // Load corrections for VIS semi-anlytic hits
 	  std::cout << "Loading vis corrections"<<std::endl;
-	  pvs->LoadParsForVISCorrection(fvispars,fradius);  
+	  pvs->LoadParsForVISCorrection(fvispars,fradius);
        	  fStoreReflected = true;
-	  
+
 	  if (pvs->ApplyVISBorderCorrection()) {
             // load border corrections
             std::cout << "Loading vis border corrections" << std::endl;
-            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x, fvis_border_distances_r, fvis_border_correction); 
+            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x, fvis_border_distances_r, fvis_border_correction);
             fApplyVisBorderCorrection = true;
             fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
           }
-          else fApplyVisBorderCorrection = false;         
+          else fApplyVisBorderCorrection = false;
 
 	  // cathode dimensions required for corrections
 	  fcathode_centre = geo->TPC(0,0).GetCathodeCenter();
@@ -363,7 +363,7 @@ namespace larg4{
 
   OpFastScintillation::~OpFastScintillation()
   {
-  
+
    if (theFastIntegralTable != NULL) {
       theFastIntegralTable->clearAndDestroy();
       delete theFastIntegralTable;
@@ -372,9 +372,9 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
-  
+
   }
-  
+
   ////////////
   // Methods
   ////////////
@@ -837,7 +837,7 @@ namespace larg4{
           }
 
         }
-     
+
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
           // Only do the reflected loop if we have reflected visibilities
@@ -1630,7 +1630,7 @@ namespace larg4{
     }
 
     //semi-analytic approach only works in the active volume
-    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
        (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
@@ -1704,7 +1704,7 @@ namespace larg4{
      }
 
     //semi-analytic approach only works in the active volume
-    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) || 
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
        (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
@@ -1739,13 +1739,13 @@ namespace larg4{
      double cathode_hits_geo = exp(-1.*distance_cathode/fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
      // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
      // offset angle bin
-     int j = (theta_cathode/fdelta_angulo);          
+     int j = (theta_cathode/fdelta_angulo);
      double  pars_ini_[4] = {fGHvuvpars[0][j],
                            fGHvuvpars[1][j],
                            fGHvuvpars[2][j],
                            fGHvuvpars[3][j]};
      double GH_correction = Gaisser_Hillas(distance_cathode,pars_ini_);
-     double cathode_hits_rec = GH_correction*cathode_hits_geo/cosine_cathode;  
+     double cathode_hits_rec = GH_correction*cathode_hits_geo/cosine_cathode;
 
      // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
      // hotspot coordinates
@@ -1793,7 +1793,7 @@ namespace larg4{
 
      // apply geometric correction
      double pars_ini_vis[6] = { fvispars[0][k], fvispars[1][k], fvispars[2][k], fvispars[3][k], fvispars[4][k], fvispars[5][k] };
-     double geo_correction = Pol_5(distance_vuv, pars_ini_vis);     
+     double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
      double hits_rec = gRandom->Poisson(geo_correction*hits_geo/cosine_vis);
 
      // apply border correction
@@ -1820,7 +1820,7 @@ namespace larg4{
        double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
        // apply border correction
        double hits_rec_borders = border_correction * hits_rec / cosine_vis;
-       
+
        // round final result
        hits_vis = std::round(hits_rec_borders);
      }
@@ -1895,7 +1895,7 @@ namespace larg4{
 
     return y;
   }
- 
+
   //======================================================================
 
   //   Returns interpolated value at x from parallel arrays ( xData, yData )

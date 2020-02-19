@@ -82,7 +82,7 @@ namespace larg4 {
   //hadron elastic, neutron HP
   class HadronElasticHPPhysicsFactory : public CustomPhysicsFactory<G4HadronElasticPhysicsHP>
   {
-  public: 
+  public:
     G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysicsHP(0);}
     HadronElasticHPPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysicsHP>("HadronElasticHP") {}
     virtual ~HadronElasticHPPhysicsFactory() {}
