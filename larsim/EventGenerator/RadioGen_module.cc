@@ -112,14 +112,14 @@ namespace evgen {
     void readfile(std::string type, std::string const& filename);
     void samplespectrum(std::string nuclideName, ParticleInfo& part);
 
-    
+
     struct ParticleInfo{
       ti_PDGID pdg;
       td_Mass mass;
       TLorentzVector pos;
       TLorentzVector mom;
     };
-    
+
     ParticleInfo AlphaDecay(double t, TVector3 pos, double time);
     ParticleInfo BetaDecay(double t, TVector3 pos, double time, double Z);
     std::vector<ParticleInfo> BetaThenAlphaDecay(double t_beta, double t_alpha, double t_mean, TVector3 pos, double time, double Z);
@@ -128,7 +128,7 @@ namespace evgen {
 
     TVector3 GetGoodPosition(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, std::string material, bool& flag);
     TVector3 GetRandomPointInVolume(std::string volname, std::string matname, bool& flag);
-    
+
     void Ar42Gamma2(std::vector<ParticleInfo>& v_prods);
     void Ar42Gamma3(std::vector<ParticleInfo>& v_prods);
     void Ar42Gamma4(std::vector<ParticleInfo>& v_prods);
@@ -169,21 +169,21 @@ namespace evgen {
     // TGenPhaseSpace rg;  // put this here so we don't constantly construct and destruct it
 
 
-    
+
     std::vector<std::string> spectrumname;
-    
+
     std::map<std::string,std::unique_ptr<TH1D>> alphaspectrum;
     std::map<std::string,double> alphaintegral;
-    
+
     std::map<std::string,std::unique_ptr<TH1D>> betaspectrum;
     std::map<std::string,double> betaintegral;
-    
+
     std::map<std::string,std::unique_ptr<TH1D>> gammaspectrum;
     std::map<std::string,double> gammaintegral;
-    
+
     std::map<std::string,std::unique_ptr<TH1D>> neutronspectrum;
     std::map<std::string,double> neutronintegral;
-    
+
     art::ServiceHandle<geo::Geometry const> fGeo;
     TGeoManager* fGeoManager;
     int nevent;
@@ -204,11 +204,11 @@ namespace evgen {
 }
 
 namespace {
-  
+
   constexpr double m_e = 0.000510998928;  // mass of electron in GeV
   constexpr double m_alpha = 3.727379240; // mass of an alpha particle in GeV
   constexpr double m_neutron = 0.9395654133; // mass of a neutron in GeV
-  
+
   constexpr int kAlphaPDG    = 1000020040;
   constexpr int kElectronPDG = 11;
   constexpr int kGammaPDG    = 22;
@@ -241,7 +241,7 @@ namespace evgen{
         TGeoVolume* vol = fGeoManager->FindVolumeFast(volname.c_str());
         if (!vol)
           throw cet::exception("RadioGen") << "Volume: " << volname << " doesn't exist in the geometry. Exit disgracefully.";
-    
+
         const TGeoShape *shape = vol->GetShape();
         TGeoBBox *box = (TGeoBBox *)shape;
         double dx = box->GetDX();
@@ -277,7 +277,7 @@ namespace evgen{
     time_TH1D   = tfs->make<TH1D>("Time", ";Time[ns];n particles", 100, tmin, tmax);
     timediff_TH1D = tfs->make<TH1D>("TimeDiff", ";Time Diff[ns];n particles", (int)(tmax/100), 0, tmax);
   }
-  
+
   void RadioGen::endJob(){
     if (nevent>0){
       pos_xy_TH2D->Scale(1./nevent);
@@ -339,12 +339,12 @@ namespace evgen{
 
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
- 
+
     // check for consistency of vector sizes
     unsigned int nsize = fNuclide.size();
-    if (fMaterial.size() != nsize) { throw cet::exception("RadioGen") << "Different size Material vector and Nuclide vector"; } 
-    if (fBq      .size() != nsize) { throw cet::exception("RadioGen") << "Different size Bq vector and Nuclide vector";       } 
-    if (fT0      .size() != nsize) { throw cet::exception("RadioGen") << "Different size T0 vector and Nuclide vector";       } 
+    if (fMaterial.size() != nsize) { throw cet::exception("RadioGen") << "Different size Material vector and Nuclide vector"; }
+    if (fBq      .size() != nsize) { throw cet::exception("RadioGen") << "Different size Bq vector and Nuclide vector";       }
+    if (fT0      .size() != nsize) { throw cet::exception("RadioGen") << "Different size T0 vector and Nuclide vector";       }
     if (fT1      .size() != nsize) { throw cet::exception("RadioGen") << "Different size T1 vector and Nuclide vector";       }
     if (fVolume.size() == 0 &&
         fX0.size() != nsize &&
@@ -355,7 +355,7 @@ namespace evgen{
         fZ1.size() != nsize) {
       throw cet::exception("RadioGen") << "You need to specify either Volume or X0,X1,Y0,Y1,Z0,Z1 vectors (and they must be the same size as Nuclide)";
     }
-    
+
     if (fVolume.size() != nsize &&
         (fX0.size() != nsize ||
          fY0.size() != nsize ||
@@ -365,7 +365,7 @@ namespace evgen{
          fZ1.size() != nsize)) {
       throw cet::exception("RadioGen") << "You need to specify either Volume vector (and it must be the same size as Nuclide)";
     }
-    
+
     for (std::string & nuclideName : fNuclide) {
       std::cout << "Initialising " << nuclideName << "\n";
 
@@ -379,7 +379,7 @@ namespace evgen{
       else if(nuclideName=="218Po"      ){continue;} //...
       else if(nuclideName=="214Pb"      ){continue;} //...
       else if(nuclideName=="BiPo(Rn222)"){continue;} //...
-      else if(nuclideName=="59Ni"       ){continue;} 
+      else if(nuclideName=="59Ni"       ){continue;}
       else if(nuclideName=="42Ar"       ){
         readfile("42Ar_1", "Argon_42_1.root"); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
         readfile("42Ar_2", "Argon_42_2.root"); //This allows us to know which decay chain to follow for the dexcitation gammas.
@@ -416,7 +416,7 @@ namespace evgen{
     for (unsigned int i=0; i<fNuclide.size(); ++i) {
       SampleOne(i,truth);
     }//end loop over nuclides
-    
+
     MF_LOG_DEBUG("RadioGen") << truth;
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
@@ -428,9 +428,9 @@ namespace evgen{
     TGeoVolume* vol = fGeoManager->FindVolumeFast(volname.c_str());
     if (!vol)
       throw cet::exception("RadioGen") << "Volume: " << volname << " doesn't exist in the geometry. Exit disgracefully.";
-    
+
     std::regex regex_material = (std::regex)matname;
-    
+
     const TGeoShape *shape = vol->GetShape();
     TGeoBBox *box = (TGeoBBox *)shape;
     double dx = box->GetDX();
@@ -469,14 +469,14 @@ namespace evgen{
     delete xyz;
     return pos;
   }
-  
-  
+
+
   TVector3 RadioGen::GetGoodPosition(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, std::string material, bool& flag)
   {
     // int trial = 0;
     TVector3 pos;
     flag = true;
-    
+
     pos = TVector3(minX + fRandomFlat->fire()*(maxX - minX),
                    minY + fRandomFlat->fire()*(maxY - minY),
                    minZ + fRandomFlat->fire()*(maxZ - minZ));
@@ -484,15 +484,15 @@ namespace evgen{
     std::string volmaterial = fGeoManager->FindNode(pos.X(),pos.Y(),pos.Z())->GetMedium()->GetMaterial()->GetName();
     std::regex regex_material = (std::regex)material;
     flag = std::regex_match(volmaterial, regex_material);
-      
+
     return pos;
   }
 
-  
+
   RadioGen::ParticleInfo RadioGen::AlphaDecay(double t, TVector3 pos, double time)
   {
     double p=0; td_Mass m=m_alpha;// ti_PDGID pdgid=kAlphaPDG;
-    double energy = t + m; 
+    double energy = t + m;
     double p2     = energy*energy - m*m;
     if (p2 > 0) p = TMath::Sqrt(p2);
     else        p = 0;
@@ -503,7 +503,7 @@ namespace evgen{
     part.pos  = TLorentzVector(pos, time);
     return part;
   }
-  
+
   RadioGen::ParticleInfo RadioGen::BetaDecay(double t, TVector3 pos, double time, double Z)
   {
     ParticleInfo part;
@@ -515,7 +515,7 @@ namespace evgen{
     part.pos  = TLorentzVector(pos, time);
     return part;
   }
-  
+
   std::vector<RadioGen::ParticleInfo> RadioGen::BetaThenAlphaDecay(double t_beta, double t_alpha, double t_mean, TVector3 pos, double time, double Z)
   {
     std::vector<ParticleInfo> vec;
@@ -527,12 +527,12 @@ namespace evgen{
   //____________________________________________________________________________
   // Generate radioactive decays per nuclide per volume according to the FCL parameters
   double RadioGen::GetRate(int i) {
-    
+
     if ((size_t)i < fVolume.size()) {
        TGeoVolume* vol = fGeoManager->FindVolumeFast(fVolume[i].c_str());
       if (!vol)
         throw cet::exception("RadioGen") << "Volume: " << fVolume[i] << " doesn't exist in the geometry. Exit disgracefully.";
-    
+
       const TGeoShape *shape = vol->GetShape();
       TGeoBBox *box = (TGeoBBox *)shape;
       double dx = box->GetDX();
@@ -555,7 +555,7 @@ namespace evgen{
     }
 
   }
-  
+
   void RadioGen::SampleOne(int i, simb::MCTruth &mct)
   {
 
@@ -584,34 +584,34 @@ namespace evgen{
         pos = GetRandomPointInVolume(fVolume[i], fMaterial[i], flag);
       else
         pos = GetGoodPosition(fX0[i],fY0[i],fZ0[i],fX1[i],fY1[i],fZ1[i],fMaterial[i], flag);
-      
+
       if (!flag)
         continue;
-      
+
       double time = (idecay==0 && fIsFirstSignalSpecial) ? 0 : ( fT0[i] + fRandomFlat->fire()*(fT1[i] - fT0[i]));
 
       std::vector<ParticleInfo> v_prods; //(First is for PDGID, second is mass, third is Momentum)
-      
+
       if (fNuclide[i] == "222Rn")          // Treat 222Rn separately
       {
         v_prods.emplace_back(AlphaDecay(0.0055904, pos, time));
       }
-      
+
       else if(fNuclide[i] == "226Ra")
       {
         v_prods.emplace_back(AlphaDecay(0.0050975, pos, time));
       }
-      
+
       else if(fNuclide[i] == "218Po")
       {
         v_prods.emplace_back(AlphaDecay(0.00611475, pos, time));
       }
-      
+
       else if(fNuclide[i]=="214Pb")
       {
         v_prods.emplace_back(BetaDecay(0.002240300, pos, time, 83));
       }
-      
+
       else if (fNuclide[i] == "BiPo(Rn222)")          // Treat 222Rn separately
       {
         std::vector<ParticleInfo> bipo_prod = BetaThenAlphaDecay(0.003269, 0.00783354, 164000, pos, time, 84);
@@ -620,7 +620,7 @@ namespace evgen{
           v_prods.emplace_back(p);
         }
       }
-      
+
       else if(fNuclide[i] == "59Ni"){ //Treat 59Ni Calibration Source separately (as I haven't made a spectrum for it, and ultimately it should be handeled with multiple particle outputs.
         double p=0.008997; // td_Mas=double. ti_PDFID=int. Assigning p directly, as t=p for gammas.
         ParticleInfo part;
@@ -630,7 +630,7 @@ namespace evgen{
         part.pos = TLorentzVector(pos, time);
         v_prods.emplace_back(part);
       }//end special case Ni59 calibration source
-      
+
       else if(fNuclide[i] == "42Ar")
       {   // Spot for special treatment of Ar42.
         ParticleInfo part;
@@ -657,12 +657,12 @@ namespace evgen{
           v_prods.emplace_back(part);
           Ar42Gamma5(v_prods);
         }
-        
+
         for (auto& it: v_prods) { // All the Ar42 are produced at the same place.
           it.pos = TLorentzVector(pos, time);
         }
       }
-      
+
       else
       { //General Case.
         ParticleInfo part;
@@ -708,9 +708,9 @@ namespace evgen{
         dir_z_TH1D ->Fill(prodEntry.mom.Z()/mom);
         time_TH1D  ->Fill(prodEntry.pos.T());
       }//End Loop over all particles produces in this single decay.
-    
+
     }
- 
+
   }
 
 //Calculate an arbitrary direction with a given magnitude p
@@ -728,9 +728,9 @@ namespace evgen{
         std::sqrt(p*p+m*m)};
   }
 
-  
+
   std::unique_ptr<TH1D> ParseTGraph(TGraph* graph, std::string type, double& integral) {
-    
+
     if (graph) {
       int np = graph->GetN();
       //double *x = graph->GetX();
@@ -748,7 +748,7 @@ namespace evgen{
     }
     integral = 0;
     return nullptr;
-    
+
   }
 
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
@@ -767,10 +767,10 @@ namespace evgen{
     //     break;
     //   }
     // }
-    
+
     // if (!found) return;
     //if (type == kUnknown) throw cet::exception("RadioGen") << "The file \"" << filename << "\" will be saved to unknown, so won't be used.";
-      
+
     Bool_t addStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE); // cloned histograms go in memory, and aren't deleted when files are closed.
     // be sure to restore this state when we're out of the routine.
@@ -839,7 +839,7 @@ namespace evgen{
     } catch (...) {
       throw cet::exception("RadioGen") << "Missing information for : " << type << "\n";
     }
-    
+
     for (int itry=0;itry<10;itry++) // maybe a tiny normalization issue with a sum of 0.99999999999 or something, so try a few times.
     {
       if (rtype <= alphaintegral.at(type) && alphaspectrum.at(type) != nullptr)
@@ -866,15 +866,15 @@ namespace evgen{
         part.mass = m_neutron;
         t = samplefromth1d(*neutronspectrum.at(type))/1000000.0;
       }
-      
+
       if (part.pdg >= 0) break;
     }
-    
+
     if (part.pdg == -1)
     {
       throw cet::exception("RadioGen") << "Normalization problem with nuclide: " << type;
     }
-    
+
     double e = t + part.mass;
     double p = e*e - part.mass* part.mass;
     if (p>=0)
@@ -952,7 +952,7 @@ namespace evgen{
   {
 
     double chan1 = (0.052 / (0.052+0.020) );
-    
+
     if(fRandomFlat->fire()<chan1){
       std::vector<double> vd_p = {.0008997};//Momentum in GeV
       for(auto p : vd_p){
