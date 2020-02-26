@@ -31,7 +31,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${MF_MESSAGELOGGER}
                        ROOT::GenVector
           MODULE_LIBRARIES larsim_PhotonPropagation
-                        larsim_LArG4
+                        larsim_LegacyLArG4
                         larsim_ElectronDrift
                         larsim_PhotonPropagation_PhotonVisibilityService_service
                         larsim_IonizationScintillation
