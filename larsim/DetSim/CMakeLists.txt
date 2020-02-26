@@ -4,8 +4,8 @@ simple_plugin(SimWireAna "module"
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${ART_ROOT_IO_TFILESERVICE_SERVICE}
               ${MF_MESSAGELOGGER}
-              ${ROOT_CORE}
-              ${ROOT_HIST})
+              ROOT::Core
+              ROOT::Hist)
 
 simple_plugin(SimWire "module"
               lardataobj_RawData
@@ -18,9 +18,9 @@ simple_plugin(SimWire "module"
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${CLHEP}
               ${MF_MESSAGELOGGER}
-              ${ROOT_CORE}
-              ${ROOT_HIST}
-              ${ROOT_MATHCORE})
+              ROOT::Core
+              ROOT::Hist
+              ROOT::MathCore)
 
 simple_plugin(WienerFilterAna "module"
               larcorealg_Geometry
@@ -28,8 +28,8 @@ simple_plugin(WienerFilterAna "module"
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${ART_ROOT_IO_TFILESERVICE_SERVICE}
               ${MF_MESSAGELOGGER}
-              ${ROOT_CORE}
-              ${ROOT_HIST})
+              ROOT::Core
+              ROOT::Hist)
 
 install_headers()
 install_fhicl()

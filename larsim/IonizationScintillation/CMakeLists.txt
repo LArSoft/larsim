@@ -16,8 +16,8 @@ art_make(LIB_LIBRARIES
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${CLHEP}
-           ${ROOT_CORE}
-           ${ROOT_TREE}
+           ROOT::Core
+           ROOT::Tree
            ${MF_MESSAGELOGGER})
 
 install_headers()
