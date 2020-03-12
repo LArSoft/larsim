@@ -493,6 +493,7 @@ namespace evgen{
     , fSigmaT       (config().SigmaT())
     , fPosDist      (selectOption(config().PosDist(), DistributionNames))
     , fTDist        (selectOption(config().TDist(), DistributionNames))
+    , fSingleVertex (config().SingleVertex())
     , fTheta0XZ     (config().Theta0XZ())
     , fTheta0YZ     (config().Theta0YZ())
     , fSigmaThetaXZ (config().SigmaThetaXZ())
