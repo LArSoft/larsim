@@ -4,8 +4,8 @@ art_make(MODULE_LIBRARIES
          nusimdata_SimulationBase
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
          ${MF_MESSAGELOGGER}
-         ${ROOT_CORE}
-         ${ROOT_PHYSICS})
+         ROOT::Core
+         ROOT::Physics)
 
 # install_headers()
 install_fhicl()

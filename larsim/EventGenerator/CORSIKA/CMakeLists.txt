@@ -7,9 +7,9 @@ art_make(MODULE_LIBRARIES
            ${CLHEP}
            ${IFDH}
            ${MF_MESSAGELOGGER}
-           ${ROOT_CORE}
-           ${ROOT_EG}
-           ${ROOT_PHYSICS}
+           ROOT::Core
+           ROOT::EG
+           ROOT::Physics
            ${SQLITE3}
          )
 

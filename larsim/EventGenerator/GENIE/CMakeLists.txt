@@ -10,16 +10,16 @@ art_make(MODULE_LIBRARIES
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+         ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
          art_Persistency_Provenance
          ${MF_MESSAGELOGGER}
          ${CLHEP}
          ${GENIE_LIB_LIST}
-         ${ROOT_EGPYTHIA6}    # FIXME!!! - resolving genie run time reference
-         ${ROOT_EG}
-         ${ROOT_HIST}
-         ${ROOT_MATHCORE}
+         ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
+         ROOT::EG
+         ROOT::Hist
+         ROOT::MathCore
         )
 
 install_headers()

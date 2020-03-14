@@ -10,9 +10,9 @@ art_make(LIB_LIBRARIES
            ${MF_MESSAGELOGGER}
            cetlib
            cetlib_except
-           ${ROOT_CORE}
-           ${ROOT_GEOM}
-           ${ROOT_PHYSICS}
+           ROOT::Core
+           ROOT::Geom
+           ROOT::Physics
            ${ART_UTILITIES}
          MODULE_LIBRARIES
            larsim_EventGenerator_MARLEY
@@ -21,9 +21,9 @@ art_make(LIB_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ROOT_HIST}
-           ${ROOT_TREE}
-           ${ROOT_RIO}
+           ROOT::Hist
+           ROOT::Tree
+           ROOT::RIO
          )
 
 install_headers()
