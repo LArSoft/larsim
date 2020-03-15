@@ -3,7 +3,7 @@
 // Plugin Type: producer
 // File:        IonAndScint_module.cc
 // Description:
-// - acts on sim::SimEnergyDeposit from LArG4Main, 
+// - acts on sim::SimEnergyDeposit from LArG4Main,
 // - calculate the number of photons and electrons
 // Input: 'sim::SimEnergyDeposit'
 // Output: updated 'sim::SimEnergyDeposit' with numPhotons and numElectrons
@@ -88,7 +88,7 @@ namespace larg4
                std::cout << " - " << instanceName << std::endl;
                // produces< std::vector<sim::SimEnergyDeposit> >(instanceName);
             }
-        }  
+        }
 
         produces< std::vector<sim::SimEnergyDeposit> >();
     }
@@ -110,18 +110,18 @@ namespace larg4
         {
             mf::LogWarning("ISCalcAna") << "No ISCalculation set, this can't be good.";
         }
-        
+
         fISAlg->Initialize();
         fISAlg->Reset();
-        
+
         return;
     }
-    
-    //......................................................................    
+
+    //......................................................................
     void IonAndScint::endJob()
     {
         std::cout << "IonAndScint endJob." << std::endl;
-        
+
         if(fISAlg)
         {
             delete fISAlg;
@@ -130,14 +130,14 @@ namespace larg4
         return;
     }
 
-    //......................................................................    
+    //......................................................................
     void IonAndScint::produce(art::Event& event)
     {
         std::cout << "IonAndScint Module Producer" << std::endl;
         std::vector< art::Handle< std::vector< sim::SimEnergyDeposit > > > edepHandle;
-        
+
         event.getManyByType(edepHandle);
-        
+
         if (edepHandle.size() == 0)
         {
             std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;
@@ -204,6 +204,6 @@ namespace larg4
         event.put(std::move(simedep));
 
         return;
-    }   
+    }
 } // namespace
 DEFINE_ART_MODULE(larg4::IonAndScint)
