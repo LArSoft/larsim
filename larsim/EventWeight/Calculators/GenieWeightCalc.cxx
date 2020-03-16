@@ -37,6 +37,7 @@
 #include "GENIE/Framework/Interaction/Interaction.h"
 #include "GENIE/Framework/Interaction/Kinematics.h"
 #include "GENIE/Framework/Messenger/Messenger.h"
+#include "GENIE/Framework/Utils/AppInit.h"
 
 #include "GENIE/RwFramework/GSystSet.h"
 #include "GENIE/RwFramework/GSyst.h"
@@ -242,6 +243,14 @@ namespace evwgh {
   void GenieWeightCalc::Configure(const fhicl::ParameterSet& p,
     CLHEP::HepRandomEngine& engine)
   {
+    // By default, run GENIE reweighting in "quiet mode"
+    // (use the logging settings in the "whisper" configuration
+    // of the genie::Messenger class). The user can disable
+    // quiet mode using the boolean FHiCL parameter "quiet_mode"
+    bool quiet_mode = p.get<bool>( "quiet_mode", true );
+    if ( quiet_mode ) genie::utils::app_init
+      ::MesgThresholds( "Messenger_whisper.xml" );
+
     // Manually silence a couple of annoying GENIE logging messages
     // that appear a lot when running reweighting
     genie::Messenger* messenger = genie::Messenger::Instance();
