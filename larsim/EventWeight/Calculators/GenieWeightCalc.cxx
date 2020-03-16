@@ -63,8 +63,15 @@
 // MicroBooNE-specific reweighting tools go here. These require a special genie
 // ups product.
 #ifdef GENIE_UB_PATCH
+
   // New weight calculator in GENIE v3.0.4 MicroBooNE patch 01
   #include "GENIE/RwCalculators/GReWeightXSecMEC.h"
+
+  // New weight calculators in GENIE v3.0.4 MicroBooNE patch 02
+  #include "GENIE/RwCalculators/GReWeightDeltaradAngle.h"
+  #include "GENIE/RwCalculators/GReWeightNuXSecCOHuB.h"
+  #include "GENIE/RwCalculators/GReWeightRESBugFix.h"
+
 #endif
 
 namespace {
@@ -513,8 +520,15 @@ namespace evwgh {
     //rw.AdoptWghtCalc( "nuclear_dis",   new GReWeightDISNuclMod );
 
     #ifdef GENIE_UB_PATCH
+
       // New weight calculator in GENIE v3.0.4 MicroBooNE patch 01
-      rw.AdoptWghtCalc( "xsec_mec",        new GReWeightXSecMEC);
+      rw.AdoptWghtCalc( "xsec_mec",        new GReWeightXSecMEC );
+
+      // New weight calculators in GENIE v3.0.4 MicroBooNE patch 02
+      rw.AdoptWghtCalc( "deltarad_angle",  new GReWeightDeltaradAngle );
+      rw.AdoptWghtCalc( "xsec_coh_ub",  new GReWeightNuXSecCOHuB );
+      rw.AdoptWghtCalc( "res_bug_fix",  new GReWeightRESBugFix );
+
     #endif
 
     // Set the modes for the weight calculators that need them to be specified
@@ -541,7 +555,7 @@ namespace evwgh {
       else if ( calc_ncres ) calc_ncres->SetMode( mode );
       else if ( calc_dis ) calc_dis->SetMode( mode );
       else throw cet::exception(__PRETTY_FUNCTION__)
-        << "Request to set the mode of and unrecognized GENIE weight calculator \""
+        << "Request to set the mode of an unrecognized GENIE weight calculator \""
         << calc_name << '\"';
     }
   }
