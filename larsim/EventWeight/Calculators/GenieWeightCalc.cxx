@@ -243,30 +243,36 @@ namespace evwgh {
   void GenieWeightCalc::Configure(const fhicl::ParameterSet& p,
     CLHEP::HepRandomEngine& engine)
   {
+    genie::Messenger* messenger = genie::Messenger::Instance();
+
     // By default, run GENIE reweighting in "quiet mode"
     // (use the logging settings in the "whisper" configuration
     // of the genie::Messenger class). The user can disable
     // quiet mode using the boolean FHiCL parameter "quiet_mode"
     bool quiet_mode = p.get<bool>( "quiet_mode", true );
-    if ( quiet_mode ) genie::utils::app_init
-      ::MesgThresholds( "Messenger_whisper.xml" );
+    if ( quiet_mode ) {
+      genie::utils::app_init::MesgThresholds( "Messenger_whisper.xml" );
+    }
+    else {
+       // If quiet mode isn't enabled, then print detailed debugging
+       // messages for GENIE reweighting
+       messenger->SetPriorityLevel( "ReW", log4cpp::Priority::DEBUG );
+    }
 
     // Manually silence a couple of annoying GENIE logging messages
-    // that appear a lot when running reweighting
-    genie::Messenger* messenger = genie::Messenger::Instance();
+    // that appear a lot when running reweighting. This is done
+    // whether or not "quiet mode" is enabled.
     messenger->SetPriorityLevel( "TransverseEnhancementFFModel",
       log4cpp::Priority::WARN );
     messenger->SetPriorityLevel( "Nieves", log4cpp::Priority::WARN );
-
-    // Also print detailed debug logging messages for GENIE reweighting
-    //messenger->SetPriorityLevel( "ReW", log4cpp::Priority::DEBUG );
 
     // Global Config
     fGenieModuleLabel = p.get<std::string>( "genie_module_label" );
 
     // Parameter central values from a table in the global config
     // Keys are GENIE knob names, values are knob settings that correspond to a tuned CV
-    const fhicl::ParameterSet& param_CVs = p.get<fhicl::ParameterSet>( "genie_central_values", fhicl::ParameterSet() );
+    const fhicl::ParameterSet& param_CVs = p.get<fhicl::ParameterSet>(
+      "genie_central_values", fhicl::ParameterSet() );
     std::vector< std::string > CV_knob_names = param_CVs.get_all_keys();
 
     // Map to store the CV knob settings
@@ -377,6 +383,25 @@ namespace evwgh {
           auto iter = gsyst_to_cv_map.find( current_knob );
           if ( iter != gsyst_to_cv_map.end() ) reweightingSigmas[k][u] += iter->second;
         }
+      }
+    }
+
+    // Add tuned CV knobs which have not been tweaked, and set them to their
+    // modified central values. This ensures that weights are always thrown
+    // around the modified CV.
+    for ( const auto& pair : gsyst_to_cv_map ) {
+      genie::rew::GSyst_t cv_knob = pair.first;
+      double cv_value = pair.second;
+
+      // If the current tuned CV knob is not present in the list of tweaked
+      // knobs, then add it to the list with its tuned central value
+      if ( !std::count(knobs_to_use.cbegin(), knobs_to_use.cend(), cv_knob) ) {
+        ++num_usable_knobs;
+        knobs_to_use.push_back( cv_knob );
+
+        // The tuned CV knob will take the same value in every universe
+        reweightingSigmas.emplace_back(
+          std::vector<double>(num_universes, cv_value) );
       }
     }
 
