@@ -549,7 +549,7 @@ namespace evgen{
 
     //  The minus sign above is for y-axis pointing up, so the y-momentum
     //  is always pointing down
-    cx       = -sin(theta)*sin(phi);
+    cx       = +sin(theta)*sin(phi);
     cy       = -cos(theta);
     cz       = +sin(theta)*cos(phi);
     Momentum = std::sqrt(Energy*Energy-m*m); // Get momentum
