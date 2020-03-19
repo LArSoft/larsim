@@ -211,6 +211,11 @@ namespace {
   }
 
 
+  // Set of FHiCL weight calculator labels for which the tuned CV will be
+  // ignored. If the name of the weight calculator doesn't appear in this set,
+  // then variation weights will be thrown around the tuned CV.
+  std::set< std::string > CALC_NAMES_THAT_IGNORE_TUNED_CV = { "RootinoFix" };
+
 } // anonymous namespace
 
 namespace evwgh {
@@ -234,6 +239,8 @@ namespace evwgh {
 
       std::string fGenieModuleLabel;
 
+      bool fQuietMode;
+
       DECLARE_WEIGHTCALC(GenieWeightCalc)
   };
 
@@ -249,14 +256,17 @@ namespace evwgh {
     // (use the logging settings in the "whisper" configuration
     // of the genie::Messenger class). The user can disable
     // quiet mode using the boolean FHiCL parameter "quiet_mode"
-    bool quiet_mode = p.get<bool>( "quiet_mode", true );
-    if ( quiet_mode ) {
+    fQuietMode = p.get<bool>( "quiet_mode", true );
+    if ( fQuietMode ) {
       genie::utils::app_init::MesgThresholds( "Messenger_whisper.xml" );
     }
     else {
-       // If quiet mode isn't enabled, then print detailed debugging
-       // messages for GENIE reweighting
-       messenger->SetPriorityLevel( "ReW", log4cpp::Priority::DEBUG );
+      // If quiet mode isn't enabled, then print detailed debugging
+      // messages for GENIE reweighting
+      messenger->SetPriorityLevel( "ReW", log4cpp::Priority::DEBUG );
+
+      MF_LOG_INFO("GENIEWeightCalc") << "Configuring GENIE weight"
+        << " calculator " << this->GetName();
     }
 
     // Manually silence a couple of annoying GENIE logging messages
@@ -279,8 +289,9 @@ namespace evwgh {
     std::map< genie::rew::GSyst_t, double > gsyst_to_cv_map;
     genie::rew::GSyst_t temp_knob;
 
-    if ( !CV_knob_names.empty() ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
-      << " non-default GENIE knob central values from input FHiCL parameter set";
+    if ( !CV_knob_names.empty() && !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc")
+      << "Configuring non-default GENIE knob central values from input"
+      << " FHiCL parameter set";
 
     for ( const auto& knob_name : CV_knob_names ) {
       double CV_knob_value = param_CVs.get<double>( knob_name );
@@ -290,8 +301,10 @@ namespace evwgh {
             << " were configured for the " << knob_name << " GENIE knob.";
         }
         gsyst_to_cv_map[ temp_knob ] = CV_knob_value;
-        MF_LOG_INFO("GENIEWeightCalc") << "Central value for the " << knob_name
-          << " knob was set to " << CV_knob_value;
+        if ( !fQuietMode ) {
+          MF_LOG_INFO("GENIEWeightCalc") << "Central value for the " << knob_name
+            << " knob was set to " << CV_knob_value;
+        }
       }
     }
 
@@ -313,7 +326,7 @@ namespace evwgh {
         << " need to have same number of parameters.";
     }
 
-    if ( !pars.empty() ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
+    if ( !pars.empty() && !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
       << " GENIE systematic knobs to be varied from the input FHiCL parameter set";
 
     size_t num_universes = pset.get<size_t>( "number_of_multisims" );
@@ -325,11 +338,26 @@ namespace evwgh {
       if ( valid_knob_name(knob_name, temp_knob) ) knobs_to_use.push_back( temp_knob );
     }
 
-    // Check that the enabled knobs are all compatible with each other. The
-    // std::map returned by this function call provides information needed to
-    // fine-tune the configuration of the GENIE weight calculators.
+    // We need to add all of the tuned CV knobs to the list when configuring
+    // the weight calculators and checking for incompatibilities. Maybe all of
+    // the systematic variation knobs are fine to use together, but they also
+    // need to be compatible with the tuned CV. To perform the check, copy the
+    // list of systematic variation knobs to use and add all the CV knobs that
+    // aren't already present.
+    std::vector< genie::rew::GSyst_t > all_knobs_vec = knobs_to_use;
+    for ( const auto& pair : gsyst_to_cv_map ) {
+      genie::rew::GSyst_t cv_knob = pair.first;
+      auto begin = all_knobs_vec.cbegin();
+      auto end = all_knobs_vec.cend();
+      if ( !std::count(begin, end, cv_knob) ) all_knobs_vec.push_back( cv_knob );
+    }
+
+    // Check that the enabled knobs (both systematic variations and knobs used
+    // for the CV tune) are all compatible with each other. The std::map
+    // returned by this function call provides information needed to fine-tune
+    // the configuration of the GENIE weight calculators.
     std::map< std::string, int >
-      modes_to_use = this->CheckForIncompatibleSystematics( knobs_to_use );
+      modes_to_use = this->CheckForIncompatibleSystematics( all_knobs_vec );
 
     // If we're working in "pm1sigma" or "minmax" mode, there should only be two
     // universes regardless of user input.
@@ -358,6 +386,9 @@ namespace evwgh {
 
     for ( size_t k = 0u; k < num_usable_knobs; ++k ) {
       reweightingSigmas[k].resize( num_universes );
+
+      genie::rew::GSyst_t current_knob = knobs_to_use.at( k );
+
       for ( size_t u = 0u; u < num_universes; ++u ) {
 	if ( mode.find("multisim") != std::string::npos ) {
           reweightingSigmas[k][u] = par_sigmas[k] * CLHEP::RandGaussQ::shoot(&engine, 0., 1.);
@@ -375,33 +406,56 @@ namespace evwgh {
 	  reweightingSigmas[k][u] = par_sigmas[k];
         }
 
+        if ( !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc")
+          << "Set sigma for the " << genie::rew::GSyst::AsString( current_knob )
+          << " knob in universe #" << u << ". sigma = "
+          << reweightingSigmas[k][u];
+
         // Add an offset if the central value for the current knob has been
         // configured (and is thus probably nonzero). Ignore this for minmax mode
         // (the limits should be chosen to respect a modified central value)
         if ( mode.find("minmax") == std::string::npos ) {
-          genie::rew::GSyst_t current_knob = knobs_to_use.at( k );
           auto iter = gsyst_to_cv_map.find( current_knob );
-          if ( iter != gsyst_to_cv_map.end() ) reweightingSigmas[k][u] += iter->second;
+          if ( iter != gsyst_to_cv_map.end() ) {
+            reweightingSigmas[k][u] += iter->second;
+            if ( !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc")
+              << "CV offset added to the "
+              << genie::rew::GSyst::AsString( current_knob )
+              << " knob. New sigma for universe #" << u << " is "
+              << reweightingSigmas[k][u];
+          }
         }
       }
     }
 
-    // Add tuned CV knobs which have not been tweaked, and set them to their
-    // modified central values. This ensures that weights are always thrown
-    // around the modified CV.
-    for ( const auto& pair : gsyst_to_cv_map ) {
-      genie::rew::GSyst_t cv_knob = pair.first;
-      double cv_value = pair.second;
 
-      // If the current tuned CV knob is not present in the list of tweaked
-      // knobs, then add it to the list with its tuned central value
-      if ( !std::count(knobs_to_use.cbegin(), knobs_to_use.cend(), cv_knob) ) {
-        ++num_usable_knobs;
-        knobs_to_use.push_back( cv_knob );
+    // Don't adjust knobs to reflect the tuned CV if this weight calculator
+    // should ignore those (as determined by whether it has one of the special
+    // FHiCL names)
+    if ( !CALC_NAMES_THAT_IGNORE_TUNED_CV.count(this->GetName()) ) {
 
-        // The tuned CV knob will take the same value in every universe
-        reweightingSigmas.emplace_back(
-          std::vector<double>(num_universes, cv_value) );
+      // Add tuned CV knobs which have not been tweaked, and set them to their
+      // modified central values. This ensures that weights are always thrown
+      // around the modified CV.
+      for ( const auto& pair : gsyst_to_cv_map ) {
+        genie::rew::GSyst_t cv_knob = pair.first;
+        double cv_value = pair.second;
+
+        // If the current tuned CV knob is not present in the list of tweaked
+        // knobs, then add it to the list with its tuned central value
+        if ( !std::count(knobs_to_use.cbegin(), knobs_to_use.cend(), cv_knob) ) {
+          ++num_usable_knobs;
+          knobs_to_use.push_back( cv_knob );
+
+          // The tuned CV knob will take the same value in every universe
+          reweightingSigmas.emplace_back(
+            std::vector<double>(num_universes, cv_value) );
+
+          if ( !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc")
+            << "Tuned knob " << genie::rew::GSyst::AsString( cv_knob )
+            << " was not configured. Setting it to " << cv_value
+            << " in all " << num_universes << " universes.";
+        }
       }
     }
 
@@ -420,9 +474,11 @@ namespace evwgh {
         double twk_dial_value = reweightingSigmas.at( k ).at( u );
         syst.Set( knob, twk_dial_value );
 
-        MF_LOG_INFO("GENIEWeightCalc") << "In universe #" << u << ", knob #" << k
-          << " (" << genie::rew::GSyst::AsString( knob ) << ") was set to"
-          << " the value " << twk_dial_value;
+        if ( !fQuietMode ) {
+          MF_LOG_INFO("GENIEWeightCalc") << "In universe #" << u << ", knob #" << k
+            << " (" << genie::rew::GSyst::AsString( knob ) << ") was set to"
+            << " the value " << twk_dial_value;
+        }
       } // loop over tweaked knobs
 
       rwght.Reconfigure();
