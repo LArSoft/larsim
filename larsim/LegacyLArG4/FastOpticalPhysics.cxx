@@ -45,6 +45,7 @@
 #include "larsim/LegacyLArG4/OpBoundaryProcessSimple.hh"
 #include "larsim/LegacyLArG4/OpFastScintillation.hh"
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"

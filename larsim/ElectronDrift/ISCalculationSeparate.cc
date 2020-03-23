@@ -13,6 +13,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/ElectronDrift/ISCalculationSeparate.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"

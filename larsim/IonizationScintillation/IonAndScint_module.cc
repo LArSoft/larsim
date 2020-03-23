@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 // LArSoft includes
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"

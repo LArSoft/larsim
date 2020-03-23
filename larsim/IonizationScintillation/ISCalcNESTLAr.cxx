@@ -6,6 +6,7 @@
 // Aug. 30 by Mu Wei
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 
 namespace larg4

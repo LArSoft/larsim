@@ -7,6 +7,7 @@
 /// to make the various simulation lists, ie ParticleList, LArVoxelList, etc
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/Simulation/SimListUtils.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/LArG4Parameters.h"

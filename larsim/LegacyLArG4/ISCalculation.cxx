@@ -5,6 +5,7 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/LegacyLArG4/ISCalculation.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"

@@ -10,6 +10,7 @@
 #include "Geant4/G4EmSaturation.hh"
 #include "Geant4/G4ParticleTypes.hh"
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/LegacyLArG4/ISCalculationSeparate.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

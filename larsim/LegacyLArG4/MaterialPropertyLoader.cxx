@@ -11,6 +11,7 @@
 // TODO convert tabs into spaces
 
 // TODO verify the inclusion list
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larsim/LegacyLArG4/MaterialPropertyLoader.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

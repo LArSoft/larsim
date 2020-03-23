@@ -13,6 +13,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
+
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
