@@ -19,24 +19,24 @@ namespace larg4
     ISCalcSeparate::ISCalcSeparate()
     {
     }
-    
+
     //----------------------------------------------------------------------------
     ISCalcSeparate::~ISCalcSeparate()
     {
     }
-    
+
     //----------------------------------------------------------------------------
     void ISCalcSeparate::Initialize()
     {
         std::cout << "ISCalcSeparate Initialize." << std::endl;
         art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
-        
+
         fSCE       = lar::providerFrom<spacecharge::SpaceChargeService>();
         fLArProp   = lar::providerFrom<detinfo::LArPropertiesService>();
         fDetProp   = lar::providerFrom<detinfo::DetectorPropertiesService>();
-        
+
         fScintYieldFactor  = 1.; // true scintillation yield will be got from LArProperties
-        
+
         //the recombination coefficient is in g/(MeVcm^2), but we report energy depositions in MeV/cm,
         //need to divide Recombk from the LArG4Parameters service by the density of the argon we got above.
         fRecombA          = LArG4PropHandle->RecombA();
@@ -45,10 +45,10 @@ namespace larg4
         fModBoxB          = LArG4PropHandle->ModBoxB()/fDetProp->Density(fDetProp->Temperature());
         fUseModBoxRecomb  = (bool)LArG4PropHandle->UseModBoxRecomb();
         fGeVToElectrons   = LArG4PropHandle->GeVToElectrons();
-        
+
         return;
     }
-    
+
     //----------------------------------------------------------------------------
     void ISCalcSeparate::Reset()
     {
@@ -58,28 +58,28 @@ namespace larg4
 //        fNumFastScintPhotons     = 0.;
 //        fNumSlowScintPhotons     = 0.;
         fScintillationYieldRatio = 0.;
-        
+
         return;
     }
-    
+
     //----------------------------------------------------------------------------
     // fNumIonElectrons returns a value that is not corrected for life time effects
     void ISCalcSeparate::CalcIon(sim::SimEnergyDeposit const& edep)
     {
         float e           = edep.Energy();
         float ds          = edep.StepLength();
-        
+
         double recomb     = 0.;
         double dEdx       = (ds<=0.0)? 0.0: e/ds;
         double EFieldStep = EFieldAtStep(fDetProp->Efield(), edep);
-        
+
         // Guard against spurious values of dE/dx. Note: assumes density of LAr
         if(dEdx < 1.)
         {
             dEdx = 1.;
         }
-        
-        if(fUseModBoxRecomb) 
+
+        if(fUseModBoxRecomb)
         {
             if(ds>0)
             {
@@ -95,28 +95,28 @@ namespace larg4
         {
             recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
         }
-        
+
         // 1.e-3 converts fEnergyDeposit to GeV
         fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
-        
+
         MF_LOG_DEBUG("ISCalcSeparate")  << " Electrons produced for " << fEnergyDeposit
                                         << " MeV deposited with "     << recomb
-                                        << " recombination: "         << fNumIonElectrons 
+                                        << " recombination: "         << fNumIonElectrons
                                         << std::endl;
         return;
     }
-    
+
     //----------------------------------------------------------------------------
     void ISCalcSeparate::CalcScint(sim::SimEnergyDeposit const& edep)
     {
         float e    = edep.Energy();
         int   pdg  = edep.PdgCode();
-        
+
         double scintYield = fLArProp->ScintYield(true);
         if(fLArProp->ScintByParticleType())
         {
             MF_LOG_DEBUG("ISCalcSeparate") << "scintillating by particle type";
-            
+
             switch(pdg)
             {
                 case 2212:
@@ -145,27 +145,27 @@ namespace larg4
                 default:
                     scintYield = fLArProp->ElectronScintYield(true);
             }
-            
+
             fNumScintPhotons = scintYield * e;
         }
         else
         {
             fNumScintPhotons = fScintYieldFactor * scintYield * e;
         }
-        
+
         fScintillationYieldRatio = GetScintYieldRatio(edep);
 //        fNumFastScintPhotons     = fNumScintPhotons * fScintillationYieldRatio;
 //        fNumSlowScintPhotons     = fNumScintPhotons - fNumFastScintPhotons;
         return;
     }
-    
+
     //----------------------------------------------------------------------------
     void ISCalcSeparate::CalcIonAndScint(sim::SimEnergyDeposit const& edep)
     {
         fEnergyDeposit = edep.Energy();
         CalcIon(edep);
         CalcScint(edep);
-        
+
         return;
     }
     //----------------------------------------------------------------------------
@@ -173,17 +173,17 @@ namespace larg4
     {
         geo::Point_t pos = edep.MidPoint();
         double EField    = efield;
-        
+
         geo::Vector_t eFieldOffsets;
-        
+
         if (fSCE->EnableSimEfieldSCE())
         {
             eFieldOffsets = fSCE->GetEfieldOffsets(pos);
             EField = std::sqrt((efield + efield*eFieldOffsets.X())*(efield + efield*eFieldOffsets.X())
-                              +(efield*eFieldOffsets.Y()*efield*eFieldOffsets.Y()) 
+                              +(efield*eFieldOffsets.Y()*efield*eFieldOffsets.Y())
                               +(efield*eFieldOffsets.Z()*efield*eFieldOffsets.Z()) );
         }
-        
+
         return EField;
     }
     //----------------------------------------------------------------------------
@@ -216,5 +216,5 @@ namespace larg4
                 return fLArProp->ElectronScintYieldRatio();
         }
     }
-    
+
 }// namespace

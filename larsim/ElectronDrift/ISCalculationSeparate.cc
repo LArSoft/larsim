@@ -56,7 +56,7 @@ namespace detsim{
   ISCalculationSeparate::~ISCalculationSeparate()
   {
   }
- 
+
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
   void ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep){
