@@ -15,7 +15,6 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/Simulation/SimChannel.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larcore/Geometry/Geometry.h"
 // STL
 #include <map>
@@ -114,8 +113,6 @@ namespace sim
     //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
 
     void MakeMCEdep(const std::vector<sim::SimChannel>& schArray);
-
-    void MakeMCEdep(const std::vector<sim::SimEnergyDeposit>& sedArray);
 
     bool ExistTrack(const unsigned int track_id) const 
     { return (_track_index.find(track_id) != _track_index.end()); } 
