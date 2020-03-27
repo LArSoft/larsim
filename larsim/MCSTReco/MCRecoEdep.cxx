@@ -185,7 +185,7 @@ namespace sim {
       const geo::TPCGeo& tpcGeo = geom->TPC(tpc, cryostat);
       
       //Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
-      // unused int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection())-1;  //x:0, y:1, z:2
+      int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection())-1;  //x:0, y:1, z:2
         
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcGeo.Nplanes(); ++p){
