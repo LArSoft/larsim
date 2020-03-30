@@ -571,8 +571,8 @@ namespace evgen{
     } else if( xfl1 <= (sh1+sv1)/ss ) {
       x0 = (fXmax - fXmin)*flat.fire() + fXmin;
       y0 = (fYmax - fYmin)*flat.fire() + fYmin;
-      if( cz >= 0 ) z0 = fZmax;
-      else z0 = fZmin;
+      if( cz >= 0 ) z0 = fZmin;
+      else z0 = fZmax;
     } else {
       if( cx >= 0 ) x0 = fXmin;
       else x0 = fXmax;
