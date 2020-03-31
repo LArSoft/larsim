@@ -1855,9 +1855,6 @@ namespace larg4 {
     const double bb = TMath::Sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
-    if(TMath::Abs(boost::math::ellint_1(bb) - bb) < 1e-10 && TMath::Abs(boost::math::ellint_3(cc, bb) - cc) < 1e-10) {
-      throw(std::runtime_error("Problem loading ELLIPTIC INTEGRALS running Disk_SolidAngle!"));
-    }
     if(d < b) {
       return 2.*TMath::Pi() - 2.*aa * (boost::math::ellint_1(bb) + TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc));
     }
