@@ -508,7 +508,7 @@ namespace larg4 {
     double X_mu_0 = par[3];
     double Normalization = par[0];
     double Diff = par[1] - X_mu_0;
-    double Term = pow((x - X_mu_0) / Diff, Diff / par[2]);
+    double Term = std::pow((x - X_mu_0) / Diff, Diff / par[2]);
     double Exponential = std::exp((par[1] - x) / par[2]);
     return (Normalization * Term * Exponential);
   }
@@ -517,7 +517,7 @@ namespace larg4 {
   G4double OpFastScintillation::Pol_5(double x, double *par)
   {
     // 5th order polynomial function
-    return par[0] + par[1] * x + par[2] * pow(x, 2) + par[3] * pow(x, 3) + par[4] * pow(x, 4) + par[5] * pow(x, 5);
+    return par[0] + par[1] * x + par[2] * std::pow(x, 2) + par[3] * std::pow(x, 3) + par[4] * std::pow(x, 4) + par[5] * std::pow(x, 5);
   }
 
 } //namespace

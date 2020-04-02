@@ -287,7 +287,8 @@ namespace larg4 {
 
         fYcathode = Cathode_centre.Y();
         fZcathode = Cathode_centre.Z();
-        fReference_to_corner = sqrt(pow(fYactive_corner, 2) + pow(fZactive_corner, 2));
+        fReference_to_corner = std::sqrt(std::pow(fYactive_corner, 2) +
+                                         std::pow(fZactive_corner, 2));
 
         std::cout << "For border corrections: " << fborder_corr[0] << "  " << fborder_corr[1] << std::endl;
         std::cout << "Photocathode-plane centre (z,y) = (" << fZcathode << ", " << fYcathode << ") and corner (z, y) = (" << fZactive_corner << ", " << fYactive_corner << ")" << std::endl;
@@ -1132,11 +1133,11 @@ namespace larg4 {
       double t_direct = distance/vuv_vgroup;
       // Defining the two functions (Landau + Exponential) describing the timing vs distance
       double pars_landau[3] = {functions_vuv[1]->Eval(distance), functions_vuv[2]->Eval(distance),
-                               pow(10.,functions_vuv[0]->Eval(distance))};
+                               std::pow(10.,functions_vuv[0]->Eval(distance))};
       if(distance > fd_break) {
         pars_landau[0]=functions_vuv[6]->Eval(distance);
         pars_landau[1]=functions_vuv[2]->Eval(fd_break);
-        pars_landau[2]=pow(10.,functions_vuv[5]->Eval(distance));
+        pars_landau[2]=std::pow(10.,functions_vuv[5]->Eval(distance));
       }
       TF1 *flandau = new TF1("flandau","[2]*TMath::Landau(x,[0],[1])",0,signal_t_range/2);
       flandau->SetParameters(pars_landau);
@@ -1198,12 +1199,12 @@ namespace larg4 {
       //signals (remember this is transportation) no longer than 1us
       const double signal_t_range = 1000.;
       double pars_landau[3] = {functions_vis[1]->Eval(t0), functions_vis[2]->Eval(t0),
-                               pow(10.,functions_vis[0]->Eval(t0))};
+                               std::pow(10.,functions_vis[0]->Eval(t0))};
       double pars_expo[2] = {functions_vis[3]->Eval(t0), functions_vis[4]->Eval(t0)};
       if(t0 > ft0_break_point) {
         pars_landau[0] = -0.798934 + 1.06216*t0;
         pars_landau[1] = functions_vis[2]->Eval(ft0_break_point);
-        pars_landau[2] = pow(10.,functions_vis[0]->Eval(ft0_break_point));
+        pars_landau[2] = std::pow(10.,functions_vis[0]->Eval(ft0_break_point));
         pars_expo[0] = functions_vis[3]->Eval(ft0_break_point);
         pars_expo[1] = functions_vis[4]->Eval(ft0_break_point);
       }
@@ -1287,7 +1288,7 @@ namespace larg4 {
       //for [0,30deg] range and [60,90deg] range respectively
       pars_expo[0] = fparameters[7].at(0) + fparameters[7].at(1) * distance_in_cm;
       pars_expo[0] *= pars_landau[2];
-      pars_expo[0] = log(pars_expo[0]);
+      pars_expo[0] = std::log(pars_expo[0]);
       // this is to find the intersection point between the two functions:
       TF1 fint = TF1("fint", finter_d, pars_landau[0], 4 * t_direct_mean, 5);
       double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
@@ -1442,8 +1443,8 @@ namespace larg4 {
     double fastest_time = vis_time + vuv_time;
 
     // calculate angle alpha between scintillation point and reflection point
-    double cosine_alpha = sqrt(pow(ScintPoint[0] - bounce_point[0], 2)) / VUVdist;
-    double alpha = acos(cosine_alpha) * 180. / CLHEP::pi;
+    double cosine_alpha = std::sqrt(std::pow(ScintPoint[0] - bounce_point[0], 2)) / VUVdist;
+    double alpha = std::acos(cosine_alpha) * 180. / CLHEP::pi;
 
     // determine smearing parameters using interpolation of generated points:
     // 1). tau = exponential smearing factor, varies with distance and angle
@@ -1469,7 +1470,7 @@ namespace larg4 {
       double arrival_time = transport_time_vis[i];
       double arrival_time_smeared;
       // if time is already greater than cutoff or minimum smeared time would be greater than cutoff, do not apply smearing
-      if (arrival_time + (arrival_time - fastest_time) * (exp(-tau * log(1.0)) - 1) >= cutoff) {
+      if (arrival_time + (arrival_time - fastest_time) * (std::exp(-tau * std::log(1.0)) - 1) >= cutoff) {
         arrival_time_smeared = arrival_time;
       }
       // otherwise smear
@@ -1487,7 +1488,7 @@ namespace larg4 {
             // generate random number in appropriate range
             double x = gRandom->Uniform(0.5, 1.0);
             // apply the exponential smearing
-            arrival_time_smeared = arrival_time + (arrival_time - fastest_time) * (exp(-tau * log(x)) - 1);
+            arrival_time_smeared = arrival_time + (arrival_time - fastest_time) * (std::exp(-tau * log(x)) - 1);
           }
           // increment counter
           counter++;
@@ -1517,9 +1518,11 @@ namespace larg4 {
     }
 
     // distance and angle between ScintPoint and OpDetPoint
-    double distance = sqrt(pow(ScintPoint[0] - OpDetPoint[0], 2) + pow(ScintPoint[1] - OpDetPoint[1], 2) + pow(ScintPoint[2] - OpDetPoint[2], 2));
-    double cosine = sqrt(pow(ScintPoint[0] - OpDetPoint[0], 2)) / distance;
-    double theta = acos(cosine) * 180. / CLHEP::pi;
+    double distance = std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2) +
+                                std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
+                                std::pow(ScintPoint[2] - OpDetPoint[2], 2));
+    double cosine = std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2)) / distance;
+    double theta = std::acos(cosine) * 180. / CLHEP::pi;
 
     // calculate solid angle:
     double solid_angle = 0;
@@ -1540,9 +1543,10 @@ namespace larg4 {
     // PMTs
     else if (optical_detector_type == 1) {
       // offset in z-y plane
-      d = sqrt(pow(ScintPoint[1] - OpDetPoint[1], 2) + pow(ScintPoint[2] - OpDetPoint[2], 2));
+      d = std::sqrt(std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
+                    std::pow(ScintPoint[2] - OpDetPoint[2], 2));
       // drift distance (in x)
-      h =  sqrt(pow(ScintPoint[0] - OpDetPoint[0], 2));
+      h =  std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2));
       // Solid angle of a disk
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
@@ -1551,16 +1555,17 @@ namespace larg4 {
     }
 
     // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
-    double hits_geo = exp(-1.*distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
+    double hits_geo = std::exp(-1.*distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     int j = (theta / fdelta_angulo);
 
     //Accounting for border effects
-    double z_to_corner = abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
-    double y_to_corner = abs(ScintPoint[1]) - fYactive_corner;
-    double distance_to_corner = sqrt(y_to_corner * y_to_corner + z_to_corner * z_to_corner); // in the ph-cathode plane
+    double z_to_corner = std::abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
+    double y_to_corner = std::abs(ScintPoint[1]) - fYactive_corner;
+    double distance_to_corner = std::sqrt(y_to_corner * y_to_corner +
+                                          z_to_corner * z_to_corner); // in the ph-cathode plane
     double pars_ini_[4] = {fGHvuvpars[0][j] + fborder_corr[0] * (distance_to_corner - fReference_to_corner),
                            fGHvuvpars[1][j] + fborder_corr[1] * (distance_to_corner - fReference_to_corner),
                            fGHvuvpars[2][j],
@@ -1618,7 +1623,7 @@ namespace larg4 {
     double cosine_cathode = 1;
     double theta_cathode = 0;
     // calculate hits on cathode plane via geometric acceptance
-    double cathode_hits_geo = exp(-1.*distance_cathode / fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
+    double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     int j = (theta_cathode / fdelta_angulo);
@@ -1651,9 +1656,10 @@ namespace larg4 {
     // disk aperture
     else if (optical_detector_type == 1) {
       // offset in z-y plane
-      double d = sqrt(pow(hotspot[1] - OpDetPoint[1], 2) + pow(hotspot[2] - OpDetPoint[2], 2));
+      double d = std::sqrt(std::pow(hotspot[1] - OpDetPoint[1], 2) +
+                           std::pow(hotspot[2] - OpDetPoint[2], 2));
       // drift distance (in x)
-      double h =  sqrt(pow(hotspot[0] - OpDetPoint[0], 2));
+      double h =  std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2));
       // calculate solid angle
       solid_angle_detector = Disk_SolidAngle(d, h, fradius);
     }
@@ -1666,12 +1672,16 @@ namespace larg4 {
 
     // calculate distances and angles for application of corrections
     // distance to hotspot
-    double distance_vuv = sqrt(pow(ScintPoint[0] - hotspot[0], 2) + pow(ScintPoint[1] - hotspot[1], 2) + pow(ScintPoint[2] - hotspot[2], 2));
+    double distance_vuv = std::sqrt(std::pow(ScintPoint[0] - hotspot[0], 2) +
+                                    std::pow(ScintPoint[1] - hotspot[1], 2) +
+                                    std::pow(ScintPoint[2] - hotspot[2], 2));
     // distance from hotspot to optical detector
-    double distance_vis = sqrt(pow(hotspot[0] - OpDetPoint[0], 2) + pow(hotspot[1] - OpDetPoint[1], 2) + pow(hotspot[2] - OpDetPoint[2], 2));
+    double distance_vis = std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2) +
+                                    std::pow(hotspot[1] - OpDetPoint[1], 2) +
+                                    std::pow(hotspot[2] - OpDetPoint[2], 2));
     //  angle between hotspot and optical detector
-    double cosine_vis = sqrt(pow(hotspot[0] - OpDetPoint[0], 2)) / distance_vis;
-    double theta_vis = acos(cosine_vis) * 180. / CLHEP::pi;
+    double cosine_vis = std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2)) / distance_vis;
+    double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
     int k = (theta_vis / fdelta_angulo);
 
     // apply geometric correction
@@ -1685,7 +1695,8 @@ namespace larg4 {
       // calculate distance for interpolation depending on model
       double r = 0;
       if (fVisBorderCorrectionType == "Radial") {
-        r = sqrt (pow(ScintPoint[1] - fcathode_centre[1], 2) + pow (ScintPoint[2] - fcathode_centre[2], 2));
+        r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) +
+                      std::pow (ScintPoint[2] - fcathode_centre[2], 2));
       }
       else if (fVisBorderCorrectionType == "Vertical") {
         r = std::abs(ScintPoint[1]);
