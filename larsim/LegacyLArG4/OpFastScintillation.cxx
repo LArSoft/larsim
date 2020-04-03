@@ -1844,11 +1844,8 @@ namespace larg4 {
 
 
   // solid angle of circular aperture
-  double Disk_SolidAngle(double* x, double *p)
+  double Disk_SolidAngle(const double d, const double h, const double b)
   {
-    const double d = x[0];
-    const double h = x[1];
-    const double b = p[0];
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
     const double aa = TMath::Sqrt(h * h / (h * h + (b + d) * (b + d)));
     if(d == 0) {
@@ -1867,15 +1864,6 @@ namespace larg4 {
       return 2.*aa * (TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc) - boost::math::ellint_1(bb));
     }
     return 0.;
-  }
-
-
-  double Disk_SolidAngle(double d, double h, double b)
-  {
-    double x[2] = { d, h };
-    double p[1] = { b };
-
-    return Disk_SolidAngle(x, p);
   }
 
 

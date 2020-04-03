@@ -393,9 +393,7 @@ namespace larg4 {
   double Rectangle_SolidAngle(acc& out, TVector3 v);
 
   // solid angle of circular aperture calculation functions
-  double Disk_SolidAngle(double *x, double *p);
-  double Disk_SolidAngle(double d, double h, double b);
-
+  double Disk_SolidAngle(const double d, const double h, const double b);
   ////////////////////
   // Inline methods
   ////////////////////
