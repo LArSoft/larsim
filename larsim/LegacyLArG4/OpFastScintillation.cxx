@@ -1518,9 +1518,7 @@ namespace larg4 {
     }
 
     // distance and angle between ScintPoint and OpDetPoint
-    double distance = std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2) +
-                                std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
-                                std::pow(ScintPoint[2] - OpDetPoint[2], 2));
+    double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
     double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
     double theta = std::acos(cosine) * 180. / CLHEP::pi;
 
@@ -1543,8 +1541,7 @@ namespace larg4 {
     // PMTs
     else if (optical_detector_type == 1) {
       // offset in z-y plane
-      d = std::sqrt(std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
-                    std::pow(ScintPoint[2] - OpDetPoint[2], 2));
+      double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
       // drift distance (in x)
       h =  std::abs(ScintPoint[0] - OpDetPoint[0]);
       // Solid angle of a disk
@@ -1656,8 +1653,7 @@ namespace larg4 {
     // disk aperture
     else if (optical_detector_type == 1) {
       // offset in z-y plane
-      double d = std::sqrt(std::pow(hotspot[1] - OpDetPoint[1], 2) +
-                           std::pow(hotspot[2] - OpDetPoint[2], 2));
+      double d = dist(&hotspot[1], &OpDetPoint[1], 2);
       // drift distance (in x)
       double h =  std::abs(hotspot[0] - OpDetPoint[0]);
       // calculate solid angle
@@ -1672,13 +1668,9 @@ namespace larg4 {
 
     // calculate distances and angles for application of corrections
     // distance to hotspot
-    double distance_vuv = std::sqrt(std::pow(ScintPoint[0] - hotspot[0], 2) +
-                                    std::pow(ScintPoint[1] - hotspot[1], 2) +
-                                    std::pow(ScintPoint[2] - hotspot[2], 2));
+    double distance_vuv = dist(&ScintPoint[0], &hotspot[0], 3);
     // distance from hotspot to optical detector
-    double distance_vis = std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2) +
-                                    std::pow(hotspot[1] - OpDetPoint[1], 2) +
-                                    std::pow(hotspot[2] - OpDetPoint[2], 2));
+    double distance_vis = dist(&hotspot[0], &OpDetPoint[0], 3);
      //  angle between hotspot and optical detector
     double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
     double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
@@ -1695,8 +1687,7 @@ namespace larg4 {
       // calculate distance for interpolation depending on model
       double r = 0;
       if (fVisBorderCorrectionType == "Radial") {
-        r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) +
-                      std::pow (ScintPoint[2] - fcathode_centre[2], 2));
+        r = dist(&ScintPoint[1], &fcathode_centre[1], 2);
       }
       else if (fVisBorderCorrectionType == "Vertical") {
         r = std::abs(ScintPoint[1]);

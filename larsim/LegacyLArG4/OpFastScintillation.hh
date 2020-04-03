@@ -525,6 +525,15 @@ namespace larg4 {
     return par[0];
   }
 
+  template<typename TReal> inline
+  double dist(TReal* x, TReal* y, const int dimension)
+  {
+    double d = 0.;
+    for (int p=0; p<dimension; ++p){
+      d += (*(x+p) - *(y+p)) * (*(x+p) - *(y+p));
+    }
+    return std::sqrt(d);
+  }
 } //namespace
 
 #endif /* OpFastScintillation_h */
