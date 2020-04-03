@@ -514,10 +514,15 @@ namespace larg4 {
   }
 
   inline
-  G4double OpFastScintillation::Pol_5(double x, double *par)
+  double OpFastScintillation::Pol_5(double x, double *par)
   {
     // 5th order polynomial function
-    return par[0] + par[1] * x + par[2] * std::pow(x, 2) + par[3] * std::pow(x, 3) + par[4] * std::pow(x, 4) + par[5] * std::pow(x, 5);
+    double xpow = 1.;
+    for(unsigned i=1; i<=5; ++i){
+      xpow *= x;
+      par[0] += par[i] * xpow ;
+    }
+    return par[0];
   }
 
 } //namespace
