@@ -771,6 +771,7 @@ namespace larg4 {
           }
         }
 
+        std::vector<double> arrival_time_dist;
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
           // Only do the reflected loop if we have reflected visibilities
@@ -810,7 +811,8 @@ namespace larg4 {
             }
 
             // Get the transport time distribution
-            std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
+            arrival_time_dist.resize(NPhotons);
+            propagation_time(arrival_time_dist, x0, OpChannel, Reflected);
 
             //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
             Edeposited = Edeposited / double(NPhotons);
@@ -1035,12 +1037,10 @@ namespace larg4 {
   }
 
 
-  std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) //const
+  void OpFastScintillation::propagation_time(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
+                                             int OpChannel, bool Reflected) //const
   {
     static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-    // Initialize vector of the right length with all 0's
-    std::vector<double> arrival_time_dist(NPhotons, 0);
-
     if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
       throw cet::exception("OpFastScintillation") << "Cannot have both propagation time models simultaneously.";
     }
@@ -1052,8 +1052,8 @@ namespace larg4 {
     else if (pvs->IncludeParPropTime()) {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
-      for (int i = 0; i < NPhotons; i++) {
-        arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
+      for(size_t i = 0; i < arrival_time_dist.size(); i++) {
+        arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom(); // TODO: std:fill
       }
     }
     else if (pvs->IncludePropTime()) {
@@ -1061,15 +1061,14 @@ namespace larg4 {
       G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm, fOpDetCenter.at(OpChannel)[1]*CLHEP::cm, fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
-        arrival_time_dist = getVUVTime(distance_in_cm, NPhotons); // in ns
+        getVUVTimes(arrival_time_dist, distance_in_cm); // in ns
       }
       else {
         TVector3 ScintPoint( x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm ); // in cm
         TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0], fOpDetCenter.at(OpChannel)[1], fOpDetCenter.at(OpChannel)[2]); // in cm
-        arrival_time_dist = getVISTime(ScintPoint, OpDetPoint_tv3, NPhotons); // in ns
+        getVISTimes(arrival_time_dist, ScintPoint, OpDetPoint_tv3); // in ns
       }
     }
-    return arrival_time_dist;
   }
 
 
@@ -1343,19 +1342,14 @@ namespace larg4 {
 
 
   // VUV arrival times calculation function
-  std::vector<double> OpFastScintillation::getVUVTime(double distance, int number_photons)
+  void OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, double distance)
   {
-    // pre-allocate memory
-    std::vector<double> arrival_time_distrb;
-    arrival_time_distrb.clear();
-    arrival_time_distrb.reserve(number_photons);
-
     // distance < 25cm
     if (distance < 25) {
       // times are fixed shift i.e. direct path only
       double t_prop_correction = distance / fvuv_vgroup_mean;
-      for (int i = 0; i < number_photons; i++) {
-        arrival_time_distrb.push_back(t_prop_correction);
+      for (size_t i = 0; i < arrivalTimes.size(); i++) {
+        arrivalTimes[i] = t_prop_correction;// TODO: std::fill
       }
     }
     // distance >= 25cm
@@ -1367,16 +1361,16 @@ namespace larg4 {
         generateparam(index);
       }
       // randomly sample parameterisation for each photon
-      for (int i = 0; i < number_photons; i++) {
-        arrival_time_distrb.push_back(VUV_timing[index].GetRandom(VUV_min[index], VUV_max[index]));
+      for (size_t i = 0; i < arrivalTimes.size(); i++) {
+        arrivalTimes[i] = VUV_timing[index].GetRandom(VUV_min[index], VUV_max[index]);//TODO"std::fill"
       }
     }
-    return arrival_time_distrb;
   }
 
 
   // VIS arrival times calculation functions
-  std::vector<double> OpFastScintillation::getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int number_photons)
+  void OpFastScintillation::getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint,
+                                        TVector3 OpDetPoint)
   {
     // *************************************************************************************************
     //     Calculation of earliest arrival times and corresponding unsmeared distribution
@@ -1415,13 +1409,11 @@ namespace larg4 {
     double Visdist = (OpDetPoint - bounce_point).Mag();
 
     // calculate times taken by each part
-    std::vector<double> VUVTimes  = getVUVTime(VUVdist, number_photons);
-    std::vector<double> ReflTimes(number_photons, Visdist / fvis_vmean);
+    getVUVTimes(arrivalTimes, VUVdist);
 
     // sum parts to get total transport times times
-    std::vector<double> transport_time_vis(number_photons, 0);
-    for (int i = 0; i < number_photons; i++) {
-      transport_time_vis[i] = VUVTimes[i] + ReflTimes[i];
+    for (size_t i = 0; i < arrivalTimes.size(); i++) {
+      arrivalTimes[i] += Visdist/fvis_vmean;
     }
 
     // *************************************************************************************************
@@ -1468,8 +1460,8 @@ namespace larg4 {
     }
 
     // apply smearing:
-    for (int i = 0; i < number_photons; i++) {
-      double arrival_time = transport_time_vis[i];
+    for (size_t i = 0; i < arrivalTimes.size(); i++) {
+      double arrival_time = arrivalTimes[i];
       double arrival_time_smeared;
       // if time is already greater than cutoff or minimum smeared time would be greater than cutoff, do not apply smearing
       if (arrival_time  >= cutoff) {
@@ -1497,9 +1489,8 @@ namespace larg4 {
         }
         while (arrival_time_smeared > cutoff);
       }
-      transport_time_vis[i] = arrival_time_smeared;
+      arrivalTimes[i] = arrival_time_smeared;
     }
-    return transport_time_vis;
   }
 
 

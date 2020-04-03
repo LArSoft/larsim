@@ -247,11 +247,12 @@ namespace larg4 {
       std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
     // old timings -- to be deleted
 
-    std::vector<double> getVUVTime(double, int);
+    void getVUVTimes(std::vector<double>& arrivalTimes, double distance_in_cm);
     void generateparam(int index);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
-    std::vector<double> getVISTime(TVector3 ScintPoint, TVector3 OpDetPoint, int Nphotons);
+    void getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint,
+                    TVector3 OpDetPoint);
     // Visible component timing parameterisation
 
     int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
@@ -296,7 +297,8 @@ namespace larg4 {
     G4double scint_time(const G4Step& aStep,
                         G4double ScintillationTime,
                         G4double ScintillationRiseTime) const;
-    std::vector<double> propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected = false); //const;
+    void propagation_time(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
+                          int OpChannel, bool Reflected = false); //const;
 
     // emission time distribution when there is a finite rise time
     G4double sample_time(G4double tau1, G4double tau2) const;
