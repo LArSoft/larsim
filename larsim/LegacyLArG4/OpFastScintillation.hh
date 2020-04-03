@@ -378,9 +378,11 @@ namespace larg4 {
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);
   //For new VUV time parametrization
-  double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate );
-  double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
-                       std::vector<double> &yData3, double x, bool extrapolate);
+  double interpolate(std::vector<double> &xData, std::vector<double> &yData,
+                     double x, bool extrapolate);
+  void interpolate(double inter[], std::vector<double> &xData,
+                   std::vector<double> &yData1, std::vector<double> &yData2,
+                   std::vector<double> &yData3, double x, bool extrapolate);
   double model_close(double*, double*);
   double model_far(double*, double*);
   // structure definition for solid angle of rectangle function

@@ -1268,7 +1268,9 @@ namespace larg4 {
 
     // Defining the model function(s) describing the photon transportation timing vs distance
     // Getting the landau parameters from the time parametrization
-    double* pars_landau = interpolate(fparameters[0], fparameters[2], fparameters[3], fparameters[1], distance_in_cm, true);
+    double pars_landau[3];
+    interpolate(pars_landau, fparameters[0], fparameters[2], fparameters[3],
+                fparameters[1], distance_in_cm, true);
     // Deciding which time model to use (depends on the distance)
     // defining useful times for the VUV arrival time shapes
     if(distance_in_cm >= finflexion_point_distance) {
@@ -1303,7 +1305,6 @@ namespace larg4 {
       }
       double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
       fVUVTiming.SetParameters(parsfinal);
-      delete pars_landau;
     }
 
     // set the number of points used to sample parameterisation
@@ -1787,8 +1788,8 @@ namespace larg4 {
   //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
   double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate )
   {
-    int size = xData.size();
-    int i = 0;                                          // find left end of interval for interpolation
+    size_t size = xData.size();
+    size_t i = 0;                                          // find left end of interval for interpolation
     if ( x >= xData[size - 2] ) {                       // special case: beyond right end
       i = size - 2;
     }
@@ -1805,11 +1806,12 @@ namespace larg4 {
   }
 
 
-  double* interpolate( std::vector<double> &xData, std::vector<double> &yData1, std::vector<double> &yData2,
-                       std::vector<double> &yData3, double x, bool extrapolate)
+  void interpolate(double inter[], std::vector<double> &xData,
+                   std::vector<double> &yData1, std::vector<double> &yData2,
+                   std::vector<double> &yData3, double x, bool extrapolate)
   {
-    int size = xData.size();
-    int i = 0;                                          // find left end of interval for interpolation
+    size_t size = xData.size();
+    size_t i = 0;                                          // find left end of interval for interpolation
     if ( x >= xData[size - 2] ) {                       // special case: beyond right end
       i = size - 2;
     }
@@ -1831,16 +1833,14 @@ namespace larg4 {
         yL3 = yR3;
       }
     }
-    double dydx1 = ( yR1 - yL1 ) / ( xR - xL );            // gradient
-    double dydx2 = ( yR2 - yL2 ) / ( xR - xL );
-    double dydx3 = ( yR3 - yL3 ) / ( xR - xL );
 
-    double *yy = new double[3];
-    yy[0] = yL1 + dydx1 * ( x - xL );// linear interpolations
-    yy[1] = yL2 + dydx2 * ( x - xL );
-    yy[2] = yL3 + dydx3 * ( x - xL );
+    inter[0] = (x - xL) * (yR1 - yL1) / (xR - xL);
+    inter[1] = (x - xL) * ( yR2 - yL2 ) / ( xR - xL );
+    inter[2] = (x - xL) * ( yR3 - yL3 ) / ( xR - xL );
 
-    return yy;
+    inter[0] += yL1;
+    inter[1] += yL2;
+    inter[2] += yL3;
   }
 
 
