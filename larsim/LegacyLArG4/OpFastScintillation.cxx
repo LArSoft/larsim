@@ -145,6 +145,12 @@
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
 
+// Define a new policy *not* internally promoting RealType to double:
+typedef boost::math::policies::policy<
+  // boost::math::policies::digits10<8>,
+  boost::math::policies::promote_double<false>
+  > noLDoublePromote;
+
 namespace larg4 {
 
   /////////////////////////
@@ -1846,14 +1852,14 @@ namespace larg4 {
     const double bb = TMath::Sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
-      return 2.*TMath::Pi() - 2.*aa * (boost::math::ellint_1(bb) + TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc));
     if(isDefinitelyLessThan(d,b)) {
+      return 2.*TMath::Pi() - 2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) + TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
     }
-      return TMath::Pi() - 2.*aa * boost::math::ellint_1(bb);
     if(isApproximatelyEqual(d,b)) {
+      return TMath::Pi() - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
     }
-      return 2.*aa * (TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc) - boost::math::ellint_1(bb));
     if(isDefinitelyGreaterThan(d,b)) {
+      return 2.*aa*(TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) - boost::math::ellint_1(bb,noLDoublePromote()));
     }
     return 0.;
   }
