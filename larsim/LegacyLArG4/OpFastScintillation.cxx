@@ -140,6 +140,7 @@
 #include "TRandom3.h"
 #include "TMath.h"
 #include <cmath>
+#include <limits>
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
@@ -1854,14 +1855,14 @@ namespace larg4 {
     const double bb = TMath::Sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
-    if(d < b) {
       return 2.*TMath::Pi() - 2.*aa * (boost::math::ellint_1(bb) + TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc));
+    if(isDefinitelyLessThan(d,b)) {
     }
-    if(d == b) {
       return TMath::Pi() - 2.*aa * boost::math::ellint_1(bb);
+    if(isApproximatelyEqual(d,b)) {
     }
-    if(d > b) {
       return 2.*aa * (TMath::Sqrt(1. - cc) * boost::math::ellint_3(bb, cc) - boost::math::ellint_1(bb));
+    if(isDefinitelyGreaterThan(d,b)) {
     }
     return 0.;
   }

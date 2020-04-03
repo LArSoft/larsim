@@ -532,6 +532,43 @@ namespace larg4 {
     }
     return std::sqrt(d);
   }
+
+  // implements relative method - do not use for comparing with zero
+  // use this most of the time, tolerance needs to be meaningful in your context
+  template<typename TReal> inline
+  static bool isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  {
+    TReal diff = std::fabs(a - b);
+    if (diff <= tolerance)
+      return true;
+    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
+      return true;
+    return false;
+  }
+
+  // use this when you want to be on safe side
+  // for example, don't start rover unless signal is above 1
+  template<typename TReal> inline
+  static bool isDefinitelyLessThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  {
+    TReal diff = a - b;
+    if (diff < tolerance)
+      return true;
+    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
+      return true;
+    return false;
+  }
+
+  template<typename TReal> inline
+  static bool isDefinitelyGreaterThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  {
+    TReal diff = a - b;
+    if (diff > tolerance)
+      return true;
+    if (diff > std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
+      return true;
+    return false;
+  }
 } //namespace
 
 #endif /* OpFastScintillation_h */
