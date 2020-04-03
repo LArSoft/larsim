@@ -1443,7 +1443,7 @@ namespace larg4 {
     double fastest_time = vis_time + vuv_time;
 
     // calculate angle alpha between scintillation point and reflection point
-    double cosine_alpha = std::sqrt(std::pow(ScintPoint[0] - bounce_point[0], 2)) / VUVdist;
+    double cosine_alpha = std::abs(ScintPoint[0] - bounce_point[0]) / VUVdist;
     double alpha = std::acos(cosine_alpha) * 180. / CLHEP::pi;
 
     // determine smearing parameters using interpolation of generated points:
@@ -1521,7 +1521,7 @@ namespace larg4 {
     double distance = std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2) +
                                 std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
                                 std::pow(ScintPoint[2] - OpDetPoint[2], 2));
-    double cosine = std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2)) / distance;
+    double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
     double theta = std::acos(cosine) * 180. / CLHEP::pi;
 
     // calculate solid angle:
@@ -1546,7 +1546,7 @@ namespace larg4 {
       d = std::sqrt(std::pow(ScintPoint[1] - OpDetPoint[1], 2) +
                     std::pow(ScintPoint[2] - OpDetPoint[2], 2));
       // drift distance (in x)
-      h =  std::sqrt(std::pow(ScintPoint[0] - OpDetPoint[0], 2));
+      h =  std::abs(ScintPoint[0] - OpDetPoint[0]);
       // Solid angle of a disk
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
@@ -1659,7 +1659,7 @@ namespace larg4 {
       double d = std::sqrt(std::pow(hotspot[1] - OpDetPoint[1], 2) +
                            std::pow(hotspot[2] - OpDetPoint[2], 2));
       // drift distance (in x)
-      double h =  std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2));
+      double h =  std::abs(hotspot[0] - OpDetPoint[0]);
       // calculate solid angle
       solid_angle_detector = Disk_SolidAngle(d, h, fradius);
     }
@@ -1679,8 +1679,8 @@ namespace larg4 {
     double distance_vis = std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2) +
                                     std::pow(hotspot[1] - OpDetPoint[1], 2) +
                                     std::pow(hotspot[2] - OpDetPoint[2], 2));
-    //  angle between hotspot and optical detector
-    double cosine_vis = std::sqrt(std::pow(hotspot[0] - OpDetPoint[0], 2)) / distance_vis;
+     //  angle between hotspot and optical detector
+    double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
     double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
     int k = (theta_vis / fdelta_angulo);
 
