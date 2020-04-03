@@ -1471,7 +1471,7 @@ namespace larg4 {
       double arrival_time = transport_time_vis[i];
       double arrival_time_smeared;
       // if time is already greater than cutoff or minimum smeared time would be greater than cutoff, do not apply smearing
-      if (arrival_time + (arrival_time - fastest_time) * (std::exp(-tau * std::log(1.0)) - 1) >= cutoff) {
+      if (arrival_time  >= cutoff) {
         arrival_time_smeared = arrival_time;
       }
       // otherwise smear
@@ -1489,7 +1489,7 @@ namespace larg4 {
             // generate random number in appropriate range
             double x = gRandom->Uniform(0.5, 1.0);
             // apply the exponential smearing
-            arrival_time_smeared = arrival_time + (arrival_time - fastest_time) * (std::exp(-tau * log(x)) - 1);
+            arrival_time_smeared = arrival_time + (arrival_time-fastest_time)*(std::pow(x,-tau) -1);
           }
           // increment counter
           counter++;
