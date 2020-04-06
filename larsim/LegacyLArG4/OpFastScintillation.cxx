@@ -294,8 +294,8 @@ namespace larg4 {
 
         fYcathode = Cathode_centre.Y();
         fZcathode = Cathode_centre.Z();
-        fReference_to_corner = std::sqrt(std::pow(fYactive_corner, 2) +
-                                         std::pow(fZactive_corner, 2));
+        fReference_to_corner = std::sqrt(fYactive_corner*fYactive_corner +
+                                         fZactive_corner*fZactive_corner);
 
         std::cout << "For border corrections: " << fborder_corr[0] << "  " << fborder_corr[1] << std::endl;
         std::cout << "Photocathode-plane centre (z,y) = (" << fZcathode << ", " << fYcathode << ") and corner (z, y) = (" << fZactive_corner << ", " << fYactive_corner << ")" << std::endl;
