@@ -1467,11 +1467,10 @@ namespace larg4 {
 
     // apply smearing:
     for (size_t i = 0; i < arrivalTimes.size(); i++) {
-      double arrival_time = arrivalTimes[i];
       double arrival_time_smeared;
-      // if time is already greater than cutoff or minimum smeared time would be greater than cutoff, do not apply smearing
-      if (arrival_time  >= cutoff) {
-        arrival_time_smeared = arrival_time;
+      // if time is already greater than cutoff, do not apply smearing
+      if (arrivalTimes[i]  >= cutoff) {
+        continue;
       }
       // otherwise smear
       else {
@@ -1479,16 +1478,16 @@ namespace larg4 {
         // loop until time generated is within cutoff limit
         // most are within single attempt, very few take more than two
         do {
-          // don't attempt smearings too many times for cases near cutoff (very few cases, not smearing these makes negigible difference)
+          // don't attempt smearings too many times
           if (counter >= 10) {
-            arrival_time_smeared = arrival_time; // don't smear
+            arrival_time_smeared = arrivalTimes[i]; // don't smear
             break;
           }
           else {
             // generate random number in appropriate range
             double x = gRandom->Uniform(0.5, 1.0);
             // apply the exponential smearing
-            arrival_time_smeared = arrival_time + (arrival_time-fastest_time)*(std::pow(x,-tau) -1);
+            arrival_time_smeared = arrivalTimes[i] + (arrivalTimes[i]-fastest_time)*(std::pow(x,-tau) -1);
           }
           // increment counter
           counter++;
