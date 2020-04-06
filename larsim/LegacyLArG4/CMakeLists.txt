@@ -1,9 +1,13 @@
+# excluding ConfigurablePhysicsList, which is used by PhysicsList
+# see https://geant4-forum.web.cern.ch/t/missing-header-in-application/1622
+
 include_directories($ENV{GENIE_INC}/GENIE)
 include_directories($ENV{LIBXML2_FQ_DIR}/include/libxml2)
 include_directories($ENV{GEANT4_FQ_DIR}/include)
 include_directories($ENV{XERCES_C_INC})
 
-art_make(LIB_LIBRARIES
+art_make(EXCLUDE PhysicsList.cxx
+         LIB_LIBRARIES
            larsim_PhotonPropagation_PhotonVisibilityService_service
            lardataobj_Simulation
            larcorealg_Geometry
@@ -49,7 +53,7 @@ art_make(LIB_LIBRARIES
            ROOT::Tree
          )
 
-install_headers()
+install_headers( EXCLUDES ConfigurablePhysicsList.icc ConfigurablePhysicsList.hh PhysicsList.h)
 install_fhicl()
 install_source()
 
