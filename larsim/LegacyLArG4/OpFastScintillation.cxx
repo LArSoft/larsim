@@ -1522,7 +1522,6 @@ namespace larg4 {
 
     // calculate solid angle:
     double solid_angle = 0;
-    double d, h;
     // Arapucas
     if (optical_detector_type == 0) {
       // set Arapuca geometry struct for solid angle function
@@ -1541,7 +1540,7 @@ namespace larg4 {
       // offset in z-y plane
       double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
       // drift distance (in x)
-      h =  std::abs(ScintPoint[0] - OpDetPoint[0]);
+      double h =  std::abs(ScintPoint[0] - OpDetPoint[0]);
       // Solid angle of a disk
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
@@ -1634,13 +1633,12 @@ namespace larg4 {
     // hotspot coordinates
     TVector3 hotspot(plane_depth, ScintPoint[1], ScintPoint[2]);
 
-    // get hotspot coordinates relative to detpoint
-    TVector3 emission_relative = hotspot - OpDetPoint;
-
     // calculate solid angle of optical channel
     double solid_angle_detector = 0;
     // rectangular aperture
     if (optical_detector_type == 0) {
+      // get hotspot coordinates relative to detpoint
+      TVector3 emission_relative = hotspot - OpDetPoint;
       // set rectangular aperture geometry struct for solid angle function
       acc detPoint;
       detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];// centre coordinates of optical detector
