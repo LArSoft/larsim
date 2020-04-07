@@ -225,6 +225,12 @@ namespace larg4 {
       std::cout << "Cathode_centre: " << Cathode_centre.X()
                 << "  " << Cathode_centre.Y() << "  " << Cathode_centre.Z() << std::endl;
 
+      std::cout << "\nInitialize acos_arr with " << acos_bins+1
+                << " hence with a resolution of " << 1./acos_bins << std::endl;
+      for(size_t i=0; i<=acos_bins; ++i){
+        acos_arr[i] = std::acos(i/double(acos_bins));
+      }
+
       for(size_t i = 0; i != pvs->NOpChannels(); i++) {
         double OpDetCenter_i[3];
         std::vector<double> OpDetCenter_v;
@@ -1996,6 +2002,16 @@ namespace larg4 {
     // error message if none of these cases, i.e. something has gone wrong!
     std::cout << "Warning: invalid solid angle call." << std::endl;
     return 0.0;
+  }
+
+
+  constexpr double acos_table(const double x)
+  {
+    if(x < 0. || x > 1.){
+      std::cout << "Range out of bounds in acos_table, only defined in [0, 1]" << std::endl;
+      exit(0);
+    }
+    return acos_arr[std::round(acos_bins*x)];
   }
 
 }
