@@ -294,8 +294,8 @@ namespace larg4 {
 
   private:
 
-    G4double single_exp(G4double t, G4double tau2) const;
-    G4double bi_exp(G4double t, G4double tau1, G4double tau2) const;
+    constexpr G4double single_exp(const G4double t, const G4double tau2) const;
+    constexpr G4double bi_exp(const G4double t, const G4double tau1, const G4double tau2) const;
 
     G4double scint_time(const G4Step& aStep,
                         G4double ScintillationTime,
@@ -304,7 +304,7 @@ namespace larg4 {
                          const size_t OpChannel, bool Reflected = false); //const;
 
     // emission time distribution when there is a finite rise time
-    G4double sample_time(G4double tau1, G4double tau2) const;
+    G4double sample_time(const G4double tau1, const G4double tau2) const;
 
     // Facility for TPB emission energies
     double reemission_energy() const;
@@ -345,13 +345,14 @@ namespace larg4 {
       double w, h; // w = width; h = height
     };
     // solid angle of rectangular aperture calculation functions
-    double Rectangle_SolidAngle(double a, double b, double d);
+    constexpr double Rectangle_SolidAngle(const double a, const double b,
+                                          const double d);
     double Rectangle_SolidAngle(dims out, TVector3 v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
     //For VUV semi-analytic hits
-    G4double Gaisser_Hillas(double x, double *par);
+    constexpr G4double Gaisser_Hillas(const double x, const double *par);
     bool fUseNhitsModel;
     //array of correction for the VUV Nhits estimation
     std::vector<std::vector<double> > fGHvuvpars;
@@ -360,7 +361,7 @@ namespace larg4 {
     double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
     double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
     // For VIS semi-analytic hits
-    double Pol_5(double x, double *par);
+    constexpr double Pol_5(const double x, double *par);
     bool fStoreReflected;
     // array of corrections for VIS Nhits estimation
     std::vector<std::vector<double>> fvispars;
@@ -500,7 +501,7 @@ namespace larg4 {
     }
   }
 
-  template<typename TReal> inline
+  template<typename TReal> inline constexpr
   double dist(TReal* x, TReal* y, const unsigned int dimension)
   {
     double d = 0.;
@@ -512,7 +513,7 @@ namespace larg4 {
 
   // implements relative method - do not use for comparing with zero
   // use this most of the time, tolerance needs to be meaningful in your context
-  template<typename TReal> inline
+  template<typename TReal> inline constexpr
   static bool isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = std::fabs(a - b);
@@ -525,7 +526,7 @@ namespace larg4 {
 
   // supply tolerance that is meaningful in your context
   // for example, default tolerance may not work if you are comparing double with float
-  template<typename TReal> inline
+  template<typename TReal> inline constexpr
   static bool isApproximatelyZero(TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     if (std::fabs(a) <= tolerance)
@@ -536,7 +537,7 @@ namespace larg4 {
 
   // use this when you want to be on safe side
   // for example, don't start rover unless signal is above 1
-  template<typename TReal> inline
+  template<typename TReal> inline constexpr
   static bool isDefinitelyLessThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = a - b;
@@ -547,7 +548,7 @@ namespace larg4 {
     return false;
   }
 
-  template<typename TReal> inline
+  template<typename TReal> inline constexpr
   static bool isDefinitelyGreaterThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = a - b;

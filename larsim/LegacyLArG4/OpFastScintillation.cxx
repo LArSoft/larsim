@@ -1106,7 +1106,7 @@ namespace larg4 {
   }
 
 
-  G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2) const
+  G4double OpFastScintillation::sample_time(const G4double tau1, const G4double tau2) const
   {
     // tau1: rise time and tau2: decay time
     while(1) {
@@ -1731,20 +1731,22 @@ namespace larg4 {
   }
 
 
-  G4double OpFastScintillation::single_exp(G4double t, G4double tau2) const
+  constexpr G4double OpFastScintillation::single_exp(const G4double t, const G4double tau2) const
   {
     return std::exp(-1.0 * t / tau2) / tau2;
   }
 
 
-  G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
+  constexpr G4double OpFastScintillation::bi_exp(const G4double t, const G4double tau1,
+                                                 const G4double tau2) const
   {// TODO: what's up with this? ... / tau2 / tau2 ...
     return std::exp(-1.0 * t / tau2) *
       (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
   }
 
 
-  G4double OpFastScintillation::Gaisser_Hillas(double x, double *par)
+  constexpr G4double OpFastScintillation::Gaisser_Hillas(const double x,
+                                                         const double *par)
   {
     double X_mu_0 = par[3];
     double Normalization = par[0];
@@ -1755,7 +1757,7 @@ namespace larg4 {
   }
 
 
-  double OpFastScintillation::Pol_5(double x, double *par)
+  constexpr double OpFastScintillation::Pol_5(const double x, double *par)
   {
     // 5th order polynomial function
     double xpow = 1.;
@@ -1921,7 +1923,8 @@ namespace larg4 {
 
   // solid angle of rectangular aperture
   // TODO: what's up with all of that times 2, divided by 2?
-  double OpFastScintillation::Rectangle_SolidAngle(double a, double b, double d)
+  constexpr double OpFastScintillation::Rectangle_SolidAngle(const double a, const double b,
+                                                             const double d)
   {
     double aa = a / (2.0 * d);
     double bb = b / (2.0 * d);
