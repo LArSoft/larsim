@@ -341,13 +341,12 @@ namespace larg4 {
     std::vector<std::vector<double>> ftau_pars;
 
     // structure definition for solid angle of rectangle function
-    struct acc {
-      // ax,ay,az = centre of rectangle; w = width; h = height
-      double ax, ay, az, w, h;
+    struct dims {
+      double w, h; // w = width; h = height
     };
     // solid angle of rectangular aperture calculation functions
     double Rectangle_SolidAngle(double a, double b, double d);
-    double Rectangle_SolidAngle(acc& out, TVector3 v);
+    double Rectangle_SolidAngle(dims out, TVector3 v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
@@ -378,6 +377,7 @@ namespace larg4 {
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
     double fydimension, fzdimension, fradius;
+    dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
     std::vector<std::vector<double> > fOpDetCenter;
     std::vector<int>  fOpDetType;

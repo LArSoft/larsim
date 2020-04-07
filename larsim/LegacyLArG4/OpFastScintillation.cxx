@@ -333,6 +333,8 @@ namespace larg4 {
           fcathode_centre[1] = (fmaxy + fminy) / 2; fcathode_centre[2] = (fmaxz + fminz) / 2; // to get full cathode dimension rather than just single tpc
           fcathode_ydimension = fmaxy - fminy;
           fcathode_zdimension = fmaxz - fminz;
+          // set cathode plane struct for solid angle function
+          cathode_plane.w = fcathode_ydimension; cathode_plane.h = fcathode_zdimension;
           fplane_depth = std::abs(fcathode_centre[0]);
         }
         else fStoreReflected = false;
@@ -769,6 +771,8 @@ namespace larg4 {
                                 fOpDetCenter.at(OpDet)[2]);
             fydimension = fOpDetLength.at(OpDet);
             fzdimension = fOpDetHeight.at(OpDet);
+            // set detector struct for solid angle function
+            detPoint.w = fydimension; detPoint.h = fzdimension;
             DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
           }
 
@@ -1545,14 +1549,8 @@ namespace larg4 {
     double solid_angle = 0;
     // Arapucas
     if (optical_detector_type == 0) {
-      // set Arapuca geometry struct for solid angle function
-      acc detPoint;
-      detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];  // centre coordinates of optical detector
-      detPoint.w = fydimension; detPoint.h = fzdimension; // width and height in cm of arapuca active window
-
       // get scintillation point coordinates relative to arapuca window centre
       TVector3 ScintPoint_rel = ScintPoint - OpDetPoint;
-
       // calculate solid angle
       solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
     }
@@ -1623,11 +1621,6 @@ namespace larg4 {
     }
 
     // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
-
-    // set cathode plane struct for solid angle function
-    acc cathode_plane;
-    cathode_plane.ax = plane_depth; cathode_plane.ay = fcathode_centre[1]; cathode_plane.az = fcathode_centre[2];       	// centre coordinates of cathode plane
-    cathode_plane.w = fcathode_ydimension; cathode_plane.h = fcathode_zdimension;                        				// width and height in cm
     // get scintpoint coords relative to centre of cathode plane
     TVector3 cathodeCentrePoint(plane_depth, fcathode_centre[1], fcathode_centre[2]);
     TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint;
@@ -1662,10 +1655,6 @@ namespace larg4 {
     if (optical_detector_type == 0) {
       // get hotspot coordinates relative to detpoint
       TVector3 emission_relative = hotspot - OpDetPoint;
-      // set rectangular aperture geometry struct for solid angle function
-      acc detPoint;
-      detPoint.ax = OpDetPoint[0]; detPoint.ay = OpDetPoint[1]; detPoint.az = OpDetPoint[2];// centre coordinates of optical detector
-      detPoint.w = fydimension; detPoint.h = fzdimension; // width and height in cm of optical detector active window [rectangular aperture]
       // calculate solid angle
       solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
     }
@@ -1938,7 +1927,7 @@ namespace larg4 {
   }
 
 
-  double OpFastScintillation::Rectangle_SolidAngle(acc& out, TVector3 v)
+  double OpFastScintillation::Rectangle_SolidAngle(dims out, TVector3 v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
