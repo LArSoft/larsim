@@ -173,7 +173,7 @@ namespace larg4 {
     : G4VRestDiscreteProcess(processName, type)
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
   {
-    SetProcessSubType(25);
+    SetProcessSubType(25); // TODO: unhardcode
     fTrackSecondariesFirst = false;
     fFiniteRiseTime = false;
     YieldFactor = 1.0;
@@ -264,7 +264,7 @@ namespace larg4 {
 
         // create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
         // default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated
-        const size_t num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead
+        const size_t num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead // TODO: unhardcode
         std::vector<TF1> VUV_timing_temp(num_params, TF1());
         VUV_timing = VUV_timing_temp;
 
@@ -291,7 +291,7 @@ namespace larg4 {
           x_v.push_back(elem.first);
           y_v.push_back(elem.second);
         }
-        fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);
+        fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);// TODO: unhardcode //TODO: unsafe casting double to int
 
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
@@ -862,7 +862,7 @@ namespace larg4 {
 
                 float PhotonEnergy = 0;
                 if (Reflected)  PhotonEnergy = reemission_energy() * CLHEP::eV;
-                else            PhotonEnergy = 9.7 * CLHEP::eV;
+                else            PhotonEnergy = 9.7 * CLHEP::eV;// TODO: unhardcode
 
                 // Make a photon object for the collection
                 sim::OnePhoton PhotToAdd;
@@ -1284,10 +1284,10 @@ namespace larg4 {
   void OpFastScintillation::generateParam(const size_t index)
   {
     // get distance
-    double distance_in_cm = (index * fstep_size) + 25;
+    double distance_in_cm = (index * fstep_size) + 25;// TODO: unhardcode
 
     // time range
-    const double signal_t_range = 5000.;
+    const double signal_t_range = 5000.;// TODO: unhardcode
 
     // parameterisation TF1
     TF1 fVUVTiming;
@@ -1344,7 +1344,7 @@ namespace larg4 {
 
     // set the number of points used to sample parameterisation
     // for shorter distances, peak is sharper so more sensitive sampling required
-    int fsampling;
+    int fsampling;// TODO: unhardcode
     if (distance_in_cm < 50) {fsampling = 10000;}
     else if (distance_in_cm < 100) {fsampling = 5000;}
     else {fsampling = 1000;}
@@ -1352,6 +1352,7 @@ namespace larg4 {
 
     // calculate max and min distance relevant to sample parameterisation
     // max
+    // TODO: array instead of pointer? why this?
     const size_t nq_max = 1;
     double xq_max[nq_max];
     double yq_max[nq_max];
@@ -1374,7 +1375,7 @@ namespace larg4 {
   // VUV arrival times calculation function
   void OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, double distance)
   {
-    if (distance < 25) {
+    if (distance < 25) {// TODO: unhardcode
       // times are fixed shift i.e. direct path only
       double t_prop_correction = distance / fvuv_vgroup_mean;
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
@@ -1383,7 +1384,7 @@ namespace larg4 {
     }
     else { // distance >= 25cm
       // determine nearest parameterisation in discretisation
-      int index = std::round((distance - 25) / fstep_size);
+      int index = std::round((distance - 25) / fstep_size);// TODO: unhardcode
       // check whether required parameterisation has been generated, generating if not
       if (VUV_timing[index].GetNdim() == 0) {
         generateParam(index);
@@ -1452,12 +1453,12 @@ namespace larg4 {
     double vis_time = Visdist / fvis_vmean;
     // vuv part
     double vuv_time;
-    if (VUVdist < 25) {
+    if (VUVdist < 25) {// TODO: unhardcode
       vuv_time = VUVdist / fvuv_vgroup_mean;
     }
     else {
       // find index of required parameterisation
-      const size_t index = std::round((VUVdist - 25) / fstep_size);
+      const size_t index = std::round((VUVdist - 25) / fstep_size);// TODO: unhardcode
       // find shortest time
       vuv_time = VUV_min[index];
     }
@@ -1474,7 +1475,7 @@ namespace larg4 {
     //     times caused by exponential distance to cathode
     double distance_cathode_plane = std::abs(plane_depth - ScintPoint[0]);
     // angular bin
-    size_t alpha_bin = alpha / 10;
+    size_t alpha_bin = alpha / 10;// TODO: unhardcode
     if (alpha_bin >= ftau_pars.size()) {
       alpha_bin = ftau_pars.size() - 1;      // default to the largest available bin if alpha larger than parameterised region; i.e. last bin effectively [last bin start value, 90] deg bin
     }
@@ -1499,13 +1500,13 @@ namespace larg4 {
         // most are within single attempt, very few take more than two
         do {
           // don't attempt smearings too many times
-          if (counter >= 10) {
+          if (counter >= 10) {// TODO: unhardcode
             arrival_time_smeared = arrivalTimes[i]; // don't smear
             break;
           }
           else {
             // generate random number in appropriate range
-            double x = gRandom->Uniform(0.5, 1.0);
+            double x = gRandom->Uniform(0.5, 1.0);// TODO: unhardcode
             // apply the exponential smearing
             arrival_time_smeared = arrivalTimes[i] +
               (arrivalTimes[i] - fastest_time)*(std::pow(x,-tau) - 1);
@@ -1525,7 +1526,7 @@ namespace larg4 {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {
+    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {// TODO: unhardcode
       return 0;
     }
     //semi-analytic approach only works in the active volume
@@ -1573,7 +1574,7 @@ namespace larg4 {
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance
     // and angular dependence offset angle bin
-    const size_t j = (theta / fdelta_angulo);
+    const size_t j = (theta / fdelta_angulo);// TODO:: std::round?
 
     //Accounting for border effects
     double z_to_corner = std::abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
@@ -1601,7 +1602,7 @@ namespace larg4 {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {
+    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {// TODO: unhardcode
       return 0;
     }
 
@@ -1643,7 +1644,7 @@ namespace larg4 {
       (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
-    const size_t j = (theta_cathode / fdelta_angulo);
+    const size_t j = (theta_cathode / fdelta_angulo);// TODO:: std::round?
     double  pars_ini_[4] = {fGHvuvpars[0][j],
                             fGHvuvpars[1][j],
                             fGHvuvpars[2][j],
@@ -1692,7 +1693,7 @@ namespace larg4 {
      //  angle between hotspot and optical detector
     double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
     double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
-    const size_t k = (theta_vis / fdelta_angulo);
+    const size_t k = (theta_vis / fdelta_angulo);// TODO:: std::round?
 
     // apply geometric correction
     double pars_ini_vis[6] = {fvispars[0][k], fvispars[1][k], fvispars[2][k],
@@ -1745,7 +1746,7 @@ namespace larg4 {
 
 
   G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
-  {
+  {// TODO: what's up with this? ... / tau2 / tau2 ...
     return std::exp(-1.0 * t / tau2) *
       (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
   }
@@ -1815,7 +1816,6 @@ namespace larg4 {
     // par4 = Expo cte
     // par5 = Expo tau
     // par6 = t_min
-
     double y1 = par[3] * TMath::Landau(x[0], par[1], par[2]);
     double y2 = TMath::Exp(par[4] + x[0] * par[5]);
     if(x[0] <= par[6] || x[0] > par[0]) y1 = 0.;
@@ -1927,7 +1927,8 @@ namespace larg4 {
   }
 
 
-  // solid angle of rectanglular aperture
+  // solid angle of rectangular aperture
+  // TODO: what's up with all of that times 2, divided by 2?
   double OpFastScintillation::Rectangle_SolidAngle(double a, double b, double d)
   {
     double aa = a / (2.0 * d);
@@ -1944,9 +1945,11 @@ namespace larg4 {
 
     // arapuca plane fixed in x direction
     if( v.Y() == 0.0 && v.Z() == 0.0) {
-      return Rectangle_SolidAngle(out.w, out.h, v.X());
+      return Rectangle_SolidAngle(out.w, out.h, v.X());// TODO: std::abs(v.X())?
     }
 
+    // TODO: shouldn't it be?
+    // if ( (std::abs(v.Y()) > op.h / 2.0) && (std::abs(v.Z()) > op.w / 2.0)) {
     if( (std::abs(v.Y()) > out.w / 2.0) && (std::abs(v.Z()) > out.h / 2.0)) {
       double A, B, a, b, d;
       A = std::abs(v.Y()) - out.w / 2.0;
