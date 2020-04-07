@@ -225,11 +225,11 @@ namespace larg4 {
       std::cout << "Cathode_centre: " << Cathode_centre.X()
                 << "  " << Cathode_centre.Y() << "  " << Cathode_centre.Z() << std::endl;
 
-      std::cout << "\nInitialize acos_arr with " << acos_bins+1
-                << " hence with a resolution of " << 1./acos_bins << std::endl;
-      for(size_t i=0; i<=acos_bins; ++i){
-        acos_arr[i] = std::acos(i/double(acos_bins));
-      }
+      // std::cout << "\nInitialize acos_arr with " << acos_bins+1
+      //           << " hence with a resolution of " << 1./acos_bins << std::endl;
+      // for(size_t i=0; i<=acos_bins; ++i){
+      //   acos_arr[i] = std::acos(i/double(acos_bins));
+      // }
 
       for(size_t i = 0; i != pvs->NOpChannels(); i++) {
         double OpDetCenter_i[3];
@@ -1471,7 +1471,8 @@ namespace larg4 {
 
     // calculate angle alpha between scintillation point and reflection point
     double cosine_alpha = std::abs(ScintPoint[0] - bounce_point[0]) / VUVdist;
-    double alpha = std::acos(cosine_alpha) * 180. / CLHEP::pi;
+    // double alpha = std::acos(cosine_alpha) * 180. / CLHEP::pi;
+    double alpha = fast_acos(cosine_alpha) * 180. / CLHEP::pi;
 
     // determine smearing parameters using interpolation of generated points:
     // 1). tau = exponential smearing factor, varies with distance and angle
@@ -1543,7 +1544,8 @@ namespace larg4 {
     // distance and angle between ScintPoint and OpDetPoint
     double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
     double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
-    double theta = std::acos(cosine) * 180. / CLHEP::pi;
+    // double theta = std::acos(cosine) * 180. / CLHEP::pi;
+    double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
     // calculate solid angle:
     double solid_angle = 0;
@@ -1681,7 +1683,8 @@ namespace larg4 {
     double distance_vis = dist(&hotspot[0], &OpDetPoint[0], 3);
      //  angle between hotspot and optical detector
     double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
-    double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
+    // double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
+    double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
     const size_t k = (theta_vis / fdelta_angulo);// TODO:: std::round?
 
     // apply geometric correction
@@ -1923,7 +1926,8 @@ namespace larg4 {
     double aa = a / (2.0 * d);
     double bb = b / (2.0 * d);
     double aux = (1 + aa * aa + bb * bb) / ((1. + aa * aa) * (1. + bb * bb));
-    return 4 * std::acos(std::sqrt(aux));
+    // return 4 * std::acos(std::sqrt(aux));
+    return 4 * fast_acos(std::sqrt(aux));
   }
 
 
