@@ -2017,7 +2017,7 @@ namespace larg4 {
 
   constexpr double fast_acos(double x) {
     double negate = double(x < 0);
-    x = abs(x);
+    x = std::abs(x);
     x -= double(x>1.0)*(x-1.0); // <- equivalent to min(1.0,x), but faster
     double ret = -0.0187293;
     ret = ret * x;
@@ -2026,7 +2026,7 @@ namespace larg4 {
     ret = ret - 0.2121144;
     ret = ret * x;
     ret = ret + 1.5707288;
-    ret = ret * sqrt(1.0-x);
+    ret = ret * std::sqrt(1.0-x);
     ret = ret - 2 * negate * ret;
     return negate * 3.14159265358979 + ret;
   }
