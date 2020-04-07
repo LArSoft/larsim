@@ -1552,7 +1552,9 @@ namespace larg4 {
     // Arapucas
     if (optical_detector_type == 0) {
       // get scintillation point coordinates relative to arapuca window centre
-      TVector3 ScintPoint_rel = ScintPoint - OpDetPoint;
+      std::array<double, 3> ScintPoint_rel = {std::abs(ScintPoint.X() - OpDetPoint.X()),
+                                              std::abs(ScintPoint.Y() - OpDetPoint.Y()),
+                                              std::abs(ScintPoint.Z() - OpDetPoint.Z())};
       // calculate solid angle
       solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
     }
@@ -1624,8 +1626,9 @@ namespace larg4 {
 
     // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
     // get scintpoint coords relative to centre of cathode plane
-    TVector3 cathodeCentrePoint(plane_depth, fcathode_centre[1], fcathode_centre[2]);
-    TVector3 ScintPoint_relative = ScintPoint - cathodeCentrePoint;
+    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
+                                                 std::abs(ScintPoint.Y() - fcathode_centre[1]),
+                                                 std::abs(ScintPoint.Z() - fcathode_centre[2])};
     // calculate solid angle of cathode from the scintillation point
     double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
     // calculate distance and angle between ScintPoint and hotspot
@@ -1656,7 +1659,9 @@ namespace larg4 {
     // rectangular aperture
     if (optical_detector_type == 0) {
       // get hotspot coordinates relative to detpoint
-      TVector3 emission_relative = hotspot - OpDetPoint;
+      std::array<double, 3> emission_relative = {std::abs(hotspot.X() - OpDetPoint.X()),
+                                                 std::abs(hotspot.Y() - OpDetPoint.Y()),
+                                                 std::abs(hotspot.Z() - OpDetPoint.Z())};
       // calculate solid angle
       solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
     }
@@ -1936,53 +1941,52 @@ namespace larg4 {
 
   // TODO: some potential gain could be achieved if using constexpr,
   // but would need to change TVector to std::vector or std::array
-  double OpFastScintillation::Rectangle_SolidAngle(dims o, TVector3 v)
+  double OpFastScintillation::Rectangle_SolidAngle(const dims o, const std::array<double, 3> v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
-    v.SetXYZ(std::abs(v.X()), std::abs(v.Y()), std::abs(v.Z()));
-    // arapuca plane fixed in x direction
-    if(isApproximatelyZero(v.Y()) &&
-       isApproximatelyZero(v.Z())) {
-      return Rectangle_SolidAngle(o.w, o.h, v.X());// TODO: std::abs(v.X())?
-    }
 
+    // arapuca plane fixed in x direction
+    if(isApproximatelyZero(v[1]) &&
+       isApproximatelyZero(v[2])) {
+      return Rectangle_SolidAngle(o.w, o.h, v[0]);
+    }
     // TODO: shouldn't it be?
-    // if ( (std::abs(v.Y()) > op.h / 2.0) && (std::abs(v.Z()) > op.w / 2.0)) {
-    if((v.Y() > o.w / 2.0) && (v.Z() > o.h / 2.0)) {
-      double A = v.Y() - o.w / 2.0;
-      double B = v.Z() - o.h / 2.0;
-      double d = v.X();
+    // if ( (std::abs(v[1]) > op.h / 2.0) && (std::abs(v[2]) > op.w / 2.0)) {
+    if((v[1] > o.w / 2.0) && (v[2] > o.h / 2.0)) {
+      double d = v[0];
+      double A = v[1] - o.w / 2.0;
+      double B = v[2] - o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (B + o.h), d) -
                           Rectangle_SolidAngle(2 * A, 2 * (B + o.h), d) -
                           Rectangle_SolidAngle(2 * (A + o.w), 2 * B, d) +
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
-    if((v.Y() > o.w / 2.0) && (v.Z() <= o.h / 2.0)) {
-      double A = v.Y() - o.w / 2.0;
-      double B = -v.Z() + o.h / 2.0;
-      double d = v.X();
+    if((v[1] > o.w / 2.0) && (v[2] <= o.h / 2.0)) {
+      double d = v[0];
+      double A = v[1] - o.w / 2.0;
+      double B = -v[2] + o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (o.h - B), d) -
                           Rectangle_SolidAngle(2 * A, 2 * (o.h - B), d) +
                           Rectangle_SolidAngle(2 * (A + o.w), 2 * B, d) -
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
-    if((v.Y() <= o.w / 2.0) && (v.Z() > o.h / 2.0)) {
-      double A = -v.Y() + o.w / 2.0;
-      double B = v.Z() - o.h / 2.0;
-      double d = v.X();
+    if((v[1] <= o.w / 2.0) && (v[2] > o.h / 2.0)) {
+      double d = v[0];
+      double A = -v[1] + o.w / 2.0;
+      double B = v[2] - o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (B + o.h), d) -
                           Rectangle_SolidAngle(2 * (o.w - A), 2 * B, d) +
                           Rectangle_SolidAngle(2 * A, 2 * (B + o.h), d) -
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
-    if((v.Y() <= o.w / 2.0) && (v.Z() <= o.h / 2.0)) {
-      double A = -v.Y() + o.w / 2.0;
-      double B = -v.Z() + o.h / 2.0;
-      double d = v.X();
+    if((v[1] <= o.w / 2.0) && (v[2] <= o.h / 2.0)) {
+      double d = v[0];
+      double A = -v[1] + o.w / 2.0;
+      double B = -v[2] + o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (o.h - B), d) +
                           Rectangle_SolidAngle(2 * A, 2 * (o.h - B), d) +
                           Rectangle_SolidAngle(2 * (o.w - A), 2 * B, d) +
