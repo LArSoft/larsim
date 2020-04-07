@@ -1933,8 +1933,8 @@ namespace larg4 {
 
   double OpFastScintillation::Rectangle_SolidAngle(acc& out, TVector3 v)
   {
-    //v is the position of the track segment with respect to
-    //the center position of the arapuca window
+    // v is the position of the track segment with respect to
+    // the center position of the arapuca window
 
     // arapuca plane fixed in x direction
     if( v.Y() == 0.0 && v.Z() == 0.0) {
@@ -1954,21 +1954,6 @@ namespace larg4 {
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
-
-    if( (std::abs(v.Y()) <= out.w / 2.0) && (std::abs(v.Z()) <= out.h / 2.0)) {
-      double A, B, a, b, d;
-      A = -std::abs(v.Y()) + out.w / 2.0;
-      B = -std::abs(v.Z()) + out.h / 2.0;
-      a = out.w;
-      b = out.h;
-      d = std::abs(v.X());
-      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (b - B), d) +
-                          Rectangle_SolidAngle(2 * A, 2 * (b - B), d) +
-                          Rectangle_SolidAngle(2 * (a - A), 2 * B, d) +
-                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
-      return to_return;
-    }
-
     if( (std::abs(v.Y()) > out.w / 2.0) && (std::abs(v.Z()) <= out.h / 2.0)) {
       double A, B, a, b, d;
       A = std::abs(v.Y()) - out.w / 2.0;
@@ -1982,7 +1967,6 @@ namespace larg4 {
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
-
     if( (std::abs(v.Y()) <= out.w / 2.0) && (std::abs(v.Z()) > out.h / 2.0)) {
       double A, B, a, b, d;
       A = -std::abs(v.Y()) + out.w / 2.0;
@@ -1993,6 +1977,19 @@ namespace larg4 {
       double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (B + b), d) -
                           Rectangle_SolidAngle(2 * (a - A), 2 * B, d) +
                           Rectangle_SolidAngle(2 * A, 2 * (B + b), d) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      return to_return;
+    }
+    if( (std::abs(v.Y()) <= out.w / 2.0) && (std::abs(v.Z()) <= out.h / 2.0)) {
+      double A, B, a, b, d;
+      A = -std::abs(v.Y()) + out.w / 2.0;
+      B = -std::abs(v.Z()) + out.h / 2.0;
+      a = out.w;
+      b = out.h;
+      d = std::abs(v.X());
+      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (b - B), d) +
+                          Rectangle_SolidAngle(2 * A, 2 * (b - B), d) +
+                          Rectangle_SolidAngle(2 * (a - A), 2 * B, d) +
                           Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
