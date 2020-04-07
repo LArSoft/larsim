@@ -256,7 +256,7 @@ namespace larg4 {
 
         // create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
         // default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated
-        int num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead
+        const size_t num_params = (fmax_d - 25) / fstep_size;  // for d < 25cm, no parameterisaton, a delta function is used instead
         std::vector<TF1> VUV_timing_temp(num_params, TF1());
         VUV_timing = VUV_timing_temp;
 
@@ -328,10 +328,10 @@ namespace larg4 {
       else fUseNhitsModel = false;
     }
     tpbemission = lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const int nbins = tpbemission.size();
+    const size_t nbins = tpbemission.size();
     double * parent = new double[nbins];
-    int ii = 0;
-    for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
+    size_t ii = 0;
+    for(auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
       parent[ii++] = (*iter).second;
     }
     rgen0 = new CLHEP::RandGeneral(parent, nbins);
@@ -626,7 +626,7 @@ namespace larg4 {
 
     phot::MappedCounts_t ReflVisibilities;
 
-    // Store timing information in the object for use in propagation_time method
+    // Store timing information in the object for use in propagationTime method
     if(pvs->StoreReflected()) {
       ReflVisibilities = pvs->GetAllVisibilities(xyz, true);
       if(pvs->StoreReflT0())
@@ -739,10 +739,10 @@ namespace larg4 {
       if(!Visibilities && !pvs->UseNhitsModel()) {
       }
       else {
-        std::map<int, int> DetectedNum;
-        std::map<int, int> ReflDetectedNum;
+        std::map<size_t, int> DetectedNum;
+        std::map<size_t, int> ReflDetectedNum;
 
-        for(size_t OpDet = 0; OpDet != NOpChannels; OpDet++) {
+        for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
           G4int DetThisPMT = 0.;
           if(Visibilities && !pvs->UseNhitsModel()) {
             DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
@@ -779,12 +779,12 @@ namespace larg4 {
 
         std::vector<double> arrival_time_dist;
         // Now we run through each PMT figuring out num of detected photons
-        for (int Reflected = 0; Reflected <= 1; Reflected++) {
+        for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
           // Only do the reflected loop if we have reflected visibilities
           if (Reflected && !pvs->StoreReflected()) continue;
 
-          std::map<int, int>::const_iterator itstart;
-          std::map<int, int>::const_iterator itend;
+          std::map<size_t, int>::const_iterator itstart;
+          std::map<size_t, int>::const_iterator itend;
           if (Reflected) {
             itstart = ReflDetectedNum.begin();
             itend   = ReflDetectedNum.end();
@@ -793,9 +793,9 @@ namespace larg4 {
             itstart = DetectedNum.begin();
             itend   = DetectedNum.end();
           }
-          for(std::map<int, int>::const_iterator itdetphot = itstart; itdetphot != itend; ++itdetphot) {
-            int OpChannel = itdetphot->first;
-            int NPhotons  = itdetphot->second;
+          for(auto itdetphot = itstart; itdetphot != itend; ++itdetphot) {
+            const size_t OpChannel = itdetphot->first;
+            const int NPhotons  = itdetphot->second;
 
             // Set up the OpDetBTR information
             sim::OpDetBacktrackerRecord tmpOpDetBTRecord(OpChannel);
@@ -818,7 +818,7 @@ namespace larg4 {
 
             // Get the transport time distribution
             arrival_time_dist.resize(NPhotons);
-            propagation_time(arrival_time_dist, x0, OpChannel, Reflected);
+            propagationTime(arrival_time_dist, x0, OpChannel, Reflected);
 
             //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
             Edeposited = Edeposited / double(NPhotons);
@@ -1043,8 +1043,8 @@ namespace larg4 {
   }
 
 
-  void OpFastScintillation::propagation_time(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
-                                             int OpChannel, bool Reflected) //const
+  void OpFastScintillation::propagationTime(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
+                                             const size_t OpChannel, bool Reflected) //const
   {
     static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
     if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
@@ -1058,7 +1058,7 @@ namespace larg4 {
     else if (pvs->IncludeParPropTime()) {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
-      for(size_t i = 0; i < arrival_time_dist.size(); i++) {
+      for(size_t i = 0; i < arrival_time_dist.size(); ++i) {
         arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom(); // TODO: std:fill
       }
     }
@@ -1256,7 +1256,7 @@ namespace larg4 {
 
   // New Parametrization code
   // parameterisation generation function
-  void OpFastScintillation::generateparam(int index)
+  void OpFastScintillation::generateParam(const size_t index)
   {
     // get distance
     double distance_in_cm = (index * fstep_size) + 25;
@@ -1314,21 +1314,21 @@ namespace larg4 {
 
     // set the number of points used to sample parameterisation
     // for shorter distances, peak is sharper so more sensitive sampling required
-    int f_sampling;
+    int fsampling;
     if (distance_in_cm < 50) {
-      f_sampling = 10000;
+      fsampling = 10000;
     }
     else if (distance_in_cm < 100) {
-      f_sampling = 5000;
+      fsampling = 5000;
     }
     else {
-      f_sampling = 1000;
+      fsampling = 1000;
     }
-    fVUVTiming.SetNpx(f_sampling);
+    fVUVTiming.SetNpx(fsampling);
 
     // calculate max and min distance relevant to sample parameterisation
     // max
-    const int nq_max = 1;
+    const size_t nq_max = 1;
     double xq_max[nq_max];
     double yq_max[nq_max];
     xq_max[0] = 0.99;   // include 99%
@@ -1354,7 +1354,7 @@ namespace larg4 {
     if (distance < 25) {
       // times are fixed shift i.e. direct path only
       double t_prop_correction = distance / fvuv_vgroup_mean;
-      for (size_t i = 0; i < arrivalTimes.size(); i++) {
+      for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = t_prop_correction;// TODO: std::fill
       }
     }
@@ -1364,10 +1364,10 @@ namespace larg4 {
       int index = std::round((distance - 25) / fstep_size);
       // check whether required parameterisation has been generated, generating if not
       if (VUV_timing[index].GetNdim() == 0) {
-        generateparam(index);
+        generateParam(index);
       }
       // randomly sample parameterisation for each photon
-      for (size_t i = 0; i < arrivalTimes.size(); i++) {
+      for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = VUV_timing[index].GetRandom(VUV_min[index], VUV_max[index]);//TODO"std::fill"
       }
     }
@@ -1418,7 +1418,7 @@ namespace larg4 {
     getVUVTimes(arrivalTimes, VUVdist);
 
     // sum parts to get total transport times times
-    for (size_t i = 0; i < arrivalTimes.size(); i++) {
+    for (size_t i = 0; i < arrivalTimes.size(); ++i) {
       arrivalTimes[i] += Visdist/fvis_vmean;
     }
 
@@ -1435,7 +1435,7 @@ namespace larg4 {
     }
     else {
       // find index of required parameterisation
-      int index = std::round((VUVdist - 25) / fstep_size);
+      const size_t index = std::round((VUVdist - 25) / fstep_size);
       // find shortest time
       vuv_time = VUV_min[index];
     }
@@ -1452,7 +1452,7 @@ namespace larg4 {
     // distance to cathode
     double distance_cathode_plane = std::abs(plane_depth - ScintPoint[0]);
     // angular bin
-    unsigned int alpha_bin = alpha / 10;
+    size_t alpha_bin = alpha / 10;
     if (alpha_bin >= ftau_pars.size()) {
       alpha_bin = ftau_pars.size() - 1;      // default to the largest available bin if alpha larger than parameterised region; i.e. last bin effectively [last bin start value, 90] deg bin
     }
@@ -1466,7 +1466,7 @@ namespace larg4 {
     }
 
     // apply smearing:
-    for (size_t i = 0; i < arrivalTimes.size(); i++) {
+    for (size_t i = 0; i < arrivalTimes.size(); ++i) {
       double arrival_time_smeared;
       // if time is already greater than cutoff, do not apply smearing
       if (arrivalTimes[i]  >= cutoff) {
@@ -1474,7 +1474,7 @@ namespace larg4 {
       }
       // otherwise smear
       else {
-        int counter = 0;
+        unsigned int counter = 0;
         // loop until time generated is within cutoff limit
         // most are within single attempt, very few take more than two
         do {
@@ -1553,7 +1553,7 @@ namespace larg4 {
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
-    int j = (theta / fdelta_angulo);
+    const size_t j = (theta / fdelta_angulo);
 
     //Accounting for border effects
     double z_to_corner = std::abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
@@ -1620,7 +1620,7 @@ namespace larg4 {
     double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
-    int j = (theta_cathode / fdelta_angulo);
+    const size_t j = (theta_cathode / fdelta_angulo);
     double  pars_ini_[4] = {fGHvuvpars[0][j],
                             fGHvuvpars[1][j],
                             fGHvuvpars[2][j],
@@ -1670,7 +1670,7 @@ namespace larg4 {
      //  angle between hotspot and optical detector
     double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
     double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
-    int k = (theta_vis / fdelta_angulo);
+    const size_t k = (theta_vis / fdelta_angulo);
 
     // apply geometric correction
     double pars_ini_vis[6] = { fvispars[0][k], fvispars[1][k], fvispars[2][k], fvispars[3][k], fvispars[4][k], fvispars[5][k] };
@@ -1692,9 +1692,9 @@ namespace larg4 {
         std::cout << "Invalid border correction type - defaulting to using central value" << std::endl;
       }
       // interpolate in x for each r bin
-      int nbins_r = fvis_border_correction[k].size();
+      const size_t nbins_r = fvis_border_correction[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
-      for (int i = 0; i < nbins_r; i++) {
+      for (size_t i = 0; i < nbins_r; ++i) {
         interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i], std::abs(ScintPoint[0]), false);
       }
       // interpolate in r

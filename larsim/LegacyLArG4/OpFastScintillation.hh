@@ -248,7 +248,7 @@ namespace larg4 {
     // old timings -- to be deleted
 
     void getVUVTimes(std::vector<double>& arrivalTimes, double distance_in_cm);
-    void generateparam(int index);
+    void generateParam(const size_t index);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
     void getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint,
@@ -297,8 +297,8 @@ namespace larg4 {
     G4double scint_time(const G4Step& aStep,
                         G4double ScintillationTime,
                         G4double ScintillationRiseTime) const;
-    void propagation_time(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
-                          int OpChannel, bool Reflected = false); //const;
+    void propagationTime(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
+                         const size_t OpChannel, bool Reflected = false); //const;
 
     // emission time distribution when there is a finite rise time
     G4double sample_time(G4double tau1, G4double tau2) const;
@@ -528,10 +528,10 @@ namespace larg4 {
   }
 
   template<typename TReal> inline
-  double dist(TReal* x, TReal* y, const int dimension)
+  double dist(TReal* x, TReal* y, const unsigned int dimension)
   {
     double d = 0.;
-    for (int p=0; p<dimension; ++p){
+    for (unsigned int p=0; p<dimension; ++p){
       d += (*(x+p) - *(y+p)) * (*(x+p) - *(y+p));
     }
     return std::sqrt(d);
