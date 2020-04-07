@@ -1732,6 +1732,42 @@ namespace larg4 {
   }
 
 
+  G4double OpFastScintillation::single_exp(G4double t, G4double tau2) const
+  {
+    return std::exp(-1.0 * t / tau2) / tau2;
+  }
+
+
+  G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
+  {
+    return std::exp(-1.0 * t / tau2) *
+      (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
+  }
+
+
+  G4double OpFastScintillation::Gaisser_Hillas(double x, double *par)
+  {
+    double X_mu_0 = par[3];
+    double Normalization = par[0];
+    double Diff = par[1] - X_mu_0;
+    double Term = std::pow((x - X_mu_0) / Diff, Diff / par[2]);
+    double Exponential = std::exp((par[1] - x) / par[2]);
+    return (Normalization * Term * Exponential);
+  }
+
+
+  double OpFastScintillation::Pol_5(double x, double *par)
+  {
+    // 5th order polynomial function
+    double xpow = 1.;
+    for(unsigned i=1; i<=5; ++i){
+      xpow *= x;
+      par[0] += par[i] * xpow ;
+    }
+    return par[0];
+  }
+
+
   double finter_d(double *x, double *par)
   {
     double y1 = par[2] * TMath::Landau(x[0], par[0], par[1]);
@@ -1859,7 +1895,7 @@ namespace larg4 {
 
 
   // solid angle of circular aperture
-  double Disk_SolidAngle(const double d, const double h, const double b)
+  double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b)
   {
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
     const double aa = TMath::Sqrt(h * h / (h * h + (b + d) * (b + d)));
@@ -1886,7 +1922,7 @@ namespace larg4 {
 
 
   // solid angle of rectanglular aperture
-  double Rectangle_SolidAngle(double a, double b, double d)
+  double OpFastScintillation::Rectangle_SolidAngle(double a, double b, double d)
   {
     double aa = a / (2.0 * d);
     double bb = b / (2.0 * d);
@@ -1895,7 +1931,7 @@ namespace larg4 {
   }
 
 
-  double Rectangle_SolidAngle(acc& out, TVector3 v)
+  double OpFastScintillation::Rectangle_SolidAngle(acc& out, TVector3 v)
   {
     //v is the position of the track segment with respect to
     //the center position of the arapuca window

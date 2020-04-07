@@ -340,6 +340,17 @@ namespace larg4 {
     std::vector<std::vector<double>> fcut_off_pars;
     std::vector<std::vector<double>> ftau_pars;
 
+    // structure definition for solid angle of rectangle function
+    struct acc {
+      // ax,ay,az = centre of rectangle; w = width; h = height
+      double ax, ay, az, w, h;
+    };
+    // solid angle of rectangular aperture calculation functions
+    double Rectangle_SolidAngle(double a, double b, double d);
+    double Rectangle_SolidAngle(acc& out, TVector3 v);
+    // solid angle of circular aperture calculation functions
+    double Disk_SolidAngle(const double d, const double h, const double b);
+
     //For VUV semi-analytic hits
     G4double Gaisser_Hillas(double x, double *par);
     bool fUseNhitsModel;
@@ -350,7 +361,7 @@ namespace larg4 {
     double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
     double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
     // For VIS semi-analytic hits
-    G4double Pol_5(double x, double *par);
+    double Pol_5(double x, double *par);
     bool fStoreReflected;
     // array of corrections for VIS Nhits estimation
     std::vector<std::vector<double>> fvispars;
@@ -390,17 +401,7 @@ namespace larg4 {
                    std::vector<double> &yData3, double x, bool extrapolate);
   double model_close(double*, double*);
   double model_far(double*, double*);
-  // structure definition for solid angle of rectangle function
-  struct acc {
-    // ax,ay,az = centre of rectangle; w = width; h = height
-    double ax, ay, az, w, h;
-  };
-  // solid angle of rectangular aperture calculation functions
-  double Rectangle_SolidAngle(double a, double b, double d);
-  double Rectangle_SolidAngle(acc& out, TVector3 v);
 
-  // solid angle of circular aperture calculation functions
-  double Disk_SolidAngle(const double d, const double h, const double b);
   ////////////////////
   // Inline methods
   ////////////////////
@@ -494,42 +495,6 @@ namespace larg4 {
     }
   }
 
-  inline
-  G4double OpFastScintillation::single_exp(G4double t, G4double tau2) const
-  {
-    return std::exp(-1.0 * t / tau2) / tau2;
-  }
-
-  inline
-  G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
-  {
-    return std::exp(-1.0 * t / tau2) *
-      (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
-  }
-
-  inline
-  G4double OpFastScintillation::Gaisser_Hillas(double x, double *par)
-  {
-    double X_mu_0 = par[3];
-    double Normalization = par[0];
-    double Diff = par[1] - X_mu_0;
-    double Term = std::pow((x - X_mu_0) / Diff, Diff / par[2]);
-    double Exponential = std::exp((par[1] - x) / par[2]);
-    return (Normalization * Term * Exponential);
-  }
-
-  inline
-  double OpFastScintillation::Pol_5(double x, double *par)
-  {
-    // 5th order polynomial function
-    double xpow = 1.;
-    for(unsigned i=1; i<=5; ++i){
-      xpow *= x;
-      par[0] += par[i] * xpow ;
-    }
-    return par[0];
-  }
-
   template<typename TReal> inline
   double dist(TReal* x, TReal* y, const unsigned int dimension)
   {
@@ -576,6 +541,7 @@ namespace larg4 {
       return true;
     return false;
   }
-} //namespace
+
+} // namespace larg4
 
 #endif /* OpFastScintillation_h */
