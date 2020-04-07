@@ -1905,6 +1905,10 @@ namespace larg4 {
     const double bb = std::sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
+    if(isDefinitelyGreaterThan(d,b)) {
+      return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
+                    boost::math::ellint_1(bb,noLDoublePromote()));
+    }
     if(isDefinitelyLessThan(d,b)) {
       return 2.* CLHEP::pi -
         2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) +
@@ -1912,10 +1916,6 @@ namespace larg4 {
     }
     if(isApproximatelyEqual(d,b)) {
       return CLHEP::pi - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
-    }
-    if(isDefinitelyGreaterThan(d,b)) {
-      return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
-                    boost::math::ellint_1(bb,noLDoublePromote()));
     }
     return 0.;
   }
