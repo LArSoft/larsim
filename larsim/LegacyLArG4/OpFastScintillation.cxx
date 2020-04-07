@@ -220,8 +220,10 @@ namespace larg4 {
       std::cout << "miny: " << fminy << "  maxy: " << fmaxy << std::endl;
       std::cout << "minz: " << fminz << "  maxz: " << fmaxz << std::endl;
 
-      TVector3 Cathode_centre(geo->TPC(0, 0).GetCathodeCenter().X(), (fminy + fmaxy) / 2, (fminz + fmaxz) / 2);
-      std::cout << "Cathode_centre: " << Cathode_centre.X() << "  " << Cathode_centre.Y() << "  " << Cathode_centre.Z() << std::endl;
+      TVector3 Cathode_centre(geo->TPC(0, 0).GetCathodeCenter().X(),
+                              (fminy + fmaxy) / 2, (fminz + fmaxz) / 2);
+      std::cout << "Cathode_centre: " << Cathode_centre.X()
+                << "  " << Cathode_centre.Y() << "  " << Cathode_centre.Z() << std::endl;
 
       for(size_t i = 0; i != pvs->NOpChannels(); i++) {
         double OpDetCenter_i[3];
@@ -269,7 +271,8 @@ namespace larg4 {
         // VIS time parameterisation
         if (pvs->StoreReflected()) {
           // load parameters
-          pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars, fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
+          pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
+                                    fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
         }
       }
       if(pvs->UseNhitsModel()) {
@@ -297,8 +300,10 @@ namespace larg4 {
         fReference_to_corner = std::sqrt(fYactive_corner*fYactive_corner +
                                          fZactive_corner*fZactive_corner);
 
-        std::cout << "For border corrections: " << fborder_corr[0] << "  " << fborder_corr[1] << std::endl;
-        std::cout << "Photocathode-plane centre (z,y) = (" << fZcathode << ", " << fYcathode << ") and corner (z, y) = (" << fZactive_corner << ", " << fYactive_corner << ")" << std::endl;
+        std::cout << "For border corrections: "
+                  << fborder_corr[0] << "  " << fborder_corr[1] << std::endl;
+        std::cout << "Photocathode-plane centre (z,y) = (" << fZcathode << ", " << fYcathode << ") "
+                  << "and corner (z, y) = (" << fZactive_corner << ", " << fYactive_corner << ")" << std::endl;
         std::cout << "Reference_to_corner: " << fReference_to_corner << std::endl;
 
         if(pvs->StoreReflected()) {
@@ -310,7 +315,8 @@ namespace larg4 {
           if (pvs->ApplyVISBorderCorrection()) {
             // load border corrections
             std::cout << "Loading vis border corrections" << std::endl;
-            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x, fvis_border_distances_r, fvis_border_correction);
+            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x,
+                                                fvis_border_distances_r, fvis_border_correction);
             fApplyVisBorderCorrection = true;
             fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
           }
@@ -581,17 +587,20 @@ namespace larg4 {
                      GetConstProperty("PROTONYIELDRATIO");
       }
       // Muons
-      else if(pDef == G4MuonPlus::MuonPlusDefinition() || pDef == G4MuonMinus::MuonMinusDefinition()) {
+      else if(pDef == G4MuonPlus::MuonPlusDefinition() ||
+              pDef == G4MuonMinus::MuonMinusDefinition()) {
         YieldRatio = aMaterialPropertiesTable->
                      GetConstProperty("MUONYIELDRATIO");
       }
       // Pions
-      else if(pDef == G4PionPlus::PionPlusDefinition() || pDef == G4PionMinus::PionMinusDefinition()) {
+      else if(pDef == G4PionPlus::PionPlusDefinition() ||
+              pDef == G4PionMinus::PionMinusDefinition()) {
         YieldRatio = aMaterialPropertiesTable->
                      GetConstProperty("PIONYIELDRATIO");
       }
       // Kaons
-      else if(pDef == G4KaonPlus::KaonPlusDefinition() || pDef == G4KaonMinus::KaonMinusDefinition()) {
+      else if(pDef == G4KaonPlus::KaonPlusDefinition() ||
+              pDef == G4KaonMinus::KaonMinusDefinition()) {
         YieldRatio = aMaterialPropertiesTable->
                      GetConstProperty("KAONYIELDRATIO");
       }
@@ -621,7 +630,7 @@ namespace larg4 {
       }
     }
 
-    double const xyz[3] = { x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm };
+    double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
     auto const& Visibilities = pvs->GetAllVisibilities(xyz);
 
     phot::MappedCounts_t ReflVisibilities;
@@ -749,7 +758,9 @@ namespace larg4 {
           }
           else {
             TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
-            TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
+            TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
+                                fOpDetCenter.at(OpDet)[1],
+                                fOpDetCenter.at(OpDet)[2]);
             fydimension = fOpDetLength.at(OpDet);
             fzdimension = fOpDetHeight.at(OpDet);
             DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
@@ -768,7 +779,9 @@ namespace larg4 {
             }
             else {
               TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
-              TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0], fOpDetCenter.at(OpDet)[1], fOpDetCenter.at(OpDet)[2]);
+              TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
+                                  fOpDetCenter.at(OpDet)[1],
+                                  fOpDetCenter.at(OpDet)[2]);
               ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
             }
             if(ReflDetThisPMT > 0) {
@@ -1029,7 +1042,8 @@ namespace larg4 {
   {
     G4StepPoint const* pPreStepPoint  = aStep.GetPreStepPoint();
     G4StepPoint const* pPostStepPoint = aStep.GetPostStepPoint();
-    G4double avgVelocity = (pPreStepPoint->GetVelocity() + pPostStepPoint->GetVelocity()) / 2.;
+    G4double avgVelocity = (pPreStepPoint->GetVelocity() +
+                            pPostStepPoint->GetVelocity()) / 2.;
     G4double deltaTime = aStep.GetStepLength() / avgVelocity;
     if (ScintillationRiseTime == 0.0) {
       deltaTime = deltaTime -
@@ -1059,19 +1073,23 @@ namespace larg4 {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
       for(size_t i = 0; i < arrival_time_dist.size(); ++i) {
-        arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom(); // TODO: std:fill
+        arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
       }
     }
     else if (pvs->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
-      G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm, fOpDetCenter.at(OpChannel)[1]*CLHEP::cm, fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
+      const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm,
+                                     fOpDetCenter.at(OpChannel)[1]*CLHEP::cm,
+                                     fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
         getVUVTimes(arrival_time_dist, distance_in_cm); // in ns
       }
       else {
-        TVector3 ScintPoint( x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm ); // in cm
-        TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0], fOpDetCenter.at(OpChannel)[1], fOpDetCenter.at(OpChannel)[2]); // in cm
+        TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
+        TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0],
+                                fOpDetCenter.at(OpChannel)[1],
+                                fOpDetCenter.at(OpChannel)[2]); // in cm
         getVISTimes(arrival_time_dist, ScintPoint, OpDetPoint_tv3); // in ns
       }
     }
@@ -1101,7 +1119,8 @@ namespace larg4 {
 
   double OpFastScintillation::reemission_energy() const
   {
-    return rgen0->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) + (*tpbemission.begin()).first;
+    return rgen0->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
+      (*tpbemission.begin()).first;
   }
 
 
@@ -1279,7 +1298,8 @@ namespace larg4 {
     // Deciding which time model to use (depends on the distance)
     // defining useful times for the VUV arrival time shapes
     if(distance_in_cm >= finflexion_point_distance) {
-      double pars_far[4] = {t_direct_min, pars_landau[0], pars_landau[1], pars_landau[2]};
+      double pars_far[4] = {t_direct_min, pars_landau[0], pars_landau[1],
+                            pars_landau[2]};
       // Set model: Landau
       fVUVTiming = TF1("fVUVTiming", model_far, 0, signal_t_range, 4);
       fVUVTiming.SetParameters(pars_far);
@@ -1290,7 +1310,8 @@ namespace larg4 {
       // Exponential parameters
       double pars_expo[2];
       // Getting the exponential parameters from the time parametrization
-      pars_expo[1] = interpolate(fparameters[4], fparameters[5], distance_in_cm, true);
+      pars_expo[1] = interpolate(fparameters[4], fparameters[5],
+                                 distance_in_cm, true);
       //For simplicity, not considering the small dependency with the offset angle in pars_expo[0]
       //Using the value for the [30,60deg] range. fparameters[6] and fparameters[8] are the values
       //for [0,30deg] range and [60,90deg] range respectively
@@ -1299,31 +1320,28 @@ namespace larg4 {
       pars_expo[0] = std::log(pars_expo[0]);
       // this is to find the intersection point between the two functions:
       TF1 fint = TF1("fint", finter_d, pars_landau[0], 4 * t_direct_mean, 5);
-      double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1]};
+      double parsInt[5] = {pars_landau[0], pars_landau[1], pars_landau[2],
+                           pars_expo[0], pars_expo[1]};
       fint.SetParameters(parsInt);
       double t_int = fint.GetMinimumX();
       double minVal = fint.Eval(t_int);
       // the functions must intersect - output warning if they don't
       if(minVal > 0.015) {
-        std::cout << "WARNING: Parametrization of VUV light discontinuous for distance = " << distance_in_cm << std::endl;
+        std::cout << "WARNING: Parametrization of VUV light discontinuous for distance = "
+                  << distance_in_cm << std::endl;
         std::cout << "WARNING: This shouldn't be happening " << std::endl;
       }
-      double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2], pars_expo[0], pars_expo[1], t_direct_min};
+      double parsfinal[7] = {t_int, pars_landau[0], pars_landau[1], pars_landau[2],
+                             pars_expo[0], pars_expo[1], t_direct_min};
       fVUVTiming.SetParameters(parsfinal);
     }
 
     // set the number of points used to sample parameterisation
     // for shorter distances, peak is sharper so more sensitive sampling required
     int fsampling;
-    if (distance_in_cm < 50) {
-      fsampling = 10000;
-    }
-    else if (distance_in_cm < 100) {
-      fsampling = 5000;
-    }
-    else {
-      fsampling = 1000;
-    }
+    if (distance_in_cm < 50) {fsampling = 10000;}
+    else if (distance_in_cm < 100) {fsampling = 5000;}
+    else {fsampling = 1000;}
     fVUVTiming.SetNpx(fsampling);
 
     // calculate max and min distance relevant to sample parameterisation
@@ -1350,16 +1368,14 @@ namespace larg4 {
   // VUV arrival times calculation function
   void OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, double distance)
   {
-    // distance < 25cm
     if (distance < 25) {
       // times are fixed shift i.e. direct path only
       double t_prop_correction = distance / fvuv_vgroup_mean;
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
-        arrivalTimes[i] = t_prop_correction;// TODO: std::fill
+        arrivalTimes[i] = t_prop_correction;
       }
     }
-    // distance >= 25cm
-    else {
+    else { // distance >= 25cm
       // determine nearest parameterisation in discretisation
       int index = std::round((distance - 25) / fstep_size);
       // check whether required parameterisation has been generated, generating if not
@@ -1368,7 +1384,7 @@ namespace larg4 {
       }
       // randomly sample parameterisation for each photon
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
-        arrivalTimes[i] = VUV_timing[index].GetRandom(VUV_min[index], VUV_max[index]);//TODO"std::fill"
+        arrivalTimes[i] = VUV_timing[index].GetRandom(VUV_min[index], VUV_max[index]);
       }
     }
   }
@@ -1391,8 +1407,8 @@ namespace larg4 {
       plane_depth = fplane_depth;
     }
 
-    // calculate point of reflection for shortest path accounting for difference in refractive indicies
-    // vectors for storing results
+    // calculate point of reflection for shortest path accounting for difference
+    // in refractive indices vectors for storing results
     TVector3 image(0, 0, 0);
     TVector3 bounce_point(0, 0, 0);
 
@@ -1448,8 +1464,8 @@ namespace larg4 {
 
     // determine smearing parameters using interpolation of generated points:
     // 1). tau = exponential smearing factor, varies with distance and angle
-    // 2). cutoff = largest smeared time allowed, preventing excessively large times caused by exponential
-    // distance to cathode
+    // 2). cutoff = largest smeared time allowed, preventing excessively large
+    //     times caused by exponential distance to cathode
     double distance_cathode_plane = std::abs(plane_depth - ScintPoint[0]);
     // angular bin
     size_t alpha_bin = alpha / 10;
@@ -1457,13 +1473,11 @@ namespace larg4 {
       alpha_bin = ftau_pars.size() - 1;      // default to the largest available bin if alpha larger than parameterised region; i.e. last bin effectively [last bin start value, 90] deg bin
     }
     // cut-off and tau
-    double cutoff = interpolate( fdistances_refl, fcut_off_pars[alpha_bin], distance_cathode_plane, true );
-    double tau = interpolate( fdistances_refl, ftau_pars[alpha_bin], distance_cathode_plane, true );
-
-    // fail-safe if tau extrapolate goes wrong, drops below zero since last distance close to zero [did not occur in testing, but possible]
-    if (tau < 0) {
-      tau = 0;
-    }
+    double cutoff = interpolate(fdistances_refl, fcut_off_pars[alpha_bin],
+                                 distance_cathode_plane, true);
+    double tau = interpolate(fdistances_refl, ftau_pars[alpha_bin],
+                             distance_cathode_plane, true);
+    if (tau < 0) {tau = 0;} // if tau extrapolate goes wrong
 
     // apply smearing:
     for (size_t i = 0; i < arrivalTimes.size(); ++i) {
@@ -1487,9 +1501,9 @@ namespace larg4 {
             // generate random number in appropriate range
             double x = gRandom->Uniform(0.5, 1.0);
             // apply the exponential smearing
-            arrival_time_smeared = arrivalTimes[i] + (arrivalTimes[i]-fastest_time)*(std::pow(x,-tau) -1);
+            arrival_time_smeared = arrivalTimes[i] +
+              (arrivalTimes[i] - fastest_time)*(std::pow(x,-tau) - 1);
           }
-          // increment counter
           counter++;
         }
         while (arrival_time_smeared > cutoff);
@@ -1510,8 +1524,8 @@ namespace larg4 {
     }
     //semi-analytic approach only works in the active volume
     if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
-        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-        (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
     }
 
@@ -1551,8 +1565,8 @@ namespace larg4 {
     // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
     double hits_geo = std::exp(-1.*distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
 
-    // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
-    // offset angle bin
+    // apply Gaisser-Hillas correction for Rayleigh scattering distance
+    // and angular dependence offset angle bin
     const size_t j = (theta / fdelta_angulo);
 
     //Accounting for border effects
@@ -1575,7 +1589,8 @@ namespace larg4 {
 
 
   // VIS hits semi-analytic model calculation
-  int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
+  int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint,
+                                   TVector3 OpDetPoint, int optical_detector_type)
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -1586,8 +1601,8 @@ namespace larg4 {
 
     //semi-analytic approach only works in the active volume
     if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
-        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-        (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
       return 0;
     }
 
@@ -1612,20 +1627,21 @@ namespace larg4 {
     // calculate solid angle of cathode from the scintillation point
     double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
     // calculate distance and angle between ScintPoint and hotspot
-    // vast majority of hits in hotspot region directly infront of scintpoint,therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
+    // vast majority of hits in hotspot region directly infront of scintpoint,
+    // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
     double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
     double cosine_cathode = 1;
     double theta_cathode = 0;
     // calculate hits on cathode plane via geometric acceptance
-    double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) * (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
+    double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
+      (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     const size_t j = (theta_cathode / fdelta_angulo);
     double  pars_ini_[4] = {fGHvuvpars[0][j],
                             fGHvuvpars[1][j],
                             fGHvuvpars[2][j],
-                            fGHvuvpars[3][j]
-                           };
+                            fGHvuvpars[3][j]};
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
     double cathode_hits_rec = GH_correction * cathode_hits_geo / cosine_cathode;
 
@@ -1660,7 +1676,7 @@ namespace larg4 {
     }
 
     // calculate number of hits via geometeric acceptance
-    double hits_geo = (solid_angle_detector / (2.*CLHEP::pi)) * cathode_hits_rec;	// 2*pi rather than 4*pi due to presence of reflective foils (vm2000)
+    double hits_geo = (solid_angle_detector / (2.*CLHEP::pi)) * cathode_hits_rec; // 2*pi due to presence of reflective foils
 
     // calculate distances and angles for application of corrections
     // distance to hotspot
@@ -1673,7 +1689,8 @@ namespace larg4 {
     const size_t k = (theta_vis / fdelta_angulo);
 
     // apply geometric correction
-    double pars_ini_vis[6] = { fvispars[0][k], fvispars[1][k], fvispars[2][k], fvispars[3][k], fvispars[4][k], fvispars[5][k] };
+    double pars_ini_vis[6] = {fvispars[0][k], fvispars[1][k], fvispars[2][k],
+                              fvispars[3][k], fvispars[4][k], fvispars[5][k]};
     double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
     double hits_rec = gRandom->Poisson(geo_correction * hits_geo / cosine_vis);
 
@@ -1695,7 +1712,8 @@ namespace larg4 {
       const size_t nbins_r = fvis_border_correction[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
       for (size_t i = 0; i < nbins_r; ++i) {
-        interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i], std::abs(ScintPoint[0]), false);
+        interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i],
+                                     std::abs(ScintPoint[0]), false);
       }
       // interpolate in r
       double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
@@ -1780,23 +1798,24 @@ namespace larg4 {
   //   Returns interpolated value at x from parallel arrays ( xData, yData )
   //   Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
   //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
-  double interpolate( std::vector<double> &xData, std::vector<double> &yData, double x, bool extrapolate )
+  double interpolate(std::vector<double> &xData, std::vector<double> &yData,
+                     double x, bool extrapolate)
   {
     size_t size = xData.size();
-    size_t i = 0;                                          // find left end of interval for interpolation
-    if ( x >= xData[size - 2] ) {                       // special case: beyond right end
+    size_t i = 0; // find left end of interval for interpolation
+    if (x >= xData[size-2]) { // special case: beyond right end
       i = size - 2;
     }
     else {
-      while ( x > xData[i + 1] ) i++;
+      while (x > xData[i+1]) i++;
     }
-    double xL = xData[i], yL = yData[i], xR = xData[i + 1], yR = yData[i + 1]; // points on either side (unless beyond ends)
-    if ( !extrapolate ) {                                                  // if beyond ends of array and not extrapolating
-      if ( x < xL ) yR = yL;
-      if ( x > xR ) yL = yR;
+    double xL = xData[i], yL = yData[i], xR = xData[i+1], yR = yData[i+1]; // points on either side (unless beyond ends)
+    if (!extrapolate) { // if beyond ends of array and not extrapolating
+      if (x < xL) yR = yL;
+      if (x > xR) yL = yR;
     }
-    double dydx = ( yR - yL ) / ( xR - xL );            // gradient
-    return yL + dydx * ( x - xL );                      // linear interpolation
+    double dydx = (yR - yL) / (xR - xL); // gradient
+    return yL + dydx * ( x - xL ); // linear interpolation
   }
 
 
@@ -1805,29 +1824,30 @@ namespace larg4 {
                    std::vector<double> &yData3, double x, bool extrapolate)
   {
     size_t size = xData.size();
-    size_t i = 0;                                          // find left end of interval for interpolation
-    if ( x >= xData[size - 2] ) {                       // special case: beyond right end
+    size_t i = 0; // find left end of interval for interpolation
+    if (x >= xData[size-2]) { // special case: beyond right end
       i = size - 2;
     }
     else {
-      while ( x > xData[i + 1] ) i++;
+      while (x > xData[i+1]) i++;
     }
-    double xL = xData[i], xR = xData[i + 1]; // points on either side (unless beyond ends)
-    double yL1 = yData1[i], yR1 = yData1[i + 1], yL2 = yData2[i], yR2 = yData2[i + 1], yL3 = yData3[i], yR3 = yData3[i + 1];
+    double xL = xData[i], xR = xData[i+1]; // points on either side (unless beyond ends)
+    double yL1 = yData1[i], yR1 = yData1[i+1];
+    double yL2 = yData2[i], yR2 = yData2[i+1];
+    double yL3 = yData3[i], yR3 = yData3[i+1];
 
-    if ( !extrapolate ) {                                                  // if beyond ends of array and not extrapolating
-      if ( x < xL ) {
+    if (!extrapolate) { // if beyond ends of array and not extrapolating
+      if (x < xL) {
         yR1 = yL1;
         yR2 = yL2;
         yR3 = yL3;
       }
-      if ( x > xR ) {
+      if (x > xR) {
         yL1 = yR1;
         yL2 = yR2;
         yL3 = yR3;
       }
     }
-
     inter[0] = (x - xL) * (yR1 - yL1) / (xR - xL);
     inter[1] = (x - xL) * ( yR2 - yL2 ) / ( xR - xL );
     inter[2] = (x - xL) * ( yR3 - yL3 ) / ( xR - xL );
@@ -1850,13 +1870,16 @@ namespace larg4 {
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
     if(isDefinitelyLessThan(d,b)) {
-      return 2.*TMath::Pi() - 2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) + TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
+      return 2.*TMath::Pi() -
+        2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) +
+               TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
     }
     if(isApproximatelyEqual(d,b)) {
       return TMath::Pi() - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
     }
     if(isDefinitelyGreaterThan(d,b)) {
-      return 2.*aa*(TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) - boost::math::ellint_1(bb,noLDoublePromote()));
+      return 2.*aa*(TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
+                    boost::math::ellint_1(bb,noLDoublePromote()));
     }
     return 0.;
   }
@@ -1889,7 +1912,10 @@ namespace larg4 {
       a = out.w;
       b = out.h;
       d = std::abs(v.X());
-      double to_return = (Rectangle_SolidAngle(2 * (A + a), 2 * (B + b), d) - Rectangle_SolidAngle(2 * A, 2 * (B + b), d) - Rectangle_SolidAngle(2 * (A + a), 2 * B, d) + Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (A + a), 2 * (B + b), d) -
+                          Rectangle_SolidAngle(2 * A, 2 * (B + b), d) -
+                          Rectangle_SolidAngle(2 * (A + a), 2 * B, d) +
+                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
 
@@ -1900,7 +1926,10 @@ namespace larg4 {
       a = out.w;
       b = out.h;
       d = std::abs(v.X());
-      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (b - B), d) + Rectangle_SolidAngle(2 * A, 2 * (b - B), d) + Rectangle_SolidAngle(2 * (a - A), 2 * B, d) + Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (b - B), d) +
+                          Rectangle_SolidAngle(2 * A, 2 * (b - B), d) +
+                          Rectangle_SolidAngle(2 * (a - A), 2 * B, d) +
+                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
 
@@ -1911,7 +1940,10 @@ namespace larg4 {
       a = out.w;
       b = out.h;
       d = std::abs(v.X());
-      double to_return = (Rectangle_SolidAngle(2 * (A + a), 2 * (b - B), d) - Rectangle_SolidAngle(2 * A, 2 * (b - B), d) + Rectangle_SolidAngle(2 * (A + a), 2 * B, d) - Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (A + a), 2 * (b - B), d) -
+                          Rectangle_SolidAngle(2 * A, 2 * (b - B), d) +
+                          Rectangle_SolidAngle(2 * (A + a), 2 * B, d) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
 
@@ -1922,7 +1954,10 @@ namespace larg4 {
       a = out.w;
       b = out.h;
       d = std::abs(v.X());
-      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (B + b), d) - Rectangle_SolidAngle(2 * (a - A), 2 * B, d) + Rectangle_SolidAngle(2 * A, 2 * (B + b), d) - Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (a - A), 2 * (B + b), d) -
+                          Rectangle_SolidAngle(2 * (a - A), 2 * B, d) +
+                          Rectangle_SolidAngle(2 * A, 2 * (B + b), d) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
       return to_return;
     }
     // error message if none of these cases, i.e. something has gone wrong!

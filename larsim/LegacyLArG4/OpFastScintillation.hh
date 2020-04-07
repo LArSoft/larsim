@@ -133,7 +133,8 @@ namespace larg4 {
     // Constructors and Destructor
     ////////////////////////////////
 
-    OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);
+    OpFastScintillation(const G4String& processName = "Scintillation",
+                        G4ProcessType type = fElectromagnetic);
     OpFastScintillation(const OpFastScintillation &right);
 
     ~OpFastScintillation();
@@ -255,10 +256,12 @@ namespace larg4 {
                     TVector3 OpDetPoint);
     // Visible component timing parameterisation
 
-    int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+    int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint,
+                int optical_detector_type);
     // Calculates semi-analytic model number of hits for vuv component
 
-    int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+    int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint,
+                int optical_detector_type);
     // Calculates semi-analytic model number of hits for visible component
 
   protected:
@@ -500,13 +503,13 @@ namespace larg4 {
   inline
   G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2) const
   {
-    return std::exp(-1.0 * t / tau2) * (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
+    return std::exp(-1.0 * t / tau2) *
+      (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 * (tau1 + tau2);
   }
 
   inline
   G4double OpFastScintillation::Gaisser_Hillas(double x, double *par)
   {
-    //This is the Gaisser-Hillas function
     double X_mu_0 = par[3];
     double Normalization = par[0];
     double Diff = par[1] - X_mu_0;
