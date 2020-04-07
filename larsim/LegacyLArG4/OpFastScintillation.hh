@@ -523,6 +523,17 @@ namespace larg4 {
     return false;
   }
 
+  // supply tolerance that is meaningful in your context
+  // for example, default tolerance may not work if you are comparing double with float
+  template<typename TReal> inline
+  static bool isApproximatelyZero(TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  {
+    if (std::fabs(a) <= tolerance)
+      return true;
+    return false;
+  }
+
+
   // use this when you want to be on safe side
   // for example, don't start rover unless signal is above 1
   template<typename TReal> inline

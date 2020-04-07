@@ -1905,7 +1905,7 @@ namespace larg4 {
   {
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
     const double aa = TMath::Sqrt(h * h / (h * h + (b + d) * (b + d)));
-    if(d == 0) {
+    if(isApproximatelyZero(d)) {
       return 2.*TMath::Pi() * (1. - aa);
     }
     const double bb = TMath::Sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
@@ -1944,7 +1944,8 @@ namespace larg4 {
     // the center position of the arapuca window
 
     // arapuca plane fixed in x direction
-    if( v.Y() == 0.0 && v.Z() == 0.0) {
+    if(isApproximatelyZero(v.Y()) &&
+       isApproximatelyZero(v.Z())) {
       return Rectangle_SolidAngle(out.w, out.h, v.X());// TODO: std::abs(v.X())?
     }
 
