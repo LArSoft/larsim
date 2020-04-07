@@ -1895,26 +1895,26 @@ namespace larg4 {
 
 
   // solid angle of circular aperture
-  double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b)
+  constexpr double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b)
   {
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
-    const double aa = TMath::Sqrt(h * h / (h * h + (b + d) * (b + d)));
+    const double aa = std::sqrt(h * h / (h * h + (b + d) * (b + d)));
     if(isApproximatelyZero(d)) {
-      return 2.*TMath::Pi() * (1. - aa);
+      return 2. * CLHEP::pi * (1. - aa);
     }
-    const double bb = TMath::Sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
+    const double bb = std::sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
     const double cc = 4 * b * d / ((b + d) * (b + d));
 
     if(isDefinitelyLessThan(d,b)) {
-      return 2.*TMath::Pi() -
+      return 2.* CLHEP::pi -
         2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) +
-               TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
+               std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
     }
     if(isApproximatelyEqual(d,b)) {
-      return TMath::Pi() - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
+      return CLHEP::pi - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
     }
     if(isDefinitelyGreaterThan(d,b)) {
-      return 2.*aa*(TMath::Sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
+      return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
                     boost::math::ellint_1(bb,noLDoublePromote()));
     }
     return 0.;
