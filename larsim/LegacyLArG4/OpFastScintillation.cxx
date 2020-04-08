@@ -1939,8 +1939,6 @@ namespace larg4 {
   }
 
 
-  // TODO: some potential gain could be achieved if using constexpr,
-  // but would need to change TVector to std::vector or std::array
   double OpFastScintillation::Rectangle_SolidAngle(const dims o, const std::array<double, 3> v)
   {
     // v is the position of the track segment with respect to
@@ -1954,43 +1952,39 @@ namespace larg4 {
     // TODO: shouldn't it be?
     // if ( (std::abs(v[1]) > op.h / 2.0) && (std::abs(v[2]) > op.w / 2.0)) {
     if((v[1] > o.w / 2.0) && (v[2] > o.h / 2.0)) {
-      double d = v[0];
       double A = v[1] - o.w / 2.0;
       double B = v[2] - o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (B + o.h), d) -
-                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), d) -
-                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, d) +
-                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, v[0]) +
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
     if((v[1] > o.w / 2.0) && (v[2] <= o.h / 2.0)) {
-      double d = v[0];
       double A = v[1] - o.w / 2.0;
       double B = -v[2] + o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (o.h - B), d) -
-                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), d) +
-                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, d) -
-                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (o.h - B), v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), v[0]) +
+                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
     if((v[1] <= o.w / 2.0) && (v[2] > o.h / 2.0)) {
-      double d = v[0];
       double A = -v[1] + o.w / 2.0;
       double B = v[2] - o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (B + o.h), d) -
-                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, d) +
-                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), d) -
-                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, v[0]) +
+                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
     if((v[1] <= o.w / 2.0) && (v[2] <= o.h / 2.0)) {
-      double d = v[0];
       double A = -v[1] + o.w / 2.0;
       double B = -v[2] + o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (o.h - B), d) +
-                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), d) +
-                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, d) +
-                          Rectangle_SolidAngle(2 * A, 2 * B, d)) / 4.0;
+      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (o.h - B), v[0]) +
+                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), v[0]) +
+                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, v[0]) +
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
     // error message if none of these cases, i.e. something has gone wrong!
