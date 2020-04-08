@@ -1900,15 +1900,21 @@ namespace larg4 {
 
 
   // solid angle of circular aperture
-  constexpr double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b)
+  // TODO: allow greater tolerance in comparisons, by default its using:
+  // std::numeric_limits<double>::epsilon(): 2.22045e-16
+  // that's an unrealistic small number, better setting
+  // constexpr double tolerance = 0.0000001; // 1 nm
+  constexpr double OpFastScintillation::Disk_SolidAngle(const double d, const double h,
+                                                        const double b)
   {
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
-    const double aa = std::sqrt(h * h / (h * h + (b + d) * (b + d)));
+    const double leg2 = (b + d) * (b + d);
+    const double aa = std::sqrt(h * h / (h * h + leg2));
     if(isApproximatelyZero(d)) {
       return 2. * CLHEP::pi * (1. - aa);
     }
-    const double bb = std::sqrt(4 * b * d / (h * h + (b + d) * (b + d)));
-    const double cc = 4 * b * d / ((b + d) * (b + d));
+    double bb = 2.*std::sqrt(b * d / (h * h + leg2));
+    double cc = 4. * b * d / leg2;
 
     if(isDefinitelyGreaterThan(d,b)) {
       return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
@@ -1939,7 +1945,9 @@ namespace larg4 {
   }
 
 
-  double OpFastScintillation::Rectangle_SolidAngle(const dims o, const std::array<double, 3> v)
+  // TODO: allow greater tolerance in comparisons, see note above on Disk_SolidAngle()
+  constexpr double OpFastScintillation::Rectangle_SolidAngle(const dims o,
+                                                             const std::array<double, 3> v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
@@ -1951,7 +1959,8 @@ namespace larg4 {
     }
     // TODO: shouldn't it be?
     // if ( (std::abs(v[1]) > op.h / 2.0) && (std::abs(v[2]) > op.w / 2.0)) {
-    if((v[1] > o.w / 2.0) && (v[2] > o.h / 2.0)) {
+    if(isDefinitelyGreaterThan(v[1], o.w/2.0) &&
+       isDefinitelyGreaterThan(v[2], o.h/2.0)) {
       double A = v[1] - o.w / 2.0;
       double B = v[2] - o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (B + o.h), v[0]) -
@@ -1960,25 +1969,8 @@ namespace larg4 {
                           Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
-    if((v[1] > o.w / 2.0) && (v[2] <= o.h / 2.0)) {
-      double A = v[1] - o.w / 2.0;
-      double B = -v[2] + o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (o.h - B), v[0]) -
-                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), v[0]) +
-                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, v[0]) -
-                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
-      return to_return;
-    }
-    if((v[1] <= o.w / 2.0) && (v[2] > o.h / 2.0)) {
-      double A = -v[1] + o.w / 2.0;
-      double B = v[2] - o.h / 2.0;
-      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (B + o.h), v[0]) -
-                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, v[0]) +
-                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), v[0]) -
-                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
-      return to_return;
-    }
-    if((v[1] <= o.w / 2.0) && (v[2] <= o.h / 2.0)) {
+    if((v[1] <= o.w / 2.0) &&
+       (v[2] <= o.h / 2.0)) {
       double A = -v[1] + o.w / 2.0;
       double B = -v[2] + o.h / 2.0;
       double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (o.h - B), v[0]) +
@@ -1987,8 +1979,28 @@ namespace larg4 {
                           Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
       return to_return;
     }
+    if(isDefinitelyGreaterThan(v[1], o.w/2.0) &&
+       (v[2] <= o.h / 2.0)) {
+      double A = v[1] - o.w / 2.0;
+      double B = -v[2] + o.h / 2.0;
+      double to_return = (Rectangle_SolidAngle(2 * (A + o.w), 2 * (o.h - B), v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * (o.h - B), v[0]) +
+                          Rectangle_SolidAngle(2 * (A + o.w), 2 * B, v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
+      return to_return;
+    }
+    if((v[1] <= o.w / 2.0) &&
+       isDefinitelyGreaterThan(v[2], o.h/2.0)) {
+      double A = -v[1] + o.w / 2.0;
+      double B = v[2] - o.h / 2.0;
+      double to_return = (Rectangle_SolidAngle(2 * (o.w - A), 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * (o.w - A), 2 * B, v[0]) +
+                          Rectangle_SolidAngle(2 * A, 2 * (B + o.h), v[0]) -
+                          Rectangle_SolidAngle(2 * A, 2 * B, v[0])) / 4.0;
+      return to_return;
+    }
     // error message if none of these cases, i.e. something has gone wrong!
-    std::cout << "Warning: invalid solid angle call." << std::endl;
+    // std::cout << "Warning: invalid solid angle call." << std::endl;
     return 0.0;
   }
 

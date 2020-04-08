@@ -347,7 +347,7 @@ namespace larg4 {
     // solid angle of rectangular aperture calculation functions
     constexpr double Rectangle_SolidAngle(const double a, const double b,
                                           const double d);
-    double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
+    constexpr double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     constexpr double Disk_SolidAngle(const double d, const double h, const double b);
 
