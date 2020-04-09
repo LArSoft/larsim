@@ -1,4 +1,4 @@
-include_directories ( $ENV{GENIE_INC}/GENIE )
+include_directories ( $ENV{GENIE_INC}/GENIE $ENV{PPFX_DIR}/include $ENV{DK2NU_INC})
 
 art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
          LIB_LIBRARIES
@@ -9,6 +9,10 @@ art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
 		       larsim_Simulation
                        nutools_RandomUtils_NuRandomService_service
 		       nusimdata_SimulationBase
+                       nutools_EventGeneratorBase_GENIE
+		       ppfx
+                       ${DK2NU_TREE}
+                       ${DK2NU_GENIE}
               	       ${ART_FRAMEWORK_CORE}
 		       ${ART_FRAMEWORK_PRINCIPAL}
 		       ${ART_FRAMEWORK_SERVICES_REGISTRY}

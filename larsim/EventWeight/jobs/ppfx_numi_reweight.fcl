@@ -1,0 +1,133 @@
+BEGIN_PROLOG
+reweight_numi_ppfx: {
+  module_type:  "EventWeight"
+  weight_functions: [
+    ppfx_cv, ppfx_mipppi, ppfx_mippk, ppfx_thinmes, ppfx_thinpi,
+    ppfx_other, ppfx_thinnpi, ppfx_totabs, ppfx_targatt, ppfx_thinna,
+    ppfx_think, ppfx_thinn
+  ]
+  min_weight: 0
+  max_weight: 100
+ 
+  ppfx_mipppi: {
+    type: PPFXMIPPPion
+    random_seed: 3251
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  
+  ppfx_mippk: {
+    type: PPFXMIPPKaon
+    random_seed: 86351
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_thinmes: {
+    type: PPFXThinMeson
+    random_seed: 46314
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_thinpi: {
+    type: PPFXThinPion
+    random_seed: 90210
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_other: {
+    type: PPFXOther
+    random_seed: 12112
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_thinnpi: {
+    type: PPFXThinNeutronPion
+    random_seed: 4068
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_totabs: {
+    type: PPFXTotAbsorp
+    random_seed: 8863
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_targatt: {
+    type: PPFXTargAtten
+    random_seed: 3423
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_thinna: {
+    type: PPFXThinNucA
+    random_seed: 881
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_think: {
+    type: PPFXThinKaon
+    random_seed: 901
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  ppfx_thinn: {
+    type: PPFXThinNuc
+    random_seed: 8
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  
+  ppfx_ms: {
+    type: PPFX
+    random_seed: 42
+    mode: multisim
+    number_of_multisims: 100
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }
+  
+  ppfx_cv: {
+    type: PPFXCV
+    random_seed:84
+    mode: reweight
+    number_of_multisims: 1
+    input_labels: [ "generator" ] #  [ "singlemixer", "genpremixer" ]
+    ppfx_mode:    "default" # "mipp_numi"
+    verbose:     1
+  }    
+}
+END_PROLOG
