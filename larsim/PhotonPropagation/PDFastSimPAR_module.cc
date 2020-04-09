@@ -295,52 +295,52 @@ namespace
         // arapuca plane fixed in x direction
         if( v.Y()==0.0 && v.Z()==0.0)
         {
-            return Rectangle_SolidAngle(out.w,out.h,v.X());
+            return Rectangle_SolidAngle(out.h,out.w,v.X());
         }
         
-        if( (std::abs(v.Y()) > out.w/2.0) && (std::abs(v.Z()) > out.h/2.0))
+        if( (std::abs(v.Y()) > out.h/2.0) && (std::abs(v.Z()) > out.w/2.0))
         {
             double A, B, a, b, d;
-            A = std::abs(v.Y())-out.w/2.0;
-            B = std::abs(v.Z())-out.h/2.0;
-            a = out.w;
-            b = out.h;
+            A = std::abs(v.Y())-out.h/2.0;
+            B = std::abs(v.Z())-out.w/2.0;
+            a = out.h;
+            b = out.w;
             d = std::abs(v.X());
             double to_return = (Rectangle_SolidAngle(2*(A+a),2*(B+b),d)-Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*(A+a),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
             return to_return;
         }
         
-        if( (std::abs(v.Y()) <= out.w/2.0) && (std::abs(v.Z()) <= out.h/2.0))
+        if( (std::abs(v.Y()) <= out.h/2.0) && (std::abs(v.Z()) <= out.w/2.0))
         {
             double A, B, a, b, d;
-            A = -std::abs(v.Y())+out.w/2.0;
-            B = -std::abs(v.Z())+out.h/2.0;
-            a = out.w;
-            b = out.h;
+            A = -std::abs(v.Y())+out.h/2.0;
+            B = -std::abs(v.Z())+out.w/2.0;
+            a = out.h;
+            b = out.w;
             d = std::abs(v.X());
             double to_return = (Rectangle_SolidAngle(2*(a-A),2*(b-B),d)+Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*B,d))/4.0;
             return to_return;
         }
         
-        if( (std::abs(v.Y()) > out.w/2.0) && (std::abs(v.Z()) <= out.h/2.0))
+        if( (std::abs(v.Y()) > out.h/2.0) && (std::abs(v.Z()) <= out.w/2.0))
         {
             double A, B, a, b, d;
-            A = std::abs(v.Y())-out.w/2.0;
-            B = -std::abs(v.Z())+out.h/2.0;
-            a = out.w;
-            b = out.h;
+            A = std::abs(v.Y())-out.h/2.0;
+            B = -std::abs(v.Z())+out.w/2.0;
+            a = out.h;
+            b = out.w;
             d = std::abs(v.X());
             double to_return = (Rectangle_SolidAngle(2*(A+a),2*(b-B),d)-Rectangle_SolidAngle(2*A,2*(b-B),d)+Rectangle_SolidAngle(2*(A+a),2*B,d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
             return to_return;
         }
         
-        if( (std::abs(v.Y()) <= out.w/2.0) && (std::abs(v.Z()) > out.h/2.0))
+        if( (std::abs(v.Y()) <= out.h/2.0) && (std::abs(v.Z()) > out.w/2.0))
         {
             double A, B, a, b, d;
-            A = -std::abs(v.Y())+out.w/2.0;
-            B = std::abs(v.Z())-out.h/2.0;
-            a = out.w;
-            b = out.h;
+            A = -std::abs(v.Y())+out.h/2.0;
+            B = std::abs(v.Z())-out.w/2.0;
+            a = out.h;
+            b = out.w;
             d = std::abs(v.X());
             double to_return = (Rectangle_SolidAngle(2*(a-A),2*(B+b),d)-Rectangle_SolidAngle(2*(a-A),2*B,d)+Rectangle_SolidAngle(2*A,2*(B+b),d)-Rectangle_SolidAngle(2*A,2*B,d))/4.0;
             return to_return;
@@ -526,8 +526,8 @@ namespace phot
                 sim::OpDetBacktrackerRecord tmpbtr(channel);
                 
                 TVector3 OpDetPoint(fOpDetCenter.at(channel)[0], fOpDetCenter.at(channel)[1], fOpDetCenter.at(channel)[2]);
-                fydimension = fOpDetLength.at(channel);
-                fzdimension = fOpDetHeight.at(channel);
+                fydimension = fOpDetHeight.at(channel);
+                fzdimension = fOpDetLength.at(channel);
                 
                 if (nphot_fast > 0)
                 {                   
@@ -750,8 +750,8 @@ namespace phot
             detPoint.ax = OpDetPoint[0];
             detPoint.ay = OpDetPoint[1];
             detPoint.az = OpDetPoint[2];  // centre coordinates of optical detector
-            detPoint.w  = fydimension;
-            detPoint.h  = fzdimension;    // width and height in cm of arapuca active window
+            detPoint.h  = fydimension;
+            detPoint.w  = fzdimension;    // width and height in cm of arapuca active window
             
             // get scintillation point coordinates relative to arapuca window centre
             TVector3 ScintPoint_rel = ScintPoint - OpDetPoint;
@@ -830,8 +830,8 @@ namespace phot
         cathode_plane.ax = plane_depth;
         cathode_plane.ay = fcathode_centre[1];
         cathode_plane.az = fcathode_centre[2];      // centre coordinates of cathode plane
-        cathode_plane.w  = fcathode_ydimension;
-        cathode_plane.h  = fcathode_zdimension;                                         // width and height in cm
+        cathode_plane.h  = fcathode_ydimension;
+        cathode_plane.w  = fcathode_zdimension;                                         // width and height in cm
         
         // get scintpoint coords relative to centre of cathode plane
         TVector3 cathodeCentrePoint(plane_depth,fcathode_centre[1],fcathode_centre[2]);
@@ -875,7 +875,7 @@ namespace phot
             detPoint.ax = OpDetPoint[0];
             detPoint.ay = OpDetPoint[1];
             detPoint.az = OpDetPoint[2];    // centre coordinates of optical detector
-            detPoint.w  = fydimension; detPoint.h = fzdimension;                            // width and height in cm of optical detector active window [rectangular aperture]
+            detPoint.h  = fydimension; detPoint.w = fzdimension;                            // width and height in cm of optical detector active window [rectangular aperture]
             // calculate solid angle
             solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
         }
