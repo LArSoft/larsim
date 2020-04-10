@@ -19,10 +19,12 @@ namespace evwgh {
   {
      public:
        PPFXOtherWeightCalc();
-       void Configure(fhicl::ParameterSet const& p);
+       void Configure(fhicl::ParameterSet const& p, 
+                   CLHEP::HepRandomEngine& engine) override;
        std::vector<std::vector<double> > GetWeight(art::Event & e);
      private:
        CLHEP::RandGaussQ *fGaussRandom;
+       std::string fGenieModuleLabel;
     
        std::vector<std::string>  fInputLabels;
        std::string fPPFXMode;
@@ -37,14 +39,16 @@ namespace evwgh {
   {
   }
 
-  void PPFXOtherWeightCalc::Configure(fhicl::ParameterSet const& p)
+  void PPFXOtherWeightCalc::Configure(fhicl::ParameterSet const& p, 
+                                  CLHEP::HepRandomEngine& engine)
   {
     //get configuration for this function
     fhicl::ParameterSet const &pset=p.get<fhicl::ParameterSet> (GetName());
+    fGenieModuleLabel = p.get<std::string> ("genie_module_label");
 
     //Prepare random generator
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    fGaussRandom = new CLHEP::RandGaussQ(rng->getEngine(GetName()));    
+    fGaussRandom = new CLHEP::RandGaussQ(rng->getEngine(art::ScheduleID::first(), fGenieModuleLabel, GetName()) );    
 
     //ppfx setup
     fInputLabels = pset.get<std::vector<std::string>>("input_labels");
