@@ -1537,7 +1537,8 @@ namespace larg4 {
     //semi-analytic approach only works in the active volume
     if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
+       (std::abs(ScintPoint[0]) <= fplane_depth)) {
       return 0;
     }
 
@@ -1611,7 +1612,8 @@ namespace larg4 {
     //semi-analytic approach only works in the active volume
     if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)) {
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
+       (std::abs(ScintPoint[0]) <= fplane_depth)) {
       return 0;
     }
 
