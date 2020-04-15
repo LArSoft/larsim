@@ -492,6 +492,9 @@ namespace larg4 {
     // get the number of photons produced from the IonizationAndScintillation
     // singleton
     larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
+    // TODO: I believe MeanNumberOfPhotons should be unsigned int or
+    // long unsigned int, this would need to change across different files
+    // ~icaza
     double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
     // double stepEnergy          = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
     RecordPhotonsProduced(aStep, MeanNumberOfPhotons);//, stepEnergy);
@@ -773,6 +776,9 @@ namespace larg4 {
             fzdimension = fOpDetLength.at(OpDet);
             // set detector struct for solid angle function
             detPoint.h = fydimension; detPoint.w = fzdimension;
+            // TODO: potentially loosing photons:
+            //       Num is double but gets casted to int in the function below
+            // ~icaza
             DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
           }
 
@@ -792,6 +798,9 @@ namespace larg4 {
               TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
                                   fOpDetCenter.at(OpDet)[1],
                                   fOpDetCenter.at(OpDet)[2]);
+              // TODO: potentially loosing photons:
+              //       Num is double but gets casted to int in the function below
+              // ~icaza
               ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
             }
             if(ReflDetThisPMT > 0) {
