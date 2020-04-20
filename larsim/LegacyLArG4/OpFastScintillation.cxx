@@ -760,6 +760,49 @@ namespace larg4 {
       std::map<size_t, int> DetectedNum;
       std::map<size_t, int> ReflDetectedNum;
 
+      // 1). calculate total number of hits of VUV photons on
+      // reflective foils via solid angle + Gaisser-Hillas
+      // corrections:
+      double cathode_hits_rec = 0.;
+      std::array<double, 3> hotspot;
+      if(pvs->StoreReflected() && pvs->UseNhitsModel()){
+        // set plane_depth for correct TPC:
+        double plane_depth;
+        if (ScintPoint[0] < 0.) {
+          plane_depth = -fplane_depth;
+        }
+        else {
+          plane_depth = fplane_depth;
+        }
+
+        // get scintpoint coords relative to centre of cathode plane
+        std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
+                                                     std::abs(ScintPoint[1] - fcathode_centre[1]),
+                                                     std::abs(ScintPoint[2] - fcathode_centre[2])};
+        // calculate solid angle of cathode from the scintillation point
+        double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
+        // calculate distance and angle between ScintPoint and hotspot
+        // vast majority of hits in hotspot region directly infront of scintpoint,
+        // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
+        double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
+        // calculate hits on cathode plane via geometric acceptance
+        double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
+          (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
+        // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
+        // offset angle bin
+        // double theta_cathode = 0.;
+        // const size_t j = (theta_cathode / fdelta_angulo);
+        double  pars_ini_[4] = {fGHvuvpars[0][0],
+                                fGHvuvpars[1][0],
+                                fGHvuvpars[2][0],
+                                fGHvuvpars[3][0]};
+        double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
+        // double cosine_cathode = 1.;
+        cathode_hits_rec = GH_correction * cathode_hits_geo;
+
+        hotspot[0] = plane_depth; hotspot[1] = ScintPoint[1]; hotspot[2] = ScintPoint[2];
+      }
+
       for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
         G4int DetThisPMT = 0.;
         if(Visibilities && !pvs->UseNhitsModel()) {
@@ -793,7 +836,8 @@ namespace larg4 {
             //       Num is double but gets casted to int in the function below
             // ~icaza
             ReflDetThisPMT = VISHits(Num, ScintPoint,
-                                     fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+                                     fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
+                                     cathode_hits_rec, hotspot);
           }
           if(ReflDetThisPMT > 0) {
             ReflDetectedNum[OpDet] = ReflDetThisPMT;
@@ -1605,7 +1649,9 @@ namespace larg4 {
   int OpFastScintillation::VISHits(const int Nphotons_created,
                                    const std::array<double, 3> ScintPoint,
                                    const std::array<double, 3> OpDetPoint,
-                                   const int optical_detector_type)
+                                   const int optical_detector_type,
+                                   const double cathode_hits_rec,
+                                   const std::array<double, 3> hotspot)
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -1622,53 +1668,21 @@ namespace larg4 {
       return 0;
     }
 
-    // set plane_depth for correct TPC:
-    double plane_depth;
-    if (ScintPoint[0] < 0) {
-      plane_depth = -fplane_depth;
-    }
-    else {
-      plane_depth = fplane_depth;
-    }
+    // 1). calculate total number of hits of VUV photons on reflective
+    // foils via solid angle + Gaisser-Hillas corrections.
+    // Done outside as it doesn't depend on OpDetPoint
 
-    // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
-    // get scintpoint coords relative to centre of cathode plane
-    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
-                                                 std::abs(ScintPoint[1] - fcathode_centre[1]),
-                                                 std::abs(ScintPoint[2] - fcathode_centre[2])};
-    // calculate solid angle of cathode from the scintillation point
-    double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
-    // calculate distance and angle between ScintPoint and hotspot
-    // vast majority of hits in hotspot region directly infront of scintpoint,
-    // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
-    double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
-    double cosine_cathode = 1;
-    double theta_cathode = 0;
-    // calculate hits on cathode plane via geometric acceptance
-    double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
-      (solid_angle_cathode / (4.*CLHEP::pi)) * Nphotons_created;
-    // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
-    // offset angle bin
-    const size_t j = (theta_cathode / fdelta_angulo);// TODO:: std::round?
-    double  pars_ini_[4] = {fGHvuvpars[0][j],
-                            fGHvuvpars[1][j],
-                            fGHvuvpars[2][j],
-                            fGHvuvpars[3][j]};
-    double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
-    double cathode_hits_rec = GH_correction * cathode_hits_geo / cosine_cathode;
-
-    // 2). calculate number of these hits which reach the optical detector from the hotspot via solid angle
-    // hotspot coordinates
-    TVector3 hotspot(plane_depth, ScintPoint[1], ScintPoint[2]);
+    // 2). calculate number of these hits which reach the optical
+    // detector from the hotspot via solid angle
 
     // calculate solid angle of optical channel
     double solid_angle_detector = 0;
     // rectangular aperture
     if (optical_detector_type == 0) {
       // get hotspot coordinates relative to detpoint
-      std::array<double, 3> emission_relative = {std::abs(hotspot.X() - OpDetPoint[0]),
-                                                 std::abs(hotspot.Y() - OpDetPoint[1]),
-                                                 std::abs(hotspot.Z() - OpDetPoint[2])};
+      std::array<double, 3> emission_relative = {std::abs(hotspot[0] - OpDetPoint[0]),
+                                                 std::abs(hotspot[1] - OpDetPoint[1]),
+                                                 std::abs(hotspot[2] - OpDetPoint[2])};
       // calculate solid angle
       solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
     }

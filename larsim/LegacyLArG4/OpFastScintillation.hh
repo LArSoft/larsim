@@ -265,7 +265,9 @@ namespace larg4 {
     int VISHits(const int Nphotons_created,
                 const std::array<double, 3> ScintPoint,
                 const std::array<double, 3> OpDetPoint,
-                const int optical_detector_type);
+                const int optical_detector_type,
+                const double cathode_hits_rec,
+                const std::array<double, 3> hotspot);
     // Calculates semi-analytic model number of hits for visible component
 
   protected:
