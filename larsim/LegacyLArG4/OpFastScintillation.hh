@@ -256,12 +256,16 @@ namespace larg4 {
                     TVector3 OpDetPoint);
     // Visible component timing parameterisation
 
-    int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint,
-                int optical_detector_type);
+    int VUVHits(const int Nphotons_created,
+                const std::array<double, 3> ScintPoint,
+                const std::array<double, 3> OpDetPoint,
+                const int optical_detector_type);
     // Calculates semi-analytic model number of hits for vuv component
 
-    int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint,
-                int optical_detector_type);
+    int VISHits(const int Nphotons_created,
+                const std::array<double, 3> ScintPoint,
+                const std::array<double, 3> OpDetPoint,
+                const int optical_detector_type);
     // Calculates semi-analytic model number of hits for visible component
 
   protected:
@@ -380,7 +384,7 @@ namespace larg4 {
     double fydimension, fzdimension, fradius;
     dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
-    std::vector<std::vector<double> > fOpDetCenter;
+    std::vector<std::array<double, 3>> fOpDetCenter;
     std::vector<int>  fOpDetType;
     std::vector<double>  fOpDetLength;
     std::vector<double>  fOpDetHeight;
@@ -502,7 +506,7 @@ namespace larg4 {
   }
 
   template<typename TReal> inline constexpr
-  double dist(TReal* x, TReal* y, const unsigned int dimension)
+  double dist(const TReal* x, const TReal* y, const unsigned int dimension)
   {
     double d = 0.;
     for (unsigned int p=0; p<dimension; ++p){

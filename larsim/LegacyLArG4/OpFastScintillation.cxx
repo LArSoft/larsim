@@ -233,10 +233,10 @@ namespace larg4 {
 
       for(size_t i = 0; i != pvs->NOpChannels(); i++) {
         double OpDetCenter_i[3];
-        std::vector<double> OpDetCenter_v;
         geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
-        OpDetCenter_v.assign(OpDetCenter_i, OpDetCenter_i + 3);
-        fOpDetCenter.push_back(OpDetCenter_v);
+        std::array<double, 3> OpDetCenter_a;
+        std::move(std::begin(OpDetCenter_i), std::end(OpDetCenter_i), OpDetCenter_a.begin());
+        fOpDetCenter.push_back(OpDetCenter_a);
         int type_i = -1;
         if(strcmp(geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName(), "TGeoBBox") == 0) {
           type_i = 0;//Arapucas
@@ -641,19 +641,19 @@ namespace larg4 {
       }
     }
 
-    double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
-    auto const& Visibilities = pvs->GetAllVisibilities(xyz);
+    const std::array<double, 3> ScintPoint = {x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
+    auto const& Visibilities = pvs->GetAllVisibilities(ScintPoint);
 
     phot::MappedCounts_t ReflVisibilities;
 
     // Store timing information in the object for use in propagationTime method
     if(pvs->StoreReflected()) {
-      ReflVisibilities = pvs->GetAllVisibilities(xyz, true);
+      ReflVisibilities = pvs->GetAllVisibilities(ScintPoint, true);
       if(pvs->StoreReflT0())
-        ReflT0s = pvs->GetReflT0s(xyz);
+        ReflT0s = pvs->GetReflT0s(ScintPoint);
     }
     if(pvs->IncludeParPropTime()) {
-      ParPropTimeTF1 = pvs->GetTimingTF1(xyz);
+      ParPropTimeTF1 = pvs->GetTimingTF1(ScintPoint);
     }
 
     /*
@@ -675,7 +675,7 @@ namespace larg4 {
     <<pPreStepPoint->GetKineticEnergy()<<","
     <<pPreStepPoint->GetTotalEnergy()<<","
     <<aStep.GetTotalEnergyDeposit()<<","
-    <<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<","<<t0<<","
+    <<ScintPoint[0]<<","<<ScintPoint[1]<<","<<ScintPoint[2]<<","<<t0<<","
     <<aStep.GetDeltaPosition().mag()<<","
     <<MeanNumberOfPhotons<<","<<std::flush;
 
@@ -752,8 +752,8 @@ namespace larg4 {
       // here we go: now if visibilities are invalid, we are in trouble
       //if (!Visibilities && (NOpChannels > 0)) {
       //  throw cet::exception("OpFastScintillator")
-      //    << "Photon library does not cover point ( " << xyz[0] << ", "
-      //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
+      //    << "Photon library does not cover point ( " << ScintPoint[0] << ", "
+      //    << ScintPoint[1] << ", " << ScintPoint[2] << " ) cm.\n";
       //}
 
       if(!Visibilities && !pvs->UseNhitsModel()) continue;
@@ -766,10 +766,6 @@ namespace larg4 {
           DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
         }
         else {
-          TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
-          TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
-                              fOpDetCenter.at(OpDet)[1],
-                              fOpDetCenter.at(OpDet)[2]);
           fydimension = fOpDetHeight.at(OpDet);
           fzdimension = fOpDetLength.at(OpDet);
           // set detector struct for solid angle function
@@ -777,7 +773,8 @@ namespace larg4 {
           // TODO: potentially loosing photons:
           //       Num is double but gets casted to int in the function below
           // ~icaza
-          DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
+          DetThisPMT = VUVHits(Num, ScintPoint,
+                               fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
         }
 
         if(DetThisPMT > 0) {
@@ -792,14 +789,11 @@ namespace larg4 {
             ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
           }
           else {
-            TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
-            TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
-                                fOpDetCenter.at(OpDet)[1],
-                                fOpDetCenter.at(OpDet)[2]);
             // TODO: potentially loosing photons:
             //       Num is double but gets casted to int in the function below
             // ~icaza
-            ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
+            ReflDetThisPMT = VISHits(Num, ScintPoint,
+                                     fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
           }
           if(ReflDetThisPMT > 0) {
             ReflDetectedNum[OpDet] = ReflDetThisPMT;
@@ -1532,7 +1526,10 @@ namespace larg4 {
 
 
   // VUV semi-analytic hits calculation
-  int OpFastScintillation::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
+  int OpFastScintillation::VUVHits(const int Nphotons_created,
+                                   const std::array<double, 3> ScintPoint,
+                                   const std::array<double, 3> OpDetPoint,
+                                   const int optical_detector_type)
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -1559,9 +1556,9 @@ namespace larg4 {
     // Arapucas
     if (optical_detector_type == 0) {
       // get scintillation point coordinates relative to arapuca window centre
-      std::array<double, 3> ScintPoint_rel = {std::abs(ScintPoint.X() - OpDetPoint.X()),
-                                              std::abs(ScintPoint.Y() - OpDetPoint.Y()),
-                                              std::abs(ScintPoint.Z() - OpDetPoint.Z())};
+      std::array<double, 3> ScintPoint_rel = {std::abs(ScintPoint[0] - OpDetPoint[0]),
+                                              std::abs(ScintPoint[1] - OpDetPoint[1]),
+                                              std::abs(ScintPoint[2] - OpDetPoint[2])};
       // calculate solid angle
       solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
     }
@@ -1605,8 +1602,10 @@ namespace larg4 {
 
 
   // VIS hits semi-analytic model calculation
-  int OpFastScintillation::VISHits(int Nphotons_created, TVector3 ScintPoint,
-                                   TVector3 OpDetPoint, int optical_detector_type)
+  int OpFastScintillation::VISHits(const int Nphotons_created,
+                                   const std::array<double, 3> ScintPoint,
+                                   const std::array<double, 3> OpDetPoint,
+                                   const int optical_detector_type)
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -1634,9 +1633,9 @@ namespace larg4 {
 
     // 1). calculate total number of hits of VUV photons on reflective foils via solid angle + Gaisser-Hillas corrections:
     // get scintpoint coords relative to centre of cathode plane
-    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
-                                                 std::abs(ScintPoint.Y() - fcathode_centre[1]),
-                                                 std::abs(ScintPoint.Z() - fcathode_centre[2])};
+    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
+                                                 std::abs(ScintPoint[1] - fcathode_centre[1]),
+                                                 std::abs(ScintPoint[2] - fcathode_centre[2])};
     // calculate solid angle of cathode from the scintillation point
     double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
     // calculate distance and angle between ScintPoint and hotspot
@@ -1667,9 +1666,9 @@ namespace larg4 {
     // rectangular aperture
     if (optical_detector_type == 0) {
       // get hotspot coordinates relative to detpoint
-      std::array<double, 3> emission_relative = {std::abs(hotspot.X() - OpDetPoint.X()),
-                                                 std::abs(hotspot.Y() - OpDetPoint.Y()),
-                                                 std::abs(hotspot.Z() - OpDetPoint.Z())};
+      std::array<double, 3> emission_relative = {std::abs(hotspot.X() - OpDetPoint[0]),
+                                                 std::abs(hotspot.Y() - OpDetPoint[1]),
+                                                 std::abs(hotspot.Z() - OpDetPoint[2])};
       // calculate solid angle
       solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
     }
