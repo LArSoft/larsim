@@ -809,35 +809,47 @@ namespace larg4 {
           DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
         }
         else {
-          fydimension = fOpDetHeight.at(OpDet);
-          fzdimension = fOpDetLength.at(OpDet);
-          // set detector struct for solid angle function
-          detPoint.h = fydimension; detPoint.w = fzdimension;
-          // TODO: potentially loosing photons:
-          //       Num is double but gets casted to int in the function below
-          // ~icaza
-          DetThisPMT = VUVHits(Num, ScintPoint,
-                               fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+          if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0]) ||
+             !isScintInActiveVolume(ScintPoint)){
+            DetThisPMT = 0.;
+          }
+          else{
+            fydimension = fOpDetHeight.at(OpDet);
+            fzdimension = fOpDetLength.at(OpDet);
+            // set detector struct for solid angle function
+            detPoint.h = fydimension; detPoint.w = fzdimension;
+            // TODO: potentially loosing photons:
+            //       Num is double but gets casted to int in the function below
+            // ~icaza
+            DetThisPMT = VUVHits(Num, ScintPoint,
+                                 fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+          }
         }
-
         if(DetThisPMT > 0) {
           DetectedNum[OpDet] = DetThisPMT;
           //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
           //   //   it->second<<" " << Num << " " << DetThisPMT;
           //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
         }
+
         if(pvs->StoreReflected()) {
           G4int ReflDetThisPMT = 0;
           if (!pvs->UseNhitsModel()) {
             ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
           }
           else {
-            // TODO: potentially loosing photons:
-            //       Num is double but gets casted to int in the function below
-            // ~icaza
-            ReflDetThisPMT = VISHits(Num, ScintPoint,
-                                     fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
-                                     cathode_hits_rec, hotspot);
+            if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0]) ||
+               !isScintInActiveVolume(ScintPoint)){
+              ReflDetThisPMT = 0.;
+            }
+            else{
+              // TODO: potentially loosing photons:
+              //       Num is double but gets casted to int in the function below
+              // ~icaza
+              ReflDetThisPMT = VISHits(Num, ScintPoint,
+                                       fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
+                                       cathode_hits_rec, hotspot);
+            }
           }
           if(ReflDetThisPMT > 0) {
             ReflDetectedNum[OpDet] = ReflDetThisPMT;
@@ -1575,20 +1587,6 @@ namespace larg4 {
                                    const std::array<double, 3> OpDetPoint,
                                    const int optical_detector_type)
   {
-    // check optical channel is in same TPC as scintillation light, if not return 0 hits
-    // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
-    // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {// TODO: unhardcode
-      return 0;
-    }
-    //semi-analytic approach only works in the active volume
-    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
-       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
-       (std::abs(ScintPoint[0]) <= fplane_depth)) {
-      return 0;
-    }
-
     // distance and angle between ScintPoint and OpDetPoint
     double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
     double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
@@ -1653,21 +1651,6 @@ namespace larg4 {
                                    const double cathode_hits_rec,
                                    const std::array<double, 3> hotspot)
   {
-    // check optical channel is in same TPC as scintillation light, if not return 0 hits
-    // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
-    // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    if (((ScintPoint[0] < 0) != (OpDetPoint[0] < 0)) && std::abs(OpDetPoint[0]) > 10) {// TODO: unhardcode
-      return 0;
-    }
-
-    //semi-analytic approach only works in the active volume
-    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
-       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
-       (std::abs(ScintPoint[0]) <= fplane_depth)) {
-      return 0;
-    }
-
     // 1). calculate total number of hits of VUV photons on reflective
     // foils via solid angle + Gaisser-Hillas corrections.
     // Done outside as it doesn't depend on OpDetPoint
@@ -1754,6 +1737,31 @@ namespace larg4 {
     }
 
     return hits_vis;
+  }
+
+
+  bool OpFastScintillation::isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX)
+  {
+    // check optical channel is in same TPC as scintillation light, if not return 0 hits
+    // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
+    // check x coordinate has same sign or is close to zero, otherwise return 0 hits
+    if (((ScintPointX < 0.) != (OpDetPointX < 0.)) && std::abs(OpDetPointX) > 10.) {// TODO: unhardcode
+      return false;
+    }
+    return true;
+  }
+
+
+  bool OpFastScintillation::isScintInActiveVolume(const std::array<double, 3> ScintPoint)
+  {
+    //semi-analytic approach only works in the active volume
+    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
+       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
+       (std::abs(ScintPoint[0]) <= fplane_depth)) {
+      return false;
+    }
+    return true;
   }
 
 

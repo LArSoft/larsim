@@ -396,6 +396,8 @@ namespace larg4 {
 
     bool bPropagate; ///< Whether propagation of photons is enabled.
 
+    bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
+    bool isScintInActiveVolume(const std::array<double, 3> ScintPoint);
   };
 
   double finter_d(double*, double*);
