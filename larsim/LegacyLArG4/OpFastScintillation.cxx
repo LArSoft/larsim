@@ -756,140 +756,137 @@ namespace larg4 {
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
 
-      if(!Visibilities && !pvs->UseNhitsModel()) {
-      }
-      else {
-        std::map<size_t, int> DetectedNum;
-        std::map<size_t, int> ReflDetectedNum;
+      if(!Visibilities && !pvs->UseNhitsModel()) continue;
+      std::map<size_t, int> DetectedNum;
+      std::map<size_t, int> ReflDetectedNum;
 
-        for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-          G4int DetThisPMT = 0.;
-          if(Visibilities && !pvs->UseNhitsModel()) {
-            DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+      for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
+        G4int DetThisPMT = 0.;
+        if(Visibilities && !pvs->UseNhitsModel()) {
+          DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+        }
+        else {
+          TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
+          TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
+                              fOpDetCenter.at(OpDet)[1],
+                              fOpDetCenter.at(OpDet)[2]);
+          fydimension = fOpDetHeight.at(OpDet);
+          fzdimension = fOpDetLength.at(OpDet);
+          // set detector struct for solid angle function
+          detPoint.h = fydimension; detPoint.w = fzdimension;
+          // TODO: potentially loosing photons:
+          //       Num is double but gets casted to int in the function below
+          // ~icaza
+          DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
+        }
+
+        if(DetThisPMT > 0) {
+          DetectedNum[OpDet] = DetThisPMT;
+          //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+          //   //   it->second<<" " << Num << " " << DetThisPMT;
+          //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+        }
+        if(pvs->StoreReflected()) {
+          G4int ReflDetThisPMT = 0;
+          if (!pvs->UseNhitsModel()) {
+            ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
           }
           else {
             TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
             TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
                                 fOpDetCenter.at(OpDet)[1],
                                 fOpDetCenter.at(OpDet)[2]);
-            fydimension = fOpDetHeight.at(OpDet);
-            fzdimension = fOpDetLength.at(OpDet);
-            // set detector struct for solid angle function
-            detPoint.h = fydimension; detPoint.w = fzdimension;
             // TODO: potentially loosing photons:
             //       Num is double but gets casted to int in the function below
             // ~icaza
-            DetThisPMT = VUVHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
+            ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
           }
-
-          if(DetThisPMT > 0) {
-            DetectedNum[OpDet] = DetThisPMT;
-            //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-            //   //   it->second<<" " << Num << " " << DetThisPMT;
-            //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
-          }
-          if(pvs->StoreReflected()) {
-            G4int ReflDetThisPMT = 0;
-            if (!pvs->UseNhitsModel()) {
-              ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
-            }
-            else {
-              TVector3 ScintPoint( xyz[0], xyz[1], xyz[2] );
-              TVector3 OpDetPoint(fOpDetCenter.at(OpDet)[0],
-                                  fOpDetCenter.at(OpDet)[1],
-                                  fOpDetCenter.at(OpDet)[2]);
-              // TODO: potentially loosing photons:
-              //       Num is double but gets casted to int in the function below
-              // ~icaza
-              ReflDetThisPMT = VISHits(Num, ScintPoint, OpDetPoint, fOpDetType.at(OpDet));
-            }
-            if(ReflDetThisPMT > 0) {
-              ReflDetectedNum[OpDet] = ReflDetThisPMT;
-            }
+          if(ReflDetThisPMT > 0) {
+            ReflDetectedNum[OpDet] = ReflDetThisPMT;
           }
         }
+      }
 
-        std::vector<double> arrival_time_dist;
-        // Now we run through each PMT figuring out num of detected photons
-        for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
-          // Only do the reflected loop if we have reflected visibilities
-          if (Reflected && !pvs->StoreReflected()) continue;
+      std::vector<double> arrival_time_dist;
+      // Now we run through each PMT figuring out num of detected photons
+      for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
+        // Only do the reflected loop if we have reflected visibilities
+        if (Reflected && !pvs->StoreReflected()) continue;
 
-          std::map<size_t, int>::const_iterator itstart;
-          std::map<size_t, int>::const_iterator itend;
-          if (Reflected) {
-            itstart = ReflDetectedNum.begin();
-            itend   = ReflDetectedNum.end();
+        std::map<size_t, int>::const_iterator itstart;
+        std::map<size_t, int>::const_iterator itend;
+        if (Reflected) {
+          itstart = ReflDetectedNum.begin();
+          itend   = ReflDetectedNum.end();
+        }
+        else {
+          itstart = DetectedNum.begin();
+          itend   = DetectedNum.end();
+        }
+        for(auto itdetphot = itstart; itdetphot != itend; ++itdetphot) {
+          const size_t OpChannel = itdetphot->first;
+          const int NPhotons  = itdetphot->second;
+
+          // Set up the OpDetBTR information
+          sim::OpDetBacktrackerRecord tmpOpDetBTRecord(OpChannel);
+          int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
+          double xyzPos[3];
+          average_position(aStep, xyzPos);
+          double Edeposited  = 0;
+          if(scintillationByParticleType) {
+            //We use this when it is the only sensical information. It may be of limited use to end users.
+            Edeposited = aStep.GetTotalEnergyDeposit();
+          }
+          else if(emSaturation) {
+            //If Birk Coefficient used, log VisibleEnergies.
+            Edeposited = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit() / CLHEP::MeV;
           }
           else {
-            itstart = DetectedNum.begin();
-            itend   = DetectedNum.end();
+            //We use this when it is the only sensical information. It may be of limited use to end users.
+            Edeposited = aStep.GetTotalEnergyDeposit();
           }
-          for(auto itdetphot = itstart; itdetphot != itend; ++itdetphot) {
-            const size_t OpChannel = itdetphot->first;
-            const int NPhotons  = itdetphot->second;
 
-            // Set up the OpDetBTR information
-            sim::OpDetBacktrackerRecord tmpOpDetBTRecord(OpChannel);
-            int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
-            double xyzPos[3];
-            average_position(aStep, xyzPos);
-            double Edeposited  = 0;
-            if(scintillationByParticleType) {
-              //We use this when it is the only sensical information. It may be of limited use to end users.
-              Edeposited = aStep.GetTotalEnergyDeposit();
-            }
-            else if(emSaturation) {
-              //If Birk Coefficient used, log VisibleEnergies.
-              Edeposited = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit() / CLHEP::MeV;
+          // Get the transport time distribution
+          arrival_time_dist.resize(NPhotons);
+          propagationTime(arrival_time_dist, x0, OpChannel, Reflected);
+
+          //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
+          Edeposited = Edeposited / double(NPhotons);
+
+          // Loop through the photons
+          for (G4int i = 0; i < NPhotons; ++i) {
+            //std::cout<<"VUV time correction: "<<arrival_time_dist[i]<<std::endl;
+            G4double Time = t0
+              + scint_time(aStep, ScintillationTime, ScintillationRiseTime)
+              + arrival_time_dist[i] * CLHEP::ns;
+
+            // Always store the BTR
+            tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
+
+            // Store as lite photon or as OnePhoton
+            if(lgp->UseLitePhotons()) {
+              fst->AddLitePhoton(OpChannel, static_cast<int>(Time), 1, Reflected);
             }
             else {
-              //We use this when it is the only sensical information. It may be of limited use to end users.
-              Edeposited = aStep.GetTotalEnergyDeposit();
+              // The sim photon in this case stores its production point and time
+              TVector3 PhotonPosition( x0[0], x0[1], x0[2] );
+
+              float PhotonEnergy = 0;
+              if (Reflected)  PhotonEnergy = reemission_energy() * CLHEP::eV;
+              else            PhotonEnergy = 9.7 * CLHEP::eV;// TODO: unhardcode
+
+              // Make a photon object for the collection
+              sim::OnePhoton PhotToAdd;
+              PhotToAdd.InitialPosition  = PhotonPosition;
+              PhotToAdd.Energy           = PhotonEnergy;
+              PhotToAdd.Time             = Time;
+              PhotToAdd.SetInSD          = false;
+              PhotToAdd.MotherTrackID    = tracknumber;
+
+              fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
             }
-
-            // Get the transport time distribution
-            arrival_time_dist.resize(NPhotons);
-            propagationTime(arrival_time_dist, x0, OpChannel, Reflected);
-
-            //We need to split the energy up by the number of photons so that we never try to write a 0 energy.
-            Edeposited = Edeposited / double(NPhotons);
-
-            // Loop through the photons
-            for (G4int i = 0; i < NPhotons; ++i) {
-              //std::cout<<"VUV time correction: "<<arrival_time_dist[i]<<std::endl;
-              G4double Time = t0
-                              + scint_time(aStep, ScintillationTime, ScintillationRiseTime)
-                              + arrival_time_dist[i] * CLHEP::ns;
-
-              // Always store the BTR
-              tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
-
-              // Store as lite photon or as OnePhoton
-              if(lgp->UseLitePhotons()) {
-                fst->AddLitePhoton(OpChannel, static_cast<int>(Time), 1, Reflected);
-              }
-              else {
-                // The sim photon in this case stores its production point and time
-                TVector3 PhotonPosition( x0[0], x0[1], x0[2] );
-
-                float PhotonEnergy = 0;
-                if (Reflected)  PhotonEnergy = reemission_energy() * CLHEP::eV;
-                else            PhotonEnergy = 9.7 * CLHEP::eV;// TODO: unhardcode
-
-                // Make a photon object for the collection
-                sim::OnePhoton PhotToAdd;
-                PhotToAdd.InitialPosition  = PhotonPosition;
-                PhotToAdd.Energy           = PhotonEnergy;
-                PhotToAdd.Time             = Time;
-                PhotToAdd.SetInSD          = false;
-                PhotToAdd.MotherTrackID    = tracknumber;
-
-                fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
-              }
-            }
-            fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
+          fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
         }
       }
     }
