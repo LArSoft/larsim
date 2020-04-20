@@ -136,6 +136,7 @@
 
 // support libraries
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TRandom3.h"
 #include "TMath.h"
@@ -1933,7 +1934,7 @@ namespace larg4 {
   // std::numeric_limits<double>::epsilon(): 2.22045e-16
   // that's an unrealistic small number, better setting
   // constexpr double tolerance = 0.0000001; // 1 nm
-  constexpr double OpFastScintillation::Disk_SolidAngle(const double d, const double h,
+  double OpFastScintillation::Disk_SolidAngle(const double d, const double h,
                                                         const double b)
   {
     if(b <= 0. || d < 0. || h <= 0.) return 0.;
@@ -1946,13 +1947,51 @@ namespace larg4 {
     double cc = 4. * b * d / leg2;
 
     if(isDefinitelyGreaterThan(d,b)) {
-      return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
-                    boost::math::ellint_1(bb,noLDoublePromote()));
+      try{
+        return 2.*aa*(std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()) -
+                      boost::math::ellint_1(bb,noLDoublePromote()));
+      }catch(std::domain_error& e){
+        if(isApproximatelyEqual(d,b, 1e-9)) {
+          mf::LogWarning("OpFastScintillation")
+            << "Elliptic Integral in Disk_SolidAngle() given parameters outside domain."
+            << "\nbb: " << bb
+            << "\ncc: " << cc
+            << "\nException message: " << e.what()
+            << "\nRelax condition and carry on.";
+          return CLHEP::pi - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
+        }
+        else{
+          mf::LogError("OpFastScintillation") << "Elliptic Integral inside Disk_SolidAngle() given parameters outside domain.\n"
+                                              << "\nbb: " << bb
+                                              << "\ncc: " << cc
+                                              << "Exception message: " << e.what();
+          return 0.;
+        }
+      }
     }
     if(isDefinitelyLessThan(d,b)) {
+      try{
       return 2.* CLHEP::pi -
         2.*aa*(boost::math::ellint_1(bb, noLDoublePromote()) +
                std::sqrt(1.-cc)*boost::math::ellint_3(bb,cc,noLDoublePromote()));
+      }catch(std::domain_error& e){
+        if(isApproximatelyEqual(d,b, 1e-9)) {
+          mf::LogWarning("OpFastScintillation")
+            << "Elliptic Integral in Disk_SolidAngle() given parameters outside domain."
+            << "\nbb: " << bb
+            << "\ncc: " << cc
+            << "\nException message: " << e.what()
+            << "\nRelax condition and carry on.";
+          return CLHEP::pi - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
+        }
+        else{
+          mf::LogError("OpFastScintillation") << "Elliptic Integral inside Disk_SolidAngle() given parameters outside domain.\n"
+                                              << "\nbb: " << bb
+                                              << "\ncc: " << cc
+                                              << "Exception message: " << e.what();
+          return 0.;
+        }
+      }
     }
     if(isApproximatelyEqual(d,b)) {
       return CLHEP::pi - 2.*aa*boost::math::ellint_1(bb,noLDoublePromote());
