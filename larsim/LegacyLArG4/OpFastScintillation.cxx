@@ -2001,7 +2001,6 @@ namespace larg4 {
 
 
   // solid angle of rectangular aperture
-  // TODO: what's up with all of that times 2, divided by 2?
   constexpr double OpFastScintillation::Rectangle_SolidAngle(const double a, const double b,
                                                              const double d)
   {
@@ -2025,44 +2024,44 @@ namespace larg4 {
        isApproximatelyZero(v[2])) {
       return Rectangle_SolidAngle(o.h, o.w, v[0]);
     }
-    if(isDefinitelyGreaterThan(v[1], o.h/2.) &&
-       isDefinitelyGreaterThan(v[2], o.w/2.)) {
-      double A = v[1] - o.h/2.;
-      double B = v[2] - o.w/2.;
+    if(isDefinitelyGreaterThan(v[1], o.h*.5) &&
+       isDefinitelyGreaterThan(v[2], o.w*.5)) {
+      double A = v[1] - o.h*.5;
+      double B = v[2] - o.w*.5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), v[0]) -
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v[0]) -
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) / 4.;
+                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) * .25;
       return to_return;
     }
-    if((v[1] <= o.h/2.) &&
-       (v[2] <= o.w/2.)) {
-      double A = -v[1] + o.h/2.;
-      double B = -v[2] + o.w/2.;
+    if((v[1] <= o.h*.5) &&
+       (v[2] <= o.w*.5)) {
+      double A = -v[1] + o.h*.5;
+      double B = -v[2] + o.w*.5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), v[0]) +
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v[0]) +
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) / 4.;
+                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) * .25;
       return to_return;
     }
-    if(isDefinitelyGreaterThan(v[1], o.h/2.) &&
-       (v[2] <= o.w/2.)) {
-      double A = v[1] - o.h/2.;
-      double B = -v[2] + o.w/2.;
+    if(isDefinitelyGreaterThan(v[1], o.h*.5) &&
+       (v[2] <= o.w*.5)) {
+      double A = v[1] - o.h*.5;
+      double B = -v[2] + o.w*.5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), v[0]) -
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v[0]) +
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) / 4.;
+                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) * .25;
       return to_return;
     }
-    if((v[1] <= o.h/2.) &&
-       isDefinitelyGreaterThan(v[2], o.w/2.)) {
-      double A = -v[1] + o.h/2.;
-      double B = v[2] - o.w/2.;
+    if((v[1] <= o.h*.5) &&
+       isDefinitelyGreaterThan(v[2], o.w*.5)) {
+      double A = -v[1] + o.h*.5;
+      double B = v[2] - o.w*.5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), v[0]) -
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v[0]) +
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) / 4.;
+                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) * .25;
       return to_return;
     }
     // error message if none of these cases, i.e. something has gone wrong!
