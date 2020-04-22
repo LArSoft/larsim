@@ -1359,8 +1359,8 @@ namespace larg4 {
 
     // Defining the model function(s) describing the photon transportation timing vs distance
     // Getting the landau parameters from the time parametrization
-    double pars_landau[3];
-    interpolate(pars_landau, fparameters[0], fparameters[2], fparameters[3],
+    std::array<double, 3> pars_landau;
+    interpolate3(pars_landau, fparameters[0], fparameters[2], fparameters[3],
                 fparameters[1], distance_in_cm, true);
     // Deciding which time model to use (depends on the distance)
     // defining useful times for the VUV arrival time shapes
@@ -1720,12 +1720,22 @@ namespace larg4 {
       // interpolate in x for each r bin
       const size_t nbins_r = fvis_border_correction[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
-      for (size_t i = 0; i < nbins_r; ++i) {
-        interp_vals[i] = interpolate(fvis_border_distances_x, fvis_border_correction[k][i],
-                                     std::abs(ScintPoint[0]), false);
+      {
+        size_t idx = 0;
+        size_t size = fvis_border_distances_x.size();
+        if (std::abs(ScintPoint[0]) >= fvis_border_distances_x[size-2]) idx = size - 2;
+        else {
+          while (std::abs(ScintPoint[0]) > fvis_border_distances_x[idx+1]) idx++;
+        }
+        for (size_t i = 0; i < nbins_r; ++i) {
+          interp_vals[i] = interpolate(fvis_border_distances_x,
+                                       fvis_border_correction[k][i],
+                                       std::abs(ScintPoint[0]), false, idx);
+        }
       }
       // interpolate in r
-      double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
+      double border_correction = interpolate(fvis_border_distances_r,
+                                             interp_vals, r, false);
       // apply border correction
       double hits_rec_borders = border_correction * hits_rec / cosine_vis;
 
@@ -1869,30 +1879,37 @@ namespace larg4 {
   //   Returns interpolated value at x from parallel arrays ( xData, yData )
   //   Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
   //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
-  double interpolate(std::vector<double> &xData, std::vector<double> &yData,
-                     double x, bool extrapolate)
+  double OpFastScintillation::interpolate(const std::vector<double> &xData,
+                                          const std::vector<double> &yData,
+                                          double x, bool extrapolate,
+                                          size_t i)
   {
-    size_t size = xData.size();
-    size_t i = 0; // find left end of interval for interpolation
-    if (x >= xData[size-2]) { // special case: beyond right end
-      i = size - 2;
+    if(i == 0){
+      size_t size = xData.size();
+      if (x >= xData[size-2]) { // special case: beyond right end
+        i = size - 2;
+      }
+      else {
+        while (x > xData[i+1]) i++;
+      }
     }
-    else {
-      while (x > xData[i+1]) i++;
-    }
-    double xL = xData[i], yL = yData[i], xR = xData[i+1], yR = yData[i+1]; // points on either side (unless beyond ends)
+    double xL = xData[i]; double xR = xData[i+1];
+    double yL = yData[i]; double yR = yData[i+1]; // points on either side (unless beyond ends)
     if (!extrapolate) { // if beyond ends of array and not extrapolating
-      if (x < xL) yR = yL;
-      if (x > xR) yL = yR;
+      if (x < xL) return yL;
+      if (x > xR) return yL;
     }
-    double dydx = (yR - yL) / (xR - xL); // gradient
+    const double dydx = (yR - yL) / (xR - xL); // gradient
     return yL + dydx * ( x - xL ); // linear interpolation
   }
 
 
-  void interpolate(double inter[], std::vector<double> &xData,
-                   std::vector<double> &yData1, std::vector<double> &yData2,
-                   std::vector<double> &yData3, double x, bool extrapolate)
+  void OpFastScintillation::interpolate3(std::array<double, 3> &inter,
+                   const std::vector<double> &xData,
+                   const std::vector<double> &yData1,
+                   const std::vector<double> &yData2,
+                   const std::vector<double> &yData3,
+                   double x, bool extrapolate)
   {
     size_t size = xData.size();
     size_t i = 0; // find left end of interval for interpolation
@@ -1902,30 +1919,29 @@ namespace larg4 {
     else {
       while (x > xData[i+1]) i++;
     }
-    double xL = xData[i], xR = xData[i+1]; // points on either side (unless beyond ends)
-    double yL1 = yData1[i], yR1 = yData1[i+1];
-    double yL2 = yData2[i], yR2 = yData2[i+1];
-    double yL3 = yData3[i], yR3 = yData3[i+1];
+    double xL = xData[i]; double xR = xData[i+1]; // points on either side (unless beyond ends)
+    double yL1 = yData1[i]; double yR1 = yData1[i+1];
+    double yL2 = yData2[i]; double yR2 = yData2[i+1];
+    double yL3 = yData3[i]; double yR3 = yData3[i+1];
 
     if (!extrapolate) { // if beyond ends of array and not extrapolating
       if (x < xL) {
-        yR1 = yL1;
-        yR2 = yL2;
-        yR3 = yL3;
+        inter[0] = yL1;
+        inter[1] = yL2;
+        inter[2] = yL3;
+        return;
       }
       if (x > xR) {
-        yL1 = yR1;
-        yL2 = yR2;
-        yL3 = yR3;
+        inter[0] = yL1;
+        inter[1] = yL2;
+        inter[2] = yL3;
+        return;
       }
     }
-    inter[0] = (x - xL) * (yR1 - yL1) / (xR - xL);
-    inter[1] = (x - xL) * ( yR2 - yL2 ) / ( xR - xL );
-    inter[2] = (x - xL) * ( yR3 - yL3 ) / ( xR - xL );
-
-    inter[0] += yL1;
-    inter[1] += yL2;
-    inter[2] += yL3;
+    const double m = (x - xL) / (xR - xL);
+    inter[0] = m * (yR1 - yL1) + yL1;
+    inter[1] = m * (yR2 - yL2) + yL2;
+    inter[2] = m * (yR3 - yL3) + yL3;
   }
 
 

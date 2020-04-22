@@ -398,16 +398,19 @@ namespace larg4 {
 
     bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
     bool isScintInActiveVolume(const std::array<double, 3> ScintPoint);
+    double interpolate(const std::vector<double> &xData,
+                       const std::vector<double> &yData,
+                       double x, bool extrapolate, size_t i=0);
+    void interpolate3(std::array<double, 3> &inter,
+                      const std::vector<double> &xData,
+                      const std::vector<double> &yData1,
+                      const std::vector<double> &yData2,
+                      const std::vector<double> &yData3,
+                      double x, bool extrapolate);
   };
 
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);
-  //For new VUV time parametrization
-  double interpolate(std::vector<double> &xData, std::vector<double> &yData,
-                     double x, bool extrapolate);
-  void interpolate(double inter[], std::vector<double> &xData,
-                   std::vector<double> &yData1, std::vector<double> &yData2,
-                   std::vector<double> &yData3, double x, bool extrapolate);
   double model_close(double*, double*);
   double model_far(double*, double*);
 
