@@ -297,7 +297,7 @@ namespace larg4 {
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
         pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
-        fdelta_angulo = 10.; // angle bin size
+        fdelta_angulo = 10; // angle bin size
         //Needed for Nhits-model border corrections (in cm)
         fYactive_corner = (fmaxy - fminy) / 2;
         fZactive_corner = (fmaxz - fminz) / 2;
@@ -331,7 +331,7 @@ namespace larg4 {
 
           // cathode dimensions required for corrections
           fcathode_centre = geo->TPC(0, 0).GetCathodeCenter();
-          fcathode_centre[1] = (fmaxy + fminy) / 2; fcathode_centre[2] = (fmaxz + fminz) / 2; // to get full cathode dimension rather than just single tpc
+          fcathode_centre[1] = (fmaxy + fminy) / 2.; fcathode_centre[2] = (fmaxz + fminz) / 2.; // to get full cathode dimension rather than just single tpc
           fcathode_ydimension = fmaxy - fminy;
           fcathode_zdimension = fmaxz - fminz;
           // set cathode plane struct for solid angle function
@@ -805,7 +805,7 @@ namespace larg4 {
       }
 
       for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-        G4int DetThisPMT = 0.;
+        G4int DetThisPMT = 0;
         if(Visibilities && !pvs->UseNhitsModel()) {
           DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
         }
