@@ -573,8 +573,8 @@ namespace larg4 {
       return 0;
 
     // Get the visibility vector for this point
-    art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-    size_t const NOpChannels = pvs->NOpChannels();
+    const art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
+    NOpChannels = pvs->NOpChannels();
 
     G4int nscnt = 1;
     if (Fast_Intensity && Slow_Intensity) nscnt = 2;
@@ -643,7 +643,8 @@ namespace larg4 {
     }
 
     const std::array<double, 3> ScintPoint = {x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
-    auto const& Visibilities = pvs->GetAllVisibilities(ScintPoint);
+    if(!isScintInActiveVolume(ScintPoint)) return 0;
+    const phot::MappedCounts_t& Visibilities = pvs->GetAllVisibilities(ScintPoint);
 
     phot::MappedCounts_t ReflVisibilities;
 
@@ -758,103 +759,34 @@ namespace larg4 {
       //}
 
       if(!Visibilities && !pvs->UseNhitsModel()) continue;
+
+      // detected photons from direct light
       std::map<size_t, int> DetectedNum;
-      std::map<size_t, int> ReflDetectedNum;
-
-      // 1). calculate total number of hits of VUV photons on
-      // reflective foils via solid angle + Gaisser-Hillas
-      // corrections:
-      double cathode_hits_rec = 0.;
-      std::array<double, 3> hotspot;
-      if(pvs->StoreReflected() && pvs->UseNhitsModel()){
-        // set plane_depth for correct TPC:
-        double plane_depth;
-        if (ScintPoint[0] < 0.) {
-          plane_depth = -fplane_depth;
+      if(Visibilities && !pvs->UseNhitsModel()) {
+        int DetThis = 0;
+        for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
+          if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+          DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
+          if(DetThis > 0) DetectedNum[OpDet] = DetThis;
         }
-        else {
-          plane_depth = fplane_depth;
-        }
-
-        // get scintpoint coords relative to centre of cathode plane
-        std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
-                                                     std::abs(ScintPoint[1] - fcathode_centre[1]),
-                                                     std::abs(ScintPoint[2] - fcathode_centre[2])};
-        // calculate solid angle of cathode from the scintillation point
-        double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
-        // calculate distance and angle between ScintPoint and hotspot
-        // vast majority of hits in hotspot region directly infront of scintpoint,
-        // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
-        double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
-        // calculate hits on cathode plane via geometric acceptance
-        double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
-          (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
-        // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
-        // offset angle bin
-        // double theta_cathode = 0.;
-        // const size_t j = (theta_cathode / fdelta_angulo);
-        double  pars_ini_[4] = {fGHvuvpars[0][0],
-                                fGHvuvpars[1][0],
-                                fGHvuvpars[2][0],
-                                fGHvuvpars[3][0]};
-        double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
-        // double cosine_cathode = 1.;
-        cathode_hits_rec = GH_correction * cathode_hits_geo;
-
-        hotspot[0] = plane_depth; hotspot[1] = ScintPoint[1]; hotspot[2] = ScintPoint[2];
+      }
+      else{
+        detectedDirectHits(DetectedNum, Num, ScintPoint);
       }
 
-      for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-        G4int DetThisPMT = 0;
-        if(Visibilities && !pvs->UseNhitsModel()) {
-          DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
-        }
-        else {
-          if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0]) ||
-             !isScintInActiveVolume(ScintPoint)){
-            DetThisPMT = 0.;
-          }
-          else{
-            fydimension = fOpDetHeight.at(OpDet);
-            fzdimension = fOpDetLength.at(OpDet);
-            // set detector struct for solid angle function
-            detPoint.h = fydimension; detPoint.w = fzdimension;
-            // TODO: potentially loosing photons:
-            //       Num is double but gets casted to int in the function below
-            // ~icaza
-            DetThisPMT = VUVHits(Num, ScintPoint,
-                                 fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+      // detected photons from reflected light
+      std::map<size_t, int> ReflDetectedNum;
+      if(pvs->StoreReflected()) {
+        if (!pvs->UseNhitsModel()) {
+          int ReflDetThis = 0;
+          for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
+            if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+            ReflDetThis = std::round(G4Poisson(ReflVisibilities[OpDet] * Num));
+            if(ReflDetThis > 0) ReflDetectedNum[OpDet] = ReflDetThis;
           }
         }
-        if(DetThisPMT > 0) {
-          DetectedNum[OpDet] = DetThisPMT;
-          //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-          //   //   it->second<<" " << Num << " " << DetThisPMT;
-          //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
-        }
-
-        if(pvs->StoreReflected()) {
-          G4int ReflDetThisPMT = 0;
-          if (!pvs->UseNhitsModel()) {
-            ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
-          }
-          else {
-            if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0]) ||
-               !isScintInActiveVolume(ScintPoint)){
-              ReflDetThisPMT = 0.;
-            }
-            else{
-              // TODO: potentially loosing photons:
-              //       Num is double but gets casted to int in the function below
-              // ~icaza
-              ReflDetThisPMT = VISHits(Num, ScintPoint,
-                                       fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
-                                       cathode_hits_rec, hotspot);
-            }
-          }
-          if(ReflDetThisPMT > 0) {
-            ReflDetectedNum[OpDet] = ReflDetThisPMT;
-          }
+        else{
+          detectedReflecHits(ReflDetectedNum, Num, ScintPoint);
         }
       }
 
@@ -1581,6 +1513,91 @@ namespace larg4 {
     }
   }
 
+  void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                                               const double Num,
+                                               const std::array<double, 3> ScintPoint)
+  {
+    for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
+      int DetThis = 0;
+      if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+
+      fydimension = fOpDetHeight.at(OpDet);
+      fzdimension = fOpDetLength.at(OpDet);
+      // set detector struct for solid angle function
+      detPoint.h = fydimension; detPoint.w = fzdimension;
+      // TODO: potentially loosing photons:
+      //       Num is double but gets casted to int in the function below
+      // ~icaza
+      DetThis = VUVHits(Num, ScintPoint,
+                        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+      if(DetThis > 0) {
+        DetectedNum[OpDet] = DetThis;
+        //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+        //   //   it->second<<" " << Num << " " << DetThisPMT;
+        //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+      }
+    }
+  }
+
+
+  void OpFastScintillation::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                                               const double Num,
+                                               const std::array<double, 3> ScintPoint)
+  {
+    // 1). calculate total number of hits of VUV photons on
+    // reflective foils via solid angle + Gaisser-Hillas
+    // corrections:
+
+    // set plane_depth for correct TPC:
+    double plane_depth;
+    if (ScintPoint[0] < 0.) {
+      plane_depth = -fplane_depth;
+    }
+    else {
+      plane_depth = fplane_depth;
+    }
+
+    // get scintpoint coords relative to centre of cathode plane
+    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
+                                                 std::abs(ScintPoint[1] - fcathode_centre[1]),
+                                                 std::abs(ScintPoint[2] - fcathode_centre[2])};
+    // calculate solid angle of cathode from the scintillation point
+    double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
+    // calculate distance and angle between ScintPoint and hotspot
+    // vast majority of hits in hotspot region directly infront of scintpoint,
+    // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
+    double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
+    // calculate hits on cathode plane via geometric acceptance
+    double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
+      (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
+    // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
+    // offset angle bin
+    // double theta_cathode = 0.;
+    // const size_t j = (theta_cathode / fdelta_angulo);
+    double  pars_ini_[4] = {fGHvuvpars[0][0],
+                            fGHvuvpars[1][0],
+                            fGHvuvpars[2][0],
+                            fGHvuvpars[3][0]};
+    double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
+    // double cosine_cathode = 1.;
+    const double cathode_hits_rec = GH_correction * cathode_hits_geo;
+    const std::array<double, 3> hotspot = {plane_depth, ScintPoint[1], ScintPoint[2]};
+
+    for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
+      int ReflDetThis = 0;
+      if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+
+      // TODO: potentially loosing photons:
+      //       Num is double but gets casted to int in the function below
+      // ~icaza
+      ReflDetThis = VISHits(Num, ScintPoint,
+                            fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
+                            cathode_hits_rec, hotspot);
+      if(ReflDetThis > 0) {
+        ReflDetectedNum[OpDet] = ReflDetThis;
+      }
+    }
+  }
 
   // VUV semi-analytic hits calculation
   int OpFastScintillation::VUVHits(const int Nphotons_created,

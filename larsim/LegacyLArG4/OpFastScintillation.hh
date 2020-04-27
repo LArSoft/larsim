@@ -256,20 +256,6 @@ namespace larg4 {
                     TVector3 OpDetPoint);
     // Visible component timing parameterisation
 
-    int VUVHits(const int Nphotons_created,
-                const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
-                const int optical_detector_type);
-    // Calculates semi-analytic model number of hits for vuv component
-
-    int VISHits(const int Nphotons_created,
-                const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
-                const int optical_detector_type,
-                const double cathode_hits_rec,
-                const std::array<double, 3> hotspot);
-    // Calculates semi-analytic model number of hits for visible component
-
   protected:
 
     void BuildThePhysicsTable();
@@ -299,6 +285,26 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
+    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                            const double Num,
+                            const std::array<double, 3> ScintPoint);
+    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                            const double Num,
+                            const std::array<double, 3> ScintPoint);
+
+    int VUVHits(const int Nphotons_created,
+                const std::array<double, 3> ScintPoint,
+                const std::array<double, 3> OpDetPoint,
+                const int optical_detector_type);
+    // Calculates semi-analytic model number of hits for vuv component
+
+    int VISHits(const int Nphotons_created,
+                const std::array<double, 3> ScintPoint,
+                const std::array<double, 3> OpDetPoint,
+                const int optical_detector_type,
+                const double cathode_hits_rec,
+                const std::array<double, 3> hotspot);
+    // Calculates semi-analytic model number of hits for visible component
 
     constexpr G4double single_exp(const G4double t, const G4double tau2) const;
     constexpr G4double bi_exp(const G4double t, const G4double tau1, const G4double tau2) const;
@@ -330,6 +336,8 @@ namespace larg4 {
      double fd_max;
      double ftf1_sampling_factor;
      double ft0_max, ft0_break_point;*/
+
+    size_t NOpChannels;
 
     //For new VUV time parametrization
     double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
