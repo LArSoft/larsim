@@ -1,0 +1,113 @@
+#
+# File:    POTsummary.fcl
+# Purpose: Prints the total protons on target from a given input set.
+# Date:    April 29, 2020
+# Author:  Gianluca Petrillo (petrillo@slac.stanford.edu)
+# Version: 1.0
+#
+#
+# Description
+# ============
+#
+# This job runs an analyzer across all the input files, and it prints in
+# `POTsummary.txt` the total number of protons on target from the `generator`
+# data products and the summary run by run.
+#
+# Example
+# --------
+#
+#
+#     lar -c POTsummary.fcl -S datafiles.list
+#
+# will produce a `POTsummary.txt` file with all information from the art/ROOT
+# files in the `datafiles.list` file list.
+#
+#
+# Dependencies
+# =============
+#
+# * message facility service
+#
+#
+# Input
+# ======
+#
+# Input files are required to have a `sumdata::POTSummary` data product with
+# label `generator` (which is a de facto standard for LArSoft neutrino
+# generators).
+#
+#
+# Output
+# =======
+#
+# * `POTsummary.txt`: text file with the summary of POT from the input dataset.
+#
+#
+# Changes
+# ========
+#
+# 20200429 (petrillo@slac.stanford.edu) [v1.0]
+# :   original version
+#
+#
+
+process_name: POTsummary
+
+
+services: {
+
+  message: {
+
+    destinations: {
+
+      # grab all the "POTsummary" messages and put them in POTsummary.txt
+      POTsummary: {
+        categories: {
+          DumpMCParticles: { limit: -1 }
+          default: { limit: 0 }
+        }
+        threshold: "INFO"
+        type: "file"
+        filename: "POTsummary.txt"
+        append: false
+      } # POTsummary
+
+      # standard output console also includes the summary.
+      LogStandardOut: {
+        categories: {
+          default: {}
+        }
+        threshold: "INFO"
+        type: "cout"
+      } # LogStandardOut
+
+    } # destinations
+  } # message
+} # services
+
+
+physics: {
+  producers:{}
+  filters:  {}
+  analyzers: {
+    potsummary: {
+
+      module_type:  POTaccumulator
+
+      # tag for data product with POT summary information (default: "generator")
+      SummaryTag: "generator"
+
+      # the same stream is used for both run-level and global summary
+      # (thus, the former is also enabled)
+      SummaryCategory:    "POTsummary"
+      RunSummaryCategory: "POTsummary"
+
+    } # potsummary
+  } # analyzers
+
+  summaries: [ potsummary ]
+
+  trigger_paths: []
+  end_paths:     [ summaries ]
+
+} # physics

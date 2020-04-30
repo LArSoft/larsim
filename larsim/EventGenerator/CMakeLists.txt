@@ -1,4 +1,7 @@
-art_make(LIB_LIBRARIES
+art_make(
+         EXCLUDE
+           "POTaccumulator_module.cc"
+         LIB_LIBRARIES
            nusimdata_SimulationBase
            cetlib
            cetlib_except
@@ -27,6 +30,11 @@ art_make(LIB_LIBRARIES
            ROOT::Physics
            ROOT::RIO
         )
+
+simple_plugin(POTaccumulator "module"
+  larcoreobj_SummaryData
+  ${MF_MESSAGELOGGER}
+  )
 
 install_headers()
 install_fhicl()
