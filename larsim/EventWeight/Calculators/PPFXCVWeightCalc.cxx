@@ -2,9 +2,6 @@
 #include "larsim/EventWeight/Base/WeightCalcCreator.h"
 #include "larsim/EventWeight/Base/WeightCalc.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-
 #include "CLHEP/Random/RandGaussQ.h"
 
 #include "MakeReweight.h"
@@ -21,9 +18,8 @@ namespace evwgh {
        PPFXCVWeightCalc();
        void Configure(fhicl::ParameterSet const& p,
                    CLHEP::HepRandomEngine& engine) override;
-       std::vector<std::vector<double> > GetWeight(art::Event & e);
+       std::vector<std::vector<double> > GetWeight(art::Event & e) override;
      private:
-       CLHEP::RandGaussQ *fGaussRandom;
        std::string fGenieModuleLabel; 
     
        std::vector<std::string>  fInputLabels;
@@ -44,11 +40,7 @@ namespace evwgh {
   {
     //get configuration for this function
     fhicl::ParameterSet const &pset=p.get<fhicl::ParameterSet> (GetName());
-    fGenieModuleLabel = p.get<std::string> ("genie_module_label");
-
-    //Prepare random generator
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    fGaussRandom = new CLHEP::RandGaussQ( rng->getEngine(art::ScheduleID::first(), fGenieModuleLabel, GetName()) );    
+    fGenieModuleLabel = p.get<std::string> ("genie_module_label");   
 
     //ppfx setup
     fInputLabels = pset.get<std::vector<std::string>>("input_labels");
@@ -59,7 +51,6 @@ namespace evwgh {
     gSystem->Setenv("MODE", fPPFXMode.c_str());
 
     fPPFXrw = NeutrinoFluxReweight::MakeReweight::getInstance();
-    std::cout<<"PPFX instance "<<fPPFXrw<<std::endl;
     std::string inputOptions  =std::string(getenv("PPFX_DIR"))+"/xml/inputs_"+fPPFXMode+".xml";
     std::cout << "is PPFX setup : " << fPPFXrw->AlreadyInitialized() << std::endl;  
     std::cout << "Setting PPFX, inputs: " << inputOptions << std::endl;    
