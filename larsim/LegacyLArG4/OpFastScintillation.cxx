@@ -292,7 +292,7 @@ namespace larg4 {
           x_v.push_back(elem.first);
           y_v.push_back(elem.second);
         }
-        fL_abs_vuv =  interpolate(x_v, y_v, 9.7, false);// TODO: unhardcode //TODO: unsafe casting double to int
+        fL_abs_vuv =  std::round(interpolate(x_v, y_v, 9.7, false));// 9.7 eV: peak of VUV emission spectrum
 
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
@@ -856,7 +856,7 @@ namespace larg4 {
 
               float PhotonEnergy = 0;
               if (Reflected)  PhotonEnergy = reemission_energy() * CLHEP::eV;
-              else            PhotonEnergy = 9.7 * CLHEP::eV;// TODO: unhardcode
+              else            PhotonEnergy = 9.7 * CLHEP::eV;// 9.7 eV peak of VUV emission spectrum
 
               // Make a photon object for the collection
               sim::OnePhoton PhotToAdd;
@@ -1345,7 +1345,6 @@ namespace larg4 {
 
     // calculate max and min distance relevant to sample parameterisation
     // max
-    // TODO: array instead of pointer? why this?
     const size_t nq_max = 1;
     double xq_max[nq_max];
     double yq_max[nq_max];
@@ -1640,7 +1639,7 @@ namespace larg4 {
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance
     // and angular dependence offset angle bin
-    const size_t j = (theta / fdelta_angulo);// TODO:: std::round?
+    const size_t j = (theta / fdelta_angulo);
 
     //Accounting for border effects
     double z_to_corner = std::abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
@@ -1712,7 +1711,7 @@ namespace larg4 {
     double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
     // double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
     double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
-    const size_t k = (theta_vis / fdelta_angulo);// TODO:: std::round?
+    const size_t k = (theta_vis / fdelta_angulo);
 
     // apply geometric correction
     double pars_ini_vis[6] = {fvispars[0][k], fvispars[1][k], fvispars[2][k],
