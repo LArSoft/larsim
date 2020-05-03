@@ -63,7 +63,7 @@ services: {
       # grab all the "POTsummary" messages and put them in POTsummary.txt
       POTsummary: {
         categories: {
-          DumpMCParticles: { limit: -1 }
+          POTsummary: { limit: -1 }
           default: { limit: 0 }
         }
         threshold: "INFO"
