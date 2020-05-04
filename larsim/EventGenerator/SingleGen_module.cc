@@ -508,8 +508,9 @@ namespace evgen{
   //____________________________________________________________________________
   void SingleGen::beginRun(art::Run& run)
   {
-    art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+    run.put
+      (std::make_unique<sumdata::RunData>(geom.DetectorName()), art::fullRun());
   }
 
 
