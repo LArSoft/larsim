@@ -1567,7 +1567,7 @@ namespace larg4 {
     double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
     // calculate hits on cathode plane via geometric acceptance
     double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
-      (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
+      (solid_angle_cathode / (4.*CLHEP::pi)) * int(Num);
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     // double theta_cathode = 0.;
@@ -1781,8 +1781,8 @@ namespace larg4 {
     //semi-analytic approach only works in the active volume
     if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
        (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz) ||
-       (std::abs(ScintPoint[0]) <= fplane_depth)) {
+       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)){
+       // (std::abs(ScintPoint[0]) <= fplane_depth)) {
       return false;
     }
     return true;
