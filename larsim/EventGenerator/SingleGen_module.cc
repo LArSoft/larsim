@@ -226,7 +226,7 @@ namespace evgen {
     explicit SingleGen(Parameters const& config);
 
     // This is called for each event.
-    void produce(art::Event& evt);
+    void produce(art::Event& evt) override;
 
   private:
 
