@@ -359,9 +359,9 @@ namespace larg4 {
       double w, h; // w = width; h = height
     };
     // solid angle of rectangular aperture calculation functions
-    constexpr double Rectangle_SolidAngle(const double a, const double b,
-                                          const double d);
-    constexpr double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
+    double Rectangle_SolidAngle(const double a, const double b,
+                                const double d);
+    double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
@@ -425,7 +425,7 @@ namespace larg4 {
   static const size_t acos_bins = 2000000;
   static std::array<double, acos_bins+1> acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
   constexpr double acos_table(const double x);
-  constexpr double fast_acos(const double x);
+  double fast_acos(const double x);
 
   ////////////////////
   // Inline methods

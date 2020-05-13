@@ -2030,8 +2030,8 @@ namespace larg4 {
 
 
   // solid angle of rectangular aperture
-  constexpr double OpFastScintillation::Rectangle_SolidAngle(const double a, const double b,
-                                                             const double d)
+  double OpFastScintillation::Rectangle_SolidAngle(const double a, const double b,
+                                                   const double d)
   {
     double aa = a / (2. * d);
     double bb = b / (2. * d);
@@ -2042,8 +2042,8 @@ namespace larg4 {
 
 
   // TODO: allow greater tolerance in comparisons, see note above on Disk_SolidAngle()
-  constexpr double OpFastScintillation::Rectangle_SolidAngle(const dims o,
-                                                             const std::array<double, 3> v)
+  double OpFastScintillation::Rectangle_SolidAngle(const dims o,
+                                                   const std::array<double, 3> v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
@@ -2109,7 +2109,7 @@ namespace larg4 {
   }
 
 
-  constexpr double fast_acos(double x) {
+  double fast_acos(double x) {
     double negate = double(x < 0);
     x = std::abs(x);
     x -= double(x>1.0)*(x-1.0); // <- equivalent to min(1.0,x), but faster
