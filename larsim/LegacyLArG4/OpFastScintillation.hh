@@ -306,8 +306,8 @@ namespace larg4 {
                 const std::array<double, 3> hotspot);
     // Calculates semi-analytic model number of hits for visible component
 
-    constexpr G4double single_exp(const G4double t, const G4double tau2) const;
-    constexpr G4double bi_exp(const G4double t, const G4double tau1, const G4double tau2) const;
+    G4double single_exp(const G4double t, const G4double tau2) const;
+    G4double bi_exp(const G4double t, const G4double tau1, const G4double tau2) const;
 
     G4double scint_time(const G4Step& aStep,
                         G4double ScintillationTime,
@@ -366,7 +366,7 @@ namespace larg4 {
     double Disk_SolidAngle(const double d, const double h, const double b);
 
     //For VUV semi-analytic hits
-    constexpr G4double Gaisser_Hillas(const double x, const double *par);
+    G4double Gaisser_Hillas(const double x, const double *par);
     bool fUseNhitsModel;
     //array of correction for the VUV Nhits estimation
     std::vector<std::vector<double> > fGHvuvpars;

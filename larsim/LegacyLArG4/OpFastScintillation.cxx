@@ -1789,13 +1789,13 @@ namespace larg4 {
   }
 
 
-  constexpr G4double OpFastScintillation::single_exp(const G4double t, const G4double tau2) const
+  G4double OpFastScintillation::single_exp(const G4double t, const G4double tau2) const
   {
     return std::exp(-1.0 * t / tau2) / tau2;
   }
 
 
-  constexpr G4double OpFastScintillation::bi_exp(const G4double t, const G4double tau1,
+  G4double OpFastScintillation::bi_exp(const G4double t, const G4double tau1,
                                                  const G4double tau2) const
   {// TODO: what's up with this? ... / tau2 / tau2 ...
     return std::exp(-1.0 * t / tau2) *
@@ -1803,7 +1803,7 @@ namespace larg4 {
   }
 
 
-  constexpr G4double OpFastScintillation::Gaisser_Hillas(const double x,
+  G4double OpFastScintillation::Gaisser_Hillas(const double x,
                                                          const double *par)
   {
     double X_mu_0 = par[3];
