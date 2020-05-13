@@ -262,7 +262,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
         else {
           sim::OnePhoton photon;
           photon.SetInSD = false;
-          photon.InitialPosition = TVector3{edep.X(), edep.Y(), edep.Z()};
+          photon.InitialPosition = edep.End();
           photon.Energy = 9.7e-6;
           if (nphot_fast > 0) {
             //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
