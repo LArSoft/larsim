@@ -107,7 +107,4 @@ physics: {
 
   summaries: [ potsummary ]
 
-  trigger_paths: []
-  end_paths:     [ summaries ]
-
 } # physics

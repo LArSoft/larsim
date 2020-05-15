@@ -6,7 +6,6 @@
  */
 
 // LArSoft libraries
-#include "larcorealg/CoreUtils/get_elements.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
 
 // framework libraries
@@ -17,6 +16,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "range/v3/view.hpp"
 
 // C/C++ standard libraries
 #include <map>
@@ -37,7 +37,8 @@ namespace sim { class POTaccumulator; }
  * are added together (i.e. it is assumed that summary information is
  * complementary rather than duplicate).
  *
- * The output is printed to the console via message facility.
+ * The output can be printed to the console or a file via the appropriate
+ * message facility configuration.
  *
  * Two output streams are used: the one for the run summary and the one for
  * the total summary. They may coincide.
@@ -111,7 +112,7 @@ class sim::POTaccumulator: public art::EDAnalyzer {
   virtual void analyze(art::Event const& event) override {}
 
   /// Collects information from each subrun.
-  virtual void beginSubRun(art::SubRun const& subRun) override;
+  virtual void endSubRun(art::SubRun const& subRun) override;
 
   /// Prints the general summary.
   virtual void endJob() override;
@@ -170,7 +171,7 @@ sim::POTaccumulator::POTaccumulator(Parameters const& config)
 
 
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::beginSubRun(art::SubRun const& subRun) {
+void sim::POTaccumulator::endSubRun(art::SubRun const& subRun) {
 
   auto const& ID = subRun.id();
 
@@ -190,17 +191,15 @@ void sim::POTaccumulator::beginSubRun(art::SubRun const& subRun) {
   //
   // accumulate the information by run
   //
-  auto const& runID = subRun.getRun().id();
-
   sumdata::POTSummary const& subRunPOT = *summaryHandle;
 
-  fRunPOT[runID].aggregate(subRunPOT);
+  fRunPOT[ID.runID()].aggregate(subRunPOT);
   MF_LOG_TRACE(fSummaryOutputCategory) << "Fragment #"
     << fPresentSubrunFragments[ID] << " of subrun " << ID
     << ": " << sim::POTaccumulator::to_string(subRunPOT)
     ;
 
-} // sim::POTaccumulator::analyze()
+} // sim::POTaccumulator::endSubRun()
 
 
 //------------------------------------------------------------------------------
@@ -216,7 +215,7 @@ void sim::POTaccumulator::endJob() {
 
     printRunSummary();
 
-  } // if run report requested
+  } // if
 
 
   //
@@ -234,16 +233,16 @@ void sim::POTaccumulator::printMissingSubrunList() const {
   // missing fragments information
   //
   mf::LogVerbatim log{fRunOutputCategory};
-  log << size(fMissingSubrunFragments) << " subruns miss POT information:";
+  log << size(fMissingSubrunFragments) << " subruns lack POT information:";
 
-  auto const efound = fPresentSubrunFragments.cend();
+  auto const fend = fPresentSubrunFragments.cend();
 
   for (auto const& [ id, nMissing ]: fMissingSubrunFragments) {
 
-    // add to the count of fragments the ones which did have
+    // add to the count of fragments the ones which we have actually found
     unsigned int nFragments = nMissing;
     auto const iFound = fPresentSubrunFragments.find(id);
-    if (iFound != efound) nFragments += iFound->second;
+    if (iFound != fend) nFragments += iFound->second;
 
     log << "\n" << id << ": " << nMissing << " / " << nFragments
       << " \"fragments\"";
@@ -258,8 +257,8 @@ void sim::POTaccumulator::printRunSummary() const {
 
   // count subruns in run
   std::map<art::RunID, unsigned int> subrunCount;
-  for (art::SubRunID const& ID: util::get_elements<0U>(fPresentSubrunFragments))
-    ++subrunCount[art::RunID{ ID.run() }];
+  for (art::SubRunID const& ID: fPresentSubrunFragments | ranges::view::keys)
+    ++subrunCount[ID.runID()];
 
   mf::LogVerbatim log{fRunOutputCategory};
   log << "POT from " << size(fRunPOT) << " runs:";
