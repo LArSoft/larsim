@@ -40,6 +40,12 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 
+// LArSoft libraries
+#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcoreobj/SummaryData/RunData.h"
+
+
 #include "TVector3.h"
 #include "TDatabasePDG.h"
 #include "TFile.h"
@@ -220,7 +226,7 @@ namespace evgen {
     explicit SingleGen(Parameters const& config);
 
     // This is called for each event.
-    void produce(art::Event& evt);
+    void produce(art::Event& evt) override;
 
   private:
 
@@ -298,6 +304,10 @@ namespace evgen {
 
     /// Returns a vector with the name of distribution keywords.
     static std::map<int, std::string> makeDistributionNames();
+
+
+    /// Act on begin of run: write "RunData" information (`sumdata::RunData`).
+    void beginRun(art::Run& run) override;
 
 
     /// Performs checks and initialization based on the current configuration.
@@ -490,6 +500,17 @@ namespace evgen{
     }
 
     produces< std::vector<simb::MCTruth> >();
+    produces< sumdata::RunData, art::InRun >();
+
+  }
+
+
+  //____________________________________________________________________________
+  void SingleGen::beginRun(art::Run& run)
+  {
+    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+    run.put
+      (std::make_unique<sumdata::RunData>(geom.DetectorName()), art::fullRun());
   }
 
 
