@@ -11,6 +11,7 @@
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/SummedValue.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
@@ -21,7 +22,6 @@
 // C/C++ standard libraries
 #include <map>
 #include <string>
-#include <algorithm> // std::for_each()
 
 
 // -----------------------------------------------------------------------------
@@ -137,7 +137,10 @@ class sim::POTaccumulator: public art::EDAnalyzer {
   std::map<art::SubRunID, unsigned int> fMissingSubrunFragments;
 
   /// Partial count of POT in the run, per run.
-  std::map<art::RunID, sumdata::POTSummary> fRunPOT;
+  std::map<art::RunID, art::SummedValue<sumdata::POTSummary>> fRunPOT;
+
+  /// Global count of POT in the job.
+  art::SummedValue<sumdata::POTSummary> fTotalPOT;
 
   // -- END -- Internal cache variables ----------------------------------------
 
@@ -193,11 +196,13 @@ void sim::POTaccumulator::endSubRun(art::SubRun const& subRun) {
   //
   sumdata::POTSummary const& subRunPOT = *summaryHandle;
 
-  fRunPOT[ID.runID()].aggregate(subRunPOT);
+  fRunPOT[ID.runID()].update(summaryHandle);
   MF_LOG_TRACE(fSummaryOutputCategory) << "Fragment #"
     << fPresentSubrunFragments[ID] << " of subrun " << ID
     << ": " << sim::POTaccumulator::to_string(subRunPOT)
     ;
+
+  fTotalPOT.update(summaryHandle);
 
 } // sim::POTaccumulator::endSubRun()
 
@@ -264,7 +269,7 @@ void sim::POTaccumulator::printRunSummary() const {
   log << "POT from " << size(fRunPOT) << " runs:";
   for (auto const& [ id, POT ]: fRunPOT) {
     log << "\n " << id << " (" << subrunCount[id] << " subruns): "
-      << sim::POTaccumulator::to_string(POT);
+      << sim::POTaccumulator::to_string(POT.value());
   } // for
 
 } // sim::POTaccumulator::printRunSummary()
@@ -274,14 +279,10 @@ void sim::POTaccumulator::printRunSummary() const {
 void sim::POTaccumulator::printSummary() const {
 
   // aggregate all run summaries
-  sumdata::POTSummary totPOT;
-  std::for_each(cbegin(fRunPOT), cend(fRunPOT),
-    [&totPOT](auto const& p){ totPOT.aggregate(p.second); });
-
   mf::LogVerbatim{fSummaryOutputCategory}
     << "Aggregated POT from " << fRunPOT.size() << " runs ("
     << fPresentSubrunFragments.size() << " subruns): "
-    << sim::POTaccumulator::to_string(totPOT)
+    << sim::POTaccumulator::to_string(fTotalPOT.value())
     ;
 
 } // sim::POTaccumulator::printSummary()
