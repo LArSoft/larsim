@@ -87,8 +87,6 @@ services: {
 
 
 physics: {
-  producers:{}
-  filters:  {}
   analyzers: {
     potsummary: {
 
