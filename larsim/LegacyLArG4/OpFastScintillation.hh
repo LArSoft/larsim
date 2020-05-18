@@ -292,13 +292,13 @@ namespace larg4 {
                             const double Num,
                             const std::array<double, 3> ScintPoint);
 
-    int VUVHits(const int Nphotons_created,
+    int VUVHits(const double Nphotons_created,
                 const std::array<double, 3> ScintPoint,
                 const std::array<double, 3> OpDetPoint,
                 const int optical_detector_type);
     // Calculates semi-analytic model number of hits for vuv component
 
-    int VISHits(const int Nphotons_created,
+    int VISHits(const double Nphotons_created,
                 const std::array<double, 3> ScintPoint,
                 const std::array<double, 3> OpDetPoint,
                 const int optical_detector_type,

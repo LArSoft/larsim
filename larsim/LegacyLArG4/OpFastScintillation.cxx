@@ -1524,9 +1524,6 @@ namespace larg4 {
       fzdimension = fOpDetLength.at(OpDet);
       // set detector struct for solid angle function
       detPoint.h = fydimension; detPoint.w = fzdimension;
-      // TODO: potentially loosing photons:
-      //       Num is double but gets casted to int in the function below
-      // ~icaza
       DetThis = VUVHits(Num, ScintPoint,
                         fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
       if(DetThis > 0) {
@@ -1568,7 +1565,7 @@ namespace larg4 {
     double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
     // calculate hits on cathode plane via geometric acceptance
     double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
-      (solid_angle_cathode / (4.*CLHEP::pi)) * int(Num);
+      (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     // double theta_cathode = 0.;
@@ -1586,9 +1583,6 @@ namespace larg4 {
       int ReflDetThis = 0;
       if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
 
-      // TODO: potentially loosing photons:
-      //       Num is double but gets casted to int in the function below
-      // ~icaza
       ReflDetThis = VISHits(Num, ScintPoint,
                             fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
                             cathode_hits_rec, hotspot);
@@ -1599,7 +1593,7 @@ namespace larg4 {
   }
 
   // VUV semi-analytic hits calculation
-  int OpFastScintillation::VUVHits(const int Nphotons_created,
+  int OpFastScintillation::VUVHits(const double Nphotons_created,
                                    const std::array<double, 3> ScintPoint,
                                    const std::array<double, 3> OpDetPoint,
                                    const int optical_detector_type)
@@ -1661,7 +1655,7 @@ namespace larg4 {
 
 
   // VIS hits semi-analytic model calculation
-  int OpFastScintillation::VISHits(const int Nphotons_created,
+  int OpFastScintillation::VISHits(const double Nphotons_created,
                                    const std::array<double, 3> ScintPoint,
                                    const std::array<double, 3> OpDetPoint,
                                    const int optical_detector_type,
