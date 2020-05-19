@@ -47,22 +47,19 @@ namespace larg4{
   //----------------------------------------------------------------------------
   void ISCalculationCorrelated::Initialize()
   {
+    std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     double density        = detprop->Density(detprop->Temperature());
     fEfield               = detprop->Efield();
-    fScintByParticleType  = larp->ScintByParticleType();
 
     // ionization work function
     fWion                 = 1./lgpHandle->GeVToElectrons() * 1e3; // MeV
 
     // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
     fWph                  = 19.5 * 1e-6; // MeV
-
-    // \todo get scintillation yield from LArG4Parameters or LArProperties
-    fScintYieldFactor  = 1.;
 
     // the recombination coefficient is in g/(MeVcm^2), but
     // we report energy depositions in MeV/cm, need to divide
@@ -101,7 +98,7 @@ namespace larg4{
     fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
 
     // calculate total quanta (ions + excitons)
-    double Nq = fEnergyDeposit / Wph;  
+    double Nq = fEnergyDeposit / fWph;  
 
     // Get the recombination factor for this voxel - Nucl.Instrum.Meth.A523:275-286,2004
     // R = A/(1 + (dE/dx)*k)
@@ -138,7 +135,7 @@ namespace larg4{
     }
 
     // using this recombination, calculate number of ionization electrons
-    fNumIonElectrons = ( fEnergyDeposit / Wion ) * recomb;
+    fNumIonElectrons = ( fEnergyDeposit / fWion ) * recomb;
 
     // calculate scintillation photons
     fNumScintPhotons = Nq - fNumIonElectrons;

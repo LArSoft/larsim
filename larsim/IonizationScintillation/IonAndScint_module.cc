@@ -7,11 +7,12 @@
 // - calculate the number of photons and electrons
 // Input: 'sim::SimEnergyDeposit'
 // Output: updated 'sim::SimEnergyDeposit' with numPhotons and numElectrons
-
+//
 //This module calculate the number of photons and electrons produced at each step where energy is deposited.
-//The Separate algorithm is used.
+//The Separate algorithm is used by default, but this can be changed via the "ISCalcAlg"
+//fhicl parameter tag.
 //At the end of this module the numPhotons and numElectrons of sim:SimEnergyDeposit have been updated.
-
+//
 // Aug.18 by Mu Wei
 //
 // 10/28/2019 Wenqiang Gu (wgu@bnl.gov)
@@ -23,6 +24,7 @@
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
+#include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
@@ -107,6 +109,10 @@ namespace larg4
         {
             fISAlg = new ISCalcSeparate();
         }
+        else if(calcTag.label().compare("Correlated") == 0)
+        {
+            fISAlg = new ISCalcCorrelated();
+        }
         else
         {
             mf::LogWarning("ISCalcAna") << "No ISCalculation set, this can't be good.";
@@ -123,10 +129,7 @@ namespace larg4
     {
         std::cout << "IonAndScint endJob." << std::endl;
 
-        if(fISAlg)
-        {
-            delete fISAlg;
-        }
+        if(fISAlg) delete fISAlg;
 
         return;
     }

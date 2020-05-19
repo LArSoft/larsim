@@ -1,21 +1,21 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculationCorrelated.h
-/// \brief Interface to algorithm class for a specific calculation of
-///        ionization electrons and scintillation photons, based on 
-///        simple microphysics arguments to establish an anticorrelation
-///        between these two quantities.
-///
-///        To enable this in simulation, change LArG4Parameters variable
-///        in your fhicl file:
-///       
-///        services.LArG4Parameters.IonAndScintCalculator: "Correlated" 
-///
-/// \author wforeman @ iit.edu
+// \file  ISCalculationCorrelated.h
+// \brief Interface to algorithm class for a specific calculation of
+//        ionization electrons and scintillation photons, based on 
+//        simple microphysics arguments to establish an anticorrelation
+//        between these two quantities.
+//
+//        To enable this in simulation, change LArG4Parameters variable
+//        in your fhicl file:
+//       
+//        services.LArG4Parameters.IonAndScintCalculator: "Correlated" 
+//
+// \author wforeman @ iit.edu
 ////////////////////////////////////////////////////////////////////////
 #ifndef LARG4_ISCALCULATIONCORRELATED_H
 #define LARG4_ISCALCULATIONCORRELATED_H
 
-#include "larsim/LArG4/ISCalculation.h"
+#include "larsim/LegacyLArG4/ISCalculation.h"
 
 // forward declarations
 class G4Step;
