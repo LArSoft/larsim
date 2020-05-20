@@ -56,6 +56,7 @@ find_ups_product( postgresql )
 find_ups_product( ifdhc )
 find_ups_product( genie )
 find_ups_product( log4cpp )
+find_ups_product( range )
 
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
