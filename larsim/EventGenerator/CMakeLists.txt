@@ -37,6 +37,7 @@ add_subdirectory(GENIE)
 add_subdirectory(MARLEY)
 add_subdirectory(MuonPropagation)
 add_subdirectory(CORSIKA)
+add_subdirectory(Decay0)
 
 # See ubooneoffline repository for a functioning NuWro implementation.
 # Leave it commented out here, as below.
