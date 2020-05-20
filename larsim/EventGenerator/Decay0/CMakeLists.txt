@@ -8,7 +8,6 @@ art_make(MODULE_LIBRARIES
          larcorealg_Geometry
          larcore_Geometry_Geometry_service
          nurandom_RandomUtils_NuRandomService_service
-         nugen_EventGeneratorBase_GENIE
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
          ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
@@ -19,6 +18,7 @@ art_make(MODULE_LIBRARIES
          ROOT::Geom
          ROOT::Core
          ${ROOT_EG}
+         ${ROOT_LIBRARIES}
          ${ROOT_HIST}
          ${ROOT_MATHCORE}
         )
