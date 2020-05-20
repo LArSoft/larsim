@@ -102,14 +102,20 @@ namespace evgen {
     explicit Decay0Gen(fhicl::ParameterSet const& pset);
 
   private:
+    typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
+    typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
+    struct ParticleInfo{
+      ti_PDGID pdg;
+      td_Mass mass;
+      TLorentzVector pos;
+      TLorentzVector mom;
+    };
     // This is called for each event.
     void produce(art::Event& evt);
     void beginRun(art::Run& run);
     void beginJob();
     void endJob();
 
-    typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
-    typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
 
     void SampleOne(int i,
        simb::MCTruth &mct);
@@ -120,12 +126,6 @@ namespace evgen {
     void samplespectrum(std::string nuclideName, ParticleInfo& part);
 
 
-    struct ParticleInfo{
-      ti_PDGID pdg;
-      td_Mass mass;
-      TLorentzVector pos;
-      TLorentzVector mom;
-    };
 
     ParticleInfo AlphaDecay(double t, TVector3 pos, double time);
     ParticleInfo BetaDecay(double t, TVector3 pos, double time, double Z);
@@ -449,6 +449,7 @@ namespace evgen{
     double *xyz = new double[3];
     TGeoNode *node = 0;
     int i=0;
+    vol->SetAsTopVolume();
     // int ic = 0;
     // double ratio=0;
     int npoints=10000;

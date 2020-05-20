@@ -16,6 +16,8 @@ art_make(MODULE_LIBRARIES
          ${MF_MESSAGELOGGER}
          ${CLHEP}
          ${BxDecay0_LIBRARIES}
+         ROOT::Geom
+         ROOT::Core
          ${ROOT_EG}
          ${ROOT_HIST}
          ${ROOT_MATHCORE}

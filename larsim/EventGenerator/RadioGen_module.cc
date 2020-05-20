@@ -103,6 +103,12 @@ namespace evgen {
 
     typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
     typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
+    struct ParticleInfo{
+      ti_PDGID pdg;
+      td_Mass mass;
+      TLorentzVector pos;
+      TLorentzVector mom;
+    };
 
     void SampleOne(int i,
        simb::MCTruth &mct);
@@ -113,12 +119,6 @@ namespace evgen {
     void samplespectrum(std::string nuclideName, ParticleInfo& part);
 
 
-    struct ParticleInfo{
-      ti_PDGID pdg;
-      td_Mass mass;
-      TLorentzVector pos;
-      TLorentzVector mom;
-    };
 
     ParticleInfo AlphaDecay(double t, TVector3 pos, double time);
     ParticleInfo BetaDecay(double t, TVector3 pos, double time, double Z);
@@ -428,6 +428,7 @@ namespace evgen{
     TGeoVolume* vol = fGeoManager->FindVolumeFast(volname.c_str());
     if (!vol)
       throw cet::exception("RadioGen") << "Volume: " << volname << " doesn't exist in the geometry. Exit disgracefully.";
+    vol->SetAsTopVolume();
 
     std::regex regex_material = (std::regex)matname;
 
