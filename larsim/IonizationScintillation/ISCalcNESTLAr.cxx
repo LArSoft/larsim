@@ -15,15 +15,6 @@ namespace larg4
     ISCalcNESTLAr::ISCalcNESTLAr(CLHEP::HepRandomEngine& Engine)
     : fEngine (Engine)
     {
-    }
-    //----------------------------------------------------------------------------
-    ISCalcNESTLAr::~ISCalcNESTLAr()
-    {
-    }
-
-    //----------------------------------------------------------------------------
-    void ISCalcNESTLAr::Initialize()
-    {
         std::cout << "ISCalcNESTLAr Initialize." << std::endl;
 
         fSCE       = lar::providerFrom<spacecharge::SpaceChargeService>();
@@ -33,7 +24,6 @@ namespace larg4
         fScintYield        = 1.0 / (19.5*CLHEP::eV);
         fResolutionScale   = 0.107;                   // Doke 1976
 
-        return;
     }
 
     //----------------------------------------------------------------------------

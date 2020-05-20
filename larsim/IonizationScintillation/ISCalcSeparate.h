@@ -33,8 +33,6 @@ namespace larg4
     {
     public:
         ISCalcSeparate();
-        virtual ~ISCalcSeparate();
-        void   Initialize();
         void   Reset();
         
         double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step

@@ -54,9 +54,9 @@ namespace larg4
         void endJob()                           override;
 
     private:
-        art::InputTag            calcTag;             // name of calculator to use, NEST or Separate
+        art::InputTag            calcTag;             // name of calculator: Separate, Correlated, or NEST
         ISCalc*                  fISAlg;
-        CLHEP::HepRandomEngine&  fEngine;             // random number engine for NEST algorithm
+        CLHEP::HepRandomEngine&  fEngine;   
         string                   Instances;
         std::vector<string>      instanceNames;
     };
@@ -101,24 +101,12 @@ namespace larg4
     {
         std::cout << "IonAndScint beginJob." << std::endl;
         std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
-        if(calcTag.label().compare("NEST") == 0)
-        {
-            fISAlg = new ISCalcNESTLAr(fEngine);
-        }
-        else if(calcTag.label().compare("Separate") == 0)
-        {
-            fISAlg = new ISCalcSeparate();
-        }
-        else if(calcTag.label().compare("Correlated") == 0)
-        {
-            fISAlg = new ISCalcCorrelated();
-        }
-        else
-        {
-            mf::LogWarning("ISCalcAna") << "No ISCalculation set, this can't be good.";
-        }
-
-        fISAlg->Initialize();
+        
+        if      (calcTag.label() == "Separate")   fISAlg = new ISCalcSeparate();
+        else if (calcTag.label() == "Correlated") fISAlg = new ISCalcCorrelated();
+        else if (calcTag.label() == "NEST")       fISAlg = new ISCalcNESTLAr(fEngine);
+        else mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
+        
         fISAlg->Reset();
 
         return;
@@ -128,9 +116,7 @@ namespace larg4
     void IonAndScint::endJob()
     {
         std::cout << "IonAndScint endJob." << std::endl;
-
         if(fISAlg) delete fISAlg;
-
         return;
     }
 

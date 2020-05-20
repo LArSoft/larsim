@@ -25,17 +25,14 @@ namespace larg4 {
   }
 
   //......................................................................
-  double ISCalculation::EFieldAtStep(double fEfield, const G4Step* step) const
+  double ISCalculation::EFieldAtStep(double efield, const G4Step* step) const
   {
     auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    if (!SCE->EnableSimEfieldSCE()) return fEfield;
-
+    if (!SCE->EnableSimEfieldSCE()) return efield;
     geo::Point_t midPoint
       { ( step->GetPreStepPoint()->GetPosition() + step->GetPostStepPoint()->GetPosition() ) * 0.5/CLHEP::cm };
-    auto EfieldDelta = fEfield * SCE->GetEfieldOffsets(midPoint);
-    geo::Vector_t EfieldVec
-      = { fEfield + EfieldDelta.X(), EfieldDelta.Y(), EfieldDelta.Z() };
-    return EfieldVec.R();
+    auto const eFieldOffsets = SCE->GetEfieldOffsets(midPoint);
+    return efield * std::hypot(1+eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
   }
 
 }

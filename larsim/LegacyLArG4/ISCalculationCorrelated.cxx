@@ -11,10 +11,10 @@
 //
 //        TO DO:
 //        [ ] Add fluctuations from Fano factor
-//        [ ] Get W_ph = 19.5eV from somewhere more centralized instead
+//        [ ] Get W_ph = 19.5 eV from somewhere more centralized instead
 //            of hard-coding it into this algorithm
 //
-// \author  wforeman @ iit.edu
+// \author  W. Foreman, May 2020
 ////////////////////////////////////////////////////////////////////////
 
 #include "Geant4/G4LossTableManager.hh"
@@ -36,16 +36,6 @@ namespace larg4{
 
   //----------------------------------------------------------------------------
   ISCalculationCorrelated::ISCalculationCorrelated(CLHEP::HepRandomEngine&)
-  {
-  }
-
-  //----------------------------------------------------------------------------
-  ISCalculationCorrelated::~ISCalculationCorrelated()
-  {
-  }
-
-  //----------------------------------------------------------------------------
-  void ISCalculationCorrelated::Initialize()
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
@@ -76,8 +66,6 @@ namespace larg4{
     double maxsize = std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * CLHEP::cm;
 
     fStepSize = 0.1 * maxsize;
-
-    return;
   }
 
   //----------------------------------------------------------------------------
@@ -114,7 +102,6 @@ namespace larg4{
     G4ThreeVector totstep = step->GetPostStepPoint()->GetPosition();
     totstep -= step->GetPreStepPoint()->GetPosition();
     double dx     = totstep.mag()/CLHEP::cm;
-    double recomb = 0.;
     double dEdx   = (dx == 0.0)? 0.0: fEnergyDeposit/dx;
     double EFieldStep = EFieldAtStep(fEfield,step);
 
@@ -122,6 +109,7 @@ namespace larg4{
     if(dEdx < 1.) dEdx = 1.;
 
     // calculate the recombination survival fraction
+    double recomb = 0.;
     if(fUseModBoxRecomb) {
       if (dx){
         double Xi = fModBoxB * dEdx / EFieldStep;

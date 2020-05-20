@@ -34,8 +34,6 @@ namespace larg4
     {
     public:
         ISCalcCorrelated();
-        virtual ~ISCalcCorrelated();
-        void   Initialize();
         void   Reset();
         
         double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step

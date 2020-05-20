@@ -24,7 +24,7 @@ namespace larg4 {
    ISCalculationNEST(CLHEP::HepRandomEngine& engine);
    virtual ~ISCalculationNEST();
 
-   void   Initialize();
+   //void   Initialize();
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
    double StepSizeLimit()              const { return fStepSize;        }

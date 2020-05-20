@@ -231,7 +231,7 @@ namespace detsim {
 //		      detprop,
 //		      &(*paramHandle),
 //		      lar::providerFrom<spacecharge::SpaceChargeService>());
-    fISAlg.Initialize();
+//    fISAlg.Initialize();
 
 
     return;

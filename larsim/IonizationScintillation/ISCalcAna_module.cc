@@ -24,6 +24,7 @@
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
+#include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -69,21 +70,12 @@ namespace larg4
         std::cout << "ISCalcAna beginJob." << std::endl;       
         std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
         
-        if(calcTag.label().compare("NEST") == 0)
-        {
-            fISAlg = new ISCalcNESTLAr(fEngine);
-        }
-        else if(calcTag.label().compare("Separate") == 0)
-        {
-            fISAlg = new ISCalcSeparate();
-        }
-        else
-        {
-            mf::LogWarning("ISCalcAna") << "No ISCalculation set, this can't be good.";
-        }
+        if      (calcTag.label() == "Separate")   fISAlg = new larg4::ISCalcSeparate();
+        else if (calcTag.label() == "Correlated") fISAlg = new larg4::ISCalcCorrelated();
+        else if (calcTag.label() == "NEST")       fISAlg = new larg4::ISCalcNESTLAr(fEngine);
+        else mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
         
         fISAlg->Reset();
-        fISAlg->Initialize();
         
         art::ServiceHandle<art::TFileService const> tfs;
         fNtuple = tfs->make<TNtuple>("nt_is",
@@ -94,12 +86,7 @@ namespace larg4
     void ISCalcAna::endJob()
     {
         std::cout << "ISCalcAna endJob." << std::endl;
-        
-        if(fISAlg)
-        {
-            delete fISAlg;
-        }
-        
+        if(fISAlg) delete fISAlg;
         return;
     }
     void ISCalcAna::analyze(art::Event const & event)

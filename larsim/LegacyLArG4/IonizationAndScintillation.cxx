@@ -61,15 +61,11 @@ namespace larg4 {
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
-
-    if(fISCalculator.compare("NEST") == 0)
-      fISCalc = new larg4::ISCalculationNEST(fEngine);
-    else if(fISCalculator.compare("Separate") == 0)
-      fISCalc = new larg4::ISCalculationSeparate(fEngine);
-    else if(fISCalculator.compare("Correlated") == 0 )
-      fISCalc = new larg4::ISCalculationCorrelated(fEngine);
-    else
-      mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
+    
+    if      (fISCalculator == "Separate")   fISCalc = new larg4::ISCalculationSeparate(fEngine);
+    else if (fISCalculator == "Correlated") fISCalc = new larg4::ISCalculationCorrelated(fEngine);
+    else if (fISCalculator == "NEST")       fISCalc = new larg4::ISCalculationNEST(fEngine);
+    else mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
 
     // Reset the values for the electrons, photons, and energy to 0
     // in the calculator
@@ -77,9 +73,6 @@ namespace larg4 {
     //set the current track and step number values to bogus so that it will run the first reset:
     fStepNumber=-1;
     fTrkID=-1;
-
-    // initialize the calculator
-    fISCalc->Initialize();
 
     // make the histograms
     art::ServiceHandle<art::TFileService const> tfs;

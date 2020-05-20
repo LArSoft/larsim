@@ -79,7 +79,7 @@ void spacecharge::ShiftEdepSCE::beginJob()
 //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 //		    &(*lg4paramHandle),
 //		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  fISAlg.Initialize();
+//  fISAlg.Initialize();
 
 }
 
@@ -90,7 +90,8 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
 //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
 //		    &(*lg4paramHandle),
 //		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  fISAlg.Initialize();  /*
+//  fISAlg.Initialize(); 
+  /* 
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
 		    lar::providerFrom<detinfo::DetectorPropertiesService>(),

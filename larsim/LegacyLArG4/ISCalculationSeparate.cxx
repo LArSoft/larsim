@@ -26,16 +26,6 @@ namespace larg4{
   //----------------------------------------------------------------------------
   ISCalculationSeparate::ISCalculationSeparate(CLHEP::HepRandomEngine&)
   {
-  }
-
-  //----------------------------------------------------------------------------
-  ISCalculationSeparate::~ISCalculationSeparate()
-  {
-  }
-
-  //----------------------------------------------------------------------------
-  void ISCalculationSeparate::Initialize()
-  {
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -66,8 +56,6 @@ namespace larg4{
     double maxsize = std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * CLHEP::cm;
 
     fStepSize = 0.1 * maxsize;
-
-    return;
   }
 
   //----------------------------------------------------------------------------

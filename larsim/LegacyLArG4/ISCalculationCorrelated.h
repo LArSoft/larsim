@@ -28,9 +28,7 @@ namespace larg4 {
  public:
 
    ISCalculationCorrelated(CLHEP::HepRandomEngine&);
-   virtual ~ISCalculationCorrelated();
-
-   void   Initialize();
+   
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
    double StepSizeLimit()              const { return fStepSize;            }

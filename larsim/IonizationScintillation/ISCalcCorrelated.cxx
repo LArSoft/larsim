@@ -19,16 +19,6 @@ namespace larg4
     //----------------------------------------------------------------------------
     ISCalcCorrelated::ISCalcCorrelated()
     {
-    }
-
-    //----------------------------------------------------------------------------
-    ISCalcCorrelated::~ISCalcCorrelated()
-    {
-    }
-
-    //----------------------------------------------------------------------------
-    void ISCalcCorrelated::Initialize()
-    {
         std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
         art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
 
@@ -53,7 +43,6 @@ namespace larg4
         // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
         fWph              = 19.5 * 1e-6; // MeV
 
-        return;
     }
 
     //----------------------------------------------------------------------------
@@ -75,10 +64,10 @@ namespace larg4
         // calculate total quanta (ions + excitons)
         double Nq = fEnergyDeposit / fWph;  
 
-        double recomb     = 0.;
         float  ds         = edep.StepLength();
         double dEdx       = (ds<=0.0)? 0.0: fEnergyDeposit/ds;
         double EFieldStep = EFieldAtStep(fDetProp->Efield(), edep);
+        double recomb     = 0.;
 
         // Guard against spurious values of dE/dx. Note: assumes density of LAr
         if(dEdx < 1.) dEdx = 1.;
@@ -127,20 +116,9 @@ namespace larg4
     //----------------------------------------------------------------------------
     double ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
     {
-        geo::Point_t pos = edep.MidPoint();
-        double EField    = efield;
-
-        geo::Vector_t eFieldOffsets;
-
-        if (fSCE->EnableSimEfieldSCE())
-        {
-            eFieldOffsets = fSCE->GetEfieldOffsets(pos);
-            EField = std::sqrt((efield + efield*eFieldOffsets.X())*(efield + efield*eFieldOffsets.X())
-                              +(efield*eFieldOffsets.Y()*efield*eFieldOffsets.Y())
-                              +(efield*eFieldOffsets.Z()*efield*eFieldOffsets.Z()) );
-        }
-
-        return EField;
+      if (!fSCE->EnableSimEfieldSCE()) return efield;
+      auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+      return efield * std::hypot(1+eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
     }
 
 }// namespace

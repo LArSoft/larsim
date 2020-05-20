@@ -20,7 +20,6 @@ namespace larg4
     public:
         ISCalc();
         virtual ~ISCalc();
-        virtual void      Initialize()                                                        = 0;
         virtual void      Reset()                                                             = 0;
         virtual void      CalcIonAndScint(sim::SimEnergyDeposit const& edep)                  = 0;
         virtual double    EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)      = 0;
@@ -38,5 +37,6 @@ namespace larg4
 //        double  fNumSlowScintPhotons;       // number of slow scintillation photons for this step
         double    fScintillationYieldRatio;   // liquid argon scintillation yield ratio
     };
+   
 }
 #endif // LARG4_ISCALC_H

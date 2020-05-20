@@ -199,7 +199,7 @@ void PhotonLibraryPropagation::produce(art::Event& e)
   CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
   auto const nOpChannels = pvs->NOpChannels();
 //  fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
-  fISAlg.Initialize();
+  //fISAlg.Initialize();
   unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
   auto& photonCollection{*photCol};
   photonCollection.resize(nOpChannels);
