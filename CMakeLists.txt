@@ -72,6 +72,9 @@ cet_find_library( BOOST_DATE_TIME     NAMES boost_date_time     PATHS ENV BOOST_
 #
 find_library( CRY NAMES CRY PATHS $ENV{CRYHOME}/lib NO_DEFAULT_PATH )
 
+list(APPEND CMAKE_PREFIX_PATH "~/bxdecay0/bin/")
+find_package(BxDecay0 1.0 CONFIG)
+
 # genie (copied from nugen)
   cet_find_library( LOG4CPP NAMES log4cpp PATHS ENV LOG4CPP_LIB NO_DEFAULT_PATH )
   cet_find_library( GFWMSG       NAMES GFwMsg       PATHS ENV GENIE_LIB NO_DEFAULT_PATH )

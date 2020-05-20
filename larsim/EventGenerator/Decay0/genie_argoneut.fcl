@@ -1,0 +1,24 @@
+#include "genie.fcl"
+
+BEGIN_PROLOG
+
+argoneut_genie_hist_neutrino:                @local::standard_genie
+argoneut_genie_hist_neutrino.FluxType:       "histogram"
+argoneut_genie_hist_neutrino.FluxFiles:      ["flugg_L010z185i_antineutrino_mode.root"]
+argoneut_genie_hist_neutrino.BeamDirection:  [0.0, -0.0583497, 0.998296]
+
+argoneut_genie_hist_antineutrino:               @local::standard_genie
+argoneut_genie_hist_antineutrino.FluxType:       "histogram"
+argoneut_genie_hist_antineutrino.FluxFiles:     ["flugg_L010z185i_antineutrino_mode.root"]
+argoneut_genie_hist_antineutrino.BeamDirection: [0.0, -0.0583497, 0.998296]
+
+argoneut_genie_simple_neutrino:                @local::standard_genie
+argoneut_genie_simple_neutrino.FluxType:       "simple_flux"
+argoneut_genie_simple_neutrino.FluxFiles:      ["argoneut/gsimple_ArgoNeuT_le010z185i_run3_38l0-9r_00001.root"] #each file is 1e8 POT
+argoneut_genie_simple_neutrino.TopVolume:      "volTPCActive"
+argoneut_genie_simple_neutrino.EventsPerSpill: 0
+
+argoneut_genie_simple_antineutrino:           @local::argoneut_genie_simple_neutrino
+argoneut_genie_simple_antineutrino.FluxFiles: ["argoneut/gsimple_ArgoNeuT_le010z-185i_run4_38l0-9r_00001.root"] #each file is 1e8 POT
+
+END_PROLOG
