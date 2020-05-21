@@ -80,7 +80,10 @@ namespace larg4 {
 			    double start_time,double end_time,
 			    int trackid,int pdgcode,
 			    std::string const& vol="EMPTY");
+      /// Returns the map of energy deposits by volume name.
       std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > const& GetSimEnergyDeposits() const;
+      /// Yields the map of energy deposits by volume name, and resets the internal one.
+      std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > YieldSimEnergyDeposits();
       //std::vector<sim::SimEnergyDeposit> & GetSimEnergyDeposits();
 
     protected:

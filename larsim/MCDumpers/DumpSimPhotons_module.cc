@@ -46,58 +46,58 @@ namespace {
       };
 
   }; // struct Config
-  
-  
+
+
   /**
    * @brief Sorts `sim::OnePhoton` objects.
-   * 
+   *
    * The sorting criteria are:
-   * 
+   *
    * 1. arrival time
    * 2. particle identificator (GEANT4 track ID)
    * 3. energy
    * 4. starting position: _z_, then _y_, then _x_
-   * 
+   *
    * Comparison of objects with all these values the same yields `false` and the
    * two objects are considered equivalent.
    */
   struct OnePhotonSorter {
-    
+
     /// Direct comparison of `sim::OnePhoton` objects.
     bool operator() (sim::OnePhoton const& a, sim::OnePhoton const& b) const
       {
         auto res = cmp(a.Time, b.Time);
         if (res < 0) return true;
         if (res > 0) return false;
-        
+
         res = cmp(a.MotherTrackID, b.MotherTrackID);
         if (res < 0) return true;
         if (res > 0) return false;
-        
+
         res = cmp(a.Energy, b.Energy);
         if (res < 0) return true;
         if (res > 0) return false;
-        
+
         res = cmp(a.InitialPosition.Z(), b.InitialPosition.Z());
         if (res < 0) return true;
         if (res > 0) return false;
-        
+
         res = cmp(a.InitialPosition.Y(), b.InitialPosition.Y());
         if (res < 0) return true;
         if (res > 0) return false;
-        
+
         res = cmp(a.InitialPosition.X(), b.InitialPosition.X());
         if (res < 0) return true;
         if (res > 0) return false;
-        
-        return false; // 
+
+        return false; //
       } // operator()
-    
+
     /// Comparison of `sim::OnePhoton` via their pointers.
     bool operator() (sim::OnePhoton const* a, sim::OnePhoton const* b) const
       { return operator() (*a, *b); }
-    
-    
+
+
     // TODO when C++20 is supported, this becomes `return a <=> b;`
     template <typename T, typename U>
     static int cmp(T const& a, U const& b)
@@ -106,7 +106,7 @@ namespace {
         if (a == b) return  0;
         else        return +1;
       }
-    
+
   }; // struct OnePhotonSorter
 
 } // local namespace
@@ -179,12 +179,8 @@ void sim::DumpSimPhotons::DumpOnePhoton
   (Stream&& out, sim::OnePhoton const& onephoton) const
 {
   out << "E=" << onephoton.Energy << " t=" << onephoton.Time
-    << " from (" << onephoton.InitialPosition.X()
-    << ", " << onephoton.InitialPosition.Y()
-    << ", " << onephoton.InitialPosition.Z() << ") cm"
-    << " to (" << onephoton.FinalLocalPosition.X()
-    << ", " << onephoton.FinalLocalPosition.Y()
-    << ", " << onephoton.FinalLocalPosition.Z() << ") cm"
+    << " from " << onephoton.InitialPosition << " cm"
+    << " to " << onephoton.FinalLocalPosition << " cm"
     ;
   if (onephoton.SetInSD) out << " [in SD]"; // in sensitive detector?
   out << " from track ID=" << onephoton.MotherTrackID;
@@ -204,16 +200,16 @@ void sim::DumpSimPhotons::DumpElement(
   }
   else {
     out << simphotons.size() << " photons:";
-    
+
     auto sortedPhotonPtrs = util::makePointerVector(simphotons);
     std::sort
       (sortedPhotonPtrs.begin(), sortedPhotonPtrs.end(), OnePhotonSorter());
-    
+
     for (auto const* onephoton: sortedPhotonPtrs) {
       out << "\n" << indent << "  ";
       DumpOnePhoton(out, *onephoton);
     } // for
-    
+
   }
 
 } // sim::DumpSimPhotons::DumpSimPhotons()

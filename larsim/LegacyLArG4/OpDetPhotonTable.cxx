@@ -224,5 +224,13 @@ namespace larg4 {
   std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> > const& OpDetPhotonTable::GetSimEnergyDeposits() const
   { return fSimEDepCol; }
 
+  //--------------------------------------------------
+  std::unordered_map< std::string,std::vector<sim::SimEnergyDeposit> > OpDetPhotonTable::YieldSimEnergyDeposits()
+  {
+    auto data { std::move(fSimEDepCol) };
+    ClearEnergyDeposits();
+    return data;
+  }
+
 
 }
