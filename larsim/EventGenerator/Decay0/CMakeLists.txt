@@ -1,7 +1,6 @@
 include_directories ( ${BxDecay0_INCLUDE_DIR} )
 
 art_make(MODULE_LIBRARIES
-         lardataalg_MCDumpers
          larsim_Simulation lardataobj_Simulation
          nusimdata_SimulationBase
          larcoreobj_SummaryData
@@ -16,11 +15,7 @@ art_make(MODULE_LIBRARIES
          ${CLHEP}
          ${BxDecay0_LIBRARIES}
          ROOT::Geom
-         ROOT::Core
-         ${ROOT_EG}
          ${ROOT_LIBRARIES}
-         ${ROOT_HIST}
-         ${ROOT_MATHCORE}
         )
 
 install_headers()
