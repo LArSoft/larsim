@@ -10,6 +10,7 @@
 
 // LArSoft includes
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/MCCheater/BackTrackerService.h"
@@ -68,6 +69,9 @@ namespace cheat {
     art::ServiceHandle<cheat::BackTrackerService const> bt_serv;
     art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
 
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+
     // make a collection of the distinct eve ID values
     std::set<int> eveIDs;
 
@@ -76,9 +80,9 @@ namespace cheat {
       // print the truth information for this hit
       mf::LogInfo("CheckBackTracking") << *((*itr).get()) << "\n channel is: " << (*itr)->Channel();
 
-      std::vector<sim::TrackIDE> trackides = bt_serv->HitToTrackIDEs(*itr);
-      std::vector<sim::TrackIDE> eveides = bt_serv->HitToEveTrackIDEs(*itr);
-      std::vector<double> xyz = bt_serv->HitToXYZ(*itr);
+      std::vector<sim::TrackIDE> trackides = bt_serv->HitToTrackIDEs(clockData, *itr);
+      std::vector<sim::TrackIDE> eveides = bt_serv->HitToEveTrackIDEs(clockData, *itr);
+      std::vector<double> xyz = bt_serv->HitToXYZ(clockData, *itr);
 
       mf::LogInfo("CheckBackTracking")
         << "hit weighted mean position is (" << xyz[0] << "," << xyz[1] << "," << xyz[2] << ")";
@@ -104,15 +108,16 @@ namespace cheat {
       itr++;
     } // end loop over hits
 
-    // loop over the eveID values and calculate the purity and efficiency for each
+    // loop over the eveID values and calculate the purity and efficiency for
+    // each
     std::set<int>::iterator setitr = eveIDs.begin();
     while (setitr != eveIDs.end()) {
 
       std::set<int> id;
       id.insert(*setitr);
       mf::LogInfo("CheckBackTracking")
-        << "eve ID: " << *setitr << " purity: " << bt_serv->HitCollectionPurity(id, hits)
-        << " efficiency: " << bt_serv->HitCollectionEfficiency(id, hits, hits, geo::k3D);
+        << "eve ID: " << *setitr << " purity: " << bt_serv->HitCollectionPurity(clockData, id, hits)
+        << " efficiency: " << bt_serv->HitCollectionEfficiency(clockData, id, hits, hits, geo::k3D);
 
       setitr++;
     }

@@ -38,6 +38,16 @@
 ///   readouts.  Geant4 allows the construction of multiple parallel
 ///   readouts, so this mechanism is relatively easy to extend for
 ///   each type of readout.
+///
+/// =================================================================
+/// N.B. At the beginning of each event, the clock data pointer must
+///      be set to the event currently being processed.  This is a
+///      thread-safety problem which should be reconciled for the
+///      larg4 package if it has not already been.  The way that is
+///      done for the LArG4_module is for the LArVoxelReadoutGeometry
+///      object to update the state of the LArVoxelReadout object
+///      through a sentry object.
+/// =================================================================
 
 #ifndef LArG4_LArVoxelReadout_h
 #define LArG4_LArVoxelReadout_h
@@ -52,9 +62,12 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
-#include "lardataalg/DetectorInfo/ElecClock.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/LArG4Parameters.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
 
 // Forward declarations
 class G4HCofThisEvent;
@@ -175,9 +188,6 @@ namespace larg4 {
     /// Constructor. Sets which TPC to work on
     LArVoxelReadout(std::string const& name, unsigned int cryostat, unsigned int tpc);
 
-    // Destructor
-    virtual ~LArVoxelReadout();
-
     /// Reads all the configuration elements from `setupData`
     void Setup(Setup_t const& setupData);
 
@@ -232,6 +242,23 @@ namespace larg4 {
     //@}
 
   private:
+    // N.B. This code is not thread-safe, as it presupposes that there
+    // is a "current" clock-data object.  Such a pattern should be
+    // avoided for the users of larg4.
+    friend class LArVoxelReadoutGeometry;
+
+    void
+    SetClockData(detinfo::DetectorClocksData const* const clockData) noexcept
+    {
+      fClockData = clockData;
+    }
+
+    void
+    SetPropertiesData(detinfo::DetectorPropertiesData const* const detProp) noexcept
+    {
+      fDetProp = detProp;
+    }
+
     /**
      * @brief Sets the margin for recovery of charge drifted off-plane.
      * @param margin the extent of the margin on each frame coordinate [cm]
@@ -290,7 +317,8 @@ namespace larg4 {
      */
     geo::Point_t RecoverOffPlaneDeposit(geo::Point_t const& pos, geo::PlaneGeo const& plane) const;
 
-    void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
+    void DriftIonizationElectrons(detinfo::DetectorClocksData const& clockData,
+                                  G4ThreeVector stepMidPoint,
                                   const double simTime,
                                   int trackID,
                                   unsigned short int cryostat,
@@ -313,9 +341,6 @@ namespace larg4 {
     double fElectronLifetime;
     double fElectronClusterSize;
     int fMinNumberOfElCluster;
-    // for c2: unused private data members
-    //double                                    fSampleRate;
-    //int                                       fTriggerOffset;
     bool fDontDriftThem;
     std::vector<unsigned short int> fSkipWireSignalInTPCs;
     /// Charge deposited within this many [cm] from the plane is lead onto it.
@@ -331,7 +356,8 @@ namespace larg4 {
 
     CLHEP::HepRandomEngine* fPropGen = nullptr; ///< random engine for charge propagation
 
-    ::detinfo::ElecClock fClock; ///< TPC electronics clock
+    detinfo::DetectorClocksData const* fClockData{nullptr};
+    detinfo::DetectorPropertiesData const* fDetProp{nullptr};
 
     //these are the things for doing the separated EDeps
     void ProcessStep(G4Step*);

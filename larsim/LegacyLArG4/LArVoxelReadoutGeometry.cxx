@@ -12,9 +12,11 @@
 #include <map>
 #include <memory>  // std::unique_ptr()
 #include <sstream> // std::ostringstream
+#include <typeinfo>
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib_except/demangle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
@@ -37,91 +39,68 @@
 
 constexpr bool DisableVoxelCaching = false;
 
-#include <typeinfo>
+namespace {
+  template <typename T>
+  std::string
+  demangle_cxx_symbol(const T& obj)
+  {
+    return cet::demangle_symbol(typeid(obj).name());
+  }
 
-#ifdef __GNUG__
-#include <cxxabi.h>
+  template <class STREAM>
+  int
+  DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
+  {
+    const G4ThreeVector& pos = PV.GetTranslation();
+    const G4LogicalVolume* LV = PV.GetLogicalVolume();
 
-template <typename T>
-std::string
-demangle_cxx_symbol(const T& obj)
-{
-  int status = -4; // some arbitrary value to eliminate the compiler warning
+    int count = 1;
+    out << indentstr << PV.GetName() << " [" << demangle_cxx_symbol(PV) << "]"
+        << " at (" << pos.x() << ", " << pos.y() << ", " << pos.z() << ")";
+    if (LV) {
+      out << ", a " << LV->GetName();
 
-  std::string name = typeid(obj).name();
+      const G4VSolid* Solid = LV->GetSolid();
+      if (Solid) {
+        out << " shaped as " << Solid->GetName();
+        const G4Box* pBox;
 
-  // __cxa_demangle() allocates with malloc(), so we ask unique_ptr to
-  // deallocate by free()
-  std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name.c_str(), NULL, NULL, &status),
-                                             std::free};
+        try {
+          pBox = dynamic_cast<const G4Box*>(Solid);
+        }
+        catch (std::bad_cast&) {
+          pBox = nullptr;
+        }
 
-  return (status == 0) ? res.get() : name;
-} // demangle_cxx_symbol()
-
-#else
-
-template <typename T>
-std::string
-demangle_cxx_symbol(const T& obj)
-{
-  return typeid(obj).name();
-}
-
-#endif
-
-template <class STREAM>
-int
-DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
-{
-
-  const G4ThreeVector& pos = PV.GetTranslation();
-  const G4LogicalVolume* LV = PV.GetLogicalVolume();
-
-  int count = 1;
-  out << indentstr << PV.GetName() << " [" << demangle_cxx_symbol(PV) << "]"
-      << " at (" << pos.x() << ", " << pos.y() << ", " << pos.z() << ")";
-  if (LV) {
-    out << ", a " << LV->GetName();
-
-    const G4VSolid* Solid = LV->GetSolid();
-    if (Solid) {
-      out << " shaped as " << Solid->GetName();
-      const G4Box* pBox;
-
-      try {
-        pBox = dynamic_cast<const G4Box*>(Solid);
+        if (pBox) {
+          out << ", a (" << (2. * pBox->GetXHalfLength()) << " x " << (2. * pBox->GetYHalfLength())
+              << " x " << (2. * pBox->GetZHalfLength()) << ") cm box";
+        } // if box
+        else {
+          out << ", a " << demangle_cxx_symbol(*Solid);
+        }
       }
-      catch (std::bad_cast&) {
-        pBox = nullptr;
-      }
-
-      if (pBox) {
-        out << ", a (" << (2. * pBox->GetXHalfLength()) << " x " << (2. * pBox->GetYHalfLength())
-            << " x " << (2. * pBox->GetZHalfLength()) << ") cm box";
-      } // if box
       else {
-        out << ", a " << demangle_cxx_symbol(*Solid);
+        out << " with no shape (!?!)";
       }
-    }
-    else {
-      out << " with no shape (!?!)";
-    }
 
-    G4int nDaughters = LV->GetNoDaughters();
-    if (nDaughters > 0) {
-      out << " with " << nDaughters << " subvolumes:\n";
-      for (G4int i = 0; i < nDaughters; ++i) {
-        count += DumpPhysicalVolume(out, *LV->GetDaughter(i), indentstr + "  ");
+      G4int nDaughters = LV->GetNoDaughters();
+      if (nDaughters > 0) {
+        out << " with " << nDaughters << " subvolumes:\n";
+        for (G4int i = 0; i < nDaughters; ++i) {
+          count += DumpPhysicalVolume(out, *LV->GetDaughter(i), indentstr + "  ");
+        }
       }
+      else
+        out << '\n';
     }
     else
-      out << '\n';
-  }
-  else
-    out << " with no logical volume (!?)\n";
+      out << " with no logical volume (!?)\n";
 
-  return count;
-} // DumpPhysicalVolume()
+    return count;
+  } // DumpPhysicalVolume()
+
+}
 
 namespace larg4 {
 
@@ -130,13 +109,12 @@ namespace larg4 {
     : G4VUserParallelWorld(name), fReadoutSetupData(setupData.readoutSetup)
   {
     larg4::IonizationAndScintillation* ios = larg4::IonizationAndScintillation::Instance();
-    auto fStepLimit = std::make_unique<G4UserLimits>(ios->StepSizeLimit());
+    fStepLimit = std::make_unique<G4UserLimits>(ios->StepSizeLimit());
   }
 
   ////////////////////////////////////////////////////////////////////
   void
   LArVoxelReadoutGeometry::Construct()
-
   {
     // With a "parallel geometry", Geant4 has already created a clone
     // of the world physical and logical volumes.  We want to place
@@ -200,18 +178,18 @@ namespace larg4 {
     // Define the sensitive detector for the voxel readout.  This class
     // routines will be called every time a particle deposits energy in
     // a voxel that overlaps the LAr TPC.
-    LArVoxelReadout* larVoxelReadout = new LArVoxelReadout("LArVoxelSD");
-    larVoxelReadout->Setup(fReadoutSetupData);
+    flarVoxelReadout = new LArVoxelReadout("LArVoxelSD");
+    flarVoxelReadout->Setup(fReadoutSetupData);
     if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat(0).NTPC() == 1))
-      larVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
+      flarVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
 
     // Tell Geant4's sensitive-detector manager that the voxel SD
     // class exists.
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    sdManager->AddNewDetector(larVoxelReadout);
+    sdManager->AddNewDetector(flarVoxelReadout);
 
     // hope hashing doubles is reliable...
-    typedef std::map<VoxelSpecs_t, VoxelVolumes_t> VoxelCache_t;
+    using VoxelCache_t = std::map<VoxelSpecs_t, VoxelVolumes_t>;
     VoxelCache_t VoxelCache;
 
     for (unsigned int c = 0; c < fGeo->Ncryostats(); ++c) {
@@ -344,23 +322,14 @@ namespace larg4 {
           // Now we have a box that will include an integer number of voxels
           // in each direction.  Note that the material is irrelevant for a
           // "parallel world."
-          G4Box* voxelBox = new G4Box("VoxelBox", voxelBoxHalfX, voxelBoxHalfY, voxelBoxHalfZ);
-          G4LogicalVolume* voxelBoxLogical =
-            new G4LogicalVolume(voxelBox, 0, "VoxelizationLogicalVolume");
+          auto voxelBox = new G4Box("VoxelBox", voxelBoxHalfX, voxelBoxHalfY, voxelBoxHalfZ);
+          auto voxelBoxLogical = new G4LogicalVolume(voxelBox, 0, "VoxelizationLogicalVolume");
 
           // If we generate an event display within Geant4, we won't want to
           // see this box.
-          G4VisAttributes* invisible = new G4VisAttributes();
+          auto invisible = new G4VisAttributes();
           invisible->SetVisibility(false);
           voxelBoxLogical->SetVisAttributes(invisible);
-
-          //MF_LOG_DEBUG("LArVoxelReadoutGeometry") << ": transform = \n";
-          //for ( G4int i = 0; i < 3; ++i ){
-          //  for ( G4int j = 0; j < 4; ++j ){
-          //    MF_LOG_DEBUG("LArVoxelReadoutGeometry") << transform[i][j] << " ";
-          //  }
-          //  MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "\n";
-          //}
 
           // Now we've fill our "box of voxels" with the voxels themselves.
           // We'll do this by sub-dividing the volume in x, then y, then z.
@@ -379,8 +348,8 @@ namespace larg4 {
                           voxelSizeX);
 
           // Now do the same thing, dividing that x-slice along the y-axis.
-          G4Box* ySlice = new G4Box("ySlice", voxelSizeX / 2., voxelSizeY / 2., voxelBoxHalfZ);
-          G4LogicalVolume* ySliceLogical = new G4LogicalVolume(ySlice, 0, "yLArVoxelSlice");
+          auto ySlice = new G4Box("ySlice", voxelSizeX / 2., voxelSizeY / 2., voxelBoxHalfZ);
+          auto ySliceLogical = new G4LogicalVolume(ySlice, 0, "yLArVoxelSlice");
           ySliceLogical->SetVisAttributes(invisible);
           new G4PVReplica("VoxelSlicesInY",
                           ySliceLogical,
@@ -389,9 +358,10 @@ namespace larg4 {
                           G4int(numberYvoxels),
                           voxelSizeY);
 
-          // Now divide the y-slice along the z-axis, giving us our actual voxels.
-          G4Box* zSlice = new G4Box("zSlice", voxelSizeX / 2., voxelSizeY / 2., voxelSizeZ / 2.);
-          G4LogicalVolume* voxelLogical = new G4LogicalVolume(zSlice, 0, "LArVoxel");
+          // Now divide the y-slice along the z-axis, giving us our actual
+          // voxels.
+          auto zSlice = new G4Box("zSlice", voxelSizeX / 2., voxelSizeY / 2., voxelSizeZ / 2.);
+          auto voxelLogical = new G4LogicalVolume(zSlice, 0, "LArVoxel");
           voxelLogical->SetVisAttributes(invisible);
           new G4PVReplica(
             "LArVoxel", voxelLogical, ySliceLogical, kZAxis, G4int(numberZvoxels), voxelSizeZ);
@@ -401,7 +371,7 @@ namespace larg4 {
 
           // Set the sensitive detector of this LAr TPC (logical) volume
           // to be the voxel readout.
-          voxelLogical->SetSensitiveDetector(larVoxelReadout);
+          voxelLogical->SetSensitiveDetector(flarVoxelReadout);
 
         } // if not cached yet
         G4LogicalVolume* voxelBoxLogical = iVoxelVol->second.pBox;
@@ -459,7 +429,6 @@ namespace larg4 {
       }
       MF_LOG_DEBUG("LArVoxelReadoutGeometryDump") << "End of dump of voxelized volume";
     }
-    return;
   }
 
   //---------------------------------------------------------------
@@ -481,8 +450,6 @@ namespace larg4 {
     for (G4int i = 0; i != numberDaughters; ++i) {
       G4VPhysicalVolume* d = logicalVolume->GetDaughter(i);
 
-      //  MF_LOG_DEBUG("LArVoxelReadoutGeometry") << d->GetName() << ":" << mother->GetName();
-
       if (d->GetName().contains(daughterName)) {
 
         // check that this cryostat is the requested one using fCryostat
@@ -500,9 +467,9 @@ namespace larg4 {
           << "current " << daughterName << " origin is at (" << world.x() / CLHEP::cm << ","
           << world.y() / CLHEP::cm << "," << world.z() / CLHEP::cm << ")";
 
-        // we don't bother with the cryostat number when calling Geometry::PositionToTPC
-        // because we know we have already started off with the correct cryostat volume
-        // G4 uses mm, we want cm
+        // we don't bother with the cryostat number when calling
+        // Geometry::PositionToTPC because we know we have already started off
+        // with the correct cryostat volume G4 uses mm, we want cm
         double worldPos[3] = {world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm};
         unsigned int daughterNum = 0;
         unsigned int extra = 0;
@@ -512,7 +479,8 @@ namespace larg4 {
           fGeo->PositionToTPC(worldPos, daughterNum, extra);
         else if (daughterName.compare("volTPCActive") == 0 ||
                  daughterName.compare("volDetEnclosure") == 0) {
-          // for either of these volumes, we know there is only 1 in the mother volume
+          // for either of these volumes, we know there is only 1 in the mother
+          // volume
           MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "found the desired " << daughterName;
           return d;
         }

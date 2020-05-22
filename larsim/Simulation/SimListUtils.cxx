@@ -8,8 +8,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/Simulation/SimListUtils.h"
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
@@ -20,20 +19,14 @@
 namespace sim {
 
   //----------------------------------------------------------------------
-  SimListUtils::SimListUtils() {}
-
-  //----------------------------------------------------------------------
-  SimListUtils::~SimListUtils() {}
-
-  //----------------------------------------------------------------------
   // moduleLabel is the label of the module that created the voxels you
   // are putting into the list
   sim::LArVoxelList
   SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
+    auto const clocks =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
     // get the sim::SimChannels
     std::vector<const sim::SimChannel*> sccol;
@@ -46,13 +39,13 @@ namespace sim {
 
       // get all sim::IDE associated with this channel
       const auto& idemap = (*itr)->TDCIDEMap();
-      //std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
+      // std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
 
       // loop over all the sim::IDE values
       for (auto mitr = idemap.begin(); mitr != idemap.end(); mitr++) {
 
-        double time = (*mitr).first - detprop->TriggerOffset();
-        time *= detprop->SamplingRate();
+        double time = (*mitr).first - trigger_offset(clocks);
+        time *= sampling_rate(clocks);
 
         // loop over the sim::IDE objects
         const std::vector<sim::IDE>& ide = (*mitr).second;
@@ -86,7 +79,7 @@ namespace sim {
 
     sim::SimPhotonsCollection pmtList;
     pmtList.clear();
-    //std::cout << "Building SimPhotonsCollection" << std::endl;
+    // std::cout << "Building SimPhotonsCollection" << std::endl;
 
     /// loop over the pmthits and put them into the list
     for (auto itr = pmt.begin(); itr != pmt.end(); ++itr) {
@@ -108,7 +101,7 @@ namespace sim {
     }
 
     return pmtList;
-    //return std::move(pmtList);
+    // return std::move(pmtList);
   }
 
-} //end namespace util
+} // end namespace util

@@ -17,6 +17,10 @@
 
 class G4LogicalVolumeStore;
 
+namespace detinfo {
+  class DetectorPropertiesData;
+}
+
 namespace larg4 {
 
   /**
@@ -45,15 +49,6 @@ namespace larg4 {
    */
   class MaterialPropertyLoader {
   public:
-    // TODO use type aliases
-
-    // TODO remove default constructor
-    MaterialPropertyLoader() {}
-    // TODO remove default destructor
-    ~MaterialPropertyLoader() {}
-
-    // TODO remove duplicate "public" label
-  public:
     // TODO turn arguments into constant references
     //Accessors
     std::map<double, double>
@@ -70,14 +65,14 @@ namespace larg4 {
     }
 
     // TODO turn argument into constant reference
-    std::map<std::string, double>
+    std::map<std::string, double> const&
     GetMaterialConstProperties(std::string Material)
     {
       return fConstPropertyList[Material];
     }
 
     // TODO turn argument into constant reference
-    std::map<std::string, std::map<double, double>>
+    std::map<std::string, std::map<double, double>> const&
     GetMaterialProperties(std::string Material)
     {
       return fPropertyList[Material];
@@ -187,7 +182,7 @@ namespace larg4 {
      *     * `"WLSCOMPONENT"` from `detinfo::LArProperties::TpbEm()`
      *
      */
-    void GetPropertiesFromServices();
+    void GetPropertiesFromServices(detinfo::DetectorPropertiesData const& detProp);
 
     // TODO make this method constant
     /**
@@ -211,7 +206,6 @@ namespace larg4 {
     std::map<std::string, std::map<std::string, std::map<double, double>>> fPropertyList;
 
     std::map<std::string, double> fBirksConstants;
-
   }; // clas MaterialPropertyLoader
 
 } // namespace larg4

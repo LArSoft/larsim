@@ -1,4 +1,3 @@
-
 // Configurable Physics List Class
 //
 // Ben Jones, MIT, 24/06/09
@@ -45,7 +44,7 @@ namespace larg4 {
   static CustomPhysicsTable* TheCustomPhysicsTable;
 
   template <class T>
-  TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int ver) : T()
+  TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int const ver) : T()
   {
     mf::LogWarning logmsg{"ConfigurablePhysics"};
     logmsg << "Setting up Configurable Physics List.\n";

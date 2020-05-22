@@ -16,23 +16,22 @@
 
 namespace larg4 {
   //----------------------------------------------------------------------------
-  ISCalcCorrelated::ISCalcCorrelated()
+  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp)
   {
     std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
 
     fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
     fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
-    fDetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     fScintYieldFactor = 1.; // true scintillation yield will be got from LArProperties
 
     //the recombination coefficient is in g/(MeVcm^2), but we report energy depositions in MeV/cm,
     //need to divide Recombk from the LArG4Parameters service by the density of the argon we got above.
     fRecombA = LArG4PropHandle->RecombA();
-    fRecombk = LArG4PropHandle->Recombk() / fDetProp->Density(fDetProp->Temperature());
+    fRecombk = LArG4PropHandle->Recombk() / detProp.Density(detProp.Temperature());
     fModBoxA = LArG4PropHandle->ModBoxA();
-    fModBoxB = LArG4PropHandle->ModBoxB() / fDetProp->Density(fDetProp->Temperature());
+    fModBoxB = LArG4PropHandle->ModBoxB() / detProp.Density(detProp.Temperature());
     fUseModBoxRecomb = (bool)LArG4PropHandle->UseModBoxRecomb();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
@@ -44,29 +43,18 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  void
-  ISCalcCorrelated::Reset()
+  ISCalcData
+  ISCalcCorrelated::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                    sim::SimEnergyDeposit const& edep)
   {
-    fEnergyDeposit = 0.;
-    fNumScintPhotons = 0.;
-    fNumIonElectrons = 0.;
-    fScintillationYieldRatio = 0.;
-
-    return;
-  }
-
-  //----------------------------------------------------------------------------
-  void
-  ISCalcCorrelated::CalcIonAndScint(sim::SimEnergyDeposit const& edep)
-  {
-    fEnergyDeposit = edep.Energy();
+    double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
-    double Nq = fEnergyDeposit / fWph;
+    double Nq = energy_deposit / fWph;
 
     float ds = edep.StepLength();
-    double dEdx = (ds <= 0.0) ? 0.0 : fEnergyDeposit / ds;
-    double EFieldStep = EFieldAtStep(fDetProp->Efield(), edep);
+    double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
+    double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0.;
 
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
@@ -87,17 +75,17 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    fNumIonElectrons = (fEnergyDeposit / fWion) * recomb;
+    double const num_electrons = (energy_deposit / fWion) * recomb;
 
     // calculate scintillation photons
-    fNumScintPhotons = Nq - fNumIonElectrons;
+    double const num_photons = Nq - num_electrons;
 
     MF_LOG_DEBUG("ISCalcCorrelated")
-      << " Electrons produced for " << fEnergyDeposit << " MeV deposited with " << recomb
-      << " recombination: " << fNumIonElectrons << std::endl;
-    MF_LOG_DEBUG("ISCalcCorrelated") << "number photons: " << fNumScintPhotons;
+      << " Electrons produced for " << energy_deposit << " MeV deposited with " << recomb
+      << " recombination: " << num_electrons << std::endl;
+    MF_LOG_DEBUG("ISCalcCorrelated") << "number photons: " << num_photons;
 
-    return;
+    return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------

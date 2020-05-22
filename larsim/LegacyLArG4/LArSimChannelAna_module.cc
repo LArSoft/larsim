@@ -33,21 +33,19 @@ namespace larg {
 
   /// Base class for creation of raw signals on wires.
   class LArSimChannelAna : public art::EDAnalyzer {
-
   public:
     explicit LArSimChannelAna(fhicl::ParameterSet const& pset);
 
-    /// read/write access to event
-    void analyze(const art::Event& evt);
+  private:
+    void analyze(const art::Event& evt) override;
 
-    // intilize the histograms
+    // initialize the histograms
     //
     // Can't be done in Begin job because I want to use LArProperties
     // which used the database, so I test and run on each
     // event. Wasteful and silly, but at least it *works*.
-    void ensureHists();
+    void ensureHists(unsigned int const nTimeSamples);
 
-  private:
     std::string fLArG4ModuleLabel;
 
     // Flag for initialization done, because we set up histograms the
@@ -96,7 +94,7 @@ namespace larg {
 
   //-------------------------------------------------
   void
-  LArSimChannelAna::ensureHists()
+  LArSimChannelAna::ensureHists(unsigned int const nTimeSamples)
   {
     if (initDone) return; // Bail if we've already done this.
     initDone = true;      // Insure that we bail later on
@@ -105,9 +103,6 @@ namespace larg {
     art::ServiceHandle<art::TFileService const> tfs;
     // geometry data.
     art::ServiceHandle<geo::Geometry const> geom;
-    // detector specific properties
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // assumes all TPCs are the same
     double width = 2 * geom->TPC(0).HalfWidth();
@@ -121,16 +116,9 @@ namespace larg {
       "hChargeYpos", "Y charge depositions;Y (cm);Events", 101, -halfHeight, halfHeight);
     fChargeZpos =
       tfs->make<TH1D>("hChargeZpos", "Z charge depositions;Z (cm);Events", 101, 0.0, length);
-    fTDC = tfs->make<TH1D>("hTDC",
-                           "Active TDC;TDCs;Events;",
-                           detprop->NumberTimeSamples(),
-                           0,
-                           detprop->NumberTimeSamples());
-    fTDCsPerChannel = tfs->make<TH1D>("hTDCsPerChannel",
-                                      "TDCs per channel entry;# TDCs;Events",
-                                      128,
-                                      0,
-                                      detprop->NumberTimeSamples());
+    fTDC = tfs->make<TH1D>("hTDC", "Active TDC;TDCs;Events;", nTimeSamples, 0, nTimeSamples);
+    fTDCsPerChannel = tfs->make<TH1D>(
+      "hTDCsPerChannel", "TDCs per channel entry;# TDCs;Events", 128, 0, nTimeSamples);
     fIDEsPerChannel =
       tfs->make<TH1D>("hIDEsPerChannel", "IDE per channel entry;# IDEs;Events", 100, 0, 20000);
     fElectrons =
@@ -142,25 +130,23 @@ namespace larg {
     fElectronsPerTDC =
       tfs->make<TH1D>("hElectronsPerTDC", "Electrons per TDC;Electrons;Events", 100, 0, 10000);
     fEnergyPerTDC = tfs->make<TH1D>("hEnergyPerTDC", "Energy per YDC;energy;Events", 100, 0, 50);
-    return;
   }
 
   //-------------------------------------------------
   void
   LArSimChannelAna::analyze(const art::Event& evt)
   {
-
     if (evt.isRealData()) {
       throw cet::exception("LArSimChannelAna") << "Not for use on Data yet...\n";
     }
 
-    ensureHists();
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt);
+    ensureHists(detProp.NumberTimeSamples());
 
     art::ServiceHandle<geo::Geometry const> geom;
 
-    art::Handle<std::vector<sim::SimChannel>> chanHandle;
-    evt.getByLabel(fLArG4ModuleLabel, chanHandle);
-    const std::vector<sim::SimChannel>& scVec(*chanHandle);
+    auto const& scVec = *evt.getValidHandle<std::vector<sim::SimChannel>>(fLArG4ModuleLabel);
 
     //++++++++++
     // Loop over the Chnnels and fill histograms
@@ -172,9 +158,7 @@ namespace larg {
       const auto& tdcidemap = sc.TDCIDEMap();
       fTDCsPerChannel->Fill(tdcidemap.size());
 
-      for (const auto& tdcide : tdcidemap) {
-        unsigned int tdc = tdcide.first;
-        const std::vector<sim::IDE>& ideVec = tdcide.second;
+      for (auto const& [tdc, ideVec] : tdcidemap) {
         totalIDEs += ideVec.size();
         double tdcElectrons = 0;
         double tdcEnergy = 0;
@@ -200,7 +184,6 @@ namespace larg {
     fIDEsPerChannel->Fill(totalIDEs);
     fElectrons->Fill(totalElectrons);
     fEnergy->Fill(totalEnergy);
-    return;
   } //end analyze method
 
   DEFINE_ART_MODULE(LArSimChannelAna)

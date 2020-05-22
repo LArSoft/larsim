@@ -24,11 +24,9 @@ namespace cheat {
   //-----------------------------------------------------------------------
   BackTracker::BackTracker(const fhiclConfig& config,
                            const cheat::ParticleInventory* partInv,
-                           const geo::GeometryCore* geom,
-                           const detinfo::DetectorClocks* detClock)
+                           const geo::GeometryCore* geom)
     : fPartInv(partInv)
     , fGeom(geom)
-    , fDetClocks(detClock)
     , fG4ModuleLabel(config.G4ModuleLabel())
     , fSimChannelModuleLabel(config.SimChannelModuleLabel())
     , fHitLabel(config.DefaultHitModuleLabel())
@@ -39,11 +37,9 @@ namespace cheat {
   //-----------------------------------------------------------------------
   BackTracker::BackTracker(const fhicl::ParameterSet& pSet,
                            const cheat::ParticleInventory* partInv,
-                           const geo::GeometryCore* geom,
-                           const detinfo::DetectorClocks* detClock)
+                           const geo::GeometryCore* geom)
     : fPartInv(partInv)
     , fGeom(geom)
-    , fDetClocks(detClock)
     , fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant"))
     , fSimChannelModuleLabel(pSet.get<art::InputTag>("SimChannelModuleLabel", fG4ModuleLabel))
     , // -- D.R. if not provided, default behavior is to use the G4ModuleLabel
@@ -66,18 +62,19 @@ namespace cheat {
   {
     std::vector<const sim::IDE*> ideps;
     for (size_t sc = 0; sc < fSimChannels.size(); ++sc) {
-      const auto& tdcidemap = fSimChannels[sc]->TDCIDEMap(); //This returns a reference.
+      const auto& tdcidemap = fSimChannels[sc]->TDCIDEMap(); // This returns a reference.
       // loop over the IDEMAP
       for (auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++) {
         // loop over the vector of IDE objects.
         const std::vector<sim::IDE>& idevec =
-          (*mapitr).second; //note, mapitr.second returns the actual data from the map, not a copy
+          (*mapitr).second; // note, mapitr.second returns the actual data from
+                            // the map, not a copy
         for (size_t iv = 0; iv < idevec.size(); ++iv) {
-          //const sim::IDE* const idep = &idevec[iv];
-          //if( abs(idevec[iv].trackID) == id) continue;
-          //ideps.push_back(idep);
+          // const sim::IDE* const idep = &idevec[iv];
+          // if( abs(idevec[iv].trackID) == id) continue;
+          // ideps.push_back(idep);
           if (abs(idevec[iv].trackID) == id) ideps.push_back(&(idevec[iv]));
-        } //end for index in idevec
+        } // end for index in idevec
       }   // end loop over map from sim::SimChannel
     }     // end loop over sim::SimChannels
     return ideps;
@@ -125,7 +122,8 @@ namespace cheat {
 
   //-----------------------------------------------------------------------
   std::vector<sim::TrackIDE>
-  BackTracker::ChannelToTrackIDEs(raw::ChannelID_t channel,
+  BackTracker::ChannelToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                  raw::ChannelID_t channel,
                                   const double hit_start_time,
                                   const double hit_end_time) const
   {
@@ -136,8 +134,8 @@ namespace cheat {
 
       // loop over the electrons in the channel and grab those that are in time
       // with the identified hit start and stop times
-      int start_tdc = fDetClocks->TPCTick2TDC(hit_start_time);
-      int end_tdc = fDetClocks->TPCTick2TDC(hit_end_time);
+      int start_tdc = clockData.TPCTick2TDC(hit_start_time);
+      int end_tdc = clockData.TPCTick2TDC(hit_end_time);
       if (start_tdc < 0) start_tdc = 0;
       if (end_tdc < 0) end_tdc = 0;
       std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
@@ -174,33 +172,34 @@ namespace cheat {
 
   //-----------------------------------------------------------------------
   std::vector<sim::TrackIDE>
-  BackTracker::HitToTrackIDEs(recob::Hit const& hit) const
+  BackTracker::HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                              recob::Hit const& hit) const
   {
-    std::vector<sim::TrackIDE> trackIDEs;
     const double start = hit.PeakTimeMinusRMS();
     const double end = hit.PeakTimePlusRMS();
-    trackIDEs = this->ChannelToTrackIDEs(hit.Channel(), start, end);
-    return trackIDEs;
+    return this->ChannelToTrackIDEs(clockData, hit.Channel(), start, end);
   }
 
   //-----------------------------------------------------------------------
   std::vector<int>
-  BackTracker::HitToTrackIds(recob::Hit const& hit) const
+  BackTracker::HitToTrackIds(detinfo::DetectorClocksData const& clockData,
+                             recob::Hit const& hit) const
   {
     std::vector<int> retVec;
-    for (auto const trackIDE : this->HitToTrackIDEs(hit)) {
+    for (auto const trackIDE : this->HitToTrackIDEs(clockData, hit)) {
       retVec.push_back(trackIDE.trackID);
     }
     return retVec;
   }
 
-  //These don't exist in the event. They are generated on the fly.
+  // These don't exist in the event. They are generated on the fly.
   //----------------------------------------------------------------------------
   std::vector<sim::TrackIDE>
-  BackTracker::HitToEveTrackIDEs(recob::Hit const& hit) const
+  BackTracker::HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                 recob::Hit const& hit) const
   {
     std::vector<sim::TrackIDE> eveIDEs;
-    std::vector<sim::TrackIDE> trackIDEs = this->HitToTrackIDEs(hit);
+    std::vector<sim::TrackIDE> trackIDEs = this->HitToTrackIDEs(clockData, hit);
     std::map<int, std::pair<double, double>> eveToEMap;
     double totalE = 0.0;
     for (const auto& trackIDE : trackIDEs) {
@@ -213,7 +212,7 @@ namespace cheat {
       //      eveToEMap[fPartInv->TrackIdToEveTrackId(trackIDE.trackID)].first
       //      += trackIDE.energy;
       totalE += trackIDE.energy;
-    } //End for trackIDEs
+    } // End for trackIDEs
     eveIDEs.reserve(eveToEMap.size());
     for (const auto& eveToE : eveToEMap) {
       sim::TrackIDE eveTrackIDE_tmp;
@@ -224,13 +223,14 @@ namespace cheat {
       eveTrackIDE_tmp.numElectrons = eveToE.second.second;
 
       eveIDEs.push_back(eveTrackIDE_tmp);
-    } //END eveToEMap loop
+    } // END eveToEMap loop
     return eveIDEs;
   }
 
   //-----------------------------------------------------------------------
   std::vector<art::Ptr<recob::Hit>>
-  BackTracker::TrackIdToHits_Ps(const int& tkId,
+  BackTracker::TrackIdToHits_Ps(detinfo::DetectorClocksData const& clockData,
+                                const int tkId,
                                 std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
   {
     // returns a subset of the hits in the hitsIn collection that are matched
@@ -243,8 +243,8 @@ namespace cheat {
     for (auto itr = hitsIn.begin(); itr != hitsIn.end(); ++itr) {
       trackIDE.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
-      trackIDE =
-        this->ChannelToTrackIDEs(hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
+      trackIDE = this->ChannelToTrackIDEs(
+        clockData, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
       for (auto itr_trakIDE = trackIDE.begin(); itr_trakIDE != trackIDE.end(); ++itr_trakIDE) {
         if (itr_trakIDE->trackID == tkId && itr_trakIDE->energyFrac > fMinHitEnergyFraction)
           hitList.push_back(hit);
@@ -256,7 +256,8 @@ namespace cheat {
   //-----------------------------------------------------------------------
   //This function could clearly be made by calling TrackIdToHits for each trackId, but that would be significantly slower because we would loop through all hits many times.
   std::vector<std::vector<art::Ptr<recob::Hit>>>
-  BackTracker::TrackIdsToHits_Ps(std::vector<int> const& tkIds,
+  BackTracker::TrackIdsToHits_Ps(detinfo::DetectorClocksData const& clockData,
+                                 std::vector<int> const& tkIds,
                                  std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
   {
     // returns a subset of the hits in the hitsIn collection that are matched
@@ -269,8 +270,8 @@ namespace cheat {
     for (auto itr = hitsIn.begin(); itr != hitsIn.end(); ++itr) {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
-      tids =
-        this->ChannelToTrackIDEs(hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
+      tids = this->ChannelToTrackIDEs(
+        clockData, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
       for (auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for (auto itkid = tkIds.begin(); itkid != tkIds.end(); ++itkid) {
           if (itid->trackID == *itkid) {
@@ -298,12 +299,13 @@ namespace cheat {
   //-----------------------------------------------------------------------
   //Cannot be returned as a reference, as these IDEs do not exist in the event. They are constructed on the fly.
   std::vector<sim::IDE>
-  BackTracker::HitToAvgSimIDEs(recob::Hit const& hit) const
+  BackTracker::HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
+                               recob::Hit const& hit) const
   {
     // Get services.
 
-    int start_tdc = fDetClocks->TPCTick2TDC(hit.PeakTimeMinusRMS());
-    int end_tdc = fDetClocks->TPCTick2TDC(hit.PeakTimePlusRMS());
+    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS());
+    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS());
     if (start_tdc < 0) start_tdc = 0;
     if (end_tdc < 0) end_tdc = 0;
 
@@ -312,71 +314,57 @@ namespace cheat {
 
   //-----------------------------------------------------------------------
   std::vector<const sim::IDE*>
-  BackTracker::HitToSimIDEs_Ps(recob::Hit const& hit) const
+  BackTracker::HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
+                               recob::Hit const& hit) const
   {
     std::vector<const sim::IDE*> retVec;
-    //    const auto start_tdc = hit.PeakTimeMinusRMS();
-    //    const auto end_tdc = hit.PeakTimePlusRMS();
-    int start_tdc = fDetClocks->TPCTick2TDC(hit.PeakTimeMinusRMS());
-    int end_tdc = fDetClocks->TPCTick2TDC(hit.PeakTimePlusRMS());
+    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS());
+    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS());
     if (start_tdc < 0) start_tdc = 0;
     if (end_tdc < 0) end_tdc = 0;
 
     if (start_tdc > end_tdc) { throw; }
 
-    /*    auto sc = this->FindSimChannel(hit.Channel());
-          auto tdcidemap = sc->TDCIDEMap();
-          auto& tdcidemapref = sc->TDCIDEMap();*/
-
     const std::vector<std::pair<unsigned short, std::vector<sim::IDE>>>& tdcIDEMap =
       (this->FindSimChannel(hit.Channel()))
-        ->TDCIDEMap(); //This in fact does not return a map. It returns a vector... with no guarantee that it is sorted...
+        ->TDCIDEMap(); // This in fact does not return a map. It returns a
+                       // vector... with no guarantee that it is sorted...
     std::vector<const std::pair<unsigned short, std::vector<sim::IDE>>*> tdcIDEMap_SortedPointers;
     for (auto& pair : tdcIDEMap) {
       tdcIDEMap_SortedPointers.push_back(&pair);
     }
 
-    //Sort a vector of pointers to the TDCIDEs
-    /*
-       auto pairSort = [](auto& a, auto& b) { return a.first < b.first ; } ;
-       if( !std::is_sorted( tdcIDEMap.begin(), tdcIDEMap.end(), pairSort)) {
-       std::cout<<"AlreadySorted\n";
-    //   std::sort (tdcIDEMap.begin(), tdcIDEMap.end(), pairSort);
-    }else{
-    throw;
-    }*/
-
-    //This is a bunch of extra steps, due to needing a vector we can sort, and needing those items in the sorted vector to be the items from the sim channels (so a pointer to the IDEs inside the sim channels can be made). The work around is to make a vector of pointers to IDEs inside the TDCIDEMap (which is a constant reference to the fTDCIDEs in the SimChannel.)
+    // This is a bunch of extra steps, due to needing a vector we can sort, and
+    // needing those items in the sorted vector to be the items from the sim
+    // channels (so a pointer to the IDEs inside the sim channels can be made).
+    // The work around is to make a vector of pointers to IDEs inside the
+    // TDCIDEMap (which is a constant reference to the fTDCIDEs in the
+    // SimChannel.)
     auto pairSort = [](auto& a, auto& b) { return a->first < b->first; };
     if (!std::is_sorted(
           tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort)) {
       std::sort(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort);
     }
 
-    std::vector<sim::IDE>
-      dummyVec; //I need something to stick in a pair to compare pair<tdcVal, IDE>. This is an otherwise useless "hack".
-    std::pair<double, std::vector<sim::IDE>> start_tdcPair = std::make_pair(
-      start_tdc,
-      dummyVec); //This pair is a "hack" to make my comparison work for lower and upper bound.
+    std::vector<sim::IDE> dummyVec; // I need something to stick in a pair to compare pair<tdcVal,
+                                    // IDE>. This is an otherwise useless "hack".
+    std::pair<double, std::vector<sim::IDE>> start_tdcPair =
+      std::make_pair(start_tdc, dummyVec); // This pair is a "hack" to make my comparison work
+                                           // for lower and upper bound.
     std::pair<double, std::vector<sim::IDE>> end_tdcPair = std::make_pair(end_tdc, dummyVec);
-    //const std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to the first interesting IDE
     auto start_tdcPair_P = &start_tdcPair;
     auto end_tdcPair_P = &end_tdcPair;
     auto mapFirst = std::lower_bound(
       tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), start_tdcPair_P, pairSort);
-    //mapFirst = std::lower_bound(tdcIDEMap.begin(), tdcIDEMap.end(), start_tdcPair, pairSort);
-    //const std::vector<std::pair<unsigned short, std::vector<sim::IDE> > >::iterator  //iterator to just after the last interesting IDE
+
+    // iterator to just after the last interesting IDE
     auto mapLast = std::upper_bound(
       tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), end_tdcPair_P, pairSort);
     for (auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr) {
       for (auto& ide : (*mapitr)->second) {
         retVec.push_back(&ide);
-        //std::cout<<"Dumping Selected IDEs from tdcIDEMap:\nTrackID: "<<ide.trackID<<"\nnumElectrons: "<<ide.numElectrons<<"\nenergy: "<<ide.energy<<"\nXYZ: "<<ide.x<<" "<<ide.y<<" "<<ide.z<<"\n";
-      } //Add all interesting IDEs to the retVec
+      } // Add all interesting IDEs to the retVec
     }
-    /*    for( auto ide : retVec){
-          std::cout<<"Dumping Selected IDEs from retVec:\nTrackID: "<<ide->trackID<<"\nnumElectrons: "<<ide->numElectrons<<"\nenergy: "<<ide->energy<<"\nXYZ: "<<ide->x<<" "<<ide->y<<" "<<ide->z<<"\n";
-          }*/
     return retVec;
   }
 
@@ -415,54 +403,57 @@ namespace cheat {
 
   //--------------------------------------------------------------------------------
   std::vector<double>
-  BackTracker::HitToXYZ(const recob::Hit& hit) const
+  BackTracker::HitToXYZ(detinfo::DetectorClocksData const& clockData, const recob::Hit& hit) const
   {
-    std::vector<const sim::IDE*> ide_Ps = this->HitToSimIDEs_Ps(hit);
+    std::vector<const sim::IDE*> ide_Ps = this->HitToSimIDEs_Ps(clockData, hit);
     return this->SimIDEsToXYZ(ide_Ps);
   }
 
   //-----------------------------------------------------------------------------------
   double
-  BackTracker::HitCollectionPurity(std::set<int> const& trackIds,
+  BackTracker::HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                                   std::set<int> const& trackIds,
                                    std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     int desired = 0;
     for (const auto& hit : hits) {
-      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
+      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& tIDE : hitTrackIDEs) {
         if (trackIds.find(tIDE.trackID) != trackIds.end()) {
           ++desired;
           break;
-        } //End if TID Found
-      }   //END for trackIDE in TrackIDEs
-    }     //End for hit in hits
+        } // End if TID Found
+      }   // END for trackIDE in TrackIDEs
+    }     // End for hit in hits
     if (hits.size() > 0) { return double(double(desired) / double(hits.size())); }
     return 0;
   }
 
   //-----------------------------------------------------------------------------------
   double
-  BackTracker::HitChargeCollectionPurity(std::set<int> const& trackIds,
+  BackTracker::HitChargeCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                                         std::set<int> const& trackIds,
                                          std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     double totalCharge = 0., desired = 0.;
     for (const auto& hit : hits) {
       totalCharge += hit->Integral();
-      std::vector<sim::TrackIDE> trackIDEs = this->HitToTrackIDEs(hit);
+      std::vector<sim::TrackIDE> trackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& trackIDE : trackIDEs) {
         if (trackIds.find(trackIDE.trackID) != trackIds.end()) {
           desired += hit->Integral();
           break;
-        } //End if trackId in trackIds.
-      }   //End for trackIDE in trackIDEs
-    }     //End for Hit in Hits
+        } // End if trackId in trackIds.
+      }   // End for trackIDE in trackIDEs
+    }     // End for Hit in Hits
     if (totalCharge > 0.0) { return (desired / totalCharge); }
     return 0.0;
   }
 
   //-----------------------------------------------------------------------------------
   double
-  BackTracker::HitCollectionEfficiency(std::set<int> const& trackIds,
+  BackTracker::HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                       std::set<int> const& trackIds,
                                        std::vector<art::Ptr<recob::Hit>> const& hits,
                                        std::vector<art::Ptr<recob::Hit>> const& allHits,
                                        geo::View_t const& view) const
@@ -471,63 +462,64 @@ namespace cheat {
     int desired = 0, total = 0;
 
     for (const auto& hit : hits) {
-      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
+      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& trackIDE : hitTrackIDEs) {
         if (trackIds.find(trackIDE.trackID) != trackIds.end() &&
             trackIDE.energyFrac >= fMinHitEnergyFraction) {
           ++desired;
           break;
-        } //End if trackID in trackIds.
-      }   //end for trackIDE in TrackIDEs
-    }     //end for hit in hits
+        } // End if trackID in trackIds.
+      }   // end for trackIDE in TrackIDEs
+    }     // end for hit in hits
 
     for (const auto& hit : allHits) {
       if (hit->View() != view && view != geo::k3D) {
         continue;
-      } //End if hit.view = view or view = geo::k3D
-      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
+      } // End if hit.view = view or view = geo::k3D
+      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& hitIDE : hitTrackIDEs) {
         if (trackIds.find(hitIDE.trackID) != trackIds.end() &&
             hitIDE.energyFrac >= fMinHitEnergyFraction) {
           ++total;
           break;
         }
-      } //END for all IDEs in HitTrackIDEs.
-    }   //end for hit in allHits.
+      } // END for all IDEs in HitTrackIDEs.
+    }   // end for hit in allHits.
     if (total >= 0) { return double(double(desired) / double(total)); }
     return 0.;
   }
 
   //-----------------------------------------------------------------------------------
   double
-  BackTracker::HitChargeCollectionEfficiency(std::set<int> trackIds,
+  BackTracker::HitChargeCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                             std::set<int> const& trackIds,
                                              std::vector<art::Ptr<recob::Hit>> const& hits,
                                              std::vector<art::Ptr<recob::Hit>> const& allHits,
                                              geo::View_t const& view) const
   {
     double desired = 0., total = 0.;
     for (const auto& hit : hits) {
-      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
+      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& hitIDE : hitTrackIDEs) {
         if (trackIds.find(hitIDE.trackID) != trackIds.end() &&
             hitIDE.energyFrac >= fMinHitEnergyFraction) {
           desired += hit->Integral();
           break;
-        } //end if hit id matches and energy sufficient.
-      }   //End for IDE in HitTrackIDEs.
-    }     //End for hit in hits.
+        } // end if hit id matches and energy sufficient.
+      }   // End for IDE in HitTrackIDEs.
+    }     // End for hit in hits.
 
     for (const auto& hit : allHits) {
       if (hit->View() != view && view != geo::k3D) { continue; }
-      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(hit);
+      std::vector<sim::TrackIDE> hitTrackIDEs = this->HitToTrackIDEs(clockData, hit);
       for (const auto& hitIDE : hitTrackIDEs) {
         if (trackIds.find(hitIDE.trackID) != trackIds.end() &&
             hitIDE.energyFrac >= fMinHitEnergyFraction) {
           total += hit->Integral();
           break;
-        } //end if hit matches
-      }   //end for ide in ides
-    }     //End for hit in allHits
+        } // end if hit matches
+      }   // end for ide in ides
+    }     // End for hit in allHits
 
     if (total > 0.) { return desired / total; }
     return 0.;
@@ -535,37 +527,41 @@ namespace cheat {
 
   //-----------------------------------------------------------------------------------
   std::set<int>
-  BackTracker::GetSetOfTrackIds(std::vector<art::Ptr<recob::Hit>> const& hits) const
+  BackTracker::GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
+                                std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     std::set<int> tids;
     for (const auto& hit : hits) {
       const double start = hit->PeakTimeMinusRMS();
       const double end = hit->PeakTimePlusRMS();
-      std::vector<sim::TrackIDE> trackIDEs = this->ChannelToTrackIDEs(hit->Channel(), start, end);
+      std::vector<sim::TrackIDE> trackIDEs =
+        this->ChannelToTrackIDEs(clockData, hit->Channel(), start, end);
       for (const auto& ide : trackIDEs) {
         tids.insert(ide.trackID);
-      } //End for TrackIDEs
-    }   //End for hits
+      } // End for TrackIDEs
+    }   // End for hits
     return tids;
-  } //End GetSetOfTrackIds
+  } // End GetSetOfTrackIds
 
   //-----------------------------------------------------------------------------------
   std::set<int>
-  BackTracker::GetSetOfEveIds(std::vector<art::Ptr<recob::Hit>> const& hits) const
+  BackTracker::GetSetOfEveIds(detinfo::DetectorClocksData const& clockData,
+                              std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     std::set<int> eveIds;
     for (const auto& hit : hits) {
-      const std::vector<sim::TrackIDE> ides = this->HitToEveTrackIDEs(hit);
+      const std::vector<sim::TrackIDE> ides = this->HitToEveTrackIDEs(clockData, hit);
       for (const auto& ide : ides) {
         eveIds.insert(ide.trackID);
-      } //end ides
-    }   //End for hits
+      } // end ides
+    }   // End for hits
     return eveIds;
   }
 
   //This function definitely needs a new implimentation. There must be abetter way than so many loops.
   std::vector<double>
-  BackTracker::SpacePointHitsToWeightedXYZ(std::vector<art::Ptr<recob::Hit>> const& hits) const
+  BackTracker::SpacePointHitsToWeightedXYZ(detinfo::DetectorClocksData const& clockData,
+                                           std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     std::vector<double> xyz(3, -99999.9);
     std::vector<std::vector<std::vector<int>>> numHits(fGeom->Ncryostats());
@@ -590,7 +586,7 @@ namespace cheat {
 
       // use the HitToXYZ and Geometry::PositionToTPC
       // to figure out which drift volume the hit originates from
-      std::vector<double> hitOrigin = this->HitToXYZ(*ihit);
+      std::vector<double> hitOrigin = this->HitToXYZ(clockData, *ihit);
       unsigned int cstat = 0;
       unsigned int tpc = 0;
       const double worldLoc[3] = {hitOrigin[0], hitOrigin[1], hitOrigin[2]};
@@ -637,4 +633,4 @@ namespace cheat {
     return xyz;
   }
 
-} //End namespace cheat
+} // End namespace cheat

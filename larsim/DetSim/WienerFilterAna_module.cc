@@ -22,7 +22,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "lardataobj/RawData/RawDigit.h"
 
@@ -77,9 +77,9 @@ namespace detsim {
     art::ServiceHandle<util::LArFFT const> fFFT;
     int fNTicks = fFFT->FFTSize();
     fNBins = fNTicks / 2 + 1;
-    const detinfo::DetectorProperties* detp =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    double samprate = detp->SamplingRate();
+    auto const clock_data =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataForJob();
+    double samprate = sampling_rate(clock_data);
     double sampfreq = 1. / samprate * 1e6; // in kHz
     art::ServiceHandle<geo::Geometry const> geo;
     unsigned int fNPlanes = geo->Nplanes();
@@ -214,9 +214,8 @@ namespace detsim {
       geo::WireID wireid = geom->ChannelToWire(rdvec[rd]->Channel())[0];
 
       // this is hardcoded for the time being. Should be automatized.
-      unsigned int plane =
-        wireid
-          .Plane; /// \todo  Need to change hardcoded values to an automatic determination of noise vs. signal
+      unsigned int plane = wireid.Plane; /// \todo  Need to change hardcoded values to an automatic
+                                         /// determination of noise vs. signal
       unsigned int wire = wireid.Wire;
       unsigned int cstat = wireid.Cryostat;
       unsigned int tpc = wireid.TPC;

@@ -14,12 +14,6 @@
 
 namespace larg4 {
 
-  //----------------------------------------------------------------------
-  ISCalculation::ISCalculation() {}
-
-  //----------------------------------------------------------------------
-  ISCalculation::~ISCalculation() {}
-
   //......................................................................
   double
   ISCalculation::EFieldAtStep(double efield, const G4Step* step) const

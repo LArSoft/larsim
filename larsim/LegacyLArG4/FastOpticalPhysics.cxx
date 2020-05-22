@@ -41,7 +41,6 @@
 //
 
 #include "larsim/LegacyLArG4/FastOpticalPhysics.h"
-#include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
 #include "larsim/LegacyLArG4/OpBoundaryProcessSimple.hh"
 #include "larsim/LegacyLArG4/OpFastScintillation.hh"
 
@@ -78,22 +77,15 @@
 #include "Geant4/G4OpRayleigh.hh"
 #include "Geant4/G4OpWLS.hh"
 
-//Register optical physics in custom physics list
-
 namespace larg4 {
 
-  CustomPhysicsFactory<FastOpticalPhysics> fastoptical_factory("FastOptical");
-
   //-----------------------------------------------------------
-  FastOpticalPhysics::FastOpticalPhysics(G4int ver, const G4String& name)
-    : G4VPhysicsConstructor(name), verbose(ver)
+  FastOpticalPhysics::FastOpticalPhysics(G4int /*verbose*/, const G4String& name)
+    : G4VPhysicsConstructor(name)
   {
     G4LossTableManager::Instance();
     mf::LogInfo("FastOpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
-
-  //-----------------------------------------------------------
-  FastOpticalPhysics::~FastOpticalPhysics() { delete fTheScintillationProcess; }
 
   //-----------------------------------------------------------
   void
@@ -142,7 +134,7 @@ namespace larg4 {
     fTheRayleighScatteringProcess = new G4OpRayleigh();
     fTheBoundaryProcess = new OpBoundaryProcessSimple();
     fTheWLSProcess = new G4OpWLS();
-    fTheScintillationProcess = new OpFastScintillation("FastScintillation");
+    fTheScintillationProcess = std::make_unique<OpFastScintillation>("FastScintillation");
 
     fTheCerenkovProcess->SetMaxNumPhotonsPerStep(700);
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
@@ -166,9 +158,10 @@ namespace larg4 {
         pmanager->SetProcessOrdering(fTheCerenkovProcess, idxPostStep);
       }
       if (fTheScintillationProcess->IsApplicable(*particle)) {
-        pmanager->AddProcess(fTheScintillationProcess);
-        pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxAtRest);
-        pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
+        auto ptr = fTheScintillationProcess.get();
+        pmanager->AddProcess(ptr);
+        pmanager->SetProcessOrderingToLast(ptr, idxAtRest);
+        pmanager->SetProcessOrderingToLast(ptr, idxPostStep);
       }
 
       if (particleName == "opticalphoton") {

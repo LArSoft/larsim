@@ -42,7 +42,7 @@ namespace larg4 {
 
   //-----------------------------------------------------------------
   bool
-  CustomPhysicsTable::IsPhysicsAvailable(std::string PhysicsName)
+  CustomPhysicsTable::IsPhysicsAvailable(std::string const& PhysicsName)
   {
     if (!TheCustomPhysicsTable->theTable[PhysicsName])
       return false;
@@ -52,16 +52,13 @@ namespace larg4 {
 
   //-----------------------------------------------------------------
   G4VPhysicsConstructor*
-  CustomPhysicsTable::GetPhysicsConstructor(std::string PhysicsName)
+  CustomPhysicsTable::GetPhysicsConstructor(std::string const& PhysicsName)
   {
     if (IsPhysicsAvailable(PhysicsName)) {
-      G4VPhysicsConstructor* G4VPC = TheCustomPhysicsTable->theTable[PhysicsName]->Build();
-      return G4VPC;
+      return TheCustomPhysicsTable->theTable[PhysicsName]->Build();
     }
-    else {
-      G4VPhysicsConstructor* G4VPC = 0;
-      return G4VPC;
-    }
+
+    return nullptr;
   }
 
   //-----------------------------------------------------------------
@@ -78,5 +75,3 @@ namespace larg4 {
   }
 
 }
-
-//Ben Jones, MIT, Sept 2009

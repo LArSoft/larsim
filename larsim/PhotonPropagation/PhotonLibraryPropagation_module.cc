@@ -13,7 +13,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
-
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -142,15 +141,14 @@ namespace phot {
  * A possible way around the problem is to implement a scaling of the produced `sim::SimPhotons`, to only produce a fraction of them.
  */
   class PhotonLibraryPropagation : public art::EDProducer {
-
   private:
     double fRiseTimeFast;
     double fRiseTimeSlow;
     bool fDoSlowComponent;
     vector<art::InputTag> fEDepTags;
-    larg4::ISCalcSeparate fISAlg;
     CLHEP::HepRandomEngine& fPhotonEngine;
     CLHEP::HepRandomEngine& fScintTimeEngine;
+    larg4::ISCalcSeparate fISAlg;
 
     void produce(art::Event&) override;
 
@@ -187,11 +185,10 @@ namespace phot {
     art::ServiceHandle<PhotonVisibilityService const> pvs;
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
     CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
     CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
     auto const nOpChannels = pvs->NOpChannels();
-    //  fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
-    //fISAlg.Initialize();
     unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
     auto& photonCollection{*photCol};
     photonCollection.resize(nOpChannels);
@@ -200,7 +197,7 @@ namespace phot {
     photonLiteCollection.resize(nOpChannels);
     for (unsigned int i = 0; i < nOpChannels; ++i) {
       photonLiteCollection[i].OpChannel = i;
-      photonCollection[i].fOpChannel = i;
+      photonCollection[i].SetChannel(i);
     }
     vector<vector<sim::SimEnergyDeposit> const*> edep_vecs;
     for (auto label : fEDepTags) {
@@ -218,10 +215,9 @@ namespace phot {
                "Position: "
             << edep.MidPoint();
         }
-        fISAlg.Reset();
-        fISAlg.CalcIonAndScint(edep);
+        auto const isCalcData = fISAlg.CalcIonAndScint(detProp, edep);
         //total amount of scintillation photons
-        double nphot = static_cast<int>(fISAlg.NumOfPhotons());
+        double nphot = static_cast<int>(isCalcData.numPhotons);
         //amount of scintillated photons created via the fast scintillation process
         double nphot_fast = static_cast<int>(GetScintYield(edep, *larp) * nphot);
         //amount of scintillated photons created via the slow scintillation process

@@ -35,6 +35,7 @@
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "lardataobj/RawData/RawDigit.h"
@@ -44,17 +45,13 @@
 // Detector simulation of raw signals on wires
 namespace detsim {
 
-  // Base class for creation of raw signals on wires.
   class SimWire : public art::EDProducer {
   public:
     explicit SimWire(fhicl::ParameterSet const& pset);
-    virtual ~SimWire();
 
   private:
-    // read/write access to event
     void produce(art::Event& evt) override;
     void beginJob() override;
-    void reconfigure(fhicl::ParameterSet const& p);
 
     void ConvoluteResponseFunctions(); ///< convolute electronics and field response
 
@@ -63,9 +60,7 @@ namespace detsim {
 
     void GenNoise(std::vector<float>& array, CLHEP::HepRandomEngine& engine);
 
-    bool fResponseSet;              ///< flag of whether to set the response functions or not
     std::string fDriftEModuleLabel; ///< module making the ionization electrons
-    std::string fResponseFile;      ///< response file for induction planes
     raw::Compress_t fCompression;   ///< compression type to use
 
     double fNoiseFact;                   ///< noise scale factor
@@ -85,11 +80,10 @@ namespace detsim {
     int fTriggerOffset;                  ///< (units of ticks) time of expected neutrino event
     unsigned int fNElectResp;            ///< number of entries from response to use
 
-    std::vector<double> fColFieldResponse; ///< response function for the field @ collection plane
-    std::vector<double> fIndFieldResponse; ///< response function for the field @ induction plane
-    std::vector<TComplex> fColShape;       ///< response function for the field @ collection plane
-    std::vector<TComplex> fIndShape;       ///< response function for the field @ induction plane
-    std::vector<double> fChargeWork;
+    std::vector<double> fColFieldResponse;  ///< response function for the field @ collection plane
+    std::vector<double> fIndFieldResponse;  ///< response function for the field @ induction plane
+    std::vector<TComplex> fColShape;        ///< response function for the field @ collection plane
+    std::vector<TComplex> fIndShape;        ///< response function for the field @ induction plane
     std::vector<double> fElectResponse;     ///< response function for the electronics
     std::vector<std::vector<float>> fNoise; ///< noise on each channel for each time
 
@@ -110,68 +104,35 @@ namespace detsim {
   //-------------------------------------------------
   SimWire::SimWire(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
+    , fDriftEModuleLabel{pset.get<std::string>("DriftEModuleLabel")}
+    , fCompression{pset.get<std::string>("CompressionType") == "Huffman" ? raw::kHuffman :
+                                                                           raw::kNone}
+    , fNoiseFact{pset.get<double>("NoiseFact")}
+    , fNoiseWidth{pset.get<double>("NoiseWidth")}
+    , fLowCutoff{pset.get<double>("LowCutoff")}
+    , fNFieldBins{pset.get<int>("FieldBins")}
+    , fCol3DCorrection{pset.get<double>("Col3DCorrection")}
+    , fInd3DCorrection{pset.get<double>("Ind3DCorrection")}
+    , fColFieldRespAmp{pset.get<double>("ColFieldRespAmp")}
+    , fIndFieldRespAmp{pset.get<double>("IndFieldRespAmp")}
+    , fShapeTimeConst{pset.get<std::vector<double>>("ShapeTimeConst")}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
     , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
   {
-    this->reconfigure(pset);
-
-    produces<std::vector<raw::RawDigit>>();
-
-    fCompression = raw::kNone;
-    std::string compression(pset.get<std::string>("CompressionType"));
-    if (compression.compare("Huffman") == 0) fCompression = raw::kHuffman;
-  }
-
-  //-------------------------------------------------
-  SimWire::~SimWire()
-  {
-    fColFieldResponse.clear();
-    fIndFieldResponse.clear();
-    fColShape.clear();
-    fIndShape.clear();
-    fChargeWork.clear();
-    fElectResponse.clear();
-
-    for (unsigned int i = 0; i < fNoise.size(); ++i)
-      fNoise[i].clear();
-    fNoise.clear();
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataForJob();
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob(clockData);
+    fSampleRate = sampling_rate(clockData);
+    fTriggerOffset = trigger_offset(clockData);
+    fNSamplesReadout = detProp.NumberTimeSamples();
 
     MF_LOG_WARNING("SimWire") << "SimWire is an example module that works for the "
                               << "MicroBooNE detector.  Each experiment should implement "
                               << "its own version of this module to simulate electronics "
                               << "response.";
-  }
 
-  //-------------------------------------------------
-  void
-  SimWire::reconfigure(fhicl::ParameterSet const& p)
-  {
-    std::string fResponseFile = p.get<std::string>("ResponseFile", "");
-
-    fResponseSet = !fResponseFile.empty();
-    if (fResponseSet) {
-      cet::search_path sp("FW_SEARCH_PATH");
-      sp.find_file(p.get<std::string>("ResponseFile"), fResponseFile);
-    }
-    else
-      fResponseFile.clear();
-    fDriftEModuleLabel = p.get<std::string>("DriftEModuleLabel");
-    fNoiseFact = p.get<double>("NoiseFact");
-    fNoiseWidth = p.get<double>("NoiseWidth");
-    fLowCutoff = p.get<double>("LowCutoff");
-    fNFieldBins = p.get<int>("FieldBins");
-    fCol3DCorrection = p.get<double>("Col3DCorrection");
-    fInd3DCorrection = p.get<double>("Ind3DCorrection");
-    fColFieldRespAmp = p.get<double>("ColFieldRespAmp");
-    fIndFieldRespAmp = p.get<double>("IndFieldRespAmp");
-    fShapeTimeConst = p.get<std::vector<double>>("ShapeTimeConst");
-
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    fSampleRate = detprop->SamplingRate();
-    fTriggerOffset = detprop->TriggerOffset();
-    fNSamplesReadout = detprop->NumberTimeSamples();
+    produces<std::vector<raw::RawDigit>>();
   }
 
   //-------------------------------------------------
@@ -185,7 +146,6 @@ namespace detsim {
 
     art::ServiceHandle<util::LArFFT const> fFFT;
     fNTicks = fFFT->FFTSize();
-    fChargeWork.resize(fNTicks, 0.);
 
     // Note the magic 100 here. Argo and uBooNe use NChannels.
     fNoise.resize(100);
@@ -211,9 +171,6 @@ namespace detsim {
   {
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry const> geo;
-    unsigned int signalSize = fNTicks;
-    // vectors for working
-    std::vector<short> adcvec(signalSize, 0);
 
     std::vector<const sim::SimChannel*> chanHandle;
     evt.getView(fDriftEModuleLabel, chanHandle);
@@ -229,11 +186,7 @@ namespace detsim {
 
     // make an unique_ptr of sim::SimDigits that allows ownership of the produced
     // digits to be transferred to the art::Event after the put statement below
-    std::unique_ptr<std::vector<raw::RawDigit>> digcol(new std::vector<raw::RawDigit>);
-
-    unsigned int chan = 0;
-    fChargeWork.clear();
-    fChargeWork.resize(fNTicks, 0.);
+    auto digcol = std::make_unique<std::vector<raw::RawDigit>>();
 
     art::ServiceHandle<util::LArFFT> fFFT;
 
@@ -241,11 +194,11 @@ namespace detsim {
     CLHEP::RandFlat flat(fEngine);
 
     std::map<int, double>::iterator mapIter;
-    for (chan = 0; chan < geo->Nchannels(); chan++) {
-      //       std::cout << "on channel " << chan << std::endl;
-
-      fChargeWork.clear();
-      fChargeWork.resize(fNTicks, 0.);
+    for (unsigned int chan = 0; chan < geo->Nchannels(); ++chan) {
+      std::vector<short> adcvec(fNTicks, 0);
+      adcvec.reserve(fNTicks);
+      std::vector<double> charges;
+      charges.reserve(fNTicks);
 
       if (channels[chan]) {
 
@@ -253,14 +206,14 @@ namespace detsim {
         const sim::SimChannel* sc = channels[chan];
 
         // loop over the tdcs and grab the number of electrons for each
-        for (size_t t = 0; t < fChargeWork.size(); ++t)
-          fChargeWork[t] = sc->Charge(t);
+        for (size_t t = 0; t < charges.size(); ++t)
+          charges.push_back(sc->Charge(t));
 
         //Convolve charge with appropriate response function
         if (geo->SignalType(chan) == geo::kInduction)
-          fFFT->Convolute(fChargeWork, fIndShape);
+          fFFT->Convolute(charges, fIndShape);
         else
-          fFFT->Convolute(fChargeWork, fColShape);
+          fFFT->Convolute(charges, fColShape);
       }
 
       // noise was already generated for each wire in the event
@@ -268,29 +221,20 @@ namespace detsim {
       // pick a new "noise channel" for every channel  - this makes sure
       // the noise has the right coherent characteristics to be on one channel
       int noisechan = TMath::Nint(flat.fire() * (1. * (fNoise.size() - 1) + 0.1));
-      for (unsigned int i = 0; i < signalSize; ++i) {
-        adcvec[i] = (short)TMath::Nint(fNoise[noisechan][i] + fChargeWork[i]);
+      for (int i = 0; i < fNTicks; ++i) {
+        adcvec.push_back((short)TMath::Nint(fNoise[noisechan][i] + charges[i]));
       }
       adcvec.resize(fNSamplesReadout);
 
       // compress the adc vector using the desired compression scheme,
       // if raw::kNone is selected nothing happens to adcvec
       // This shrinks adcvec, if fCompression is not kNone.
-
       raw::Compress(adcvec, fCompression);
 
-      raw::RawDigit rd(chan, signalSize, adcvec, fCompression);
-      // Then, resize adcvec back to full length!
-      adcvec.clear();
-      adcvec.resize(signalSize, 0.0);
-
-      // add this digit to the collection
-      digcol->push_back(rd);
+      digcol->emplace_back(chan, fNTicks, move(adcvec), fCompression);
     } //end loop over channels
 
-    evt.put(std::move(digcol));
-
-    return;
+    evt.put(move(digcol));
   }
 
   //-------------------------------------------------
@@ -352,8 +296,6 @@ namespace detsim {
 
     fColTimeShape->Write();
     fIndTimeShape->Write();
-
-    return;
   }
 
   //-------------------------------------------------
@@ -401,17 +343,12 @@ namespace detsim {
     ///has already been done.
     for (unsigned int i = 0; i < noise.size(); ++i)
       noise[i] *= 1. * fNTicks;
-
-    return;
   }
 
   //-------------------------------------------------
   void
   SimWire::SetFieldResponse()
   {
-
-    //     std::cerr << "SetFieldResponse" << std::endl;
-
     art::ServiceHandle<geo::Geometry const> geo;
 
     double xyz1[3] = {0.};
@@ -438,10 +375,9 @@ namespace detsim {
       tfs->make<TH1D>("InductionFieldResponse", ";t (ns);Induction Response", fNTicks, 0, fNTicks);
     fColFieldResp = tfs->make<TH1D>(
       "CollectionFieldResponse", ";t (ns);Collection Response", fNTicks, 0, fNTicks);
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    double driftvelocity =
-      detprop->DriftVelocity(detprop->Efield(), detprop->Temperature()) / 1000.;
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
+    double driftvelocity = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature()) / 1000.;
     int nbinc = TMath::Nint(fCol3DCorrection * (std::abs(pitch)) /
                             (driftvelocity * fSampleRate)); ///number of bins //KP
 
@@ -470,17 +406,12 @@ namespace detsim {
 
     fColFieldResp->Write();
     fIndFieldResp->Write();
-
-    return;
   }
 
   //-------------------------------------------------
   void
   SimWire::SetElectResponse()
   {
-
-    //     std::cerr << "SetElectResponse" << std::endl;
-
     art::ServiceHandle<geo::Geometry const> geo;
 
     fElectResponse.resize(fNTicks, 0.);
@@ -523,19 +454,12 @@ namespace detsim {
     fElectResp = tfs->make<TH1D>(
       "ElectronicsResponse", ";t (ns);Electronics Response", fNElectResp, 0, fNElectResp);
     for (unsigned int i = 0; i < fNElectResp; ++i) {
-      //mf::LogInfo("SimWire") <<"checking ElectResponse: i=  "<< i << "  time[i]=  " << time[i] << "  fElectResponse[i]=  " << fElectResponse[i];
       fElectResp->Fill(i, fElectResponse[i]);
     }
 
     fElectResp->Write();
-
-    return;
   }
 
 }
 
-namespace detsim {
-
-  DEFINE_ART_MODULE(SimWire)
-
-}
+DEFINE_ART_MODULE(detsim::SimWire)

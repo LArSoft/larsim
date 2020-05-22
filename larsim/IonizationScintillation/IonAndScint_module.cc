@@ -27,6 +27,7 @@
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -53,7 +54,7 @@ namespace larg4 {
 
   private:
     art::InputTag calcTag; // name of calculator: Separate, Correlated, or NEST
-    ISCalc* fISAlg;
+    std::unique_ptr<ISCalc> fISAlg;
     CLHEP::HepRandomEngine& fEngine;
     string Instances;
     std::vector<string> instanceNames;
@@ -75,7 +76,6 @@ namespace larg4 {
       std::cout << "Produce SimEnergyDeposit in default volume - LArG4DetectorServicevolTPCActive"
                 << std::endl;
       instanceNames.push_back("LArG4DetectorServicevolTPCActive");
-      // produces< std::vector<sim::SimEnergyDeposit> >("LArG4DetectorServicevolTPCActive");
     }
     else {
       std::stringstream input(Instances);
@@ -87,7 +87,6 @@ namespace larg4 {
       std::cout << "Produce SimEnergyDeposit in volumes: " << std::endl;
       for (auto instanceName : instanceNames) {
         std::cout << " - " << instanceName << std::endl;
-        // produces< std::vector<sim::SimEnergyDeposit> >(instanceName);
       }
     }
 
@@ -102,17 +101,15 @@ namespace larg4 {
     std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
 
     if (calcTag.label() == "Separate")
-      fISAlg = new ISCalcSeparate();
-    else if (calcTag.label() == "Correlated")
-      fISAlg = new ISCalcCorrelated();
+      fISAlg = std::make_unique<ISCalcSeparate>();
+    else if (calcTag.label() == "Correlated") {
+      auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
+      fISAlg = std::make_unique<ISCalcCorrelated>(detProp);
+    }
     else if (calcTag.label() == "NEST")
-      fISAlg = new ISCalcNESTLAr(fEngine);
+      fISAlg = std::make_unique<ISCalcNESTLAr>(fEngine);
     else
       mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
-
-    fISAlg->Reset();
-
-    return;
   }
 
   //......................................................................
@@ -120,8 +117,6 @@ namespace larg4 {
   IonAndScint::endJob()
   {
     std::cout << "IonAndScint endJob." << std::endl;
-    if (fISAlg) delete fISAlg;
-    return;
   }
 
   //......................................................................
@@ -133,15 +128,16 @@ namespace larg4 {
 
     event.getManyByType(edepHandle);
 
-    if (edepHandle.size() == 0) {
+    if (empty(edepHandle)) {
       std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;
       return;
     }
 
     auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
 
-    std::unique_ptr<std::vector<sim::SimEnergyDeposit>> simedep(
-      new std::vector<sim::SimEnergyDeposit>);
+    auto simedep = std::make_unique<std::vector<sim::SimEnergyDeposit>>();
     for (auto edeps : edepHandle) {
       // Do some checking before we proceed
       if (!edeps.isValid()) {
@@ -160,13 +156,12 @@ namespace larg4 {
       std::cout << "SimEnergyDeposit input module: " << edeps.provenance()->moduleLabel()
                 << ", instance name: " << edeps.provenance()->productInstanceName() << std::endl;
 
-      // std::unique_ptr< std::vector<sim::SimEnergyDeposit> >  simedep (new std::vector<sim::SimEnergyDeposit>);
       for (sim::SimEnergyDeposit const& edepi : *edeps) {
-        fISAlg->CalcIonAndScint(edepi);
+        auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi);
 
-        int ph_num = round(fISAlg->NumOfPhotons());
-        int ion_num = round(fISAlg->NumOfElectrons());
-        float scintyield = fISAlg->ScintillationYieldRatio();
+        int ph_num = round(isCalcData.numPhotons);
+        int ion_num = round(isCalcData.numElectrons);
+        float scintyield = isCalcData.scintillationYieldRatio;
         float edep_tmp = edepi.Energy();
         geo::Point_t startPos_tmp = edepi.Start();
         geo::Point_t endPos_tmp = edepi.End();
@@ -200,12 +195,8 @@ namespace larg4 {
                               trackID_tmp,
                               pdgCode_tmp);
       }
-
-      // event.put(std::move(simedep), edeps.provenance()->productInstanceName().c_str());
     }
     event.put(std::move(simedep));
-
-    return;
   }
 } // namespace
 DEFINE_ART_MODULE(larg4::IonAndScint)

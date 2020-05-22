@@ -8,51 +8,50 @@
 
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Units/SystemOfUnits.h"
+
+#include <algorithm>
+
+namespace {
+  constexpr double LAr_Z{18};
+  constexpr double Density_LAr{1.393};
+
+  constexpr double scint_yield{1.0 / (19.5 * CLHEP::eV)};
+  constexpr double resolution_scale{0.107}; // Doke 1976
+}
 
 namespace larg4 {
+
   //----------------------------------------------------------------------------
-  ISCalcNESTLAr::ISCalcNESTLAr(CLHEP::HepRandomEngine& Engine) : fEngine(Engine)
+  ISCalcNESTLAr::ISCalcNESTLAr(CLHEP::HepRandomEngine& Engine)
+    : fEngine(Engine)
+    , fSCE{lar::providerFrom<spacecharge::SpaceChargeService>()}
+    , fLArProp{lar::providerFrom<detinfo::LArPropertiesService>()}
   {
     std::cout << "ISCalcNESTLAr Initialize." << std::endl;
-
-    fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
-    fDetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-
-    fScintYield = 1.0 / (19.5 * CLHEP::eV);
-    fResolutionScale = 0.107; // Doke 1976
   }
 
   //----------------------------------------------------------------------------
-  void
-  ISCalcNESTLAr::Reset()
-  {
-    fEnergyDeposit = 0.;
-    fNumScintPhotons = 0.;
-    fNumIonElectrons = 0.;
-    //        fNumFastScintPhotons     = 0.;
-    //        fNumSlowScintPhotons     = 0.;
-    fScintillationYieldRatio = 0.;
-
-    return;
-  }
-
-  //----------------------------------------------------------------------------
-  void
-  ISCalcNESTLAr::CalcIonAndScint(sim::SimEnergyDeposit const& edep)
+  ISCalcData
+  ISCalcNESTLAr::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                 sim::SimEnergyDeposit const& edep)
   {
     CLHEP::RandGauss GaussGen(fEngine);
     CLHEP::RandFlat UniformGen(fEngine);
 
-    fNumIonElectrons = 0.0;
-    fNumScintPhotons = 0.0;
-    fYieldFactor = 1.0;      // default, for electronic recoils
-    fExcitationRatio = 0.21; // ratio for light particle in LAr, such as e-, mu-, Aprile et. al book
+    double yieldFactor = 1.0; // default quenching factor, for electronic recoils
+    double excitationRatio =
+      0.21; // ratio for light particle in LAr, such as e-, mu-, Aprile et. al book
 
-    fEnergyDeposit = edep.Energy();
-    if (fEnergyDeposit < 1 * CLHEP::eV) // too small energy deposition
+    double const energyDeposit = edep.Energy();
+    if (energyDeposit < 1 * CLHEP::eV) // too small energy deposition
     {
-      return;
+      return {0., 0., 0., 0.};
     }
 
     int pdgcode = edep.PdgCode();
@@ -63,76 +62,58 @@ namespace larg4 {
     geo::Length_t endx = edep.EndX();
     geo::Length_t endy = edep.EndY();
     geo::Length_t endz = edep.EndZ();
-    //        geo::Point_t  midpos = edep.MidPoint();
-
-    //        double delta    = 1*CLHEP::mm;
-    //        double R0           = 1.568*CLHEP::um;    //Mozumder 1995
 
     double DokeBirks[3];
-    //        double ThomasImel = 0.00;
 
-    double eField = EFieldAtStep(fDetProp->Efield(), edep);
+    double eField = EFieldAtStep(detProp.Efield(), edep);
     if (eField) {
-      //            ThomasImel   = 0.156977 * pow(eField, -0.1);
       DokeBirks[0] = 0.07 * pow((eField / 1.0e3), -0.85);
       DokeBirks[2] = 0.00;
     }
     else {
-      //            ThomasImel   = 0.099;
       DokeBirks[0] = 0.0003;
       DokeBirks[2] = 0.75;
     }
 
-    double Density = fDetProp->Density() /
+    double Density = detProp.Density() /
                      (CLHEP::g / CLHEP::cm3); // argon density at the temperature from Temperature()
-
-    //biExc = 0.6;
 
     // nuclear recoil quenching "L" factor: total yield is
     // reduced for nuclear recoil as per Lindhard theory
-    double epsilon = 11.5 * (fEnergyDeposit / CLHEP::keV) * pow(LAr_Z, (-7. / 3.));
-    //      double gamma   = 3. * pow(epsilon, 0.15) + 0.7 * pow( epsilon, 0.6 ) + epsilon;
-    //      double kappa   = 0.133*pow(z1,(2./3.))*pow(a2,(-1./2.))*(2./3.);
+    double epsilon = 11.5 * (energyDeposit / CLHEP::keV) * pow(LAr_Z, (-7. / 3.));
 
     if (pdgcode == 2112 || pdgcode == -2112) //nuclear recoil
     {
-      //            fYieldFactor = (kappa * gamma) / ( 1 + kappa * gamma ); //Lindhard factor
-      fYieldFactor = 0.23 * (1 + exp(-5 * epsilon)); //liquid argon L_eff
-                                                     //            if ( eField == 0 )
-                                                     //            {
-      //                ThomasImel = 0.25; //special TIB parameters for nuclear recoil only, in LAr
-      //            }
-      fExcitationRatio = 0.69337 + 0.3065 * exp(-0.008806 * pow(eField, 0.76313));
+      yieldFactor = 0.23 * (1 + exp(-5 * epsilon)); //liquid argon L_eff
+      excitationRatio = 0.69337 + 0.3065 * exp(-0.008806 * pow(eField, 0.76313));
     }
 
     // determine ultimate number of quanta from current E-deposition (ph+e-) total mean number of exc/ions
     //the total number of either quanta produced is equal to product of the
     //work function, the energy deposited, and yield reduction, for NR
-    double MeanNumQuanta = fScintYield * fEnergyDeposit;
-    double sigma = sqrt(fResolutionScale * MeanNumQuanta); //Fano
+    double MeanNumQuanta = scint_yield * energyDeposit;
+    double sigma = sqrt(resolution_scale * MeanNumQuanta); //Fano
     int NumQuanta = int(floor(GaussGen.fire(MeanNumQuanta, sigma) + 0.5));
-    double LeffVar = GaussGen.fire(fYieldFactor, 0.25 * fYieldFactor);
-    if (LeffVar > 1) { LeffVar = 1.0; }
+    double LeffVar = GaussGen.fire(yieldFactor, 0.25 * yieldFactor);
+    LeffVar = std::clamp(LeffVar, 0., 1.);
 
-    if (LeffVar < 0) { LeffVar = 0.0; }
-
-    if (fYieldFactor < 1) //nuclear reocils
+    if (yieldFactor < 1) //nuclear reocils
     {
       NumQuanta = BinomFluct(NumQuanta, LeffVar);
     }
 
     //if Edep below work function, can't make any quanta, and if NumQuanta
     //less than zero because Gaussian fluctuated low, update to zero
-    if (fEnergyDeposit < 1 / fScintYield || NumQuanta < 0) { NumQuanta = 0; }
+    if (energyDeposit < 1 / scint_yield || NumQuanta < 0) { NumQuanta = 0; }
 
     // next section binomially assigns quanta to excitons and ions
-    int NumExcitons = BinomFluct(NumQuanta, fExcitationRatio / (1 + fExcitationRatio));
+    int NumExcitons = BinomFluct(NumQuanta, excitationRatio / (1 + excitationRatio));
     int NumIons = NumQuanta - NumExcitons;
 
     // this section calculates recombination following the modified Birks'Law of Doke, deposition by deposition,
     // may be overridden later in code if a low enough energy necessitates switching to the
     // Thomas-Imel box model for recombination instead (determined by site)
-    double dE = fEnergyDeposit / CLHEP::MeV;
+    double dE = energyDeposit / CLHEP::MeV;
     double dx = 0.0;
     double LET = 0.0;
     double recombProb;
@@ -157,9 +138,7 @@ namespace larg4 {
     }
     else //normal case of an e-/+ energy deposition recorded by Geant
     {
-      dx = std::sqrt((startx - endx) * (startx - endx) + (starty - endy) * (starty - endy) +
-                     (startz - endz) * (startz - endz)) /
-           CLHEP::cm;
+      dx = std::hypot(startx - endx, starty - endy, startz - endz) / CLHEP::cm;
       if (dx) {
         LET = (dE / dx) * (1 / Density); //lin. energy xfer (prop. to dE/dx)
       }
@@ -178,22 +157,18 @@ namespace larg4 {
     recombProb *= (Density / Density_LAr);
 
     //check against unphysicality resulting from rounding errors
-    if (recombProb < 0) { recombProb = 0; }
-    if (recombProb > 1) { recombProb = 1; }
+    recombProb = std::clamp(recombProb, 0., 1.);
 
     //use binomial distribution to assign photons, electrons, where photons
     //are excitons plus recombined ionization electrons, while final
     //collected electrons are the "escape" (non-recombined) electrons
-    int NumPhotons = NumExcitons + BinomFluct(NumIons, recombProb);
-    int NumElectrons = NumQuanta - NumPhotons;
+    int const NumPhotons = NumExcitons + BinomFluct(NumIons, recombProb);
+    int const NumElectrons = NumQuanta - NumPhotons;
 
-    fNumIonElectrons = NumElectrons;
-    fNumScintPhotons = NumPhotons;
-    fScintillationYieldRatio = GetScintYieldRatio(edep);
-    //        fNumFastScintPhotons      = fNumScintPhotons * fScintillationYieldRatio;
-    //        fNumSlowScintPhotons      = fNumScintPhotons - fNumFastScintPhotons;
-
-    return;
+    return {energyDeposit,
+            static_cast<double>(NumElectrons),
+            static_cast<double>(NumPhotons),
+            GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------

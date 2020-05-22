@@ -51,10 +51,15 @@ namespace larg4 {
     /// Constructor: sets up all its LArVoxelReadout instances.
     LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
 
+    /// N.B. Sets the relevant DetectorClocksData and
+    /// DetectorPropertiesData for the event in flight.  See
+    /// definition below.
+    class Sentry;
+
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the LAr voxel readout.  Required of
     /// any class that inherits from G4VUserParallelWorld
-    virtual void Construct();
+    void Construct() override;
 
   private:
     G4VPhysicalVolume* FindNestedVolume(G4VPhysicalVolume* mother,
@@ -64,11 +69,35 @@ namespace larg4 {
                                         unsigned int expectedNum);
 
     art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry
-    std::unique_ptr<G4UserLimits> fStepLimit;     ///< G4 doesn't handle memory management,
-                                                  ///< so we have to
+    std::unique_ptr<G4UserLimits> fStepLimit;     ///< G4 doesn't handle memory
+                                                  ///< management, so we have to
 
     /// Data for `LArVoxelReadout` setup.
+    larg4::LArVoxelReadout* flarVoxelReadout{nullptr};
     larg4::LArVoxelReadout::Setup_t fReadoutSetupData;
+  };
+
+  // This is dirty, dirty.  Sigh.  Due to the limited interface of G4
+  // and the prevalent use of services in LArSoft, there isn't a much
+  // better alternative.
+  class LArVoxelReadoutGeometry::Sentry {
+  public:
+    Sentry(LArVoxelReadoutGeometry* const readout,
+           detinfo::DetectorClocksData const& clockData,
+           detinfo::DetectorPropertiesData const& detProp) noexcept
+      : readout_{readout}
+    {
+      readout_->flarVoxelReadout->SetClockData(&clockData);
+      readout_->flarVoxelReadout->SetPropertiesData(&detProp);
+    }
+    ~Sentry() noexcept
+    {
+      readout_->flarVoxelReadout->SetClockData(nullptr);
+      readout_->flarVoxelReadout->SetPropertiesData(nullptr);
+    }
+
+  private:
+    LArVoxelReadoutGeometry* const readout_;
   };
 
 } // namespace larg4

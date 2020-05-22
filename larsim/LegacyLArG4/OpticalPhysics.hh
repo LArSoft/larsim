@@ -67,10 +67,9 @@ class G4OpRayleigh;
 class G4OpWLS;
 class G4Scintillation;
 
-#if defined __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-private-field"
-#endif
+namespace detinfo {
+  class DetectorPropertiesData;
+}
 
 namespace larg4 {
 
@@ -78,14 +77,15 @@ namespace larg4 {
 
   class OpticalPhysics : public G4VPhysicsConstructor {
   public:
-    OpticalPhysics(G4int ver = 0, const G4String& name = "G4Optical");
-    virtual ~OpticalPhysics();
-
-    virtual void ConstructParticle();
-    virtual void ConstructProcess();
+    OpticalPhysics(detinfo::DetectorPropertiesData const& detProp,
+                   G4int ver = 0,
+                   G4String const& name = "G4Optical");
 
   private:
-    G4int verbose;
+    void ConstructParticle() override;
+    void ConstructProcess() override;
+
+    bool fSimpleBoundary;
     G4Cerenkov* fTheCerenkovProcess;
     G4Scintillation* fTheScintillationProcess;
     G4OpAbsorption* fTheAbsorptionProcess;
@@ -96,8 +96,4 @@ namespace larg4 {
   };
 
 }
-#if defined __clang__
-#pragma clang diagnostic pop
-#endif
-
 #endif

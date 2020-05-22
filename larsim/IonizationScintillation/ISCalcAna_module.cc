@@ -47,7 +47,7 @@ namespace larg4 {
     void endJob() override;
 
   private:
-    ISCalc* fISAlg;
+    std::unique_ptr<ISCalc> fISAlg;
     art::InputTag fEDepTag;
     art::InputTag calcTag; // name of calculator to use, NEST or Separate
     CLHEP::HepRandomEngine& fEngine;
@@ -71,30 +71,28 @@ namespace larg4 {
     std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
 
     if (calcTag.label() == "Separate")
-      fISAlg = new larg4::ISCalcSeparate();
-    else if (calcTag.label() == "Correlated")
-      fISAlg = new larg4::ISCalcCorrelated();
+      fISAlg = std::make_unique<larg4::ISCalcSeparate>();
+    else if (calcTag.label() == "Correlated") {
+      auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
+      fISAlg = std::make_unique<larg4::ISCalcCorrelated>(detProp);
+    }
     else if (calcTag.label() == "NEST")
-      fISAlg = new larg4::ISCalcNESTLAr(fEngine);
+      fISAlg = std::make_unique<larg4::ISCalcNESTLAr>(fEngine);
     else
       mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
-
-    fISAlg->Reset();
 
     art::ServiceHandle<art::TFileService const> tfs;
     fNtuple = tfs->make<TNtuple>(
       "nt_is",
       "EDep IS Calc Ntuple",
       "run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon:scintyield");
-    return;
   }
   void
   ISCalcAna::endJob()
   {
     std::cout << "ISCalcAna endJob." << std::endl;
-    if (fISAlg) delete fISAlg;
-    return;
   }
+
   void
   ISCalcAna::analyze(art::Event const& event)
   {
@@ -103,10 +101,12 @@ namespace larg4 {
       std::cout << "PDFastSimPAR Module Cannot getByLabel: " << fEDepTag << std::endl;
       return;
     }
-    auto const& edeps = edep_handle;
-    for (auto const& edepi : *edeps) {
-      fISAlg->Reset();
-      fISAlg->CalcIonAndScint(edepi);
+
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
+    for (auto const& edepi : *edep_handle) {
+      auto const [energyDeposit, nElectrons, nPhotons, scintYieldRatio] =
+        fISAlg->CalcIonAndScint(detProp, edepi);
       fNtuple->Fill(event.run(),
                     event.event(),
                     edepi.T(),
@@ -117,16 +117,13 @@ namespace larg4 {
                     edepi.Energy(),
                     edepi.TrackID(),
                     edepi.PdgCode(),
-                    fISAlg->EnergyDeposit(),
-                    fISAlg->NumOfElectrons(),
-                    fISAlg->NumOfPhotons(),
-                    //                          fISAlg->NumOfFastPhotons(),
-                    //                          fISAlg->NumOfSlowPhotons());
-                    fISAlg->ScintillationYieldRatio());
+                    energyDeposit,
+                    nElectrons,
+                    nPhotons,
+                    scintYieldRatio);
     }
 
     std::cout << "ISCalcAna analyze completed." << std::endl;
-    return;
   }
 }
 DEFINE_ART_MODULE(larg4::ISCalcAna)

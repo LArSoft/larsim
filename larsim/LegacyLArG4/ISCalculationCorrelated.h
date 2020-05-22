@@ -16,19 +16,18 @@
 #define LARG4_ISCALCULATIONCORRELATED_H
 
 #include "larsim/LegacyLArG4/ISCalculation.h"
+namespace detinfo {
+  class DetectorPropertiesData;
+}
 
 // forward declarations
 class G4Step;
-namespace CLHEP {
-  class HepRandomEngine;
-}
 
 namespace larg4 {
 
   class ISCalculationCorrelated : public ISCalculation {
-
   public:
-    ISCalculationCorrelated(CLHEP::HepRandomEngine&);
+    explicit ISCalculationCorrelated(detinfo::DetectorPropertiesData const& detProp);
 
     void Reset();
     void CalculateIonizationAndScintillation(const G4Step* step);

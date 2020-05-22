@@ -31,13 +31,13 @@
 namespace larg4 {
   class ISCalcCorrelated : public ISCalc {
   public:
-    ISCalcCorrelated();
-    void Reset();
+    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
 
-    double EFieldAtStep(
-      double efield,
-      sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step
-    void CalcIonAndScint(sim::SimEnergyDeposit const& edep);
+    double EFieldAtStep(double efield,
+                        sim::SimEnergyDeposit const& edep)
+      override; //value of field with any corrections for this step
+    ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                               sim::SimEnergyDeposit const& edep) override;
 
   private:
     double fGeVToElectrons;   ///< from LArG4Parameters service
@@ -51,7 +51,6 @@ namespace larg4 {
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
 
     const spacecharge::SpaceCharge* fSCE;
-    const detinfo::DetectorProperties* fDetProp;
     const detinfo::LArProperties* fLArProp;
 
     void CalcIon(sim::SimEnergyDeposit const& edep);

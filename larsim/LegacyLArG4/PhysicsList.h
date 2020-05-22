@@ -61,10 +61,6 @@ namespace larg4 {
   // to modify one of its routines.
   class ModularPhysicsList : public G4VModularPhysicsList {
   public:
-    // Constructor.
-    explicit ModularPhysicsList();
-    virtual ~ModularPhysicsList();
-
     // This is the one method we're overridding to include the code
     // for the parallel geometry.
     virtual void ConstructProcess();
@@ -88,9 +84,9 @@ namespace larg4 {
     }
   };
 
-  /// This typedef is what defines the name "larg4::PhysicsList" in
+  /// This type alias is what defines the name "larg4::PhysicsList" in
   /// any class that includes this header.
-  typedef TConfigurablePhysicsList<ModularPhysicsList> PhysicsList;
+  using PhysicsList = TConfigurablePhysicsList<ModularPhysicsList>;
 
 } // namespace larg4
 

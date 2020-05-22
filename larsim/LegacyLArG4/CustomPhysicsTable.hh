@@ -29,37 +29,27 @@
 
 class G4VPhysicsConstructor;
 
-#ifndef CUSTOMPHYSICSFACTORY_hh
 namespace larg4 {
   class CustomPhysicsFactoryBase;
-}
-#endif
 
-namespace larg4 {
   class CustomPhysicsTable {
-
   public:
+    CustomPhysicsTable() = default;
     CustomPhysicsTable(CustomPhysicsFactoryBase*);
-    ~CustomPhysicsTable(){};
     std::vector<std::string> GetAvailablePhysicsList();
-    bool IsPhysicsAvailable(std::string);
-    G4VPhysicsConstructor* GetPhysicsConstructor(std::string);
-    std::map<std::string, CustomPhysicsFactoryBase*>
+    bool IsPhysicsAvailable(std::string const&);
+    G4VPhysicsConstructor* GetPhysicsConstructor(std::string const& physicsName);
+    std::map<std::string, CustomPhysicsFactoryBase*> const&
     GetFullTable()
     {
       return theTable;
     }
     void AddPhysics(CustomPhysicsFactoryBase*);
 
-  protected:
+  private:
     std::map<std::string, CustomPhysicsFactoryBase*> theTable;
-    CustomPhysicsTable(){};
   };
 
 }
 
-#include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
-
 #endif
-
-// Sept 2009 - Ben Jones, MIT

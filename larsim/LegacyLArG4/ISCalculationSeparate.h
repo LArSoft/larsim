@@ -14,21 +14,16 @@
 // forward declarations
 class G4EmSaturation;
 class G4Step;
-namespace CLHEP {
-  class HepRandomEngine;
-}
 
 namespace larg4 {
 
   class ISCalculationSeparate : public ISCalculation {
-
   public:
-    ISCalculationSeparate(CLHEP::HepRandomEngine&);
-
+    ISCalculationSeparate();
     void Reset();
     void CalculateIonizationAndScintillation(const G4Step* step);
     double
-    StepSizeLimit() const
+    StepSizeLimit() const override
     {
       return fStepSize;
     }

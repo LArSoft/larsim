@@ -7,86 +7,53 @@
 #define CUSTOMPHYSICSFACTORY_hh
 
 #include "Geant4/G4VPhysicsConstructor.hh"
+#include "larsim/LegacyLArG4/CustomPhysicsTable.hh"
 
-#ifndef CUSTOMPHYSICSTABLE_hh
 namespace larg4 {
   class CustomPhysicsTable;
-}
-#endif
 
-namespace larg4 {
   class CustomPhysicsFactoryBase {
   public:
-    CustomPhysicsFactoryBase() {}
-    virtual ~CustomPhysicsFactoryBase() {}
+    explicit CustomPhysicsFactoryBase(std::string const& name) : fName{name}
+    {
+      if (empty(name))
+        std::cerr << "CustomPhysicsFactory Error : Physics registered with no name!" << std::endl;
+    }
+    virtual ~CustomPhysicsFactoryBase() = default;
 
-    virtual bool Registered() = 0;
-    virtual std::string GetName() = 0;
-    virtual G4VPhysicsConstructor* Build() = 0;
+    std::string const&
+    GetName() const noexcept
+    {
+      return fName;
+    }
+
+    virtual G4VPhysicsConstructor* Build() const = 0;
+
+  private:
+    std::string fName;
   };
 
   template <class T>
   class CustomPhysicsFactory : public CustomPhysicsFactoryBase {
   public:
-    CustomPhysicsFactory();
-    CustomPhysicsFactory(std::string);
-    virtual ~CustomPhysicsFactory(){};
-    bool
-    Registered()
-    {
-      return registered;
-    }
-    std::string
-    GetName()
-    {
-      return myName;
-    }
-    virtual G4VPhysicsConstructor* Build();
+    explicit CustomPhysicsFactory(std::string const& name);
 
-  private:
-    std::string myName;
-    bool registered;
-    bool verbose;
+    G4VPhysicsConstructor*
+    Build() const
+    {
+      return new T{};
+    }
   };
-}
-#include "larsim/LegacyLArG4/CustomPhysicsTable.hh"
-
-namespace larg4 {
 
   template <class T>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<T>::Build()
+  CustomPhysicsFactory<T>::CustomPhysicsFactory(std::string const& name)
+    : CustomPhysicsFactoryBase{name}
   {
-    return new T();
-  }
-
-  template <class T>
-  CustomPhysicsFactory<T>::CustomPhysicsFactory(std::string Name)
-  {
-
-    // For debugging.
-    verbose = true;
-
-    if (Name != "")
-      myName = Name;
-    else
-      std::cerr << "CustomPhysicsFactory Error : Physics registered with no name!" << std::endl;
-
     // register self in physics table - note, factory is actually registered
     // in static TheCustomPhysicsTable, not the instance created below
     // which just acts to pass information along
     new CustomPhysicsTable(this);
-    registered = true;
   }
-
-  template <class T>
-  CustomPhysicsFactory<T>::CustomPhysicsFactory()
-  {
-    registered = false;
-  }
-
 }
 
 #endif
-
-// Sept 2009 - Ben Jones, MIT

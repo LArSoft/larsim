@@ -72,7 +72,6 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
-#include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
 #include "larsim/LegacyLArG4/OpBoundaryProcessSimple.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -80,18 +79,15 @@
 
 namespace larg4 {
 
-  CustomPhysicsFactory<OpticalPhysics> optical_factory("Optical");
-
   //-----------------------------------------------------------
-  OpticalPhysics::OpticalPhysics(G4int ver, const G4String& name)
-    : G4VPhysicsConstructor(name), verbose(ver)
+  OpticalPhysics::OpticalPhysics(detinfo::DetectorPropertiesData const& detProp,
+                                 G4int const /*ver*/,
+                                 G4String const& name)
+    : G4VPhysicsConstructor(name), fSimpleBoundary{detProp.SimpleBoundary()}
   {
     G4LossTableManager::Instance();
     mf::LogInfo("OpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
-
-  //-----------------------------------------------------------
-  OpticalPhysics::~OpticalPhysics() {}
 
   //-----------------------------------------------------------
   void
@@ -132,10 +128,7 @@ namespace larg4 {
   void
   OpticalPhysics::ConstructProcess()
   {
-
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-    const detinfo::DetectorProperties* detp =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // Add standard EM Processes
     MF_LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
@@ -144,7 +137,7 @@ namespace larg4 {
     fTheScintillationProcess = new G4Scintillation("Scintillation");
     fTheAbsorptionProcess = new G4OpAbsorption();
     fTheRayleighScatteringProcess = new G4OpRayleigh();
-    if (detp->SimpleBoundary())
+    if (fSimpleBoundary)
       fTheBoundaryProcess = new OpBoundaryProcessSimple();
     else
       fTheBoundaryProcess_g4 = new G4OpBoundaryProcess();
@@ -177,20 +170,18 @@ namespace larg4 {
       if (fTheCerenkovProcess->IsApplicable(*particle) && CerenkovLightEnabled) {
         pmanager->AddProcess(fTheCerenkovProcess);
         pmanager->SetProcessOrdering(fTheCerenkovProcess, idxPostStep);
-        //	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Cerenkov applicable : " << particleName;
       }
       if (fTheScintillationProcess->IsApplicable(*particle)) {
         pmanager->AddProcess(fTheScintillationProcess);
         pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxAtRest);
         pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
-        //	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Scintillation applicable : " << particleName;
       }
 
       if (particleName == "opticalphoton") {
         mf::LogInfo("OpticalPhysics") << " AddDiscreteProcess to OpticalPhoton ";
         pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
         pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
-        if (detp->SimpleBoundary())
+        if (fSimpleBoundary)
           pmanager->AddDiscreteProcess(fTheBoundaryProcess);
         else
           pmanager->AddDiscreteProcess(fTheBoundaryProcess_g4);

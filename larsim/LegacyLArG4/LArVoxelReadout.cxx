@@ -49,9 +49,6 @@ namespace larg4 {
     // Initialize values for the electron-cluster calculation.
     ClearSimChannels();
 
-    const detinfo::DetectorClocks* ts = lar::providerFrom<detinfo::DetectorClocksService>();
-    fClock = ts->TPCClock();
-
     // the standard name contains cryostat and TPC;
     // if we don't find it, we will detect the TPC at each Geant hit
     unsigned int cryostat, tpc;
@@ -75,11 +72,9 @@ namespace larg4 {
   void
   LArVoxelReadout::Setup(Setup_t const& setupData)
   {
-
     SetOffPlaneChargeRecoveryMargin(setupData.offPlaneMargin);
     SetRandomEngines(setupData.propGen);
-
-  } // LArVoxelReadout::Setup()
+  }
 
   //---------------------------------------------------------------------------------------
   void
@@ -89,7 +84,7 @@ namespace larg4 {
     fCstat = cryostat;
     fTPC = tpc;
     MF_LOG_DEBUG("LArVoxelReadout") << GetName() << "covers C=" << fCstat << " T=" << fTPC;
-  } // LArVoxelReadout::SetSingleTPC()
+  }
 
   void
   LArVoxelReadout::SetDiscoverTPC()
@@ -98,23 +93,26 @@ namespace larg4 {
     fCstat = 0;
     fTPC = 0;
     MF_LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
-  } // LArVoxelReadout::SetDiscoverTPC()
-
-  //---------------------------------------------------------------------------------------
-  LArVoxelReadout::~LArVoxelReadout() {}
+  }
 
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
   void
   LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
-    // for c2: larp is unused
-    //auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
-    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    fElectronLifetime = detprop->ElectronLifetime();
+    assert(fClockData != nullptr &&
+           "You must use set the clock data pointer at the beginning "
+           "of each module's event-level call.  This might be done through the "
+           "LArVoxelReadoutGeometry::Sentry class.");
+    assert(fDetProp != nullptr &&
+           "You must use set the detector-properties data pointer at the beginning "
+           "of each module's event-level call.  This might be done through the "
+           "LArVoxelReadoutGeometry::Sentry class.");
+
+    fElectronLifetime = fDetProp->ElectronLifetime();
     for (int i = 0; i < 3; ++i)
       fDriftVelocity[i] =
-        detprop->DriftVelocity(detprop->Efield(i), detprop->Temperature()) / 1000.;
+        fDetProp->DriftVelocity(fDetProp->Efield(i), fDetProp->Temperature()) / 1000.;
 
     fElectronClusterSize = fLgpHandle->ElectronClusterSize();
     fMinNumberOfElCluster = fLgpHandle->MinNumberOfElCluster();
@@ -124,7 +122,7 @@ namespace larg4 {
     fSkipWireSignalInTPCs = fLgpHandle->SkipWireSignalInTPCs();
 
     MF_LOG_DEBUG("LArVoxelReadout")
-      << " e lifetime: " << fElectronLifetime << "\n Temperature: " << detprop->Temperature()
+      << " e lifetime: " << fElectronLifetime << "\n Temperature: " << fDetProp->Temperature()
       << "\n Drift velocity: " << fDriftVelocity[0] << " " << fDriftVelocity[1] << " "
       << fDriftVelocity[2];
 
@@ -139,8 +137,7 @@ namespace larg4 {
   LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
     MF_LOG_DEBUG("LArVoxelReadout") << "Total number of steps was " << fNSteps << std::endl;
-
-  } // LArVoxelReadout::EndOfEvent()
+  }
 
   //---------------------------------------------------------------------------------------
   void
@@ -165,14 +162,14 @@ namespace larg4 {
   {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannelMap() const
+  }
 
   LArVoxelReadout::ChannelMap_t&
   LArVoxelReadout::GetSimChannelMap()
   {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannelMap()
+  }
 
   const LArVoxelReadout::ChannelMap_t&
   LArVoxelReadout::GetSimChannelMap(unsigned short cryo, unsigned short tpc) const
@@ -191,7 +188,7 @@ namespace larg4 {
   {
     if (bSingleTPC) return GetSimChannels(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannels()
+  }
 
   std::vector<sim::SimChannel>
   LArVoxelReadout::GetSimChannels(unsigned short cryo, unsigned short tpc) const
@@ -202,7 +199,7 @@ namespace larg4 {
     for (const auto& chpair : chmap)
       channels.push_back(chpair.second);
     return channels;
-  } // LArVoxelReadout::GetSimChannels(short, short)
+  }
 
   //---------------------------------------------------------------------------------------
   // Called for each step.
@@ -280,7 +277,7 @@ namespace larg4 {
         // Note that if there is no particle ID for this energy deposit, the
         // trackID will be sim::NoParticleId.
 
-        DriftIonizationElectrons(midPoint, g4time, trackID, cryostat, tpc);
+        DriftIonizationElectrons(*fClockData, midPoint, g4time, trackID, cryostat, tpc);
       } // end we are drifting
     }   // end there is non-zero energy deposition
 
@@ -293,7 +290,7 @@ namespace larg4 {
   {
     assert(pPropGen); // random engine must be present
     fPropGen = pPropGen;
-  } // LArVoxelReadout::SetRandomEngines()
+  }
 
   //----------------------------------------------------------------------------
   geo::Point_t
@@ -329,19 +326,19 @@ namespace larg4 {
     auto const distance = plane.DistanceFromPlane(pos);
 
     return plane.ComposePoint<geo::Point_t>(distance, landingPos + offPlane);
-
   } // LArVoxelReadout::RecoverOffPlaneDeposit()
 
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
   void
-  LArVoxelReadout::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
+  LArVoxelReadout::DriftIonizationElectrons(detinfo::DetectorClocksData const& clockData,
+                                            G4ThreeVector stepMidPoint,
                                             const double simTime,
                                             int trackID,
                                             unsigned short int cryostat,
                                             unsigned short int tpc)
   {
-    auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
+    auto const tpcClock = clockData.TPCClock();
 
     // this must be always true, unless caller has been sloppy
     assert(fPropGen); // No propagation random generator provided?!
@@ -530,7 +527,7 @@ namespace larg4 {
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks
             // Add potential decay/capture/etc delay effect, simTime.
-            unsigned int tdc = fClock.Ticks(ts->G4ToElecTime(TDiff + simTime));
+            unsigned int tdc = tpcClock.Ticks(clockData.G4ToElecTime(TDiff + simTime));
 
             // Add electrons produced by each cluster to the map
             DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);

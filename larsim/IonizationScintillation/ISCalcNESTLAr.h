@@ -11,48 +11,30 @@
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
+namespace detinfo {
+  class DetectorPropertiesData;
+}
 
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Utilities/Exception.h"
-#include "canvas/Utilities/InputTag.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
-
-#include "CLHEP/Units/SystemOfUnits.h"
-// Random number engine
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGauss.h"
-#include "CLHEP/Random/RandPoissonQ.h"
-
-#define LAr_Z (18)
-#define Density_LAr (1.393)
-#define LAr_W_Value (19.5 * CLHEP::eV)
+#include "CLHEP/Random/RandEngine.h"
 
 namespace larg4 {
   class ISCalcNESTLAr : public ISCalc {
   public:
     explicit ISCalcNESTLAr(CLHEP::HepRandomEngine& fEngine);
-    //        virtual ~ISCalcNESTLAr();
     void Reset();
 
-    double EFieldAtStep(
-      double efield,
-      sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step
-    void CalcIonAndScint(sim::SimEnergyDeposit const& edep);
+    double EFieldAtStep(double efield,
+                        sim::SimEnergyDeposit const& edep)
+      override; //value of field with any corrections for this step
+    ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                               sim::SimEnergyDeposit const& edep) override;
 
   private:
-    double fResolutionScale;
-    double fScintYield;      // quanta (electrons or photons) yield per eV
-    double fYieldFactor;     // quenching factor
-    double fExcitationRatio; // N_ex/N_i, the dimensionless ratio of initial excitons to ions
-
-    const spacecharge::SpaceCharge* fSCE;
-    const detinfo::DetectorProperties* fDetProp;
-    const detinfo::LArProperties* fLArProp;
     CLHEP::HepRandomEngine& fEngine; // random engine
+    const spacecharge::SpaceCharge* fSCE;
+    const detinfo::LArProperties* fLArProp;
 
     int BinomFluct(int N0, double prob);
     double CalcElectronLET(double E);

@@ -31,22 +31,11 @@
 
 #include "Geant4/G4SystemOfUnits.hh"
 
-// LArSoft includes
-#include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
-
-// Register this physics constructor so that we can use the name "NeutronHP" to
-// load it in a FHiCL custom physics list. See the section "Using Custom
-// Physics Modules" on the web page
-// http://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/LArG4 for more details.
-larg4::CustomPhysicsFactory<NeutronHPphysics> dummy_factory("NeutronHP");
-
 // Thermal neutron physics is enabled by default
 // (important for low-energy neutron interactions!)
 NeutronHPphysics::NeutronHPphysics(const G4String& name)
   : G4VPhysicsConstructor(name), fThermal(true)
 {}
-
-NeutronHPphysics::~NeutronHPphysics() {}
 
 void
 NeutronHPphysics::ConstructProcess()

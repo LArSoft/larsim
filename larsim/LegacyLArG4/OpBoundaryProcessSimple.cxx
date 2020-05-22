@@ -62,12 +62,10 @@
 
 namespace larg4 {
 
-  //Constructor
-
   OpBoundaryProcessSimple::OpBoundaryProcessSimple(const G4String& processName, G4ProcessType type)
     : G4VDiscreteProcess(processName, type)
   {
-    if (1 > 0) { G4cout << GetProcessName() << " is created " << G4endl; }
+    G4cout << GetProcessName() << " is created " << G4endl;
 
     SetProcessSubType(fOpBoundary);
 
@@ -75,14 +73,6 @@ namespace larg4 {
 
     fCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
   }
-
-  // OpBoundaryProcessSimple::OpBoundaryProcessSimple(const OpBoundaryProcessSimple &right)
-  // {
-  // }
-
-  //Destructor
-
-  OpBoundaryProcessSimple::~OpBoundaryProcessSimple() {}
 
   //Action to take after making each step of an optical photon - described in file header.
 
@@ -119,11 +109,6 @@ namespace larg4 {
 
       fVerbosity = lgp->OpVerbosity();
 
-      G4double thePhotonMomentum;
-
-      G4ThreeVector OldMomentum;
-      G4ThreeVector OldPolarization;
-
       G4ThreeVector NewMomentum;
       G4ThreeVector NewPolarization;
 
@@ -134,10 +119,9 @@ namespace larg4 {
       std::string Material2Name = Material2->GetName();
 
       const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
-
-      thePhotonMomentum = aParticle->GetTotalMomentum();
-      OldMomentum = aParticle->GetMomentumDirection();
-      OldPolarization = aParticle->GetPolarization();
+      G4double thePhotonMomentum = aParticle->GetTotalMomentum();
+      G4ThreeVector OldMomentum = aParticle->GetMomentumDirection();
+      G4ThreeVector OldPolarization = aParticle->GetPolarization();
 
       if (fVerbosity > 9)
         std::cout << "OpBoundaryProcessSimple Debug: Photon " << aTrack.GetTrackID() << " momentum "
@@ -152,10 +136,9 @@ namespace larg4 {
       G4ThreeVector theLocalPoint =
         theNavigator->GetGlobalToLocalTransform().TransformPoint(theGlobalPoint);
 
-      G4ThreeVector theLocalNormal; // Normal points back into volume
-
+      // Normal points back into volume
       G4bool valid;
-      theLocalNormal = theNavigator->GetLocalExitNormal(&valid);
+      G4ThreeVector theLocalNormal = theNavigator->GetLocalExitNormal(&valid);
 
       if (valid) { theLocalNormal = -theLocalNormal; }
       else {

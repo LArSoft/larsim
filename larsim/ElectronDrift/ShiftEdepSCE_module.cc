@@ -24,7 +24,6 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
-#include "larsim/Simulation/LArG4Parameters.h"
 
 namespace spacecharge {
   class ShiftEdepSCE;
@@ -74,41 +73,19 @@ spacecharge::ShiftEdepSCE::beginJob()
       "Edep PosDiff Ana Ntuple",
       "energy:orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
   }
-
-  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-  //  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-  //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-  //		    &(*lg4paramHandle),
-  //		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  //  fISAlg.Initialize();
 }
 
 void
 spacecharge::ShiftEdepSCE::produce(art::Event& e)
 {
-  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-  //  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-  //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-  //		    &(*lg4paramHandle),
-  //		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  //  fISAlg.Initialize();
-  /* 
-  art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-		    lg4paramHandle,
-		    lar::providerFrom<spacecharge::SpaceChargeService>());
-  */
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
+  auto const detProp =
+    art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
 
-  std::unique_ptr<std::vector<sim::SimEnergyDeposit>> outEdepVecPtr(
-    new std::vector<sim::SimEnergyDeposit>());
-  auto& outEdepVec(*outEdepVecPtr);
+  auto const& inEdepVec = *e.getValidHandle<std::vector<sim::SimEnergyDeposit>>(fEDepTag);
 
-  art::Handle<std::vector<sim::SimEnergyDeposit>> inEdepHandle;
-  e.getByLabel(fEDepTag, inEdepHandle);
-  auto const& inEdepVec(*inEdepHandle);
-
+  auto outEdepVecPtr = std::make_unique<std::vector<sim::SimEnergyDeposit>>();
+  auto& outEdepVec = *outEdepVecPtr;
   outEdepVec.reserve(inEdepVec.size());
 
   geo::Vector_t posOffsetsStart{0.0, 0.0, 0.0};
@@ -118,13 +95,10 @@ spacecharge::ShiftEdepSCE::produce(art::Event& e)
       posOffsetsStart = sce->GetPosOffsets({edep.StartX(), edep.StartY(), edep.StartZ()});
       posOffsetsEnd = sce->GetPosOffsets({edep.EndX(), edep.EndY(), edep.EndZ()});
     }
-    fISAlg.Reset();
-    fISAlg.CalcIonAndScint(edep);
+    auto const isData = fISAlg.CalcIonAndScint(detProp, edep);
     outEdepVec.emplace_back(
-      fISAlg.NumOfPhotons(),
-      //                0,
-      //                0,
-      fISAlg.NumOfElectrons(),
+      isData.numPhotons,
+      isData.numElectrons,
       0.0,
       edep.Energy(),
       geo::Point_t{(float)(edep.StartX() - posOffsetsStart.X()), //x should be subtracted
@@ -149,8 +123,6 @@ spacecharge::ShiftEdepSCE::produce(art::Event& e)
                        outEdepVec.back().Z(),
                        outEdepVec.back().NumElectrons(),
                        outEdepVec.back().NumPhotons());
-
-    //std::cout << "space charge position: (" << edep.X() << ", " << edep.Y() << ", " << edep.Z() << ") --> (" << outEdepVec.back().X() << ", " << outEdepVec.back().Y() << ", " << outEdepVec.back().Z() << ")" << std::endl;
   }
 
   e.put(std::move(outEdepVecPtr));

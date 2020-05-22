@@ -57,7 +57,6 @@
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
-//#include "larcore/Geometry/GeometryCore.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
@@ -85,7 +84,7 @@
 #include <cmath>
 #include <map>
 
-//stuff from wes
+// stuff from wes
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 
 namespace detsim {
@@ -105,14 +104,11 @@ namespace detsim {
     // objects (as of Oct-2017, this is probably "largeant").
     art::InputTag fSimModuleLabel;
 
-    const detinfo::DetectorClocks* fTimeService;
     CLHEP::RandGauss fRandGauss;
 
     double fElectronLifetime;
     double fElectronClusterSize;
     int fMinNumberOfElCluster;
-    //double fSampleRate; // unused
-    //int    fTriggerOffset; // unused
     double fLongitudinalDiffusion;
     double fTransverseDiffusion;
 
@@ -123,18 +119,18 @@ namespace detsim {
 
     bool fStoreDriftedElectronClusters;
 
-    //double fOffPlaneMargin;
+    // double fOffPlaneMargin;
 
     // In order to create the associations, for each channel we create
     // we have to keep track of its index in the output vector, and the
     // indexes of all the steps that contributed to it.
-    typedef struct {
+    struct ChannelBookKeeping {
       size_t channelIndex;
       std::vector<size_t> stepList;
-    } ChannelBookKeeping_t;
+    };
 
     // Define type: channel -> sim::SimChannel's bookkeeping.
-    typedef std::map<raw::ChannelID_t, ChannelBookKeeping_t> ChannelMap_t;
+    typedef std::map<raw::ChannelID_t, ChannelBookKeeping> ChannelMap_t;
 
     // Array of maps of channel data indexed by [cryostat,tpc]
     std::vector<std::vector<ChannelMap_t>> fChannelMaps;
@@ -156,9 +152,8 @@ namespace detsim {
     double fDriftClusterPos[3];
 
     art::ServiceHandle<geo::Geometry const> fGeometry; ///< Handle to the Geometry service
-    ::detinfo::ElecClock fClock;                       ///< TPC electronics clock
 
-    //IS calculationg
+    // IS calculationg
     larg4::ISCalcSeparate fISAlg;
 
   }; // class SimDriftElectrons
@@ -181,20 +176,18 @@ namespace detsim {
   void
   SimDriftElectrons::beginJob()
   {
-    fTimeService = lar::providerFrom<detinfo::DetectorClocksService>();
-    fClock = fTimeService->TPCClock();
-
     // Define the physical constants we'll use.
 
-    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    fElectronLifetime =
-      detprop
-        ->ElectronLifetime(); // Electron lifetime as returned by the DetectorProperties service assumed to be in us;
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
+    fElectronLifetime = detProp.ElectronLifetime(); // Electron lifetime as returned by the
+      // DetectorProperties service assumed to be in us;
     for (int i = 0; i < 3; ++i) {
-      double driftVelocity =
-        detprop->DriftVelocity(detprop->Efield(i),
-                               detprop->Temperature()) *
-        1.e-3; //  Drift velocity as returned by the DetectorProperties service assumed to be in cm/us. Multiply by 1.e-3 to convert into LArSoft standard velocity units, cm/ns;
+      double driftVelocity = detProp.DriftVelocity(detProp.Efield(i),
+                                                   detProp.Temperature()) *
+                             1.e-3; //  Drift velocity as returned by the DetectorProperties service
+                                    //  assumed to be in cm/us. Multiply by 1.e-3 to convert into
+                                    //  LArSoft standard velocity units, cm/ns;
 
       fRecipDriftVel[i] = 1. / driftVelocity;
     }
@@ -209,7 +202,7 @@ namespace detsim {
 
     MF_LOG_DEBUG("SimDriftElectrons")
       << " e lifetime (ns): " << fElectronLifetime
-      << "\n Temperature (K): " << detprop->Temperature()
+      << "\n Temperature (K): " << detProp.Temperature()
       << "\n Drift velocity (cm/ns): " << 1. / fRecipDriftVel[0] << " " << 1. / fRecipDriftVel[1]
       << " " << 1. / fRecipDriftVel[2];
 
@@ -224,14 +217,6 @@ namespace detsim {
     fNTPCs.resize(fNCryostats);
     for (size_t n = 0; n < fNCryostats; ++n)
       fNTPCs[n] = fGeometry->NTPC(n);
-
-    //    fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-    //		      detprop,
-    //		      &(*paramHandle),
-    //		      lar::providerFrom<spacecharge::SpaceChargeService>());
-    //    fISAlg.Initialize();
-
-    return;
   }
 
   //-------------------------------------------------
@@ -264,6 +249,13 @@ namespace detsim {
         channelsMap.clear(); // each, a map
     }
 
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(event);
+    auto const& tpcClock = clockData.TPCClock();
+
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event,
+                                                                                   clockData);
     // We're going through the input vector by index, rather than by
     // iterator, because we need the index number to compute the
     // associations near the end of this method.
@@ -317,8 +309,10 @@ namespace detsim {
       // +z: tpcGeo.DetectDriftDirection()==3
       // -z: tpcGeo.DetectDriftDirection()==-3
 
-      //Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
-      int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection()) - 1; //x:0, y:1, z:2
+      // Define charge drift direction: driftcoordinate (x, y or z) and
+      // driftsign (positive or negative). Also define coordinates perpendicular
+      // to drift direction.
+      int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection()) - 1; // x:0, y:1, z:2
 
       int transversecoordinate1 = 0;
       int transversecoordinate2 = 0;
@@ -336,15 +330,15 @@ namespace detsim {
       }
 
       if (transversecoordinate1 == transversecoordinate2)
-        continue; //this is the case when driftcoordinate != 0, 1 or 2
+        continue; // this is the case when driftcoordinate != 0, 1 or 2
 
-      int driftsign = 0; //1: +x, +y or +z, -1: -x, -y or -z
+      int driftsign = 0; // 1: +x, +y or +z, -1: -x, -y or -z
       if (tpcGeo.DetectDriftDirection() > 0)
         driftsign = 1;
       else
         driftsign = -1;
 
-      //Check for charge deposits behind charge readout planes
+      // Check for charge deposits behind charge readout planes
       if (driftsign == 1 && tpcGeo.PlaneLocation(0)[driftcoordinate] < xyz[driftcoordinate])
         continue;
       if (driftsign == -1 && tpcGeo.PlaneLocation(0)[driftcoordinate] > xyz[driftcoordinate])
@@ -358,8 +352,8 @@ namespace detsim {
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
       geo::Vector_t posOffsets{0.0, 0.0, 0.0};
-      double posOffsetxyz[3] = {
-        0.0, 0.0, 0.0}; //need this array for the driftcoordinate and transversecoordinates
+      double posOffsetxyz[3] = {0.0, 0.0, 0.0}; // need this array for the driftcoordinate and
+                                                // transversecoordinates
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets(mp);
@@ -384,20 +378,15 @@ namespace detsim {
       // Drift time in ns
       double TDrift = DriftDistance * fRecipDriftVel[0];
 
-      if (
-        tpcGeo.Nplanes() == 2 &&
-        driftcoordinate ==
-          0) { // special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
+      if (tpcGeo.Nplanes() == 2 &&
+          driftcoordinate == 0) { // special case for ArgoNeuT (Nplanes = 2 and drift direction =
+                                  // x): plane 0 is the second wire plane
         TDrift = ((DriftDistance - tpcGeo.PlanePitch(0, 1)) * fRecipDriftVel[0] +
                   tpcGeo.PlanePitch(0, 1) * fRecipDriftVel[1]);
       }
 
-      fISAlg.Reset();
-      fISAlg.CalcIonAndScint(energyDeposit);
-      //std::cout << "Got " << fISAlg.NumberIonizationElectrons() << "." << std::endl;
-
+      const int nIonizedElectrons = fISAlg.CalcIonAndScint(detProp, energyDeposit).numElectrons;
       const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
-      const int nIonizedElectrons = fISAlg.NumOfElectrons();
       const double energy = energyDeposit.Energy();
 
       // if we have no electrons (too small energy or too large recombination)
@@ -411,7 +400,8 @@ namespace detsim {
 
       // includes the effect of lifetime: lifetimecorrection = exp[-tdrift/tau]
       const double nElectrons = nIonizedElectrons * lifetimecorrection;
-      //std::cout << "After lifetime, " << nElectrons << " electrons." << std::endl;
+      // std::cout << "After lifetime, " << nElectrons << " electrons." <<
+      // std::endl;
 
       // Longitudinal & transverse diffusion sigma (cm)
       double SqrtT = std::sqrt(TDrift);
@@ -439,7 +429,8 @@ namespace detsim {
       fnElDiff.resize(nClus, electronclsize);
       fnEnDiff.resize(nClus);
 
-      // fix the number of electrons in the last cluster, that has a smaller size
+      // fix the number of electrons in the last cluster, that has a smaller
+      // size
       fnElDiff.back() = nElectrons - (nClus - 1) * electronclsize;
 
       for (size_t xx = 0; xx < fnElDiff.size(); ++xx) {
@@ -456,7 +447,8 @@ namespace detsim {
         fLongDiff.assign(nClus, 0.0);
 
       if (TDiffSig > 0.0) {
-        // Smear the coordinates in plane perpendicular to drift direction by the transverse diffusion
+        // Smear the coordinates in plane perpendicular to drift direction by
+        // the transverse diffusion
         fRandGauss.fireArray(nClus, &fTransDiff1[0], avegagetransversePos1, TDiffSig);
         fRandGauss.fireArray(nClus, &fTransDiff2[0], avegagetransversePos2, TDiffSig);
       }
@@ -477,7 +469,8 @@ namespace detsim {
           double TDiff = TDrift + fLongDiff[k] * fRecipDriftVel[0];
 
           // Take into account different Efields between planes
-          // Also take into account special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
+          // Also take into account special case for ArgoNeuT (Nplanes = 2 and
+          // drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
             TDiff +=
               (tpcGeo.PlaneLocation(ip + 1)[driftcoordinate] -
@@ -492,23 +485,6 @@ namespace detsim {
 
           // grab the nearest channel to the fDriftClusterPos position
           try {
-            /*
-	      if (fOffPlaneMargin != 0) {
-		// get the effective position where to consider the charge landed;
-		//
-		// Some optimisations are possible; in particular, this method
-		// could be extended to inform us if the point was too far.
-		// Currently, if that is the case the code will proceed, find the
-		// point is off plane, emit a warning and skip the deposition.
-		//
-		auto const landingPos
-		  = RecoverOffPlaneDeposit({ fDriftClusterPos[0], fDriftClusterPos[1], fDriftClusterPos[2] }, plane);
-		fDriftClusterPos[0] = landingPos.X();
-		fDriftClusterPos[1] = landingPos.Y();
-		fDriftClusterPos[2] = landingPos.Z();
-
-	      } // if charge lands off plane
-	      */
             raw::ChannelID_t channel =
               fGeometry->NearestChannel(fDriftClusterPos, p, tpc, cryostat);
 
@@ -516,7 +492,7 @@ namespace detsim {
             /// \todo beyond the end of the expected number of ticks
             // Add potential decay/capture/etc delay effect, simTime.
             auto const simTime = energyDeposit.Time();
-            unsigned int tdc = fClock.Ticks(fTimeService->G4ToElecTime(TDiff + simTime));
+            unsigned int tdc = tpcClock.Ticks(clockData.G4ToElecTime(TDiff + simTime));
 
             // Find whether we already have this channel in our map.
             ChannelMap_t& channelDataMap = fChannelMaps[cryostat][tpc];
@@ -524,7 +500,6 @@ namespace detsim {
 
             // We will find (or create) the pointer to a
             // sim::SimChannel.
-            //sim::SimChannel* channelPtr = NULL;
             size_t channelIndex = 0;
 
             // Have we created the sim::SimChannel corresponding to
@@ -532,7 +507,7 @@ namespace detsim {
             if (search == channelDataMap.end()) {
               // We haven't. Initialize the bookkeeping information
               // for this channel.
-              ChannelBookKeeping_t bookKeeping;
+              ChannelBookKeeping bookKeeping;
 
               // Add a new channel to the end of the list we'll
               // write out after we've processed this event.
@@ -580,7 +555,7 @@ namespace detsim {
                              fDriftClusterPos[2]}, // final position of the drifted cluster
                 geo::Point_t{
                   LDiffSig, TDiffSig, TDiffSig}, // Longitudinal (X) and transverse (Y,Z) diffusion
-                fnEnDiff[k],                     //deposited energy that originated this cluster
+                fnEnDiff[k],                     // deposited energy that originated this cluster
                 energyDeposit.TrackID());
           }
           catch (cet::exception& e) {

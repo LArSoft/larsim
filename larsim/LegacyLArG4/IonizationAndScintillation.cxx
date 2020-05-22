@@ -32,9 +32,10 @@ namespace larg4 {
 
   //......................................................................
   IonizationAndScintillation*
-  IonizationAndScintillation::CreateInstance(CLHEP::HepRandomEngine& engine)
+  IonizationAndScintillation::CreateInstance(detinfo::DetectorPropertiesData const& detProp,
+                                             CLHEP::HepRandomEngine& engine)
   {
-    if (!gInstance) gInstance = new IonizationAndScintillation(engine);
+    if (!gInstance) gInstance = new IonizationAndScintillation(detProp, engine);
     return gInstance;
   }
 
@@ -49,25 +50,20 @@ namespace larg4 {
 
   //......................................................................
   // Constructor.
-  IonizationAndScintillation::IonizationAndScintillation(CLHEP::HepRandomEngine& engine)
-    : fISCalc(0)
-    , fStep(0)
-    , fElectronsPerStep(0)
-    , fStepSize(0)
-    , fPhotonsPerStep(0)
-    , fEnergyPerStep(0)
-    , fElectronsVsPhotons(0)
-    , fEngine(engine)
+  IonizationAndScintillation::IonizationAndScintillation(
+    detinfo::DetectorPropertiesData const& detProp,
+    CLHEP::HepRandomEngine& engine)
+    : fEngine{engine}
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
 
     if (fISCalculator == "Separate")
-      fISCalc = new larg4::ISCalculationSeparate(fEngine);
+      fISCalc = std::make_unique<larg4::ISCalculationSeparate>();
     else if (fISCalculator == "Correlated")
-      fISCalc = new larg4::ISCalculationCorrelated(fEngine);
+      fISCalc = std::make_unique<larg4::ISCalculationCorrelated>(detProp);
     else if (fISCalculator == "NEST")
-      fISCalc = new larg4::ISCalculationNEST(fEngine);
+      fISCalc = std::make_unique<larg4::ISCalculationNEST>(fEngine);
     else
       mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
 
@@ -80,7 +76,6 @@ namespace larg4 {
 
     // make the histograms
     art::ServiceHandle<art::TFileService const> tfs;
-
     fElectronsPerStep = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps", 500, 0., 5000.);
     fPhotonsPerStep = tfs->make<TH1F>("photonsPerStep", ";Photons;Steps", 500, 0., 5000.);
     fEnergyPerStep = tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps", 100, 0., 0.5);
@@ -96,14 +91,6 @@ namespace larg4 {
 
     fElectronsVsPhotons =
       tfs->make<TH2F>("electronsVsPhotons", ";Photons;Electrons", 500, 0., 5000., 500, 0., 5000.);
-
-    return;
-  }
-
-  //......................................................................
-  IonizationAndScintillation::~IonizationAndScintillation()
-  {
-    if (fISCalc) delete fISCalc;
   }
 
   //......................................................................
@@ -119,9 +106,6 @@ namespace larg4 {
     fTrkID = step->GetTrack()->GetTrackID();
 
     fStep = step;
-
-    // reset the calculator
-    fISCalc->Reset();
 
     // check the material for this step and be sure it is LAr
     if (step->GetTrack()->GetMaterial()->GetName() != "LAr") return;

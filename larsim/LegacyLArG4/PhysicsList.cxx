@@ -28,13 +28,6 @@ PHYSLISTREG3(larg4, PhysicsList, larg4::PhysicsList)
 
 namespace larg4 {
 
-  // Constructor: call the G4 constructor.
-  ModularPhysicsList::ModularPhysicsList() : G4VModularPhysicsList() {}
-
-  // Destructor; C++ will automatically call the G4VModulePhysicsList
-  // destructor, so we need do nothing here.
-  ModularPhysicsList::~ModularPhysicsList() {}
-
   // This is the method we have to modify to use the Geant4 parallel geometries.
   void
   ModularPhysicsList::ConstructProcess()

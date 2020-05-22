@@ -54,7 +54,6 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -92,7 +91,6 @@ namespace detsim {
     // objects (as of Oct-2017, this is probably "largeant").
     art::InputTag fSimModuleLabel;
 
-    const detinfo::DetectorClocks* fTimeService;
     CLHEP::RandGauss fRandGauss;
 
     bool fStoreDriftedElectronClusters;
@@ -113,24 +111,6 @@ namespace detsim {
     double fTDiff_const;
     double fRecipDriftVel[3];
 
-    //double fOffPlaneMargin;
-
-    // In order to create the associations, for each channel we create
-    // we have to keep track of its index in the output vector, and the
-    // indexes of all the steps that contributed to it.
-    /*
-    typedef struct {
-      size_t              channelIndex;
-      std::vector<size_t> stepList;
-    } ChannelBookKeeping_t;
-    
-
-
-    // Array of maps of channel data indexed by [cryostat,tpc]
-    std::vector< std::vector<ChannelMap_t> > fChannelMaps;
-    // The above ensemble may be thought of as a 3D array of
-    // ChannelBookKeepings: e.g., SimChannel[cryostat,tpc,channel ID].
-    */
     // Save the number of cryostats, and the number of TPCs within
     // each cryostat.
     size_t fNCryostats;
@@ -146,10 +126,9 @@ namespace detsim {
     double fDriftClusterPos[3];
 
     art::ServiceHandle<geo::Geometry const> fGeometry; ///< Handle to the Geometry service
-    ::detinfo::ElecClock fClock;                       ///< TPC electronics clock
 
     //IS calculationg
-    ISCalculationSeparate* fISAlg;
+    ISCalculationSeparate fISAlg;
 
   }; // class DriftElectronstoPlane
 
@@ -172,8 +151,8 @@ namespace detsim {
     , fModBoxA{pset.get<double>("ModBoxA", 0.930)}
     , fModBoxB{pset.get<double>("ModBoxB", 0.212)}
     , fUseModBoxRecomb{pset.get<bool>("UseModBoxRecomb", true)}
+    , fISAlg{pset}
   {
-    fISAlg = new ISCalculationSeparate(pset);
     if (fStoreDriftedElectronClusters) { produces<std::vector<sim::SimDriftedElectronCluster>>(); }
   }
 
@@ -181,35 +160,24 @@ namespace detsim {
   void
   DriftElectronstoPlane::beginJob()
   {
-    fTimeService = lar::providerFrom<detinfo::DetectorClocksService>();
-    fClock = fTimeService->TPCClock();
-
     // Define the physical constants we'll use.
 
-    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
     fElectronLifetime =
-      detprop
-        ->ElectronLifetime(); // Electron lifetime as returned by the DetectorProperties service assumed to be in us;
+      detProp
+        .ElectronLifetime(); // Electron lifetime as returned by the DetectorProperties service assumed to be in us;
     for (int i = 0; i < 3; ++i) {
       double driftVelocity =
-        detprop->DriftVelocity(detprop->Efield(i),
-                               detprop->Temperature()) *
+        detProp.DriftVelocity(detProp.Efield(i),
+                              detProp.Temperature()) *
         1.e-3; //  Drift velocity as returned by the DetectorProperties service assumed to be in cm/us. Multiply by 1.e-3 to convert into LArSoft standard velocity units, cm/ns;
 
       fRecipDriftVel[i] = 1. / driftVelocity;
     }
-    /*    
-    // To-do: Move the parameters we fetch from "LArG4" to detector
-    // properties.
-    art::ServiceHandle<sim::LArG4Parameters const> paramHandle;
-    fElectronClusterSize   = paramHandle->ElectronClusterSize();
-    fMinNumberOfElCluster  = paramHandle->MinNumberOfElCluster();
-    fLongitudinalDiffusion = paramHandle->LongitudinalDiffusion(); // cm^2/ns units
-    fTransverseDiffusion   = paramHandle->TransverseDiffusion(); // cm^2/ns units
-    */
     MF_LOG_DEBUG("DriftElectronstoPlane")
       << " e lifetime (ns): " << fElectronLifetime
-      << "\n Temperature (K): " << detprop->Temperature()
+      << "\n Temperature (K): " << detProp.Temperature()
       << "\n Drift velocity (cm/ns): " << 1. / fRecipDriftVel[0] << " " << 1. / fRecipDriftVel[1]
       << " " << 1. / fRecipDriftVel[2];
 
@@ -224,15 +192,6 @@ namespace detsim {
     fNTPCs.resize(fNCryostats);
     for (size_t n = 0; n < fNCryostats; ++n)
       fNTPCs[n] = fGeometry->NTPC(n);
-
-    /*
-    fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-		      detprop,
-		      &(*paramHandle),
-		      lar::providerFrom<spacecharge::SpaceChargeService>());
-
-    */
-    return;
   }
 
   //-------------------------------------------------
@@ -257,6 +216,8 @@ namespace detsim {
     auto const& energyDeposits = *energyDepositHandle;
     auto energyDepositsSize = energyDeposits.size();
 
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
     // For each energy deposit in this event
     for (size_t edIndex = 0; edIndex < energyDepositsSize; ++edIndex) {
       auto const& energyDeposit = energyDeposits[edIndex];
@@ -271,28 +232,7 @@ namespace detsim {
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
-      /*	try {
-	  fGeometry->PositionToCryostat(xyz, cryostat);
-	}
-	catch(cet::exception &e){
-	  std::cout << "---------------------------------------------------------step "// << energyDeposit << "\n"
-	  				      << "cannot be found in a cryostat\n"
-		    << e<<std::endl;
-	  continue;
-	}
-	*/
       unsigned int tpc = 0;
-      /*
-	try {
-	  fGeometry->PositionToTPC(xyz, tpc, cryostat);
-	}
-	catch(cet::exception &e){
-	   std::cout <<  "-----------------------step "// << energyDeposit << "\n"
-					      << "cannot be found in a TPC\n"
-					      << e<<std::endl;
-	  continue;
-	}
-	*/
       const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpc, cryostat);
 
       // The drift direction can be either in the positive
@@ -379,11 +319,10 @@ namespace detsim {
         TDrift = ((DriftDistance - tpcGeo.PlanePitch(0, 1)) * fRecipDriftVel[0] +
                   tpcGeo.PlanePitch(0, 1) * fRecipDriftVel[1]);
       }
-      fISAlg->CalculateIonizationAndScintillation(energyDeposit);
-      //std::cout << "Got " << fISAlg.NumberIonizationElectrons() << "." << std::endl;
+      const int nIonizedElectrons =
+        fISAlg.CalculateIonizationAndScintillation(detProp, energyDeposit).numElectrons;
 
       const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
-      const int nIonizedElectrons = fISAlg->NumberIonizationElectrons();
       const double energy = energyDeposit.Energy();
 
       // if we have no electrons (too small energy or too large recombination)
@@ -397,7 +336,6 @@ namespace detsim {
 
       // includes the effect of lifetime: lifetimecorrection = exp[-tdrift/tau]
       const double nElectrons = nIonizedElectrons * lifetimecorrection;
-      //std::cout << "After lifetime, " << nElectrons << " electrons." << std::endl;
 
       // Longitudinal & transverse diffusion sigma (cm)
       double SqrtT = std::sqrt(TDrift);
@@ -474,7 +412,6 @@ namespace detsim {
           fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
           fDriftClusterPos[transversecoordinate2] = fTransDiff2[k];
           auto const simTime = energyDeposit.Time();
-          // unused unsigned int tdc = fClock.Ticks(fTimeService->G4ToElecTime(TDiff + simTime));
           /// \todo think about effects of drift between planes
           SimDriftedElectronClusterCollection->emplace_back(
             fnElDiff[k],

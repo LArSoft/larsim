@@ -18,10 +18,9 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "larsim/MCCheater/BackTracker.h"
 
-//Included Services
+// Included Services
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "larsim/MCCheater/ParticleInventory.h"
 
 namespace cheat {
@@ -54,52 +53,68 @@ namespace cheat {
 
     art::Ptr<sim::SimChannel> FindSimChannel(raw::ChannelID_t channel) const;
 
-    std::vector<sim::TrackIDE> ChannelToTrackIDEs(raw::ChannelID_t channel,
+    std::vector<sim::TrackIDE> ChannelToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                                  raw::ChannelID_t channel,
                                                   const double hit_start_time,
                                                   const double hit_end_time) const;
 
-    std::vector<sim::TrackIDE> HitToTrackIDEs(recob::Hit const& hit) const;
-    std::vector<sim::TrackIDE> HitToTrackIDEs(art::Ptr<recob::Hit> const& hit) const;
+    std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                              recob::Hit const& hit) const;
+    std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                              art::Ptr<recob::Hit> const& hit) const;
 
-    std::vector<int> HitToTrackIds(recob::Hit const& hit) const;
+    std::vector<int> HitToTrackIds(detinfo::DetectorClocksData const& clockData,
+                                   recob::Hit const& hit) const;
 
-    std::vector<sim::TrackIDE> HitToEveTrackIDEs(recob::Hit const& hit) const;
-    std::vector<sim::TrackIDE> HitToEveTrackIDEs(art::Ptr<recob::Hit> const& hit) const;
+    std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                                 recob::Hit const& hit) const;
+    std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                                 art::Ptr<recob::Hit> const& hit) const;
 
     std::vector<art::Ptr<recob::Hit>> TrackIdToHits_Ps(
-      const int& tkId,
+      detinfo::DetectorClocksData const& clockData,
+      int tkId,
       std::vector<art::Ptr<recob::Hit>> const& hitsIn) const;
-    std::vector<art::Ptr<recob::Hit>> TrackIdToHits_Ps(const int& tkId) const;
+    //    std::vector<art::Ptr<recob::Hit>> TrackIdToHits_Ps(const int& tkId)
+    //    const;
 
     std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIdsToHits_Ps(
+      detinfo::DetectorClocksData const& clockData,
       std::vector<int> const& tkIds,
       std::vector<art::Ptr<recob::Hit>> const& hitsIn) const;
-    std::vector<std::vector<art::Ptr<recob::Hit>>> TrackIdsToHits_Ps(
-      std::vector<int> const& tkIds) const;
 
-    std::vector<sim::IDE> HitToAvgSimIDEs(recob::Hit const& hit) const;
-    std::vector<sim::IDE> HitToAvgSimIDEs(art::Ptr<recob::Hit> hit) const;
+    std::vector<sim::IDE> HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
+                                          recob::Hit const& hit) const;
+    std::vector<sim::IDE> HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
+                                          art::Ptr<recob::Hit> hit) const;
 
-    std::vector<const sim::IDE*> HitToSimIDEs_Ps(recob::Hit const& hit) const;
-    std::vector<const sim::IDE*> HitToSimIDEs_Ps(art::Ptr<recob::Hit> const& hit) const;
+    std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
+                                                 recob::Hit const& hit) const;
+    std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
+                                                 art::Ptr<recob::Hit> const& hit) const;
 
     std::vector<double> SimIDEsToXYZ(std::vector<sim::IDE> const& ides) const;
     std::vector<double> SimIDEsToXYZ(std::vector<const sim::IDE*> const& ide_Ps) const;
 
-    std::vector<double> HitToXYZ(const recob::Hit& hit) const;
-    std::vector<double> HitToXYZ(art::Ptr<recob::Hit> const& hit) const;
+    std::vector<double> HitToXYZ(detinfo::DetectorClocksData const& clockData,
+                                 const recob::Hit& hit) const;
+    std::vector<double> HitToXYZ(detinfo::DetectorClocksData const& clockData,
+                                 art::Ptr<recob::Hit> const& hit) const;
 
-    double HitCollectionPurity(std::set<int> const& trackIds,
+    double HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                               std::set<int> const& trackIds,
                                std::vector<art::Ptr<recob::Hit>> const& hits) const;
-    double HitChargeCollectionPurity(std::set<int> const& trackIds,
+    double HitChargeCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                                     std::set<int> const& trackIds,
                                      std::vector<art::Ptr<recob::Hit>> const& hits) const;
 
-    double HitCollectionEfficiency(std::set<int> const& trackIds,
+    double HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                   std::set<int> const& trackIds,
                                    std::vector<art::Ptr<recob::Hit>> const& hits,
                                    std::vector<art::Ptr<recob::Hit>> const& allhits,
                                    geo::View_t const& view) const;
-
-    double HitChargeCollectionEfficiency(std::set<int> trackIds,
+    double HitChargeCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                         std::set<int> const& trackIds,
                                          std::vector<art::Ptr<recob::Hit>> const& hits,
                                          std::vector<art::Ptr<recob::Hit>> const& allhits,
                                          geo::View_t const& view) const;
@@ -107,19 +122,23 @@ namespace cheat {
     std::set<int> GetSetOfTrackIds() const;
     std::set<int> GetSetOfEveIds() const;
 
-    std::set<int> GetSetOfTrackIds(std::vector<art::Ptr<recob::Hit>> const& hits) const;
-    std::set<int> GetSetOfEveIds(std::vector<art::Ptr<recob::Hit>> const& hits) const;
+    std::set<int> GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
+                                   std::vector<art::Ptr<recob::Hit>> const& hits) const;
+    std::set<int> GetSetOfEveIds(detinfo::DetectorClocksData const& clockData,
+                                 std::vector<art::Ptr<recob::Hit>> const& hits) const;
 
     std::vector<double> SpacePointHitsToWeightedXYZ(
+      detinfo::DetectorClocksData const& clockData,
       std::vector<art::Ptr<recob::Hit>> const& hits) const;
     std::vector<art::Ptr<recob::Hit>> SpacePointToHits_Ps(
       art::Ptr<recob::SpacePoint> const& spt) const;
-    std::vector<double> SpacePointToXYZ(art::Ptr<recob::SpacePoint> const& spt) const;
+    std::vector<double> SpacePointToXYZ(detinfo::DetectorClocksData const& clockData,
+                                        art::Ptr<recob::SpacePoint> const& spt) const;
 
   private:
     const art::Event* fEvt = nullptr;
 
-    //Prep functions go here.
+    // Prep functions go here.
     void priv_PrepEvent(const art::Event& evt, art::ScheduleContext);
     void priv_PrepSimChannels(const art::Event& evt);
     //      void priv_PrepAllHitList ();
@@ -132,11 +151,12 @@ namespace cheat {
     {
       return BackTracker::SimChannelsReady();
     }
-    //      bool priv_AllHitListReady() { return BackTracker::AllHitListReady();}
+    //      bool priv_AllHitListReady() { return
+    //      BackTracker::AllHitListReady();}
 
-  }; //class BackTrackerService
+  }; // class BackTrackerService
 
-} //end namespace cheat
+} // end namespace cheat
 DECLARE_ART_SERVICE(cheat::BackTrackerService, LEGACY)
 
-#endif //CHEAT_BACKTRACKERSERVICESERVICE_H
+#endif // CHEAT_BACKTRACKERSERVICESERVICE_H

@@ -36,13 +36,7 @@ namespace larg4 {
     bool UseCustomPhysics;
     std::vector<std::string> EnabledPhysics;
     std::vector<std::string> GetDefaultSettings();
-
-  public:
-    // SetCuts()
     virtual void SetCuts();
-
-  private:
-    enum { ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
   };
 
 }
@@ -50,9 +44,7 @@ namespace larg4 {
 #include "larsim/LegacyLArG4/ConfigurablePhysicsList.icc"
 
 namespace larg4 {
-  typedef TConfigurablePhysicsList<G4VModularPhysicsList> ConfigurablePhysicsList;
+  using ConfigurablePhysicsList = TConfigurablePhysicsList<G4VModularPhysicsList>;
 }
 
 #endif
-
-// Sept 2009 - Ben Jones, MIT

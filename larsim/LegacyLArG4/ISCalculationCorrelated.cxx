@@ -34,15 +34,13 @@
 namespace larg4 {
 
   //----------------------------------------------------------------------------
-  ISCalculationCorrelated::ISCalculationCorrelated(CLHEP::HepRandomEngine&)
+  ISCalculationCorrelated::ISCalculationCorrelated(detinfo::DetectorPropertiesData const& detProp)
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
-    double density = detprop->Density(detprop->Temperature());
-    fEfield = detprop->Efield();
+    double density = detProp.Density(detProp.Temperature());
+    fEfield = detProp.Efield();
 
     // ionization work function
     fWion = 1. / lgpHandle->GeVToElectrons() * 1e3; // MeV

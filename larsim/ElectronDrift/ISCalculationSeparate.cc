@@ -27,6 +27,10 @@
 #include <cmath>
 #include <ostream>
 
+namespace {
+  constexpr double scint_yield_factor{1.};
+}
+
 namespace detsim {
 
   //----------------------------------------------------------------------------
@@ -38,27 +42,22 @@ namespace detsim {
     , fUseModBoxRecomb{pset.get<bool>("UseModBoxRecomb")}
     , fGeVToElectrons{pset.get<double>("GeVToElectrons")}
   {
-    fDetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
     fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    // \todo get scintillation yield from LArProperties
-    fScintYieldFactor = 1.;
 
     // the recombination coefficient is in g/(MeVcm^2), but
     // we report energy depositions in MeV/cm, need to divide
     // Recombk from the LArG4Parameters service by the density
-    // of the argon we got above.
+    // of the argon we got above.  FIXME: is this being done?
 
     std::cout << "fLArG4Prop->GeVToElectrons(): " << fGeVToElectrons << std::endl;
   }
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::~ISCalculationSeparate() {}
-
-  //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void
-  ISCalculationSeparate::CalculateIonization(sim::SimEnergyDeposit const& edep)
+  double
+  ISCalculationSeparate::CalculateIonization(detinfo::DetectorPropertiesData const& detProp,
+                                             sim::SimEnergyDeposit const& edep) const
   {
     float e = edep.Energy();
     float ds = edep.StepLength();
@@ -67,7 +66,7 @@ namespace detsim {
     float z = edep.MidPointZ();
     double recomb = 0.;
     double dEdx = (ds <= 0.0) ? 0.0 : e / ds;
-    double EFieldStep = EFieldAtStep(fDetProp->Efield(), x, y, z);
+    double EFieldStep = EFieldAtStep(detProp.Efield(), x, y, z);
 
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if (dEdx < 1.) dEdx = 1.;
@@ -85,19 +84,21 @@ namespace detsim {
     }
 
     // 1.e-3 converts fEnergyDeposit to GeV
-    fNumIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
+    double const numIonElectrons = fGeVToElectrons * 1.e-3 * e * recomb;
 
     MF_LOG_DEBUG("ISCalculationSeparate")
-      << " Electrons produced for " << fEnergyDeposit << " MeV deposited with " << recomb
-      << " recombination: " << fNumIonElectrons << std::endl;
+      << " Electrons produced for " << edep.Energy() << " MeV deposited with " << recomb
+      << " recombination: " << numIonElectrons << std::endl;
+
+    return numIonElectrons;
   }
 
   //----------------------------------------------------------------------------
-  void
-  ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep)
+  double
+  ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep) const
   {
-    float e = edep.Energy();
-    int pdg = edep.PdgCode();
+    float const e = edep.Energy();
+    int const pdg = edep.PdgCode();
     double scintYield = fLArProp->ScintYield(true);
     if (fLArProp->ScintByParticleType()) {
 
@@ -119,38 +120,36 @@ namespace detsim {
       default: scintYield = fLArProp->ElectronScintYield(true);
       }
 
-      fNumScintPhotons = scintYield * e;
+      return scintYield * e;
     }
-    else
-      fNumScintPhotons = fScintYieldFactor * scintYield * e;
+
+    return scint_yield_factor * scintYield * e;
   }
   //----------------------------------------------------------------------------
-  void
-  ISCalculationSeparate::CalculateIonizationAndScintillation(sim::SimEnergyDeposit const& edep)
+  ISCalculationSeparate::Data
+  ISCalculationSeparate::CalculateIonizationAndScintillation(
+    detinfo::DetectorPropertiesData const& detProp,
+    sim::SimEnergyDeposit const& edep) const
   {
-    fEnergyDeposit = edep.Energy();
-    CalculateIonization(edep);
-    CalculateScintillation(edep);
+    return {edep.Energy(), CalculateIonization(detProp, edep), CalculateScintillation(edep)};
   }
 
   double
-  ISCalculationSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  ISCalculationSeparate::EFieldAtStep(double const efield, sim::SimEnergyDeposit const& edep) const
   {
     return EFieldAtStep(efield, edep.MidPointX(), edep.MidPointY(), edep.MidPointZ());
   }
 
   double
-  ISCalculationSeparate::EFieldAtStep(double efield, float x, float y, float z)
+  ISCalculationSeparate::EFieldAtStep(double const efield,
+                                      float const x,
+                                      float const y,
+                                      float const z) const
   {
-    double EField = efield;
-    if (fSCE->EnableSimEfieldSCE()) {
-      fEfieldOffsets = fSCE->GetEfieldOffsets(geo::Point_t{x, y, z});
-      EField =
-        std::sqrt((efield + efield * fEfieldOffsets.X()) * (efield + efield * fEfieldOffsets.X()) +
-                  (efield * fEfieldOffsets.Y() * efield * fEfieldOffsets.Y()) +
-                  (efield * fEfieldOffsets.Z() * efield * fEfieldOffsets.Z()));
-    }
-    return EField;
+    if (not fSCE->EnableSimEfieldSCE()) { return efield; }
+
+    auto const offsets = fSCE->GetEfieldOffsets(geo::Point_t{x, y, z});
+    return std::hypot(efield + efield * offsets.X(), efield * offsets.Y(), efield * offsets.Z());
   }
 
 } // namespace

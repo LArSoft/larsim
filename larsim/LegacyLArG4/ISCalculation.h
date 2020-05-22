@@ -12,10 +12,8 @@ class G4Step;
 namespace larg4 {
 
   class ISCalculation {
-
   public:
-    ISCalculation();
-    virtual ~ISCalculation();
+    virtual ~ISCalculation() = default;
 
     virtual void Reset() = 0;
     virtual void CalculateIonizationAndScintillation(const G4Step* step) = 0;

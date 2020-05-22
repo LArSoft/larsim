@@ -8,13 +8,11 @@
 // for LAr and other optical components
 //
 
-// TODO convert tabs into spaces
-
 // TODO verify the inclusion list
 #include "larsim/LegacyLArG4/MaterialPropertyLoader.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 
 #include "Geant4/G4LogicalSkinSurface.hh"
 #include "Geant4/G4LogicalVolume.hh"
@@ -317,11 +315,9 @@ namespace larg4 {
   }
 
   void
-  MaterialPropertyLoader::GetPropertiesFromServices()
+  MaterialPropertyLoader::GetPropertiesFromServices(detinfo::DetectorPropertiesData const& detProp)
   {
     const detinfo::LArProperties* LarProp = lar::providerFrom<detinfo::LArPropertiesService>();
-    const detinfo::DetectorProperties* DetProp =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // wavelength dependent quantities
 
@@ -341,11 +337,10 @@ namespace larg4 {
     SetMaterialConstProperty("LAr", "FASTTIMECONSTANT", LarProp->ScintFastTimeConst(), CLHEP::ns);
     SetMaterialConstProperty("LAr", "SLOWTIMECONSTANT", LarProp->ScintSlowTimeConst(), CLHEP::ns);
     SetMaterialConstProperty("LAr", "YIELDRATIO", LarProp->ScintYieldRatio(), 1);
-    SetMaterialConstProperty(
-      "LAr", "ELECTRICFIELD", DetProp->Efield(), CLHEP::kilovolt / CLHEP::cm);
+    SetMaterialConstProperty("LAr", "ELECTRICFIELD", detProp.Efield(), CLHEP::kilovolt / CLHEP::cm);
 
     SetBirksConstant("LAr", LarProp->ScintBirksConstant(), CLHEP::cm / CLHEP::MeV);
-    if (DetProp->SimpleBoundary())
+    if (detProp.SimpleBoundary())
       SetReflectances(
         "LAr", LarProp->SurfaceReflectances(), LarProp->SurfaceReflectanceDiffuseFractions());
     else

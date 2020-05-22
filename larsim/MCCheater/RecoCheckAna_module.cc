@@ -28,6 +28,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Event.h"
 #include "lardataobj/RecoBase/Hit.h"
@@ -48,12 +49,12 @@ class cheat::RecoCheckAna : public art::EDAnalyzer {
 public:
   explicit RecoCheckAna(fhicl::ParameterSet const& p);
 
-  virtual void analyze(art::Event const& e);
-
-  virtual void beginRun(art::Run const& r);
-
 private:
+  void analyze(art::Event const& e) override;
+  void beginRun(art::Run const& r) override;
+
   void CheckReco(
+    detinfo::DetectorClocksData const& clockData,
     int const& colID,
     std::vector<art::Ptr<recob::Hit>> const& allhits,
     std::vector<art::Ptr<recob::Hit>> const& colHits,
@@ -79,7 +80,8 @@ private:
                        art::Handle<std::vector<recob::Event>> const& evtcol,
                        std::vector<art::Ptr<recob::Hit>> const& allhits);
   // method to fill the histograms and TTree
-  void FillResults(std::vector<art::Ptr<recob::Hit>> const& allhits);
+  void FillResults(detinfo::DetectorClocksData const& clockData,
+                   std::vector<art::Ptr<recob::Hit>> const& allhits);
 
   // helper method to the above for clusters, showers and tracks
   void FlattenMap(
@@ -218,7 +220,9 @@ cheat::RecoCheckAna::analyze(art::Event const& e)
   frun = e.run();
   fevent = e.id().event();
 
-  this->FillResults(allhits);
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(e);
+  this->FillResults(clockData, allhits);
 
   return;
 }
@@ -294,6 +298,7 @@ cheat::RecoCheckAna::beginRun(art::Run const& /*r*/)
 // associated with it
 void
 cheat::RecoCheckAna::CheckReco(
+  detinfo::DetectorClocksData const& clockData,
   int const& colID,
   std::vector<art::Ptr<recob::Hit>> const& allhits,
   std::vector<art::Ptr<recob::Hit>> const& colHits,
@@ -301,21 +306,20 @@ cheat::RecoCheckAna::CheckReco(
 {
 
   // grab the set of track IDs for these hits
-  std::set<int> trackIDs = fBT->GetSetOfTrackIds(colHits);
+  std::set<int> trackIDs = fBT->GetSetOfTrackIds(clockData, colHits);
 
   geo::View_t view = colHits[0]->View();
 
   std::set<int>::iterator itr = trackIDs.begin();
   while (itr != trackIDs.end()) {
 
-    //std::cout << "*itr: " << *itr << std::endl;
-
     std::set<int> id;
     id.insert(*itr);
 
-    // use the cheat::BackTrackerService to find purity and efficiency for these hits
-    double purity = fBT->HitCollectionPurity(id, colHits);
-    double efficiency = fBT->HitCollectionEfficiency(id, colHits, allhits, view);
+    // use the cheat::BackTrackerService to find purity and efficiency for these
+    // hits
+    double purity = fBT->HitCollectionPurity(clockData, id, colHits);
+    double efficiency = fBT->HitCollectionEfficiency(clockData, id, colHits, allhits, view);
 
     // make the purity and efficiency pair
     std::pair<double, double> pe(purity, efficiency);
@@ -340,7 +344,8 @@ cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
                                        art::Handle<std::vector<recob::Cluster>> const& clscol,
                                        std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(clscol, evt, label);
 
   for (size_t c = 0; c < clscol->size(); ++c) {
@@ -348,7 +353,7 @@ cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
     // get the hits associated with this event
     std::vector<art::Ptr<recob::Hit>> hits = fmh.at(c);
 
-    this->CheckReco(clscol->at(c).ID(), allhits, hits, fG4ClusterIDToPurityEfficiency);
+    this->CheckReco(clockData, clscol->at(c).ID(), allhits, hits, fG4ClusterIDToPurityEfficiency);
 
   } // end loop over clusters
 
@@ -362,7 +367,8 @@ cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
                                      art::Handle<std::vector<recob::Track>> const& tcol,
                                      std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(tcol, evt, label);
 
   for (size_t p = 0; p < tcol->size(); ++p) {
@@ -370,7 +376,7 @@ cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
     // get the hits associated with this event
     std::vector<art::Ptr<recob::Hit>> hits = fmh.at(p);
 
-    this->CheckReco(tcol->at(p).ID(), allhits, hits, fG4TrackIDToPurityEfficiency);
+    this->CheckReco(clockData, tcol->at(p).ID(), allhits, hits, fG4TrackIDToPurityEfficiency);
 
   } // end loop over tracks
 
@@ -384,7 +390,8 @@ cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
                                       art::Handle<std::vector<recob::Shower>> const& scol,
                                       std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(scol, evt, label);
 
   for (size_t p = 0; p < scol->size(); ++p) {
@@ -392,7 +399,7 @@ cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
     // get the hits associated with this event
     std::vector<art::Ptr<recob::Hit>> hits = fmh.at(p);
 
-    this->CheckReco(scol->at(p).ID(), allhits, hits, fG4ShowerIDToPurityEfficiency);
+    this->CheckReco(clockData, scol->at(p).ID(), allhits, hits, fG4ShowerIDToPurityEfficiency);
 
   } // end loop over events
 
@@ -425,10 +432,13 @@ cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
       for (int d = 0; d < part.NumberDaughters(); ++d)
         dv.insert(part.Daughter(d));
       ids.push_back(std::move(dv));
-    } //end if this primary particle has daughters
+    } // end if this primary particle has daughters
   }   // end loop over primaries
 
   art::FindManyP<recob::Hit> fmh(vtxcol, evt, label);
+
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
   for (size_t v = 0; v < vtxcol->size(); ++v) {
 
@@ -440,9 +450,10 @@ cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
 
     for (size_t tv = 0; tv < ids.size(); ++tv) {
 
-      // use the cheat::BackTrackerService to find purity and efficiency for these hits
-      double purity = fBT->HitCollectionPurity(ids[tv], hits);
-      double efficiency = fBT->HitCollectionEfficiency(ids[tv], hits, allhits, geo::k3D);
+      // use the cheat::BackTrackerService to find purity and efficiency for
+      // these hits
+      double purity = fBT->HitCollectionPurity(clockData, ids[tv], hits);
+      double efficiency = fBT->HitCollectionEfficiency(clockData, ids[tv], hits, allhits, geo::k3D);
 
       if (purity > maxPurity) maxPurity = purity;
       if (efficiency > maxEfficiency) maxEfficiency = efficiency;
@@ -483,14 +494,17 @@ cheat::RecoCheckAna::CheckRecoEvents(art::Event const& evt,
 
   art::FindManyP<recob::Hit> fmh(evtcol, evt, label);
 
+  auto const clockData =
+    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   for (size_t ev = 0; ev < evtcol->size(); ++ev) {
 
     // get the hits associated with this event
     std::vector<art::Ptr<recob::Hit>> hits = fmh.at(ev);
 
-    // use the cheat::BackTrackerService to find purity and efficiency for these hits
-    double purity = fBT->HitCollectionPurity(ids, hits);
-    double efficiency = fBT->HitCollectionEfficiency(ids, hits, allhits, geo::k3D);
+    // use the cheat::BackTrackerService to find purity and efficiency for these
+    // hits
+    double purity = fBT->HitCollectionPurity(clockData, ids, hits);
+    double efficiency = fBT->HitCollectionEfficiency(clockData, ids, hits, allhits, geo::k3D);
 
     fEventPurity->Fill(purity);
     fEventEfficiency->Fill(efficiency);
@@ -563,19 +577,20 @@ cheat::RecoCheckAna::FlattenMap(
 
 //-------------------------------------------------------------------
 void
-cheat::RecoCheckAna::FillResults(std::vector<art::Ptr<recob::Hit>> const& allhits)
+cheat::RecoCheckAna::FillResults(detinfo::DetectorClocksData const& clockData,
+                                 std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   // map the g4 track id to energy deposited in a hit
   std::map<int, double> g4IDToHitEnergy;
   for (size_t h = 0; h < allhits.size(); ++h) {
-    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackIDEs(allhits[h]);
+    const std::vector<sim::TrackIDE> hitTrackIDs = fBT->HitToTrackIDEs(clockData, allhits[h]);
     for (size_t e = 0; e < hitTrackIDs.size(); ++e) {
       g4IDToHitEnergy[hitTrackIDs[e].trackID] += hitTrackIDs[e].energy;
     }
   } // end loop over hits to fill map
 
-  // flatten the G4RecoBaseIDToPurityEfficiency maps to have just the g4ID as the key and the
-  // rest of the information in vector form
+  // flatten the G4RecoBaseIDToPurityEfficiency maps to have just the g4ID as
+  // the key and the rest of the information in vector form
   std::map<int, std::vector<std::pair<int, std::pair<double, double>>>>
     g4IDToClusterPurityEfficiency;
   std::map<int, std::vector<std::pair<int, std::pair<double, double>>>>

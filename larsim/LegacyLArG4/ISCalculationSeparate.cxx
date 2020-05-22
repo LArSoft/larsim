@@ -23,15 +23,15 @@
 namespace larg4 {
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::ISCalculationSeparate(CLHEP::HepRandomEngine&)
+  ISCalculationSeparate::ISCalculationSeparate()
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-    const detinfo::DetectorProperties* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
 
-    double density = detprop->Density(detprop->Temperature());
-    fEfield = detprop->Efield();
+    double density = detProp.Density(detProp.Temperature());
+    fEfield = detProp.Efield();
     fScintByParticleType = larp->ScintByParticleType();
     fGeVToElectrons = lgpHandle->GeVToElectrons();
 
@@ -67,8 +67,6 @@ namespace larg4 {
     fEnergyDeposit = 0.;
     fNumScintPhotons = 0.;
     fNumIonElectrons = 0.;
-
-    return;
   }
 
   //----------------------------------------------------------------------------
@@ -76,7 +74,6 @@ namespace larg4 {
   void
   ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
   {
-
     fEnergyDeposit = step->GetTotalEnergyDeposit() / CLHEP::MeV;
 
     // Get the recombination factor for this voxel - Nucl.Instrum.Meth.A523:275-286,2004
@@ -136,7 +133,6 @@ namespace larg4 {
 
       // Get the definition of the current particle
       G4ParticleDefinition* pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
-      //G4MaterialPropertyVector *Scint_Yield_Vector = NULL;
 
       // Obtain the G4MaterialPropertyVectory containing the
       // scintillation light yield as a function of the deposited
@@ -193,17 +189,8 @@ namespace larg4 {
     }
     else if (fEMSaturation) {
       // The default linear scintillation process
-      //fEMSaturation->SetVerbose(1);
       fVisibleEnergyDeposition = fEMSaturation->VisibleEnergyDepositionAtAStep(step);
       fNumScintPhotons = fScintYieldFactor * scintYield * fVisibleEnergyDeposition;
-      //fNumScintPhotons = fScintYieldFactor * scintYield * fEMSaturation->VisibleEnergyDepositionAtAStep(step);
-      //I need a dump here
-      //mf::LogInfo("EMSaturation") <<"\n\nfEMSaturation VisibleEnergyDepositionAtAStep(step): "<<fEMSaturation->VisibleEnergyDepositionAtAStep(step)<<"\n" <<"BirksCoefs: \n";
-      // fEMSaturation->DumpBirksCoefficients();
-      //mf::LogInfo("EMSaturation")<<"\n" <<"G4Birks: \n";
-      //fEMSaturation->DumpG4BirksCoefficients();
-      //mf::LogInfo("EMSaturation")<<"fScintYieldFactor: "<<fScintYieldFactor <<"\nscintYield: "<<scintYield<<"\nfEMVisAtStep: "<<fEMSaturation->VisibleEnergyDepositionAtAStep(step)<<"\nfNumScintPhotons: "<<fNumScintPhotons<<"\n";
-      //mf::LogInfo("EMSaturation")<<"fTotalEnergyDeposit: "<< step->GetTotalEnergyDeposit()/CLHEP::MeV<<"\nfNumIonElectrons: "<<fNumIonElectrons<<"\n";
     }
     else {
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
@@ -213,8 +200,6 @@ namespace larg4 {
       << "number photons: " << fNumScintPhotons << " energy: " << fEnergyDeposit / CLHEP::MeV
       << " saturation: " << fEMSaturation->VisibleEnergyDepositionAtAStep(step)
       << " step length: " << step->GetStepLength() / CLHEP::cm;
-
-    return;
   }
 
 } // namespace

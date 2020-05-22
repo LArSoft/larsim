@@ -98,44 +98,36 @@ namespace larg4 {
    * This class is based on the `G4OpBoundaryProcess` class in Geant4 and was
    * adapted for LArSoft by Ben Jones, MIT, March 2010.
    */
+
   class OpBoundaryProcessSimple : public G4VDiscreteProcess {
-
   public:
-    // Constructors and Destructor
-
     OpBoundaryProcessSimple(const G4String& processName = "OpBoundary",
                             G4ProcessType type = fOptical);
 
-    ~OpBoundaryProcessSimple();
-
-  public:
-    G4bool IsApplicable(const G4ParticleDefinition& aParticleType);
     // Returns true -> 'is applicable' only for an optical photon.
+    G4bool IsApplicable(const G4ParticleDefinition& aParticleType);
 
-    G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition);
     // Returns infinity; i. e. the process does not limit the step,
     // but sets the 'Forced' condition for the DoIt to be invoked at
     // every step. However, only at a boundary will any action be
     // taken.
+    G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition);
 
-    G4VParticleChange* PostStepDoIt(const G4Track& aTrack, const G4Step& aStep);
     // This is the method implementing boundary processes.
+    G4VParticleChange* PostStepDoIt(const G4Track& aTrack, const G4Step& aStep);
 
-    OpBoundaryProcessSimpleStatus GetStatus() const;
     // Returns the current status.
+    OpBoundaryProcessSimpleStatus GetStatus() const;
 
   private:
-    G4bool G4BooleanRand(const G4double prob) const;
     // Generate a random bool to decide which process to execute
+    G4bool G4BooleanRand(const G4double prob) const;
 
-  private:
     OpBoundaryProcessSimpleStatus fTheStatus;
     G4double fCarTolerance;
 
     int fVerbosity;
   };
-
-  // Inline methods
 
   inline G4bool
   OpBoundaryProcessSimple::G4BooleanRand(const G4double prob) const
