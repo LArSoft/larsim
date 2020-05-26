@@ -39,7 +39,6 @@ namespace larg4{
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
-    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     double density        = detprop->Density(detprop->Temperature());
