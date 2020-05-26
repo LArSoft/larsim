@@ -45,11 +45,8 @@ namespace larg4{
 
     ThePhoton.SetInSD      = true;
 
-    ThePhoton.InitialPosition     = TVector3(
-					      aStep->GetTrack()->GetVertexPosition().x(),
-					      aStep->GetTrack()->GetVertexPosition().y(),
-					      aStep->GetTrack()->GetVertexPosition().z()
-					      );
+    auto const& startPos = aStep->GetTrack()->GetVertexPosition();
+    ThePhoton.InitialPosition = { startPos.x(), startPos.y(), startPos.z() };
 
     //ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
     ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime();
@@ -65,7 +62,11 @@ namespace larg4{
     // Store relative position on the photon detector
     G4ThreeVector worldPosition  = preStepPoint->GetPosition();
     G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
-    ThePhoton.FinalLocalPosition = TVector3(localPosition.x()/CLHEP::cm, localPosition.y()/CLHEP::cm, localPosition.z()/CLHEP::cm);
+    ThePhoton.FinalLocalPosition = {
+      localPosition.x()/CLHEP::cm,
+      localPosition.y()/CLHEP::cm,
+      localPosition.z()/CLHEP::cm
+      };
 
 
     // Add this photon to the detected photons table

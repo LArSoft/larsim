@@ -353,6 +353,44 @@ namespace larg4 {
 
 } // namespace LArG4
 
+namespace {
+
+  // ---------------------------------------------------------------------------
+  /**
+   * @brief Moves data from `source` to the end of `dest`.
+   * @tparam T type of values in the containers
+   * @param dest collection to append data to
+   * @param source collection to take data from
+   * @return a reference to `dest`
+   *
+   * The data contained in `source` is moved (appended) to the end of `dest`.
+   *
+   * The data is moved from source element by element; as an exception, if
+   * `dest` is still empty, the data is moved in a block.
+   *
+   * The `source` collection is always returned depleted as after being "moved
+   * away" (i.e. after `auto temp = std::move(source);`): that means that the
+   * only thing that can be done with it according to C++ standard is to
+   * destruct it.
+   *
+   */
+  template <typename T>
+  std::vector<T>& append(std::vector<T>& dest, std::vector<T>&& source) {
+    if (empty(dest)) dest = std::move(source);
+    else {
+      dest.insert(
+        dest.end(),
+        std::move_iterator{ begin(source) },
+        std::move_iterator{ end(source) }
+        );
+      source = std::vector<T>{}; // ensure the old memory is released
+    }
+    return dest;
+  }
+  // ---------------------------------------------------------------------------
+
+} // local namespace
+
 namespace larg4 {
 
   //----------------------------------------------------------------------
@@ -758,15 +796,16 @@ namespace larg4 {
 
       if(lgp->FillSimEnergyDeposits())
         {
-          auto const& edepMap = OpDetPhotonTable::Instance()->GetSimEnergyDeposits();
-          for(auto const& edepCol : edepMap){
-            if(boost::contains(edepCol.first,"TPCActive"))
-              edepCol_TPCActive->insert(edepCol_TPCActive->end(),
-                                        edepCol.second.begin(),edepCol.second.end());
-            else
-              edepCol_Other->insert(edepCol_Other->end(),
-                                    edepCol.second.begin(),edepCol.second.end());
-          }
+          // we steal the only existing copy of the energy deposit map. Oink!
+          auto edepMap = OpDetPhotonTable::Instance()->YieldSimEnergyDeposits();
+          for(auto& [ volumeName, edepCol ]: edepMap){
+            // note: constant reference to a (smart) pointer to non-const data
+            auto const& destColl = boost::contains(volumeName,"TPCActive")
+              ? edepCol_TPCActive
+              : edepCol_Other
+              ;
+            append(*destColl, std::move(edepCol));
+          } // for
         }
     }//end if theOpDetDet
 
