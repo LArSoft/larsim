@@ -90,7 +90,8 @@ namespace evgen {
     std::vector<std::string> m_isotope; ///< isotope to simulate.  Example:  "Ar39"
     std::string m_decay_chain; ///< decay chain to simulate.  Example:  "Rn222", this can also be the complete decay chain
     std::string m_material;    ///< regex of materials in which to generate the decays.  Example: "LAr"
-    std::string m_volume;      ///< The volume in which to generate the decays
+    std::string m_volume_rand; ///< The volume in which to generate the decays
+    std::string m_volume_gen;  ///< The volume in which to generate the decays
     double      m_Bq;          ///< Radioactivity in Becquerels (decay per sec) per cubic cm.
     double      m_rate;        ///< Radioactivity in Becquerels (decay per sec) use either of this of Bq
     double      m_T0;          ///< Beginning of time window to simulate in ns
@@ -118,6 +119,7 @@ namespace evgen {
     bool m_rate_mode;
     
     std::regex  m_regex_material;
+    std::regex  m_regex_volume;
     int m_nevent;
     TH2D* m_pos_xy_TH2D;
     TH2D* m_pos_xz_TH2D;
@@ -158,7 +160,6 @@ namespace evgen{
     
     
     if (not m_single_isotope_mode) {
-      m_decay_chain = pset.get<std::string>("decay_chain");
       fhicl::ParameterSet decay_chain = pset.get<fhicl::ParameterSet>("decay_chain");
       int index=0;
      
@@ -174,6 +175,9 @@ namespace evgen{
     m_material = pset.get<std::string>("material", ".*");
     m_regex_material = (std::regex)m_material;
 
+    m_volume_gen = pset.get<std::string>("volume_gen", ".*");
+    m_regex_volume = (std::regex)m_volume_gen;
+
     m_rate_mode = pset.get_if_present<double>("rate", m_rate);
     if (not m_rate_mode)
       m_Bq = pset.get<double>("BqPercc");
@@ -185,7 +189,7 @@ namespace evgen{
       throw cet::exception("Decay0Gen") << "for now, you have to specify T0, later, it should generate for all time in the events using detector property or so.";
     }
 
-    m_geo_volume_mode = pset.get_if_present<std::string>("volume", m_volume);
+    m_geo_volume_mode = pset.get_if_present<std::string>("volume_rand", m_volume_rand);
 
     m_geo_manager = m_geo_service->ROOTGeoManager();
     
@@ -200,7 +204,7 @@ namespace evgen{
       const TGeoNode* world = gGeoManager->GetNode(0);
       world->GetVolume()->SetAsTopVolume();
       const TGeoNode* node_to_throw = nullptr; // 
-      bool found = findNode(world, m_volume, node_to_throw);
+      bool found = findNode(world, m_volume_rand, node_to_throw);
 
       if (not found) {
         throw;
@@ -309,12 +313,12 @@ namespace evgen{
 
     m_volume_cc = (m_X1-m_X0) * (m_Y1-m_Y0) * (m_Z1-m_Z0);
     
-    if (m_material != ".*") {
-      std::cout << "Calculating the proportion of " << m_material << " in the specified volume.\n";
+    if (m_material != ".*" || m_volume_gen != ".*") {
+      std::cout << "Calculating the proportion of " << m_material << " and the volume " << m_volume_gen << " in the specified volume " << m_volume_rand << ".\n";
       int nfound=0;
       int ntries=0;
       int npoint=10000; // 1% statistical uncertainty
-      int nmax_tries=npoint*100;
+      int nmax_tries=npoint*1000;
       double xyz[3];
       TGeoNode* node = nullptr;
 
@@ -329,18 +333,19 @@ namespace evgen{
         if (!node) continue;
         if (node->IsOverlapping()) continue;
 
-        std::string volmaterial = node->GetMedium()->GetMaterial()->GetName();
-        bool flag = std::regex_match(volmaterial, m_regex_material);
+        std::string material_name = node->GetMedium()->GetMaterial()->GetName();
+        std::string volume_name = node->GetVolume()->GetName();
+        bool flag = std::regex_match(material_name, m_regex_material) && std::regex_match(volume_name, m_regex_volume);
         if (!flag) continue;
         nfound++;
       }
       
       if (nfound==0) {
-        throw cet::exception("Decay0Gen") << "Didn't find the material " << m_material << " in the specified volume\n";
+        throw cet::exception("Decay0Gen") << "Didn't find the material " << m_material << " or the volume " << m_volume_gen << " in the specified volume " << m_volume_rand << ".\n";
       }
       
       double proportion = (double)nfound / ntries;
-      std::cout << "\033[32mThere is " << proportion*100. << "% of " << m_material << " in the specified volume.\033[0m\n";
+      std::cout << "There is " << proportion*100. << "% of " << m_material << " in the specified volume.\n";
       m_volume_cc *= proportion;
     }
     
@@ -465,9 +470,11 @@ namespace evgen{
                        m_Y0 + m_random_flat->fire()*(m_Y1 - m_Y0),
                        m_Z0 + m_random_flat->fire()*(m_Z1 - m_Z0),
                        time);
-
-      std::string volmaterial = m_geo_manager->FindNode(position.X(),position.Y(),position.Z())->GetMedium()->GetMaterial()->GetName();
-      flag = std::regex_match(volmaterial, m_regex_material);
+      
+      const TGeoNode* node = m_geo_manager->FindNode(position.X(),position.Y(),position.Z());
+      std::string material_name = node->GetMedium()->GetMaterial()->GetName();
+      std::string volume_name = node->GetVolume()->GetName();
+      flag = std::regex_match(material_name, m_regex_material) && std::regex_match(volume_name, m_regex_volume);
       if (flag) return true;
     }
     return false;
