@@ -221,13 +221,13 @@ void sim::POTaccumulator::endJob() {
   //
   // print the total summary
   //
-  
+
   // here we skip _art_ aggregation mechanism
   // because it can't handle multiple runs
   sumdata::POTSummary totalPOT;
   for (auto const& POT: fRunPOT | ranges::view::values)
     totalPOT.aggregate(POT.value());
-  
+
   printSummary(totalPOT);
 
 } // sim::POTaccumulator::endJob()
