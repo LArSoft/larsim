@@ -7,71 +7,76 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "larsim/LegacyLArG4/CustomPhysicsTable.hh"
 #include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
+#include "larsim/LegacyLArG4/CustomPhysicsTable.hh"
 
 namespace larg4 {
 
-  static CustomPhysicsTable * TheCustomPhysicsTable;
+  static CustomPhysicsTable* TheCustomPhysicsTable;
 
   //-----------------------------------------------------------------
-  CustomPhysicsTable::CustomPhysicsTable(CustomPhysicsFactoryBase * Factory)
+  CustomPhysicsTable::CustomPhysicsTable(CustomPhysicsFactoryBase* Factory)
   {
-    if(!TheCustomPhysicsTable){
+    if (!TheCustomPhysicsTable) {
       TheCustomPhysicsTable = new CustomPhysicsTable;
       TheCustomPhysicsTable->AddPhysics(Factory);
     }
-    else{
+    else {
       TheCustomPhysicsTable->AddPhysics(Factory);
     }
   }
 
   //-----------------------------------------------------------------
-  std::vector<std::string> CustomPhysicsTable::GetAvailablePhysicsList()
+  std::vector<std::string>
+  CustomPhysicsTable::GetAvailablePhysicsList()
   {
     std::vector<std::string> ReturnVector;
-    for(std::map<std::string,CustomPhysicsFactoryBase* >::const_iterator i = TheCustomPhysicsTable->theTable.begin(); i!=TheCustomPhysicsTable->theTable.end(); i++){
+    for (std::map<std::string, CustomPhysicsFactoryBase*>::const_iterator i =
+           TheCustomPhysicsTable->theTable.begin();
+         i != TheCustomPhysicsTable->theTable.end();
+         i++) {
       ReturnVector.push_back((*i).first);
     }
     return ReturnVector;
   }
 
   //-----------------------------------------------------------------
-  bool CustomPhysicsTable::IsPhysicsAvailable(std::string PhysicsName)
+  bool
+  CustomPhysicsTable::IsPhysicsAvailable(std::string PhysicsName)
   {
-    if(!TheCustomPhysicsTable->theTable[PhysicsName])
+    if (!TheCustomPhysicsTable->theTable[PhysicsName])
       return false;
     else
       return true;
   }
 
   //-----------------------------------------------------------------
-  G4VPhysicsConstructor * CustomPhysicsTable::GetPhysicsConstructor(std::string PhysicsName)
+  G4VPhysicsConstructor*
+  CustomPhysicsTable::GetPhysicsConstructor(std::string PhysicsName)
   {
-    if(IsPhysicsAvailable(PhysicsName)){
-      G4VPhysicsConstructor * G4VPC =  TheCustomPhysicsTable->theTable[PhysicsName]->Build();
+    if (IsPhysicsAvailable(PhysicsName)) {
+      G4VPhysicsConstructor* G4VPC = TheCustomPhysicsTable->theTable[PhysicsName]->Build();
       return G4VPC;
     }
-    else{
-      G4VPhysicsConstructor * G4VPC=0;
+    else {
+      G4VPhysicsConstructor* G4VPC = 0;
       return G4VPC;
     }
-
   }
 
   //-----------------------------------------------------------------
-  void CustomPhysicsTable::AddPhysics(CustomPhysicsFactoryBase * Factory)
+  void
+  CustomPhysicsTable::AddPhysics(CustomPhysicsFactoryBase* Factory)
   {
 
-    if(IsPhysicsAvailable(Factory->GetName()))
+    if (IsPhysicsAvailable(Factory->GetName()))
       mf::LogWarning("CustomPhysicsTable") << "Physics constructor being overwritten"
                                            << " in CustomPhysicsTable";
-    TheCustomPhysicsTable->theTable[Factory->GetName()]=Factory;
-    MF_LOG_DEBUG("CustomPhysicsTable")<<"CustomPhysicsTable : Physics Table registering new physics "
-                                   << Factory->GetName();
+    TheCustomPhysicsTable->theTable[Factory->GetName()] = Factory;
+    MF_LOG_DEBUG("CustomPhysicsTable")
+      << "CustomPhysicsTable : Physics Table registering new physics " << Factory->GetName();
   }
 
 }
-
 
 //Ben Jones, MIT, Sept 2009

@@ -21,8 +21,6 @@
 //
 // See CustomPhysicsFactory.hh and CustomPhysicsFactory.cxx for more details.
 
-
-
 #ifndef CUSTOMPHYSICSTABLE_hh
 #define CUSTOMPHYSICSTABLE_hh 1
 
@@ -32,27 +30,30 @@
 class G4VPhysicsConstructor;
 
 #ifndef CUSTOMPHYSICSFACTORY_hh
-namespace larg4 { class CustomPhysicsFactoryBase; }
+namespace larg4 {
+  class CustomPhysicsFactoryBase;
+}
 #endif
 
 namespace larg4 {
-  class CustomPhysicsTable
-  {
+  class CustomPhysicsTable {
 
   public:
     CustomPhysicsTable(CustomPhysicsFactoryBase*);
-    ~CustomPhysicsTable() {};
+    ~CustomPhysicsTable(){};
     std::vector<std::string> GetAvailablePhysicsList();
     bool IsPhysicsAvailable(std::string);
-    G4VPhysicsConstructor * GetPhysicsConstructor(std::string);
-    std::map<std::string,CustomPhysicsFactoryBase* > GetFullTable()
-    { return theTable;}
+    G4VPhysicsConstructor* GetPhysicsConstructor(std::string);
+    std::map<std::string, CustomPhysicsFactoryBase*>
+    GetFullTable()
+    {
+      return theTable;
+    }
     void AddPhysics(CustomPhysicsFactoryBase*);
 
-
   protected:
-    std::map<std::string,CustomPhysicsFactoryBase* > theTable;
-    CustomPhysicsTable() {};
+    std::map<std::string, CustomPhysicsFactoryBase*> theTable;
+    CustomPhysicsTable(){};
   };
 
 }
@@ -60,8 +61,5 @@ namespace larg4 {
 #include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
 
 #endif
-
-
-
 
 // Sept 2009 - Ben Jones, MIT

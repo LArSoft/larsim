@@ -5,7 +5,6 @@
  * @see    larsim/LArG4/OpBoundaryProcessSimple.cxx
  */
 
-
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -38,8 +37,6 @@
 // Optical Photon Boundary Process Class Definition
 ////////////////////////////////////////////////////////////////////////
 
-
-
 #ifndef OpBoundaryProcessSimple_h
 #define OpBoundaryProcessSimple_h 1
 
@@ -63,8 +60,16 @@ class G4VParticleChange;
 namespace larg4 {
 
   // Possible statuses of a particle after each step.
-  enum OpBoundaryProcessSimpleStatus {  Undefined, NotAtBoundary, SimpleAbsorbedNoRefl,
-          SimpleAbsorbed, SimpleDiffuse, SimpleSpecular, StepTooSmall, NoRINDEX };
+  enum OpBoundaryProcessSimpleStatus {
+    Undefined,
+    NotAtBoundary,
+    SimpleAbsorbedNoRefl,
+    SimpleAbsorbed,
+    SimpleDiffuse,
+    SimpleSpecular,
+    StepTooSmall,
+    NoRINDEX
+  };
 
   /**
    * @brief Discrete process for reflection and diffusion at optical interfaces.
@@ -93,76 +98,60 @@ namespace larg4 {
    * This class is based on the `G4OpBoundaryProcess` class in Geant4 and was
    * adapted for LArSoft by Ben Jones, MIT, March 2010.
    */
-class OpBoundaryProcessSimple : public G4VDiscreteProcess
-  {
-
+  class OpBoundaryProcessSimple : public G4VDiscreteProcess {
 
   public:
-
-
     // Constructors and Destructor
 
     OpBoundaryProcessSimple(const G4String& processName = "OpBoundary",
-          G4ProcessType type = fOptical);
+                            G4ProcessType type = fOptical);
 
     ~OpBoundaryProcessSimple();
 
-
-
   public:
-
     G4bool IsApplicable(const G4ParticleDefinition& aParticleType);
     // Returns true -> 'is applicable' only for an optical photon.
 
-    G4double GetMeanFreePath(const G4Track& ,
-           G4double ,
-           G4ForceCondition* condition);
+    G4double GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition);
     // Returns infinity; i. e. the process does not limit the step,
     // but sets the 'Forced' condition for the DoIt to be invoked at
     // every step. However, only at a boundary will any action be
     // taken.
 
-    G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
-            const G4Step&  aStep);
+    G4VParticleChange* PostStepDoIt(const G4Track& aTrack, const G4Step& aStep);
     // This is the method implementing boundary processes.
 
     OpBoundaryProcessSimpleStatus GetStatus() const;
     // Returns the current status.
 
-
   private:
-
     G4bool G4BooleanRand(const G4double prob) const;
     // Generate a random bool to decide which process to execute
 
   private:
-
     OpBoundaryProcessSimpleStatus fTheStatus;
     G4double fCarTolerance;
 
     int fVerbosity;
-
   };
-
 
   // Inline methods
 
-  inline
-  G4bool OpBoundaryProcessSimple::G4BooleanRand(const G4double prob) const
+  inline G4bool
+  OpBoundaryProcessSimple::G4BooleanRand(const G4double prob) const
   {
     /* Returns a random boolean variable with the specified probability */
     return (G4UniformRand() < prob);
   }
 
-  inline
-  G4bool OpBoundaryProcessSimple::IsApplicable(const G4ParticleDefinition&
-                 aParticleType)
+  inline G4bool
+  OpBoundaryProcessSimple::IsApplicable(const G4ParticleDefinition& aParticleType)
   {
-    return ( &aParticleType == G4OpticalPhoton::OpticalPhoton() );
+    return (&aParticleType == G4OpticalPhoton::OpticalPhoton());
   }
 
-  inline
-  OpBoundaryProcessSimpleStatus OpBoundaryProcessSimple::GetStatus() const
+  inline OpBoundaryProcessSimpleStatus
+  OpBoundaryProcessSimple::GetStatus() const
   {
     return fTheStatus;
   }

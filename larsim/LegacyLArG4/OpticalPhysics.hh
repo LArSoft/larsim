@@ -68,16 +68,15 @@ class G4OpWLS;
 class G4Scintillation;
 
 #if defined __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wunused-private-field"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
 #endif
 
 namespace larg4 {
 
   class OpBoundaryProcessSimple;
 
-  class OpticalPhysics : public G4VPhysicsConstructor
-  {
+  class OpticalPhysics : public G4VPhysicsConstructor {
   public:
     OpticalPhysics(G4int ver = 0, const G4String& name = "G4Optical");
     virtual ~OpticalPhysics();
@@ -86,19 +85,19 @@ namespace larg4 {
     virtual void ConstructProcess();
 
   private:
-    G4int  verbose;
-    G4Cerenkov*              fTheCerenkovProcess;
-    G4Scintillation*         fTheScintillationProcess;
-    G4OpAbsorption*          fTheAbsorptionProcess;
-    G4OpRayleigh*            fTheRayleighScatteringProcess;
+    G4int verbose;
+    G4Cerenkov* fTheCerenkovProcess;
+    G4Scintillation* fTheScintillationProcess;
+    G4OpAbsorption* fTheAbsorptionProcess;
+    G4OpRayleigh* fTheRayleighScatteringProcess;
     OpBoundaryProcessSimple* fTheBoundaryProcess;
-    G4OpBoundaryProcess*     fTheBoundaryProcess_g4;
-    G4OpWLS *                fTheWLSProcess;
+    G4OpBoundaryProcess* fTheBoundaryProcess_g4;
+    G4OpWLS* fTheWLSProcess;
   };
 
 }
 #if defined __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif
 
 #endif

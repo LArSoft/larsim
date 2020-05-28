@@ -11,86 +11,87 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art_root_io/TFileService.h"
 
 #include <memory>
 
+#include "TNtuple.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "larsim/Simulation/LArG4Parameters.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
-#include "TNtuple.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 namespace spacecharge {
   class ShiftEdepSCE;
 }
 
-
 class spacecharge::ShiftEdepSCE : public art::EDProducer {
 public:
-  explicit ShiftEdepSCE(fhicl::ParameterSet const & p);
+  explicit ShiftEdepSCE(fhicl::ParameterSet const& p);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
   // Plugins should not be copied or assigned.
-  ShiftEdepSCE(ShiftEdepSCE const &) = delete;
-  ShiftEdepSCE(ShiftEdepSCE &&) = delete;
-  ShiftEdepSCE & operator = (ShiftEdepSCE const &) = delete;
-  ShiftEdepSCE & operator = (ShiftEdepSCE &&) = delete;
+  ShiftEdepSCE(ShiftEdepSCE const&) = delete;
+  ShiftEdepSCE(ShiftEdepSCE&&) = delete;
+  ShiftEdepSCE& operator=(ShiftEdepSCE const&) = delete;
+  ShiftEdepSCE& operator=(ShiftEdepSCE&&) = delete;
 
   // Required functions.
-  void produce(art::Event & e) override;
+  void produce(art::Event& e) override;
   void beginJob() override;
 
 private:
-
   // Declare member data here.
   art::InputTag fEDepTag;
-  bool          fMakeAnaTree;
-  TNtuple*      fNtEdepAna;
+  bool fMakeAnaTree;
+  TNtuple* fNtEdepAna;
 
-    //IS calculationg
-    larg4::ISCalcSeparate fISAlg;
+  //IS calculationg
+  larg4::ISCalcSeparate fISAlg;
 };
 
-
-spacecharge::ShiftEdepSCE::ShiftEdepSCE(fhicl::ParameterSet const & p)
+spacecharge::ShiftEdepSCE::ShiftEdepSCE(fhicl::ParameterSet const& p)
   : EDProducer{p}
-  , fEDepTag(p.get<art::InputTag>("EDepTag")),
-    fMakeAnaTree(p.get<bool>("MakeAnaTree",true))
+  , fEDepTag(p.get<art::InputTag>("EDepTag"))
+  , fMakeAnaTree(p.get<bool>("MakeAnaTree", true))
 {
-  produces< std::vector<sim::SimEnergyDeposit> >();
+  produces<std::vector<sim::SimEnergyDeposit>>();
 }
 
-void spacecharge::ShiftEdepSCE::beginJob()
+void
+spacecharge::ShiftEdepSCE::beginJob()
 {
-  if(fMakeAnaTree){
+  if (fMakeAnaTree) {
     art::ServiceHandle<art::TFileService const> tfs;
-    fNtEdepAna = tfs->make<TNtuple>("nt_edep_ana","Edep PosDiff Ana Ntuple","energy:orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
+    fNtEdepAna = tfs->make<TNtuple>(
+      "nt_edep_ana",
+      "Edep PosDiff Ana Ntuple",
+      "energy:orig_x:orig_y:orig_z:orig_el:orig_ph:shift_x:shift_y:shift_z:shift_el:shift_ph");
   }
 
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-//  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-//		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-//		    &(*lg4paramHandle),
-//		    lar::providerFrom<spacecharge::SpaceChargeService>());
-//  fISAlg.Initialize();
-
+  //  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+  //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+  //		    &(*lg4paramHandle),
+  //		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  //  fISAlg.Initialize();
 }
 
-void spacecharge::ShiftEdepSCE::produce(art::Event & e)
+void
+spacecharge::ShiftEdepSCE::produce(art::Event& e)
 {
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
-//  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
-//		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
-//		    &(*lg4paramHandle),
-//		    lar::providerFrom<spacecharge::SpaceChargeService>());
-//  fISAlg.Initialize(); 
+  //  fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
+  //		    lar::providerFrom<detinfo::DetectorPropertiesService>(),
+  //		    &(*lg4paramHandle),
+  //		    lar::providerFrom<spacecharge::SpaceChargeService>());
+  //  fISAlg.Initialize();
   /* 
   art::ServiceHandle<sim::LArG4Parameters const> lg4paramHandle;
   fISAlg.Initialize(lar::providerFrom<detinfo::LArPropertiesService>(),
@@ -100,50 +101,57 @@ void spacecharge::ShiftEdepSCE::produce(art::Event & e)
   */
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
-  std::unique_ptr< std::vector<sim::SimEnergyDeposit> >
-    outEdepVecPtr(new std::vector<sim::SimEnergyDeposit>() );
-  auto & outEdepVec(*outEdepVecPtr);
+  std::unique_ptr<std::vector<sim::SimEnergyDeposit>> outEdepVecPtr(
+    new std::vector<sim::SimEnergyDeposit>());
+  auto& outEdepVec(*outEdepVecPtr);
 
-  art::Handle< std::vector<sim::SimEnergyDeposit> > inEdepHandle;
-  e.getByLabel(fEDepTag,inEdepHandle);
+  art::Handle<std::vector<sim::SimEnergyDeposit>> inEdepHandle;
+  e.getByLabel(fEDepTag, inEdepHandle);
   auto const& inEdepVec(*inEdepHandle);
 
   outEdepVec.reserve(inEdepVec.size());
 
-  geo::Vector_t posOffsetsStart{0.0,0.0,0.0};
-  geo::Vector_t posOffsetsEnd{0.0,0.0,0.0};
-  for(auto const& edep : inEdepVec){
-    if(sce->EnableSimSpatialSCE()){
-      posOffsetsStart = sce->GetPosOffsets({edep.StartX(),edep.StartY(),edep.StartZ()});
-      posOffsetsEnd = sce->GetPosOffsets({edep.EndX(),edep.EndY(),edep.EndZ()});
+  geo::Vector_t posOffsetsStart{0.0, 0.0, 0.0};
+  geo::Vector_t posOffsetsEnd{0.0, 0.0, 0.0};
+  for (auto const& edep : inEdepVec) {
+    if (sce->EnableSimSpatialSCE()) {
+      posOffsetsStart = sce->GetPosOffsets({edep.StartX(), edep.StartY(), edep.StartZ()});
+      posOffsetsEnd = sce->GetPosOffsets({edep.EndX(), edep.EndY(), edep.EndZ()});
     }
     fISAlg.Reset();
     fISAlg.CalcIonAndScint(edep);
-    outEdepVec.emplace_back(fISAlg.NumOfPhotons(),
-//                0,
-//                0,
-			    fISAlg.NumOfElectrons(),
-			    0.0,
-			    edep.Energy(),
-			    geo::Point_t{(float)(edep.StartX()-posOffsetsStart.X()), //x should be subtracted
-				(float)(edep.StartY()+posOffsetsStart.Y()),
-				(float)(edep.StartZ()+posOffsetsStart.Z())},
-			    geo::Point_t{(float)(edep.EndX()-posOffsetsEnd.X()), //x should be subtracted
-				(float)(edep.EndY()+posOffsetsEnd.Y()),
-				(float)(edep.EndZ()+posOffsetsEnd.Z())},
-			    edep.StartT(),
-			    edep.EndT(),
-			    edep.TrackID(),
-			    edep.PdgCode());
-    if(fMakeAnaTree)
+    outEdepVec.emplace_back(
+      fISAlg.NumOfPhotons(),
+      //                0,
+      //                0,
+      fISAlg.NumOfElectrons(),
+      0.0,
+      edep.Energy(),
+      geo::Point_t{(float)(edep.StartX() - posOffsetsStart.X()), //x should be subtracted
+                   (float)(edep.StartY() + posOffsetsStart.Y()),
+                   (float)(edep.StartZ() + posOffsetsStart.Z())},
+      geo::Point_t{(float)(edep.EndX() - posOffsetsEnd.X()), //x should be subtracted
+                   (float)(edep.EndY() + posOffsetsEnd.Y()),
+                   (float)(edep.EndZ() + posOffsetsEnd.Z())},
+      edep.StartT(),
+      edep.EndT(),
+      edep.TrackID(),
+      edep.PdgCode());
+    if (fMakeAnaTree)
       fNtEdepAna->Fill(edep.Energy(),
-		       edep.X(),edep.Y(),edep.Z(),edep.NumElectrons(),edep.NumPhotons(),
-		       outEdepVec.back().X(),outEdepVec.back().Y(),outEdepVec.back().Z(),
-		       outEdepVec.back().NumElectrons(),outEdepVec.back().NumPhotons());
+                       edep.X(),
+                       edep.Y(),
+                       edep.Z(),
+                       edep.NumElectrons(),
+                       edep.NumPhotons(),
+                       outEdepVec.back().X(),
+                       outEdepVec.back().Y(),
+                       outEdepVec.back().Z(),
+                       outEdepVec.back().NumElectrons(),
+                       outEdepVec.back().NumPhotons());
 
-	//std::cout << "space charge position: (" << edep.X() << ", " << edep.Y() << ", " << edep.Z() << ") --> (" << outEdepVec.back().X() << ", " << outEdepVec.back().Y() << ", " << outEdepVec.back().Z() << ")" << std::endl;
+    //std::cout << "space charge position: (" << edep.X() << ", " << edep.Y() << ", " << edep.Z() << ") --> (" << outEdepVec.back().X() << ", " << outEdepVec.back().Y() << ", " << outEdepVec.back().Z() << ")" << std::endl;
   }
-
 
   e.put(std::move(outEdepVecPtr));
 }

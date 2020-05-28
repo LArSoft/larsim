@@ -1,9 +1,1 @@
-*~
-.depend
-*Dict.cxx
-*Dict.o
-*.bak
-*.backup
-*.log
-*.root
-*.swp
+*~.depend* Dict.cxx* Dict.o*.bak*.backup*.log*.root*.swp

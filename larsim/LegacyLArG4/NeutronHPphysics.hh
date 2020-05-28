@@ -8,19 +8,22 @@
 // Geant4 includes
 #include "Geant4/G4VPhysicsConstructor.hh"
 
-class NeutronHPphysics : public G4VPhysicsConstructor
-{
-  public:
-    NeutronHPphysics(const G4String& name="neutron");
-   ~NeutronHPphysics();
+class NeutronHPphysics : public G4VPhysicsConstructor {
+public:
+  NeutronHPphysics(const G4String& name = "neutron");
+  ~NeutronHPphysics();
 
-  public:
-    virtual void ConstructParticle() {};
-    virtual void ConstructProcess();
+public:
+  virtual void ConstructParticle(){};
+  virtual void ConstructProcess();
 
-  public:
-    void SetThermalPhysics(G4bool flag) {fThermal = flag;};
+public:
+  void
+  SetThermalPhysics(G4bool flag)
+  {
+    fThermal = flag;
+  };
 
-  private:
-    G4bool  fThermal;
+private:
+  G4bool fThermal;
 };
