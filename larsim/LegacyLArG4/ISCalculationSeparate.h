@@ -20,8 +20,8 @@ namespace larg4 {
   class ISCalculationSeparate : public ISCalculation {
   public:
     ISCalculationSeparate();
-    void Reset();
-    void CalculateIonizationAndScintillation(const G4Step* step);
+    void Reset() override;
+    void CalculateIonizationAndScintillation(const G4Step* step) override;
     double
     StepSizeLimit() const override
     {
