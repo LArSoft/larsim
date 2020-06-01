@@ -30,7 +30,16 @@
 #include "Geant4/G4ios.hh"
 #include <iomanip>
 
-#include "Geant4/G4DataQuestionaire.hh"
+#include "Geant4/G4Version.hh"
+#if  G4VERSION_NUMBER < 1060
+  #include "Geant4/G4DataQuestionaire.hh"
+#else
+// The G4DataQuestionaire.hh interface was removed in the 10.6, as described in the release notes:
+// http://geant4-data.web.cern.ch/geant4-data/ReleaseNotes/ReleaseNotes4.10.6.html 8
+// The class was header-only and only used internally by packaged physics lists to check dataset
+// environment variables. These are checked anyway by processes that require them,
+// so it should be possible to remove it from your application without an issue.
+#endif
 
 #include "larsim/LegacyLArG4/CustomPhysicsTable.hh"
 #include "larsim/LegacyLArG4/MuNuclearSplittingProcess.h"
@@ -52,7 +61,9 @@ namespace larg4 {
     // note - not sure exact purpose of these commands, but left in from QGSP_BERT list
     this->defaultCutValue = 0.7 * CLHEP::mm;
     this->SetVerboseLevel(ver);
+#if  G4VERSION_NUMBER < 1060
     G4DataQuestionaire it(photon);
+#endif
     art::ServiceHandle<sim::LArG4Parameters> lgp;
     if (lgp->UseCustomPhysics()) {
       EnabledPhysics = lgp->EnabledPhysics();
