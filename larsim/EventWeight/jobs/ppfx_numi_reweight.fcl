@@ -4,7 +4,7 @@ reweight_numi_ppfx: {
   weight_functions: [
     ppfx_cv, ppfx_mipppi, ppfx_mippk, ppfx_thinmes, ppfx_thinpi,
     ppfx_other, ppfx_thinnpi, ppfx_totabs, ppfx_targatt, ppfx_thinna,
-    ppfx_think, ppfx_thinn
+    ppfx_think, ppfx_thinn, ppfx_ms
   ]
   min_weight: 0
   max_weight: 100
