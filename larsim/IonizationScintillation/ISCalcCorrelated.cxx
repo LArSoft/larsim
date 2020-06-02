@@ -95,6 +95,9 @@ namespace larg4
 
         // calculate scintillation photons
         fNumScintPhotons = Nq - fNumIonElectrons;
+       
+        // set the scintillation singlet fraction (i.e., fraction of "fast" photons) 
+        fScintillationYieldRatio = GetScintYieldRatio(edep);
     
         MF_LOG_DEBUG("ISCalcCorrelated")  << " Electrons produced for " << fEnergyDeposit
                                 << " MeV deposited with "     << recomb
@@ -114,6 +117,9 @@ namespace larg4
         // the scintillation yield ratio, which is the ratio of fast light (singlet
         // component) to the total light (singlet+triplet components).
         //
+        // TODO: move this to ISCalc, since it is the same function used in the
+        //       other ionization/scintillation calculation algs
+        
         if (!fLArProp->ScintByParticleType()) 
           return fLArProp->ScintYieldRatio();
         
