@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	larsim	v08_26_00
+parent	larsim	v08_27_00
 defaultqual	e19
 #
 fcldir  product_dir job
