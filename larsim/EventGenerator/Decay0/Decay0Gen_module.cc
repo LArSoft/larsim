@@ -121,15 +121,17 @@ namespace evgen {
     std::regex  m_regex_material;
     std::regex  m_regex_volume;
     int m_nevent;
-    TH2D* m_pos_xy_TH2D;
-    TH2D* m_pos_xz_TH2D;
-    TH1D* m_dir_x_TH1D ;
-    TH1D* m_dir_y_TH1D ;
-    TH1D* m_dir_z_TH1D ;
-    TH1D* m_pdg_TH1D   ;
-    TH1D* m_mom_TH1D   ;
-    TH1D* m_time_TH1D  ;
+    
+    std::map<int,TH2D*> m_pos_xy_TH2D;
+    std::map<int,TH2D*> m_pos_xz_TH2D;
+    std::map<int,TH1D*> m_dir_x_TH1D;
+    std::map<int,TH1D*> m_dir_y_TH1D;
+    std::map<int,TH1D*> m_dir_z_TH1D;
+    std::map<int,TH1D*> m_mom_TH1D;
+    std::map<int,TH1D*> m_time_TH1D;
     TH1D* m_timediff_TH1D;
+    TH1D* m_pdg_TH1D;
+    
   };
     /// \brief Wrapper functor for a standard random number generator
   struct clhep_random : public bxdecay0::i_random{
@@ -164,7 +166,6 @@ namespace evgen{
       int index=0;
      
       while (decay_chain.get_if_present<std::string>("isotope_"+std::to_string(index++), isotope)) {
-        std::cout << "\033[32misotope : " << isotope << "\033[0m\n";
         m_isotope.push_back(isotope);
       }
       
@@ -186,7 +187,9 @@ namespace evgen{
     if (timed_mode) {
       m_T1 = pset.get<double>("T1");
     } else {
-      throw cet::exception("Decay0Gen") << "for now, you have to specify T0, later, it should generate for all time in the events using detector property or so.";
+      // m_T0 =;
+      // m_T1 =;
+      throw cet::exception("Decay0Gen") << "For now, you have to specify T0, later, it should generate for all time in the events using detector property or so.";
     }
 
     m_geo_volume_mode = pset.get_if_present<std::string>("volume_rand", m_volume_rand);
@@ -207,10 +210,10 @@ namespace evgen{
       bool found = findNode(world, m_volume_rand, node_to_throw);
 
       if (not found) {
-        throw;
+        throw cet::exception("Decay0Gen") << "Didn't find the node " << m_volume_rand << " exiting because I cannot generate events in this volume.";
       }
   
-      std::vector<const TGeoNode*> mother_nodes;// = nullptr; //
+      std::vector<const TGeoNode*> mother_nodes;
       const TGeoNode* current_node=node_to_throw;
       std::string daughter_name = node_to_throw->GetName();
       int nmax = 20;
@@ -220,17 +223,12 @@ namespace evgen{
         daughter_name =current_node->GetName();
         bool found_mum = findMotherNode(world, daughter_name, mother_node);
         if(not found_mum) {
-          std::cout << "\033[32mDidn't find mum of "<< daughter_name<< "\033[0m\n";
-          throw;
+          throw cet::exception("Decay0Gen") << "Didn't find the mum of the following node: " << daughter_name;
         }
         mother_nodes.push_back(mother_node);
         current_node = mother_node;
       }
       
-      std::cout << "\033[32mMums of "<< node_to_throw->GetName() << " are:\033[0m\n";
-      for (auto const& mums: mother_nodes) {
-        std::cout << "\033[32m - " << mums->GetName() << "\033[0m\n";
-      }
   
       TGeoVolume* vol   = node_to_throw->GetVolume();
       TGeoShape*  shape = vol->GetShape();
@@ -350,21 +348,44 @@ namespace evgen{
     }
     
     art::ServiceHandle<art::TFileService> tfs;
-    m_pos_xy_TH2D   = tfs->make<TH2D>("posXY"   , ";X [cm];Y [cm]"             , 100, m_X0, m_X1, 100, m_Y0, m_Y1);
-    m_pos_xz_TH2D   = tfs->make<TH2D>("posXZ"   , ";X [cm];Z [cm]"             , 100, m_X0, m_X1, 100, m_Z0, m_Z1);
-    m_dir_x_TH1D    = tfs->make<TH1D>("dirX"    , ";X momentum projection"     , 100,   -1,   1);
-    m_dir_y_TH1D    = tfs->make<TH1D>("dirY"    , ";Y momentum projection"     , 100,   -1,   1);
-    m_dir_z_TH1D    = tfs->make<TH1D>("dirZ"    , ";Z momentum projection"     , 100,   -1,   1);
-    m_pdg_TH1D      = tfs->make<TH1D>("PDG"     , ";PDG;n particles"           ,  10,    0,  10);
-    m_mom_TH1D      = tfs->make<TH1D>("Momentum", ";Momentum [MeV];n particles", 5000,   0, 500);
-    m_time_TH1D     = tfs->make<TH1D>("Time"    , ";Time[ns];n particles"      , 100, m_T0, m_T1);
     m_timediff_TH1D = tfs->make<TH1D>("TimeDiff", ";Time Diff[ns];n particles" , (int)(m_T1/100), 0, m_T1);
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(1+1, "alpha"   );
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(2+1, "gamma"   );
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(3+1, "positron");
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(4+1, "electron");
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(5+1, "neutron" );
-    m_pdg_TH1D->GetXaxis()->SetBinLabel(6+1, "proton"  );
+    m_pdg_TH1D      = tfs->make<TH1D>("PDG"     , ";PDG;n particles"           ,  10,    0,  10);
+
+    for (auto pdg in {1,2,3,4,5,6}) {
+      std::string part="";
+      switch (pdg) {
+      case 1:
+        part="alpha";
+        break;
+      case 2:
+        part="gamma";
+        break;
+      case 3:
+        part="positron";
+        break;
+      case 4:
+        part="electron";
+        break;
+      case 5:
+        part="neutron";
+        break;
+      case 6:
+        part="proton";
+        break;
+      default:
+        break;
+      }
+      
+      m_pos_xy_TH2D[pdg]   = tfs->make<TH2D>(Form("posXY_%s"   , part.c_str()), ";X [cm];Y [cm]"             , 100, m_X0, m_X1, 100, m_Y0, m_Y1);
+      m_pos_xz_TH2D[pdg]   = tfs->make<TH2D>(Form("posXZ_%s"   , part.c_str()), ";X [cm];Z [cm]"             , 100, m_X0, m_X1, 100, m_Z0, m_Z1);
+      m_dir_x_TH1D [pdg]   = tfs->make<TH1D>(Form("dirX_%s"    , part.c_str()), ";X momentum projection"     , 100,   -1,   1);
+      m_dir_y_TH1D [pdg]   = tfs->make<TH1D>(Form("dirY_%s"    , part.c_str()), ";Y momentum projection"     , 100,   -1,   1);
+      m_dir_z_TH1D [pdg]   = tfs->make<TH1D>(Form("dirZ_%s"    , part.c_str()), ";Z momentum projection"     , 100,   -1,   1);
+      m_mom_TH1D   [pdg]   = tfs->make<TH1D>(Form("Momentum_%s", part.c_str()), ";Momentum [MeV];n particles", 5000,   0, 500);
+      m_time_TH1D  [pdg]   = tfs->make<TH1D>(Form("Time_%s"    , part.c_str()), ";Time[ns];n particles"      , 100, m_T0, m_T1);
+%    
+      m_pdg_TH1D->GetXaxis()->SetBinLabel(pdg+1, part.c_str());
+    }
   }
   //____________________________________________________________________________
   void Decay0Gen::beginRun(art::Run& run)
@@ -404,10 +425,8 @@ namespace evgen{
             // so don't rely so heavily on default arguments to the MCParticle constructor
             simb::MCParticle part;
             if (not p.is_valid()) {
-              std::cout << "\033[32mInvalid part generated by Decay0\033[0m\n";
               p.print(std::cout);
-              std::cout << "\n\n";
-              continue;
+              throw cet::exception("Decay0Gen") << "Invalid part generated by Decay0, printed above (no clue what that means so throw)";
             }
           
             double mass = bxdecay0::particle_mass_MeV(p.get_code())/1000.;
@@ -421,7 +440,7 @@ namespace evgen{
             else if (p.is_proton  ()) { simple_pdg = 6; part = simb::MCParticle(track_id,       2212, primary_str); }
             else {
               p.print(std::cout);
-              throw cet::exception("Decay0Gen") << "this particle is weird!";
+              throw cet::exception("Decay0Gen") << "Particle is above is weird, cannot recognise it.";
             }
             if ((p.is_positron() or p.is_electron()) and t_electron == 0) {
               t_electron = p.get_time();
@@ -435,17 +454,18 @@ namespace evgen{
             TLorentzVector this_part_position = position;
             double t = position.T();
             this_part_position.SetT(t+p.get_time()*1e9);
+
             part.AddTrajectoryPoint(position, mom);
             truth.Add(part);
           
-            m_pos_xy_TH2D->Fill(position.X(), position.Y());
-            m_pos_xz_TH2D->Fill(position.X(), position.Z());
-            m_dir_x_TH1D ->Fill(mom.Px()/mom.P());
-            m_dir_y_TH1D ->Fill(mom.Py()/mom.P());
-            m_dir_z_TH1D ->Fill(mom.Pz()/mom.P());
+            m_pos_xy_TH2D[simple_pdg]->Fill(position.X(), position.Y());
+            m_pos_xz_TH2D[simple_pdg]->Fill(position.X(), position.Z());
+            m_dir_x_TH1D [simple_pdg]->Fill(mom.Px()/mom.P());
+            m_dir_y_TH1D [simple_pdg]->Fill(mom.Py()/mom.P());
+            m_dir_z_TH1D [simple_pdg]->Fill(mom.Pz()/mom.P());
+            m_mom_TH1D   [simple_pdg]->Fill(mom.P());
+            m_time_TH1D  [simple_pdg]->Fill(position.T());
             m_pdg_TH1D   ->Fill(simple_pdg);
-            m_mom_TH1D   ->Fill(mom.P());
-            m_time_TH1D  ->Fill(position.T());
 
           }
           m_timediff_TH1D->Fill(abs(t_alpha-t_electron)/1e9);
