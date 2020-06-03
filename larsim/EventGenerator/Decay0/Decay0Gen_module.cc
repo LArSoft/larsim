@@ -28,7 +28,7 @@
 #include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 #include "cetlib/exempt_ptr.h"
-
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 // nurandom includes
 #include "nurandom/RandomUtils/NuRandomService.h"
 
@@ -189,9 +189,11 @@ namespace evgen{
     if (timed_mode) {
       m_T1 = pset.get<double>("T1");
     } else {
-      // m_T0 =;
-      // m_T1 =;
-      throw cet::exception("Decay0Gen") << "For now, you have to specify T0, later, it should generate for all time in the events using detector property or so.";
+      const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+      int nsample = detprop->NumberTimeSamples();
+      double rate = detprop->SamplingRate();
+      m_T0 = -nsample * rate;
+      m_T1 = -m_T0;
     }
 
     m_geo_volume_mode = pset.get_if_present<std::string>("volume_rand", m_volume_rand);
