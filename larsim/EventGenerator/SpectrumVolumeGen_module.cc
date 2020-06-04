@@ -34,7 +34,7 @@ namespace evgen{
     std::string isotope="";
     isotope = pset.get<std::string>("isotope");
     m_pdg = pset.get<int>("isotope");
-    
+
     bool mass_specified = pset.get_if_present<double>("mass", m_mass);
     if (not mass_specified) {
       const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
@@ -48,9 +48,9 @@ namespace evgen{
         throw cet::exception("SpectrumVolumeGen") << "Cannot find the particle pdg " << m_pdg;
       }
     }
-    
+
     m_isotope.push_back(isotope);
-    
+
     double min_p=0, max_p=0;
     std::vector<double> bins;
     bool minmax_mode = pset.get_if_present<double>("spectrum_p_min", min_p);
@@ -65,18 +65,18 @@ namespace evgen{
     bool have_params;
     std::vector<double> spectrum;
     bool func_mode = pset.get_if_present<std::string>("function", function);
-    
+
     if (func_mode) {
       have_params = pset.get_if_present<std::vector<double>>("parameters", parameters);
     } else {
       spectrum = pset.get<std::vector<double>>("spectrum");
     }
-    
+
     if (func_mode and minmax_mode) {
       int nbins = pset.get<int>("nbins");
       TF1 the_func("spect_func",function.c_str(), min_p, max_p);
       if (have_params) the_func.SetParameters(parameters.data());
-                        
+
       m_spectrum = new TH1D("spectrum", ";p [GeV];PDF", nbins, min_p, max_p);
 
       for (int ibin=1; ibin<nbins+1; ++ibin) {
@@ -105,7 +105,7 @@ namespace evgen{
         if (y<0) y=0;
         m_spectrum->SetBinContent(ibin, y);
       }
-      
+
     } else if (not func_mode and minmax_mode) {
       int nbins = spectrum.size();
 
@@ -113,7 +113,7 @@ namespace evgen{
       for (int ibin=1; ibin<nbins+1; ++ibin) {
         m_spectrum->SetBinContent(ibin, spectrum.at(ibin-1));
       }
-      
+
     } else {
       int nbins = spectrum.size();
       if ((unsigned)nbins != spectrum.size())
@@ -125,13 +125,13 @@ namespace evgen{
         m_spectrum->SetBinContent(ibin, spectrum.at(ibin-1));
       }
     }
-    
+
     m_spectrum->Scale(1. / m_spectrum->Integral());
 
     art::ServiceHandle<art::TFileService> tfs;
     TH1D* sp = tfs->make<TH1D>(*m_spectrum);
     (void)sp;
-    
+
   }
 
   //____________________________________________________________________________
@@ -144,12 +144,12 @@ namespace evgen{
     truth.SetOrigin(simb::kSingleParticle);
     int track_id=-1;
     const std::string primary_str("primary");
-    
+
     int n_decay = GetNDecays();
-      
+
     for (int iDecay=0; iDecay<n_decay; ++iDecay) {
       TLorentzVector position;
-      
+
       if (GetGoodPositionTime(position)) {
         simb::MCParticle part(track_id, m_pdg, primary_str);
 
@@ -162,8 +162,8 @@ namespace evgen{
         track_id--;
       } // GetGoodPosition
     } // idecay
-  
-    
+
+
     MF_LOG_DEBUG("SpectrumVolumeGen") << truth;
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));

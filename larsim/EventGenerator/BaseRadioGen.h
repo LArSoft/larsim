@@ -69,7 +69,7 @@ namespace evgen {
     void beginRun(art::Run& run);
     void beginJob();
     void endJob();
-    
+
     virtual void produce_radio(art::Event& evt) = 0;
     virtual void beginRun_radio(art::Run&) {};
     virtual void beginJob_radio() {}
@@ -89,7 +89,7 @@ namespace evgen {
     void GetXs(double& X0, double& X1) {X0=m_X0; X1=m_X1;}
     void GetYs(double& Y0, double& Y1) {Y0=m_Y0; Y1=m_Y1;}
     void GetZs(double& Z0, double& Z1) {Z0=m_Z0; Z1=m_Z1;}
-    
+
   private:
     void SimplePDG(int pdg, int& simple, std::string& name);
     void DeclareOutputHistos();
@@ -111,19 +111,19 @@ namespace evgen {
     double      m_X1;          ///< Top corner x position (cm) in world coordinates
     double      m_Y1;          ///< Top corner y position (cm) in world coordinates
     double      m_Z1;          ///< Top corner z position (cm) in world coordinates
-    
+
     art::ServiceHandle<geo::Geometry const> m_geo_service;
     CLHEP::HepRandomEngine& m_engine;
-  
+
     TGeoManager* m_geo_manager;
     double m_volume_cc;
-    
+
     std::unique_ptr<CLHEP::RandFlat   > m_random_flat;
     std::unique_ptr<CLHEP::RandPoisson> m_random_poisson;
 
     bool m_geo_volume_mode;
     bool m_rate_mode;
-    
+
     std::regex  m_regex_material;
     std::regex  m_regex_volume;
 
@@ -145,7 +145,7 @@ namespace evgen {
   BaseRadioGen::BaseRadioGen(fhicl::ParameterSet const& pset):
     EDProducer(pset),
     m_engine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "BaseRadioGen", pset, "SeedBaseRadioGen")) {
-    
+
     m_nevent=0;
 
     produces<std::vector<simb::MCTruth>>();
@@ -160,7 +160,7 @@ namespace evgen {
     m_rate_mode = pset.get_if_present<double>("rate", m_rate);
     if (not m_rate_mode)
       m_Bq = pset.get<double>("BqPercc");
-    
+
     bool timed_mode = pset.get_if_present<double>("T0", m_T0);
     if (timed_mode) {
       m_T1 = pset.get<double>("T1");
@@ -175,7 +175,7 @@ namespace evgen {
     m_geo_volume_mode = pset.get_if_present<std::string>("volume_rand", m_volume_rand);
 
     m_geo_manager = m_geo_service->ROOTGeoManager();
-    
+
     if (not m_geo_volume_mode) {
       m_X0 = pset.get<double>("X0");
       m_Y0 = pset.get<double>("Y0");
@@ -186,13 +186,13 @@ namespace evgen {
     } else {
       const TGeoNode* world = gGeoManager->GetNode(0);
       world->GetVolume()->SetAsTopVolume();
-      const TGeoNode* node_to_throw = nullptr; // 
+      const TGeoNode* node_to_throw = nullptr; //
       bool found = findNode(world, m_volume_rand, node_to_throw);
 
       if (not found) {
         throw cet::exception("BaseRadioGen") << "Didn't find the node " << m_volume_rand << " exiting because I cannot generate events in this volume.";
       }
-  
+
       std::vector<const TGeoNode*> mother_nodes;
       const TGeoNode* current_node=node_to_throw;
       std::string daughter_name = node_to_throw->GetName();
@@ -208,16 +208,16 @@ namespace evgen {
         mother_nodes.push_back(mother_node);
         current_node = mother_node;
       }
-      
-  
+
+
       TGeoVolume* vol   = node_to_throw->GetVolume();
       TGeoShape*  shape = vol->GetShape();
       TGeoBBox*   bbox  = (TGeoBBox*)shape;
-  
+
       double dx = bbox->GetDX();
       double dy = bbox->GetDY();
       double dz = bbox->GetDZ();
-  
+
       double halfs[3] = { dx, dy, dz };
       double posmin[3] = {  1.0e30,  1.0e30,  1.0e30 };
       double posmax[3] = { -1.0e30, -1.0e30, -1.0e30 };
@@ -245,7 +245,7 @@ namespace evgen {
           }
         }
       }
-      
+
       m_X0 = posmin[0];
       m_Y0 = posmin[1];
       m_Z0 = posmin[2];
@@ -253,14 +253,14 @@ namespace evgen {
       m_Y1 = posmax[1];
       m_Z1 = posmax[2];
     }
-  
-    
+
+
     m_random_flat    = std::make_unique<CLHEP::RandFlat   >(m_engine);
     m_random_poisson = std::make_unique<CLHEP::RandPoisson>(m_engine);
 
 
     m_volume_cc = (m_X1-m_X0) * (m_Y1-m_Y0) * (m_Z1-m_Z0);
-    
+
     if (m_material != ".*" || m_volume_gen != ".*") {
       std::cout << "Calculating the proportion of " << m_material << " and the volume " << m_volume_gen << " in the specified volume " << m_volume_rand << ".\n";
       int nfound=0;
@@ -287,43 +287,43 @@ namespace evgen {
         if (!flag) continue;
         nfound++;
       }
-      
+
       if (nfound==0) {
         throw cet::exception("BaseRadioGen") << "Didn't find the material " << m_material << " or the volume " << m_volume_gen << " in the specified volume " << m_volume_rand << ".\n";
       }
-      
+
       double proportion = (double)nfound / ntries;
       std::cout << "There is " << proportion*100. << "% of " << m_material << " in the specified volume.\n";
       m_volume_cc *= proportion;
     }
 
   }
-  
+
   void BaseRadioGen::produce(art::Event& evt) {
     m_nevent++;
     produce_radio(evt);
   }
-  
+
   void BaseRadioGen::beginRun(art::Run& run) {
     art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(m_geo_service->DetectorName()));
     beginRun_radio(run);
   }
-  
+
   void BaseRadioGen::beginJob() {
     if (m_isotope.empty()) {
       throw cet::exception("BaseRadioGen") << "m_isotope is empty, you need to fill it yourself in the constructor of your module\n";
     }
-    
-    DeclareOutputHistos();    
+
+    DeclareOutputHistos();
     beginJob_radio();
     m_nevent=0;
   }
-  
+
   void BaseRadioGen::endJob() {
     if (m_nevent) {
       m_pdg_TH1D->Scale(1./m_nevent);
-    
+
       for (auto histo : m_pos_xy_TH2D) {
         m_pos_xy_TH2D[histo.first]->Scale(1./m_nevent);
         m_pos_xz_TH2D[histo.first]->Scale(1./m_nevent);
@@ -336,7 +336,7 @@ namespace evgen {
       }
     }
     endJob_radio();
-  }    
+  }
 
   bool BaseRadioGen::GetGoodPositionTime(TLorentzVector& position) {
 
@@ -349,7 +349,7 @@ namespace evgen {
                        m_Y0 + m_random_flat->fire()*(m_Y1 - m_Y0),
                        m_Z0 + m_random_flat->fire()*(m_Z1 - m_Z0),
                        time);
-      
+
       const TGeoNode* node = m_geo_manager->FindNode(position.X(),position.Y(),position.Z());
       std::string material_name = node->GetMedium()->GetMaterial()->GetName();
       std::string volume_name = node->GetVolume()->GetName();
@@ -372,7 +372,7 @@ namespace evgen {
     }
 
   }
-  
+
   bool BaseRadioGen::findNode(const TGeoNode* curnode, std::string& tgtnname,
                            const TGeoNode* & targetnode)
   /// Shamelessly stolen from here: https://cdcvs.fnal.gov/redmine/attachments/6719/calc_bbox.C
@@ -396,15 +396,15 @@ namespace evgen {
     return false;
   }
 
-  
+
   bool BaseRadioGen::findMotherNode(const TGeoNode* cur_node, std::string& daughter_name,
                                     const TGeoNode* & mother_node)
   /// Adapted from above
   {
     TObjArray* daunodes = cur_node->GetNodes();
-  
+
     if ( ! daunodes ) return false;
-  
+
     TIter next(daunodes);
 
     const TGeoNode* anode = 0;
@@ -418,7 +418,7 @@ namespace evgen {
         return true;
       }
       found = findMotherNode(anode, daughter_name, mother_node);
-    
+
     }
 
     return found;
@@ -428,14 +428,14 @@ namespace evgen {
     art::ServiceHandle<art::TFileService> tfs;
     auto pdgs = {1000020040,11,-11,22,2112,2212,9999};
     m_pdg_TH1D = tfs->make<TH1D>("PDG", ";PDG;n particles/event", pdgs.size(), 0, pdgs.size());
-    
+
     for (auto pdg : pdgs) {
-      
+
       std::string part="";
       int simple_pdg;
       SimplePDG(pdg, simple_pdg, part);
       art::TFileDirectory dir = tfs->mkdir(part.c_str());
-      
+
       m_pos_xy_TH2D[simple_pdg] = dir.make<TH2D>("posXY"   , ";X [cm];Y [cm]"             , 100, m_X0, m_X1, 100, m_Y0, m_Y1);
       m_pos_xz_TH2D[simple_pdg] = dir.make<TH2D>("posXZ"   , ";X [cm];Z [cm]"             , 100, m_X0, m_X1, 100, m_Z0, m_Z1);
       m_dir_x_TH1D [simple_pdg] = dir.make<TH1D>("dirX"    , ";X momentum projection"     , 100,   -1,   1);
@@ -444,7 +444,7 @@ namespace evgen {
       m_mom_TH1D   [simple_pdg] = dir.make<TH1D>("Momentum", ";Momentum [MeV];n particles/event", 5000,   0, 500);
       m_ke_TH1D    [simple_pdg] = dir.make<TH1D>("KE"      , ";KE [MeV];n particles/event"      , 5000,   0, 500);
       m_time_TH1D  [simple_pdg] = dir.make<TH1D>("Time"    , ";Time[ns];n particles/event"      , 100, m_T0, m_T1);
-      
+
       m_pdg_TH1D->GetXaxis()->SetBinLabel(simple_pdg+1, part.c_str());
     }
   }
@@ -481,7 +481,7 @@ namespace evgen {
       return;
     }
   }
-    
+
 
   void BaseRadioGen::FillHistos(simb::MCParticle& part) {
     int pdg = part.PdgCode();
@@ -503,7 +503,7 @@ namespace evgen {
     m_time_TH1D  [simple_pdg]->Fill(position.T());
     m_pdg_TH1D->Fill(simple_pdg);
   }
-  
+
   TLorentzVector BaseRadioGen::dirCalc(double p, double m) {
     // isotropic production angle for the decay product
     double costheta = (2.0*m_random_flat->fire() - 1.0);
