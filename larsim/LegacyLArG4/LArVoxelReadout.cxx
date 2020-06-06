@@ -35,7 +35,8 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "larevt/SpaceCharge/SpaceCharge.h"
 #include "larsim/LegacyLArG4/IonizationAndScintillation.h"
-
+#include "larevt/ChargeYieldServices/ChargeYieldService.h"
+#include "larevt/ChargeYield/ChargeYield.h"
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
 
@@ -479,6 +480,16 @@ namespace larg4 {
         ZDiff.assign(nClus, avegageZtransversePos);
       }
 
+      auto const* CYE = lar::providerFrom<chargeyield::ChargeYieldService>();
+     
+      if (CYE->EnableChargeYield() == true)
+	{         
+	  for(int k = 0; k < nClus; ++k){                               
+	    //calculate the number of electrons after charge multiplication at first plane
+	    nElDiff[k]= CYE->GetNElectrons(cryostat,tpc, { (tpcg.PlaneLocation(0)[0] - tpcg.PlanePitch(0)), YDiff[k], ZDiff[k] }, TDrift, nElDiff[k]);
+	  }
+	}
+           
       // make a collection of electrons for each plane
       for(size_t p = 0; p < tpcg.Nplanes(); ++p){
 
@@ -527,8 +538,15 @@ namespace larg4 {
             // Add potential decay/capture/etc delay effect, simTime.
             unsigned int tdc = fClock.Ticks(ts->G4ToElecTime(TDiff + simTime));
 
+	    double nel=nElDiff[k]; //if using ChargeYield module --> calculate electron signals per plane 
+	    if (CYE->EnableChargeYield() == true)
+	      {//calculate how many electrons on each plane
+		nel= CYE->GetNElectronsPlane(cryostat,tpc, p, nElDiff[k]);
+		nElDiff[k] =  CYE->GetRemainingElectrons(nElDiff[k], nel);//planes can be collection or induction
+		if(nel<=0) continue;
+ 	      }
             // Add electrons produced by each cluster to the map
-            DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
+            DepositsToStore[channel][tdc].add(nEnDiff[k], nel);
           }
           catch(cet::exception &e){
             MF_LOG_DEBUG("LArVoxelReadout") << "unable to drift electrons from point ("
@@ -537,7 +555,7 @@ namespace larg4 {
           }
         } // end loop over clusters
       } // end loop over planes
-
+ 
       // Now store them in SimChannels
       ChannelMap_t& ChannelDataMap = fChannelMaps[cryostat][tpc];
 
