@@ -25,6 +25,8 @@ namespace evwgh {
        std::vector<std::string>  fInputLabels;
        std::string fPPFXMode;
        std::string fMode;
+       std::string fHorn;
+       std::string fTarget; 
        int fVerbose;
        NeutrinoFluxReweight::MakeReweight* fPPFXrw;
 
@@ -48,6 +50,8 @@ namespace evwgh {
     fPPFXMode    = pset.get<std::string>("ppfx_mode");
     fVerbose     = pset.get<int>("verbose");
     fMode        = pset.get<std::string>("mode");  
+    fHorn        = pset.get<std::string>("horn_curr");
+    fTarget      = pset.get<std::string>("target_config");
 
     gSystem->Setenv("MODE", fPPFXMode.c_str());
 
@@ -56,6 +60,8 @@ namespace evwgh {
     std::string inputOptions  =std::string(getenv("PPFX_DIR"))+"/xml/inputs_"+fPPFXMode+".xml";
     std::cout << "is PPFX setup : " << fPPFXrw->AlreadyInitialized() << std::endl;  
     std::cout << "Setting PPFX, inputs: " << inputOptions << std::endl;
+    std::cout << "Setting Horn Current Configuration to: " << fHorn << std::endl;
+    std::cout << "Setting Target Configuration to: " << fTarget << std::endl;
     if(!(fPPFXrw->AlreadyInitialized())){
       fPPFXrw->SetOptions(inputOptions);	
     }
@@ -101,8 +107,8 @@ namespace evwgh {
       //RWH// herein begins the replacment for the "construct_toy_dkmeta"
 
       static bsim::DkMeta dkmeta_obj;        //RWH// create this on stack (destroyed when out-of-scope)  ... or static
-      dkmeta_obj.tgtcfg  = "me000z";  //RWH// this should come from FCL parameter
-      dkmeta_obj.horncfg = "200i";    //RWH// as should this
+      dkmeta_obj.tgtcfg  = fTarget;
+      dkmeta_obj.horncfg = fHorn; 
       (dkmeta_obj.vintnames).push_back("Index_Tar_In_Ancestry");
       (dkmeta_obj.vintnames).push_back("Playlist");
       bsim::DkMeta* tmp_dkmeta = &dkmeta_obj;
