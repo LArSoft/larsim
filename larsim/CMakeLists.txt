@@ -10,7 +10,6 @@ add_subdirectory(LegacyLArG4)
 add_subdirectory(EventGenerator)
 add_subdirectory(DetSim)
 add_subdirectory(MCDumpers)
-## does not build with geant4 v4_10_6_p01
-##add_subdirectory(GDMLUtils)
+add_subdirectory(GDMLUtils)
 add_subdirectory(EventWeight)
 add_subdirectory(MergeSimSources)
