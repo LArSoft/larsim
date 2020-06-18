@@ -3,8 +3,8 @@
 
 #include "FluxInterface.h"
 
-#include "FluxDrivers/GNuMIFlux.h"
-#include "FluxDrivers/GSimpleNtpFlux.h"
+#include "Tools/Flux/GNuMIFlux.h"
+#include "Tools/Flux/GSimpleNtpFlux.h"
 
 class TTree;
 class TFile;

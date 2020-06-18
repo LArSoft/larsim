@@ -29,7 +29,7 @@
 #include "GSimpleInterface.h"
 #include "DK2NuInterface.h"
 
-#include "GENIE/EVGCore/EventRecord.h"
+#include "GENIE/Framework/EventGen/EventRecord.h"
 #include "nutools/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
 #include "nutools/EventGeneratorBase/evgenbase.h"
 
