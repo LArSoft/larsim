@@ -1,7 +1,7 @@
 BEGIN_PROLOG
 microboone_fluxreader:
 {
-	module_type:	"FluxReaderSource"
+	module_type:	"PPFXFluxReaderSource"
 	maxEvents: 0
 	skipEvents: 0
 }
