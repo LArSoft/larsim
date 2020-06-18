@@ -2,7 +2,7 @@
 #include "eventweight_microboone_MCC8.fcl"
 #include "seedservice_microboone.fcl"
 
-process_name: FluxReader
+process_name: PPFXFluxReader
 
 services: {
   TFileService: { fileName: "flux_hist.root" }
@@ -14,7 +14,7 @@ services: {
 
 source: {
   fileNames: []
-  module_type: FluxReader
+  module_type: PPFXFluxReader
   skipEvents: 0
   maxEvents: -1
   inputType: "dk2nu"

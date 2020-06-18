@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////
-/// \file  FluxReader.cxx
+/// \file  PPFXFluxReader.cxx
 /// \brief Source to read beam flux files
 /// \author  zarko@fnal.gov
 ////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@
 #include "dk2nu/tree/dk2nu.h"
 #include "dk2nu/tree/NuChoice.h"
 
-#include "FluxReader.h"
+#include "PPFXFluxReader.h"
 #include "GSimpleInterface.h"
 #include "DK2NuInterface.h"
 
@@ -38,7 +38,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 namespace fluxr {
 
-  FluxReader::FluxReader(fhicl::ParameterSet const & ps, 
+  PPFXFluxReader::PPFXFluxReader(fhicl::ParameterSet const & ps, 
 			 art::ProductRegistryHelper &helper,
 			 art::SourceHelper const &pm)
     :
@@ -109,7 +109,7 @@ namespace fluxr {
     fMaxEvents=ps.get<int>("maxEvents", -1);
   }
   
-  void FluxReader::closeCurrentFile()  
+  void PPFXFluxReader::closeCurrentFile()  
   {    
     //mf::LogInfo(__FUNCTION__)<<"File boundary (processed "<<fEventCounter<<" events)"<<std::endl;
     fSubRunID.flushSubRun();
@@ -120,11 +120,11 @@ namespace fluxr {
     fEntry=0;
   }
   
-  void FluxReader::readFile(std::string const &name,
+  void PPFXFluxReader::readFile(std::string const &name,
 			    art::FileBlock* &fb)
   {
     // Fill and return a new Fileblock.
-    fb = new art::FileBlock(art::FileFormatVersion(1, "FluxReader"), name);
+    fb = new art::FileBlock(art::FileFormatVersion(1, "PPFXFluxReader"), name);
     
     fFluxInputFile=new TFile(name.c_str());
     if (fFluxInputFile->IsZombie()) {
@@ -155,7 +155,7 @@ namespace fluxr {
   }
   
   
-  bool FluxReader::readNext(art::RunPrincipal* const &/*inR*/,
+  bool PPFXFluxReader::readNext(art::RunPrincipal* const &/*inR*/,
 			    art::SubRunPrincipal* const &/*inSR*/,
 			    art::RunPrincipal* &outR,
 			    art::SubRunPrincipal* &outSR,
