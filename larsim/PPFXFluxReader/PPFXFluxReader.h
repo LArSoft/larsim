@@ -17,10 +17,10 @@ class TTree;
 class TFile;
 
 namespace fluxr {
-  class FluxReader {
+  class PPFXFluxReader {
   public:
     // Required constructor
-    FluxReader(fhicl::ParameterSet const &pset,
+    PPFXFluxReader(fhicl::ParameterSet const &pset,
 	       art::ProductRegistryHelper &helper,
 	       art::SourceHelper const &pm);
     
@@ -58,7 +58,7 @@ namespace fluxr {
     art::TypeLabel                fTLmcflux;
     art::TypeLabel                fTLdk2nu;
     art::TypeLabel                fTLnuchoice;
-  };  // FluxReader
+  };  // PPFXFluxReader
 }
 
 

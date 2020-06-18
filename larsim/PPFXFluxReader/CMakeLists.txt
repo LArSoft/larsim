@@ -5,8 +5,8 @@ include_directories ( $ENV{DK2NUDATA_INC} )
 link_directories ( $ENV{DK2NUDATA_LIB} )
 
 file(GLOB INTERFACEFILES *Interface* )
-simple_plugin( FluxReader "source"
-	       FluxReader
+simple_plugin( PPFXFluxReader "source"
+	       PPFXFluxReader
                # ${ART_FRAMEWORK_PERSISTENCY_COMMON}
                BASENAME_ONLY
              )
@@ -36,9 +36,9 @@ art_make_library(LIBRARY_NAME FluxInterface
                       ${Boost_SYSTEM_LIBRARY}
 	        ) 
 
-art_make( EXCLUDE FluxReader_source.cc ${INTERFACEFILES}
+art_make( EXCLUDE PPFXFluxReader_source.cc ${INTERFACEFILES}
 	  BASENAME_ONLY
-          LIBRARY_NAME  FluxReader
+          LIBRARY_NAME  PPFXFluxReader
           LIB_LIBRARIES	nusimdata_SimulationBase
 	  		FluxInterface
 			larcoreobj_SummaryData
