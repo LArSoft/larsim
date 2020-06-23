@@ -20,20 +20,6 @@ namespace larg4{
     : fNest(0)
     , fEngine(engine)
   {
-    return;
-  }
-
-  //----------------------------------------------------------------------------
-  ISCalculationNEST::~ISCalculationNEST()
-  {
-    if(fNest) delete fNest;
-
-    return;
-  }
-
-  //----------------------------------------------------------------------------
-  void ISCalculationNEST::Initialize()
-  {
     // \todo should ideally make the yield factor passed to the NestAlg ctor a parameter
     if(!fNest) fNest = new NestAlg(1., fEngine);
 
@@ -42,9 +28,32 @@ namespace larg4{
     // in LArSoft uses a fudge factor to compensate, but NEST is "purer" -- no
     // fudge factor. "
     fStepSize = 0.05 * CLHEP::micrometer;
+    
+    return;
+  }
+  
+  //----------------------------------------------------------------------------
+  ISCalculationNEST::~ISCalculationNEST()
+  {
+    if(fNest) delete fNest;
 
     return;
   }
+
+//  //----------------------------------------------------------------------------
+//  void ISCalculationNEST::Initialize()
+//  {
+//    // \todo should ideally make the yield factor passed to the NestAlg ctor a parameter
+//    if(!fNest) fNest = new NestAlg(1., fEngine);
+//
+//    // Set the step size to small value if NEST is chosen, per Matthew Szydagis,
+//    // "because without delta rays, the yields are wrong.  The ICARUS model that is
+//    // in LArSoft uses a fudge factor to compensate, but NEST is "purer" -- no
+//    // fudge factor. "
+//    fStepSize = 0.05 * CLHEP::micrometer;
+//
+//    return;
+//  }
 
   //----------------------------------------------------------------------------
   void ISCalculationNEST::Reset()

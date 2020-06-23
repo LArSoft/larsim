@@ -18,16 +18,6 @@ namespace larg4
     //----------------------------------------------------------------------------
     ISCalcSeparate::ISCalcSeparate()
     {
-    }
-
-    //----------------------------------------------------------------------------
-    ISCalcSeparate::~ISCalcSeparate()
-    {
-    }
-
-    //----------------------------------------------------------------------------
-    void ISCalcSeparate::Initialize()
-    {
         std::cout << "ISCalcSeparate Initialize." << std::endl;
         art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
 
@@ -45,8 +35,6 @@ namespace larg4
         fModBoxB          = LArG4PropHandle->ModBoxB()/fDetProp->Density(fDetProp->Temperature());
         fUseModBoxRecomb  = (bool)LArG4PropHandle->UseModBoxRecomb();
         fGeVToElectrons   = LArG4PropHandle->GeVToElectrons();
-
-        return;
     }
 
     //----------------------------------------------------------------------------

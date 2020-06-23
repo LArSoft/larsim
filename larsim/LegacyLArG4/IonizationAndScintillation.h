@@ -43,8 +43,8 @@ namespace larg4 {
     IonizationAndScintillation(CLHEP::HepRandomEngine& engine);
     ~IonizationAndScintillation();
 
-    larg4::ISCalculation* fISCalc;             ///< object to calculate ionization and scintillation
-                                               ///< produced by an energy deposition
+    larg4::ISCalculation* fISCalc;              ///< object to calculate ionization and scintillation
+                                                ///< produced by an energy deposition
     std::string           fISCalculator;       ///< name of calculator to use, NEST or Separate
     G4Step const*         fStep;               ///< pointer to the current G4 step
     int                   fStepNumber;         ///< last StepNumber checked
@@ -59,7 +59,7 @@ namespace larg4 {
     TH1F*                 fElectronsPerEDep;   ///< histogram of electrons per MeV deposited
     TH1F*                 fPhotonsPerEDep;     ///< histogram of photons per MeV deposited
     TH2F*                 fElectronsVsPhotons; ///< histogram of electrons vs photons per step
-    CLHEP::HepRandomEngine& fEngine;           ///< random engine
+    CLHEP::HepRandomEngine& fEngine;           ///< random engine (needed for NEST)
   };
 
 } // namespace larg4

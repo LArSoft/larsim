@@ -18,7 +18,6 @@ namespace larg4{
    ISCalculation();
    virtual ~ISCalculation();
 
-   virtual void                 Initialize()                                            = 0;
    virtual void                 Reset()                            		        = 0;
    virtual void                 CalculateIonizationAndScintillation(const G4Step* step) = 0;
    virtual double               StepSizeLimit()              const 		        = 0;

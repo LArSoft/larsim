@@ -20,25 +20,23 @@ namespace larg4
     public:
         ISCalc();
         virtual ~ISCalc();
-        virtual void       Initialize()                                                         = 0;
-        virtual void       Reset()                                                              = 0;
-        virtual void       CalcIonAndScint(sim::SimEnergyDeposit const& edep)                   = 0;
-        virtual double     EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)       = 0; //value of field with any corrections for this step
+        virtual void      Reset()                                                             = 0;
+        virtual void      CalcIonAndScint(sim::SimEnergyDeposit const& edep)                  = 0;
+        virtual double    EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)      = 0;
         
-        double             EnergyDeposit() const                       {return fEnergyDeposit;}
-        double             NumOfElectrons() const                      {return fNumIonElectrons;}
-        double             NumOfPhotons() const                        {return fNumScintPhotons;}
-//        double             NumOfFastPhotons() const                    {return fNumFastScintPhotons;}
-//        double             NumOfSlowPhotons() const                    {return fNumSlowScintPhotons;}
-        double             ScintillationYieldRatio() const             {return fScintillationYieldRatio;}
+        double    EnergyDeposit() const                       {return fEnergyDeposit;}
+        double    NumOfElectrons() const                      {return fNumIonElectrons;}
+        double    NumOfPhotons() const                        {return fNumScintPhotons;}
+        double    ScintillationYieldRatio() const             {return fScintillationYieldRatio;}
         
     protected:
-        double  fEnergyDeposit;             // total energy deposited in the step
-        double  fNumIonElectrons;           // number of ionization electrons for this step
-        double  fNumScintPhotons;           // number of scintillation photons for this step
+        double    fEnergyDeposit;             // total energy deposited in the step
+        double    fNumIonElectrons;           // number of ionization electrons for this step
+        double    fNumScintPhotons;           // number of scintillation photons for this step
 //        double  fNumFastScintPhotons;       // number of fast scintillation photons for this step
 //        double  fNumSlowScintPhotons;       // number of slow scintillation photons for this step
-        double  fScintillationYieldRatio;   // liquid argon scintillation yield ratio
+        double    fScintillationYieldRatio;   // liquid argon scintillation yield ratio
     };
+   
 }
 #endif // LARG4_ISCALC_H

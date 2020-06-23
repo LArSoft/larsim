@@ -23,9 +23,7 @@ namespace larg4 {
  public:
 
    ISCalculationSeparate(CLHEP::HepRandomEngine&);
-   virtual ~ISCalculationSeparate();
-
-   void   Initialize();
+   
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
    double StepSizeLimit()              const { return fStepSize;            }

@@ -1,17 +1,18 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       ISCalcSeparate
+// Class:       ISCalcCorrelated
 // Plugin Type: algorithm
-// File:        ISCalcSeparate.h and ISCalcSeparate.cxx
-// Description:
-// Interface to algorithm class for a specific calculation of ionization electrons and scintillation photons
-// assuming there is no correlation between the two
+// File:        ISCalcCorrelated.h and ISCalcCorrelated.cxx
+// Description: Interface to algorithm class for a specific calculation of
+//              ionization electrons and scintillation photons, based on 
+//              simple microphysics arguments to establish an anticorrelation
+//              between these two quantities.
 // Input: 'sim::SimEnergyDeposit'
 // Output: num of Photons and Electrons
-// Sept.16 by Mu Wei
+// May 2020 by W Foreman
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef IS_ISCALCSEPARATE_H
-#define IS_ISCALCSEPARATE_H
+#ifndef IS_ISCALCCORRELATED_H
+#define IS_ISCALCCORRELATED_H
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 
@@ -29,10 +30,10 @@
 
 namespace larg4 
 {
-    class ISCalcSeparate : public ISCalc
+    class ISCalcCorrelated : public ISCalc
     {
     public:
-        ISCalcSeparate();
+        ISCalcCorrelated();
         void   Reset();
         
         double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step
@@ -40,6 +41,8 @@ namespace larg4
         
     private:
         double  fGeVToElectrons;      ///< from LArG4Parameters service
+        double  fWion;                ///< W_ion (23.6 eV) == 1/fGeVToElectrons
+        double  fWph;                 ///< W_ph (19.5 eV) 
         double  fScintYieldFactor;    ///< scintillation yield factor
         double  fRecombA;             ///< from LArG4Parameters service
         double  fRecombk;             ///< from LArG4Parameters service
@@ -56,4 +59,4 @@ namespace larg4
         double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
     };
 }
-#endif // LARG4_ISCALCULATIONSEPARATE_H
+#endif
