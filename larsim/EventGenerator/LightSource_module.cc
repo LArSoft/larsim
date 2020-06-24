@@ -49,7 +49,7 @@
  *     int32   PDist                 and time ranges specified.  For all of these :
  *     int32   TDist                   0 = uniform and 1 = gaussian
  *     bool    FillTree            - whether to write a tree of photon production points to fileservice
- *     bool    UseCustomRegion     - supply our own volme specification or use the full detector volume?
+ *     bool    UseCustomRegion     - supply our own volume specification or use the full detector volume?
  *     vdouble[3]  RegionMin       - bounding corners of the custom volume specification
  *     vdouble[3]  RegionMax           (only used if UseCustomRegion=true)
  *
@@ -70,6 +70,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/Exception.h"
+#include "cetlib/pow.h" // cet::square()
 #include "cetlib_except/exception.h"
 
 // art extensions
@@ -80,12 +81,12 @@
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 // lar includes
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larcoreobj/SummaryData/RunData.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
-#include "TVector3.h"
 #include "TLorentzVector.h"
 #include "TTree.h"
 
@@ -104,7 +105,7 @@ namespace evgen {
 
   private:
 
-    void Sample(simb::MCTruth &truth);
+    simb::MCTruth Sample();
 
     // for c2: fSeed is unused
     //int               fSeed;              //random number seed
@@ -146,18 +147,15 @@ namespace evgen {
 
 
     //  TPC Measurements
-    TVector3 fTPCCenter;
-    TVector3 fTPCDimensions;
+    geo::Vector_t fTPCCenter;
     std::vector<double> fRegionMin;
     std::vector<double> fRegionMax;
     bool fUseCustomRegion;
 
 
     // Parameters used to shoot in distributions
-    double              fX;              // central x position of source
-    double              fY;              // central y position of source
-    double              fZ;              // central z position of source
-    bool                fPointSource;    // Point-like light source in fX, fY, fZ
+    geo::Point_t        fCenter;         ///< Central position of source [cm]
+    bool                fPointSource;    // Point-like light source in fCenter
     double              fT;              // central t position of source
     double              fSigmaX;         // x width
     double              fSigmaY;         // y width
@@ -224,7 +222,6 @@ namespace evgen{
             fZSteps = pset.get<int >("ZSteps");
           }
 
-        art::ServiceHandle<geo::Geometry const> geo;
         // get TPC dimensions removed. -TA
 
 
@@ -320,18 +317,20 @@ namespace evgen{
         }
         else{
           // read in one line
-          fInputFile >> fX >> fY >> fZ >> fT
+          double x, y, z;
+          fInputFile >> x >> y >> z >> fT
                      >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT
                      >> fP >> fSigmaP >> fN;
           fInputFile.getline(fDummyString,256);
-          fThePhotonVoxelDef = sim::PhotonVoxelDef(fX - fSigmaX,
-                                                   fX + fSigmaX,
+          fCenter = { x, y, z };
+          fThePhotonVoxelDef = sim::PhotonVoxelDef(fCenter.X() - fSigmaX,
+                                                   fCenter.X() + fSigmaX,
                                                    1,
-                                                   fY - fSigmaY,
-                                                   fY + fSigmaY,
+                                                   fCenter.Y() - fSigmaY,
+                                                   fCenter.Y() + fSigmaY,
                                                    1,
-                                                   fZ - fSigmaZ,
-                                                   fZ + fSigmaZ,
+                                                   fCenter.Z() - fSigmaZ,
+                                                   fCenter.Z() + fSigmaZ,
                                                    1);
 
           fCurrentVoxel=0;
@@ -340,23 +339,17 @@ namespace evgen{
     else if(fSourceMode==kSCAN) {
     //  Step through detector using a number of steps provided in the config file
     //  firing a constant number of photons from each point
-        auto const VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
-        fX = VoxelCenter.X();
-        fY = VoxelCenter.Y();
-        fZ = VoxelCenter.Z();
+        fCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
       }
     else{
       //  Neither file or scan mode, probably a config file error
       throw cet::exception("LightSource") <<"EVGEN : Light Source, unrecognised source mode\n";
     }
 
-    std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
+    auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
 
-    simb::MCTruth truth;
-    truth.SetOrigin(simb::kSingleParticle);
-    Sample(truth);
-
-    truthcol->push_back(truth);
+    truthcol->push_back(Sample());
+    
     evt.put(std::move(truthcol));
 
     phot::PhotonVisibilityService* vis = nullptr;
@@ -387,41 +380,43 @@ namespace evgen{
   }
 
 
-  void LightSource::Sample(simb::MCTruth& mct)
+  simb::MCTruth LightSource::Sample()
   {
-    mf::LogVerbatim("LightSource") <<"Light source debug : Shooting at " << fX <<" " << fY<<" "<< fZ;
+    mf::LogVerbatim("LightSource") <<"Light source debug : Shooting at " << fCenter;
 
-    CLHEP::RandFlat   flat(fEngine);
+    CLHEP::RandFlat   flat(fEngine, -1.0, 1.0);
     CLHEP::RandGaussQ gauss(fEngine);
 
+    simb::MCTruth mct;
+    mct.SetOrigin(simb::kSingleParticle);
     for(int j=0; j!=fN; ++j){
       // Choose momentum (supplied in eV, convert to GeV)
-      double p = fP;
-      if (fPDist == kGAUS) {
-        p = gauss.fire(fP, fSigmaP);
-      }
-      else {
-        p = fP + fSigmaP*(2.0*flat.fire()-1.0);
-      }
-      p /= 1000000000.;
-
+      double const p = 1e-9 * (
+        (fPDist == kGAUS)
+          ? gauss.fire(fP, fSigmaP)
+          : fP + fSigmaP * flat.fire()
+        );
+      
       // Choose position
-      TVector3 x;
+      geo::Point_t x;
+      
       if(fPointSource) {
-        x[0] = fX;
-        x[1] = fY;
-        x[2] = fZ;
+        x = fCenter;
       }
       else {
         if (fPosDist == kGAUS) {
-          x[0] = gauss.fire(fX, fSigmaX);
-          x[1] = gauss.fire(fY, fSigmaY);
-          x[2] = gauss.fire(fZ, fSigmaZ);
+          x = {
+            gauss.fire(fCenter.X(), fSigmaX),
+            gauss.fire(fCenter.Y(), fSigmaY),
+            gauss.fire(fCenter.Z(), fSigmaZ)
+          };
         }
         else {
-          x[0] = fX + fSigmaX*(2.0*flat.fire()-1.0);
-          x[1] = fY + fSigmaY*(2.0*flat.fire()-1.0);
-          x[2] = fZ + fSigmaZ*(2.0*flat.fire()-1.0);
+          x = {
+            fCenter.X() + fSigmaX * flat.fire(),
+            fCenter.Y() + fSigmaY * flat.fire(),
+            fCenter.Z() + fSigmaZ * flat.fire()
+          };
         }
 
       }
@@ -432,19 +427,19 @@ namespace evgen{
         t = gauss.fire(fT, fSigmaT);
       }
       else {
-        t = fT + fSigmaT * (2.0 * flat.fire()-1.0);
+        t = fT + fSigmaT * flat.fire();
       }
 
 
       //assume the position is relative to the center of the TPC
       //x += fTPCCenter;
 
-      fShotPos = TLorentzVector(x[0], x[1], x[2], t);
+      fShotPos = TLorentzVector(fCenter.X(), fCenter.Y(), fCenter.Z(), t);
 
 
       // Choose angles
-      double costh = 2 * flat.fire() - 1;
-      double sinth = pow(1-pow(costh,2),0.5);
+      double costh = flat.fire();
+      double sinth = std::sqrt(1.0 - cet::square(costh));
       double phi   = 2 * M_PI * flat.fire();
 
       // Generate momentum 4-vector
@@ -454,7 +449,7 @@ namespace evgen{
                                  p*costh,
                                  p                  );
 
-      int trackid = -1*(j+1); // set track id to -i as these are all primary particles and have id <= 0
+      int trackid = -(mct.NParticles()+1); // set track id to -i as these are all primary particles and have id <= 0
       std::string primary("primary");
       int PDG=0; //optical photons have PDG 0
 
@@ -466,9 +461,10 @@ namespace evgen{
 
       mct.Add(part);
     }
+    
+    return mct;
+  } // LightSource::Sample()
 
-  }
-
-}
+} // namespace evgen
 
 DEFINE_ART_MODULE(evgen::LightSource)
