@@ -195,80 +195,80 @@ namespace evgen{
 
     if(fSourceMode==kFILE)
       {
-	fFileName  = pset.get<std::string>("SteeringFile");
-	fInputFile.open(fFileName.c_str());
-	fInputFile.getline(fDummyString,256);
+        fFileName  = pset.get<std::string>("SteeringFile");
+        fInputFile.open(fFileName.c_str());
+        fInputFile.getline(fDummyString,256);
 
       }
     else if (fSourceMode==kSCAN)
       {
-	fT      = pset.get<double>("T0");
-	fSigmaT = pset.get<double>("SigmaT");
-	fN      = pset.get<int   >("N");
+        fT      = pset.get<double>("T0");
+        fSigmaT = pset.get<double>("SigmaT");
+        fN      = pset.get<int   >("N");
 
-	fFirstVoxel     = pset.get<int   >("FirstVoxel");
-	fLastVoxel      = pset.get<int   >("LastVoxel");
+        fFirstVoxel     = pset.get<int   >("FirstVoxel");
+        fLastVoxel      = pset.get<int   >("LastVoxel");
 
-	fP      = pset.get<double>("P");
-	fSigmaP = pset.get<double>("SigmaP");
+        fP      = pset.get<double>("P");
+        fSigmaP = pset.get<double>("SigmaP");
 
-	fUseCustomRegion = pset.get<bool>("UseCustomRegion");
-	fPointSource = pset.get<bool>("PointSource",false);
+        fUseCustomRegion = pset.get<bool>("UseCustomRegion");
+        fPointSource = pset.get<bool>("PointSource",false);
 
-	if(fUseCustomRegion)
-	  {
-	    fRegionMin = pset.get< std::vector<double> >("RegionMin");
-	    fRegionMax = pset.get< std::vector<double> >("RegionMax");
-	    fXSteps = pset.get<int >("XSteps");
-	    fYSteps = pset.get<int >("YSteps");
-	    fZSteps = pset.get<int >("ZSteps");
-	  }
+        if(fUseCustomRegion)
+          {
+            fRegionMin = pset.get< std::vector<double> >("RegionMin");
+            fRegionMax = pset.get< std::vector<double> >("RegionMax");
+            fXSteps = pset.get<int >("XSteps");
+            fYSteps = pset.get<int >("YSteps");
+            fZSteps = pset.get<int >("ZSteps");
+          }
 
         art::ServiceHandle<geo::Geometry const> geo;
-	// get TPC dimensions removed. -TA
+        // get TPC dimensions removed. -TA
 
 
-	fCurrentVoxel=0;
+        fCurrentVoxel=0;
 
-	// define voxelization based on parameters read from config.
-	// There are two modes - either read the dimensions of the TPC from
-	// the geometry, or use values specified by the user.
-	if(!fUseCustomRegion)
-	  {
+        // define voxelization based on parameters read from config.
+        // There are two modes - either read the dimensions of the TPC from
+        // the geometry, or use values specified by the user.
+        if(!fUseCustomRegion)
+          {
             art::ServiceHandle<phot::PhotonVisibilityService const> vis;
-	    fThePhotonVoxelDef = vis->GetVoxelDef();
-	  }
-	else
-	  {
-	    fThePhotonVoxelDef = sim::PhotonVoxelDef(fRegionMin[0],
-						     fRegionMax[0],
-						     fXSteps,
-						     fRegionMin[1],
-						     fRegionMax[1],
-						     fYSteps,
-						     fRegionMin[2],
-						     fRegionMax[2],
-						     fZSteps);
-	  }
+            fThePhotonVoxelDef = vis->GetVoxelDef();
+          }
+        else
+          {
+            fThePhotonVoxelDef = sim::PhotonVoxelDef(fRegionMin[0],
+                                                     fRegionMax[0],
+                                                     fXSteps,
+                                                     fRegionMin[1],
+                                                     fRegionMax[1],
+                                                     fYSteps,
+                                                     fRegionMin[2],
+                                                     fRegionMax[2],
+                                                     fZSteps);
+          }
 
 
-	// Set distribution widths to voxel size
+        // Set distribution widths to voxel size
 
-	fSigmaX = fThePhotonVoxelDef.GetVoxelSize().X()/2.0;
-	fSigmaY = fThePhotonVoxelDef.GetVoxelSize().Y()/2.0;
-	fSigmaZ = fThePhotonVoxelDef.GetVoxelSize().Z()/2.0;
+        fSigmaX = fThePhotonVoxelDef.GetVoxelSize().X()/2.0;
+        fSigmaY = fThePhotonVoxelDef.GetVoxelSize().Y()/2.0;
+        fSigmaZ = fThePhotonVoxelDef.GetVoxelSize().Z()/2.0;
 
-	// Get number of voxels we will step through
+        // Get number of voxels we will step through
 
-	fVoxelCount = fThePhotonVoxelDef.GetNVoxels();
+        fVoxelCount = fThePhotonVoxelDef.GetNVoxels();
 
-	if(fLastVoxel<0) fLastVoxel = fVoxelCount;
+        if(fLastVoxel<0) fLastVoxel = fVoxelCount;
 
-	mf::LogVerbatim("LightSource") << "Light Source : Determining voxel params : "
-				       << fVoxelCount << " "
-				       << fSigmaX     << " "
-				       << fSigmaY     << " "
-				       <<fSigmaZ;
+        mf::LogVerbatim("LightSource") << "Light Source : Determining voxel params : "
+                                       << fVoxelCount << " "
+                                       << fSigmaX     << " "
+                                       << fSigmaY     << " "
+                                       <<fSigmaZ;
 
       }
     else{
@@ -278,16 +278,16 @@ namespace evgen{
     if(fFillTree)
       {
         art::ServiceHandle<art::TFileService const> tfs;
-	fPhotonsGenerated = tfs->make<TTree>("PhotonsGenerated","PhotonsGenerated");
-	fPhotonsGenerated->Branch("X",&(fShotPos[0]),"X/D");
-	fPhotonsGenerated->Branch("Y",&(fShotPos[1]),"Y/D");
-	fPhotonsGenerated->Branch("Z",&(fShotPos[2]),"Z/D");
-	fPhotonsGenerated->Branch("T",&(fShotPos[3]),"T/D");
-	fPhotonsGenerated->Branch("PX",&(fShotMom[0]),"PX/D");
-	fPhotonsGenerated->Branch("PY",&(fShotMom[1]),"PY/D");
-	fPhotonsGenerated->Branch("PZ",&(fShotMom[2]),"PZ/D");
-	fPhotonsGenerated->Branch("PT",&(fShotMom[3]),"PT/D");
-	fPhotonsGenerated->Branch("EventID",&fEvID,"EventID/I");
+        fPhotonsGenerated = tfs->make<TTree>("PhotonsGenerated","PhotonsGenerated");
+        fPhotonsGenerated->Branch("X",&(fShotPos[0]),"X/D");
+        fPhotonsGenerated->Branch("Y",&(fShotPos[1]),"Y/D");
+        fPhotonsGenerated->Branch("Z",&(fShotPos[2]),"Z/D");
+        fPhotonsGenerated->Branch("T",&(fShotPos[3]),"T/D");
+        fPhotonsGenerated->Branch("PX",&(fShotMom[0]),"PX/D");
+        fPhotonsGenerated->Branch("PY",&(fShotMom[1]),"PY/D");
+        fPhotonsGenerated->Branch("PZ",&(fShotMom[2]),"PZ/D");
+        fPhotonsGenerated->Branch("PT",&(fShotMom[3]),"PT/D");
+        fPhotonsGenerated->Branch("EventID",&fEvID,"EventID/I");
       }
   }
 
@@ -306,44 +306,44 @@ namespace evgen{
   {
     if(fSourceMode==kFILE) {
     //  Each event, read coordinates of gun and number of photons to shoot from file
-	// Loop file if required
-	if(fInputFile.eof()){
-	  mf::LogWarning("LightSource") << "EVGEN Light Source : Warning, reached end of file,"
-					<< " looping back to beginning";
-	  fInputFile.seekg(0,std::ios::beg);
-	  fInputFile.clear();
-	}
+        // Loop file if required
+        if(fInputFile.eof()){
+          mf::LogWarning("LightSource") << "EVGEN Light Source : Warning, reached end of file,"
+                                        << " looping back to beginning";
+          fInputFile.seekg(0,std::ios::beg);
+          fInputFile.clear();
+        }
 
-	if(!fInputFile.is_open() || fInputFile.fail() ){
-	  throw cet::exception("LightSource") << "EVGEN Light Source : File error in "
-					      << fFileName << "\n";
-	}
-	else{
-	  // read in one line
-	  fInputFile >> fX >> fY >> fZ >> fT
-		     >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT
-		     >> fP >> fSigmaP >> fN;
-	  fInputFile.getline(fDummyString,256);
-	  fThePhotonVoxelDef = sim::PhotonVoxelDef(fX - fSigmaX,
-						   fX + fSigmaX,
-						   1,
-						   fY - fSigmaY,
-						   fY + fSigmaY,
-						   1,
-						   fZ - fSigmaZ,
-						   fZ + fSigmaZ,
-						   1);
+        if(!fInputFile.is_open() || fInputFile.fail() ){
+          throw cet::exception("LightSource") << "EVGEN Light Source : File error in "
+                                              << fFileName << "\n";
+        }
+        else{
+          // read in one line
+          fInputFile >> fX >> fY >> fZ >> fT
+                     >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT
+                     >> fP >> fSigmaP >> fN;
+          fInputFile.getline(fDummyString,256);
+          fThePhotonVoxelDef = sim::PhotonVoxelDef(fX - fSigmaX,
+                                                   fX + fSigmaX,
+                                                   1,
+                                                   fY - fSigmaY,
+                                                   fY + fSigmaY,
+                                                   1,
+                                                   fZ - fSigmaZ,
+                                                   fZ + fSigmaZ,
+                                                   1);
 
-	  fCurrentVoxel=0;
-	}
+          fCurrentVoxel=0;
+        }
       }
     else if(fSourceMode==kSCAN) {
     //  Step through detector using a number of steps provided in the config file
     //  firing a constant number of photons from each point
-	auto const VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
-	fX = VoxelCenter.X();
-	fY = VoxelCenter.Y();
-	fZ = VoxelCenter.Z();
+        auto const VoxelCenter = fThePhotonVoxelDef.GetPhotonVoxel(fCurrentVoxel).GetCenter();
+        fX = VoxelCenter.X();
+        fY = VoxelCenter.Y();
+        fZ = VoxelCenter.Z();
       }
     else{
       //  Neither file or scan mode, probably a config file error
@@ -371,18 +371,18 @@ namespace evgen{
 
     if(vis && vis->IsBuildJob())
       {
-	mf::LogVerbatim("LightSource") << "Light source : Stowing voxel params ";
-	vis->StoreLightProd(fCurrentVoxel,fN);
+        mf::LogVerbatim("LightSource") << "Light source : Stowing voxel params ";
+        vis->StoreLightProd(fCurrentVoxel,fN);
       }
 
     if(fCurrentVoxel!=fLastVoxel)
       {
-	++fCurrentVoxel;
+        ++fCurrentVoxel;
       }
     else
       {
-	mf::LogVerbatim("LightSource") << "EVGEN Light Source fully scanned detector.  Starting over.";
-	fCurrentVoxel=fFirstVoxel;
+        mf::LogVerbatim("LightSource") << "EVGEN Light Source fully scanned detector.  Starting over.";
+        fCurrentVoxel=fFirstVoxel;
       }
   }
 
@@ -398,30 +398,30 @@ namespace evgen{
       // Choose momentum (supplied in eV, convert to GeV)
       double p = fP;
       if (fPDist == kGAUS) {
-	p = gauss.fire(fP, fSigmaP);
+        p = gauss.fire(fP, fSigmaP);
       }
       else {
-	p = fP + fSigmaP*(2.0*flat.fire()-1.0);
+        p = fP + fSigmaP*(2.0*flat.fire()-1.0);
       }
       p /= 1000000000.;
 
       // Choose position
       TVector3 x;
       if(fPointSource) {
-	x[0] = fX;
-	x[1] = fY;
-	x[2] = fZ;
+        x[0] = fX;
+        x[1] = fY;
+        x[2] = fZ;
       }
       else {
         if (fPosDist == kGAUS) {
-	  x[0] = gauss.fire(fX, fSigmaX);
-	  x[1] = gauss.fire(fY, fSigmaY);
-	  x[2] = gauss.fire(fZ, fSigmaZ);
+          x[0] = gauss.fire(fX, fSigmaX);
+          x[1] = gauss.fire(fY, fSigmaY);
+          x[2] = gauss.fire(fZ, fSigmaZ);
         }
         else {
-	  x[0] = fX + fSigmaX*(2.0*flat.fire()-1.0);
-  	  x[1] = fY + fSigmaY*(2.0*flat.fire()-1.0);
-  	  x[2] = fZ + fSigmaZ*(2.0*flat.fire()-1.0);
+          x[0] = fX + fSigmaX*(2.0*flat.fire()-1.0);
+          x[1] = fY + fSigmaY*(2.0*flat.fire()-1.0);
+          x[2] = fZ + fSigmaZ*(2.0*flat.fire()-1.0);
         }
 
       }
@@ -429,10 +429,10 @@ namespace evgen{
       // Choose time
       double t;
       if (fTDist == kGAUS) {
-	t = gauss.fire(fT, fSigmaT);
+        t = gauss.fire(fT, fSigmaT);
       }
       else {
-	t = fT + fSigmaT * (2.0 * flat.fire()-1.0);
+        t = fT + fSigmaT * (2.0 * flat.fire()-1.0);
       }
 
 
@@ -450,9 +450,9 @@ namespace evgen{
       // Generate momentum 4-vector
 
       fShotMom = TLorentzVector( p*sinth*cos(phi),
-				 p*sinth*sin(phi),
-				 p*costh,
-				 p                  );
+                                 p*sinth*sin(phi),
+                                 p*costh,
+                                 p                  );
 
       int trackid = -1*(j+1); // set track id to -i as these are all primary particles and have id <= 0
       std::string primary("primary");
@@ -462,7 +462,7 @@ namespace evgen{
       part.AddTrajectoryPoint(fShotPos, fShotMom);
 
       if(fFillTree)
-	fPhotonsGenerated->Fill();
+        fPhotonsGenerated->Fill();
 
       mct.Add(part);
     }
