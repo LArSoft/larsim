@@ -439,6 +439,7 @@ namespace evgen{
     auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
 
     truthcol->push_back(Sample());
+    int const nPhotons = truthcol->back().NParticles();
     
     evt.put(std::move(truthcol));
 
@@ -455,7 +456,7 @@ namespace evgen{
     if(vis && vis->IsBuildJob())
       {
         mf::LogVerbatim("LightSource") << "Light source : Stowing voxel params ";
-        vis->StoreLightProd(fCurrentVoxel,fN);
+        vis->StoreLightProd(fCurrentVoxel,nPhotons);
       }
 
     if(fCurrentVoxel!=fLastVoxel)
