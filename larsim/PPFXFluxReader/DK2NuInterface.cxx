@@ -7,6 +7,9 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "TRandom.h"
+#include "TMath.h"
+
 #include <iomanip>
 
 namespace fluxr {
@@ -110,7 +113,13 @@ namespace fluxr {
               << std::setw(w) << fBeamPosXML.Z() << " ] "
               << std::endl;
 
-    std::vector<double> windowBase=ps.get<std::vector<double> >("windowBase");
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // 
+    // calculation from flux window 
+    // discontinued in favor of random point in active volume
+    
+    /*std::vector<double> windowBase=ps.get<std::vector<double> >("windowBase");
     std::vector<double> window1   =ps.get<std::vector<double> >("window1");
     std::vector<double> window2   =ps.get<std::vector<double> >("window2");
 
@@ -141,7 +150,33 @@ namespace fluxr {
     if ( TMath::Abs(dot) > 1.0e-8 ) 
       std::cout << "Dot product between window direction vectors was "
         << dot << "; please check for orthoganality"<<std::endl;
+    */
+
+    //
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     
+    // calculation from random point in detector 
+
+    std::vector<double> x_detAV = ps.get<std::vector<double> >("x_detAV"); 
+    std::vector<double> y_detAV = ps.get<std::vector<double> >("y_detAV");
+    std::vector<double> z_detAV = ps.get<std::vector<double> >("z_detAV");
+
+    // assign random point  
+ 
+    detAV_rand_user[0] = gRandom->Uniform(x_detAV[0], x_detAV[1]);
+    detAV_rand_user[1] = gRandom->Uniform(y_detAV[0], y_detAV[1]);
+    detAV_rand_user[2] = gRandom->Uniform(z_detAV[0], z_detAV[1]); 
+    
+    // convert to beam coordinates 
+    fRandUser = TLorentzVector(detAV_rand_user, 0); 
+    User2BeamPos(fRandUser, fRandBeam);
+
+    // this will serve as the input point for calcEnuWgt function 
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
     //overwrite dkmeta
     fDkMeta->location.clear();
     fDkMeta->location.resize(2);
@@ -210,7 +245,12 @@ namespace fluxr {
         if (xnu > 1) return true;
     }
 
-    TLorentzVector x4beam=fFluxWindowBase+fRnd.Uniform()*fFluxWindowDir1+fRnd.Uniform()*fFluxWindowDir2;
+    // bypass flux window method in favor of random point in detector
+    //TLorentzVector x4beam=fFluxWindowBase+fRnd.Uniform()*fFluxWindowDir1+fRnd.Uniform()*fFluxWindowDir2;
+    TLorentzVector x4beam = fRandBeam; 
+
+    // enu = resulting energy when the neutrino is redirected 
+    // wgt = output probability weight 
     double enu,wgt;
     bsim::calcEnuWgt(fDk2Nu, x4beam.Vect(),enu,wgt);
 
@@ -223,12 +263,18 @@ namespace fluxr {
     TVector3 xyzDk(fDk2Nu->decay.vx,fDk2Nu->decay.vy,fDk2Nu->decay.vz);  // origin of decay
     TVector3 p3beam = enu * (x4beam.Vect()-xyzDk).Unit();
 
+    /*
     //weight due to window being tilted with respect to beam direction
     double tiltwgt = p3beam.Unit().Dot( fWindowNormal );
     wgt*=tiltwgt;
     //weight for the window area and divide by pi (since wgt returned by calcEnuWgt function is flux/(pi*m^2)
     wgt*=fWindowArea/3.14159;
+    */
 
+    // divide output wgt by pi so it is in unit area (output wgt is returned as flux/(pi*m^2))
+    wgt *= 1/TMath::Pi(); 
+
+    // with the recalculated energy, compute the momentum components
     bsim::NuRay anuray(p3beam.x(), p3beam.y(), p3beam.z(), enu, wgt);    
     fDk2Nu->nuray.push_back(rndnuray);
     fDk2Nu->nuray.push_back(anuray);
@@ -240,10 +286,11 @@ namespace fluxr {
     fNuPos=TLorentzVector(x4usr);
     fNuMom=TLorentzVector(p4usr);
 
-    x4usr.SetX(x4usr.X()/100.);
+    x4usr.SetX(x4usr.X()/100.);  // from cm --> m 
     x4usr.SetY(x4usr.Y()/100.);
     x4usr.SetZ(x4usr.Z()/100.);
-    
+
+    // overwrite nuchoice    
     fNuChoice->clear();
     fNuChoice->pdgNu=fDk2Nu->decay.ntype;
     fNuChoice->xyWgt=fDk2Nu->nuray[1].wgt;

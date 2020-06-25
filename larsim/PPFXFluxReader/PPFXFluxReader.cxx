@@ -244,7 +244,7 @@ namespace fluxr {
 	rn=fFluxDriver->GetRun();
     } 
     else { 
-        mf::LogInfo(__FUNCTION__)<<"Run number is not valid! Reassigning to positive value...." << std::endl;
+        //mf::LogInfo(__FUNCTION__)<<"Run number is not valid! Reassigning to positive value...." << std::endl;
 	rn=999999; 
     }
     art::Timestamp tstamp(time(0));
