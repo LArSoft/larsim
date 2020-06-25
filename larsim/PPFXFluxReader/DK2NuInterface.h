@@ -57,12 +57,14 @@ namespace fluxr {
       TLorentzRotation fBeamRot, fBeamRotInv;
       TVector3 fBeamPosXML;
       TLorentzVector fBeamZero;
-      TVector3 fFluxWindowPtUser[3];
-      TLorentzVector fFluxWindowBase, fFluxWindowDir1, fFluxWindowDir2;
-      TVector3 fWindowNormal; 
-      Double_t fFluxWindowLen1, fFluxWindowLen2;
-      Double_t fWindowArea;
-      TRandom3 fRnd;
+      TVector3 detAV_rand_user;
+      TLorentzVector fRandUser, fRandBeam; 
+      //TVector3 fFluxWindowPtUser[3];
+      //TLorentzVector fFluxWindowBase, fFluxWindowDir1, fFluxWindowDir2;
+      //TVector3 fWindowNormal; 
+      //Double_t fFluxWindowLen1, fFluxWindowLen2;
+      //Double_t fWindowArea;
+      //TRandom3 fRnd;
   };
 
 }
