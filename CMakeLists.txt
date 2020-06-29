@@ -58,6 +58,7 @@ find_ups_geant4( geant4 )
 find_ups_product( postgresql )
 find_ups_product( ifdhc )
 find_ups_product( genie )
+find_ups_product( ppfx )
 
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
@@ -94,8 +95,7 @@ if( ${VMAJ} LESS 3 )
   add_definitions(-DGENIE_PRE_R3)
 
   # GENIE v2 library list
-  set(GENIE_LIB_LIST  ${GALGORITHM}
-                    ${GBARYONRESONANCE}
+  set(GENIE_LIB_LIST  ${GBARYONRESONANCE}
                     ${GBASE}
                     ${GBODEKYANG}
                     ${GCHARM}
@@ -106,20 +106,15 @@ if( ${VMAJ} LESS 3 )
                     ${GDECAY}
                     ${GELAS}
                     ${GELFF}
-                    ${GHEP}
                     ${GEVGCORE}
                     ${GEVGMODULES}
-                    ${GEVGDRIVERS}
                     ${GGIBUU}
                     ${GHADRONTRANSP}
                     ${GFRAGMENTATION}
-                    ${GINTERACTION}
                     ${GLLEWELLYNSMITH}
                     ${GMEC}
-                    ${GMESSENGER}
                     ${GNUGAMMA}
                     ${GNUE}
-                    ${GNTUPLE}
                     ${GNUCLEAR}
                     ${GNUMERICAL}
                     ${GQPM}
@@ -129,9 +124,7 @@ if( ${VMAJ} LESS 3 )
                     ${GRES}
                     ${GREGISTRY}
                     ${GREINSEHGAL}
-                    ${GUTILS}
                     ${GGEO}
-                    ${GFLUXDRIVERS}
                     ${GMUELOSS}
                     ${GREWEIGHT}
                     ${GNUCLEONDECAY} )

@@ -10,15 +10,16 @@ product         version
 larevt		v08_01_00_05c
 marley		v1_0_0e
 larsoft_data    v1_02_01
+ppfx            v02_11_01
 
 cetbuildtools	v7_11_00	-	only_for_build
 end_product_list
 
-qualifier	larevt	 	marley		larsoft_data	notes
-e17:debug	e17:debug	e17:debug	-nq-	
-e17:prof	e17:prof	e17:prof	-nq-	
-c2:debug	c2:debug	c2:debug	-nq-	
-c2:prof		c2:prof		c2:prof		-nq-	
+qualifier	larevt	 	marley		larsoft_data	ppfx		notes
+e17:debug	e17:debug	e17:debug	-nq-		e17:debug
+e17:prof	e17:prof	e17:prof	-nq-		e17:prof
+c2:debug	c2:debug	c2:debug	-nq-		c2:debug
+c2:prof		c2:prof		c2:prof		-nq-		c2:prof
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
