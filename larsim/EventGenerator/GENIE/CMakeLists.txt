@@ -2,6 +2,12 @@
 cet_add_compiler_flags( CXX -DHIDE_GENIE_LOG_XXX )
 
 include_directories ( $ENV{LOG4CPP_INC} )
+include_directories ( $ENV{DK2NUDATA_INC} )
+include_directories ( $ENV{DK2NUGENIE_INC} )
+
+# genie
+cet_find_library( DK2NUDATA  NAMES dk2nuTree  PATHS ENV DK2NUDATA_LIB )
+cet_find_library( DK2NUGENIE NAMES dk2nuGenie PATHS ENV DK2NUGENIE_LIB )
 
 art_make( 
           MODULE_LIBRARIES 
@@ -13,6 +19,8 @@ art_make(
                         larcore_Geometry_Geometry_service
                         nutools_RandomUtils_NuRandomService_service
                         nutools_EventGeneratorBase_GENIE
+			${DK2NUDATA}
+                        ${DK2NUGENIE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
