@@ -26,8 +26,6 @@ namespace larg4
         fLArProp   = lar::providerFrom<detinfo::LArPropertiesService>();
         fDetProp   = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
-        fScintYieldFactor  = 1.; // true scintillation yield will be got from LArProperties
-
         //the recombination coefficient is in g/(MeVcm^2), but we report energy depositions in MeV/cm,
         //need to divide Recombk from the LArG4Parameters service by the density of the argon we got above.
         fRecombA          = LArG4PropHandle->RecombA();
@@ -42,6 +40,9 @@ namespace larg4
 
         // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
         fWph              = 19.5 * 1e-6; // MeV
+
+        // scintillatio pre-scale
+        fScintPreScale    = fLArProp->ScintPreScale();
 
     }
 
@@ -95,6 +96,10 @@ namespace larg4
 
         // calculate scintillation photons
         fNumScintPhotons = Nq - fNumIonElectrons;
+
+        // apply the scintillation pre-scaling (normally this is already folded into 
+        // the particle-specific scintillation yields)
+        fNumScintPhotons *= fScintPreScale;
        
         // set the scintillation singlet fraction (i.e., fraction of "fast" photons) 
         fScintillationYieldRatio = GetScintYieldRatio(edep);

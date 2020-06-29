@@ -36,9 +36,10 @@ namespace larg4 {
  private:
 
    double                fStepSize;            ///< maximum step to take
-   double                fEfield;              ///< value of electric field from LArProperties service
+   double                fEfield;              ///< value of electric field from DetectorProperties service
    double                fWion;                ///< W_ion (23.6 eV) == 1/fGeVToElectrons
-   double                fWph;                 ///< W_ph (19.5 eV) 
+   double                fWph;                 ///< W_ph (19.5 eV)
+   double                fScintPreScale;       ///< scintillation pre-scale from LArProperties service 
    double                fRecombA;             ///< from LArG4Parameters service
    double                fRecombk;             ///< from LArG4Parameters service
    double                fModBoxA;             ///< from LArG4Parameters service
