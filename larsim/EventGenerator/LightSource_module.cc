@@ -535,7 +535,7 @@ namespace evgen{
       //assume the position is relative to the center of the TPC
       //x += fTPCCenter;
 
-      fShotPos = TLorentzVector(fCenter.X(), fCenter.Y(), fCenter.Z(), t);
+      fShotPos = TLorentzVector(x.X(), x.Y(), x.Z(), t);
 
 
       // Choose angles
