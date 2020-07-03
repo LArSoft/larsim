@@ -4,6 +4,11 @@
 // File:        FilterSimPhotonLiteTime_module.cc
 //
 // Author: Gray Putnam -- ported from FilterSimPhotonTime
+//
+// Module for filtering events based on the number of true photons
+// hitting optical detectors inside a time window. Uses the
+// sim::SimPhotonsLite data product as input (see FilterSimPhotonTime
+// for filtering using the sim::SimPhotons data product).
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/ModuleMacros.h"
@@ -38,13 +43,13 @@ public:
 private:
   bool filter(art::Event& e, art::ProcessingFrame const&) override;
 
-  std::string const fSimPhotonsLiteCollectionLabel;
-  std::vector<std::vector<int>> const fTimeWindows;
-  int const fMinTotalPhotons;
-  bool const fDebug;
-  std::size_t const fN;
-  bool fUseReflectedPhotons;
-  std::string fReflectedLabel;
+  std::string const fSimPhotonsLiteCollectionLabel; //!< Label for the sim::SimPhotonsLite data product
+  std::vector<std::vector<int>> const fTimeWindows; //!< Time windows used for filtering. Units are the same as in the sim::SimPhotonsLite
+  int const fMinTotalPhotons; //!< Minimum number of photons inside a window to pass the filter
+  bool const fDebug; //!< Set to true to print (a lot of) debug information.
+  std::size_t const fN; //!< Number of time winows.
+  bool fUseReflectedPhotons; //!< Whether to include reflected photons in the filter.
+  std::string fReflectedLabel; //!< Label for the reflected photons -- "Reflected" by default.
 
   void CheckTimeWindows() const;
 };
