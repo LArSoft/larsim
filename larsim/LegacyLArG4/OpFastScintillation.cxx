@@ -143,6 +143,7 @@
 #include "TMath.h"
 #include <cmath>
 #include <limits>
+#include <cassert>
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
@@ -175,6 +176,7 @@ namespace larg4 {
     : G4VRestDiscreteProcess(processName, type)
     , fActiveVolumes{ extractActiveVolumes(*(lar::providerFrom<geo::Geometry>())) }
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
+    , fPVS(bPropagate? art::ServiceHandle<phot::PhotonVisibilityService const>().get(): nullptr)
   {
     SetProcessSubType(25); // TODO: unhardcode
     fTrackSecondariesFirst = false;
@@ -194,7 +196,7 @@ namespace larg4 {
     emSaturation = NULL;
 
     if (bPropagate) {
-      art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
+      assert(fPVS);
 
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
@@ -223,7 +225,7 @@ namespace larg4 {
       //   acos_arr[i] = std::acos(i/double(acos_bins));
       // }
 
-      for(size_t i = 0; i != pvs->NOpChannels(); i++) {
+      for(size_t i = 0; i != fPVS->NOpChannels(); i++) {
         double OpDetCenter_i[3];
         geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
         std::array<double, 3> OpDetCenter_a;
@@ -246,13 +248,13 @@ namespace larg4 {
                   // <<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
       }
 
-      if(pvs->IncludePropTime()) {
+      if(fPVS->IncludePropTime()) {
         std::cout << "Using parameterisation of timings." << std::endl;
         //OLD VUV time parapetrization (to be removed soon)
-        //pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-        //pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+        //fPVS->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+        //fPVS->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
         //New VUV time parapetrization
-        pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
+        fPVS->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance);
 
         // create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
         // default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated
@@ -267,13 +269,13 @@ namespace larg4 {
         VUV_min = VUV_empty;
 
         // VIS time parameterisation
-        if (pvs->StoreReflected()) {
+        if (fPVS->StoreReflected()) {
           // load parameters
-          pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
+          fPVS->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
                                     fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
         }
       }
-      if(pvs->UseNhitsModel()) {
+      if(fPVS->UseNhitsModel()) {
         std::cout << "Using semi-analytic model for number of hits:" << std::endl;
         fUseNhitsModel = true;
         // LAr absorption length in cm
@@ -287,7 +289,7 @@ namespace larg4 {
 
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
-        pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
+        fPVS->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
         fdelta_angulo = 10; // angle bin size
         //Needed for Nhits-model border corrections (in cm)
         fYactive_corner = fActiveVolumes[0].HalfSizeY();
@@ -304,19 +306,19 @@ namespace larg4 {
                   << "and corner (z, y) = (" << fZactive_corner << ", " << fYactive_corner << ")" << std::endl;
         std::cout << "Reference_to_corner: " << fReference_to_corner << std::endl;
 
-        if(pvs->StoreReflected()) {
+        if(fPVS->StoreReflected()) {
           // Load corrections for VIS semi-anlytic hits
           std::cout << "Loading vis corrections" << std::endl;
-          pvs->LoadParsForVISCorrection(fvispars, fradius);
+          fPVS->LoadParsForVISCorrection(fvispars, fradius);
           fStoreReflected = true;
 
-          if (pvs->ApplyVISBorderCorrection()) {
+          if (fPVS->ApplyVISBorderCorrection()) {
             // load border corrections
             std::cout << "Loading vis border corrections" << std::endl;
-            pvs->LoadParsForVISBorderCorrection(fvis_border_distances_x,
+            fPVS->LoadParsForVISBorderCorrection(fvis_border_distances_x,
                                                 fvis_border_distances_r, fvis_border_correction);
             fApplyVisBorderCorrection = true;
-            fVisBorderCorrectionType = pvs->VISBorderCorrectionType();
+            fVisBorderCorrectionType = fPVS->VISBorderCorrectionType();
           }
           else fApplyVisBorderCorrection = false;
 
@@ -542,8 +544,8 @@ namespace larg4 {
       return 0;
 
     // Get the visibility vector for this point
-    const art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-    NOpChannels = pvs->NOpChannels();
+    assert(fPVS);
+    NOpChannels = fPVS->NOpChannels();
 
     G4int nscnt = 1;
     if (Fast_Intensity && Slow_Intensity) nscnt = 2;
@@ -613,18 +615,18 @@ namespace larg4 {
 
     const std::array<double, 3> ScintPoint = {x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
     if(!isScintInActiveVolume(ScintPoint)) return 0;
-    const phot::MappedCounts_t& Visibilities = pvs->GetAllVisibilities(ScintPoint);
+    const phot::MappedCounts_t& Visibilities = fPVS->GetAllVisibilities(ScintPoint);
 
     phot::MappedCounts_t ReflVisibilities;
 
     // Store timing information in the object for use in propagationTime method
-    if(pvs->StoreReflected()) {
-      ReflVisibilities = pvs->GetAllVisibilities(ScintPoint, true);
-      if(pvs->StoreReflT0())
-        ReflT0s = pvs->GetReflT0s(ScintPoint);
+    if(fPVS->StoreReflected()) {
+      ReflVisibilities = fPVS->GetAllVisibilities(ScintPoint, true);
+      if(fPVS->StoreReflT0())
+        ReflT0s = fPVS->GetReflT0s(ScintPoint);
     }
-    if(pvs->IncludeParPropTime()) {
-      ParPropTimeTF1 = pvs->GetTimingTF1(ScintPoint);
+    if(fPVS->IncludeParPropTime()) {
+      ParPropTimeTF1 = fPVS->GetTimingTF1(ScintPoint);
     }
 
     /*
@@ -727,11 +729,11 @@ namespace larg4 {
       //    << ScintPoint[1] << ", " << ScintPoint[2] << " ) cm.\n";
       //}
 
-      if(!Visibilities && !pvs->UseNhitsModel()) continue;
+      if(!Visibilities && !fPVS->UseNhitsModel()) continue;
 
       // detected photons from direct light
       std::map<size_t, int> DetectedNum;
-      if(Visibilities && !pvs->UseNhitsModel()) {
+      if(Visibilities && !fPVS->UseNhitsModel()) {
         int DetThis = 0;
         for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
           if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
@@ -745,8 +747,8 @@ namespace larg4 {
 
       // detected photons from reflected light
       std::map<size_t, int> ReflDetectedNum;
-      if(pvs->StoreReflected()) {
-        if (!pvs->UseNhitsModel()) {
+      if(fPVS->StoreReflected()) {
+        if (!fPVS->UseNhitsModel()) {
           int ReflDetThis = 0;
           for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
             if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
@@ -763,7 +765,7 @@ namespace larg4 {
       // Now we run through each PMT figuring out num of detected photons
       for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
         // Only do the reflected loop if we have reflected visibilities
-        if (Reflected && !pvs->StoreReflected()) continue;
+        if (Reflected && !fPVS->StoreReflected()) continue;
 
         std::map<size_t, int>::const_iterator itstart;
         std::map<size_t, int>::const_iterator itend;
@@ -1028,23 +1030,23 @@ namespace larg4 {
   void OpFastScintillation::propagationTime(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
                                              const size_t OpChannel, bool Reflected) //const
   {
-    static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-    if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
+    assert(fPVS);
+    if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
       throw cet::exception("OpFastScintillation") << "Cannot have both propagation time models simultaneously.";
     }
-    else if (pvs->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim() == 1)) ) {
+    else if (fPVS->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim() == 1)) ) {
       //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or it is the default one.
       //This will fix a segfault when using timing and interpolation.
       G4cout << "WARNING: Requested parameterized timing, but no function found. Not applying propagation time." << G4endl;
     }
-    else if (pvs->IncludeParPropTime()) {
+    else if (fPVS->IncludeParPropTime()) {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
       for(size_t i = 0; i < arrival_time_dist.size(); ++i) {
         arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
       }
     }
-    else if (pvs->IncludePropTime()) {
+    else if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
       const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm,
                                      fOpDetCenter.at(OpChannel)[1]*CLHEP::cm,

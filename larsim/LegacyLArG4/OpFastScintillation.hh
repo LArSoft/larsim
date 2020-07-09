@@ -110,6 +110,7 @@ namespace CLHEP {
   class RandGeneral;
 }
 namespace geo { class GeometryCore; }
+namespace phot { class PhotonVisibilityService; }
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -407,6 +408,9 @@ namespace larg4 {
     void ProcessStep( const G4Step& step);
 
     bool bPropagate; ///< Whether propagation of photons is enabled.
+    
+    /// Photon visibility service instance.
+    phot::PhotonVisibilityService const* const fPVS;
 
     bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
     bool isScintInActiveVolume(const std::array<double, 3>& ScintPoint);
