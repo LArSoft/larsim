@@ -84,6 +84,7 @@
 /////////////
 
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
+#include "larcorealg/Geometry/BoxBoundedGeo.h"
 
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4VRestDiscreteProcess.hh"
@@ -105,6 +106,7 @@ class G4VParticleChange;
 namespace CLHEP {
   class RandGeneral;
 }
+namespace geo { class GeometryCore; }
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -373,7 +375,7 @@ namespace larg4 {
     //To account for the border effects
     std::vector<double> fborder_corr;
     double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
-    double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
+    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
     // For VIS semi-analytic hits
     constexpr double Pol_5(const double x, double *par);
     bool fStoreReflected;
@@ -405,7 +407,7 @@ namespace larg4 {
     bool bPropagate; ///< Whether propagation of photons is enabled.
 
     bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
-    bool isScintInActiveVolume(const std::array<double, 3> ScintPoint);
+    bool isScintInActiveVolume(const std::array<double, 3>& ScintPoint);
     double interpolate(const std::vector<double> &xData,
                        const std::vector<double> &yData,
                        double x, bool extrapolate, size_t i=0);
@@ -415,7 +417,11 @@ namespace larg4 {
                       const std::vector<double> &yData2,
                       const std::vector<double> &yData3,
                       double x, bool extrapolate);
-  };
+    
+    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes
+      (geo::GeometryCore const& geom);
+    
+  }; // class OpFastScintillation
 
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);

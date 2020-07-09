@@ -131,6 +131,7 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+#include "larcorealg/CoreUtils/enumerate.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
@@ -172,6 +173,7 @@ namespace larg4 {
 
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)
     : G4VRestDiscreteProcess(processName, type)
+    , fActiveVolumes{ extractActiveVolumes(*(lar::providerFrom<geo::Geometry>())) }
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
   {
     SetProcessSubType(25); // TODO: unhardcode
@@ -200,31 +202,23 @@ namespace larg4 {
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
       static art::ServiceHandle<geo::Geometry const> geo;
 
-      // Find boundary of active volume
-      fminx = 1e9;
-      fmaxx = -1e9;
-      fminy = 1e9;
-      fmaxy = -1e9;
-      fminz = 1e9;
-      fmaxz = -1e9;
-      for (size_t i = 0; i < geo->NTPC(); ++i) {
-        const geo::TPCGeo &tpc = geo->TPC(i);
-        if (fminx > tpc.MinX()) fminx = tpc.MinX();
-        if (fmaxx < tpc.MaxX()) fmaxx = tpc.MaxX();
-        if (fminy > tpc.MinY()) fminy = tpc.MinY();
-        if (fmaxy < tpc.MaxY()) fmaxy = tpc.MaxY();
-        if (fminz > tpc.MinZ()) fminz = tpc.MinZ();
-        if (fmaxz < tpc.MaxZ()) fmaxz = tpc.MaxZ();
-      }
-      std::cout << "Active volume boundaries:" << std::endl;
-      std::cout << "minx: " << fminx << "  maxx: " << fmaxx << std::endl;
-      std::cout << "miny: " << fminy << "  maxy: " << fmaxy << std::endl;
-      std::cout << "minz: " << fminz << "  maxz: " << fmaxz << std::endl;
+      {
+        auto log = mf::LogTrace("OpFastScintillation")
+          << "OpFastScintillation: active volume boundaries from "
+          << fActiveVolumes.size() << " volumes:"
+          ;
+        for (auto const& [ iCryo, box ]: util::enumerate(fActiveVolumes)) {
+          log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+        } // for
+      } // local scope
 
-      TVector3 Cathode_centre(geo->TPC(0, 0).GetCathodeCenter().X(),
-                              (fminy + fmaxy) / 2, (fminz + fmaxz) / 2);
-      std::cout << "Cathode_centre: " << Cathode_centre.X()
-                << "  " << Cathode_centre.Y() << "  " << Cathode_centre.Z() << std::endl;
+      geo::Point_t const Cathode_centre {
+        geo->TPC(0, 0).GetCathodeCenter().X(),
+        fActiveVolumes[0].CenterY(),
+        fActiveVolumes[0].CenterZ()
+        };
+      mf::LogTrace("OpFastScintillation")
+        << "Cathode_centre: " << Cathode_centre << " cm";
 
       // std::cout << "\nInitialize acos_arr with " << acos_bins+1
       //           << " hence with a resolution of " << 1./acos_bins << std::endl;
@@ -299,8 +293,8 @@ namespace larg4 {
         pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
         fdelta_angulo = 10; // angle bin size
         //Needed for Nhits-model border corrections (in cm)
-        fYactive_corner = (fmaxy - fminy) / 2;
-        fZactive_corner = (fmaxz - fminz) / 2;
+        fYactive_corner = fActiveVolumes[0].HalfSizeY();
+        fZactive_corner = fActiveVolumes[0].HalfSizeZ();
 
         fYcathode = Cathode_centre.Y();
         fZcathode = Cathode_centre.Z();
@@ -331,9 +325,10 @@ namespace larg4 {
 
           // cathode dimensions required for corrections
           fcathode_centre = geo->TPC(0, 0).GetCathodeCenter();
-          fcathode_centre[1] = (fmaxy + fminy) / 2.; fcathode_centre[2] = (fmaxz + fminz) / 2.; // to get full cathode dimension rather than just single tpc
-          fcathode_ydimension = fmaxy - fminy;
-          fcathode_zdimension = fmaxz - fminz;
+          fcathode_centre[1] = fActiveVolumes[0].CenterY();
+          fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
+          fcathode_ydimension = fActiveVolumes[0].SizeY();
+          fcathode_zdimension = fActiveVolumes[0].SizeZ();
           // set cathode plane struct for solid angle function
           cathode_plane.h = fcathode_ydimension; cathode_plane.w = fcathode_zdimension;
           fplane_depth = std::abs(fcathode_centre[0]);
@@ -1779,16 +1774,10 @@ namespace larg4 {
   }
 
 
-  bool OpFastScintillation::isScintInActiveVolume(const std::array<double, 3> ScintPoint)
+  bool OpFastScintillation::isScintInActiveVolume(const std::array<double, 3>& ScintPoint)
   {
     //semi-analytic approach only works in the active volume
-    if((ScintPoint[0] < fminx) || (ScintPoint[0] > fmaxx) ||
-       (ScintPoint[1] < fminy) || (ScintPoint[1] > fmaxy) ||
-       (ScintPoint[2] < fminz) || (ScintPoint[2] > fmaxz)){
-       // (std::abs(ScintPoint[0]) <= fplane_depth)) {
-      return false;
-    }
-    return true;
+    return fActiveVolumes[0].ContainsPosition(ScintPoint.data());
   }
 
 
@@ -2100,6 +2089,31 @@ namespace larg4 {
     // std::cout << "Warning: invalid solid angle call." << std::endl;
     return 0.;
   }
+
+  
+  // ---------------------------------------------------------------------------
+  std::vector<geo::BoxBoundedGeo> OpFastScintillation::extractActiveVolumes
+    (geo::GeometryCore const& geom)
+  {
+    std::vector<geo::BoxBoundedGeo> activeVolumes;
+    activeVolumes.reserve(geom.Ncryostats());
+    
+    for (geo::CryostatGeo const& cryo: geom.IterateCryostats()) {
+      
+      // can't use it default-constructed since it would always include origin
+      geo::BoxBoundedGeo box { cryo.TPC(0).ActiveBoundingBox() };
+      
+      for (geo::TPCGeo const& TPC: cryo.IterateTPCs())
+        box.ExtendToInclude(TPC.ActiveBoundingBox());
+        
+      activeVolumes.push_back(std::move(box));
+      
+    } // for cryostats
+    
+    return activeVolumes;
+  } // OpFastScintillation::extractActiveVolumes()
+  
+  // ---------------------------------------------------------------------------
 
 
   constexpr double acos_table(const double x)
