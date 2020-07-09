@@ -99,6 +99,9 @@
 #include "TF1.h"
 #include "TVector3.h"
 
+#include <memory> // std::unique_ptr
+
+
 class G4EmSaturation;
 class G4Step;
 class G4Track;
@@ -138,18 +141,6 @@ namespace larg4 {
     OpFastScintillation(const G4String& processName = "Scintillation",
                         G4ProcessType type = fElectromagnetic);
     
-    // BUG: copy is broken since the different copies may share tables,
-    //      and each copy believes to own them;
-    //      standard C++ solution applies (`std::shared_ptr`)
-    OpFastScintillation(OpFastScintillation const &) = delete;
-    OpFastScintillation& operator= (OpFastScintillation const&)= delete;
-    
-    // BUG: move is broken since the source object destructor will destroy
-    //      the  table that has been surrendered to the right-hand operand;
-    //      standard C++ solution applies (`std::unique_ptr`)
-    OpFastScintillation(OpFastScintillation&&) = delete;
-    OpFastScintillation& operator= (OpFastScintillation&&) = delete;
-
     ~OpFastScintillation();
 
     ////////////
@@ -285,8 +276,8 @@ namespace larg4 {
     // Class Data Members
     ///////////////////////
 
-    G4PhysicsTable* theSlowIntegralTable;
-    G4PhysicsTable* theFastIntegralTable;
+    std::unique_ptr<G4PhysicsTable> theSlowIntegralTable;
+    std::unique_ptr<G4PhysicsTable> theFastIntegralTable;
 
     G4bool fTrackSecondariesFirst;
     G4bool fFiniteRiseTime;
@@ -507,13 +498,13 @@ namespace larg4 {
   inline
   G4PhysicsTable* OpFastScintillation::GetSlowIntegralTable() const
   {
-    return theSlowIntegralTable;
+    return theSlowIntegralTable.get();
   }
 
   inline
   G4PhysicsTable* OpFastScintillation::GetFastIntegralTable() const
   {
-    return theFastIntegralTable;
+    return theFastIntegralTable.get();
   }
 
   inline

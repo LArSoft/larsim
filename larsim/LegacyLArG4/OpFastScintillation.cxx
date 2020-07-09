@@ -186,9 +186,6 @@ namespace larg4 {
 
     scintillationByParticleType = larp->ScintByParticleType();
 
-    theFastIntegralTable = NULL;
-    theSlowIntegralTable = NULL;
-
     if (verboseLevel > 0) {
       G4cout << GetProcessName() << " is created " << G4endl;
     }
@@ -354,14 +351,8 @@ namespace larg4 {
   ////////////////
   OpFastScintillation::~OpFastScintillation()
   {
-    if (theFastIntegralTable != NULL) {
-      theFastIntegralTable->clearAndDestroy();
-      delete theFastIntegralTable;
-    }
-    if (theSlowIntegralTable != NULL) {
-      theSlowIntegralTable->clearAndDestroy();
-      delete theSlowIntegralTable;
-    }
+    if (theFastIntegralTable) theFastIntegralTable->clearAndDestroy();
+    if (theSlowIntegralTable) theSlowIntegralTable->clearAndDestroy();
   }
 
   ////////////
@@ -868,8 +859,8 @@ namespace larg4 {
     G4int numOfMaterials = G4Material::GetNumberOfMaterials();
 
     // create new physics table
-    if(!theFastIntegralTable)theFastIntegralTable = new G4PhysicsTable(numOfMaterials);
-    if(!theSlowIntegralTable)theSlowIntegralTable = new G4PhysicsTable(numOfMaterials);
+    if(!theFastIntegralTable)theFastIntegralTable = std::make_unique<G4PhysicsTable>(numOfMaterials);
+    if(!theSlowIntegralTable)theSlowIntegralTable = std::make_unique<G4PhysicsTable>(numOfMaterials);
 
     // loop for materials
     for (G4int i = 0 ; i < numOfMaterials; i++) {
