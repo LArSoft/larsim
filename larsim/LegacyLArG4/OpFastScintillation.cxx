@@ -177,6 +177,7 @@ namespace larg4 {
     , fActiveVolumes{ extractActiveVolumes(*(lar::providerFrom<geo::Geometry>())) }
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
     , fPVS(bPropagate? art::ServiceHandle<phot::PhotonVisibilityService const>().get(): nullptr)
+    , fUseNhitsModel(fPVS && fPVS->UseNhitsModel())
   {
     SetProcessSubType(25); // TODO: unhardcode
     fTrackSecondariesFirst = false;
@@ -275,9 +276,10 @@ namespace larg4 {
                                     fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
         }
       }
-      if(fPVS->UseNhitsModel()) {
-        std::cout << "Using semi-analytic model for number of hits:" << std::endl;
-        fUseNhitsModel = true;
+      if(usesSemiAnalyticModel()) {
+        mf::LogVerbatim("OpFastScintillation")
+          << "OpFastScintillation: using semi-analytic model for number of hits";
+        
         // LAr absorption length in cm
         std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
         std::vector<double> x_v, y_v;
@@ -334,7 +336,6 @@ namespace larg4 {
         }
         else fStoreReflected = false;
       }
-      else fUseNhitsModel = false;
     }
     tpbemission = lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
     const size_t nbins = tpbemission.size();
@@ -729,11 +730,11 @@ namespace larg4 {
       //    << ScintPoint[1] << ", " << ScintPoint[2] << " ) cm.\n";
       //}
 
-      if(!Visibilities && !fPVS->UseNhitsModel()) continue;
+      if(!Visibilities && !usesSemiAnalyticModel()) continue;
 
       // detected photons from direct light
       std::map<size_t, int> DetectedNum;
-      if(Visibilities && !fPVS->UseNhitsModel()) {
+      if(Visibilities && !usesSemiAnalyticModel()) {
         int DetThis = 0;
         for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
           if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
@@ -748,7 +749,7 @@ namespace larg4 {
       // detected photons from reflected light
       std::map<size_t, int> ReflDetectedNum;
       if(fPVS->StoreReflected()) {
-        if (!fPVS->UseNhitsModel()) {
+        if (!usesSemiAnalyticModel()) {
           int ReflDetThis = 0;
           for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
             if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
@@ -1483,6 +1484,14 @@ namespace larg4 {
     }
   }
 
+  
+  // ---------------------------------------------------------------------------
+  bool OpFastScintillation::usesSemiAnalyticModel() const {
+    return fUseNhitsModel;
+  } // OpFastScintillation::usesSemiAnalyticModel()
+  
+  
+  // ---------------------------------------------------------------------------
   void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
                                                const double Num,
                                                const std::array<double, 3> ScintPoint)

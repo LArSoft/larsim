@@ -290,6 +290,10 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
+    
+    /// Returns whether the semi-analytic visibility parametrization is being used.
+    bool usesSemiAnalyticModel() const;
+    
     void detectedDirectHits(std::map<size_t, int>& DetectedNum,
                             const double Num,
                             const std::array<double, 3> ScintPoint);
@@ -372,7 +376,6 @@ namespace larg4 {
 
     //For VUV semi-analytic hits
     G4double Gaisser_Hillas(const double x, const double *par);
-    bool fUseNhitsModel;
     //array of correction for the VUV Nhits estimation
     std::vector<std::vector<double> > fGHvuvpars;
     //To account for the border effects
@@ -411,6 +414,9 @@ namespace larg4 {
     
     /// Photon visibility service instance.
     phot::PhotonVisibilityService const* const fPVS;
+
+    /// Whether the semi-analytic model is being used for photon visibility.
+    bool const fUseNhitsModel = false;
 
     bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
     bool isScintInActiveVolume(const std::array<double, 3>& ScintPoint);
