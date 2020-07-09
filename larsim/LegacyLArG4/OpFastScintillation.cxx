@@ -349,23 +349,6 @@ namespace larg4 {
   }
 
 
-  OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
-    :  G4VRestDiscreteProcess(rhs.GetProcessName(), rhs.GetProcessType())
-  {
-    theSlowIntegralTable        = rhs.GetSlowIntegralTable();
-    theFastIntegralTable        = rhs.GetFastIntegralTable();
-
-    fTrackSecondariesFirst      = rhs.GetTrackSecondariesFirst();
-    fFiniteRiseTime             = rhs.GetFiniteRiseTime();
-    YieldFactor                 = rhs.GetScintillationYieldFactor();
-    ExcitationRatio             = rhs.GetScintillationExcitationRatio();
-    scintillationByParticleType = rhs.GetScintillationByParticleType();
-    emSaturation                = rhs.GetSaturation();
-
-    BuildThePhysicsTable();
-  }
-
-
   ////////////////
   // Destructors
   ////////////////

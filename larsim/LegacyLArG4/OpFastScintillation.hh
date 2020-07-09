@@ -137,7 +137,18 @@ namespace larg4 {
 
     OpFastScintillation(const G4String& processName = "Scintillation",
                         G4ProcessType type = fElectromagnetic);
-    OpFastScintillation(const OpFastScintillation &right);
+    
+    // BUG: copy is broken since the different copies may share tables,
+    //      and each copy believes to own them;
+    //      standard C++ solution applies (`std::shared_ptr`)
+    OpFastScintillation(OpFastScintillation const &) = delete;
+    OpFastScintillation& operator= (OpFastScintillation const&)= delete;
+    
+    // BUG: move is broken since the source object destructor will destroy
+    //      the  table that has been surrendered to the right-hand operand;
+    //      standard C++ solution applies (`std::unique_ptr`)
+    OpFastScintillation(OpFastScintillation&&) = delete;
+    OpFastScintillation& operator= (OpFastScintillation&&) = delete;
 
     ~OpFastScintillation();
 
