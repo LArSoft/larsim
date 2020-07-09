@@ -178,6 +178,8 @@ namespace larg4 {
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters const>()->NoPhotonPropagation()))
     , fPVS(bPropagate? art::ServiceHandle<phot::PhotonVisibilityService const>().get(): nullptr)
     , fUseNhitsModel(fPVS && fPVS->UseNhitsModel())
+      // for now, limit to the active volume only if semi-analytic model is used
+    , fOnlyActiveVolume(usesSemiAnalyticModel())
   {
     SetProcessSubType(25); // TODO: unhardcode
     fTrackSecondariesFirst = false;
@@ -210,7 +212,32 @@ namespace larg4 {
         for (auto const& [ iCryo, box ]: util::enumerate(fActiveVolumes)) {
           log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
         } // for
+        log
+          << "\n  (scintillation photons are propagated "
+          << (fOnlyActiveVolume? "only from active volumes": "from anywhere")
+          << ")"
+          ;
       } // local scope
+      
+      if (usesSemiAnalyticModel() && (geo->Ncryostats() > 1U)) {
+        if (fOnlyOneCryostat) {
+          mf::LogWarning("OpFastScintillation")
+            << std::string(80, '=')
+            << "\nA detector with " << geo->Ncryostats() << " cryostats is configured"
+            << " , and semi-analytic model is requested for scintillation photon propagation."
+            << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
+            << " (e.g. scintillation may be detected only in cryostat #0)."
+            << "\nThis would be normally a fatal error, but it has been forcibly overridden."
+            << "\n" << std::string(80, '=')
+            ;
+        }
+        else {
+          throw art::Exception(art::errors::Configuration)
+            << "Photon propagation via semi-analytic model is not supported yet"
+            << " on detectors with more than one cryostat."
+            ;
+        }
+      } // if
 
       geo::Point_t const Cathode_centre {
         geo->TPC(0, 0).GetCathodeCenter().X(),
@@ -615,7 +642,7 @@ namespace larg4 {
     }
 
     const std::array<double, 3> ScintPoint = {x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
-    if(!isScintInActiveVolume(ScintPoint)) return 0;
+    if(fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) return 0;
     const phot::MappedCounts_t& Visibilities = fPVS->GetAllVisibilities(ScintPoint);
 
     phot::MappedCounts_t ReflVisibilities;
@@ -735,10 +762,9 @@ namespace larg4 {
       // detected photons from direct light
       std::map<size_t, int> DetectedNum;
       if(Visibilities && !usesSemiAnalyticModel()) {
-        int DetThis = 0;
         for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-          if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
-          DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
+          if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+          int const DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
           if(DetThis > 0) DetectedNum[OpDet] = DetThis;
         }
       }
@@ -750,10 +776,9 @@ namespace larg4 {
       std::map<size_t, int> ReflDetectedNum;
       if(fPVS->StoreReflected()) {
         if (!usesSemiAnalyticModel()) {
-          int ReflDetThis = 0;
           for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-            if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
-            ReflDetThis = std::round(G4Poisson(ReflVisibilities[OpDet] * Num));
+            if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+            int const ReflDetThis = std::round(G4Poisson(ReflVisibilities[OpDet] * Num));
             if(ReflDetThis > 0) ReflDetectedNum[OpDet] = ReflDetThis;
           }
         }

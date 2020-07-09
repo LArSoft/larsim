@@ -410,13 +410,20 @@ namespace larg4 {
 
     void ProcessStep( const G4Step& step);
 
-    bool bPropagate; ///< Whether propagation of photons is enabled.
+    bool const bPropagate; ///< Whether propagation of photons is enabled.
     
     /// Photon visibility service instance.
     phot::PhotonVisibilityService const* const fPVS;
 
     /// Whether the semi-analytic model is being used for photon visibility.
     bool const fUseNhitsModel = false;
+    /// Whether photon propagation is performed only from active volumes
+    bool const fOnlyActiveVolume = false;
+    /// Allows running even if light on cryostats `C:1` and higher is not supported.
+    /// Currently hard coded "no"
+    bool const fOnlyOneCryostat = false;
+    /// Whether the cathodes are fully opaque; currently hard coded "no".
+    bool const fOpaqueCathode = false;
 
     bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
     bool isScintInActiveVolume(const std::array<double, 3>& ScintPoint);
