@@ -85,6 +85,7 @@
 
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4VRestDiscreteProcess.hh"
@@ -296,20 +297,20 @@ namespace larg4 {
     
     void detectedDirectHits(std::map<size_t, int>& DetectedNum,
                             const double Num,
-                            const std::array<double, 3> ScintPoint);
+                            geo::Point_t const& ScintPoint);
     void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
                             const double Num,
-                            const std::array<double, 3> ScintPoint);
+                            geo::Point_t const& ScintPoint);
 
     int VUVHits(const int Nphotons_created,
-                const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
+                geo::Point_t const& ScintPoint,
+                geo::Point_t const& OpDetPoint,
                 const int optical_detector_type);
     // Calculates semi-analytic model number of hits for vuv component
 
     int VISHits(const int Nphotons_created,
-                const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
+                geo::Point_t const& ScintPoint,
+                geo::Point_t const& OpDetPoint,
                 const int optical_detector_type,
                 const double cathode_hits_rec,
                 const std::array<double, 3> hotspot);
@@ -402,7 +403,7 @@ namespace larg4 {
     double fydimension, fzdimension, fradius;
     dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
-    std::vector<std::array<double, 3>> fOpDetCenter;
+    std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int>  fOpDetType;
     std::vector<double>  fOpDetLength;
     std::vector<double>  fOpDetHeight;
@@ -425,8 +426,9 @@ namespace larg4 {
     /// Whether the cathodes are fully opaque; currently hard coded "no".
     bool const fOpaqueCathode = false;
 
-    bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
-    bool isScintInActiveVolume(const std::array<double, 3>& ScintPoint);
+    bool isOpDetInSameTPC
+      (geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
     double interpolate(const std::vector<double> &xData,
                        const std::vector<double> &yData,
                        double x, bool extrapolate, size_t i=0);

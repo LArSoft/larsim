@@ -134,6 +134,8 @@
 #include "larcorealg/CoreUtils/enumerate.h"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect::fillCoords()
 
 // support libraries
 #include "cetlib_except/exception.h"
@@ -253,25 +255,20 @@ namespace larg4 {
       //   acos_arr[i] = std::acos(i/double(acos_bins));
       // }
 
-      for(size_t i = 0; i != fPVS->NOpChannels(); i++) {
-        double OpDetCenter_i[3];
-        geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
-        std::array<double, 3> OpDetCenter_a;
-        std::move(std::begin(OpDetCenter_i), std::end(OpDetCenter_i), OpDetCenter_a.begin());
-        fOpDetCenter.push_back(OpDetCenter_a);
-        int type_i = -1;
-        if(strcmp(geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName(), "TGeoBBox") == 0) {
-          type_i = 0;//Arapucas
-          fOpDetLength.push_back(geo->OpDetGeoFromOpDet(i).Length());
-          fOpDetHeight.push_back(geo->OpDetGeoFromOpDet(i).Height());
+      for(size_t const i: util::counter(fPVS->NOpChannels())) {
+        geo::OpDetGeo const& opDet = geo->OpDetGeoFromOpDet(i);
+        fOpDetCenter.push_back(opDet.GetCenter());
+        if (opDet.isBar()) {
+          fOpDetType.push_back(0);//Arapucas
+          fOpDetLength.push_back(opDet.Length());
+          fOpDetHeight.push_back(opDet.Height());
         }
         else {
-          type_i = 1;//PMTs
+          fOpDetType.push_back(1); //PMTs
           //    std::cout<<"Radio: "<<geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
           fOpDetLength.push_back(-1);
           fOpDetHeight.push_back(-1);
         }
-        fOpDetType.push_back(type_i);
         // std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "
                   // <<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
       }
@@ -641,7 +638,7 @@ namespace larg4 {
       }
     }
 
-    const std::array<double, 3> ScintPoint = {x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm};
+    geo::Point_t const ScintPoint = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
     if(fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) return 0;
     const phot::MappedCounts_t& Visibilities = fPVS->GetAllVisibilities(ScintPoint);
 
@@ -676,7 +673,7 @@ namespace larg4 {
     <<pPreStepPoint->GetKineticEnergy()<<","
     <<pPreStepPoint->GetTotalEnergy()<<","
     <<aStep.GetTotalEnergyDeposit()<<","
-    <<ScintPoint[0]<<","<<ScintPoint[1]<<","<<ScintPoint[2]<<","<<t0<<","
+    <<ScintPoint<<","<<t0<<","
     <<aStep.GetDeltaPosition().mag()<<","
     <<MeanNumberOfPhotons<<","<<std::flush;
 
@@ -753,8 +750,7 @@ namespace larg4 {
       // here we go: now if visibilities are invalid, we are in trouble
       //if (!Visibilities && (NOpChannels > 0)) {
       //  throw cet::exception("OpFastScintillator")
-      //    << "Photon library does not cover point ( " << ScintPoint[0] << ", "
-      //    << ScintPoint[1] << ", " << ScintPoint[2] << " ) cm.\n";
+      //    << "Photon library does not cover point " << ScintPoint << " cm.\n";
       //}
 
       if(!Visibilities && !usesSemiAnalyticModel()) continue;
@@ -762,8 +758,8 @@ namespace larg4 {
       // detected photons from direct light
       std::map<size_t, int> DetectedNum;
       if(Visibilities && !usesSemiAnalyticModel()) {
-        for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-          if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+        for(size_t const OpDet: util::counter(NOpChannels)) {
+          if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
           int const DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
           if(DetThis > 0) DetectedNum[OpDet] = DetThis;
         }
@@ -776,8 +772,8 @@ namespace larg4 {
       std::map<size_t, int> ReflDetectedNum;
       if(fPVS->StoreReflected()) {
         if (!usesSemiAnalyticModel()) {
-          for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-            if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+          for(size_t const OpDet: util::counter(NOpChannels)) {
+            if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
             int const ReflDetThis = std::round(G4Poisson(ReflVisibilities[OpDet] * Num));
             if(ReflDetThis > 0) ReflDetectedNum[OpDet] = ReflDetThis;
           }
@@ -1074,18 +1070,18 @@ namespace larg4 {
     }
     else if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
-      const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm,
-                                     fOpDetCenter.at(OpChannel)[1]*CLHEP::cm,
-                                     fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
+      const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel).X()*CLHEP::cm,
+                                     fOpDetCenter.at(OpChannel).Y()*CLHEP::cm,
+                                     fOpDetCenter.at(OpChannel).Z()*CLHEP::cm);
       if (!Reflected) {
         double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
         getVUVTimes(arrival_time_dist, distance_in_cm); // in ns
       }
       else {
         TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
-        TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0],
-                                fOpDetCenter.at(OpChannel)[1],
-                                fOpDetCenter.at(OpChannel)[2]); // in cm
+        TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel).X(),
+                                fOpDetCenter.at(OpChannel).Y(),
+                                fOpDetCenter.at(OpChannel).Z()); // in cm
         getVISTimes(arrival_time_dist, ScintPoint, OpDetPoint_tv3); // in ns
       }
     }
@@ -1519,11 +1515,10 @@ namespace larg4 {
   // ---------------------------------------------------------------------------
   void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
                                                const double Num,
-                                               const std::array<double, 3> ScintPoint)
+                                               geo::Point_t const& ScintPoint)
   {
-    for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-      int DetThis = 0;
-      if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+    for(size_t const OpDet: util::counter(NOpChannels)) {
+      if(!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       fydimension = fOpDetHeight.at(OpDet);
       fzdimension = fOpDetLength.at(OpDet);
@@ -1532,8 +1527,8 @@ namespace larg4 {
       // TODO: potentially loosing photons:
       //       Num is double but gets casted to int in the function below
       // ~icaza
-      DetThis = VUVHits(Num, ScintPoint,
-                        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet));
+      int const DetThis = VUVHits(Num, ScintPoint,
+                        fOpDetCenter[OpDet], fOpDetType[OpDet]);
       if(DetThis > 0) {
         DetectedNum[OpDet] = DetThis;
         //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
@@ -1546,7 +1541,7 @@ namespace larg4 {
 
   void OpFastScintillation::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
                                                const double Num,
-                                               const std::array<double, 3> ScintPoint)
+                                               geo::Point_t const& ScintPoint)
   {
     // 1). calculate total number of hits of VUV photons on
     // reflective foils via solid angle + Gaisser-Hillas
@@ -1554,7 +1549,7 @@ namespace larg4 {
 
     // set plane_depth for correct TPC:
     double plane_depth;
-    if (ScintPoint[0] < 0.) {
+    if (ScintPoint.X() < 0.) {
       plane_depth = -fplane_depth;
     }
     else {
@@ -1562,15 +1557,15 @@ namespace larg4 {
     }
 
     // get scintpoint coords relative to centre of cathode plane
-    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint[0] - plane_depth),
-                                                 std::abs(ScintPoint[1] - fcathode_centre[1]),
-                                                 std::abs(ScintPoint[2] - fcathode_centre[2])};
+    std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
+                                                 std::abs(ScintPoint.Y() - fcathode_centre[1]),
+                                                 std::abs(ScintPoint.Z() - fcathode_centre[2])};
     // calculate solid angle of cathode from the scintillation point
     double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
     // calculate distance and angle between ScintPoint and hotspot
     // vast majority of hits in hotspot region directly infront of scintpoint,
     // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
-    double distance_cathode = std::abs(plane_depth - ScintPoint[0]);
+    double distance_cathode = std::abs(plane_depth - ScintPoint.X());
     // calculate hits on cathode plane via geometric acceptance
     double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
       (solid_angle_cathode / (4.*CLHEP::pi)) * int(Num);
@@ -1585,17 +1580,16 @@ namespace larg4 {
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini_);
     // double cosine_cathode = 1.;
     const double cathode_hits_rec = GH_correction * cathode_hits_geo;
-    const std::array<double, 3> hotspot = {plane_depth, ScintPoint[1], ScintPoint[2]};
+    const std::array<double, 3> hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
 
-    for(size_t OpDet = 0; OpDet != NOpChannels; ++OpDet) {
-      int ReflDetThis = 0;
-      if(!isOpDetInSameTPC(ScintPoint[0], fOpDetCenter.at(OpDet)[0])) continue;
+    for(size_t const OpDet: util::counter(NOpChannels)) {
+      if(!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // TODO: potentially loosing photons:
       //       Num is double but gets casted to int in the function below
       // ~icaza
-      ReflDetThis = VISHits(Num, ScintPoint,
-                            fOpDetCenter.at(OpDet), fOpDetType.at(OpDet),
+      int const ReflDetThis = VISHits(Num, ScintPoint,
+                            fOpDetCenter[OpDet], fOpDetType[OpDet],
                             cathode_hits_rec, hotspot);
       if(ReflDetThis > 0) {
         ReflDetectedNum[OpDet] = ReflDetThis;
@@ -1605,10 +1599,16 @@ namespace larg4 {
 
   // VUV semi-analytic hits calculation
   int OpFastScintillation::VUVHits(const int Nphotons_created,
-                                   const std::array<double, 3> ScintPoint,
-                                   const std::array<double, 3> OpDetPoint,
+                                   geo::Point_t const& ScintPoint_v,
+                                   geo::Point_t const& OpDetPoint_v,
                                    const int optical_detector_type)
   {
+    // the interface has been converted into geo::Point_t, the implementation not yet
+    std::array<double, 3U> ScintPoint;
+    std::array<double, 3U> OpDetPoint;
+    geo::vect::fillCoords(ScintPoint, ScintPoint_v);
+    geo::vect::fillCoords(OpDetPoint, OpDetPoint_v);
+
     // distance and angle between ScintPoint and OpDetPoint
     double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
     double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
@@ -1667,8 +1667,8 @@ namespace larg4 {
 
   // VIS hits semi-analytic model calculation
   int OpFastScintillation::VISHits(const int Nphotons_created,
-                                   const std::array<double, 3> ScintPoint,
-                                   const std::array<double, 3> OpDetPoint,
+                                   geo::Point_t const& ScintPoint_v,
+                                   geo::Point_t const& OpDetPoint_v,
                                    const int optical_detector_type,
                                    const double cathode_hits_rec,
                                    const std::array<double, 3> hotspot)
@@ -1679,6 +1679,12 @@ namespace larg4 {
 
     // 2). calculate number of these hits which reach the optical
     // detector from the hotspot via solid angle
+
+    // the interface has been converted into geo::Point_t, the implementation not yet
+    std::array<double, 3U> ScintPoint;
+    std::array<double, 3U> OpDetPoint;
+    geo::vect::fillCoords(ScintPoint, ScintPoint_v);
+    geo::vect::fillCoords(OpDetPoint, OpDetPoint_v);
 
     // calculate solid angle of optical channel
     double solid_angle_detector = 0;
@@ -1772,22 +1778,23 @@ namespace larg4 {
   }
 
 
-  bool OpFastScintillation::isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX)
+  bool OpFastScintillation::isOpDetInSameTPC
+    (geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is close to zero, otherwise return 0 hits
-    if (((ScintPointX < 0.) != (OpDetPointX < 0.)) && std::abs(OpDetPointX) > 10.) {// TODO: unhardcode
+    if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10.) {// TODO: unhardcode
       return false;
     }
     return true;
   }
 
 
-  bool OpFastScintillation::isScintInActiveVolume(const std::array<double, 3>& ScintPoint)
+  bool OpFastScintillation::isScintInActiveVolume(geo::Point_t const& ScintPoint)
   {
     //semi-analytic approach only works in the active volume
-    return fActiveVolumes[0].ContainsPosition(ScintPoint.data());
+    return fActiveVolumes[0].ContainsPosition(ScintPoint);
   }
 
 
