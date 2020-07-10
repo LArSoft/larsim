@@ -142,7 +142,7 @@ namespace larg4 {
 
     OpFastScintillation(const G4String& processName = "Scintillation",
                         G4ProcessType type = fElectromagnetic);
-    
+
     ~OpFastScintillation();
 
     ////////////
@@ -291,10 +291,10 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
-    
+
     /// Returns whether the semi-analytic visibility parametrization is being used.
     bool usesSemiAnalyticModel() const;
-    
+
     void detectedDirectHits(std::map<size_t, int>& DetectedNum,
                             const double Num,
                             geo::Point_t const& ScintPoint);
@@ -412,7 +412,7 @@ namespace larg4 {
     void ProcessStep( const G4Step& step);
 
     bool const bPropagate; ///< Whether propagation of photons is enabled.
-    
+
     /// Photon visibility service instance.
     phot::PhotonVisibilityService const* const fPVS;
 
@@ -438,10 +438,10 @@ namespace larg4 {
                       const std::vector<double> &yData2,
                       const std::vector<double> &yData3,
                       double x, bool extrapolate);
-    
+
     static std::vector<geo::BoxBoundedGeo> extractActiveVolumes
       (geo::GeometryCore const& geom);
-    
+
   }; // class OpFastScintillation
 
   double finter_d(double*, double*);

@@ -220,7 +220,7 @@ namespace larg4 {
           << ")"
           ;
       } // local scope
-      
+
       if (usesSemiAnalyticModel() && (geom.Ncryostats() > 1U)) {
         if (fOnlyOneCryostat) {
           mf::LogWarning("OpFastScintillation")
@@ -303,7 +303,7 @@ namespace larg4 {
       if(usesSemiAnalyticModel()) {
         mf::LogVerbatim("OpFastScintillation")
           << "OpFastScintillation: using semi-analytic model for number of hits";
-        
+
         // LAr absorption length in cm
         std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
         std::vector<double> x_v, y_v;
@@ -1505,13 +1505,13 @@ namespace larg4 {
     }
   }
 
-  
+
   // ---------------------------------------------------------------------------
   bool OpFastScintillation::usesSemiAnalyticModel() const {
     return fUseNhitsModel;
   } // OpFastScintillation::usesSemiAnalyticModel()
-  
-  
+
+
   // ---------------------------------------------------------------------------
   void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
                                                const double Num,
@@ -2107,29 +2107,29 @@ namespace larg4 {
     return 0.;
   }
 
-  
+
   // ---------------------------------------------------------------------------
   std::vector<geo::BoxBoundedGeo> OpFastScintillation::extractActiveVolumes
     (geo::GeometryCore const& geom)
   {
     std::vector<geo::BoxBoundedGeo> activeVolumes;
     activeVolumes.reserve(geom.Ncryostats());
-    
+
     for (geo::CryostatGeo const& cryo: geom.IterateCryostats()) {
-      
+
       // can't use it default-constructed since it would always include origin
       geo::BoxBoundedGeo box { cryo.TPC(0).ActiveBoundingBox() };
-      
+
       for (geo::TPCGeo const& TPC: cryo.IterateTPCs())
         box.ExtendToInclude(TPC.ActiveBoundingBox());
-        
+
       activeVolumes.push_back(std::move(box));
-      
+
     } // for cryostats
-    
+
     return activeVolumes;
   } // OpFastScintillation::extractActiveVolumes()
-  
+
   // ---------------------------------------------------------------------------
 
 
