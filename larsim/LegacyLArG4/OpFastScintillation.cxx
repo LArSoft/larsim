@@ -204,7 +204,7 @@ namespace larg4 {
       assert(fPVS);
 
       // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
-      static art::ServiceHandle<geo::Geometry const> geo;
+      geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
       {
         auto log = mf::LogTrace("OpFastScintillation")
@@ -221,11 +221,11 @@ namespace larg4 {
           ;
       } // local scope
       
-      if (usesSemiAnalyticModel() && (geo->Ncryostats() > 1U)) {
+      if (usesSemiAnalyticModel() && (geom.Ncryostats() > 1U)) {
         if (fOnlyOneCryostat) {
           mf::LogWarning("OpFastScintillation")
             << std::string(80, '=')
-            << "\nA detector with " << geo->Ncryostats() << " cryostats is configured"
+            << "\nA detector with " << geom.Ncryostats() << " cryostats is configured"
             << " , and semi-analytic model is requested for scintillation photon propagation."
             << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
             << " (e.g. scintillation may be detected only in cryostat #0)."
@@ -242,7 +242,7 @@ namespace larg4 {
       } // if
 
       geo::Point_t const Cathode_centre {
-        geo->TPC(0, 0).GetCathodeCenter().X(),
+        geom.TPC(0, 0).GetCathodeCenter().X(),
         fActiveVolumes[0].CenterY(),
         fActiveVolumes[0].CenterZ()
         };
@@ -256,7 +256,7 @@ namespace larg4 {
       // }
 
       for(size_t const i: util::counter(fPVS->NOpChannels())) {
-        geo::OpDetGeo const& opDet = geo->OpDetGeoFromOpDet(i);
+        geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
         fOpDetCenter.push_back(opDet.GetCenter());
         if (opDet.isBar()) {
           fOpDetType.push_back(0);//Arapucas
@@ -265,12 +265,12 @@ namespace larg4 {
         }
         else {
           fOpDetType.push_back(1); //PMTs
-          //    std::cout<<"Radio: "<<geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
+          //    std::cout<<"Radio: "<<geom.OpDetGeoFromOpDet(i).RMax()<<std::endl;
           fOpDetLength.push_back(-1);
           fOpDetHeight.push_back(-1);
         }
-        // std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< type_i <<"  APERTURE_height: "
-                  // <<geo->OpDetGeoFromOpDet(i).Height()<<"  APERTURE_width: "<<geo->OpDetGeoFromOpDet(i).Length()<< std::endl;
+        // std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< fOpDetType.back() <<"  APERTURE_height: "
+                  // <<opDet.Height()<<"  APERTURE_width: "<<opDet.Length()<< std::endl;
       }
 
       if(fPVS->IncludePropTime()) {
@@ -349,7 +349,7 @@ namespace larg4 {
           else fApplyVisBorderCorrection = false;
 
           // cathode dimensions required for corrections
-          fcathode_centre = geo->TPC(0, 0).GetCathodeCenter();
+          fcathode_centre = geom.TPC(0, 0).GetCathodeCenter();
           fcathode_centre[1] = fActiveVolumes[0].CenterY();
           fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
           fcathode_ydimension = fActiveVolumes[0].SizeY();
