@@ -136,6 +136,7 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect::fillCoords()
+#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
 
 // support libraries
 #include "cetlib_except/exception.h"
@@ -1067,19 +1068,17 @@ namespace larg4 {
     }
     else if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
-      const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel).X()*CLHEP::cm,
-                                     fOpDetCenter.at(OpChannel).Y()*CLHEP::cm,
-                                     fOpDetCenter.at(OpChannel).Z()*CLHEP::cm);
+      geo::Point_t const& opDetCenter = fOpDetCenter.at(OpChannel);
       if (!Reflected) {
+        const G4ThreeVector OpDetPoint(opDetCenter.X() * CLHEP::cm,
+                                       opDetCenter.Y() * CLHEP::cm,
+                                       opDetCenter.Z() * CLHEP::cm);
         double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
         getVUVTimes(arrival_time_dist, distance_in_cm); // in ns
       }
       else {
-        TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
-        TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel).X(),
-                                fOpDetCenter.at(OpChannel).Y(),
-                                fOpDetCenter.at(OpChannel).Z()); // in cm
-        getVISTimes(arrival_time_dist, ScintPoint, OpDetPoint_tv3); // in ns
+        TVector3 const ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm ); // in cm
+        getVISTimes(arrival_time_dist, ScintPoint, geo::vect::toTVector3(opDetCenter)); // in ns
       }
     }
   }
