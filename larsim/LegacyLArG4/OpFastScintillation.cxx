@@ -489,9 +489,6 @@ namespace larg4 {
     // get the number of photons produced from the IonizationAndScintillation
     // singleton
     larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
-    // TODO: I believe MeanNumberOfPhotons should be unsigned int or
-    // long unsigned int, this would need to change across different files
-    // ~icaza
     double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
     // double stepEnergy          = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
     RecordPhotonsProduced(aStep, MeanNumberOfPhotons);//, stepEnergy);
@@ -1524,9 +1521,6 @@ namespace larg4 {
       fzdimension = fOpDetLength.at(OpDet);
       // set detector struct for solid angle function
       detPoint.h = fydimension; detPoint.w = fzdimension;
-      // TODO: potentially loosing photons:
-      //       Num is double but gets casted to int in the function below
-      // ~icaza
       int const DetThis = VUVHits(Num, ScintPoint,
                         fOpDetCenter[OpDet], fOpDetType[OpDet]);
       if(DetThis > 0) {
@@ -1568,7 +1562,7 @@ namespace larg4 {
     double distance_cathode = std::abs(plane_depth - ScintPoint.X());
     // calculate hits on cathode plane via geometric acceptance
     double cathode_hits_geo = std::exp(-1.*distance_cathode / fL_abs_vuv) *
-      (solid_angle_cathode / (4.*CLHEP::pi)) * int(Num);
+      (solid_angle_cathode / (4.*CLHEP::pi)) * Num;
     // apply Gaisser-Hillas correction for Rayleigh scattering distance and angular dependence
     // offset angle bin
     // double theta_cathode = 0.;
@@ -1585,10 +1579,7 @@ namespace larg4 {
     for(size_t const OpDet: util::counter(NOpChannels)) {
       if(!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
-      // TODO: potentially loosing photons:
-      //       Num is double but gets casted to int in the function below
-      // ~icaza
-      int const ReflDetThis = VISHits(Num, ScintPoint,
+      int const ReflDetThis = VISHits(ScintPoint,
                             fOpDetCenter[OpDet], fOpDetType[OpDet],
                             cathode_hits_rec, hotspot);
       if(ReflDetThis > 0) {
@@ -1598,7 +1589,7 @@ namespace larg4 {
   }
 
   // VUV semi-analytic hits calculation
-  int OpFastScintillation::VUVHits(const int Nphotons_created,
+  int OpFastScintillation::VUVHits(const double Nphotons_created,
                                    geo::Point_t const& ScintPoint_v,
                                    geo::Point_t const& OpDetPoint_v,
                                    const int optical_detector_type)
@@ -1657,8 +1648,7 @@ namespace larg4 {
                            fGHvuvpars[3][j]
                           };
     double GH_correction = Gaisser_Hillas(distance, pars_ini_);
-    double hits_rec = gRandom->Poisson( GH_correction * hits_geo / cosine );
-    // round to integer value, cannot have non-integer number of hits
+    double hits_rec = gRandom->Poisson(GH_correction * hits_geo / cosine);
     int hits_vuv = std::round(hits_rec);
 
     return hits_vuv;
@@ -1666,8 +1656,7 @@ namespace larg4 {
 
 
   // VIS hits semi-analytic model calculation
-  int OpFastScintillation::VISHits(const int Nphotons_created,
-                                   geo::Point_t const& ScintPoint_v,
+  int OpFastScintillation::VISHits(geo::Point_t const& ScintPoint_v,
                                    geo::Point_t const& OpDetPoint_v,
                                    const int optical_detector_type,
                                    const double cathode_hits_rec,
@@ -1766,11 +1755,9 @@ namespace larg4 {
       // apply border correction
       double hits_rec_borders = border_correction * hits_rec / cosine_vis;
 
-      // round final result
       hits_vis = std::round(hits_rec_borders);
     }
     else {
-      // round final result
       hits_vis = std::round(hits_rec);
     }
 

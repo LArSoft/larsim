@@ -381,8 +381,8 @@ namespace phot
 
         void Initialization();
 
-        int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
-        int VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+        int VUVHits(double Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
+        int VISHits(double Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
 
         std::vector<double> propagationtime(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected);
         std::vector<double> getVUVTime(double distance, int number_photons);
@@ -716,7 +716,7 @@ namespace phot
     }
 
     //......................................................................
-    int PDFastSimPAR::VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
+    int PDFastSimPAR::VUVHits(double Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
     {
         // check optical channel is in same TPC as scintillation light, if not return 0 hits
         // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -795,7 +795,7 @@ namespace phot
     }
 
     //......................................................................
-    int PDFastSimPAR::VISHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
+    int PDFastSimPAR::VISHits(double Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint, int optical_detector_type)
     {
         // check optical channel is in same TPC as scintillation light, if not return 0 hits
         // temporary method working for SBND, DUNE 1x2x6; to be replaced to work in full DUNE geometry
