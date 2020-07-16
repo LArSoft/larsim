@@ -45,8 +45,8 @@ private:
   float const fMinPhotonEnergy;
   bool const fDebug;
   std::size_t const fN;
-  bool fUseReflectedPhotons;
-  std::string fReflectedLabel;
+  bool const fUseReflectedPhotons;
+  std::string const fReflectedLabel;
 
   void CheckTimeWindows() const;
 };
@@ -62,7 +62,7 @@ simfilter::FilterSimPhotonTime::FilterSimPhotonTime(
   , fDebug(p.get<bool>("Debug", false))
   , fN(fTimeWindows.size())
   , fUseReflectedPhotons(p.get<bool>("UseReflectedPhotons", false))
-  , fReflectedLabel(p.get<std::string>("fReflectedLabel", "Reflected"))
+  , fReflectedLabel(p.get<std::string>("ReflectedLabel", "Reflected"))
 {
   CheckTimeWindows();
 

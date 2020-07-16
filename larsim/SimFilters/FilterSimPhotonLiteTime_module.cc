@@ -48,8 +48,8 @@ private:
   int const fMinTotalPhotons; //!< Minimum number of photons inside a window to pass the filter
   bool const fDebug; //!< Set to true to print (a lot of) debug information.
   std::size_t const fN; //!< Number of time winows.
-  bool fUseReflectedPhotons; //!< Whether to include reflected photons in the filter.
-  std::string fReflectedLabel; //!< Label for the reflected photons -- "Reflected" by default.
+  bool const fUseReflectedPhotons; //!< Whether to include reflected photons in the filter.
+  std::string const fReflectedLabel; //!< Label for the reflected photons -- "Reflected" by default.
 
   void CheckTimeWindows() const;
 };
@@ -64,7 +64,7 @@ simfilter::FilterSimPhotonLiteTime::FilterSimPhotonLiteTime(
   , fDebug(p.get<bool>("Debug", false))
   , fN(fTimeWindows.size())
   , fUseReflectedPhotons(p.get<bool>("UseReflectedPhotons", false))
-  , fReflectedLabel(p.get<std::string>("fReflectedLabel", "Reflected"))
+  , fReflectedLabel(p.get<std::string>("ReflectedLabel", "Reflected"))
 {
   CheckTimeWindows();
 
