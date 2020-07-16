@@ -24,6 +24,7 @@
 #include "nug4/G4Base/UserAction.h"
 
 #include <map>
+#include <memory>
 
 // Forward declarations.
 class G4Event;
@@ -47,7 +48,7 @@ namespace larg4 {
 
     struct ParticleInfo_t {
 
-      simb::MCParticle* particle = nullptr;  ///< simple structure representing particle
+      simb::MCParticle* particle = nullptr;  ///< Object representing particle (not owned).
       bool              keep = false;        ///< if there was decision to keep
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
@@ -75,8 +76,11 @@ namespace larg4 {
     }; // ParticleInfo_t
 
     // Standard constructors and destructors;
-    ParticleListAction(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false);
-    virtual ~ParticleListAction();
+    ParticleListAction(double energyCut,
+                       bool storeTrajectories=false,
+                       bool keepEMShowerDaughters=false,
+                       bool keepMCParticleList=true
+                       );
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
@@ -105,6 +109,9 @@ namespace larg4 {
     std::map<int, GeneratedParticleIndex_t> const& GetPrimaryTruthMap() const
       { return fPrimaryTruthMap; }
 
+    /// Returns whether a particle list is being kept.
+    bool hasList() const { return bool(fparticleList); }
+    
     /// Returns the index of primary truth (`sim::NoGeneratorIndex` if none).
     GeneratedParticleIndex_t GetPrimaryTruthIndex(int trackId) const;
 
@@ -124,7 +131,7 @@ namespace larg4 {
                                                      ///< be included in the list.
     ParticleInfo_t           fCurrentParticle;       ///< information about the particle currently being simulated
                                                      ///< for a single particle.
-    sim::ParticleList*       fparticleList;          ///< The accumulated particle information for
+    std::unique_ptr<sim::ParticleList> fparticleList; ///< The accumulated particle information for
                                                      ///< all particles in the event.
     G4bool                   fstoreTrajectories;     ///< Whether to store particle trajectories with each particle.
     std::map<int, int>       fParentIDMap;           ///< key is current track ID, value is parent ID
