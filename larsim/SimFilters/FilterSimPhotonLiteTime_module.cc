@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "lardataobj/Simulation/SimPhotons.h"
-#include "lardataobj/Simulation/SimPhotons.h"
 
 namespace simfilter {
   class FilterSimPhotonLiteTime;
