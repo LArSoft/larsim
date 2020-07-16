@@ -84,6 +84,8 @@
 /////////////
 
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
+#include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4VRestDiscreteProcess.hh"
@@ -98,6 +100,9 @@
 #include "TF1.h"
 #include "TVector3.h"
 
+#include <memory> // std::unique_ptr
+
+
 class G4EmSaturation;
 class G4Step;
 class G4Track;
@@ -105,6 +110,8 @@ class G4VParticleChange;
 namespace CLHEP {
   class RandGeneral;
 }
+namespace geo { class GeometryCore; }
+namespace phot { class PhotonVisibilityService; }
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -135,7 +142,6 @@ namespace larg4 {
 
     OpFastScintillation(const G4String& processName = "Scintillation",
                         G4ProcessType type = fElectromagnetic);
-    OpFastScintillation(const OpFastScintillation &right);
 
     ~OpFastScintillation();
 
@@ -272,8 +278,8 @@ namespace larg4 {
     // Class Data Members
     ///////////////////////
 
-    G4PhysicsTable* theSlowIntegralTable;
-    G4PhysicsTable* theFastIntegralTable;
+    std::unique_ptr<G4PhysicsTable> theSlowIntegralTable;
+    std::unique_ptr<G4PhysicsTable> theFastIntegralTable;
 
     G4bool fTrackSecondariesFirst;
     G4bool fFiniteRiseTime;
@@ -285,21 +291,25 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
+
+    /// Returns whether the semi-analytic visibility parametrization is being used.
+    bool usesSemiAnalyticModel() const;
+
     void detectedDirectHits(std::map<size_t, int>& DetectedNum,
                             const double Num,
-                            const std::array<double, 3> ScintPoint);
+                            geo::Point_t const& ScintPoint);
     void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
                             const double Num,
-                            const std::array<double, 3> ScintPoint);
+                            geo::Point_t const& ScintPoint);
 
     int VUVHits(const double Nphotons_created,
-                const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
+                geo::Point_t const& ScintPoint,
+                geo::Point_t const& OpDetPoint,
                 const int optical_detector_type);
     // Calculates semi-analytic model number of hits for vuv component
 
-    int VISHits(const std::array<double, 3> ScintPoint,
-                const std::array<double, 3> OpDetPoint,
+    int VISHits(geo::Point_t const& ScintPoint,
+                geo::Point_t const& OpDetPoint,
                 const int optical_detector_type,
                 const double cathode_hits_rec,
                 const std::array<double, 3> hotspot);
@@ -366,13 +376,12 @@ namespace larg4 {
 
     //For VUV semi-analytic hits
     G4double Gaisser_Hillas(const double x, const double *par);
-    bool fUseNhitsModel;
     //array of correction for the VUV Nhits estimation
     std::vector<std::vector<double> > fGHvuvpars;
     //To account for the border effects
     std::vector<double> fborder_corr;
     double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
-    double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
+    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
     // For VIS semi-analytic hits
     constexpr double Pol_5(const double x, double *par);
     bool fStoreReflected;
@@ -393,7 +402,7 @@ namespace larg4 {
     double fydimension, fzdimension, fradius;
     dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
-    std::vector<std::array<double, 3>> fOpDetCenter;
+    std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int>  fOpDetType;
     std::vector<double>  fOpDetLength;
     std::vector<double>  fOpDetHeight;
@@ -401,10 +410,24 @@ namespace larg4 {
 
     void ProcessStep( const G4Step& step);
 
-    bool bPropagate; ///< Whether propagation of photons is enabled.
+    bool const bPropagate; ///< Whether propagation of photons is enabled.
 
-    bool isOpDetInSameTPC(const double ScintPointX, const double OpDetPointX);
-    bool isScintInActiveVolume(const std::array<double, 3> ScintPoint);
+    /// Photon visibility service instance.
+    phot::PhotonVisibilityService const* const fPVS;
+
+    /// Whether the semi-analytic model is being used for photon visibility.
+    bool const fUseNhitsModel = false;
+    /// Whether photon propagation is performed only from active volumes
+    bool const fOnlyActiveVolume = false;
+    /// Allows running even if light on cryostats `C:1` and higher is not supported.
+    /// Currently hard coded "no"
+    bool const fOnlyOneCryostat = false;
+    /// Whether the cathodes are fully opaque; currently hard coded "no".
+    bool const fOpaqueCathode = false;
+
+    bool isOpDetInSameTPC
+      (geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
     double interpolate(const std::vector<double> &xData,
                        const std::vector<double> &yData,
                        double x, bool extrapolate, size_t i=0);
@@ -414,7 +437,11 @@ namespace larg4 {
                       const std::vector<double> &yData2,
                       const std::vector<double> &yData3,
                       double x, bool extrapolate);
-  };
+
+    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes
+      (geo::GeometryCore const& geom);
+
+  }; // class OpFastScintillation
 
   double finter_d(double*, double*);
   double LandauPlusExpoFinal(double*, double*);
@@ -489,13 +516,13 @@ namespace larg4 {
   inline
   G4PhysicsTable* OpFastScintillation::GetSlowIntegralTable() const
   {
-    return theSlowIntegralTable;
+    return theSlowIntegralTable.get();
   }
 
   inline
   G4PhysicsTable* OpFastScintillation::GetFastIntegralTable() const
   {
-    return theFastIntegralTable;
+    return theFastIntegralTable.get();
   }
 
   inline
