@@ -546,7 +546,7 @@ namespace larg4 {
     pworlds.push_back(new LArVoxelReadoutGeometry
       ("LArVoxelReadoutGeometry", readoutGeomSetupData)
       );
-    pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
+    pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName(), "OpDetReadoutGeometry", fUseLitePhotons ));
     pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );
 
     fG4Help->SetParallelWorlds(pworlds);

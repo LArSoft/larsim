@@ -29,8 +29,10 @@
 
 namespace larg4 {
 
-  OpDetReadoutGeometry::OpDetReadoutGeometry(G4String OpDetSensitiveName, const G4String name) :
-    G4VUserParallelWorld(name)
+  OpDetReadoutGeometry::OpDetReadoutGeometry
+    (G4String OpDetSensitiveName, const G4String name, bool useLitePhotons /* = false */)
+    : G4VUserParallelWorld(name)
+    , fUseLitePhotons(useLitePhotons)
   {
     fOpDetSensitiveName = OpDetSensitiveName;
   }
@@ -65,7 +67,7 @@ namespace larg4 {
     OpDetLookup * TheOpDetLookup = OpDetLookup::Instance();
 
     // Create sensitive detector
-    OpDetSensitiveDetector * TheSD = new OpDetSensitiveDetector("OpDetSensitiveDetector");
+    OpDetSensitiveDetector * TheSD = new OpDetSensitiveDetector("OpDetSensitiveDetector", fUseLitePhotons);
 
 
     if(OpDetVolumes.size()>0)
