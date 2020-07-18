@@ -12,6 +12,30 @@
 #include "TBranch.h"
 #include "TNamed.h"
 #include "TString.h"
+#include "TVector.h"
+#include "RooDouble.h"
+#include "RooInt.h"
+
+
+namespace {
+  
+  template <typename RooT, typename T>
+  struct RooReader {
+    TDirectory& srcDir;
+    std::vector<std::string>& missingKeys;
+    
+    std::optional<T> operator() (std::string const& key)
+      {
+        RooT const* value = srcDir.Get<RooT>(key.c_str());
+        if (value) return { T(*value) };
+        missingKeys.push_back(key);
+        return std::nullopt;
+      }
+  }; // RooReader
+  
+} // local namespace
+
+
 
 namespace phot{
 
@@ -19,9 +43,10 @@ namespace phot{
 
   //------------------------------------------------------------
 
-  void PhotonLibrary::StoreLibraryToFile(std::string LibraryFile, bool storeReflected, bool storeReflT0, size_t storeTiming) const
+  void PhotonLibrary::StoreLibraryToFile
+    (std::string, bool storeReflected, bool storeReflT0, size_t storeTiming) const
   {
-    mf::LogInfo("PhotonLibrary") << "Writing photon library to input file: " << LibraryFile.c_str()<<std::endl;
+    mf::LogInfo("PhotonLibrary") << "Writing photon library to file";;
 
     art::ServiceHandle<art::TFileService const> tfs;
 
@@ -95,6 +120,8 @@ namespace phot{
         }
       }
     }
+    
+    StoreMetadata();
   }
 
 
@@ -143,15 +170,21 @@ namespace phot{
 
     TFile *f = nullptr;
     TTree *tt = nullptr;
+    TDirectory* pSrcDir = nullptr;
 
     try
       {
 	f  =  TFile::Open(LibraryFile.c_str());
 	tt =  (TTree*)f->Get("PhotonLibraryData");
-        if (!tt) { // Library not in the top directory
+        if (tt) {
+          pSrcDir = f;
+        }
+        else { // Library not in the top directory
             TKey *key = f->FindKeyAny("PhotonLibraryData");
-            if (key)
+            if (key) {
                 tt = (TTree*)key->ReadObj();
+                pSrcDir = key->GetMotherDir();
+            }
             else {
                 mf::LogError("PhotonLibrary") << "PhotonLibraryData not found in file" <<LibraryFile;
             }
@@ -199,6 +232,7 @@ namespace phot{
       timing_par.resize(getTiming);
       tt->SetBranchAddress("timing_par", timing_par.data());
       fTimingParNParameters=fHasTiming;
+      // should be pSrcDir->Get()? kept as is for backward compatibility
       TNamed *n = (TNamed*)f->Get("fTimingParFormula");
       if(!n) mf::LogError("PhotonLibrary") <<"Error reading the photon propagation formula. Please check the photon library." << std::endl;
       fTimingParFormula = n->GetTitle();
@@ -243,7 +277,13 @@ namespace phot{
       }
     } // for entries
 
-    mf::LogInfo("PhotonLibrary") <<"Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
+    LoadMetadata(*pSrcDir);
+    {
+      mf::LogInfo log("PhotonLibrary");
+      log << "Photon lookup table size : "<<  NVoxels << " voxels,  " << fNOpChannels<<" channels";
+      if (hasVoxelDef()) log << "; " << GetVoxelDef();
+      else log << " (no voxel geometry included)";
+    }
 
     try
       {
@@ -398,6 +438,127 @@ namespace phot{
     else return fReflTLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
 
+  //------------------------------------------------------------
+  void PhotonLibrary::LoadMetadata(TDirectory& srcDir) {
+    
+    constexpr std::size_t NExpectedKeys = 9U;
+    
+    std::vector<std::string> missingKeys;
+    
+    RooReader<RooInt, Int_t> readInt { srcDir, missingKeys };
+    RooReader<RooDouble, Double_t> readDouble { srcDir, missingKeys };
+    
+    double xMin;
+    double xMax;
+    int xN;
+    double yMin;
+    double yMax;
+    int yN;
+    double zMin;
+    double zMax;
+    int zN;
+    if (auto metaValue = readDouble("MinX")) xMin = *metaValue;
+    if (auto metaValue = readDouble("MaxX")) xMax = *metaValue;
+    if (auto metaValue = readInt  ("NDivX")) xN   = *metaValue;
+    if (auto metaValue = readDouble("MinY")) yMin = *metaValue;
+    if (auto metaValue = readDouble("MaxY")) yMax = *metaValue;
+    if (auto metaValue = readInt  ("NDivY")) yN   = *metaValue;
+    if (auto metaValue = readDouble("MinZ")) zMin = *metaValue;
+    if (auto metaValue = readDouble("MaxZ")) zMax = *metaValue;
+    if (auto metaValue = readInt  ("NDivZ")) zN   = *metaValue;
+    
+    if (!missingKeys.empty()) {
+      if (missingKeys.size() != NExpectedKeys) {
+        mf::LogError log("PhotonLibrary");
+        log
+          << "Photon library at '" << srcDir.GetPath() << "' is missing "
+          << missingKeys.size() << " metadata elements:";
+        for (auto const& key: missingKeys) log << " '" << key << "'";
+      }
+      else {
+        mf::LogTrace("PhotonLibrary")
+          << "No voxel metadata found in '" << srcDir.GetPath() << "'";
+      }
+      return;
+    } // if missing keys
+    
+    fVoxelDef.emplace(
+      xMin, xMax, xN,
+      yMin, yMax, yN,
+      zMin, zMax, zN
+      );
+    
+  } // PhotonLibrary::LoadMetadata()
+  
+  
+  //------------------------------------------------------------
+  void PhotonLibrary::StoreMetadata() const {
+    
+    auto const& tfs = *(art::ServiceHandle<art::TFileService const>());
+
+    // NVoxels
+    tfs.makeAndRegister<RooInt>
+      ("NVoxels","Total number of voxels in the library", fNVoxels);
+    
+    // NChannels
+    tfs.makeAndRegister<RooInt>(
+      "NChannels","Total number of optical detector channels in the library",
+      fNOpChannels
+      );
+    
+    if (!hasVoxelDef()) return;
+    sim::PhotonVoxelDef const& voxelDef = GetVoxelDef();
+    
+    // lower point
+    geo::Point_t const& lower = voxelDef.GetRegionLowerCorner();
+    tfs.makeAndRegister<RooDouble>(
+      "MinX","Lower x coordinate covered by the library (world coordinates, cm)",
+      lower.X()
+      );
+    tfs.makeAndRegister<RooDouble>(
+      "MinY","Lower y coordinate covered by the library (world coordinates, cm)",
+      lower.Y()
+      );
+    tfs.makeAndRegister<RooDouble>(
+      "MinZ","Lower z coordinate covered by the library (world coordinates, cm)",
+      lower.Z()
+      );
+    
+    // upper point
+    geo::Point_t const& upper = voxelDef.GetRegionUpperCorner();
+    tfs.makeAndRegister<RooDouble>(
+      "MaxX","Upper x coordinate covered by the library (world coordinates, cm)",
+      upper.X()
+      );
+    tfs.makeAndRegister<RooDouble>(
+      "MaxY","Upper y coordinate covered by the library (world coordinates, cm)",
+      upper.Y()
+      );
+    tfs.makeAndRegister<RooDouble>(
+      "MaxZ","Upper z coordinate covered by the library (world coordinates, cm)",
+      upper.Z()
+      );
+    
+    // steps
+    geo::Vector_t const& stepSizes = voxelDef.GetVoxelSize();
+    tfs.makeAndRegister<RooDouble>
+      ("StepX","Size on x direction of a voxel (cm)", stepSizes.X());
+    tfs.makeAndRegister<RooDouble>
+      ("StepY","Size on y direction of a voxel (cm)", stepSizes.Y());
+    tfs.makeAndRegister<RooDouble>
+      ("StepZ","Size on z direction of a voxel (cm)", stepSizes.Z());
+    
+    // divisions
+    auto const& steps = voxelDef.GetSteps();
+    tfs.makeAndRegister<RooInt>("NDivX","Steps on the x direction", steps[0]);
+    tfs.makeAndRegister<RooInt>("NDivY","Steps on the y direction", steps[1]);
+    tfs.makeAndRegister<RooInt>("NDivZ","Steps on the z direction", steps[2]);
+    
+
+    
+  } // PhotonLibrary::StoreMetadata()
+  
+  
   //----------------------------------------------------
 
   size_t PhotonLibrary::ExtractNOpChannels(TTree* tree) {

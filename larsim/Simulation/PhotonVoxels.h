@@ -83,7 +83,7 @@ namespace sim {
                    int yN,
                    double zMin,
                    double zMax,
-                   int z);
+                   int zN);
 
     /// Returns the volume vertex (type `Point`) with the lowest coordinates.
     template <typename Point = DefaultPoint>
@@ -97,9 +97,16 @@ namespace sim {
     std::array<unsigned int, 3U> GetSteps() const;
 
 
+    /// Returns a vector describing the span of a single voxel in x, y an z [cm]
     template <typename Vector = DefaultVector>
     Vector GetVoxelSize() const;
 
+    /// Returns a vector describing the full span in x, y an z [cm]
+    template <typename Vector = DefaultVector, typename Point = DefaultPoint>
+    Vector GetVolumeSize() const
+      { return GetRegionUpperCorner<Point>() - GetRegionLowerCorner<Point>(); }
+
+    /// Returns the total number of voxels in the volume.
     unsigned int GetNVoxels() const;
 
     /// Returns the ID of the voxel containing `p`, or `-1` if none.
@@ -166,6 +173,11 @@ namespace sim {
     static bool isInsideRange(double value, double lower, double upper);
 
   }; // class PhotonVoxelDef
+  
+  
+  /// Prints the content of the specified voxel definition into a stream.
+  std::ostream& operator<<
+    (std::ostream& out, sim::PhotonVoxelDef const& voxelDef);
 
 } // namespace sim
 

@@ -176,6 +176,24 @@ namespace phot{
 
             size_t NVoxels = GetVoxelDef().GetNVoxels();
             lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar, fParPropTime_MaxRange);
+            
+            // if the library does not have metadata, we supply some;
+            // otherwise we check that it's compatible with the configured one
+            // (and shrug if it's not); overriding configured metadata
+            // from the one in the library is currently not supported
+            if (!lib->hasVoxelDef()) lib->SetVoxelDef(GetVoxelDef());
+            else if (GetVoxelDef() != lib->GetVoxelDef()) {
+              // this might become a fatal error in the future if some protocol
+              // is imposed... it may also be possible to check only the size
+              // rather than the coordinates, which may allow for translations
+              // of the geometry volumes in world space.
+              mf::LogWarning("PhotonVisbilityService")
+                << "Photon library reports the geometry:\n"
+                << lib->GetVoxelDef()
+                << "while PhotonVisbilityService is configured with:\n"
+                << GetVoxelDef()
+                ;
+            } // if metadata
           }
         }
       }
@@ -190,6 +208,7 @@ namespace phot{
         fTheLibrary = lib;
 
         lib->CreateEmptyLibrary(NVoxels, NOpDets, fStoreReflected, fStoreReflT0, fParPropTime_npar);
+        lib->SetVoxelDef(GetVoxelDef());
       }
 
     }
@@ -419,7 +438,7 @@ namespace phot{
     }
 
     // In case we're outside the bounding box we'll get a empty optional list.
-    auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(p));
+    auto const neis = GetVoxelDef().GetNeighboringVoxelIDs(LibLocation(p));
     if (!neis) return 0.0;
 
     // Sum up all the weighted neighbours to get interpolation behaviour

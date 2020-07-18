@@ -18,6 +18,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ROOT::Matrix
                        ROOT::Tree
                        ROOT::GenVector
+                       ROOT::RooFit
           SERVICE_LIBRARIES larsim_PhotonPropagation
                        larsim_Simulation
                        nug4_ParticleNavigation
