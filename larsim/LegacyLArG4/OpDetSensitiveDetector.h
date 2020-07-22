@@ -73,9 +73,6 @@ namespace larg4 {
     /// Adds the photon at the specified step with reduced information.
     void AddLitePhoton(G4Step const* aStep, int OpDet);
     
-    /// Converts a photon `energy` [eV] into its Wavelength [nm]
-    static constexpr double Wavelength(double energy);
-
   };
 }
 

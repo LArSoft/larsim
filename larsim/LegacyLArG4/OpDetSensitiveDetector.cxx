@@ -19,6 +19,14 @@
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h" // util::pi()
 #include "Geant4/G4SDManager.hh"
 
+namespace {
+  
+  /// Converts a photon `energy` [eV] into its Wavelength [nm]
+  constexpr double Wavelength(double energy);
+
+} // local namespace
+
+
 namespace larg4{
 
 
@@ -118,15 +126,21 @@ namespace larg4{
   }
   
   
-  //--------------------------------------------------------
-  constexpr double OpDetSensitiveDetector::Wavelength(double energy) {
+}
+
+
+//--------------------------------------------------------
+namespace {
+  
+  constexpr double Wavelength(double energy) {
     
     // SI 2019 (eV nm):
     constexpr double hc = 6.62607015e-34 * 299792458.0 / 1.602176634e-19 * 1e9;
     
     return hc / energy; // nm
     
-  } // OpDetSensitiveDetector::Wavelength()
+  } // Wavelength()
   
+} // local namespace
 
-}
+//--------------------------------------------------------
