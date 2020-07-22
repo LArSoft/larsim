@@ -111,7 +111,7 @@ namespace larg4 {
       { return fPrimaryTruthMap; }
 
     /// Returns whether a particle list is being kept.
-    bool hasList() const { return bool(fparticleList); }
+    bool hasList() const { return static_cast<bool>(fparticleList); }
     
     /// Returns the index of primary truth (`sim::NoGeneratorIndex` if none).
     GeneratedParticleIndex_t GetPrimaryTruthIndex(int trackId) const;
