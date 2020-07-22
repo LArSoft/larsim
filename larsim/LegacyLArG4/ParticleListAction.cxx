@@ -257,7 +257,7 @@ namespace larg4 {
                                                          polarization.z() ) );
 
       // Save the particle in the ParticleList.
-    fparticleList->Add( fCurrentParticle.particle );
+    fparticleList->Add( fCurrentParticle.particle.get() );
   }
 
   //----------------------------------------------------------------------------
@@ -269,7 +269,7 @@ namespace larg4 {
     // if we have found no reason to keep it, drop it!
     // (we might still need parentage information though)
     if (!fCurrentParticle.keep) {
-      fparticleList->Archive(fCurrentParticle.particle);
+      fparticleList->Archive(fCurrentParticle.particle.get());
       // after the particle is archived, it is deleted
       fCurrentParticle.clear();
       return;

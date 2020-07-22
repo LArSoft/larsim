@@ -22,6 +22,7 @@
 #include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
 #include "nug4/G4Base/UserAction.h"
+#include "cetlib/exempt_ptr.h"
 
 #include <map>
 #include <memory>
@@ -48,7 +49,7 @@ namespace larg4 {
 
     struct ParticleInfo_t {
 
-      simb::MCParticle* particle = nullptr;  ///< Object representing particle (not owned).
+      cet::exempt_ptr<simb::MCParticle> particle;  ///< Object representing particle.
       bool              keep = false;        ///< if there was decision to keep
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
@@ -62,7 +63,7 @@ namespace larg4 {
         }
 
       /// Returns whether there is a particle
-      bool hasParticle() const { return particle; }
+      bool hasParticle() const { return !particle.empty(); }
 
       /// Returns whether there is a particle
       bool isPrimary() const { return simb::isGeneratedParticleIndex(truthIndex); }
