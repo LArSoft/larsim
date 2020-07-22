@@ -27,7 +27,7 @@ namespace {
     std::optional<T> operator() (std::string const& key)
       {
         RooT const* value = srcDir.Get<RooT>(key.c_str());
-        if (value) return { T(*value) };
+        if (value) return std::make_optional<T>(*value);
         missingKeys.push_back(key);
         return std::nullopt;
       }
