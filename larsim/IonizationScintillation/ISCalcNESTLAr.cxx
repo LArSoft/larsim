@@ -57,53 +57,33 @@ namespace larg4
         }
 
         int pdgcode = edep.PdgCode();
-
-        geo::Length_t startx = edep.StartX();
-        geo::Length_t starty = edep.StartY();
-        geo::Length_t startz = edep.StartZ();
-        geo::Length_t endx   = edep.EndX();
-        geo::Length_t endy   = edep.EndY();
-        geo::Length_t endz   = edep.EndZ();
-//        geo::Point_t  midpos = edep.MidPoint();
-
-//        double delta    = 1*CLHEP::mm;
-//        double R0           = 1.568*CLHEP::um;    //Mozumder 1995
-
+        
         double DokeBirks[3];
-//        double ThomasImel = 0.00;
 
-        double eField = EFieldAtStep(fDetProp->Efield(), edep);
+//        double eField = EFieldAtStep(fDetProp->Efield(), edep);
+        double eField = EFieldAtStep(fDetProp->Efield(), edep) * 1000;  //conver kV to 1000 V
         if(eField)
         {
-//            ThomasImel   = 0.156977 * pow(eField, -0.1);
             DokeBirks[0] = 0.07 * pow((eField/1.0e3), -0.85);
             DokeBirks[2] = 0.00;
         }
         else
         {
-//            ThomasImel   = 0.099;
             DokeBirks[0] = 0.0003;
             DokeBirks[2] = 0.75;
         }
 
-        double Density = fDetProp->Density()/(CLHEP::g/CLHEP::cm3); // argon density at the temperature from Temperature()
+//        double Density = fDetProp->Density()/(CLHEP::g/CLHEP::cm3); // argon density at the temperature from Temperature()
+        double Density = LAr_Density;
 
-        //biExc = 0.6;
 
         // nuclear recoil quenching "L" factor: total yield is
         // reduced for nuclear recoil as per Lindhard theory
         double epsilon = 11.5 *(fEnergyDeposit/CLHEP::keV) * pow(LAr_Z,(-7./3.));
-//      double gamma   = 3. * pow(epsilon, 0.15) + 0.7 * pow( epsilon, 0.6 ) + epsilon;
-//      double kappa   = 0.133*pow(z1,(2./3.))*pow(a2,(-1./2.))*(2./3.);
 
         if ( pdgcode == 2112 || pdgcode == -2112 ) //nuclear recoil
         {
-//            fYieldFactor = (kappa * gamma) / ( 1 + kappa * gamma ); //Lindhard factor
             fYieldFactor = 0.23 * ( 1 + exp( -5 * epsilon ) ); //liquid argon L_eff
-//            if ( eField == 0 )
-//            {
-//                ThomasImel = 0.25; //special TIB parameters for nuclear recoil only, in LAr
-//            }
             fExcitationRatio = 0.69337 + 0.3065 * exp( -0.008806 *pow( eField, 0.76313 ) );
         }
 
@@ -168,11 +148,13 @@ namespace larg4
         }
         else //normal case of an e-/+ energy deposition recorded by Geant
         {
-            dx = std::sqrt((startx-endx)*(startx-endx)+(starty-endy)*(starty-endy)+(startz-endz)*(startz-endz))/CLHEP::cm;
+//            dx = std::sqrt((startx-endx)*(startx-endx)+(starty-endy)*(starty-endy)+(startz-endz)*(startz-endz))/CLHEP::cm;
+            dx = edep.StepLength();
             if(dx)
             {
                 LET = (dE/dx)*(1/Density); //lin. energy xfer (prop. to dE/dx)
             }
+            
             if ( LET > 0 && dE > 0 && dx > 0 )
             {
                 double ratio = CalcElectronLET( dE*1e3 )/LET;
@@ -295,7 +277,7 @@ namespace larg4
                               +(efield*eFieldOffsets.Z()*efield*eFieldOffsets.Z()) );
         }
 
-        return EField;
+        return EField; //unit: kV/cm
     }
 
     //......................................................................

@@ -30,6 +30,7 @@
 #define LAr_Z       (18)
 #define Density_LAr (1.393)
 #define LAr_W_Value (19.5*CLHEP::eV)
+#define LAr_Density (1.4)
 
 namespace larg4
 {
