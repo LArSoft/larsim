@@ -1,5 +1,5 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -15,6 +15,8 @@
 #include "TVector.h"
 #include "RooDouble.h"
 #include "RooInt.h"
+
+#include <cassert>
 
 
 namespace {
@@ -42,15 +44,23 @@ namespace phot{
   std::string const PhotonLibrary::OpChannelBranchName = "OpChannel";
 
   //------------------------------------------------------------
+  PhotonLibrary::PhotonLibrary(art::TFileDirectory* pDir /* = nullptr */)
+    : fDir(pDir)
+    {}
+  
+  //------------------------------------------------------------
 
   void PhotonLibrary::StoreLibraryToFile
     (std::string, bool storeReflected, bool storeReflT0, size_t storeTiming) const
   {
-    mf::LogInfo("PhotonLibrary") << "Writing photon library to file";;
+    mf::LogInfo("PhotonLibrary") << "Writing photon library to file";
+    
+    if (!fDir) {
+      throw cet::exception("PhotonLibrary")
+        << "StoreLibraryToFile(): no ROOT file provided, can't store anything.\n";
+    }
 
-    art::ServiceHandle<art::TFileService const> tfs;
-
-    TTree *tt = tfs->make<TTree>("PhotonLibraryData","PhotonLibraryData");
+    TTree *tt = fDir->make<TTree>("PhotonLibraryData","PhotonLibraryData");
 
 
     Int_t     Voxel          = 0;
@@ -494,14 +504,14 @@ namespace phot{
   //------------------------------------------------------------
   void PhotonLibrary::StoreMetadata() const {
     
-    auto const& tfs = *(art::ServiceHandle<art::TFileService const>());
-
+    assert(fDir);
+    
     // NVoxels
-    tfs.makeAndRegister<RooInt>
+    fDir->makeAndRegister<RooInt>
       ("NVoxels","Total number of voxels in the library", fNVoxels);
     
     // NChannels
-    tfs.makeAndRegister<RooInt>(
+    fDir->makeAndRegister<RooInt>(
       "NChannels","Total number of optical detector channels in the library",
       fNOpChannels
       );
@@ -511,48 +521,48 @@ namespace phot{
     
     // lower point
     geo::Point_t const& lower = voxelDef.GetRegionLowerCorner();
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MinX","Lower x coordinate covered by the library (world coordinates, cm)",
       lower.X()
       );
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MinY","Lower y coordinate covered by the library (world coordinates, cm)",
       lower.Y()
       );
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MinZ","Lower z coordinate covered by the library (world coordinates, cm)",
       lower.Z()
       );
     
     // upper point
     geo::Point_t const& upper = voxelDef.GetRegionUpperCorner();
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MaxX","Upper x coordinate covered by the library (world coordinates, cm)",
       upper.X()
       );
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MaxY","Upper y coordinate covered by the library (world coordinates, cm)",
       upper.Y()
       );
-    tfs.makeAndRegister<RooDouble>(
+    fDir->makeAndRegister<RooDouble>(
       "MaxZ","Upper z coordinate covered by the library (world coordinates, cm)",
       upper.Z()
       );
     
     // steps
     geo::Vector_t const& stepSizes = voxelDef.GetVoxelSize();
-    tfs.makeAndRegister<RooDouble>
+    fDir->makeAndRegister<RooDouble>
       ("StepX","Size on x direction of a voxel (cm)", stepSizes.X());
-    tfs.makeAndRegister<RooDouble>
+    fDir->makeAndRegister<RooDouble>
       ("StepY","Size on y direction of a voxel (cm)", stepSizes.Y());
-    tfs.makeAndRegister<RooDouble>
+    fDir->makeAndRegister<RooDouble>
       ("StepZ","Size on z direction of a voxel (cm)", stepSizes.Z());
     
     // divisions
     auto const& steps = voxelDef.GetSteps();
-    tfs.makeAndRegister<RooInt>("NDivX","Steps on the x direction", steps[0]);
-    tfs.makeAndRegister<RooInt>("NDivY","Steps on the y direction", steps[1]);
-    tfs.makeAndRegister<RooInt>("NDivZ","Steps on the z direction", steps[2]);
+    fDir->makeAndRegister<RooInt>("NDivX","Steps on the x direction", steps[0]);
+    fDir->makeAndRegister<RooInt>("NDivY","Steps on the y direction", steps[1]);
+    fDir->makeAndRegister<RooInt>("NDivZ","Steps on the z direction", steps[2]);
     
 
     

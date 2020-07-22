@@ -16,12 +16,17 @@ class TTree;
 #include <optional>
 
 
+namespace art { class TFileDirectory; }
+
+
 namespace phot{
 
   class PhotonLibrary : public IPhotonLibrary
   {
   public:
-    PhotonLibrary() = default;
+    
+    /// If no valid `pDir` is provided, storage features will not be supported.
+    PhotonLibrary(art::TFileDirectory* pDir = nullptr);
 
     TTree * ProduceTTree() const;
 
@@ -116,6 +121,10 @@ namespace phot{
     
     /// Voxel definition loaded from library metadata.
     std::optional<sim::PhotonVoxelDef> fVoxelDef;
+    
+    
+    /// ROOT directory where to write data.
+    art::TFileDirectory* fDir = nullptr;
 
     bool isVoxelValidImpl(size_t Voxel) const { return Voxel < fNVoxels; }
 
