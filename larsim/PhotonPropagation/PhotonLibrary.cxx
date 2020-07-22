@@ -1,8 +1,9 @@
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileDirectory.h"
+#include "canvas/Utilities/Exception.h"
 
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 
 #include "RtypesCore.h"
 #include "TFile.h"

@@ -14,6 +14,7 @@ class TTree;
 #include "lardataobj/Utilities/LazyVector.h"
 
 #include <optional>
+#include <limits> // std::numeric_limits
 
 
 namespace art { class TFileDirectory; }
@@ -192,7 +193,7 @@ namespace phot{
 
     /// Converts size_t into integer
     static int size_t2int(size_t val) {
-    return (val <= INT_MAX) ? (int)((ssize_t)val) : -1; }
+    return (val <= std::numeric_limits<int>::max()) ? (int)((ssize_t)val) : -1; }
   };
 
 }
