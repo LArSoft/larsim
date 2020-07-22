@@ -88,7 +88,8 @@ namespace phot{
 
     /// Returns the current voxel metadata (undefined behaviour if none).
     /// @see `hasVoxelDef()`
-    sim::PhotonVoxelDef const& GetVoxelDef() const { return fVoxelDef.value(); }
+    sim::PhotonVoxelDef const& GetVoxelDef() const
+      { assert(fVoxelDef); return *fVoxelDef; }
     
     /// Copies the specified voxel definition into our own
     /// (overwrites the existing metadata if any).
