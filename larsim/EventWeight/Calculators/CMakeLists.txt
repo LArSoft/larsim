@@ -30,6 +30,7 @@ art_make(LIBRARY_NAME  larsim_EventWeight_Calculators
 		       ${LOG4CPP}
                        ${ROOT_BASIC_LIB_LIST}
                        ${Boost_SYSTEM_LIBRARY}
+		       ${ROOTSYS}/lib/libEGPythia6.so
 	) 
 
 install_headers()

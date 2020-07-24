@@ -13,7 +13,7 @@ art_make(LIBRARY_NAME larsim_EventWeight_Base
 		      ${FHICLCPP}
 		      ${CLHEP}
                       ${ROOT_BASIC_LIB_LIST}
-                      ${Boost_SYSTEM_LIBRARY}
+		      ${Boost_SYSTEM_LIBRARY}
 	) 
 
 
