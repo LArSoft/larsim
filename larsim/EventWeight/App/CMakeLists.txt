@@ -4,6 +4,7 @@ art_make(LIBRARY_NAME     larsim_EventWeight
                           larsim_EventWeight_Calculators
                           nutools_EventGeneratorBase_GENIE
                           ${Boost_SYSTEM_LIBRARY}
+
          MODULE_LIBRARIES larsim_EventWeight_Base
                           larsim_EventWeight_Calculators
                           nutools_EventGeneratorBase_GENIE
