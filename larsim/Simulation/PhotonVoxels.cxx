@@ -231,7 +231,7 @@ namespace sim {
   std::ostream& operator<<
     (std::ostream& out, sim::PhotonVoxelDef const& voxelDef)
   {
-    
+
     auto const& lower = voxelDef.GetRegionLowerCorner();
     auto const& upper = voxelDef.GetRegionUpperCorner();
     auto const& steps = voxelDef.GetSteps();

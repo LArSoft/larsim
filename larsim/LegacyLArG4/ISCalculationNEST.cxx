@@ -28,10 +28,10 @@ namespace larg4{
     // in LArSoft uses a fudge factor to compensate, but NEST is "purer" -- no
     // fudge factor. "
     fStepSize = 0.05 * CLHEP::micrometer;
-    
+
     return;
   }
-  
+
   //----------------------------------------------------------------------------
   ISCalculationNEST::~ISCalculationNEST()
   {

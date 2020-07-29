@@ -179,7 +179,7 @@ namespace phot{
 
             size_t NVoxels = GetVoxelDef().GetNVoxels();
             lib->LoadLibraryFromFile(LibraryFileWithPath, NVoxels, fStoreReflected, fStoreReflT0, fParPropTime_npar, fParPropTime_MaxRange);
-            
+
             // if the library does not have metadata, we supply some;
             // otherwise we check that it's compatible with the configured one
             // (and shrug if it's not); overriding configured metadata
@@ -207,7 +207,7 @@ namespace phot{
         size_t NVoxels = GetVoxelDef().GetNVoxels();
         mf::LogInfo("PhotonVisibilityService") << " Vis service running library build job.  Please ensure "
                                                << " job contains LightSource, LArG4, SimPhotonCounter"<<std::endl;
-        
+
         art::TFileDirectory* pDir = nullptr;
         try {
           pDir = art::ServiceHandle<art::TFileService>().get();
@@ -220,7 +220,7 @@ namespace phot{
               "service `TFileService` is required when building a photon library.\n";
           }
         }
-        
+
         PhotonLibrary* lib = new PhotonLibrary(pDir);
         fTheLibrary = lib;
 
@@ -773,7 +773,7 @@ namespace phot{
     v = fVIS_PARS;
     r = fPMT_radius;
   }
-  
+
   void PhotonVisibilityService::LoadParsForVISBorderCorrection(std::vector<double>& border_distances_x, std::vector<double>& border_distances_r, std::vector<std::vector<std::vector<double>>>& border_correction) const
  {
     border_distances_x = fVIS_BORDER_distances_x;

@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////
 // \file  ISCalculationCorrelated.h
 // \brief Interface to algorithm class for a specific calculation of
-//        ionization electrons and scintillation photons, based on 
+//        ionization electrons and scintillation photons, based on
 //        simple microphysics arguments to establish an anticorrelation
 //        between these two quantities.
 //
 //        To enable this in simulation, change LArG4Parameters variable
 //        in your fhicl file:
-//       
-//        services.LArG4Parameters.IonAndScintCalculator: "Correlated" 
+//
+//        services.LArG4Parameters.IonAndScintCalculator: "Correlated"
 //
 // \author wforeman @ iit.edu
 ////////////////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ namespace larg4 {
  public:
 
    ISCalculationCorrelated(CLHEP::HepRandomEngine&);
-   
+
    void   Reset();
    void   CalculateIonizationAndScintillation(const G4Step* step);
    double StepSizeLimit()              const { return fStepSize;            }
@@ -39,7 +39,7 @@ namespace larg4 {
    double                fEfield;              ///< value of electric field from DetectorProperties service
    double                fWion;                ///< W_ion (23.6 eV) == 1/fGeVToElectrons
    double                fWph;                 ///< W_ph (19.5 eV)
-   double                fScintPreScale;       ///< scintillation pre-scale from LArProperties service 
+   double                fScintPreScale;       ///< scintillation pre-scale from LArProperties service
    double                fRecombA;             ///< from LArG4Parameters service
    double                fRecombk;             ///< from LArG4Parameters service
    double                fModBoxA;             ///< from LArG4Parameters service

@@ -21,12 +21,12 @@
 
 
 namespace {
-  
+
   template <typename RooT, typename T>
   struct RooReader {
     TDirectory& srcDir;
     std::vector<std::string>& missingKeys;
-    
+
     std::optional<T> operator() (std::string const& key)
       {
         RooT const* value = srcDir.Get<RooT>(key.c_str());
@@ -35,7 +35,7 @@ namespace {
         return std::nullopt;
       }
   }; // RooReader
-  
+
 } // local namespace
 
 
@@ -48,14 +48,14 @@ namespace phot{
   PhotonLibrary::PhotonLibrary(art::TFileDirectory* pDir /* = nullptr */)
     : fDir(pDir)
     {}
-  
+
   //------------------------------------------------------------
 
   void PhotonLibrary::StoreLibraryToFile
     (std::string, bool storeReflected, bool storeReflT0, size_t storeTiming) const
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to file";
-    
+
     if (!fDir) {
       throw cet::exception("PhotonLibrary")
         << "StoreLibraryToFile(): no ROOT file provided, can't store anything.\n";
@@ -131,7 +131,7 @@ namespace phot{
         }
       }
     }
-    
+
     StoreMetadata();
   }
 
@@ -451,14 +451,14 @@ namespace phot{
 
   //------------------------------------------------------------
   void PhotonLibrary::LoadMetadata(TDirectory& srcDir) {
-    
+
     constexpr std::size_t NExpectedKeys = 9U;
-    
+
     std::vector<std::string> missingKeys;
-    
+
     RooReader<RooInt, Int_t> readInt { srcDir, missingKeys };
     RooReader<RooDouble, Double_t> readDouble { srcDir, missingKeys };
-    
+
     double xMin;
     double xMax;
     int xN;
@@ -477,7 +477,7 @@ namespace phot{
     if (auto metaValue = readDouble("MinZ")) zMin = *metaValue;
     if (auto metaValue = readDouble("MaxZ")) zMax = *metaValue;
     if (auto metaValue = readInt  ("NDivZ")) zN   = *metaValue;
-    
+
     if (!missingKeys.empty()) {
       if (missingKeys.size() != NExpectedKeys) {
         mf::LogError log("PhotonLibrary");
@@ -492,34 +492,34 @@ namespace phot{
       }
       return;
     } // if missing keys
-    
+
     fVoxelDef.emplace(
       xMin, xMax, xN,
       yMin, yMax, yN,
       zMin, zMax, zN
       );
-    
+
   } // PhotonLibrary::LoadMetadata()
-  
-  
+
+
   //------------------------------------------------------------
   void PhotonLibrary::StoreMetadata() const {
-    
+
     assert(fDir);
-    
+
     // NVoxels
     fDir->makeAndRegister<RooInt>
       ("NVoxels","Total number of voxels in the library", fNVoxels);
-    
+
     // NChannels
     fDir->makeAndRegister<RooInt>(
       "NChannels","Total number of optical detector channels in the library",
       fNOpChannels
       );
-    
+
     if (!hasVoxelDef()) return;
     sim::PhotonVoxelDef const& voxelDef = GetVoxelDef();
-    
+
     // lower point
     geo::Point_t const& lower = voxelDef.GetRegionLowerCorner();
     fDir->makeAndRegister<RooDouble>(
@@ -534,7 +534,7 @@ namespace phot{
       "MinZ","Lower z coordinate covered by the library (world coordinates, cm)",
       lower.Z()
       );
-    
+
     // upper point
     geo::Point_t const& upper = voxelDef.GetRegionUpperCorner();
     fDir->makeAndRegister<RooDouble>(
@@ -549,7 +549,7 @@ namespace phot{
       "MaxZ","Upper z coordinate covered by the library (world coordinates, cm)",
       upper.Z()
       );
-    
+
     // steps
     geo::Vector_t const& stepSizes = voxelDef.GetVoxelSize();
     fDir->makeAndRegister<RooDouble>
@@ -558,18 +558,18 @@ namespace phot{
       ("StepY","Size on y direction of a voxel (cm)", stepSizes.Y());
     fDir->makeAndRegister<RooDouble>
       ("StepZ","Size on z direction of a voxel (cm)", stepSizes.Z());
-    
+
     // divisions
     auto const& steps = voxelDef.GetSteps();
     fDir->makeAndRegister<RooInt>("NDivX","Steps on the x direction", steps[0]);
     fDir->makeAndRegister<RooInt>("NDivY","Steps on the y direction", steps[1]);
     fDir->makeAndRegister<RooInt>("NDivZ","Steps on the z direction", steps[2]);
-    
 
-    
+
+
   } // PhotonLibrary::StoreMetadata()
-  
-  
+
+
   //----------------------------------------------------
 
   size_t PhotonLibrary::ExtractNOpChannels(TTree* tree) {

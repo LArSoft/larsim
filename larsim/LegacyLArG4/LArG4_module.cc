@@ -421,7 +421,7 @@ namespace larg4 {
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator const> rng;
-    
+
     if (!fMakeMCParticles) { // configuration option consistency
       if (fdumpParticleList) {
         throw art::Exception(art::errors::Configuration)
@@ -665,7 +665,7 @@ namespace larg4 {
     // loop over the lists and put the particles and voxels into the event as collections
     std::unique_ptr< std::vector<sim::SimChannel>  >               scCol                      (new std::vector<sim::SimChannel>);
     std::unique_ptr< std::vector< sim::AuxDetSimChannel > >        adCol                      (new  std::vector<sim::AuxDetSimChannel> );
-    
+
     std::unique_ptr<std::vector<simb::MCParticle>> partCol
       = fMakeMCParticles? std::make_unique<std::vector<simb::MCParticle>>(): nullptr;
     std::unique_ptr<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>> tpassn
@@ -673,7 +673,7 @@ namespace larg4 {
       ? std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>()
       : nullptr
       ;
-    
+
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonCol                  (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotons>  >               PhotonColRefl              (new std::vector<sim::SimPhotons>);
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
@@ -728,7 +728,7 @@ namespace larg4 {
 
         if (!partCol) continue;
         assert(tpassn);
-        
+
         // receive the particle list
         sim::ParticleList particleList = fparticleListAction->YieldList();
 

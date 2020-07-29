@@ -119,7 +119,7 @@ namespace larg4 {
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
     fCurrentPdgCode = pdgCode;
-    
+
     if (!fparticleList) {
       // the rest is about adding a new particle to the list: skip
       return; // note that fCurrentParticle is clear()'ed
@@ -448,7 +448,7 @@ namespace larg4 {
   void ParticleListAction::EndOfEventAction(const G4Event*)
   {
     if (!fparticleList) return;
-    
+
     // Set up the utility class for the "for_each" algorithm.  (We only
     // need a separate set-up for the utility class because we need to
     // give it the pointer to the particle list.  We're using the STL
@@ -468,7 +468,7 @@ namespace larg4 {
   const sim::ParticleList* ParticleListAction::GetList() const
   {
     if (!fparticleList) return nullptr;
-    
+
     // check if the ParticleNavigator has entries, and if
     // so grab the highest track id value from it to
     // add to the fTrackIDOffset

@@ -6,7 +6,7 @@
 //
 //        To enable this in simulation, change LArG4Parameters variable
 //        in your fhicl file:
-//       
+//
 //        services.LArG4Parameters.IonAndScintCalculator: "Correlated"
 //
 //        TO DO:
@@ -52,7 +52,7 @@ namespace larg4{
     fWph                  = 19.5 * 1e-6; // MeV
 
     // get scintillation pre-scale
-    fScintPreScale        = larp->ScintPreScale(); 
+    fScintPreScale        = larp->ScintPreScale();
 
     // the recombination coefficient is in g/(MeVcm^2), but
     // we report energy depositions in MeV/cm, need to divide
@@ -89,7 +89,7 @@ namespace larg4{
     fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
 
     // calculate total quanta (ions + excitons)
-    double Nq = fEnergyDeposit / fWph;  
+    double Nq = fEnergyDeposit / fWph;
 
     // Get the recombination factor for this voxel - Nucl.Instrum.Meth.A523:275-286,2004
     // R = A/(1 + (dE/dx)*k)
@@ -131,7 +131,7 @@ namespace larg4{
     // calculate scintillation photons
     fNumScintPhotons = Nq - fNumIonElectrons;
 
-    // apply the scintillation pre-scaling (normally this is already folded into 
+    // apply the scintillation pre-scaling (normally this is already folded into
     // the particle-specific scintillation yields)
     fNumScintPhotons *= fScintPreScale;
 

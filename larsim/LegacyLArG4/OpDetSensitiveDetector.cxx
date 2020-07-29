@@ -20,7 +20,7 @@
 #include "Geant4/G4SDManager.hh"
 
 namespace {
-  
+
   /// Converts a photon `energy` [eV] into its Wavelength [nm]
   constexpr double Wavelength(double energy);
 
@@ -49,19 +49,19 @@ namespace larg4{
 
   void OpDetSensitiveDetector::AddLitePhoton(G4Step const* aStep, int OpDet)
   {
-    
+
     double const time  = aStep->GetTrack()->GetGlobalTime();
 
     // the guideline: if it's VUV (~128 nm) is direct, otherwise it is reflected
     double const energy = aStep->GetTrack()->GetVertexKineticEnergy() / CLHEP::eV;
     bool const reflected = Wavelength(energy) > 200.0; // nm
-    
+
     // Add this photon to the detected photons table
     fThePhotonTable->AddLitePhoton(OpDet, static_cast<int>(time), 1, reflected);
-    
+
   } // OpDetSensitiveDetector::AddLitePhoton()
 
-  
+
   //--------------------------------------------------------
 
   void OpDetSensitiveDetector::AddPhoton(G4Step const* aStep, int OpDet)
@@ -124,23 +124,23 @@ namespace larg4{
   {
 
   }
-  
-  
+
+
 }
 
 
 //--------------------------------------------------------
 namespace {
-  
+
   constexpr double Wavelength(double energy) {
-    
+
     // SI 2019 (eV nm):
     constexpr double hc = 6.62607015e-34 * 299792458.0 / 1.602176634e-19 * 1e9;
-    
+
     return hc / energy; // nm
-    
+
   } // Wavelength()
-  
+
 } // local namespace
 
 //--------------------------------------------------------

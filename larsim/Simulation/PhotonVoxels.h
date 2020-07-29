@@ -173,8 +173,8 @@ namespace sim {
     static bool isInsideRange(double value, double lower, double upper);
 
   }; // class PhotonVoxelDef
-  
-  
+
+
   /// Prints the content of the specified voxel definition into a stream.
   std::ostream& operator<<
     (std::ostream& out, sim::PhotonVoxelDef const& voxelDef);

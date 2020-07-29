@@ -25,7 +25,7 @@ namespace phot{
   class PhotonLibrary : public IPhotonLibrary
   {
   public:
-    
+
     /// If no valid `pDir` is provided, storage features will not be supported.
     PhotonLibrary(art::TFileDirectory* pDir = nullptr);
 
@@ -78,12 +78,12 @@ namespace phot{
     virtual int NVoxels() const override { return fNVoxels; }
 
     virtual bool isVoxelValid(size_t Voxel) const override { return isVoxelValidImpl(Voxel); }
-    
-    
+
+
     // --- BEGIN --- Metadata: voxel information -------------------------------
     /// @name Metadata: voxel information
     /// @{
-    
+
     /// Returns whether voxel metadata is available.
     bool hasVoxelDef() const { return fVoxelDef.has_value(); }
 
@@ -91,12 +91,12 @@ namespace phot{
     /// @see `hasVoxelDef()`
     sim::PhotonVoxelDef const& GetVoxelDef() const
       { assert(fVoxelDef); return *fVoxelDef; }
-    
+
     /// Copies the specified voxel definition into our own
     /// (overwrites the existing metadata if any).
     void SetVoxelDef(sim::PhotonVoxelDef const& voxelDef)
       { fVoxelDef = voxelDef; }
-    
+
     /// @}
     // --- END --- Metadata: voxel information ---------------------------------
 
@@ -120,11 +120,11 @@ namespace phot{
 
     size_t fNOpChannels;
     size_t fNVoxels;
-    
+
     /// Voxel definition loaded from library metadata.
     std::optional<sim::PhotonVoxelDef> fVoxelDef;
-    
-    
+
+
     /// ROOT directory where to write data.
     art::TFileDirectory* fDir = nullptr;
 
@@ -178,7 +178,7 @@ namespace phot{
       // note that this will produce a segmentation fault if the formula is not there
       return *(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, OpChannel)));
     }
-    
+
     /// Reads the metadata from specified ROOT directory and sets it as current.
     void LoadMetadata(TDirectory& srcDir);
 

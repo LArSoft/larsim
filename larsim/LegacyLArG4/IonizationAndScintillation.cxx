@@ -61,7 +61,7 @@ namespace larg4 {
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
-    
+
     if      (fISCalculator == "Separate")   fISCalc = new larg4::ISCalculationSeparate(fEngine);
     else if (fISCalculator == "Correlated") fISCalc = new larg4::ISCalculationCorrelated(fEngine);
     else if (fISCalculator == "NEST")       fISCalc = new larg4::ISCalculationNEST(fEngine);
