@@ -6,10 +6,18 @@
 
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 
+#include "larsim/Simulation/PhotonVoxels.h"
+
 #include "TF1.h"
 class TTree;
 
 #include "lardataobj/Utilities/LazyVector.h"
+
+#include <optional>
+#include <limits> // std::numeric_limits
+
+
+namespace art { class TFileDirectory; }
 
 
 namespace phot{
@@ -17,7 +25,9 @@ namespace phot{
   class PhotonLibrary : public IPhotonLibrary
   {
   public:
-    PhotonLibrary() = default;
+    
+    /// If no valid `pDir` is provided, storage features will not be supported.
+    PhotonLibrary(art::TFileDirectory* pDir = nullptr);
 
     TTree * ProduceTTree() const;
 
@@ -56,7 +66,10 @@ namespace phot{
     virtual bool hasReflectedT0() const override { return fHasReflectedT0; }
 
 
-    void StoreLibraryToFile(std::string LibraryFile, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0) const;
+    void StoreLibraryToFile(
+      std::string LibraryFile,
+      bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0
+      ) const;
     void LoadLibraryFromFile(std::string LibraryFile, size_t NVoxels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0, int maxrange=200);
     void CreateEmptyLibrary(size_t NVoxels, size_t NChannels, bool storeReflected=false, bool storeReflT0=false, size_t storeTiming=0);
 
@@ -65,7 +78,27 @@ namespace phot{
     virtual int NVoxels() const override { return fNVoxels; }
 
     virtual bool isVoxelValid(size_t Voxel) const override { return isVoxelValidImpl(Voxel); }
+    
+    
+    // --- BEGIN --- Metadata: voxel information -------------------------------
+    /// @name Metadata: voxel information
+    /// @{
+    
+    /// Returns whether voxel metadata is available.
+    bool hasVoxelDef() const { return fVoxelDef.has_value(); }
 
+    /// Returns the current voxel metadata (undefined behaviour if none).
+    /// @see `hasVoxelDef()`
+    sim::PhotonVoxelDef const& GetVoxelDef() const
+      { assert(fVoxelDef); return *fVoxelDef; }
+    
+    /// Copies the specified voxel definition into our own
+    /// (overwrites the existing metadata if any).
+    void SetVoxelDef(sim::PhotonVoxelDef const& voxelDef)
+      { fVoxelDef = voxelDef; }
+    
+    /// @}
+    // --- END --- Metadata: voxel information ---------------------------------
 
   private:
 
@@ -87,6 +120,13 @@ namespace phot{
 
     size_t fNOpChannels;
     size_t fNVoxels;
+    
+    /// Voxel definition loaded from library metadata.
+    std::optional<sim::PhotonVoxelDef> fVoxelDef;
+    
+    
+    /// ROOT directory where to write data.
+    art::TFileDirectory* fDir = nullptr;
 
     bool isVoxelValidImpl(size_t Voxel) const { return Voxel < fNVoxels; }
 
@@ -138,6 +178,12 @@ namespace phot{
       // note that this will produce a segmentation fault if the formula is not there
       return *(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, OpChannel)));
     }
+    
+    /// Reads the metadata from specified ROOT directory and sets it as current.
+    void LoadMetadata(TDirectory& srcDir);
+
+    /// Writes the current metadata (if any) into the ROOT output file.
+    void StoreMetadata() const;
 
     /// Name of the optical channel number in the input tree
     static std::string const OpChannelBranchName;
@@ -147,7 +193,7 @@ namespace phot{
 
     /// Converts size_t into integer
     static int size_t2int(size_t val) {
-    return (val <= INT_MAX) ? (int)((ssize_t)val) : -1; }
+    return (val <= std::numeric_limits<int>::max()) ? (int)((ssize_t)val) : -1; }
   };
 
 }

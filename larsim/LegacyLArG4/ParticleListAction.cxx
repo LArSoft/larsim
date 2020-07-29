@@ -11,6 +11,7 @@
 #include "nug4/ParticleNavigation/ParticleList.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 
 #include "Geant4/G4Track.hh"
 #include "Geant4/G4ThreeVector.hh"
@@ -26,6 +27,7 @@
 #include <TLorentzVector.h>
 
 #include <algorithm>
+#include <cassert>
 
 //const G4bool debug = false; // unused
 
@@ -53,24 +55,14 @@ namespace larg4 {
   // Constructor.
   ParticleListAction::ParticleListAction(double energyCut,
                                          bool   storeTrajectories,
-                                         bool   keepEMShowerDaughters)
+                                         bool   keepEMShowerDaughters,
+                                         bool   keepMCParticleList /* = true */
+                                         )
   : fenergyCut(energyCut * CLHEP::GeV)
-  , fparticleList(0)
+  , fparticleList(keepMCParticleList? std::make_unique<sim::ParticleList>(): nullptr)
   , fstoreTrajectories(storeTrajectories)
   , fKeepEMShowerDaughters(keepEMShowerDaughters)
   {
-    // Create the particle list that we'll (re-)use during the course
-    // of the Geant4 simulation.
-    fparticleList = new sim::ParticleList;
-    fParentIDMap.clear();
-  }
-
-  //----------------------------------------------------------------------------
-  // Destructor.
-  ParticleListAction::~ParticleListAction()
-  {
-    // Delete anything that we created with "new'.
-    delete fparticleList;
   }
 
   //----------------------------------------------------------------------------
@@ -79,7 +71,7 @@ namespace larg4 {
   {
     // Clear any previous particle information.
     fCurrentParticle.clear();
-    fparticleList->clear();
+    if (fparticleList) fparticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
     fCurrentPdgCode = 0;
@@ -127,6 +119,11 @@ namespace larg4 {
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
     fCurrentPdgCode = pdgCode;
+    
+    if (!fparticleList) {
+      // the rest is about adding a new particle to the list: skip
+      return; // note that fCurrentParticle is clear()'ed
+    }
 
     // And the particle's parent (same offset as above):
     G4int parentID = track->GetParentID() + fTrackIDOffset;
@@ -260,18 +257,19 @@ namespace larg4 {
                                                          polarization.z() ) );
 
       // Save the particle in the ParticleList.
-    fparticleList->Add( fCurrentParticle.particle );
+    fparticleList->Add( fCurrentParticle.particle.get() );
   }
 
   //----------------------------------------------------------------------------
   void ParticleListAction::PostTrackingAction( const G4Track* aTrack)
   {
     if (!fCurrentParticle.hasParticle()) return;
+    assert(fparticleList);
 
     // if we have found no reason to keep it, drop it!
     // (we might still need parentage information though)
     if (!fCurrentParticle.keep) {
-      fparticleList->Archive(fCurrentParticle.particle);
+      fparticleList->Archive(fCurrentParticle.particle.get());
       // after the particle is archived, it is deleted
       fCurrentParticle.clear();
       return;
@@ -449,13 +447,15 @@ namespace larg4 {
   // daughters yet.  That's done in this method.
   void ParticleListAction::EndOfEventAction(const G4Event*)
   {
+    if (!fparticleList) return;
+    
     // Set up the utility class for the "for_each" algorithm.  (We only
     // need a separate set-up for the utility class because we need to
     // give it the pointer to the particle list.  We're using the STL
     // "for_each" instead of the C++ "for loop" because it's supposed
     // to be faster.
     UpdateDaughterInformation updateDaughterInformation;
-    updateDaughterInformation.SetParticleList( fparticleList );
+    updateDaughterInformation.SetParticleList( fparticleList.get() );
 
     // Update the daughter information for each particle in the list.
     std::for_each(fparticleList->begin(),
@@ -467,6 +467,8 @@ namespace larg4 {
   // Returns the ParticleList accumulated during the current event.
   const sim::ParticleList* ParticleListAction::GetList() const
   {
+    if (!fparticleList) return nullptr;
+    
     // check if the ParticleNavigator has entries, and if
     // so grab the highest track id value from it to
     // add to the fTrackIDOffset
@@ -477,7 +479,7 @@ namespace larg4 {
     //Only change the fTrackIDOffset if there is in fact a particle to add to the event
     if( (fparticleList->size())!=0){ fTrackIDOffset = highestID + 1; }
 
-    return fparticleList;
+    return fparticleList.get();
   }
 
   //----------------------------------------------------------------------------
@@ -494,6 +496,11 @@ namespace larg4 {
   // Yields the ParticleList accumulated during the current event.
   sim::ParticleList&& ParticleListAction::YieldList()
   {
+    if (!fparticleList) {
+      // check with `hasList()` before calling this method
+      throw cet::exception("ParticleListAction")
+        << "ParticleListAction::YieldList(): particle list not build by user request.\n";
+    }
     // check if the ParticleNavigator has entries, and if
     // so grab the highest track id value from it to
     // add to the fTrackIDOffset
