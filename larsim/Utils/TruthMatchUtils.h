@@ -24,7 +24,14 @@ typedef int G4ID;
 typedef float EDeposit;
 typedef std::map<G4ID, EDeposit> IDToEDepositMap;
 
-const G4ID kNoG4ID = std::numeric_limits<G4ID>::lowest();           ///< The value used when no G4 ID has been found
+/**
+ *  @brief  Test whether a G4ID returned by the TruthMatchUtils functions is valid
+ *
+ *  @param  g4ID the G4ID to be tested
+ *
+ *  @return validity bool
+ */
+bool Valid(const G4ID g4ID) noexcept;
 
 /**
  *  @brief  The G4 ID of the true particle which deposits the most energy in the recob::Hit

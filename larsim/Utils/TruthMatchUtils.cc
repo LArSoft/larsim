@@ -22,6 +22,9 @@ namespace
 {
 
 using namespace TruthMatchUtils;
+
+constexpr G4ID kInvalidG4ID = std::numeric_limits<G4ID>::lowest();           ///< The value used when no G4 ID has been found
+
 IDToEDepositMap::const_iterator MaxEDepElementInMap(const IDToEDepositMap &idToEDepMap)
 {
     IDToEDepositMap::const_iterator highestContribIt(std::max_element(idToEDepMap.begin(), idToEDepMap.end(),
@@ -44,12 +47,19 @@ IDToEDepositMap::const_iterator MaxEDepElementInMap(const IDToEDepositMap &idToE
 //------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+bool TruthMatchUtils::Valid(const G4ID g4ID) noexcept
+{
+    return kInvalidG4ID != g4ID;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleID(const art::Ptr<recob::Hit> &pHit, const bool rollupUnsavedIDs)
 {
     IDToEDepositMap idToEDepMap;
     TruthMatchUtils::FillG4IDToEnergyDepositMap(idToEDepMap, pHit, rollupUnsavedIDs);
     if (idToEDepMap.empty())
-        return kNoG4ID;
+        return kInvalidG4ID;
 
     return MaxEDepElementInMap(idToEDepMap)->first;
 }
@@ -64,7 +74,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalTrueEnergy(const s
         TruthMatchUtils::FillG4IDToEnergyDepositMap(idToEDepMap, pHit, rollupUnsavedIDs);
 
     if (idToEDepMap.empty())
-        return kNoG4ID;
+        return kInvalidG4ID;
 
     return MaxEDepElementInMap(idToEDepMap)->first;
 }
@@ -85,7 +95,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoCharge(const s
     }
 
     if (idToChargeDepMap.empty())
-        return kNoG4ID;
+        return kInvalidG4ID;
 
     return MaxEDepElementInMap(idToChargeDepMap)->first;
 }
@@ -105,7 +115,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoHits(const std
     }
 
     if (idToHitCountMap.empty())
-        return kNoG4ID;
+        return kInvalidG4ID;
 
     std::map<unsigned int, std::vector<G4ID> > hitCountToIDMap;
     for (auto const& [g4ID, hitCount] : idToHitCountMap)
