@@ -48,7 +48,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleID(const art::Ptr<recob::Hit>
 {
     IDToEDepositMap idToEDepMap;
     TruthMatchUtils::FillG4IDToEnergyDepositMap(idToEDepMap, pHit, rollupUnsavedIDs);
-    if (0 == idToEDepMap.size())
+    if (idToEDepMap.empty())
         return kNoG4ID;
 
     return MaxEDepElementInMap(idToEDepMap)->first;
@@ -63,7 +63,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalTrueEnergy(const s
     for (const art::Ptr<recob::Hit> &pHit : pHits)
         TruthMatchUtils::FillG4IDToEnergyDepositMap(idToEDepMap, pHit, rollupUnsavedIDs);
 
-    if (0==idToEDepMap.size())
+    if (idToEDepMap.empty())
         return kNoG4ID;
 
     return MaxEDepElementInMap(idToEDepMap)->first;
@@ -79,12 +79,12 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoCharge(const s
     {
         const G4ID g4ID(TruthMatchUtils::TrueParticleID(pHit, rollupUnsavedIDs));
         const EDeposit recoCharge(static_cast<EDeposit>(pHit->Integral()));
-        std::pair<IDToEDepositMap::iterator, const bool> insertPair(idToChargeDepMap.insert(IDToEDepositMap::value_type(g4ID, recoCharge)));
-        if (!(insertPair.second))
-            insertPair.first->second += recoCharge;
+        auto [iterator, inserted] = idToChargeDepMap.try_emplace(g4ID, recoCharge);
+        if (!inserted)
+            iterator->second += recoCharge;
     }
 
-    if (0 == idToChargeDepMap.size())
+    if (idToChargeDepMap.empty())
         return kNoG4ID;
 
     return MaxEDepElementInMap(idToChargeDepMap)->first;
@@ -99,27 +99,23 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoHits(const std
     for (const art::Ptr<recob::Hit> &pHit : pHits)
     {
         const G4ID g4ID(TruthMatchUtils::TrueParticleID(pHit, rollupUnsavedIDs));
-        std::pair<std::map<G4ID, unsigned int>::iterator, const bool> insertPair(idToHitCountMap.insert(std::map<G4ID, unsigned int>::value_type(g4ID, 1)));
-        if (!(insertPair.second))
-            insertPair.first->second++;
+        auto [iterator, inserted] = idToHitCountMap.try_emplace(g4ID, 1);
+        if (!(inserted))
+            iterator->second++;
     }
 
-    if (0 == idToHitCountMap.size())
+    if (idToHitCountMap.empty())
         return kNoG4ID;
 
     std::map<unsigned int, std::vector<G4ID> > hitCountToIDMap;
-    for (std::map<G4ID, unsigned int>::const_iterator mapIt = idToHitCountMap.begin(); mapIt != idToHitCountMap.end(); ++mapIt)
+    for (auto const& [g4ID, hitCount] : idToHitCountMap)
     {
-        const G4ID g4ID(mapIt->first);
-        const unsigned int hitCount(mapIt->second);
-        std::pair<std::map<unsigned int, std::vector<G4ID> >::iterator, const bool> insertPair(
-            hitCountToIDMap.insert(std::map<unsigned int, std::vector<G4ID> >::value_type(hitCount, std::vector<G4ID>(1, g4ID))));
-
-        if (!(insertPair.second))
-            insertPair.first->second.emplace_back(g4ID);
+        auto [iterator, inserted] = hitCountToIDMap.try_emplace(hitCount, std::vector<G4ID>{g4ID});
+        if (!inserted)
+            iterator->second.emplace_back(g4ID);
     }
 
-    if (0 == hitCountToIDMap.size())
+    if (hitCountToIDMap.empty())
     {
      throw art::Exception(art::errors::LogicError)
         << "TruthMatchUtils::TrueParticleIDFromTotalRecoHits - Did not fill the hit count to g4 ID vector map"
@@ -155,18 +151,18 @@ void TruthMatchUtils::FillG4IDToEnergyDepositMap(IDToEDepositMap &idToEDepMap, c
 {
     const art::ServiceHandle<cheat::BackTrackerService> btServ;
     const std::vector<sim::TrackIDE> trackIDEs(btServ->HitToTrackIDEs(pHit));
-    if (0 == trackIDEs.size())
+    if (trackIDEs.empty())
         return;
 
-    for (unsigned int iID = 0; iID < trackIDEs.size(); ++iID) {
-        const G4ID g4ID(rollupUnsavedIDs ? std::abs(trackIDEs.at(iID).trackID) : trackIDEs.at(iID).trackID);
-        const EDeposit eDep(static_cast<EDeposit>(trackIDEs.at(iID).energy));
-        std::pair<IDToEDepositMap::iterator, const bool> insertPair(idToEDepMap.insert(IDToEDepositMap::value_type(g4ID, eDep)));
-        if (!insertPair.second)
-            insertPair.first->second += eDep;
+    for (const sim::TrackIDE &trackIDE : trackIDEs) {
+        const G4ID g4ID(static_cast<G4ID>(rollupUnsavedIDs ? std::abs(trackIDE.trackID) : trackIDE.trackID));
+        const EDeposit eDep(static_cast<EDeposit>(trackIDE.energy));
+        auto [iterator, inserted] = idToEDepMap.try_emplace(g4ID, eDep);
+        if (!inserted)
+            iterator->second += eDep;
     }
 
-    if (0 == idToEDepMap.size())
+    if (idToEDepMap.empty())
     {
      throw art::Exception(art::errors::LogicError)
         << "TruthMatchUtils::FillG4IDToEnergyDepositMap did not fill the IDToEDepositMap map (map size == " << idToEDepMap.size() << ")."
