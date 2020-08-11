@@ -36,7 +36,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-
 #include "fhiclcpp/ParameterSet.h"
 
 // LArSoft libraries
@@ -48,12 +47,11 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
-
+#include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
-
 
 // Random number engine
 #include "CLHEP/Random/RandFlat.h"
@@ -462,8 +460,19 @@ namespace phot
         std::cout << "PDFastSimPAR Module Construct" << std::endl;
 
         Initialization();
-        produces< std::vector<sim::SimPhotonsLite> >("par");
-        produces< std::vector<sim::OpDetBacktrackerRecord> >("par");
+        
+        art::ServiceHandle<sim::LArG4Parameters const> lgp;
+        if (lgp->UseLitePhotons())
+        {
+            std::cout << "Use Lite Photon." << std::endl;
+            produces< std::vector<sim::SimPhotonsLite> >("par");
+            produces< std::vector<sim::OpDetBacktrackerRecord> >("par");
+        }
+        else
+        {
+            std::cout << "Use Sim Photon." << std::endl;
+            produces< std::vector<sim::SimPhotons> >("par");
+        }
     }
 
     //......................................................................
@@ -472,22 +481,28 @@ namespace phot
         std::cout << "PDFastSimPAR Module Producer" << std::endl;
 
         art::ServiceHandle<PhotonVisibilityService const> pvs;
-        //unused auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+        art::ServiceHandle<sim::LArG4Parameters const> lgp;
         auto const nOpChannels = pvs->NOpChannels();
 
         CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
         CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
 
+        std::unique_ptr< std::vector< sim::SimPhotons > >             phot   (new std::vector<sim::SimPhotons>);
+        std::unique_ptr< std::vector< sim::SimPhotonsLite > >         phlit  (new std::vector<sim::SimPhotonsLite>);
         std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr  (new std::vector<sim::OpDetBacktrackerRecord>);
-        std::unique_ptr< std::vector< sim::SimPhotonsLite> >          phlit  (new std::vector<sim::SimPhotonsLite>);
 
+        auto& photonCollection (*phot);
         auto& photonLiteCollection (*phlit);
+        
+        photonCollection.resize(nOpChannels);
         photonLiteCollection.resize(nOpChannels);
+        
         for (unsigned int i = 0; i < nOpChannels; i ++)
         {
+            photonCollection[i].fOpChannel    = i;
             photonLiteCollection[i].OpChannel = i;
         }
-
+        
         art::Handle< std::vector<sim::SimEnergyDeposit> > edepHandle;
         if (!event.getByLabel(simTag, edepHandle))
         {
@@ -529,34 +544,71 @@ namespace phot
                 fydimension = fOpDetHeight.at(channel);
                 fzdimension = fOpDetLength.at(channel);
 
-                if (nphot_fast > 0)
+                if (lgp->UseLitePhotons())
                 {
-                    auto n = VUVHits(nphot_fast, ScintPoint, OpDetPoint, fOpDetType.at(channel));
-                    num_fastdp += n;
-                    for (long i = 0; i < n; ++i)
+                    if (nphot_fast > 0)
                     {
-                        //calculates the time at which the photon was produced
-                        fScintTime->GenScintTime(true, fScintTimeEngine);
-                        auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
-                        ++ photonLiteCollection[channel].DetectedPhotons[time];
-                        tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                        auto n = VUVHits(nphot_fast, ScintPoint, OpDetPoint, fOpDetType.at(channel));
+                        num_fastdp += n;
+                        for (long i = 0; i < n; ++i)
+                        {
+                            //calculates the time at which the photon was produced
+                            fScintTime->GenScintTime(true, fScintTimeEngine);
+                            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                            ++ photonLiteCollection[channel].DetectedPhotons[time];
+                            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                        }
+                    }
+    
+                    if ((nphot_slow > 0) && fDoSlowComponent)
+                    {
+                        auto n = VUVHits(nphot_slow, ScintPoint, OpDetPoint, fOpDetType.at(channel));
+                        num_slowdp += n;
+                        for (long i = 0; i < n; ++i)
+                        {
+                            fScintTime->GenScintTime(false, fScintTimeEngine);
+                            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                            ++ photonLiteCollection[channel].DetectedPhotons[time];
+                            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                        }
+                    }
+                    
+                    AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
+                }
+                else
+                {
+                    sim::OnePhoton photon;
+                    photon.SetInSD         = false;
+                    photon.InitialPosition = edepi.End();
+                    photon.Energy          = 9.7e-6;
+
+                    if (nphot_fast > 0)
+                    {
+                        auto n = VUVHits(nphot_fast, ScintPoint, OpDetPoint, fOpDetType.at(channel));
+                        num_fastdp += n;
+                        if (n > 0)
+                        {
+                            fScintTime->GenScintTime(true, fScintTimeEngine);
+                            auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                            photon.Time = time;
+                            // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
+                            photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
+                        }
+                    }
+                    if ((nphot_slow > 0) && fDoSlowComponent)
+                    {
+                        auto n = VUVHits(nphot_slow, ScintPoint, OpDetPoint, fOpDetType.at(channel));
+                        num_slowdp += n;
+                        if (n > 0)
+                        {
+                            fScintTime->GenScintTime(false, fScintTimeEngine);
+                            auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                            photon.Time = time;
+                            // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
+                            photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
+                        }
                     }
                 }
-
-                if ((nphot_slow > 0) && fDoSlowComponent)
-                {
-                    auto n = VUVHits(nphot_slow, ScintPoint, OpDetPoint, fOpDetType.at(channel));
-                    num_slowdp += n;
-                    for (long i = 0; i < n; ++i)
-                    {
-                        fScintTime->GenScintTime(false, fScintTimeEngine);
-                        auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
-                        ++ photonLiteCollection[channel].DetectedPhotons[time];
-                        tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
-                    }
-                }
-
-                AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
             }
         }
 
@@ -564,9 +616,16 @@ namespace phot
         std::cout << "detected fast photons: " << num_fastdp << ", detected slow photons: " << num_slowdp << std::endl;
 
         PDChannelToSOCMap.clear();
-        event.put(move(phlit), "par");
-        event.put(move(opbtr), "par");
-
+        
+        if (lgp->UseLitePhotons())
+        {
+            event.put(move(phlit), "par");
+            event.put(move(opbtr), "par");
+        }
+        else
+        {
+            event.put(move(phot), "par");
+        }
         return;
     }
 
