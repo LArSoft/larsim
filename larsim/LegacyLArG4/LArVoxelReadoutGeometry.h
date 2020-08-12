@@ -26,22 +26,20 @@
 #ifndef LArG4_LArVoxelReadoutGeometry_h
 #define LArG4_LArVoxelReadoutGeometry_h
 
-#include "larsim/LegacyLArG4/LArVoxelReadout.h"
-#include "larcore/Geometry/Geometry.h"
-#include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"
 #include "Geant4/G4UserLimits.hh"
+#include "Geant4/G4VUserParallelWorld.hh"
+#include "larcore/Geometry/Geometry.h"
+#include "larsim/LegacyLArG4/LArVoxelReadout.h"
 
 // Forward declarations
 class G4PhysicalVolume;
 
 namespace larg4 {
 
-  class LArVoxelReadoutGeometry : public G4VUserParallelWorld
-  {
+  class LArVoxelReadoutGeometry : public G4VUserParallelWorld {
   public:
-
     /// Collection of all it takes to set up this object.
     struct Setup_t {
 
@@ -49,7 +47,6 @@ namespace larg4 {
       larg4::LArVoxelReadout::Setup_t readoutSetup;
 
     }; // struct Setup_t
-
 
     /// Constructor: sets up all its LArVoxelReadout instances.
     LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
@@ -60,20 +57,18 @@ namespace larg4 {
     virtual void Construct();
 
   private:
-
     G4VPhysicalVolume* FindNestedVolume(G4VPhysicalVolume* mother,
-					G4Transform3D&     motherTransform,
-					G4Transform3D&     daughterTransform,
-					std::string&       daughterName,
-					unsigned int       expectedNum);
+                                        G4Transform3D& motherTransform,
+                                        G4Transform3D& daughterTransform,
+                                        std::string& daughterName,
+                                        unsigned int expectedNum);
 
-    art::ServiceHandle<geo::Geometry const> fGeo;       ///< Handle to the geometry
-    std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management,
+    art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry
+    std::unique_ptr<G4UserLimits> fStepLimit;     ///< G4 doesn't handle memory management,
                                                   ///< so we have to
 
     /// Data for `LArVoxelReadout` setup.
     larg4::LArVoxelReadout::Setup_t fReadoutSetupData;
-
   };
 
 } // namespace larg4

@@ -11,20 +11,22 @@
 
 #include <string>
 
-#include "larsim/Simulation/LArVoxelList.h"
 #include "lardataobj/Simulation/SimPhotons.h"
+#include "larsim/Simulation/LArVoxelList.h"
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 
-
-namespace sim{
+namespace sim {
   class SimListUtils {
   public:
     SimListUtils();
     virtual ~SimListUtils();
 
-    static sim::LArVoxelList         GetLArVoxelList        (const art::Event& evt, std::string moduleLabel);
-    static sim::SimPhotonsCollection GetSimPhotonsCollection(const art::Event& evt, std::string moduleLabel);
+    static sim::LArVoxelList GetLArVoxelList(const art::Event& evt, std::string moduleLabel);
+    static sim::SimPhotonsCollection GetSimPhotonsCollection(const art::Event& evt,
+                                                             std::string moduleLabel);
 
   }; // class SimListUtils
 } //namespace sim

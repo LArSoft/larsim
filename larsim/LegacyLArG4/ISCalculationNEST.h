@@ -13,27 +13,31 @@
 // forward declarations
 class G4Step;
 class NestAlg;
-namespace CLHEP { class HepRandomEngine; }
+namespace CLHEP {
+  class HepRandomEngine;
+}
 
 namespace larg4 {
 
   class ISCalculationNEST : public ISCalculation {
 
- public:
+  public:
+    ISCalculationNEST(CLHEP::HepRandomEngine& engine);
+    virtual ~ISCalculationNEST();
 
-   ISCalculationNEST(CLHEP::HepRandomEngine& engine);
-   virtual ~ISCalculationNEST();
+    //void   Initialize();
+    void Reset();
+    void CalculateIonizationAndScintillation(const G4Step* step);
+    double
+    StepSizeLimit() const
+    {
+      return fStepSize;
+    }
 
-   //void   Initialize();
-   void   Reset();
-   void   CalculateIonizationAndScintillation(const G4Step* step);
-   double StepSizeLimit()              const { return fStepSize;        }
-
- private:
-
-   NestAlg* fNest;     ///< the fast optical simulation process
-   double   fStepSize; ///< maximum step to take
-   CLHEP::HepRandomEngine& fEngine; ///< random engine
- };
+  private:
+    NestAlg* fNest;                  ///< the fast optical simulation process
+    double fStepSize;                ///< maximum step to take
+    CLHEP::HepRandomEngine& fEngine; ///< random engine
+  };
 }
 #endif // LARG4_ISCALCULATIONNEST_H

@@ -10,14 +10,12 @@
 // Ben Jones, MIT, 06/04/2010
 //
 
-
-
 #include "larsim/LegacyLArG4/OpDetSensitiveDetector.h"
-#include "larsim/LegacyLArG4/OpDetPhotonTable.h"
-#include "larsim/LegacyLArG4/OpDetLookup.h"
-#include "lardataobj/Simulation/SimPhotons.h"
-#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h" // util::pi()
 #include "Geant4/G4SDManager.hh"
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h" // util::pi()
+#include "lardataobj/Simulation/SimPhotons.h"
+#include "larsim/LegacyLArG4/OpDetLookup.h"
+#include "larsim/LegacyLArG4/OpDetPhotonTable.h"
 
 namespace {
 
@@ -26,31 +24,27 @@ namespace {
 
 } // local namespace
 
+namespace larg4 {
 
-namespace larg4{
-
-
-  OpDetSensitiveDetector::OpDetSensitiveDetector
-    (G4String DetectorUniqueName, bool useLitePhotons /* = false */)
-    : G4VSensitiveDetector(DetectorUniqueName)
-    , fUseLitePhotons(useLitePhotons)
+  OpDetSensitiveDetector::OpDetSensitiveDetector(G4String DetectorUniqueName,
+                                                 bool useLitePhotons /* = false */)
+    : G4VSensitiveDetector(DetectorUniqueName), fUseLitePhotons(useLitePhotons)
   {
     // Register self with sensitive detector manager
     G4SDManager::GetSDMpointer()->AddNewDetector(this);
 
     // Get instances of singleton classes
-    fTheOpDetLookup        = OpDetLookup::Instance();
-    fThePhotonTable        = OpDetPhotonTable::Instance();
-
+    fTheOpDetLookup = OpDetLookup::Instance();
+    fThePhotonTable = OpDetPhotonTable::Instance();
   }
-
 
   //--------------------------------------------------------
 
-  void OpDetSensitiveDetector::AddLitePhoton(G4Step const* aStep, int OpDet)
+  void
+  OpDetSensitiveDetector::AddLitePhoton(G4Step const* aStep, int OpDet)
   {
 
-    double const time  = aStep->GetTrack()->GetGlobalTime();
+    double const time = aStep->GetTrack()->GetGlobalTime();
 
     // the guideline: if it's VUV (~128 nm) is direct, otherwise it is reflected
     double const energy = aStep->GetTrack()->GetVertexKineticEnergy() / CLHEP::eV;
@@ -61,37 +55,36 @@ namespace larg4{
 
   } // OpDetSensitiveDetector::AddLitePhoton()
 
-
   //--------------------------------------------------------
 
-  void OpDetSensitiveDetector::AddPhoton(G4Step const* aStep, int OpDet)
+  void
+  OpDetSensitiveDetector::AddPhoton(G4Step const* aStep, int OpDet)
   {
     sim::OnePhoton ThePhoton;
 
     // Get photon data to store in the hit
 
-    ThePhoton.SetInSD      = true;
+    ThePhoton.SetInSD = true;
 
     auto const& track = *(aStep->GetTrack());
     auto const& startPos = track.GetVertexPosition();
-    ThePhoton.InitialPosition = { startPos.x(), startPos.y(), startPos.z() };
+    ThePhoton.InitialPosition = {startPos.x(), startPos.y(), startPos.z()};
 
     //ThePhoton.Time                = track.GetGlobalTime() - fGlobalTimeOffset;
-    ThePhoton.Time                = track.GetGlobalTime();
+    ThePhoton.Time = track.GetGlobalTime();
 
-    ThePhoton.Energy              =  track.GetVertexKineticEnergy();
+    ThePhoton.Energy = track.GetVertexKineticEnergy();
 
     // Lookup which OpDet we are in
     G4StepPoint const* preStepPoint = aStep->GetPreStepPoint();
 
     // Store relative position on the photon detector
-    G4ThreeVector worldPosition  = preStepPoint->GetPosition();
-    G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
+    G4ThreeVector worldPosition = preStepPoint->GetPosition();
+    G4ThreeVector localPosition =
+      preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(
+        worldPosition);
     ThePhoton.FinalLocalPosition = {
-      localPosition.x()/CLHEP::cm,
-      localPosition.y()/CLHEP::cm,
-      localPosition.z()/CLHEP::cm
-      };
+      localPosition.x() / CLHEP::cm, localPosition.y() / CLHEP::cm, localPosition.z() / CLHEP::cm};
 
     // Add this photon to the detected photons table
     fThePhotonTable->AddPhoton(OpDet, std::move(ThePhoton));
@@ -100,39 +93,38 @@ namespace larg4{
 
   //--------------------------------------------------------
 
-  G4bool OpDetSensitiveDetector::ProcessHits(G4Step * aStep, G4TouchableHistory *)
+  G4bool
+  OpDetSensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     // Lookup which OpDet we are in
-    int const OpDet
-      = fTheOpDetLookup->GetOpDet(aStep->GetPreStepPoint()->GetPhysicalVolume());
+    int const OpDet = fTheOpDetLookup->GetOpDet(aStep->GetPreStepPoint()->GetPhysicalVolume());
 
     // Add this photon to the detected photons table
-    if (fUseLitePhotons) AddLitePhoton(aStep, OpDet);
-    else                 AddPhoton(aStep, OpDet);
+    if (fUseLitePhotons)
+      AddLitePhoton(aStep, OpDet);
+    else
+      AddPhoton(aStep, OpDet);
 
     // Kill this photon track
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);
 
     return true;
-
-
   }
 
   //--------------------------------------------------------
 
-  void OpDetSensitiveDetector::Initialize(G4HCofThisEvent *)
-  {
-
-  }
-
+  void
+  OpDetSensitiveDetector::Initialize(G4HCofThisEvent*)
+  {}
 
 }
-
 
 //--------------------------------------------------------
 namespace {
 
-  constexpr double Wavelength(double energy) {
+  constexpr double
+  Wavelength(double energy)
+  {
 
     // SI 2019 (eV nm):
     constexpr double hc = 6.62607015e-34 * 299792458.0 / 1.602176634e-19 * 1e9;

@@ -12,22 +12,22 @@
 
 // Processes
 #include "Geant4/G4HadronElasticProcess.hh"
-#include "Geant4/G4ParticleHPElasticData.hh"
-#include "Geant4/G4ParticleHPThermalScatteringData.hh"
 #include "Geant4/G4ParticleHPElastic.hh"
+#include "Geant4/G4ParticleHPElasticData.hh"
 #include "Geant4/G4ParticleHPThermalScattering.hh"
+#include "Geant4/G4ParticleHPThermalScatteringData.hh"
 
 #include "Geant4/G4NeutronInelasticProcess.hh"
-#include "Geant4/G4ParticleHPInelasticData.hh"
 #include "Geant4/G4ParticleHPInelastic.hh"
+#include "Geant4/G4ParticleHPInelasticData.hh"
 
 #include "Geant4/G4HadronCaptureProcess.hh"
-#include "Geant4/G4ParticleHPCaptureData.hh"
 #include "Geant4/G4ParticleHPCapture.hh"
+#include "Geant4/G4ParticleHPCaptureData.hh"
 
 #include "Geant4/G4HadronFissionProcess.hh"
-#include "Geant4/G4ParticleHPFissionData.hh"
 #include "Geant4/G4ParticleHPFission.hh"
+#include "Geant4/G4ParticleHPFissionData.hh"
 
 #include "Geant4/G4SystemOfUnits.hh"
 
@@ -43,11 +43,13 @@ larg4::CustomPhysicsFactory<NeutronHPphysics> dummy_factory("NeutronHP");
 // Thermal neutron physics is enabled by default
 // (important for low-energy neutron interactions!)
 NeutronHPphysics::NeutronHPphysics(const G4String& name)
-  : G4VPhysicsConstructor(name), fThermal(true) {}
+  : G4VPhysicsConstructor(name), fThermal(true)
+{}
 
 NeutronHPphysics::~NeutronHPphysics() {}
 
-void NeutronHPphysics::ConstructProcess()
+void
+NeutronHPphysics::ConstructProcess()
 {
   G4ParticleDefinition* neutron = G4Neutron::Neutron();
   G4ProcessManager* pManager = neutron->GetProcessManager();
@@ -73,13 +75,13 @@ void NeutronHPphysics::ConstructProcess()
   pManager->AddDiscreteProcess(process1);
   //
   // model1a
-  G4ParticleHPElastic*  model1a = new G4ParticleHPElastic();
+  G4ParticleHPElastic* model1a = new G4ParticleHPElastic();
   process1->RegisterMe(model1a);
   process1->AddDataSet(new G4ParticleHPElasticData());
   //
   // model1b
   if (fThermal) {
-    model1a->SetMinEnergy(4*eV);
+    model1a->SetMinEnergy(4 * eV);
     G4ParticleHPThermalScattering* model1b = new G4ParticleHPThermalScattering();
     process1->RegisterMe(model1b);
     process1->AddDataSet(new G4ParticleHPThermalScatteringData());

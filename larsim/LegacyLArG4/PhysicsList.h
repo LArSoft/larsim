@@ -49,8 +49,8 @@
 #ifndef LArG4_PhysicsList_h
 #define LArG4_PhysicsList_h
 
-#include "Geant4/G4VModularPhysicsList.hh"
 #include "Geant4/G4String.hh"
+#include "Geant4/G4VModularPhysicsList.hh"
 #include "larsim/LegacyLArG4/ConfigurablePhysicsList.hh"
 class G4VPhysicsConstructor;
 
@@ -59,8 +59,7 @@ namespace larg4 {
   // Under normal circumstances, there is no need to inherit a class
   // from G4VModularPhysicsList.  It's necessary here because we have
   // to modify one of its routines.
-  class ModularPhysicsList : public G4VModularPhysicsList
-  {
+  class ModularPhysicsList : public G4VModularPhysicsList {
   public:
     // Constructor.
     explicit ModularPhysicsList();
@@ -72,19 +71,21 @@ namespace larg4 {
 
     // Non-virtual methods in G4VModularPhysicsList.  Just call the
     // method with the same name in G4VModularPhysicsList.
-    void RegisterPhysics(G4VPhysicsConstructor* g)
+    void
+    RegisterPhysics(G4VPhysicsConstructor* g)
     {
       G4VModularPhysicsList::RegisterPhysics(g);
     }
-    const G4VPhysicsConstructor* GetPhysics(G4int index) const
+    const G4VPhysicsConstructor*
+    GetPhysics(G4int index) const
     {
       return G4VModularPhysicsList::GetPhysics(index);
     }
-    const G4VPhysicsConstructor* GetPhysics(const G4String& name) const
+    const G4VPhysicsConstructor*
+    GetPhysics(const G4String& name) const
     {
       return G4VModularPhysicsList::GetPhysics(name);
     }
-
   };
 
   /// This typedef is what defines the name "larg4::PhysicsList" in

@@ -6,9 +6,9 @@
 
 // lar includes
 #include "larsim/LegacyLArG4/IonizationAndScintillation.h"
+#include "larsim/LegacyLArG4/ISCalculationCorrelated.h"
 #include "larsim/LegacyLArG4/ISCalculationNEST.h"
 #include "larsim/LegacyLArG4/ISCalculationSeparate.h"
-#include "larsim/LegacyLArG4/ISCalculationCorrelated.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
 // ROOT includes
@@ -16,9 +16,9 @@
 #include "TH2F.h"
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C/C++ standard libraries
 #include <cassert>
@@ -31,15 +31,16 @@ namespace larg4 {
   static IonizationAndScintillation* gInstance = 0;
 
   //......................................................................
-  IonizationAndScintillation* IonizationAndScintillation::CreateInstance
-    (CLHEP::HepRandomEngine& engine)
+  IonizationAndScintillation*
+  IonizationAndScintillation::CreateInstance(CLHEP::HepRandomEngine& engine)
   {
-    if(!gInstance) gInstance = new IonizationAndScintillation(engine);
+    if (!gInstance) gInstance = new IonizationAndScintillation(engine);
     return gInstance;
   }
 
   //......................................................................
-  IonizationAndScintillation* IonizationAndScintillation::Instance()
+  IonizationAndScintillation*
+  IonizationAndScintillation::Instance()
   {
     // the instance must have been created already by CreateInstance()
     assert(gInstance);
@@ -48,8 +49,7 @@ namespace larg4 {
 
   //......................................................................
   // Constructor.
-  IonizationAndScintillation::IonizationAndScintillation
-    (CLHEP::HepRandomEngine& engine)
+  IonizationAndScintillation::IonizationAndScintillation(CLHEP::HepRandomEngine& engine)
     : fISCalc(0)
     , fStep(0)
     , fElectronsPerStep(0)
@@ -62,40 +62,40 @@ namespace larg4 {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     fISCalculator = lgp->IonAndScintCalculator();
 
-    if      (fISCalculator == "Separate")   fISCalc = new larg4::ISCalculationSeparate(fEngine);
-    else if (fISCalculator == "Correlated") fISCalc = new larg4::ISCalculationCorrelated(fEngine);
-    else if (fISCalculator == "NEST")       fISCalc = new larg4::ISCalculationNEST(fEngine);
-    else mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
+    if (fISCalculator == "Separate")
+      fISCalc = new larg4::ISCalculationSeparate(fEngine);
+    else if (fISCalculator == "Correlated")
+      fISCalc = new larg4::ISCalculationCorrelated(fEngine);
+    else if (fISCalculator == "NEST")
+      fISCalc = new larg4::ISCalculationNEST(fEngine);
+    else
+      mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
 
     // Reset the values for the electrons, photons, and energy to 0
     // in the calculator
     fISCalc->Reset();
     //set the current track and step number values to bogus so that it will run the first reset:
-    fStepNumber=-1;
-    fTrkID=-1;
+    fStepNumber = -1;
+    fTrkID = -1;
 
     // make the histograms
     art::ServiceHandle<art::TFileService const> tfs;
 
-    fElectronsPerStep   = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps",
-					  500, 0., 5000.);
-    fPhotonsPerStep   	= tfs->make<TH1F>("photonsPerStep", ";Photons;Steps",
-					  500, 0., 5000.);
-    fEnergyPerStep    	= tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps",
-					  100, 0., 0.5);
-    fStepSize         	= tfs->make<TH1F>("stepSize", ";Step Size (CLHEP::cm);Steps",
-					  500, 0., 0.2);
-    fElectronsPerLength = tfs->make<TH1F>("electronsPerLength", ";Electrons #times 10^{3}/CLHEP::cm;Steps",
-					  1000, 0., 1000.);
-    fPhotonsPerLength   = tfs->make<TH1F>("photonsPerLength", ";Photons #times 10^{3}/CLHEP::cm;Steps",
-					  1000, 0., 1000.);
-    fElectronsPerEDep   = tfs->make<TH1F>("electronsPerEDep", ";Electrons #times 10^{3}/MeV;Steps",
-					  1000, 0., 1000.);
-    fPhotonsPerEDep     = tfs->make<TH1F>("photonsPerEDep", ";Photons #times 10^{3}/MeV;Steps",
-					  1000, 0., 1000.);
+    fElectronsPerStep = tfs->make<TH1F>("electronsPerStep", ";Electrons;Steps", 500, 0., 5000.);
+    fPhotonsPerStep = tfs->make<TH1F>("photonsPerStep", ";Photons;Steps", 500, 0., 5000.);
+    fEnergyPerStep = tfs->make<TH1F>("energyPerStep", ";Energy (MeV);Steps", 100, 0., 0.5);
+    fStepSize = tfs->make<TH1F>("stepSize", ";Step Size (CLHEP::cm);Steps", 500, 0., 0.2);
+    fElectronsPerLength = tfs->make<TH1F>(
+      "electronsPerLength", ";Electrons #times 10^{3}/CLHEP::cm;Steps", 1000, 0., 1000.);
+    fPhotonsPerLength = tfs->make<TH1F>(
+      "photonsPerLength", ";Photons #times 10^{3}/CLHEP::cm;Steps", 1000, 0., 1000.);
+    fElectronsPerEDep =
+      tfs->make<TH1F>("electronsPerEDep", ";Electrons #times 10^{3}/MeV;Steps", 1000, 0., 1000.);
+    fPhotonsPerEDep =
+      tfs->make<TH1F>("photonsPerEDep", ";Photons #times 10^{3}/MeV;Steps", 1000, 0., 1000.);
 
-    fElectronsVsPhotons = tfs->make<TH2F>("electronsVsPhotons", ";Photons;Electrons",
-					  500, 0., 5000., 500, 0., 5000.);
+    fElectronsVsPhotons =
+      tfs->make<TH2F>("electronsVsPhotons", ";Photons;Electrons", 500, 0., 5000., 500, 0., 5000.);
 
     return;
   }
@@ -103,19 +103,20 @@ namespace larg4 {
   //......................................................................
   IonizationAndScintillation::~IonizationAndScintillation()
   {
-    if(fISCalc) delete fISCalc;
+    if (fISCalc) delete fISCalc;
   }
 
-
   //......................................................................
-  void IonizationAndScintillation::Reset(const G4Step* step)
+  void
+  IonizationAndScintillation::Reset(const G4Step* step)
   {
 
-    if(fStepNumber==step->GetTrack()->GetCurrentStepNumber() && fTrkID==step->GetTrack()->GetTrackID())
+    if (fStepNumber == step->GetTrack()->GetCurrentStepNumber() &&
+        fTrkID == step->GetTrack()->GetTrackID())
       return;
 
-    fStepNumber=step->GetTrack()->GetCurrentStepNumber();
-    fTrkID=step->GetTrack()->GetTrackID();
+    fStepNumber = step->GetTrack()->GetCurrentStepNumber();
+    fTrkID = step->GetTrack()->GetTrackID();
 
     fStep = step;
 
@@ -123,38 +124,39 @@ namespace larg4 {
     fISCalc->Reset();
 
     // check the material for this step and be sure it is LAr
-    if(step->GetTrack()->GetMaterial()->GetName() != "LAr") return;
+    if (step->GetTrack()->GetMaterial()->GetName() != "LAr") return;
 
     // double check that the energy deposit is non-zero
     // then do the calculation if it is
-    if( step->GetTotalEnergyDeposit() > 0 ){
+    if (step->GetTotalEnergyDeposit() > 0) {
 
       fISCalc->CalculateIonizationAndScintillation(fStep);
 
-      MF_LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
-					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
-					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
-					      << "\nPhotons: "   << fISCalc->NumberScintillationPhotons();
+      MF_LOG_DEBUG("IonizationAndScintillation")
+        << "Step Size: " << fStep->GetStepLength() / CLHEP::cm
+        << "\nEnergy: " << fISCalc->EnergyDeposit()
+        << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
+        << "\nPhotons: " << fISCalc->NumberScintillationPhotons();
 
       G4ThreeVector totstep = fStep->GetPostStepPoint()->GetPosition();
       totstep -= fStep->GetPreStepPoint()->GetPosition();
 
       // Fill the histograms
-      fStepSize          ->Fill(totstep.mag()/CLHEP::cm);
-      fEnergyPerStep     ->Fill(fISCalc->EnergyDeposit());
-      fElectronsPerStep  ->Fill(fISCalc->NumberIonizationElectrons());
-      fPhotonsPerStep    ->Fill(fISCalc->NumberScintillationPhotons());
+      fStepSize->Fill(totstep.mag() / CLHEP::cm);
+      fEnergyPerStep->Fill(fISCalc->EnergyDeposit());
+      fElectronsPerStep->Fill(fISCalc->NumberIonizationElectrons());
+      fPhotonsPerStep->Fill(fISCalc->NumberScintillationPhotons());
       fElectronsVsPhotons->Fill(fISCalc->NumberScintillationPhotons(),
-				fISCalc->NumberIonizationElectrons());
-      double const stepSize = totstep.mag()/CLHEP::cm;
+                                fISCalc->NumberIonizationElectrons());
+      double const stepSize = totstep.mag() / CLHEP::cm;
       if (stepSize > 0.0) {
-        fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/stepSize);
-        fPhotonsPerLength  ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/stepSize);
+        fElectronsPerLength->Fill(fISCalc->NumberIonizationElectrons() * 1.e-3 / stepSize);
+        fPhotonsPerLength->Fill(fISCalc->NumberScintillationPhotons() * 1.e-3 / stepSize);
       }
       double const energyDep = fISCalc->EnergyDeposit();
       if (energyDep) {
-        fElectronsPerEDep  ->Fill(fISCalc->NumberIonizationElectrons()*1.e-3/energyDep);
-        fPhotonsPerEDep    ->Fill(fISCalc->NumberScintillationPhotons()*1.e-3/energyDep);
+        fElectronsPerEDep->Fill(fISCalc->NumberIonizationElectrons() * 1.e-3 / energyDep);
+        fPhotonsPerEDep->Fill(fISCalc->NumberScintillationPhotons() * 1.e-3 / energyDep);
       }
 
     } // end if the energy deposition is non-zero

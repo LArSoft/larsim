@@ -14,23 +14,17 @@
 #include <array>
 #include <optional>
 
-
 namespace sim {
 
-
   /// Representation of a single small volume (voxel).
-  class PhotonVoxel{
+  class PhotonVoxel {
   public:
     PhotonVoxel() = default;
-    PhotonVoxel(geo::Point_t const& min, geo::Point_t const& max)
-      : fVoxelMin(min), fVoxelMax(max) {}
-    PhotonVoxel(double xMin,
-                double xMax,
-                double yMin,
-                double yMax,
-                double zMin,
-                double zMax)
-      : PhotonVoxel({ xMin, yMin, zMin }, { xMax, yMax, zMax }) {}
+    PhotonVoxel(geo::Point_t const& min, geo::Point_t const& max) : fVoxelMin(min), fVoxelMax(max)
+    {}
+    PhotonVoxel(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax)
+      : PhotonVoxel({xMin, yMin, zMin}, {xMax, yMax, zMax})
+    {}
 
   private:
     geo::Point_t fVoxelMin;
@@ -60,10 +54,8 @@ namespace sim {
 
   }; // class PhotonVoxel
 
-
   /// Representation of a region of space diced into voxels.
-  class PhotonVoxelDef
-  {
+  class PhotonVoxelDef {
     using DefaultPoint = geo::Point_t;
     using DefaultVector = geo::Vector_t;
 
@@ -96,15 +88,17 @@ namespace sim {
     /// Returns the number of voxels along each of the three dimensions.
     std::array<unsigned int, 3U> GetSteps() const;
 
-
     /// Returns a vector describing the span of a single voxel in x, y an z [cm]
     template <typename Vector = DefaultVector>
     Vector GetVoxelSize() const;
 
     /// Returns a vector describing the full span in x, y an z [cm]
     template <typename Vector = DefaultVector, typename Point = DefaultPoint>
-    Vector GetVolumeSize() const
-      { return GetRegionUpperCorner<Point>() - GetRegionLowerCorner<Point>(); }
+    Vector
+    GetVolumeSize() const
+    {
+      return GetRegionUpperCorner<Point>() - GetRegionLowerCorner<Point>();
+    }
 
     /// Returns the total number of voxels in the volume.
     unsigned int GetNVoxels() const;
@@ -113,17 +107,15 @@ namespace sim {
     template <typename Point>
     int GetVoxelID(Point const& p) const;
 
-    int GetVoxelID(double const*)  const;
+    int GetVoxelID(double const*) const;
     bool IsLegalVoxelID(int) const;
 
-    struct NeiInfo
-    {
+    struct NeiInfo {
       NeiInfo() = default;
       NeiInfo(int i, double w) : id(i), weight(w) {}
       int id = -1;
       double weight = 0.0;
     };
-
 
     /**
      * @brief Returns IDs of the eight neighboring voxels around `v`.
@@ -139,48 +131,49 @@ namespace sim {
     template <typename Point>
     std::optional<std::array<NeiInfo, 8U>> GetNeighboringVoxelIDs(Point const& v) const;
 
-    PhotonVoxel      GetPhotonVoxel(int ID) const;
+    PhotonVoxel GetPhotonVoxel(int ID) const;
     std::array<int, 3U> GetVoxelCoords(int ID) const;
 
     /// Returns whether point `p` is inside the region (upper border excluded).
-    bool isInside(geo::Point_t const& p) const
-      { return isInsideImpl(p); }
+    bool
+    isInside(geo::Point_t const& p) const
+    {
+      return isInsideImpl(p);
+    }
 
-
-    bool operator==(const PhotonVoxelDef &rhs) const;
-    bool operator!=(const PhotonVoxelDef &rhs) const
-      { return ! ((*this)==rhs); }
+    bool operator==(const PhotonVoxelDef& rhs) const;
+    bool
+    operator!=(const PhotonVoxelDef& rhs) const
+    {
+      return !((*this) == rhs);
+    }
 
   private:
-
     int GetVoxelIDImpl(geo::Point_t const& p) const;
 
-    std::optional<std::array<NeiInfo, 8U>> GetNeighboringVoxelIDsImpl
-      (geo::Point_t const& v) const;
+    std::optional<std::array<NeiInfo, 8U>> GetNeighboringVoxelIDsImpl(geo::Point_t const& v) const;
 
     /// Returns the coordinates of the cvoxel containing `p` in step units.
-    std::array<double, 3U> GetVoxelStepCoordsUnchecked
-      (geo::Point_t const& p) const;
+    std::array<double, 3U> GetVoxelStepCoordsUnchecked(geo::Point_t const& p) const;
 
     /// Returns whether the specified point is within the volume.
-    bool isInsideImpl(geo::Point_t const& point) const
-      { return isInsideVolume(point, fLowerCorner, fUpperCorner); }
+    bool
+    isInsideImpl(geo::Point_t const& point) const
+    {
+      return isInsideVolume(point, fLowerCorner, fUpperCorner);
+    }
 
-    static bool isInsideVolume(
-      geo::Point_t const& point,
-      geo::Point_t const& lower, geo::Point_t const& upper
-      );
+    static bool isInsideVolume(geo::Point_t const& point,
+                               geo::Point_t const& lower,
+                               geo::Point_t const& upper);
     static bool isInsideRange(double value, double lower, double upper);
 
   }; // class PhotonVoxelDef
 
-
   /// Prints the content of the specified voxel definition into a stream.
-  std::ostream& operator<<
-    (std::ostream& out, sim::PhotonVoxelDef const& voxelDef);
+  std::ostream& operator<<(std::ostream& out, sim::PhotonVoxelDef const& voxelDef);
 
 } // namespace sim
-
 
 //------------------------------------------------------------------------------
 //--- template implementation
@@ -188,49 +181,68 @@ namespace sim {
 //--- sim::PhotonVoxel
 //------------------------------------------------------------------------------
 template <typename Point /* = DefaultPoint */>
-decltype(auto) sim::PhotonVoxel::GetLowerCorner() const
-  { return geo::vect::convertTo<Point>(fVoxelMin); }
+decltype(auto)
+sim::PhotonVoxel::GetLowerCorner() const
+{
+  return geo::vect::convertTo<Point>(fVoxelMin);
+}
 
 template <typename Point /* = DefaultPoint */>
-decltype(auto) sim::PhotonVoxel::GetUpperCorner() const
-  { return geo::vect::convertTo<Point>(fVoxelMax); }
+decltype(auto)
+sim::PhotonVoxel::GetUpperCorner() const
+{
+  return geo::vect::convertTo<Point>(fVoxelMax);
+}
 
 template <typename Point /* = DefaultPoint */>
-Point sim::PhotonVoxel::GetCenter() const
-  { return geo::vect::convertTo<Point>(geo::vect::middlePoint({ fVoxelMin, fVoxelMax })); }
-
+Point
+sim::PhotonVoxel::GetCenter() const
+{
+  return geo::vect::convertTo<Point>(geo::vect::middlePoint({fVoxelMin, fVoxelMax}));
+}
 
 //------------------------------------------------------------------------------
 //--- sim::PhotonVoxelDef
 //------------------------------------------------------------------------------
 template <typename Point /* = DefaultPoint */>
-decltype(auto) sim::PhotonVoxelDef::GetRegionLowerCorner() const
-  { return geo::vect::convertTo<Point>(fLowerCorner); }
+decltype(auto)
+sim::PhotonVoxelDef::GetRegionLowerCorner() const
+{
+  return geo::vect::convertTo<Point>(fLowerCorner);
+}
 
 template <typename Point /* = DefaultPoint */>
-decltype(auto) sim::PhotonVoxelDef::GetRegionUpperCorner() const
-  { return geo::vect::convertTo<Point>(fUpperCorner); }
+decltype(auto)
+sim::PhotonVoxelDef::GetRegionUpperCorner() const
+{
+  return geo::vect::convertTo<Point>(fUpperCorner);
+}
 
 //------------------------------------------------------------------------------
 template <typename Vector /* = DefaultVector */>
-Vector sim::PhotonVoxelDef::GetVoxelSize() const {
-  return {
-    (fUpperCorner.X() - fLowerCorner.X()) / fxSteps,
-    (fUpperCorner.Y() - fLowerCorner.Y()) / fySteps,
-    (fUpperCorner.Z() - fLowerCorner.Z()) / fzSteps
-    };
+Vector
+sim::PhotonVoxelDef::GetVoxelSize() const
+{
+  return {(fUpperCorner.X() - fLowerCorner.X()) / fxSteps,
+          (fUpperCorner.Y() - fLowerCorner.Y()) / fySteps,
+          (fUpperCorner.Z() - fLowerCorner.Z()) / fzSteps};
 } // sim::PhotonVoxelDef::GetVoxelSize()
 
 //------------------------------------------------------------------------------
 template <typename Point>
-int sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
-  { return GetVoxelIDImpl(geo::vect::toPoint(p)); }
+int
+sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
+{
+  return GetVoxelIDImpl(geo::vect::toPoint(p));
+}
 
 //------------------------------------------------------------------------------
 template <typename Point>
 std::optional<std::array<sim::PhotonVoxelDef::NeiInfo, 8U>>
 sim::PhotonVoxelDef::GetNeighboringVoxelIDs(Point const& v) const
-  { return GetNeighboringVoxelIDsImpl(geo::vect::toPoint(v)); }
+{
+  return GetNeighboringVoxelIDsImpl(geo::vect::toPoint(v));
+}
 
 //------------------------------------------------------------------------------
 

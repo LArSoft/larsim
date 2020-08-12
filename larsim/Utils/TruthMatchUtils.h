@@ -14,26 +14,26 @@
 #include "lardataobj/RecoBase/Hit.h"
 
 // c++
-#include <map>
 #include <limits>
+#include <map>
 #include <vector>
 
 namespace TruthMatchUtils {
 
-typedef int G4ID;
-typedef float EDeposit;
-typedef std::map<G4ID, EDeposit> IDToEDepositMap;
+  typedef int G4ID;
+  typedef float EDeposit;
+  typedef std::map<G4ID, EDeposit> IDToEDepositMap;
 
-/**
+  /**
  *  @brief  Test whether a G4ID returned by the TruthMatchUtils functions is valid
  *
  *  @param  g4ID the G4ID to be tested
  *
  *  @return validity bool
  */
-bool Valid(const G4ID g4ID) noexcept;
+  bool Valid(const G4ID g4ID) noexcept;
 
-/**
+  /**
  *  @brief  The G4 ID of the true particle which deposits the most energy in the recob::Hit
  *
  *  @param  pHit the recob::Hit to be assessed
@@ -41,9 +41,9 @@ bool Valid(const G4ID g4ID) noexcept;
  *
  *  @return the ID of the G4 particle
  */
-G4ID TrueParticleID(const art::Ptr<recob::Hit> &pHit, const bool rollupUnsavedIDs);
+  G4ID TrueParticleID(const art::Ptr<recob::Hit>& pHit, const bool rollupUnsavedIDs);
 
-/**
+  /**
  *  @brief  The G4 ID of the true particle which deposits the most energy in a vector of recob::Hit
  *
  *  @param  pHits the recob::Hit vector to be assessed
@@ -51,9 +51,10 @@ G4ID TrueParticleID(const art::Ptr<recob::Hit> &pHit, const bool rollupUnsavedID
  *
  *  @return the ID of the G4 particle
  */
-G4ID TrueParticleIDFromTotalTrueEnergy(const std::vector<art::Ptr<recob::Hit> >& pHits, const bool rollupUnsavedIDs);
+  G4ID TrueParticleIDFromTotalTrueEnergy(const std::vector<art::Ptr<recob::Hit>>& pHits,
+                                         const bool rollupUnsavedIDs);
 
-/**
+  /**
  *  @brief  The G4 ID of the true particle whose matched hits have produced the largest amount of reconstructed charge in a recob::Hit vector
  *
  *  @param  pHits the recob::Hit vector to be assessed
@@ -61,9 +62,10 @@ G4ID TrueParticleIDFromTotalTrueEnergy(const std::vector<art::Ptr<recob::Hit> >&
  *
  *  @return the ID of the G4 particle
  */
-G4ID TrueParticleIDFromTotalRecoCharge(const std::vector<art::Ptr<recob::Hit> >& pHits, const bool rollupUnsavedIDs);
+  G4ID TrueParticleIDFromTotalRecoCharge(const std::vector<art::Ptr<recob::Hit>>& pHits,
+                                         const bool rollupUnsavedIDs);
 
-/**
+  /**
  *  @brief  The G4 ID of the true particle who has been truth-matched to the most hits in a recob::Hit vector
  *
  *  @param  pHits the recob::Hit vector to be assessed
@@ -71,16 +73,19 @@ G4ID TrueParticleIDFromTotalRecoCharge(const std::vector<art::Ptr<recob::Hit> >&
  *
  *  @return the ID of the G4 particle
  */
-G4ID TrueParticleIDFromTotalRecoHits(const std::vector<art::Ptr<recob::Hit> >& pHits, const bool rollupUnsavedIDs);
+  G4ID TrueParticleIDFromTotalRecoHits(const std::vector<art::Ptr<recob::Hit>>& pHits,
+                                       const bool rollupUnsavedIDs);
 
-/**
+  /**
  *  @brief  Fill an energy deposition map (maps G4 ID to true energy deposition) for a recob::Hit
  *
  *  @param  idToEDepMap the energy deposition map to be filled
  *  @param  pHit the recob::Hit to be assessed
  *  @param  rollupUnsavedIDs whether to squash energy deposits for non-saved G4 particles (e.g. shower secondaries) its saved ancestor particle
  */
-void FillG4IDToEnergyDepositMap(IDToEDepositMap &idToEDepMap, const art::Ptr<recob::Hit> &pHit, const bool rollupUnsavedIDs);
+  void FillG4IDToEnergyDepositMap(IDToEDepositMap& idToEDepMap,
+                                  const art::Ptr<recob::Hit>& pHit,
+                                  const bool rollupUnsavedIDs);
 
 } // namespace TruthMatchUtils
 

@@ -141,38 +141,38 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
+#include <cmath>
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
-#include <cmath>
-#include <memory>
-#include <exception>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // nusimdata includes
-#include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
-#include "TTree.h"
 #include "TDatabasePDG.h"
+#include "TTree.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -180,8 +180,9 @@
 // for c2: NTPCs is no longer used
 //const int NTPCs = 300;
 
-
-namespace simb { class MCTruth; }
+namespace simb {
+  class MCTruth;
+}
 
 namespace evgen {
 
@@ -197,53 +198,62 @@ namespace evgen {
     void beginRun(art::Run& run);
     void endRun(art::Run& run);
 
-   private:
+  private:
+    void SampleOne(unsigned int i, simb::MCTruth& mct, CLHEP::HepRandomEngine& engine);
 
-    void SampleOne(unsigned int   i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine);
+    void initialization(double theta1,
+                        double theta2,
+                        double phi1,
+                        double phi2,
+                        int figflag,
+                        double s_hor,
+                        double s_ver1,
+                        double s_ver2,
+                        double& FI);
 
-    void initialization( double theta1, double theta2, double phi1, double phi2,
-			 int figflag, double s_hor, double s_ver1, double s_ver2, double &FI );
-
-    void sampling( double &E, double &theta, double &phi, double &dep, CLHEP::HepRandomEngine& engine );
-
+    void sampling(double& E,
+                  double& theta,
+                  double& phi,
+                  double& dep,
+                  CLHEP::HepRandomEngine& engine);
 
     static const int kGAUS = 1;
 
-    CLHEP::HepRandomEngine& fEngine;     ///< art-managed random-number engine
+    CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
 
-    int                 fPDG;            ///< PDG code of particles to generate
-    double              fChargeRatio;    ///< Charge ratio of particle / anti-particle
+    int fPDG;            ///< PDG code of particles to generate
+    double fChargeRatio; ///< Charge ratio of particle / anti-particle
 
-    std::string         fInputDir;       ///< Input Directory
-    std::string         fInputFile1;     ///< Input File 1
-    std::string         fInputFile2;     ///< Input File 2
-    std::string         fInputFile3;     ///< Input File 3
+    std::string fInputDir;   ///< Input Directory
+    std::string fInputFile1; ///< Input File 1
+    std::string fInputFile2; ///< Input File 2
+    std::string fInputFile3; ///< Input File 3
 
-    double              fCavernAngle;    ///< Angle of the detector from the North to the East.
-    double              fRockDensity;    ///< Default rock density is 2.70 g cm-3. If this is
-                                         ///< changed then the three input files need to be
-                                         ///< remade. If there is a desire for this contact
-                                         ///< Vitaly Kudryavtsev at V.Kudryavtsev@shef.ac.uk
+    double fCavernAngle; ///< Angle of the detector from the North to the East.
+    double fRockDensity; ///< Default rock density is 2.70 g cm-3. If this is
+                         ///< changed then the three input files need to be
+                         ///< remade. If there is a desire for this contact
+                         ///< Vitaly Kudryavtsev at V.Kudryavtsev@shef.ac.uk
 
-    double              fEmin;           ///< Minimum Kinetic Energy (GeV)
-    double              fEmax;           ///< Maximum Kinetic Energy (GeV)
+    double fEmin; ///< Minimum Kinetic Energy (GeV)
+    double fEmax; ///< Maximum Kinetic Energy (GeV)
 
-    double              fThetamin;       ///< Minimum theta
-    double              fThetamax;       ///< Maximum theta
-    double              fPhimin;         ///< Minimum phi
-    double              fPhimax;         ///< Maximum phi
+    double fThetamin; ///< Minimum theta
+    double fThetamax; ///< Maximum theta
+    double fPhimin;   ///< Minimum phi
+    double fPhimax;   ///< Maximum phi
 
-    int                 figflag;          ///< If want sampled from sphere or parallelepiped
-    double              fXmin;           ///< Minimum X position
-    double              fYmin;           ///< Minimum Y position
-    double              fZmin;           ///< Minimum Z position
-    double              fXmax;           ///< Maximum X position
-    double              fYmax;           ///< Maximum Y position
-    double              fZmax;           ///< Maximum Z position
+    int figflag;  ///< If want sampled from sphere or parallelepiped
+    double fXmin; ///< Minimum X position
+    double fYmin; ///< Minimum Y position
+    double fZmin; ///< Minimum Z position
+    double fXmax; ///< Maximum X position
+    double fYmax; ///< Maximum Y position
+    double fZmax; ///< Maximum Z position
 
-    double              fT0;             ///< Central t position (ns) in world coordinates
-    double              fSigmaT;         ///< Variation in t position (ns)
-    int                 fTDist;          ///< How to distribute t  (gaus, or uniform)
+    double fT0;     ///< Central t position (ns) in world coordinates
+    double fSigmaT; ///< Variation in t position (ns)
+    int fTDist;     ///< How to distribute t  (gaus, or uniform)
 
     //Define TFS histograms.....
     /*
@@ -269,10 +279,10 @@ namespace evgen {
     double x0, y0, z0, cx, cy, cz;
 
     //Define some variables....
-    double FI      = 0.;
-    double s_hor   = 0.;
-    double s_ver1  = 0.;
-    double s_ver2  = 0.;
+    double FI = 0.;
+    double s_hor = 0.;
+    double s_ver1 = 0.;
+    double s_ver2 = 0.;
 
     double spmu[121][62][51];
     double fnmu[32401];
@@ -306,47 +316,48 @@ namespace evgen {
   };
 }
 
-namespace evgen{
+namespace evgen {
 
   //____________________________________________________________________________
   MUSUN::MUSUN(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
-    , fPDG        {pset.get< int                 >("PDG")}
-    , fChargeRatio{pset.get< double              >("ChargeRatio")}
-    , fInputDir   {pset.get< std::string         >("InputDir")}
-    , fInputFile1 {pset.get< std::string         >("InputFile1")}
-    , fInputFile2 {pset.get< std::string         >("InputFile2")}
-    , fInputFile3 {pset.get< std::string         >("InputFile3")}
-    , fCavernAngle{pset.get< double              >("CavernAngle")}
-    , fRockDensity{pset.get< double              >("RockDensity")}
-    , fEmin       {pset.get< double              >("Emin")}
-    , fEmax       {pset.get< double              >("Emax")}
-    , fThetamin   {pset.get< double              >("Thetamin")}
-    , fThetamax   {pset.get< double              >("Thetamax")}
-    , fPhimin     {pset.get< double              >("Phimin")}
-    , fPhimax     {pset.get< double              >("Phimax")}
-    , figflag     {pset.get<int                  >("igflag")}
-    , fXmin       {pset.get<double               >("Xmin")}
-    , fYmin       {pset.get<double               >("Ymin")}
-    , fZmin       {pset.get<double               >("Zmin")}
-    , fXmax       {pset.get<double               >("Xmax")}
-    , fYmax       {pset.get<double               >("Ymax")}
-    , fZmax       {pset.get<double               >("Zmax")}
-    , fT0         {pset.get< double              >("T0")}
-    , fSigmaT     {pset.get< double              >("SigmaT")}
-    , fTDist      {pset.get< int                 >("TDist")}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fPDG{pset.get<int>("PDG")}
+    , fChargeRatio{pset.get<double>("ChargeRatio")}
+    , fInputDir{pset.get<std::string>("InputDir")}
+    , fInputFile1{pset.get<std::string>("InputFile1")}
+    , fInputFile2{pset.get<std::string>("InputFile2")}
+    , fInputFile3{pset.get<std::string>("InputFile3")}
+    , fCavernAngle{pset.get<double>("CavernAngle")}
+    , fRockDensity{pset.get<double>("RockDensity")}
+    , fEmin{pset.get<double>("Emin")}
+    , fEmax{pset.get<double>("Emax")}
+    , fThetamin{pset.get<double>("Thetamin")}
+    , fThetamax{pset.get<double>("Thetamax")}
+    , fPhimin{pset.get<double>("Phimin")}
+    , fPhimax{pset.get<double>("Phimax")}
+    , figflag{pset.get<int>("igflag")}
+    , fXmin{pset.get<double>("Xmin")}
+    , fYmin{pset.get<double>("Ymin")}
+    , fZmin{pset.get<double>("Zmin")}
+    , fXmax{pset.get<double>("Xmax")}
+    , fYmax{pset.get<double>("Ymax")}
+    , fZmax{pset.get<double>("Zmax")}
+    , fT0{pset.get<double>("T0")}
+    , fSigmaT{pset.get<double>("SigmaT")}
+    , fTDist{pset.get<int>("TDist")}
   {
-    produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();
+    produces<std::vector<simb::MCTruth>>();
+    produces<sumdata::RunData, art::InRun>();
   }
 
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Job
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::beginJob()
+  void
+  MUSUN::beginJob()
   {
     // Make the Histograms....
     art::ServiceHandle<art::TFileService const> tfs;
@@ -369,19 +380,19 @@ namespace evgen{
     hTheta      = tfs->make<TH1D>("hTheta"     ,"Angle (degrees)",500, 0, 90  );
     hPhi        = tfs->make<TH1D>("hPhi"       ,"Angle (degrees)",500, 0, 365 );
     */
-    fTree = tfs->make<TTree>("Generator","analysis tree");
-    fTree->Branch("particleID",&PdgCode, "particleID/I");
-    fTree->Branch("energy" ,&Energy , "energy/D");
-    fTree->Branch("time"   ,&Time   , "Time/D"  );
-    fTree->Branch("posX"   ,&x0     , "posX/D"  );
-    fTree->Branch("posY"   ,&y0     , "posY/D"  );
-    fTree->Branch("posZ"   ,&z0     , "posZ/D"  );
-    fTree->Branch("cosX"   ,&cx     , "cosX/D"  );
-    fTree->Branch("cosY"   ,&cy     , "cosY/D"  );
-    fTree->Branch("cosZ"   ,&cz     , "cosZ/D"  );
-    fTree->Branch("theta"  ,&theta  , "theta/D" );
-    fTree->Branch("phi"    ,&phi    , "phi/D"   );
-    fTree->Branch("depth"  ,&dep    , "dep/D"   );
+    fTree = tfs->make<TTree>("Generator", "analysis tree");
+    fTree->Branch("particleID", &PdgCode, "particleID/I");
+    fTree->Branch("energy", &Energy, "energy/D");
+    fTree->Branch("time", &Time, "Time/D");
+    fTree->Branch("posX", &x0, "posX/D");
+    fTree->Branch("posY", &y0, "posY/D");
+    fTree->Branch("posZ", &z0, "posZ/D");
+    fTree->Branch("cosX", &cx, "cosX/D");
+    fTree->Branch("cosY", &cy, "cosY/D");
+    fTree->Branch("cosZ", &cz, "cosZ/D");
+    fTree->Branch("theta", &theta, "theta/D");
+    fTree->Branch("phi", &phi, "phi/D");
+    fTree->Branch("depth", &dep, "dep/D");
     /*
     fCryos = tfs->make<TTree>("CryoSizes","cryo tree");
     fCryos->Branch("NumTPCs" , &NumTPCs , "NumTPCs/I"       );
@@ -394,44 +405,67 @@ namespace evgen{
     fCryos->Branch("CryoSize", &CryoSize, "CryoSize[6]/D"   );
     fCryos->Branch("DetHall" , &DetHall , "DetHall[6]/D"    );
     */
- }
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Run
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::beginRun(art::Run& run)
+  void
+  MUSUN::beginRun(art::Run& run)
   {
     // Check fcl parameters were set correctly
-    if ( fThetamax > 90.5 ) throw cet::exception("MUSUNGen") << "\nThetamax has to be less than " << M_PI/2 << ", but was entered as " << fThetamax << ", this causes an error so leaving program now...\n\n";
-    if ( fThetamin < 0    ) throw cet::exception("MUSUNGen") << "\nThetamin has to be more than 0, but was entered as " << fThetamin << ", this causes an error so leaving program now...\n\n";
-    if ( fThetamax < fThetamin ) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
-    if ( fPhimax > 360.5  ) throw cet::exception("MUSUNGen") << "\nPhimax has to be less than " << 2*M_PI << ", but was entered as " << fPhimax << ", this cause an error so leaving program now...\n\n";
-    if ( fPhimin < 0      ) throw cet::exception("MUSUNGen") << "\nPhimin has to be more than 0, but was entered as " << fPhimin << ", this causes an error so leaving program now...\n\n";
-    if ( fPhimax < fPhimin) throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes an error so leaving program now....\n\n";
-    if ( fEmax   < fEmin  ) throw cet::exception("MUSUNGen") << "\nMinimum energy is bigger than maximum energy....causes an error so leaving program now....\n\n";
+    if (fThetamax > 90.5)
+      throw cet::exception("MUSUNGen")
+        << "\nThetamax has to be less than " << M_PI / 2 << ", but was entered as " << fThetamax
+        << ", this causes an error so leaving program now...\n\n";
+    if (fThetamin < 0)
+      throw cet::exception("MUSUNGen")
+        << "\nThetamin has to be more than 0, but was entered as " << fThetamin
+        << ", this causes an error so leaving program now...\n\n";
+    if (fThetamax < fThetamin)
+      throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes "
+                                          "an error so leaving program now....\n\n";
+    if (fPhimax > 360.5)
+      throw cet::exception("MUSUNGen")
+        << "\nPhimax has to be less than " << 2 * M_PI << ", but was entered as " << fPhimax
+        << ", this cause an error so leaving program now...\n\n";
+    if (fPhimin < 0)
+      throw cet::exception("MUSUNGen")
+        << "\nPhimin has to be more than 0, but was entered as " << fPhimin
+        << ", this causes an error so leaving program now...\n\n";
+    if (fPhimax < fPhimin)
+      throw cet::exception("MUSUNGen") << "\nMinimum angle is bigger than maximum angle....causes "
+                                          "an error so leaving program now....\n\n";
+    if (fEmax < fEmin)
+      throw cet::exception("MUSUNGen")
+        << "\nMinimum energy is bigger than maximum energy....causes an error so leaving program "
+           "now....\n\n";
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 
     // area of the horizontal plane of the parallelepiped
-    s_hor = (fZmax-fZmin)*(fXmax-fXmin);
+    s_hor = (fZmax - fZmin) * (fXmax - fXmin);
     // area of the vertical plane of the parallelepiped, perpendicular to z-axis
-    s_ver1 = (fXmax-fXmin)*(fYmax-fYmin);
+    s_ver1 = (fXmax - fXmin) * (fYmax - fYmin);
     // area of the vertical plane of the parallelepiped, perpendicular to x-axis
-    s_ver2 = (fZmax-fZmin)*(fYmax-fYmin);
+    s_ver2 = (fZmax - fZmin) * (fYmax - fYmin);
 
     //std::cout << s_hor << " " << s_ver1 << " " << s_ver2 << std::endl;
 
-    initialization(fThetamin,fThetamax,fPhimin,fPhimax,figflag,s_hor,s_ver1,s_ver2,FI );
+    initialization(fThetamin, fThetamax, fPhimin, fPhimax, figflag, s_hor, s_ver1, s_ver2, FI);
 
     std::cout << "Material - SURF rock" << std::endl;
     std::cout << "Density = " << fRockDensity << " g/cm^3" << std::endl;
     std::cout << "Parameters for muon spectrum are from LVD best fit" << std::endl;
     std::cout << "Muon energy range = " << fEmin << " - " << fEmax << " GeV" << std::endl;
-    std::cout << "Zenith angle range = " << fThetamin << " - " << fThetamax << " degrees" << std::endl;
-    std::cout << "Azimuthal angle range = " << fPhimin << " - " << fPhimax << " degrees" << std::endl;
-    std::cout << "Global intensity = " << FI << " (cm^2 s)^(-1) or s^(-1) (for muons on the surface)" << std::endl;
+    std::cout << "Zenith angle range = " << fThetamin << " - " << fThetamax << " degrees"
+              << std::endl;
+    std::cout << "Azimuthal angle range = " << fPhimin << " - " << fPhimax << " degrees"
+              << std::endl;
+    std::cout << "Global intensity = " << FI
+              << " (cm^2 s)^(-1) or s^(-1) (for muons on the surface)" << std::endl;
     /*
     NumTPCs = geo->NTPC(0);
     std::cout << "There are " << NumTPCs << " in cryostat 0" << std::endl;
@@ -462,21 +496,23 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   //  End Run
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::endRun(art::Run& run)
+  void
+  MUSUN::endRun(art::Run& run)
   {
     std::cout << "\n\nNumber of muons = " << NEvents << std::endl;
-    std::cout << "Mean muon energy = " << se/NEvents << " GeV" << std::endl;
-    std::cout << "Mean zenith angle (theta) = " << st/NEvents << " degrees" << std::endl;
-    std::cout << "Mean azimuthal angle (phi)= " << sp/NEvents << " degrees" << std::endl;
-    std::cout << "Mean slant depth = " << sd/NEvents << " m w.e." << std::endl;
+    std::cout << "Mean muon energy = " << se / NEvents << " GeV" << std::endl;
+    std::cout << "Mean zenith angle (theta) = " << st / NEvents << " degrees" << std::endl;
+    std::cout << "Mean azimuthal angle (phi)= " << sp / NEvents << " degrees" << std::endl;
+    std::cout << "Mean slant depth = " << sd / NEvents << " m w.e." << std::endl;
   }
   ////////////////////////////////////////////////////////////////////////////////
   //  Produce
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::produce(art::Event& evt)
+  void
+  MUSUN::produce(art::Event& evt)
   {
     ///unique_ptr allows ownership to be transferred to the art::Event after the put statement
-    std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
+    std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
 
     simb::MCTruth truth;
     truth.SetOrigin(simb::kSingleParticle);
@@ -496,67 +532,64 @@ namespace evgen{
   ////////////////////////////////////////////////////////////////////////////////
   // Draw the type, momentum and position of a single particle from the
   // FCIHL description
-  void MUSUN::SampleOne(unsigned int i, simb::MCTruth &mct, CLHEP::HepRandomEngine& engine)
+  void
+  MUSUN::SampleOne(unsigned int i, simb::MCTruth& mct, CLHEP::HepRandomEngine& engine)
   {
-    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandFlat flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
     Energy = 0;
-    theta  = 0;
-    phi    = 0;
-    dep    = 0;
-    Time   = 0;
+    theta = 0;
+    phi = 0;
+    dep = 0;
+    Time = 0;
 
-    sampling( Energy, theta, phi, dep, engine );
+    sampling(Energy, theta, phi, dep, engine);
 
-    theta = theta* M_PI/180;
+    theta = theta * M_PI / 180;
 
     //  changing the angle phi so z-axis is positioned along the long side
     //  of the cavern pointing at 14 deg from the North to the East.
     //  phi += (90. - 14.0);
     //  Want our co-ord rotation going from East to South.
     phi += fCavernAngle;
-    if( phi >= 360. )
-      phi -= 360.;
-    if( phi < 0 )
-      phi += 360.;
+    if (phi >= 360.) phi -= 360.;
+    if (phi < 0) phi += 360.;
     phi *= M_PI / 180.;
 
     // set track id to -i as these are all primary particles and have id <= 0
-    int trackid = -1*(i+1);
+    int trackid = -1 * (i + 1);
     std::string primary("primary");
 
     // Work out whether particle/antiparticle, and mass...
     double m = 0.0;
     PdgCode = fPDG;
-    double ChargeCheck = 1./ ( 1 + fChargeRatio );
+    double ChargeCheck = 1. / (1 + fChargeRatio);
     double pdgfire = flat.fire();
-    if ( pdgfire < ChargeCheck ) PdgCode=-PdgCode;
+    if (pdgfire < ChargeCheck) PdgCode = -PdgCode;
 
-    static TDatabasePDG  pdgt;
+    static TDatabasePDG pdgt;
     TParticlePDG* pdgp = pdgt.GetParticle(PdgCode);
     if (pdgp) m = pdgp->Mass();
 
     //std::cout << pdgfire << " " << ChargeCheck << " " << PdgCode << " " << m << std::endl;
 
     // Work out T0...
-    if(fTDist==kGAUS){
-      Time = gauss.fire(fT0, fSigmaT);
-    }
+    if (fTDist == kGAUS) { Time = gauss.fire(fT0, fSigmaT); }
     else {
-      Time = fT0 + fSigmaT*(2.0*flat.fire()-1.0);
+      Time = fT0 + fSigmaT * (2.0 * flat.fire() - 1.0);
     }
 
     //  The minus sign above is for y-axis pointing up, so the y-momentum
     //  is always pointing down
-    cx       = +sin(theta)*sin(phi);
-    cy       = -cos(theta);
-    cz       = +sin(theta)*cos(phi);
-    Momentum = std::sqrt(Energy*Energy-m*m); // Get momentum
-    px0      = Momentum * cx;
-    py0      = Momentum * cy;
-    pz0      = Momentum * cz;
-    TLorentzVector pvec(px0, py0, pz0, Energy );
+    cx = +sin(theta) * sin(phi);
+    cy = -cos(theta);
+    cz = +sin(theta) * cos(phi);
+    Momentum = std::sqrt(Energy * Energy - m * m); // Get momentum
+    px0 = Momentum * cx;
+    py0 = Momentum * cy;
+    pz0 = Momentum * cz;
+    TLorentzVector pvec(px0, py0, pz0, Energy);
 
     //  Muon coordinates
     double sh1 = s_hor * cos(theta);
@@ -564,20 +597,26 @@ namespace evgen{
     double sv2 = s_ver2 * sin(theta) * fabs(sin(phi));
     double ss = sh1 + sv1 + sv2;
     double xfl1 = flat.fire();
-    if( xfl1 <= sh1/ss ) {
-      x0 = (fXmax - fXmin)*flat.fire() + fXmin;
+    if (xfl1 <= sh1 / ss) {
+      x0 = (fXmax - fXmin) * flat.fire() + fXmin;
       y0 = fYmax;
-      z0 = (fZmax - fZmin)*flat.fire() + fZmin;
-    } else if( xfl1 <= (sh1+sv1)/ss ) {
-      x0 = (fXmax - fXmin)*flat.fire() + fXmin;
-      y0 = (fYmax - fYmin)*flat.fire() + fYmin;
-      if( cz >= 0 ) z0 = fZmin;
-      else z0 = fZmax;
-    } else {
-      if( cx >= 0 ) x0 = fXmin;
-      else x0 = fXmax;
-      y0 = (fYmax - fYmin)*flat.fire() + fYmin;
-      z0 = (fZmax - fZmin)*flat.fire() + fZmin;
+      z0 = (fZmax - fZmin) * flat.fire() + fZmin;
+    }
+    else if (xfl1 <= (sh1 + sv1) / ss) {
+      x0 = (fXmax - fXmin) * flat.fire() + fXmin;
+      y0 = (fYmax - fYmin) * flat.fire() + fYmin;
+      if (cz >= 0)
+        z0 = fZmin;
+      else
+        z0 = fZmax;
+    }
+    else {
+      if (cx >= 0)
+        x0 = fXmin;
+      else
+        x0 = fXmax;
+      y0 = (fYmax - fYmin) * flat.fire() + fYmin;
+      z0 = (fZmax - fZmin) * flat.fire() + fZmin;
     }
     // Make Lorentz vector for x and t....
     TLorentzVector pos(x0, y0, z0, Time);
@@ -598,8 +637,8 @@ namespace evgen{
 
     mct.Add(part);
 
-    theta = theta * 180/M_PI;
-    phi   = phi   * 180/M_PI;
+    theta = theta * 180 / M_PI;
+    phi = phi * 180 / M_PI;
 
     // Sum energies, angles, depth for average outputs.
     se += Energy;
@@ -633,14 +672,21 @@ namespace evgen{
     std::cout << "Normalised..." << cx << " " << cy << " " << cz << std::endl;
     */
     fTree->Fill();
-
   }
 
   ////////////////////////////////////////////////////////////////////////////////
   //  initialization
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::initialization( double theta1, double theta2, double phi1, double phi2,
-		       int figflag, double s_hor, double s_ver1, double s_ver2, double &FI )
+  void
+  MUSUN::initialization(double theta1,
+                        double theta2,
+                        double phi1,
+                        double phi2,
+                        int figflag,
+                        double s_hor,
+                        double s_ver1,
+                        double s_ver2,
+                        double& FI)
   {
     //
     //  Read in the data files
@@ -649,96 +695,113 @@ namespace evgen{
     char inputLine[10000];
     std::string fROOTfile;
 
-    for (int a=0;a<121;++a) for (int b=0;b<62;++b) for (int c=0;c<50;++c) spmu[a][b][c]=0;
-    for (int a=0;a<23401;++a)                      fnmu[a]    = 0;
-    for (int a=0;a<360;++a) for (int b=0;b<91;++b) depth[a][b]= 0;
-    for (int a=0;a<360;++a) for (int b=0;b<91;++b) fmu[a][b]  = 0;
+    for (int a = 0; a < 121; ++a)
+      for (int b = 0; b < 62; ++b)
+        for (int c = 0; c < 50; ++c)
+          spmu[a][b][c] = 0;
+    for (int a = 0; a < 23401; ++a)
+      fnmu[a] = 0;
+    for (int a = 0; a < 360; ++a)
+      for (int b = 0; b < 91; ++b)
+        depth[a][b] = 0;
+    for (int a = 0; a < 360; ++a)
+      for (int b = 0; b < 91; ++b)
+        fmu[a][b] = 0;
 
     std::ostringstream File1LocStream;
-    File1LocStream  << fInputDir << fInputFile1;
-    std::string File1Loc = File1LocStream. str();
+    File1LocStream << fInputDir << fInputFile1;
+    std::string File1Loc = File1LocStream.str();
     cet::search_path sp1("FW_SEARCH_PATH");
-    if( sp1.find_file(fInputFile1, fROOTfile) ) File1Loc = fROOTfile;
-    std::ifstream file1( File1Loc.c_str(), std::ios::in );
-    if (!file1.good() ) throw cet::exception("MUSUNGen") << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
+    if (sp1.find_file(fInputFile1, fROOTfile)) File1Loc = fROOTfile;
+    std::ifstream file1(File1Loc.c_str(), std::ios::in);
+    if (!file1.good())
+      throw cet::exception("MUSUNGen")
+        << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\n\n";
 
-    while( file1.good() ) {
+    while (file1.good()) {
       //std::cout << "Looking at file 1...." << std::endl;
-      file1.getline( inputLine, 9999 );
-      char *token;
-      token = strtok( inputLine, " " );
-      while( token != NULL ) {
-	//std::cout << "While loop file 1..." << std::endl;
-	fmu[index][lineNumber] = atof( token );
-	token = strtok( NULL, " " );
-	index++;
-	if( index == 360 ) {
-	  //std::cout << "If statement file 1..." << std::endl;
-	  index = 0;
-	  lineNumber++;
-	}
+      file1.getline(inputLine, 9999);
+      char* token;
+      token = strtok(inputLine, " ");
+      while (token != NULL) {
+        //std::cout << "While loop file 1..." << std::endl;
+        fmu[index][lineNumber] = atof(token);
+        token = strtok(NULL, " ");
+        index++;
+        if (index == 360) {
+          //std::cout << "If statement file 1..." << std::endl;
+          index = 0;
+          lineNumber++;
+        }
       }
     }
     file1.close();
 
     std::ostringstream File2LocStream;
-    File2LocStream  << fInputDir << fInputFile2;
-    std::string File2Loc = File2LocStream. str();
+    File2LocStream << fInputDir << fInputFile2;
+    std::string File2Loc = File2LocStream.str();
     cet::search_path sp2("FW_SEARCH_PATH");
-    if( sp2.find_file(fInputFile2, fROOTfile) ) File2Loc = fROOTfile;
-    std::ifstream file2( File2Loc.c_str(), std::ios::binary|std::ios::in );
-    if (!file2.good() ) throw cet::exception("MUSUNGen") << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
+    if (sp2.find_file(fInputFile2, fROOTfile)) File2Loc = fROOTfile;
+    std::ifstream file2(File2Loc.c_str(), std::ios::binary | std::ios::in);
+    if (!file2.good())
+      throw cet::exception("MUSUNGen")
+        << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\n\n";
 
     int i1 = 0, i2 = 0, i3 = 0;
     float readVal;
-    while( file2.good() ) {
+    while (file2.good()) {
       //std::cout << "Looking at file 2...." << std::endl;
-      file2.read((char *)(&readVal), sizeof(float));
+      file2.read((char*)(&readVal), sizeof(float));
       spmu[i1][i2][i3] = readVal;
       i1++;
-      if( i1 == 121 ) {
-	//std::cout << "First if statement file 2..." << std::endl;
-	i2++;
-	i1 = 0;
+      if (i1 == 121) {
+        //std::cout << "First if statement file 2..." << std::endl;
+        i2++;
+        i1 = 0;
       }
-      if( i2 == 62 ) {
-	//std::cout << "Second if statement file 2..." << std::endl;
-	i3++;
-	i2 = 0;
+      if (i2 == 62) {
+        //std::cout << "Second if statement file 2..." << std::endl;
+        i3++;
+        i2 = 0;
       }
     }
     file2.close();
-    for( int i=0; i<120; i++ )
-      for( int j=0; j<62; j++ )
-	for( int k=0; k<51; k++ )
-	  spmu[i][j][k] = spmu[i+1][j][k];
+    for (int i = 0; i < 120; i++)
+      for (int j = 0; j < 62; j++)
+        for (int k = 0; k < 51; k++)
+          spmu[i][j][k] = spmu[i + 1][j][k];
     spmu[1][1][0] = 0.000853544;
     //std::cout << "Set spmu to some value..." << std::endl;
 
     std::ostringstream File3LocStream;
-    File3LocStream  << fInputDir << fInputFile3;
-    std::string File3Loc = File3LocStream. str();
+    File3LocStream << fInputDir << fInputFile3;
+    std::string File3Loc = File3LocStream.str();
     cet::search_path sp3("FW_SEARCH_PATH");
-    if( sp3.find_file(fInputFile3, fROOTfile) ) File3Loc = fROOTfile;
-    std::ifstream file3( File3Loc.c_str(), std::ios::in );
-    if (!file3.good() ) throw cet::exception("MUSUNGen") << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH or at " <<  fInputDir <<"\n\n";
+    if (sp3.find_file(fInputFile3, fROOTfile)) File3Loc = fROOTfile;
+    std::ifstream file3(File3Loc.c_str(), std::ios::in);
+    if (!file3.good())
+      throw cet::exception("MUSUNGen")
+        << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\n\n";
 
     lineNumber = index = 0;
-    while( file3.good() ) {
+    while (file3.good()) {
       //std::cout << "Looking at file 3...." << std::endl;
-      file3.getline( inputLine, 9999 );
-      char *token;
-      token = strtok( inputLine, " " );
-      while( token != NULL ) {
-	//std::cout << "While loop file 3..." << std::endl;
-	depth[index][lineNumber] = atof( token );
-	token = strtok( NULL, " " );
-	index++;
-	if( index == 360 ) {
-	  //std::cout << "If statement file 3..." << std::endl;
-	  index = 0;
-	  lineNumber++;
-	}
+      file3.getline(inputLine, 9999);
+      char* token;
+      token = strtok(inputLine, " ");
+      while (token != NULL) {
+        //std::cout << "While loop file 3..." << std::endl;
+        depth[index][lineNumber] = atof(token);
+        token = strtok(NULL, " ");
+        index++;
+        if (index == 360) {
+          //std::cout << "If statement file 3..." << std::endl;
+          index = 0;
+          lineNumber++;
+        }
       }
     }
     file3.close();
@@ -752,8 +815,8 @@ namespace evgen{
     // for c2: c1 and c2 are unused
     //double c1 = cos(M_PI/180.*theta1);
     //double c2 = cos(M_PI/180.*theta2);
-    ph1 = M_PI/180.*phi1;
-    ph2 = M_PI/180.*phi2;
+    ph1 = M_PI / 180. * phi1;
+    ph2 = M_PI / 180. * phi2;
     // for c2: dph is unused
     //double dph = ph2-ph1;
 
@@ -762,82 +825,88 @@ namespace evgen{
     double dc = 1.;
     double sc = 0.;
     int iteration = 0;
-    while( theta < theta2-dc/2. ) {
-        theta += dc/2.;
-        double theta0 = M_PI/180. * theta;
-        double cc = cos(theta0);
-        double ash = s_hor * cc;
-        double asv01 = s_ver1 * sqrt(1. - cc*cc);
-        double asv02 = s_ver2 * sqrt(1. - cc*cc);
-        int ic1 = (theta + 0.999);
-        int ic2 = ic1 + 1;
-        if( ic2 > 91 ) ic2 = 91;
-        if( ic1 < 1 ) ic1 = 1;
-        double phi = phi1;
-        double dp = 1.;
+    while (theta < theta2 - dc / 2.) {
+      theta += dc / 2.;
+      double theta0 = M_PI / 180. * theta;
+      double cc = cos(theta0);
+      double ash = s_hor * cc;
+      double asv01 = s_ver1 * sqrt(1. - cc * cc);
+      double asv02 = s_ver2 * sqrt(1. - cc * cc);
+      int ic1 = (theta + 0.999);
+      int ic2 = ic1 + 1;
+      if (ic2 > 91) ic2 = 91;
+      if (ic1 < 1) ic1 = 1;
+      double phi = phi1;
+      double dp = 1.;
 
-        while( phi < phi2-dp/2. ) {
-            phi += dp/2.;
-            //  the long side of the cavern is pointing at 14 deg to the north:
-            //  double phi0 = M_PI / 180. * (phi + 90. - 14);
+      while (phi < phi2 - dp / 2.) {
+        phi += dp / 2.;
+        //  the long side of the cavern is pointing at 14 deg to the north:
+        //  double phi0 = M_PI / 180. * (phi + 90. - 14);
 
-	    //  Want our co-ord system going from East to South.
-	    double phi0 = M_PI / 180. * (phi + fCavernAngle);
+        //  Want our co-ord system going from East to South.
+        double phi0 = M_PI / 180. * (phi + fCavernAngle);
 
-	    double asv1 = asv01 * fabs(cos(phi0));
-            double asv2 = asv02 * fabs(sin(phi0));
-            double asv0 = ash + asv1 + asv2;
-            double fl = 1.;
-            if( figflag == 1 )
-                fl = asv0;
-            int ip1 = (phi + 0.999);
-            int ip2 = ip1 + 1;
-            if( ip2 > 360 ) ip2 = 1;
-            if( ip1 < 1 ) ip1 = 360;
-            double sp1 = 0.;
+        double asv1 = asv01 * fabs(cos(phi0));
+        double asv2 = asv02 * fabs(sin(phi0));
+        double asv0 = ash + asv1 + asv2;
+        double fl = 1.;
+        if (figflag == 1) fl = asv0;
+        int ip1 = (phi + 0.999);
+        int ip2 = ip1 + 1;
+        if (ip2 > 360) ip2 = 1;
+        if (ip1 < 1) ip1 = 360;
+        double sp1 = 0.;
 
-            for( int ii=0; ii<4; ii++ ) {
-                int iic = ii/2;
-                int iip = ii%2;
-		if(ip1==360 && (ii==1 || ii==3) ) iip = -359;
-		if( fmu[ip1+iip-1][ic1+iic-1] < 0 ) {
-		  if ( pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 > 1e-6 ) {
-		    std::cout << "Looking at fmu [ " << ip1 << " + " << iip << " - 1 (" << ip1+iip-1 << ") ] [ " << ic1 << " + " << iic << " - 1 ("<< ic1+iic-1 << ") ] ."
-			      << "\nChanging sp1 from " << sp1 << " to " <<  sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4 << "..........." << sp1 << " + 10 ^ (" << fmu[ip1+iip-1][ic1+iic-1] << ") / 4 "
-			      << std::endl;
-		  }
-		  sp1 = sp1 + pow(10.,fmu[ip1+iip-1][ic1+iic-1]) / 4;
-		}
+        for (int ii = 0; ii < 4; ii++) {
+          int iic = ii / 2;
+          int iip = ii % 2;
+          if (ip1 == 360 && (ii == 1 || ii == 3)) iip = -359;
+          if (fmu[ip1 + iip - 1][ic1 + iic - 1] < 0) {
+            if (pow(10., fmu[ip1 + iip - 1][ic1 + iic - 1]) / 4 > 1e-6) {
+              std::cout << "Looking at fmu [ " << ip1 << " + " << iip << " - 1 (" << ip1 + iip - 1
+                        << ") ] [ " << ic1 << " + " << iic << " - 1 (" << ic1 + iic - 1 << ") ] ."
+                        << "\nChanging sp1 from " << sp1 << " to "
+                        << sp1 + pow(10., fmu[ip1 + iip - 1][ic1 + iic - 1]) / 4 << "..........."
+                        << sp1 << " + 10 ^ (" << fmu[ip1 + iip - 1][ic1 + iic - 1] << ") / 4 "
+                        << std::endl;
             }
-	    /*
+            sp1 = sp1 + pow(10., fmu[ip1 + iip - 1][ic1 + iic - 1]) / 4;
+          }
+        }
+        /*
 	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = "
 	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n"
 	      << std::endl; */
-	    sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
-	    ++iteration;
-	    ipc = ipc + 1;
-            fnmu[ipc-1] = sc;
-            phi = phi + dp / 2.;
-        }
+        sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
+        ++iteration;
+        ipc = ipc + 1;
+        fnmu[ipc - 1] = sc;
+        phi = phi + dp / 2.;
+      }
 
-        theta = theta + dc / 2.;
+      theta = theta + dc / 2.;
     }
     //std::cout << *FI << " = " << sc << std::endl;
     FI = sc;
-    for( int ipc1 = 0; ipc1 < ipc; ipc1++ )
-      fnmu[ipc1] = fnmu[ipc1] / fnmu[ipc-1];
+    for (int ipc1 = 0; ipc1 < ipc; ipc1++)
+      fnmu[ipc1] = fnmu[ipc1] / fnmu[ipc - 1];
   }
-
 
   ////////////////////////////////////////////////////////////////////////////////
   //  sampling
   ////////////////////////////////////////////////////////////////////////////////
-  void MUSUN::sampling( double &E, double &theta, double &phi, double &dep, CLHEP::HepRandomEngine& engine )
+  void
+  MUSUN::sampling(double& E,
+                  double& theta,
+                  double& phi,
+                  double& dep,
+                  CLHEP::HepRandomEngine& engine)
   {
-    CLHEP::RandFlat   flat(engine);
+    CLHEP::RandFlat flat(engine);
     CLHEP::RandGaussQ gauss(engine);
 
-    #if 0 // this code is disabled for good
+#if 0 // this code is disabled for good
     double xfl = flat.fire();
     int loIndex = 0, hiIndex = 32400;
     int i = (loIndex+hiIndex)/2;
@@ -860,34 +929,31 @@ namespace evgen{
       if( xfl > fnmu[i-1] && xfl <= fnmu[i] )
 	foundIndex = true;
     }
-    #else
+#else
     double xfl = flat.fire();
     int i = 0;
-    while ( xfl > fnmu[i] ) ++i;
-    #endif
-    int ic = (i-2)/360;
-    int ip = i-2-ic*360;
+    while (xfl > fnmu[i])
+      ++i;
+#endif
+    int ic = (i - 2) / 360;
+    int ip = i - 2 - ic * 360;
 
     xfl = flat.fire();
-    theta = the1 + ((double)ic+xfl);
+    theta = the1 + ((double)ic + xfl);
     xfl = flat.fire();
-    phi = ph1 + ((double)ip+xfl);
-    if ( phi > 360 ) phi = phi -360;
+    phi = ph1 + ((double)ip + xfl);
+    if (phi > 360) phi = phi - 360;
     dep = depth[ip][ic] * fRockDensity;
 
-    int ic1 = cos(M_PI/180.*theta) * 50.;
-    if( ic1 < 0 )
-      ic1 = 0;
-    if( ic1 > 50 )
-      ic1 = 50;
+    int ic1 = cos(M_PI / 180. * theta) * 50.;
+    if (ic1 < 0) ic1 = 0;
+    if (ic1 > 50) ic1 = 50;
     int ip1 = dep / 200. - 16;
-    if( ip1 < 0 )
-      ip1 = 0;
-    if( ip1 > 61 )
-      ip1 = 61;
+    if (ip1 < 0) ip1 = 0;
+    if (ip1 > 61) ip1 = 61;
 
     xfl = flat.fire();
-    #if 0
+#if 0
     loIndex = 0, hiIndex = 120;
     int j = (loIndex+hiIndex)/2;
     foundIndex = false;
@@ -909,22 +975,23 @@ namespace evgen{
       if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
 	foundIndex = true;
     }
-    #else
+#else
     int j = 0;
-    while ( xfl > spmu[j][ip1][ic1] ) ++j;
-    #endif
+    while (xfl > spmu[j][ip1][ic1])
+      ++j;
+#endif
 
-    double En1 = 0.05 * (j-1);
+    double En1 = 0.05 * (j - 1);
     double En2 = 0.05 * (j);
-    E = pow(10.,En1 + (En2 - En1)*flat.fire());
+    E = pow(10., En1 + (En2 - En1) * flat.fire());
 
     return;
   }
 
-}//end namespace evgen
+} //end namespace evgen
 
-namespace evgen{
+namespace evgen {
 
   DEFINE_ART_MODULE(MUSUN)
 
-}//end namespace evgen
+} //end namespace evgen

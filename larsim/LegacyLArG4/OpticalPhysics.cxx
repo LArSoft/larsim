@@ -90,13 +90,12 @@ namespace larg4 {
     mf::LogInfo("OpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
 
+  //-----------------------------------------------------------
+  OpticalPhysics::~OpticalPhysics() {}
 
   //-----------------------------------------------------------
-  OpticalPhysics::~OpticalPhysics()
-  {}
-
-  //-----------------------------------------------------------
-  void OpticalPhysics::ConstructParticle()
+  void
+  OpticalPhysics::ConstructParticle()
   {
     MF_LOG_DEBUG("OpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     // optical photon
@@ -130,26 +129,26 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------
-  void OpticalPhysics::ConstructProcess()
+  void
+  OpticalPhysics::ConstructProcess()
   {
 
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    const detinfo::DetectorProperties* detp =
+      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // Add standard EM Processes
     MF_LOG_DEBUG("OpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
 
-    fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
-    fTheScintillationProcess       = new G4Scintillation("Scintillation");
-    fTheAbsorptionProcess          = new G4OpAbsorption();
-    fTheRayleighScatteringProcess  = new G4OpRayleigh();
-    if(detp->SimpleBoundary())
-      fTheBoundaryProcess          = new OpBoundaryProcessSimple();
+    fTheCerenkovProcess = new G4Cerenkov("Cerenkov");
+    fTheScintillationProcess = new G4Scintillation("Scintillation");
+    fTheAbsorptionProcess = new G4OpAbsorption();
+    fTheRayleighScatteringProcess = new G4OpRayleigh();
+    if (detp->SimpleBoundary())
+      fTheBoundaryProcess = new OpBoundaryProcessSimple();
     else
-      fTheBoundaryProcess_g4       = new G4OpBoundaryProcess();
-    fTheWLSProcess                 = new G4OpWLS();
-
-
+      fTheBoundaryProcess_g4 = new G4OpBoundaryProcess();
+    fTheWLSProcess = new G4OpWLS();
 
     fTheCerenkovProcess->SetMaxNumPhotonsPerStep(700);
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
@@ -163,42 +162,40 @@ namespace larg4 {
     G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
     fTheScintillationProcess->AddSaturation(emSaturation);
 
-
     bool CerenkovLightEnabled = larp->CerenkovLightEnabled();
 
-    mf::LogInfo("OpticalPhysics")<<"Cerenkov light enabled : " << CerenkovLightEnabled;
+    mf::LogInfo("OpticalPhysics") << "Cerenkov light enabled : " << CerenkovLightEnabled;
     static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
-    aParticleIterator=fParticleTable->GetIterator();
+    G4ParticleTable::G4PTblDicIterator* aParticleIterator;
+    aParticleIterator = fParticleTable->GetIterator();
 
     aParticleIterator->reset();
-    while( (*aParticleIterator)() ){
+    while ((*aParticleIterator)()) {
       G4ParticleDefinition* particle = aParticleIterator->value();
       G4ProcessManager* pmanager = particle->GetProcessManager();
       G4String particleName = particle->GetParticleName();
-      if (fTheCerenkovProcess->IsApplicable(*particle)&&CerenkovLightEnabled) {
-	pmanager->AddProcess(fTheCerenkovProcess);
-	pmanager->SetProcessOrdering(fTheCerenkovProcess,idxPostStep);
-	//	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Cerenkov applicable : " << particleName;
+      if (fTheCerenkovProcess->IsApplicable(*particle) && CerenkovLightEnabled) {
+        pmanager->AddProcess(fTheCerenkovProcess);
+        pmanager->SetProcessOrdering(fTheCerenkovProcess, idxPostStep);
+        //	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Cerenkov applicable : " << particleName;
       }
       if (fTheScintillationProcess->IsApplicable(*particle)) {
-	pmanager->AddProcess(fTheScintillationProcess);
-	pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxAtRest);
-	pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
-	//	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Scintillation applicable : " << particleName;
+        pmanager->AddProcess(fTheScintillationProcess);
+        pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxAtRest);
+        pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
+        //	mf::LogInfo("OpticalPhysics")<<"OpticalPhysics : Scintillation applicable : " << particleName;
       }
 
-     if (particleName == "opticalphoton") {
-       mf::LogInfo("OpticalPhysics") << " AddDiscreteProcess to OpticalPhoton ";
-	pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
-	pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
-	if(detp->SimpleBoundary())
-	  pmanager->AddDiscreteProcess(fTheBoundaryProcess);
-	else
-	  pmanager->AddDiscreteProcess(fTheBoundaryProcess_g4);
-	pmanager->AddDiscreteProcess(fTheWLSProcess);
+      if (particleName == "opticalphoton") {
+        mf::LogInfo("OpticalPhysics") << " AddDiscreteProcess to OpticalPhoton ";
+        pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
+        pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
+        if (detp->SimpleBoundary())
+          pmanager->AddDiscreteProcess(fTheBoundaryProcess);
+        else
+          pmanager->AddDiscreteProcess(fTheBoundaryProcess_g4);
+        pmanager->AddDiscreteProcess(fTheWLSProcess);
       }
     }
-
   }
 }

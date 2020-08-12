@@ -19,20 +19,16 @@ namespace cheat {
 
 class cheat::BackTrackerLoader : public art::EDProducer {
 public:
-  explicit BackTrackerLoader(fhicl::ParameterSet const & p);
+  explicit BackTrackerLoader(fhicl::ParameterSet const& p);
 
-  virtual void produce(art::Event & e);
-
+  virtual void produce(art::Event& e);
 
 private:
-
   // Declare member data here.
-
 };
 
 //------------------------------------------------------------------------------
-cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & p)
-  : EDProducer{p}
+cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const& p) : EDProducer{p}
 {
   // Call appropriate Produces<>() functions here.
 }
@@ -43,13 +39,13 @@ cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const & p)
 // modules have run in the job, and only in jobs that create the simulation and
 // then make use of the BackTracker in either cheating reconstruction modules
 // or analyzers
-void cheat::BackTrackerLoader::produce(art::Event & e)
+void
+cheat::BackTrackerLoader::produce(art::Event& e)
 {
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   pi_serv->Rebuild(e);
   bt_serv->Rebuild(e);
 }
-
 
 DEFINE_ART_MODULE(cheat::BackTrackerLoader)
