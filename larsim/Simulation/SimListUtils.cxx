@@ -25,8 +25,7 @@ namespace sim {
   SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
-    auto const clocks =
-      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const clocks = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
     // get the sim::SimChannels
     std::vector<const sim::SimChannel*> sccol;

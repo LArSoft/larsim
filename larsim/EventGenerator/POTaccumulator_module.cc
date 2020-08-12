@@ -11,9 +11,9 @@
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Principal/SummedValue.h"
-#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "art/Framework/Principal/SummedValue.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -23,9 +23,10 @@
 #include <map>
 #include <string>
 
-
 // -----------------------------------------------------------------------------
-namespace sim { class POTaccumulator; }
+namespace sim {
+  class POTaccumulator;
+}
 
 /**
  * @brief  Prints on console the total Protons On Target from the input subruns.
@@ -67,31 +68,29 @@ namespace sim { class POTaccumulator; }
  *
  *
  */
-class sim::POTaccumulator: public art::EDAnalyzer {
-    public:
-
+class sim::POTaccumulator : public art::EDAnalyzer {
+public:
   /// Collection of configuration parameters for the module
   struct Config {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
-    fhicl::Atom<art::InputTag> SummaryTag {
+    fhicl::Atom<art::InputTag> SummaryTag{
       Name("SummaryTag"),
       Comment("data product (subrun level) with the summary information"),
-      "generator"
-      };
+      "generator"};
 
-    fhicl::Atom<std::string> SummaryCategory {
+    fhicl::Atom<std::string> SummaryCategory{
       Name("SummaryCategory"),
       Comment("name of the output category the summary is sent to"),
       "POTaccumulator" // default value
-      };
+    };
 
-    fhicl::Atom<std::string> RunSummaryCategory {
+    fhicl::Atom<std::string> RunSummaryCategory{
       Name("RunSummaryCategory"),
       Comment("name of the output category the summary is sent to"),
       "" // default value
-      };
+    };
 
   }; // struct Config
 
@@ -103,13 +102,14 @@ class sim::POTaccumulator: public art::EDAnalyzer {
 
   // Plugins should not be copied or assigned.
   POTaccumulator(POTaccumulator const&) = delete;
-  POTaccumulator(POTaccumulator &&) = delete;
-  POTaccumulator& operator = (POTaccumulator const&) = delete;
-  POTaccumulator& operator = (POTaccumulator &&) = delete;
-
+  POTaccumulator(POTaccumulator&&) = delete;
+  POTaccumulator& operator=(POTaccumulator const&) = delete;
+  POTaccumulator& operator=(POTaccumulator&&) = delete;
 
   // Nothing to be done at event level.
-  virtual void analyze(art::Event const& event) override {}
+  virtual void
+  analyze(art::Event const& event) override
+  {}
 
   /// Collects information from each subrun.
   virtual void endSubRun(art::SubRun const& subRun) override;
@@ -117,16 +117,14 @@ class sim::POTaccumulator: public art::EDAnalyzer {
   /// Prints the general summary.
   virtual void endJob() override;
 
-    private:
-
+private:
   // -- BEGIN -- Configuration variables ---------------------------------------
 
-  art::InputTag fPOTtag; ///< Name of `sumdata::POTSummary` data product.
+  art::InputTag fPOTtag;              ///< Name of `sumdata::POTSummary` data product.
   std::string fSummaryOutputCategory; ///< Name of the main stream for output.
-  std::string fRunOutputCategory; ///< Name of the run stream for output.
+  std::string fRunOutputCategory;     ///< Name of the run stream for output.
 
   // -- END -- Configuration variables -----------------------------------------
-
 
   // -- BEGIN -- Internal cache variables --------------------------------------
 
@@ -144,7 +142,6 @@ class sim::POTaccumulator: public art::EDAnalyzer {
 
   // -- END -- Internal cache variables ----------------------------------------
 
-
   /// Prints the list of subruns with partial or missing POT information.
   void printMissingSubrunList() const;
 
@@ -154,12 +151,10 @@ class sim::POTaccumulator: public art::EDAnalyzer {
   /// Prints the total POT summary.
   void printSummary() const;
 
-
   /// Converts the information from `POT` in a compact string.
   static std::string to_string(sumdata::POTSummary const& POT);
 
 }; // class sim::POTaccumulator
-
 
 //------------------------------------------------------------------------------
 //---  module implementation
@@ -170,11 +165,12 @@ sim::POTaccumulator::POTaccumulator(Parameters const& config)
   , fPOTtag(config().SummaryTag())
   , fSummaryOutputCategory(config().SummaryCategory())
   , fRunOutputCategory(config().RunSummaryCategory())
-  {}
-
+{}
 
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::endSubRun(art::SubRun const& subRun) {
+void
+sim::POTaccumulator::endSubRun(art::SubRun const& subRun)
+{
 
   auto const& ID = subRun.id();
 
@@ -184,8 +180,8 @@ void sim::POTaccumulator::endSubRun(art::SubRun const& subRun) {
   art::Handle<sumdata::POTSummary> summaryHandle;
   if (!subRun.getByLabel(fPOTtag, summaryHandle)) {
     ++fMissingSubrunFragments[ID];
-    mf::LogDebug(fSummaryOutputCategory) << "Fragment of subrun " << ID
-      << " has no '" << fPOTtag.encode() << "' POT summary.";
+    mf::LogDebug(fSummaryOutputCategory)
+      << "Fragment of subrun " << ID << " has no '" << fPOTtag.encode() << "' POT summary.";
     return;
   }
 
@@ -197,18 +193,18 @@ void sim::POTaccumulator::endSubRun(art::SubRun const& subRun) {
   sumdata::POTSummary const& subRunPOT = *summaryHandle;
 
   fRunPOT[ID.runID()].update(summaryHandle);
-  MF_LOG_TRACE(fSummaryOutputCategory) << "Fragment #"
-    << fPresentSubrunFragments[ID] << " of subrun " << ID
-    << ": " << sim::POTaccumulator::to_string(subRunPOT)
-    ;
+  MF_LOG_TRACE(fSummaryOutputCategory)
+    << "Fragment #" << fPresentSubrunFragments[ID] << " of subrun " << ID << ": "
+    << sim::POTaccumulator::to_string(subRunPOT);
 
   fTotalPOT.update(summaryHandle);
 
 } // sim::POTaccumulator::endSubRun()
 
-
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::endJob() {
+void
+sim::POTaccumulator::endJob()
+{
 
   //
   // print the run summary
@@ -222,7 +218,6 @@ void sim::POTaccumulator::endJob() {
 
   } // if
 
-
   //
   // print the total summary
   //
@@ -230,9 +225,10 @@ void sim::POTaccumulator::endJob() {
 
 } // sim::POTaccumulator::endJob()
 
-
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::printMissingSubrunList() const {
+void
+sim::POTaccumulator::printMissingSubrunList() const
+{
 
   //
   // missing fragments information
@@ -242,66 +238,61 @@ void sim::POTaccumulator::printMissingSubrunList() const {
 
   auto const fend = fPresentSubrunFragments.cend();
 
-  for (auto const& [ id, nMissing ]: fMissingSubrunFragments) {
+  for (auto const& [id, nMissing] : fMissingSubrunFragments) {
 
     // add to the count of fragments the ones which we have actually found
     unsigned int nFragments = nMissing;
     auto const iFound = fPresentSubrunFragments.find(id);
     if (iFound != fend) nFragments += iFound->second;
 
-    log << "\n" << id << ": " << nMissing << " / " << nFragments
-      << " \"fragments\"";
+    log << "\n" << id << ": " << nMissing << " / " << nFragments << " \"fragments\"";
 
   } // for
 
 } // sim::POTaccumulator::printMissingSubrunList()
 
-
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::printRunSummary() const {
+void
+sim::POTaccumulator::printRunSummary() const
+{
 
   // count subruns in run
   std::map<art::RunID, unsigned int> subrunCount;
-  for (art::SubRunID const& ID: fPresentSubrunFragments | ranges::view::keys)
+  for (art::SubRunID const& ID : fPresentSubrunFragments | ranges::view::keys)
     ++subrunCount[ID.runID()];
 
   mf::LogVerbatim log{fRunOutputCategory};
   log << "POT from " << size(fRunPOT) << " runs:";
-  for (auto const& [ id, POT ]: fRunPOT) {
-    log << "\n " << id << " (" << subrunCount[id] << " subruns): "
-      << sim::POTaccumulator::to_string(POT.value());
+  for (auto const& [id, POT] : fRunPOT) {
+    log << "\n " << id << " (" << subrunCount[id]
+        << " subruns): " << sim::POTaccumulator::to_string(POT.value());
   } // for
 
 } // sim::POTaccumulator::printRunSummary()
 
-
 //------------------------------------------------------------------------------
-void sim::POTaccumulator::printSummary() const {
+void
+sim::POTaccumulator::printSummary() const
+{
 
   // aggregate all run summaries
   mf::LogVerbatim{fSummaryOutputCategory}
-    << "Aggregated POT from " << fRunPOT.size() << " runs ("
-    << fPresentSubrunFragments.size() << " subruns): "
-    << sim::POTaccumulator::to_string(fTotalPOT.value())
-    ;
+    << "Aggregated POT from " << fRunPOT.size() << " runs (" << fPresentSubrunFragments.size()
+    << " subruns): " << sim::POTaccumulator::to_string(fTotalPOT.value());
 
 } // sim::POTaccumulator::printSummary()
 
-
 //------------------------------------------------------------------------------
-std::string sim::POTaccumulator::to_string(sumdata::POTSummary const& POT) {
+std::string
+sim::POTaccumulator::to_string(sumdata::POTSummary const& POT)
+{
   using namespace std::string_literals;
-  return
-    std::to_string(POT.totgoodpot) + " good POT ( "s
-      + std::to_string(POT.goodspills) + " spills); total: "
-    + std::to_string(POT.totpot) + " POT ( "s + std::to_string(POT.totspills)
-    + " spills)"
-    ;
+  return std::to_string(POT.totgoodpot) + " good POT ( "s + std::to_string(POT.goodspills) +
+         " spills); total: " + std::to_string(POT.totpot) + " POT ( "s +
+         std::to_string(POT.totspills) + " spills)";
 } // sim::POTaccumulator::to_string(sumdata::POTSummary)
-
 
 //------------------------------------------------------------------------------
 DEFINE_ART_MODULE(sim::POTaccumulator)
-
 
 //------------------------------------------------------------------------------

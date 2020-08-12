@@ -32,23 +32,25 @@
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 
-namespace larg4
-{
+namespace larg4 {
 
-  class OpDetReadoutGeometry : public G4VUserParallelWorld
-    {
-    public:
-      OpDetReadoutGeometry(G4String OpDetSensitiveName, const G4String name = "OpDetReadoutGeometry");
-      virtual ~OpDetReadoutGeometry();
+  class OpDetReadoutGeometry : public G4VUserParallelWorld {
+  public:
+    OpDetReadoutGeometry(G4String OpDetSensitiveName, const G4String name = "OpDetReadoutGeometry");
+    virtual ~OpDetReadoutGeometry();
 
-      virtual void Construct();
-    private:
-      void                            FindVolumes(G4VPhysicalVolume *, G4String, std::vector<G4Transform3D>, std::vector<G4LogicalVolume*>&, std::vector<G4Transform3D>&);
-      std::vector<G4LogicalVolume*>   fOpDetVolumes;
-      std::vector<G4Transform3D>      fOpDetTransformations;
-      G4String fOpDetSensitiveName;
+    virtual void Construct();
 
-    };
+  private:
+    void FindVolumes(G4VPhysicalVolume*,
+                     G4String,
+                     std::vector<G4Transform3D>,
+                     std::vector<G4LogicalVolume*>&,
+                     std::vector<G4Transform3D>&);
+    std::vector<G4LogicalVolume*> fOpDetVolumes;
+    std::vector<G4Transform3D> fOpDetTransformations;
+    G4String fOpDetSensitiveName;
+  };
 
 }
 

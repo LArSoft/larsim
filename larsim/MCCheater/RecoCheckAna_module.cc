@@ -220,8 +220,7 @@ cheat::RecoCheckAna::analyze(art::Event const& e)
   frun = e.run();
   fevent = e.id().event();
 
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(e);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(e);
   this->FillResults(clockData, allhits);
 
   return;
@@ -344,8 +343,7 @@ cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
                                        art::Handle<std::vector<recob::Cluster>> const& clscol,
                                        std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(clscol, evt, label);
 
   for (size_t c = 0; c < clscol->size(); ++c) {
@@ -367,8 +365,7 @@ cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
                                      art::Handle<std::vector<recob::Track>> const& tcol,
                                      std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(tcol, evt, label);
 
   for (size_t p = 0; p < tcol->size(); ++p) {
@@ -390,8 +387,7 @@ cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
                                       art::Handle<std::vector<recob::Shower>> const& scol,
                                       std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(scol, evt, label);
 
   for (size_t p = 0; p < scol->size(); ++p) {
@@ -437,8 +433,7 @@ cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
 
   art::FindManyP<recob::Hit> fmh(vtxcol, evt, label);
 
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
   for (size_t v = 0; v < vtxcol->size(); ++v) {
 
@@ -494,8 +489,7 @@ cheat::RecoCheckAna::CheckRecoEvents(art::Event const& evt,
 
   art::FindManyP<recob::Hit> fmh(evtcol, evt, label);
 
-  auto const clockData =
-    art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+  auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   for (size_t ev = 0; ev < evtcol->size(); ++ev) {
 
     // get the hits associated with this event

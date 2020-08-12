@@ -10,16 +10,13 @@
 // Ben Jones, MIT, 06/04/2010
 //
 
-
-
 #include "larsim/LegacyLArG4/OpDetSensitiveDetector.h"
-#include "larsim/LegacyLArG4/OpDetPhotonTable.h"
-#include "larsim/LegacyLArG4/OpDetLookup.h"
-#include "lardataobj/Simulation/SimPhotons.h"
 #include "Geant4/G4SDManager.hh"
+#include "lardataobj/Simulation/SimPhotons.h"
+#include "larsim/LegacyLArG4/OpDetLookup.h"
+#include "larsim/LegacyLArG4/OpDetPhotonTable.h"
 
-namespace larg4{
-
+namespace larg4 {
 
   OpDetSensitiveDetector::OpDetSensitiveDetector(G4String DetectorUniqueName)
     : G4VSensitiveDetector(DetectorUniqueName)
@@ -28,46 +25,41 @@ namespace larg4{
     G4SDManager::GetSDMpointer()->AddNewDetector(this);
 
     // Get instances of singleton classes
-    fTheOpDetLookup        = OpDetLookup::Instance();
-    fThePhotonTable        = OpDetPhotonTable::Instance();
-
+    fTheOpDetLookup = OpDetLookup::Instance();
+    fThePhotonTable = OpDetPhotonTable::Instance();
   }
-
 
   //--------------------------------------------------------
 
-  G4bool OpDetSensitiveDetector::ProcessHits(G4Step * aStep, G4TouchableHistory *)
+  G4bool
+  OpDetSensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     sim::OnePhoton ThePhoton;
 
-
     // Get photon data to store in the hit
 
-    ThePhoton.SetInSD      = true;
+    ThePhoton.SetInSD = true;
 
     auto const& startPos = aStep->GetTrack()->GetVertexPosition();
-    ThePhoton.InitialPosition = { startPos.x(), startPos.y(), startPos.z() };
+    ThePhoton.InitialPosition = {startPos.x(), startPos.y(), startPos.z()};
 
     //ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime() - fGlobalTimeOffset;
-    ThePhoton.Time                = aStep->GetTrack()->GetGlobalTime();
+    ThePhoton.Time = aStep->GetTrack()->GetGlobalTime();
 
-
-    ThePhoton.Energy              =  aStep->GetTrack()->GetVertexKineticEnergy();
+    ThePhoton.Energy = aStep->GetTrack()->GetVertexKineticEnergy();
 
     // Lookup which OpDet we are in
-    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    G4StepPoint* preStepPoint = aStep->GetPreStepPoint();
 
     int OpDet = fTheOpDetLookup->GetOpDet(preStepPoint->GetPhysicalVolume());
 
     // Store relative position on the photon detector
-    G4ThreeVector worldPosition  = preStepPoint->GetPosition();
-    G4ThreeVector localPosition  = preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(worldPosition);
+    G4ThreeVector worldPosition = preStepPoint->GetPosition();
+    G4ThreeVector localPosition =
+      preStepPoint->GetTouchableHandle()->GetHistory()->GetTopTransform().TransformPoint(
+        worldPosition);
     ThePhoton.FinalLocalPosition = {
-      localPosition.x()/CLHEP::cm,
-      localPosition.y()/CLHEP::cm,
-      localPosition.z()/CLHEP::cm
-      };
-
+      localPosition.x() / CLHEP::cm, localPosition.y() / CLHEP::cm, localPosition.z() / CLHEP::cm};
 
     // Add this photon to the detected photons table
     fThePhotonTable->AddPhoton(OpDet, std::move(ThePhoton));
@@ -76,15 +68,12 @@ namespace larg4{
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);
 
     return true;
-
-
   }
 
   //--------------------------------------------------------
 
-  void OpDetSensitiveDetector::Initialize(G4HCofThisEvent *)
-  {
-
-  }
+  void
+  OpDetSensitiveDetector::Initialize(G4HCofThisEvent*)
+  {}
 
 }

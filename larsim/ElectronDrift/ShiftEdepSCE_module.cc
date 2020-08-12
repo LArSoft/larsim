@@ -79,8 +79,7 @@ void
 spacecharge::ShiftEdepSCE::produce(art::Event& e)
 {
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
-  auto const detProp =
-    art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
+  auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
 
   auto const& inEdepVec = *e.getValidHandle<std::vector<sim::SimEnergyDeposit>>(fEDepTag);
 

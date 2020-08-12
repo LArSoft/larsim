@@ -254,8 +254,7 @@ namespace detsim {
     auto const& tpcClock = clockData.TPCClock();
 
     auto const detProp =
-      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event,
-                                                                                   clockData);
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event, clockData);
     // We're going through the input vector by index, rather than by
     // iterator, because we need the index number to compute the
     // associations near the end of this method.

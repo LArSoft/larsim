@@ -69,8 +69,7 @@ namespace cheat {
     art::ServiceHandle<cheat::BackTrackerService const> bt_serv;
     art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
 
-    auto const clockData =
-      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
     // make a collection of the distinct eve ID values
     std::set<int> eveIDs;
