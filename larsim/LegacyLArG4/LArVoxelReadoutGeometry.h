@@ -69,8 +69,8 @@ namespace larg4 {
                                         unsigned int expectedNum);
 
     art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry
-    std::unique_ptr<G4UserLimits> fStepLimit;     ///< G4 doesn't handle memory
-                                                  ///< management, so we have to
+    std::unique_ptr<G4UserLimits> fStepLimit;     ///< G4 doesn't handle memory management,
+                                                  ///< so we have to
 
     /// Data for `LArVoxelReadout` setup.
     larg4::LArVoxelReadout* flarVoxelReadout{nullptr};

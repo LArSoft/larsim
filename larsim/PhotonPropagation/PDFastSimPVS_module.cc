@@ -236,12 +236,12 @@ namespace phot {
   /*
 template <typename Point> MappedCounts_t GetAllVisibilities(Point const& p, bool wantReflected=false ) const
 {
-    return doGetAllVisibilities(geo::vect::toPoint(p), wantReflected); 
+    return doGetAllVisibilities(geo::vect::toPoint(p), wantReflected);
 }
 auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const -> MappedCounts_t
 {
     phot::IPhotonLibrary::Counts_t data{};
-    
+
     // first we fill a container of visibilities in the library index space
     // (it is directly the values of the library unless interpolation is
     //  requested)
@@ -250,7 +250,7 @@ auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool w
         // this is a punch into multithreading face:
         static std::vector<float> ret;
         ret.resize(fMapping->libraryMappingSize(p));
-        for(std::size_t libIndex = 0; libIndex < ret.size(); ++libIndex) 
+        for(std::size_t libIndex = 0; libIndex < ret.size(); ++libIndex)
         {
             ret[libIndex] = doGetVisibilityOfOpLib(p, LibraryIndex_t(libIndex), wantReflected);
         }
@@ -266,23 +266,23 @@ auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool w
 
 float PhotonVisibilityService::doGetVisibilityOfOpLib(geo::Point_t const& p, LibraryIndex_t libIndex, bool wantReflected ) const
 {
-    if(!fInterpolate) 
+    if(!fInterpolate)
     {
         return GetLibraryEntry(VoxelAt(p), libIndex, wantReflected);
     }
-    
+
     // In case we're outside the bounding box we'll get a empty optional list.
     auto const neis = fVoxelDef.GetNeighboringVoxelIDs(LibLocation(p));
     if (!neis) return 0.0;
-    
+
     // Sum up all the weighted neighbours to get interpolation behaviour
     float vis = 0.0;
-    for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value()) 
+    for(const sim::PhotonVoxelDef::NeiInfo& n: neis.value())
     {
         if (n.id < 0) continue;
         vis += n.weight * GetLibraryEntry(n.id, libIndex, wantReflected);
     }
-    
+
     return vis;
 }
 
@@ -290,7 +290,7 @@ float PhotonVisibilityService::GetLibraryEntry(int VoxID, OpDetID_t libOpChannel
 {
     if(fTheLibrary == 0)
     LoadLibrary();
-    
+
     if(!wantReflected)
     return fTheLibrary->GetCount(VoxID, libOpChannel);
     else

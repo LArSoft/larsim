@@ -399,8 +399,6 @@ namespace detsim {
 
       // includes the effect of lifetime: lifetimecorrection = exp[-tdrift/tau]
       const double nElectrons = nIonizedElectrons * lifetimecorrection;
-      // std::cout << "After lifetime, " << nElectrons << " electrons." <<
-      // std::endl;
 
       // Longitudinal & transverse diffusion sigma (cm)
       double SqrtT = std::sqrt(TDrift);
@@ -428,8 +426,7 @@ namespace detsim {
       fnElDiff.resize(nClus, electronclsize);
       fnEnDiff.resize(nClus);
 
-      // fix the number of electrons in the last cluster, that has a smaller
-      // size
+      // fix the number of electrons in the last cluster, that has a smaller size
       fnElDiff.back() = nElectrons - (nClus - 1) * electronclsize;
 
       for (size_t xx = 0; xx < fnElDiff.size(); ++xx) {
@@ -446,8 +443,7 @@ namespace detsim {
         fLongDiff.assign(nClus, 0.0);
 
       if (TDiffSig > 0.0) {
-        // Smear the coordinates in plane perpendicular to drift direction by
-        // the transverse diffusion
+        // Smear the coordinates in plane perpendicular to drift direction by the transverse diffusion
         fRandGauss.fireArray(nClus, &fTransDiff1[0], avegagetransversePos1, TDiffSig);
         fRandGauss.fireArray(nClus, &fTransDiff2[0], avegagetransversePos2, TDiffSig);
       }

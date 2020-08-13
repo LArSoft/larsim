@@ -13,13 +13,13 @@ services:
     RandomNumberGenerator: {} #ART native random number generator
     message:                 @local::standard_info
     @table::protodune_simulation_services
-    
+
     DetectorHolder:        {}
     ActionHolder:          {}
-    PhysicsListHolder:     {} 
-    
+    PhysicsListHolder:     {}
+
     PhysicsList:
-    { 
+    {
         PhysicsListName: "QGSP_BERT"
         DumpList:                    true
         enableCerenkov:              false
@@ -31,13 +31,13 @@ services:
         enableBoundary:              false
         enableWLS:                   false
     }
-    
-    LArG4Detector : 
+
+    LArG4Detector :
     {
         category:      "world"
         gdmlFileName_ : "protodune_v5_refactored_nowires.gdml"
     }
-    
+
     MCTruthEventAction: {service_type: "MCTruthEventActionService"}
     ParticleListAction:   {service_type: "ParticleListActionService"}
 }
@@ -54,7 +54,7 @@ source:
 services.PhotonVisibilityService:                              @local::protodunev4_photonvisibilityservice
 services.LArG4Parameters.UseLitePhotons:                       true
 physics:
-{   
+{
     producers:
     {
         //retain largeant name for compatibility
@@ -65,7 +65,7 @@ physics:
             macroPath:               ".:./macros"
             visMacro:                "vis.mac"
         }
-        
+
         IonAndScint:
         {
             module_type:            "IonAndScint"
@@ -73,25 +73,25 @@ physics:
 //            ISCalcAlg:               "NEST"
             ISCalcAlg:               "Separate"
         }
-        
+
         PDFastSim:
         {
            module_type:             "PDFastSimPVS"
 //           module_type:              "PDFastSimPAR"
-           
+
            SimulationLabel:          "IonAndScint"
-           
+
            DoSlowComponent:          true
            ScintTimeTool:            @local::ScintTimeLAr
         }
-        
+
         rns:
         {
             module_type:            "RandomNumberSaver"
         }
-    
+
     }
-    
+
     analyzers:
     {
         ISCalcAna:
@@ -101,25 +101,25 @@ physics:
             ISCalcAlg:               "NEST"
 //            ISCalcAlg:               "Separate"
         }
-        
+
         SimPh:
         {
             module_type:             "SimPhotonCounter"
             Verbosity:               5
-            InputModule:             "PDFastSim:pvs" 
+            InputModule:             "PDFastSim:pvs"
             MakeAllPhotonsTree:      true
             MakeDetectedPhotonsTree: true
             MakeOpDetsTree:          true
             MakeOpDetEventsTree:     true
         }
     }
-    
-    simulate:      [  rns, largeant, IonAndScint, PDFastSim  ] 
-//    simulate:      [  rns, largeant, IonAndScint  ] 
+
+    simulate:      [  rns, largeant, IonAndScint, PDFastSim  ]
+//    simulate:      [  rns, largeant, IonAndScint  ]
     stream1:       [  out1, ISCalcAna, SimPh   ]
 //    stream1:       [  out1, SimPh ]
-    end_paths:     [  stream1  ]  
-    
+    end_paths:     [  stream1  ]
+
 }
 
 outputs:

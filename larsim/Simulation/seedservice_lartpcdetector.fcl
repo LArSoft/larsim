@@ -4,20 +4,20 @@
 # Author:  Gianluca Petrillo (petrillo@fnal.gov)
 # Date:    April 25th, 2016
 # Version: 1.0
-# 
+#
 # Changes:
 # 20160425 (petrillo@fnal.gov) [v1.0]
 #   first version; not many choices here
-# 
+#
 #
 
 #include "seedservice.fcl"
 
 BEGIN_PROLOG
 
-# 
+#
 # Each event gets its own random stream; requires a timestamp plugin on generation
-# 
+#
 lartpcdetector_seedservice: @local::per_event_NuRandomService # from seedservice.fcl
 
 

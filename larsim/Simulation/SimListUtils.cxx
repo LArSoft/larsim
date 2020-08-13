@@ -38,7 +38,6 @@ namespace sim {
 
       // get all sim::IDE associated with this channel
       const auto& idemap = (*itr)->TDCIDEMap();
-      // std::map<unsigned short, std::vector<sim::IDE> >::const_iterator mitr;
 
       // loop over all the sim::IDE values
       for (auto mitr = idemap.begin(); mitr != idemap.end(); mitr++) {

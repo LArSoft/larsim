@@ -404,11 +404,11 @@ namespace phot {
 
     void Initialization();
 
-    int VUVHits(int Nphotons_created,
+    int VUVHits(double Nphotons_created,
                 TVector3 ScintPoint,
                 TVector3 OpDetPoint,
                 int optical_detector_type);
-    int VISHits(int Nphotons_created,
+    int VISHits(double Nphotons_created,
                 TVector3 ScintPoint,
                 TVector3 OpDetPoint,
                 int optical_detector_type);
@@ -756,7 +756,7 @@ namespace phot {
 
   //......................................................................
   int
-  PDFastSimPAR::VUVHits(int Nphotons_created,
+  PDFastSimPAR::VUVHits(double Nphotons_created,
                         TVector3 ScintPoint,
                         TVector3 OpDetPoint,
                         int optical_detector_type)
@@ -839,7 +839,7 @@ namespace phot {
 
   //......................................................................
   int
-  PDFastSimPAR::VISHits(int Nphotons_created,
+  PDFastSimPAR::VISHits(double Nphotons_created,
                         TVector3 ScintPoint,
                         TVector3 OpDetPoint,
                         int optical_detector_type)

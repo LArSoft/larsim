@@ -137,9 +137,6 @@ private:
   /// Partial count of POT in the run, per run.
   std::map<art::RunID, art::SummedValue<sumdata::POTSummary>> fRunPOT;
 
-  /// Global count of POT in the job.
-  art::SummedValue<sumdata::POTSummary> fTotalPOT;
-
   // -- END -- Internal cache variables ----------------------------------------
 
   /// Prints the list of subruns with partial or missing POT information.
@@ -148,8 +145,8 @@ private:
   /// Prints the list of POT per run.
   void printRunSummary() const;
 
-  /// Prints the total POT summary.
-  void printSummary() const;
+  /// Prints the total POT summary `totalPOT`.
+  void printSummary(sumdata::POTSummary const& totalPOT) const;
 
   /// Converts the information from `POT` in a compact string.
   static std::string to_string(sumdata::POTSummary const& POT);
@@ -197,8 +194,6 @@ sim::POTaccumulator::endSubRun(art::SubRun const& subRun)
     << "Fragment #" << fPresentSubrunFragments[ID] << " of subrun " << ID << ": "
     << sim::POTaccumulator::to_string(subRunPOT);
 
-  fTotalPOT.update(summaryHandle);
-
 } // sim::POTaccumulator::endSubRun()
 
 //------------------------------------------------------------------------------
@@ -221,7 +216,14 @@ sim::POTaccumulator::endJob()
   //
   // print the total summary
   //
-  printSummary();
+
+  // here we skip _art_ aggregation mechanism
+  // because it can't handle multiple runs
+  sumdata::POTSummary totalPOT;
+  for (auto const& POT : fRunPOT | ranges::view::values)
+    totalPOT.aggregate(POT.value());
+
+  printSummary(totalPOT);
 
 } // sim::POTaccumulator::endJob()
 
@@ -272,13 +274,13 @@ sim::POTaccumulator::printRunSummary() const
 
 //------------------------------------------------------------------------------
 void
-sim::POTaccumulator::printSummary() const
+sim::POTaccumulator::printSummary(sumdata::POTSummary const& totalPOT) const
 {
 
   // aggregate all run summaries
   mf::LogVerbatim{fSummaryOutputCategory}
     << "Aggregated POT from " << fRunPOT.size() << " runs (" << fPresentSubrunFragments.size()
-    << " subruns): " << sim::POTaccumulator::to_string(fTotalPOT.value());
+    << " subruns): " << sim::POTaccumulator::to_string(totalPOT);
 
 } // sim::POTaccumulator::printSummary()
 

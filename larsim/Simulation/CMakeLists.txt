@@ -9,7 +9,9 @@ art_make(NO_PLUGINS
            ${ART_FRAMEWORK_PRINCIPAL}
            ${ART_PERSISTENCY_PROVENANCE}
            ROOT::Core
-           ROOT::Physics)
+           ROOT::Physics
+           ROOT::GenVector
+           )
 
 simple_plugin(LArVoxelCalculator "service")
 simple_plugin(LArG4Parameters "service")

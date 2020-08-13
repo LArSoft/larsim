@@ -95,8 +95,8 @@ namespace cheat {
     }
     catch (...) {
       mf::LogWarning("BackTrackerService")
-        << "Rebuild failed to get the SimChannels. This is expected when "
-           "running on a generation or simulation step.";
+        << "Rebuild failed to get the SimChannels. This is expected when running on a generation "
+           "or simulation step.";
     }
   }
 
@@ -272,8 +272,8 @@ namespace cheat {
   BackTrackerService::HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
                                       recob::Hit const& hit) const
   {
-    // Removed until Lazy Rebuild works
-    // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
+    //Removed until Lazy Rebuild works
+    //if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
     return BackTracker::HitToSimIDEs_Ps(clockData, hit);
   }
 
@@ -282,8 +282,8 @@ namespace cheat {
   BackTrackerService::HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
                                       art::Ptr<recob::Hit> const& hit) const
   {
-    // Removed until Lazy Rebuild works
-    // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
+    //Removed until Lazy Rebuild works
+    //if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
     return BackTracker::HitToSimIDEs_Ps(clockData, hit);
   }
 

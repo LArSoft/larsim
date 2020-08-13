@@ -146,9 +146,9 @@ namespace phot {
     double fRiseTimeSlow;
     bool fDoSlowComponent;
     vector<art::InputTag> fEDepTags;
+    larg4::ISCalcSeparate fISAlg;
     CLHEP::HepRandomEngine& fPhotonEngine;
     CLHEP::HepRandomEngine& fScintTimeEngine;
-    larg4::ISCalcSeparate fISAlg;
 
     void produce(art::Event&) override;
 

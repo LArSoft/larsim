@@ -19,11 +19,13 @@
 #include "Geant4/G4Types.hh"
 #include "TLorentzVector.h"
 
+#include "cetlib/exempt_ptr.h"
 #include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "nug4/G4Base/UserAction.h"
 #include "nusimdata/SimulationBase/simb.h" // simb::GeneratedParticleIndex_t
 
 #include <map>
+#include <memory>
 
 // Forward declarations.
 class G4Event;
@@ -46,8 +48,8 @@ namespace larg4 {
 
     struct ParticleInfo_t {
 
-      simb::MCParticle* particle = nullptr; ///< simple structure representing particle
-      bool keep = false;                    ///< if there was decision to keep
+      cet::exempt_ptr<simb::MCParticle> particle; ///< Object representing particle.
+      bool keep = false;                          ///< if there was decision to keep
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
 
@@ -64,7 +66,7 @@ namespace larg4 {
       bool
       hasParticle() const
       {
-        return particle;
+        return !particle.empty();
       }
 
       /// Returns whether there is a particle
@@ -93,8 +95,8 @@ namespace larg4 {
     // Standard constructors and destructors;
     ParticleListAction(double energyCut,
                        bool storeTrajectories = false,
-                       bool keepEMShowerDaughters = false);
-    virtual ~ParticleListAction();
+                       bool keepEMShowerDaughters = false,
+                       bool keepMCParticleList = true);
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
@@ -140,6 +142,13 @@ namespace larg4 {
       return fPrimaryTruthMap;
     }
 
+    /// Returns whether a particle list is being kept.
+    bool
+    hasList() const
+    {
+      return static_cast<bool>(fparticleList);
+    }
+
     /// Returns the index of primary truth (`sim::NoGeneratorIndex` if none).
     GeneratedParticleIndex_t GetPrimaryTruthIndex(int trackId) const;
 
@@ -154,12 +163,12 @@ namespace larg4 {
     // parentage of the provided trackid
     int GetParentage(int trackid) const;
 
-    G4double fenergyCut;              ///< The minimum energy for a particle to
-                                      ///< be included in the list.
-    ParticleInfo_t fCurrentParticle;  ///< information about the particle currently being simulated
-                                      ///< for a single particle.
-    sim::ParticleList* fparticleList; ///< The accumulated particle information for
-                                      ///< all particles in the event.
+    G4double fenergyCut;             ///< The minimum energy for a particle to
+                                     ///< be included in the list.
+    ParticleInfo_t fCurrentParticle; ///< information about the particle currently being simulated
+                                     ///< for a single particle.
+    std::unique_ptr<sim::ParticleList> fparticleList; ///< The accumulated particle information for
+                                                      ///< all particles in the event.
     G4bool fstoreTrajectories;       ///< Whether to store particle trajectories with each particle.
     std::map<int, int> fParentIDMap; ///< key is current track ID, value is parent ID
     static int fCurrentTrackID;      ///< track ID of the current particle, set to eve ID

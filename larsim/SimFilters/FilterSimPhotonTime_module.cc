@@ -16,6 +16,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "lardataobj/Simulation/SimPhotons.h"
@@ -38,13 +39,13 @@ private:
   bool filter(art::Event& e, art::ProcessingFrame const&) override;
 
   std::string const fSimPhotonsCollectionLabel;
-  std::vector<std::vector<float>> const fTimeWindows;
+  std::vector<std::pair<float, float>> const fTimeWindows;
   float const fMinTotalEnergy;
   float const fMinPhotonEnergy;
   bool const fDebug;
   std::size_t const fN;
-  bool fUseReflectedPhotons;
-  std::string fReflectedLabel;
+  bool const fUseReflectedPhotons;
+  std::string const fReflectedLabel;
 
   void CheckTimeWindows() const;
 };
@@ -53,13 +54,13 @@ simfilter::FilterSimPhotonTime::FilterSimPhotonTime(fhicl::ParameterSet const& p
                                                     art::ProcessingFrame const&)
   : SharedFilter{p}
   , fSimPhotonsCollectionLabel(p.get<std::string>("SimPhotonsCollectionLabel"))
-  , fTimeWindows(p.get<std::vector<std::vector<float>>>("TimeWindows"))
+  , fTimeWindows(p.get<std::vector<std::pair<float, float>>>("TimeWindows"))
   , fMinTotalEnergy(p.get<float>("MinTotalEnergy", 0.0))
   , fMinPhotonEnergy(p.get<float>("MinPhotonEnergy", -1))
   , fDebug(p.get<bool>("Debug", false))
   , fN(fTimeWindows.size())
   , fUseReflectedPhotons(p.get<bool>("UseReflectedPhotons", false))
-  , fReflectedLabel(p.get<std::string>("fReflectedLabel", "Reflected"))
+  , fReflectedLabel(p.get<std::string>("ReflectedLabel", "Reflected"))
 {
   CheckTimeWindows();
 
@@ -81,17 +82,13 @@ simfilter::FilterSimPhotonTime::CheckTimeWindows() const
     std::cout << "\tFilterSimPhotonTime: TimeWindows size is " << fTimeWindows.size() << std::endl;
 
   for (auto const& tw : fTimeWindows) {
-    if (tw.size() != 2)
-      throw cet::exception("FilterSimPhotonTime::CheckTimeWindows")
-        << "Bad time window initialization: time window has wrong size (not 2)." << std::endl;
-
     if (fDebug)
       std::cout << "\t\tTimeWindow "
-                << "[" << tw[0] << "," << tw[1] << "]" << std::endl;
+                << "[" << tw.first << "," << tw.second << "]" << std::endl;
 
-    if (tw[0] > tw[1])
+    if (tw.first > tw.second)
       throw cet::exception("FilterSimPhotonTime::CheckTimeWindows")
-        << "Bad time window initialization: tw[0]>tw[1]. Reverse the order!" << std::endl;
+        << "Bad time window initialization: tw.first>tw.second. Reverse the order!" << std::endl;
   }
 }
 
@@ -121,9 +118,10 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e, art::ProcessingFrame const
                 << std::endl;
 
     for (auto const& photon : simphotons)
-      for (size_t i_tw = 0; i_tw < fN; ++i_tw) {
+      for (size_t i_tw = 0; i_tw < fN; i_tw++) {
         auto const& tw(fTimeWindows[i_tw]);
-        if (photon.Time >= tw[0] && photon.Time <= tw[1] && photon.Energy > fMinPhotonEnergy) {
+        if (photon.Time >= tw.first && photon.Time <= tw.second &&
+            photon.Energy > fMinPhotonEnergy) {
 
           if (fDebug) {
             std::string photon_string =
@@ -148,7 +146,7 @@ simfilter::FilterSimPhotonTime::filter(art::Event& e, art::ProcessingFrame const
               << ":" << std::endl;
     for (size_t i_tw = 0; i_tw < fN; ++i_tw) {
       std::cout << "\t\tTimeWindow "
-                << "[" << fTimeWindows[i_tw][0] << "," << fTimeWindows[i_tw][1]
+                << "[" << fTimeWindows[i_tw].first << "," << fTimeWindows[i_tw].second
                 << "]: " << sumEnergyArray[i_tw] << std::endl;
     }
   }

@@ -36,7 +36,7 @@ namespace larg4 {
   class OpDetSensitiveDetector : public G4VSensitiveDetector {
 
   public:
-    OpDetSensitiveDetector(G4String name);
+    OpDetSensitiveDetector(G4String name, bool useLitePhotons = false);
     virtual ~OpDetSensitiveDetector() {}
 
     // Beginning and end of event
@@ -62,10 +62,19 @@ namespace larg4 {
     {}
 
   private:
+    /// Fill simplified lite photons instead of full information photons.
+    bool const fUseLitePhotons;
+
     OpDetLookup* fTheOpDetLookup;
     OpDetPhotonTable* fThePhotonTable;
 
     //double                     fGlobalTimeOffset;
+
+    /// Adds the photon at the specified step with full information.
+    void AddPhoton(G4Step const* aStep, int OpDet);
+
+    /// Adds the photon at the specified step with reduced information.
+    void AddLitePhoton(G4Step const* aStep, int OpDet);
   };
 }
 

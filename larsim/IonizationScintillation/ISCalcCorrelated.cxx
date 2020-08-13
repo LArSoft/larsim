@@ -23,8 +23,7 @@ namespace larg4 {
 
     fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
     fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
-
-    fScintYieldFactor = 1.; // true scintillation yield will be got from LArProperties
+    fScintPreScale = fLArProp->ScintPreScale();
 
     //the recombination coefficient is in g/(MeVcm^2), but we report energy depositions in MeV/cm,
     //need to divide Recombk from the LArG4Parameters service by the density of the argon we got above.
@@ -78,7 +77,7 @@ namespace larg4 {
     double const num_electrons = (energy_deposit / fWion) * recomb;
 
     // calculate scintillation photons
-    double const num_photons = Nq - num_electrons;
+    double const num_photons = (Nq - num_electrons) * fScintPreScale;
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << " Electrons produced for " << energy_deposit << " MeV deposited with " << recomb
@@ -96,6 +95,9 @@ namespace larg4 {
     // the scintillation yield ratio, which is the ratio of fast light (singlet
     // component) to the total light (singlet+triplet components).
     //
+    // TODO: move this to ISCalc, since it is the same function used in the
+    //       other ionization/scintillation calculation algs
+
     if (!fLArProp->ScintByParticleType()) return fLArProp->ScintYieldRatio();
 
     switch (edep.PdgCode()) {

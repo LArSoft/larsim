@@ -229,4 +229,28 @@ namespace sim {
 
   //----------------------------------------------------------------------------
 
+  std::ostream&
+  operator<<(std::ostream& out, sim::PhotonVoxelDef const& voxelDef)
+  {
+
+    auto const& lower = voxelDef.GetRegionLowerCorner();
+    auto const& upper = voxelDef.GetRegionUpperCorner();
+    auto const& steps = voxelDef.GetSteps();
+    auto const& stepSize = voxelDef.GetVoxelSize();
+
+    out << "Volume " << voxelDef.GetVolumeSize() << " cm^3 split in " << voxelDef.GetNVoxels()
+        << " voxels:"
+        << "\n  - x axis: [ " << lower.X() << " ; " << upper.X() << " ] split in " << steps[0]
+        << "x " << stepSize.X() << " cm steps"
+        << "\n  - y axis: [ " << lower.Y() << " ; " << upper.Y() << " ] split in " << steps[1]
+        << "x " << stepSize.Y() << " cm steps"
+        << "\n  - z axis: [ " << lower.Z() << " ; " << upper.Z() << " ] split in " << steps[2]
+        << "x " << stepSize.Z() << " cm steps"
+        << "\n";
+
+    return out;
+  } // operator<< (sim::PhotonVoxelDef)
+
+  //----------------------------------------------------------------------------
+
 } // namespace sim

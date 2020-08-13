@@ -467,9 +467,9 @@ namespace larg4 {
           << "current " << daughterName << " origin is at (" << world.x() / CLHEP::cm << ","
           << world.y() / CLHEP::cm << "," << world.z() / CLHEP::cm << ")";
 
-        // we don't bother with the cryostat number when calling
-        // Geometry::PositionToTPC because we know we have already started off
-        // with the correct cryostat volume G4 uses mm, we want cm
+        // we don't bother with the cryostat number when calling Geometry::PositionToTPC
+        // because we know we have already started off with the correct cryostat volume
+        // G4 uses mm, we want cm
         double worldPos[3] = {world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm};
         unsigned int daughterNum = 0;
         unsigned int extra = 0;
@@ -479,8 +479,7 @@ namespace larg4 {
           fGeo->PositionToTPC(worldPos, daughterNum, extra);
         else if (daughterName.compare("volTPCActive") == 0 ||
                  daughterName.compare("volDetEnclosure") == 0) {
-          // for either of these volumes, we know there is only 1 in the mother
-          // volume
+          // for either of these volumes, we know there is only 1 in the mother volume
           MF_LOG_DEBUG("LArVoxelReadoutGeometry") << "found the desired " << daughterName;
           return d;
         }

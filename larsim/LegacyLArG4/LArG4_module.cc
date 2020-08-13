@@ -21,6 +21,7 @@
 #include "nug4/G4Base/G4Helper.h"
 
 // C++ Includes
+#include <cassert>
 #include <map>
 #include <set>
 #include <sstream>
@@ -208,13 +209,17 @@ namespace larg4 {
    * - *CheckOverlaps* (bool, default: `false`):
    *     whether to use the G4 overlap checker
    * - *DumpParticleList* (bool, default: `false`):
-   *     whether to print all MCParticles tracked
+   *     whether to print all MCParticles tracked;
+   *     requires `MakeMCParticles` being `true`
    * - *DumpSimChannels* (bool, default: `false`):
    *     whether to print all depositions on each SimChannel
    * - *SmartStacking* (int, default: `0`):
    *     whether to use class to dictate how tracks are put on stack (nonzero is on)
+   * - *MakeMCParticles* (flag, default: `true`): keep a list of the particles
+   *     seen in the detector, and eventually save it; you almost always want this on
    * - *KeepParticlesInVolumes* (list of strings, default: _empty_):
-   *     list of volumes in which to keep `simb::MCParticle` objects (empty keeps all)
+   *     list of volumes in which to keep `simb::MCParticle` objects (empty keeps all);
+   *     requires `MakeMCParticles` being `true`
    * - *GeantCommandFile* (string, _required_):
    *     G4 macro file to pass to `G4Helper` for setting G4 command
    * - *Seed* (integer, not defined by default): if defined, override the seed for
@@ -326,6 +331,7 @@ namespace larg4 {
     std::string fG4MacroPath;    ///< directory path for Geant4 macro file to be
                                  ///< executed before main MC processing.
     bool fCheckOverlaps;         ///< Whether to use the G4 overlap checker
+    bool fMakeMCParticles;       ///< Whether to keep a `sim::MCParticle` list
     bool fdumpParticleList;      ///< Whether each event's sim::ParticleList will be displayed.
     bool fdumpSimChannels;       ///< Whether each event's sim::Channel will be displayed.
     bool fUseLitePhotons;
@@ -398,6 +404,7 @@ namespace larg4 {
     : art::EDProducer{pset}
     , fG4PhysListName(pset.get<std::string>("G4PhysListName", "larg4::PhysicsList"))
     , fCheckOverlaps(pset.get<bool>("CheckOverlaps", false))
+    , fMakeMCParticles(pset.get<bool>("MakeMCParticles", true))
     , fdumpParticleList(pset.get<bool>("DumpParticleList", false))
     , fdumpSimChannels(pset.get<bool>("DumpSimChannels", false))
     , fSmartStacking(pset.get<int>("SmartStacking", 0))
@@ -409,6 +416,19 @@ namespace larg4 {
     , fAllPhysicsLists{art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob()}
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
+    art::ServiceHandle<art::RandomNumberGenerator const> rng;
+
+    if (!fMakeMCParticles) { // configuration option consistency
+      if (fdumpParticleList) {
+        throw art::Exception(art::errors::Configuration)
+          << "Option `DumpParticleList` can't be set if `MakeMCParticles` is unset.\n";
+      }
+      if (!fKeepParticlesInVolumes.empty()) {
+        throw art::Exception(art::errors::Configuration)
+          << "Option `KeepParticlesInVolumes` can't be set if `MakeMCParticles` is unset.\n";
+      }
+    } // if
+
     if (pset.has_key("Seed")) {
       throw art::Exception(art::errors::Configuration)
         << "The configuration of LArG4 module has the discontinued 'Seed' parameter.\n"
@@ -462,10 +482,12 @@ namespace larg4 {
       produces<std::vector<sim::SimEnergyDeposit>>("Other");
     }
 
-    produces<std::vector<simb::MCParticle>>();
+    if (fMakeMCParticles) {
+      produces<std::vector<simb::MCParticle>>();
+      produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
+    }
     if (!lgp->NoElectronPropagation()) produces<std::vector<sim::SimChannel>>();
     produces<std::vector<sim::AuxDetSimChannel>>();
-    produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
 
     // constructor decides if initialized value is a path or an environment variable
     cet::search_path sp("FW_SEARCH_PATH");
@@ -514,7 +536,8 @@ namespace larg4 {
     fVoxelReadoutGeometry =
       new LArVoxelReadoutGeometry("LArVoxelReadoutGeometry", readoutGeomSetupData);
     pworlds.push_back(fVoxelReadoutGeometry);
-    pworlds.push_back(new OpDetReadoutGeometry(geom->OpDetGeoName()));
+    pworlds.push_back(
+      new OpDetReadoutGeometry(geom->OpDetGeoName(), "OpDetReadoutGeometry", fUseLitePhotons));
     pworlds.push_back(new AuxDetReadoutGeometry("AuxDetReadoutGeometry"));
 
     fG4Help->SetParallelWorlds(pworlds);
@@ -531,8 +554,10 @@ namespace larg4 {
 
     // User-action class for accumulating particles and trajectories
     // produced in the detector.
-    fparticleListAction = new larg4::ParticleListAction(
-      lgp->ParticleKineticEnergyCut(), lgp->StoreTrajectories(), lgp->KeepEMShowerDaughters());
+    fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
+                                                        lgp->StoreTrajectories(),
+                                                        lgp->KeepEMShowerDaughters(),
+                                                        fMakeMCParticles);
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
@@ -613,8 +638,13 @@ namespace larg4 {
     auto scCol = std::make_unique<std::vector<sim::SimChannel>>();
     auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
     auto tpassn =
-      std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
-    auto partCol = std::make_unique<std::vector<simb::MCParticle>>();
+      fMakeMCParticles ?
+      std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>() :
+      nullptr;
+    auto partCol =
+      fMakeMCParticles ?
+      std::make_unique<std::vector<simb::MCParticle>>() :
+      nullptr;
     auto PhotonCol = std::make_unique<std::vector<sim::SimPhotons>>();
     auto PhotonColRefl = std::make_unique<std::vector<sim::SimPhotons>>();
     auto LitePhotonCol = std::make_unique<std::vector<sim::SimPhotonsLite>>();
@@ -623,7 +653,8 @@ namespace larg4 {
     auto cOpDetBacktrackerRecordColRefl =
       std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
 
-    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt);
+    std::optional<art::PtrMaker<simb::MCParticle>> makeMCPartPtr;
+    if (fMakeMCParticles) makeMCPartPtr.emplace(evt);
 
     // for energy deposits
     auto edepCol_TPCActive = std::make_unique<std::vector<sim::SimEnergyDeposit>>();
@@ -666,6 +697,9 @@ namespace larg4 {
         // The following tells Geant4 to track the particles in this interaction.
         fG4Help->G4Run(mct);
 
+        if (!partCol) continue;
+        assert(tpassn);
+
         // receive the particle list
         sim::ParticleList particleList = fparticleListAction->YieldList();
 
@@ -696,7 +730,7 @@ namespace larg4 {
 
           partCol->push_back(std::move(p));
 
-          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1), truthInfo);
+          tpassn->addSingle(mct, (*makeMCPartPtr)(partCol->size() - 1), truthInfo);
 
         } // for(particleList)
 
@@ -923,7 +957,8 @@ namespace larg4 {
     if (!lgp->NoElectronPropagation()) evt.put(std::move(scCol));
 
     evt.put(std::move(adCol));
-    evt.put(std::move(partCol));
+    if (partCol) evt.put(std::move(partCol));
+    if (tpassn) evt.put(std::move(tpassn));
     if (!lgp->NoPhotonPropagation()) {
       if (!fUseLitePhotons) {
         evt.put(std::move(PhotonCol));
@@ -938,7 +973,6 @@ namespace larg4 {
         }
       }
     }
-    evt.put(std::move(tpassn));
 
     if (lgp->FillSimEnergyDeposits()) {
       evt.put(std::move(edepCol_TPCActive), "TPCActive");

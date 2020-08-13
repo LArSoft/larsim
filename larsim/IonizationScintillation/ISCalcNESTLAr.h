@@ -23,7 +23,6 @@ namespace larg4 {
   class ISCalcNESTLAr : public ISCalc {
   public:
     explicit ISCalcNESTLAr(CLHEP::HepRandomEngine& fEngine);
-    void Reset();
 
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)

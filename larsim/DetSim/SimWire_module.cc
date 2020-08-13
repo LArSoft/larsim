@@ -80,10 +80,11 @@ namespace detsim {
     int fTriggerOffset;                  ///< (units of ticks) time of expected neutrino event
     unsigned int fNElectResp;            ///< number of entries from response to use
 
-    std::vector<double> fColFieldResponse;  ///< response function for the field @ collection plane
-    std::vector<double> fIndFieldResponse;  ///< response function for the field @ induction plane
-    std::vector<TComplex> fColShape;        ///< response function for the field @ collection plane
-    std::vector<TComplex> fIndShape;        ///< response function for the field @ induction plane
+    std::vector<double> fColFieldResponse; ///< response function for the field @ collection plane
+    std::vector<double> fIndFieldResponse; ///< response function for the field @ induction plane
+    std::vector<TComplex> fColShape;       ///< response function for the field @ collection plane
+    std::vector<TComplex> fIndShape;       ///< response function for the field @ induction plane
+    std::vector<double> fChargeWork;
     std::vector<double> fElectResponse;     ///< response function for the electronics
     std::vector<std::vector<float>> fNoise; ///< noise on each channel for each time
 
