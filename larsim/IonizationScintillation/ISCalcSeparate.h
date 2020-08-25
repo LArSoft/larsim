@@ -15,45 +15,45 @@
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
-#include <vector>
-#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-namespace larg4 
-{
-    class ISCalcSeparate : public ISCalc
-    {
-    public:
-        ISCalcSeparate();
-        void   Reset();
-        
-        double EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep); //value of field with any corrections for this step
-        void   CalcIonAndScint(sim::SimEnergyDeposit const& edep);
-        
-    private:
-        double  fGeVToElectrons;      ///< from LArG4Parameters service
-        double  fScintYieldFactor;    ///< scintillation yield factor
-        double  fRecombA;             ///< from LArG4Parameters service
-        double  fRecombk;             ///< from LArG4Parameters service
-        double  fModBoxA;             ///< from LArG4Parameters service
-        double  fModBoxB;             ///< from LArG4Parameters service
-        bool    fUseModBoxRecomb;     ///< from LArG4Parameters service
-        
-        const spacecharge::SpaceCharge*    fSCE;
-        const detinfo::DetectorProperties* fDetProp;
-        const detinfo::LArProperties*      fLArProp;
-        
-        void CalcIon(sim::SimEnergyDeposit const& edep);
-        void CalcScint(sim::SimEnergyDeposit const& edep);
-        double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
-    };
+namespace larg4 {
+  class ISCalcSeparate : public ISCalc {
+  public:
+    ISCalcSeparate();
+    void Reset();
+
+    double EFieldAtStep(double efield,
+                        sim::SimEnergyDeposit const& edep)
+      override; //value of field with any corrections for this step
+    ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                               sim::SimEnergyDeposit const& edep) override;
+
+  private:
+    double fGeVToElectrons; ///< from LArG4Parameters service
+    double fRecombA;        ///< from LArG4Parameters service
+    double fRecombk;        ///< from LArG4Parameters service
+    double fModBoxA;        ///< from LArG4Parameters service
+    double fModBoxB;        ///< from LArG4Parameters service
+    bool fUseModBoxRecomb;  ///< from LArG4Parameters service
+
+    const spacecharge::SpaceCharge* fSCE;
+    const detinfo::LArProperties* fLArProp;
+
+    double CalcIon(detinfo::DetectorPropertiesData const& detProp,
+                   sim::SimEnergyDeposit const& edep);
+    std::pair<double, double> CalcScint(sim::SimEnergyDeposit const& edep);
+    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
+  };
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H

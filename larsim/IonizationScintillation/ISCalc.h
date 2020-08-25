@@ -12,31 +12,26 @@
 #define LARG4_ISCALC_H
 
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+namespace detinfo {
+  class DetectorPropertiesData;
+}
 
-namespace larg4
-{
-    class ISCalc
-    {
-    public:
-        ISCalc();
-        virtual ~ISCalc();
-        virtual void      Reset()                                                             = 0;
-        virtual void      CalcIonAndScint(sim::SimEnergyDeposit const& edep)                  = 0;
-        virtual double    EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)      = 0;
-        
-        double    EnergyDeposit() const                       {return fEnergyDeposit;}
-        double    NumOfElectrons() const                      {return fNumIonElectrons;}
-        double    NumOfPhotons() const                        {return fNumScintPhotons;}
-        double    ScintillationYieldRatio() const             {return fScintillationYieldRatio;}
-        
-    protected:
-        double    fEnergyDeposit;             // total energy deposited in the step
-        double    fNumIonElectrons;           // number of ionization electrons for this step
-        double    fNumScintPhotons;           // number of scintillation photons for this step
-//        double  fNumFastScintPhotons;       // number of fast scintillation photons for this step
-//        double  fNumSlowScintPhotons;       // number of slow scintillation photons for this step
-        double    fScintillationYieldRatio;   // liquid argon scintillation yield ratio
-    };
-   
+namespace larg4 {
+  struct ISCalcData {
+    double energyDeposit;           // total energy deposited in the step
+    double numElectrons;            // number of ionization electrons for this step
+    double numPhotons;              // number of scintillation photons for this step
+    double scintillationYieldRatio; // liquid argon scintillation yield ratio
+  };
+
+  class ISCalc {
+  public:
+    virtual ~ISCalc() = default;
+    virtual ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                       sim::SimEnergyDeposit const& edep) = 0;
+    virtual double EFieldAtStep(
+      double efield,
+      sim::SimEnergyDeposit const& edep) = 0; //value of field with any corrections for this step
+  };
 }
 #endif // LARG4_ISCALC_H

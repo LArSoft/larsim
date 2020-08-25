@@ -13,7 +13,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
-
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -32,73 +31,64 @@ using namespace std;
 
 namespace {
 
-double single_exp(double t, double tau2)
-{
-         return exp((-1.0 * t) / tau2) / tau2;
-}
-
-double bi_exp(double t, double tau1, double tau2)
-{
-         return (((exp((-1.0 * t) / tau2) * (1.0 - exp((-1.0 * t) / tau1))) / tau2) / tau2) * (tau1 + tau2);
-}
-
-
-// Returns the time within the time distribution of the scintillation process, when the photon was created.
-// Scintillation light has an exponential decay which here is given by the decay time, tau2,
-// and an exponential increase, which here is given by the rise time, tau1.
-// randflatscinttime is passed to use the saved seed from the RandomNumberSaver in order to be able to reproduce the same results.
-double GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
-{
-  // tau1: rise time (originally defaulted to -1) and tau2: decay time
-  //ran1, ran2 = random numbers for the algorithm
-  if ((tau1 == 0.0) || (tau1 == -1.0)) {
-    return -tau2 * log(randflatscinttime());
+  double
+  single_exp(double t, double tau2)
+  {
+    return exp((-1.0 * t) / tau2) / tau2;
   }
-  while (1) {
-    auto ran1 = randflatscinttime();
-    auto ran2 = randflatscinttime();
-    auto d = (tau1 + tau2) / tau2;
-    auto t = -tau2 * log(1 - ran1);
-    auto g = d * single_exp(t, tau2);
-    if (ran2 <= bi_exp(t, tau1, tau2) / g) {
-      return t;
+
+  double
+  bi_exp(double t, double tau1, double tau2)
+  {
+    return (((exp((-1.0 * t) / tau2) * (1.0 - exp((-1.0 * t) / tau1))) / tau2) / tau2) *
+           (tau1 + tau2);
+  }
+
+  // Returns the time within the time distribution of the scintillation process, when the photon was created.
+  // Scintillation light has an exponential decay which here is given by the decay time, tau2,
+  // and an exponential increase, which here is given by the rise time, tau1.
+  // randflatscinttime is passed to use the saved seed from the RandomNumberSaver in order to be able to reproduce the same results.
+  double
+  GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
+  {
+    // tau1: rise time (originally defaulted to -1) and tau2: decay time
+    //ran1, ran2 = random numbers for the algorithm
+    if ((tau1 == 0.0) || (tau1 == -1.0)) { return -tau2 * log(randflatscinttime()); }
+    while (1) {
+      auto ran1 = randflatscinttime();
+      auto ran2 = randflatscinttime();
+      auto d = (tau1 + tau2) / tau2;
+      auto t = -tau2 * log(1 - ran1);
+      auto g = d * single_exp(t, tau2);
+      if (ran2 <= bi_exp(t, tau1, tau2) / g) { return t; }
     }
   }
-}
 
-double GetScintYield(sim::SimEnergyDeposit const& edep, detinfo::LArProperties const& larp)
-{
-  if (!larp.ScintByParticleType()) {
-    return larp.ScintYieldRatio();
-  }
-  switch (edep.PdgCode()) {
-    case 2212:
-      return larp.ProtonScintYieldRatio();
+  double
+  GetScintYield(sim::SimEnergyDeposit const& edep, detinfo::LArProperties const& larp)
+  {
+    if (!larp.ScintByParticleType()) { return larp.ScintYieldRatio(); }
+    switch (edep.PdgCode()) {
+    case 2212: return larp.ProtonScintYieldRatio();
     case 13:
-    case -13:
-      return larp.MuonScintYieldRatio();
+    case -13: return larp.MuonScintYieldRatio();
     case 211:
-    case -211:
-      return larp.PionScintYieldRatio();
+    case -211: return larp.PionScintYieldRatio();
     case 321:
-    case -321:
-      return larp.KaonScintYieldRatio();
-    case 1000020040:
-      return larp.AlphaScintYieldRatio();
+    case -321: return larp.KaonScintYieldRatio();
+    case 1000020040: return larp.AlphaScintYieldRatio();
     case 11:
     case -11:
-    case 22:
-      return larp.ElectronScintYieldRatio();
-    default:
-      return larp.ElectronScintYieldRatio();
+    case 22: return larp.ElectronScintYieldRatio();
+    default: return larp.ElectronScintYieldRatio();
+    }
   }
-}
 
 } // unnamed namespace
 
 namespace phot {
 
-/**
+  /**
  * @brief Fast simulation of propagating the photons created from SimEnergyDeposits.
  *
  * This module does a fast simulation of propagating the photons created from SimEnergyDeposits,
@@ -150,153 +140,160 @@ namespace phot {
  * right now it is actually impossible to produce `sim::SimPhotons` for any realistic geometry.
  * A possible way around the problem is to implement a scaling of the produced `sim::SimPhotons`, to only produce a fraction of them.
  */
-class PhotonLibraryPropagation : public art::EDProducer {
+  class PhotonLibraryPropagation : public art::EDProducer {
+  private:
+    double fRiseTimeFast;
+    double fRiseTimeSlow;
+    bool fDoSlowComponent;
+    vector<art::InputTag> fEDepTags;
+    larg4::ISCalcSeparate fISAlg;
+    CLHEP::HepRandomEngine& fPhotonEngine;
+    CLHEP::HepRandomEngine& fScintTimeEngine;
 
-private:
+    void produce(art::Event&) override;
 
-  double fRiseTimeFast;
-  double fRiseTimeSlow;
-  bool fDoSlowComponent;
-  vector<art::InputTag> fEDepTags;
-  larg4::ISCalcSeparate fISAlg;
-  CLHEP::HepRandomEngine& fPhotonEngine;
-  CLHEP::HepRandomEngine& fScintTimeEngine;
+  public:
+    explicit PhotonLibraryPropagation(fhicl::ParameterSet const&);
+    PhotonLibraryPropagation(PhotonLibraryPropagation const&) = delete;
+    PhotonLibraryPropagation(PhotonLibraryPropagation&&) = delete;
+    PhotonLibraryPropagation& operator=(PhotonLibraryPropagation const&) = delete;
+    PhotonLibraryPropagation& operator=(PhotonLibraryPropagation&&) = delete;
+  };
 
-  void produce(art::Event&) override;
-
-public:
-
-  explicit PhotonLibraryPropagation(fhicl::ParameterSet const&);
-  PhotonLibraryPropagation(PhotonLibraryPropagation const&) = delete;
-  PhotonLibraryPropagation(PhotonLibraryPropagation&&) = delete;
-  PhotonLibraryPropagation& operator=(PhotonLibraryPropagation const&) = delete;
-  PhotonLibraryPropagation& operator=(PhotonLibraryPropagation&&) = delete;
-};
-
-PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
-  : art::EDProducer{p}
-  , fRiseTimeFast{p.get<double>("RiseTimeFast", 0.0)}
-  , fRiseTimeSlow{p.get<double>("RiseTimeSlow", 0.0)}
-  , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
-  , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
-  , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "photon",    p, "SeedPhoton"))
-  , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime"))
-{
-  if (art::ServiceHandle<sim::LArG4Parameters const>{}->UseLitePhotons()) {
-    produces<vector<sim::SimPhotonsLite>>();
+  PhotonLibraryPropagation::PhotonLibraryPropagation(fhicl::ParameterSet const& p)
+    : art::EDProducer{p}
+    , fRiseTimeFast{p.get<double>("RiseTimeFast", 0.0)}
+    , fRiseTimeSlow{p.get<double>("RiseTimeSlow", 0.0)}
+    , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
+    , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
+                      ->createEngine(*this, "HepJamesRandom", "photon", p, "SeedPhoton"))
+    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()
+                         ->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime"))
+  {
+    if (art::ServiceHandle<sim::LArG4Parameters const> {}->UseLitePhotons()) {
+      produces<vector<sim::SimPhotonsLite>>();
+    }
+    else {
+      produces<vector<sim::SimPhotons>>();
+    }
   }
-  else {
-    produces<vector<sim::SimPhotons>>();
-  }
-}
 
-void PhotonLibraryPropagation::produce(art::Event& e)
-{
-  art::ServiceHandle<PhotonVisibilityService const> pvs;
-  art::ServiceHandle<sim::LArG4Parameters const> lgp;
-  auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-  CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
-  CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
-  auto const nOpChannels = pvs->NOpChannels();
-//  fISAlg.Initialize(larp, lar::providerFrom<detinfo::DetectorPropertiesService>(), &*lgp, lar::providerFrom<spacecharge::SpaceChargeService>());
-  //fISAlg.Initialize();
-  unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
-  auto& photonCollection{*photCol};
-  photonCollection.resize(nOpChannels);
-  unique_ptr<vector<sim::SimPhotonsLite>> photLiteCol{new vector<sim::SimPhotonsLite>{}};
-  auto& photonLiteCollection{*photLiteCol};
-  photonLiteCollection.resize(nOpChannels);
-  for (unsigned int i = 0; i < nOpChannels; ++i) {
-    photonLiteCollection[i].OpChannel = i;
-    photonCollection[i].fOpChannel = i;
-  }
-  vector<vector<sim::SimEnergyDeposit> const*> edep_vecs;
-  for (auto label : fEDepTags) {
-    auto const& edep_handle = e.getValidHandle<vector<sim::SimEnergyDeposit>>(label);
-    edep_vecs.push_back(edep_handle);
-  }
-  for (auto const& edeps : edep_vecs) { //loop over modules
-    for (auto const& edep : *edeps) { //loop over energy deposits: one per step
-      //int count_onePhot =0; // unused
-      auto const& p = edep.MidPoint();
-      auto const& Visibilities = pvs->GetAllVisibilities(p);
-      if (!Visibilities) {
-        throw cet::exception("PhotonLibraryPropagation")
-          << "There is no entry in the PhotonLibrary for this position in space. "
-             "Position: " << edep.MidPoint();
-      }
-      fISAlg.Reset();
-      fISAlg.CalcIonAndScint(edep);
-      //total amount of scintillation photons
-      double nphot = static_cast<int>(fISAlg.NumOfPhotons());
-      //amount of scintillated photons created via the fast scintillation process
-      double nphot_fast = static_cast<int>(GetScintYield(edep, *larp) * nphot);
-      //amount of scintillated photons created via the slow scintillation process
-      double nphot_slow = nphot - nphot_fast;
-      for (unsigned int channel = 0; channel < nOpChannels; ++channel) {
-        auto visibleFraction = Visibilities[channel];
-        if (visibleFraction == 0.0) {
-          // Voxel is not visible at this optical channel, skip doing anything for this channel.
-          continue;
+  void
+  PhotonLibraryPropagation::produce(art::Event& e)
+  {
+    art::ServiceHandle<PhotonVisibilityService const> pvs;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
+    auto const* larp = lar::providerFrom<detinfo::LArPropertiesService>();
+    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
+    CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
+    CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
+    auto const nOpChannels = pvs->NOpChannels();
+    unique_ptr<vector<sim::SimPhotons>> photCol{new vector<sim::SimPhotons>{}};
+    auto& photonCollection{*photCol};
+    photonCollection.resize(nOpChannels);
+    unique_ptr<vector<sim::SimPhotonsLite>> photLiteCol{new vector<sim::SimPhotonsLite>{}};
+    auto& photonLiteCollection{*photLiteCol};
+    photonLiteCollection.resize(nOpChannels);
+    for (unsigned int i = 0; i < nOpChannels; ++i) {
+      photonLiteCollection[i].OpChannel = i;
+      photonCollection[i].SetChannel(i);
+    }
+    vector<vector<sim::SimEnergyDeposit> const*> edep_vecs;
+    for (auto label : fEDepTags) {
+      auto const& edep_handle = e.getValidHandle<vector<sim::SimEnergyDeposit>>(label);
+      edep_vecs.push_back(edep_handle);
+    }
+    for (auto const& edeps : edep_vecs) { //loop over modules
+      for (auto const& edep : *edeps) {   //loop over energy deposits: one per step
+        //int count_onePhot =0; // unused
+        auto const& p = edep.MidPoint();
+        auto const& Visibilities = pvs->GetAllVisibilities(p);
+        if (!Visibilities) {
+          throw cet::exception("PhotonLibraryPropagation")
+            << "There is no entry in the PhotonLibrary for this position in space. "
+               "Position: "
+            << edep.MidPoint();
         }
-        if (lgp->UseLitePhotons()) {
-          if (nphot_fast > 0) {
-            //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
-            auto n = static_cast<int>(randpoisphot.fire(nphot_fast * visibleFraction));
-            for (long i = 0; i < n; ++i) {
-              //calculates the time at which the photon was produced
-              auto time = static_cast<int>(edep.T0() + GetScintTime(fRiseTimeFast, larp->ScintFastTimeConst(), randflatscinttime));
-              ++photonLiteCollection[channel].DetectedPhotons[time];
+        auto const isCalcData = fISAlg.CalcIonAndScint(detProp, edep);
+        //total amount of scintillation photons
+        double nphot = static_cast<int>(isCalcData.numPhotons);
+        //amount of scintillated photons created via the fast scintillation process
+        double nphot_fast = static_cast<int>(GetScintYield(edep, *larp) * nphot);
+        //amount of scintillated photons created via the slow scintillation process
+        double nphot_slow = nphot - nphot_fast;
+        for (unsigned int channel = 0; channel < nOpChannels; ++channel) {
+          auto visibleFraction = Visibilities[channel];
+          if (visibleFraction == 0.0) {
+            // Voxel is not visible at this optical channel, skip doing anything for this channel.
+            continue;
+          }
+          if (lgp->UseLitePhotons()) {
+            if (nphot_fast > 0) {
+              //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
+              auto n = static_cast<int>(randpoisphot.fire(nphot_fast * visibleFraction));
+              for (long i = 0; i < n; ++i) {
+                //calculates the time at which the photon was produced
+                auto time = static_cast<int>(edep.T0() + GetScintTime(fRiseTimeFast,
+                                                                      larp->ScintFastTimeConst(),
+                                                                      randflatscinttime));
+                ++photonLiteCollection[channel].DetectedPhotons[time];
+              }
+            }
+            if ((nphot_slow > 0) && fDoSlowComponent) {
+              //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
+              auto n = randpoisphot.fire(nphot_slow * visibleFraction);
+              for (long i = 0; i < n; ++i) {
+                //calculates the time at which the photon was produced
+                auto time = static_cast<int>(edep.T0() + GetScintTime(fRiseTimeSlow,
+                                                                      larp->ScintSlowTimeConst(),
+                                                                      randflatscinttime));
+                ++photonLiteCollection[channel].DetectedPhotons[time];
+              }
             }
           }
-          if ((nphot_slow > 0) && fDoSlowComponent) {
-            //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
-            auto n = randpoisphot.fire(nphot_slow * visibleFraction);
-            for (long i = 0; i < n; ++i) {
-              //calculates the time at which the photon was produced
-              auto time = static_cast<int>(edep.T0() + GetScintTime(fRiseTimeSlow, larp->ScintSlowTimeConst(), randflatscinttime));
-              ++photonLiteCollection[channel].DetectedPhotons[time];
+          else {
+            sim::OnePhoton photon;
+            photon.SetInSD = false;
+            photon.InitialPosition = edep.End();
+            photon.Energy = 9.7e-6;
+            if (nphot_fast > 0) {
+              //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
+              auto n = randpoisphot.fire(nphot_fast * visibleFraction);
+              if (n > 0) {
+                //calculates the time at which the photon was produced
+                photon.Time =
+                  edep.T0() +
+                  GetScintTime(fRiseTimeFast, larp->ScintFastTimeConst(), randflatscinttime);
+                // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
+                photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
+              }
             }
-          }
-        }
-        else {
-          sim::OnePhoton photon;
-          photon.SetInSD = false;
-          photon.InitialPosition = edep.End();
-          photon.Energy = 9.7e-6;
-          if (nphot_fast > 0) {
-            //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
-            auto n = randpoisphot.fire(nphot_fast * visibleFraction);
-            if (n > 0) {
-              //calculates the time at which the photon was produced
-              photon.Time = edep.T0() + GetScintTime(fRiseTimeFast, larp->ScintFastTimeConst(), randflatscinttime);
-              // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
-              photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
-            }
-          }
-          if ((nphot_slow > 0) && fDoSlowComponent) {
-            //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
-            auto n = randpoisphot.fire(nphot_slow * visibleFraction);
-            if (n > 0) {
-              //calculates the time at which the photon was produced
-              photon.Time = edep.T0() + GetScintTime(fRiseTimeSlow, larp->ScintSlowTimeConst(), randflatscinttime);
-              // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
-              photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
+            if ((nphot_slow > 0) && fDoSlowComponent) {
+              //throwing a random number from a poisson distribution with a mean of the amount of photons visible at this channel
+              auto n = randpoisphot.fire(nphot_slow * visibleFraction);
+              if (n > 0) {
+                //calculates the time at which the photon was produced
+                photon.Time =
+                  edep.T0() +
+                  GetScintTime(fRiseTimeSlow, larp->ScintSlowTimeConst(), randflatscinttime);
+                // add n copies of sim::OnePhoton photon to the photon collection for a given OpChannel
+                photonCollection[channel].insert(photonCollection[channel].end(), n, photon);
+              }
             }
           }
         }
       }
     }
+    if (lgp->UseLitePhotons()) {
+      // put the photon collection of LitePhotons into the art event
+      e.put(move(photLiteCol));
+    }
+    else {
+      //put the photon collection of SimPhotons into the art event
+      e.put(move(photCol));
+    }
   }
-  if (lgp->UseLitePhotons()) {
-    // put the photon collection of LitePhotons into the art event
-    e.put(move(photLiteCol));
-  }
-  else {
-    //put the photon collection of SimPhotons into the art event
-    e.put(move(photCol));
-  }
-}
 
 } // namespace phot
 

@@ -19,33 +19,24 @@
 //
 //
 
-
 #ifndef TConfigurablePhysicsList_h
 #define TConfigurablePhysicsList_h 1
 
+#include "Geant4/CompileTimeConstraints.hh"
 #include "Geant4/G4VModularPhysicsList.hh"
 #include "Geant4/globals.hh"
-#include "Geant4/CompileTimeConstraints.hh"
 
 namespace larg4 {
 
-  template<class T>
-  class TConfigurablePhysicsList: public T
-  {
+  template <class T>
+  class TConfigurablePhysicsList : public T {
   public:
     TConfigurablePhysicsList(G4int ver = 1);
     virtual ~TConfigurablePhysicsList();
     bool UseCustomPhysics;
     std::vector<std::string> EnabledPhysics;
     std::vector<std::string> GetDefaultSettings();
-
-
-  public:
-    // SetCuts()
     virtual void SetCuts();
-
-  private:
-    enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
   };
 
 }
@@ -53,14 +44,7 @@ namespace larg4 {
 #include "larsim/LegacyLArG4/ConfigurablePhysicsList.icc"
 
 namespace larg4 {
-  typedef TConfigurablePhysicsList<G4VModularPhysicsList> ConfigurablePhysicsList;
+  using ConfigurablePhysicsList = TConfigurablePhysicsList<G4VModularPhysicsList>;
 }
 
-
-
 #endif
-
-
-
-// Sept 2009 - Ben Jones, MIT
-
