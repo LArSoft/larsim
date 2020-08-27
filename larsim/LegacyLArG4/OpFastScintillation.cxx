@@ -1493,11 +1493,9 @@ namespace larg4 {
     for (size_t const OpDet : util::counter(NOpChannels)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
-      fydimension = fOpDetHeight.at(OpDet);
-      fzdimension = fOpDetLength.at(OpDet);
       // set detector struct for solid angle function
-      detPoint.h = fydimension;
-      detPoint.w = fzdimension;
+      detPoint.h = fOpDetHeight.at(OpDet);
+      detPoint.w =  fOpDetLength.at(OpDet);
       int const DetThis = VUVHits(Num, ScintPoint, fOpDetCenter[OpDet], fOpDetType[OpDet]);
       if (DetThis > 0) {
         DetectedNum[OpDet] = DetThis;
@@ -1549,6 +1547,10 @@ namespace larg4 {
 
     for (size_t const OpDet : util::counter(NOpChannels)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
+
+      // set detector struct for solid angle function
+      detPoint.h = fOpDetHeight.at(OpDet);
+      detPoint.w =  fOpDetLength.at(OpDet);
 
       int const ReflDetThis =
         VISHits(ScintPoint, fOpDetCenter[OpDet], fOpDetType[OpDet], cathode_hits_rec, hotspot);

@@ -393,7 +393,7 @@ namespace larg4 {
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
-    double fydimension, fzdimension, fradius;
+    double fradius;
     dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
