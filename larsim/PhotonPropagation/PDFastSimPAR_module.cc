@@ -385,7 +385,7 @@ private:
   TVector3 fcathode_centre;
 
   // Optical detector properties for semi-analytic hits
-  double fydimension, fzdimension, fradius;
+  double fradius;
   dims detPoint, cathode_plane;
   int fdelta_angle;
   int fL_abs_vuv;
@@ -474,11 +474,9 @@ void PDFastSimPAR::produce(art::Event &event) {
     for (size_t channel = 0; channel < nOpChannels; channel++) {
       sim::OpDetBacktrackerRecord tmpbtr(channel);
 
-      fydimension = fOpDetHeight.at(channel);
-      fzdimension = fOpDetLength.at(channel);
       // set detector struct for solid angle function
-      detPoint.h = fydimension;
-      detPoint.w = fzdimension;
+      detPoint.h = fOpDetHeight.at(channel);
+      detPoint.w = fOpDetLength.at(channel);
 
       if (nphot_fast > 0) {
         auto n = VUVHits(nphot_slow, ScintPoint, fOpDetCenter.at(channel),
