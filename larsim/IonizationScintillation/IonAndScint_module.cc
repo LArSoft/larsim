@@ -58,6 +58,7 @@ namespace larg4 {
     CLHEP::HepRandomEngine& fEngine;
     string Instances;
     std::vector<string> instanceNames;
+    bool fSavePriorSCE;
   };
 
   //......................................................................
@@ -69,6 +70,7 @@ namespace larg4 {
     , Instances{
         pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive"),
       }
+    , fSavePriorSCE{pset.get<bool>("SavePriorSCE",  true)}
   {
     std::cout << "IonAndScint Module Construct" << std::endl;
 
@@ -91,6 +93,7 @@ namespace larg4 {
     }
 
     produces<std::vector<sim::SimEnergyDeposit>>();
+    if (fSavePriorSCE) produces<std::vector<sim::SimEnergyDeposit>>("priorSCE");
   }
 
   //......................................................................
@@ -138,6 +141,7 @@ namespace larg4 {
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
 
     auto simedep = std::make_unique<std::vector<sim::SimEnergyDeposit>>();
+    auto simedep1 = std::make_unique<std::vector<sim::SimEnergyDeposit>>(); // for prior-SCE depos
     for (auto edeps : edepHandle) {
       // Do some checking before we proceed
       if (!edeps.isValid()) {
@@ -194,9 +198,24 @@ namespace larg4 {
                               endTime_tmp,
                               trackID_tmp,
                               pdgCode_tmp);
+
+        if (fSavePriorSCE) {
+            simedep1->emplace_back(ph_num,
+                                  ion_num,
+                                  scintyield,
+                                  edepi.Energy(),
+                                  edepi.Start(),
+                                  edepi.End(),
+                                  edepi.StartT(),
+                                  edepi.EndT(),
+                                  edepi.TrackID(),
+                                  edepi.PdgCode());
+        }
+
       }
     }
     event.put(std::move(simedep));
+    if (fSavePriorSCE) event.put(std::move(simedep1), "priorSCE");
   }
 } // namespace
 DEFINE_ART_MODULE(larg4::IonAndScint)
