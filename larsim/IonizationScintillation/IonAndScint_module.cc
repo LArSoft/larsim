@@ -70,7 +70,7 @@ namespace larg4 {
     , Instances{
         pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive"),
       }
-    , fSavePriorSCE{pset.get<bool>("SavePriorSCE",  true)}
+    , fSavePriorSCE{pset.get<bool>("SavePriorSCE",  false)}
   {
     std::cout << "IonAndScint Module Construct" << std::endl;
 
