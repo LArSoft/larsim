@@ -1,4 +1,3 @@
-
 // Configurable Physics List Class
 //
 // Ben Jones, MIT, 24/06/09
@@ -14,25 +13,25 @@
 // file.  Physics builders to be enabled are specified in the LArG4 config.
 //
 
-#include "Geant4/globals.hh"
+#include "Geant4/G4ChargeExchangePhysics.hh"
+#include "Geant4/G4EmExtraPhysics.hh"
 #include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/G4ParticleWithCuts.hh"
 #include "Geant4/G4ProcessManager.hh"
 #include "Geant4/G4ProcessVector.hh"
-#include "Geant4/G4ParticleTypes.hh"
-#include "Geant4/G4ParticleTable.hh"
-#include "Geant4/G4EmExtraPhysics.hh"
-#include "Geant4/G4ChargeExchangePhysics.hh"
+#include "Geant4/globals.hh"
 
-#include "Geant4/G4MuonNuclearProcess.hh"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4MaterialTable.hh"
+#include "Geant4/G4MuonNuclearProcess.hh"
 #include "Geant4/G4ios.hh"
 #include <iomanip>
 
 #include "Geant4/G4Version.hh"
-#if  G4VERSION_NUMBER < 1060
-  #include "Geant4/G4DataQuestionaire.hh"
+#if G4VERSION_NUMBER < 1060
+#include "Geant4/G4DataQuestionaire.hh"
 #else
 // The G4DataQuestionaire.hh interface was removed in the 10.6, as described in the release notes:
 // http://geant4-data.web.cern.ch/geant4-data/ReleaseNotes/ReleaseNotes4.10.6.html 8
@@ -51,17 +50,17 @@
 
 namespace larg4 {
 
-  static CustomPhysicsTable * TheCustomPhysicsTable;
+  static CustomPhysicsTable* TheCustomPhysicsTable;
 
-
-  template<class T> TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int ver) : T()
+  template <class T>
+  TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int const ver) : T()
   {
     mf::LogWarning logmsg{"ConfigurablePhysics"};
-    logmsg  << "Setting up Configurable Physics List.\n";
+    logmsg << "Setting up Configurable Physics List.\n";
     // note - not sure exact purpose of these commands, but left in from QGSP_BERT list
     this->defaultCutValue = 0.7 * CLHEP::mm;
     this->SetVerboseLevel(ver);
-#if  G4VERSION_NUMBER < 1060
+#if G4VERSION_NUMBER < 1060
     G4DataQuestionaire it(photon);
 #endif
     art::ServiceHandle<sim::LArG4Parameters> lgp;
@@ -72,12 +71,11 @@ namespace larg4 {
         logmsg << "  " << val << '\n';
         if (!TheCustomPhysicsTable->IsPhysicsAvailable(val)) {
           logmsg << "\nERROR: physics not available: " << val << '\n';
-          std::vector<std::string> availablePhysics(TheCustomPhysicsTable->GetAvailablePhysicsList());
+          std::vector<std::string> availablePhysics(
+            TheCustomPhysicsTable->GetAvailablePhysicsList());
           logmsg << "\n-- Available physics:\n";
           for (auto const& nm : availablePhysics) {
-            if (TheCustomPhysicsTable->IsPhysicsAvailable(nm)) {
-              logmsg << "  " << nm << '\n';
-            }
+            if (TheCustomPhysicsTable->IsPhysicsAvailable(nm)) { logmsg << "  " << nm << '\n'; }
           }
           logmsg << "--\n";
           logmsg << "\nERROR: Throwing exception!\n";
@@ -108,47 +106,46 @@ namespace larg4 {
     }
   }
 
+  template <class T>
+  TConfigurablePhysicsList<T>::~TConfigurablePhysicsList()
+  {}
 
-  template<class T> TConfigurablePhysicsList<T>::~TConfigurablePhysicsList()
-  {
-  }
-
-  template<class T> void TConfigurablePhysicsList<T>::SetCuts()
+  template <class T>
+  void
+  TConfigurablePhysicsList<T>::SetCuts()
   {
 
     art::ServiceHandle<sim::LArG4Parameters> lg4p;
 
-    if(this->verboseLevel >1) G4cout << "ConfigurablePhysicsList::SetCuts:";
+    if (this->verboseLevel > 1) G4cout << "ConfigurablePhysicsList::SetCuts:";
     this->SetCutsWithDefault();
 
     // Set Proton Cut to  0, particularly important when using High Precision Packages
     // D.R. 02/25/19
     bool ModifyProtonCut = lg4p->ModifyProtonCut();
-    if(ModifyProtonCut) {
-      double theProtonCut = (double)( lg4p->NewProtonCut() );
-      this->SetCutValue(theProtonCut,"proton");
-      mf::LogInfo("ConfigurablePhysicsList::SetCuts:") << "Setting Proton cut to: "
-                                                          << theProtonCut;
+    if (ModifyProtonCut) {
+      double theProtonCut = (double)(lg4p->NewProtonCut());
+      this->SetCutValue(theProtonCut, "proton");
+      mf::LogInfo("ConfigurablePhysicsList::SetCuts:") << "Setting Proton cut to: " << theProtonCut;
     }
-
   }
 
-
-  template <class T> std::vector<std::string> TConfigurablePhysicsList<T>::GetDefaultSettings()
+  template <class T>
+  std::vector<std::string>
+  TConfigurablePhysicsList<T>::GetDefaultSettings()
   {
-     // Set default enabled physics processes (equivalent to QGSP_BERT physics list)
-     std::vector<std::string> TheVector;
-     TheVector.push_back("Em");
-     TheVector.push_back("SynchrotronAndGN");
-     TheVector.push_back("Decay");
-     TheVector.push_back("Hadron");
-     TheVector.push_back("HadronElastic");
-     TheVector.push_back("Stopping");
-     TheVector.push_back("Ion");
-     TheVector.push_back("NeutronTrackingCut");
-     return TheVector;
+    // Set default enabled physics processes (equivalent to QGSP_BERT physics list)
+    std::vector<std::string> TheVector;
+    TheVector.push_back("Em");
+    TheVector.push_back("SynchrotronAndGN");
+    TheVector.push_back("Decay");
+    TheVector.push_back("Hadron");
+    TheVector.push_back("HadronElastic");
+    TheVector.push_back("Stopping");
+    TheVector.push_back("Ion");
+    TheVector.push_back("NeutronTrackingCut");
+    return TheVector;
   }
-
 
 }
 

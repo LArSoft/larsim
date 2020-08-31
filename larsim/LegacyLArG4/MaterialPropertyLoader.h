@@ -17,6 +17,10 @@
 
 class G4LogicalVolumeStore;
 
+namespace detinfo {
+  class DetectorPropertiesData;
+}
+
 namespace larg4 {
 
   /**
@@ -43,38 +47,36 @@ namespace larg4 {
    * boundary model.
    *
    */
-  class MaterialPropertyLoader
-  {
+  class MaterialPropertyLoader {
   public:
-
-    // TODO use type aliases
-
-    // TODO remove default constructor
-    MaterialPropertyLoader() {}
-    // TODO remove default destructor
-    ~MaterialPropertyLoader() {}
-
-
-    // TODO remove duplicate "public" label
-  public:
-
     // TODO turn arguments into constant references
     //Accessors
-    std::map<double,double> GetMaterialProperty(std::string Material,std::string Property)
-      {return fPropertyList[Material][Property];}
+    std::map<double, double>
+    GetMaterialProperty(std::string Material, std::string Property)
+    {
+      return fPropertyList[Material][Property];
+    }
 
     // TODO turn arguments into constant references
-    double GetMaterialConstProperty(std::string Material, std::string Property)
-      {return fConstPropertyList[Material][Property];}
+    double
+    GetMaterialConstProperty(std::string Material, std::string Property)
+    {
+      return fConstPropertyList[Material][Property];
+    }
 
     // TODO turn argument into constant reference
-    std::map<std::string,double> GetMaterialConstProperties(std::string Material)
-      {return fConstPropertyList[Material];}
+    std::map<std::string, double> const&
+    GetMaterialConstProperties(std::string Material)
+    {
+      return fConstPropertyList[Material];
+    }
 
     // TODO turn argument into constant reference
-    std::map<std::string,std::map<double,double> >  GetMaterialProperties(std::string Material)
-      {return fPropertyList[Material];}
-
+    std::map<std::string, std::map<double, double>> const&
+    GetMaterialProperties(std::string Material)
+    {
+      return fPropertyList[Material];
+    }
 
     // --- BEGIN Methods to set material properties ----------------------------
     /// @name Methods to set material properties
@@ -96,7 +98,10 @@ namespace larg4 {
      * `value` is measured in `Units` and `energy` is measured in electronvolt.
      */
     // TODO turn arguments into constant references
-    void SetMaterialProperty(       std::string Material, std::string Property, std::map<double,double> Values, double Unit);
+    void SetMaterialProperty(std::string Material,
+                             std::string Property,
+                             std::map<double, double> Values,
+                             double Unit);
 
     /**
      * @brief Stores the specified material property.
@@ -111,7 +116,10 @@ namespace larg4 {
      * The previous value of the property is silently overwritten.
      */
     // TODO turn arguments into constant references
-    void SetMaterialConstProperty(  std::string Material, std::string Property, double Value,                   double Unit);
+    void SetMaterialConstProperty(std::string Material,
+                                  std::string Property,
+                                  double Value,
+                                  double Unit);
 
     /// @}
     // --- END Methods to set material properties ------------------------------
@@ -121,20 +129,20 @@ namespace larg4 {
     /// @{
 
     // Method to set LArG4 Birks constant
-    void SetBirksConstant( std::string, double, double );
-
+    void SetBirksConstant(std::string, double, double);
 
     /**
      * @brief
      */
     // TODO turn the arguments into constant references (using type aliases)
-    void SetReflectances( std::string, std::map<std::string, std::map<double,double> >, std::map<std::string, std::map<double, double> >);
+    void SetReflectances(std::string,
+                         std::map<std::string, std::map<double, double>>,
+                         std::map<std::string, std::map<double, double>>);
     // TODO turn the argument into constant reference (using type aliases)
-    void SetReflectances( std::map<std::string, std::map<double,double> >);
+    void SetReflectances(std::map<std::string, std::map<double, double>>);
 
     /// @}
     // --- END Setting of specific properties ----------------------------------
-
 
     /**
      * @brief Imports properties from LArSoft services
@@ -174,7 +182,7 @@ namespace larg4 {
      *     * `"WLSCOMPONENT"` from `detinfo::LArProperties::TpbEm()`
      *
      */
-    void GetPropertiesFromServices();
+    void GetPropertiesFromServices(detinfo::DetectorPropertiesData const& detProp);
 
     // TODO make this method constant
     /**
@@ -188,27 +196,18 @@ namespace larg4 {
      * of a material we have properties for, their material properties are
      * updated to reflect the values we have collected.
      */
-    void UpdateGeometry( G4LogicalVolumeStore* lvs );
-
-
+    void UpdateGeometry(G4LogicalVolumeStore* lvs);
 
   private:
-
     //         materials                properties            values
-    std::map < std::string , std::map < std::string,double> > fConstPropertyList;
+    std::map<std::string, std::map<std::string, double>> fConstPropertyList;
 
     //         materials                properties               energies  values
-    std::map < std::string , std::map < std::string , std::map < double ,  double > > > fPropertyList;
+    std::map<std::string, std::map<std::string, std::map<double, double>>> fPropertyList;
 
     std::map<std::string, double> fBirksConstants;
-
-
-
-
   }; // clas MaterialPropertyLoader
 
-
 } // namespace larg4
-
 
 #endif // LArG4_MaterialPropertyLoader_h

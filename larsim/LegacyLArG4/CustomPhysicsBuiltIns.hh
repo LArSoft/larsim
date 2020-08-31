@@ -1,159 +1,122 @@
-////////////////////////////////////////////////////////////////////////
-/// \file CustomPhysicsBuiltIns.h
+#ifndef larsim_LegacyLArG4_CustomPhysicsBuiltIns_hh
+#define larsim_LegacyLArG4_CustomPhysicsBuiltIns_hh
+
+// The parameters of GEANT4 built in physics modules must be supplied
+// to their constructors.  This code initiates CustomPhysicsFactories
+// to pass the default QGSP_BERT parameters and add built in physics
+// to the CustomPhysicsFactory.  Parameters are passed exactly as they
+// were in QGSP_BERT (hence apparent inconsistencies are not the fault
+// of the current author!
 //
-/// \author  seligman@nevis.columbia.edu
-////////////////////////////////////////////////////////////////////////
+// Any LArSoft-specific lists should be added in CustomPhysicsLArSoft
+// (e.g. OpticalPhysics).
 
-
-// The parameters of GEANT4 built in physics modules must be supplied to their constructors.
-// This code initiates CustomPhysicsFactories to pass the default QGSP_BERT parameters
-// and add built in physics to the CustomPhysicsFactory.  Parameters are passed exactly
-// as they were in QGSP_BERT (hence apparent inconsistencies are not the fault of the current
-// author!
-//
-// For new modules, parameters for new physics should be read from xml files within the modules
-// themselves rather than passing parameters directly to the constructor. See OpticalPhysics as
-// an example.
-//
-// Therefore no new modules should be initialised as those below (this is a somewhat
-// hacky patch to reconcile the Geant4 way of declaring physics with the physics table
-// scheme)
-
-
+#include "Geant4/G4ChargeExchangePhysics.hh"
 #include "Geant4/G4DecayPhysics.hh"
 #include "Geant4/G4EmExtraPhysics.hh"
-#include "Geant4/G4IonPhysics.hh"
-#include "Geant4/G4StoppingPhysics.hh"
+#include "Geant4/G4EmLivermorePhysics.hh"
+#include "Geant4/G4EmStandardPhysics.hh"
 #include "Geant4/G4HadronElasticPhysics.hh"
 #include "Geant4/G4HadronElasticPhysicsHP.hh"
 #include "Geant4/G4HadronElasticPhysicsPHP.hh"
-#include "Geant4/G4NeutronTrackingCut.hh"
 #include "Geant4/G4HadronPhysicsQGSP_BERT.hh"
 #include "Geant4/G4HadronPhysicsQGSP_BERT_HP.hh"
-#include "Geant4/G4EmStandardPhysics.hh"
-#include "Geant4/G4EmLivermorePhysics.hh"
-#include "Geant4/G4ChargeExchangePhysics.hh"
+#include "Geant4/G4IonPhysics.hh"
+#include "Geant4/G4NeutronTrackingCut.hh"
+#include "Geant4/G4StoppingPhysics.hh"
 
 #include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
 
 namespace larg4 {
-
-  class EmPhysicsFactory : public CustomPhysicsFactory<G4EmStandardPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4EmStandardPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4EmStandardPhysics(0);}
-    EmPhysicsFactory() : CustomPhysicsFactory<G4EmStandardPhysics>("Em") {}
-    virtual ~EmPhysicsFactory() {};
-  };
+    return new G4EmStandardPhysics(0);
+  }
 
-  class SynchrotronAndGN : public CustomPhysicsFactory<G4EmExtraPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4EmExtraPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build() {return new G4EmExtraPhysics("extra EM");}
-    SynchrotronAndGN() : CustomPhysicsFactory<G4EmExtraPhysics>("SynchrotronAndGN") {}
-    virtual ~SynchrotronAndGN() {}
-  };
+    return new G4EmExtraPhysics("extra EM");
+  }
 
-  class ChargeExchange : public CustomPhysicsFactory<G4ChargeExchangePhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4ChargeExchangePhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build() {return new G4ChargeExchangePhysics(2);}
-    ChargeExchange() : CustomPhysicsFactory<G4ChargeExchangePhysics>("ChargeExchange") {}
-    virtual ~ChargeExchange() {}
-  };
+    return new G4ChargeExchangePhysics(2);
+  }
 
-  class DecayPhysicsFactory : public CustomPhysicsFactory<G4DecayPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4DecayPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build() {return new G4DecayPhysics("Decay",0);}
-    DecayPhysicsFactory() : CustomPhysicsFactory<G4DecayPhysics>("Decay") {}
-    virtual ~DecayPhysicsFactory() {}
-  };
+    return new G4DecayPhysics("Decay", 0);
+  }
 
   //hadron elastic
-  class HadronElasticPhysicsFactory : public CustomPhysicsFactory<G4HadronElasticPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4HadronElasticPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysics(0);}
-    HadronElasticPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysics>("HadronElastic") {}
-    virtual ~HadronElasticPhysicsFactory() {}
-  };
+    return new G4HadronElasticPhysics(0);
+  }
 
   //hadron elastic, neutron HP
-  class HadronElasticHPPhysicsFactory : public CustomPhysicsFactory<G4HadronElasticPhysicsHP>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4HadronElasticPhysicsHP>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysicsHP(0);}
-    HadronElasticHPPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysicsHP>("HadronElasticHP") {}
-    virtual ~HadronElasticHPPhysicsFactory() {}
-  };
+    return new G4HadronElasticPhysicsHP(0);
+  }
 
   //hadron elastic, particle HP
-  class HadronElasticPHPPhysicsFactory : public CustomPhysicsFactory<G4HadronElasticPhysicsPHP>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4HadronElasticPhysicsPHP>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4HadronElasticPhysicsPHP(0);}
-    HadronElasticPHPPhysicsFactory() : CustomPhysicsFactory<G4HadronElasticPhysicsPHP>("HadronElasticPHP") {}
-    virtual ~HadronElasticPHPPhysicsFactory() {}
-  };
+    return new G4HadronElasticPhysicsPHP(0);
+  }
 
   //hadron inelastic
-  class HadronPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>::Build() const
   {
-  public:
-    G4bool quasiElastic;
-    G4VPhysicsConstructor * Build() {return new G4HadronPhysicsQGSP_BERT("hadron",quasiElastic=true);}
-    HadronPhysicsFactory() : CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>("Hadron") {}
-    virtual ~HadronPhysicsFactory() {}
-  };
+    constexpr G4bool quasiElastic{true};
+    return new G4HadronPhysicsQGSP_BERT("hadron", quasiElastic);
+  }
 
   //hadron inelastic, neutron HP
-  class HadronHPPhysicsFactory : public CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>::Build() const
   {
-  public:
-    G4bool quasiElastic;
-    G4VPhysicsConstructor * Build() {return new G4HadronPhysicsQGSP_BERT_HP("hadronHP",true);}
-    HadronHPPhysicsFactory() : CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>("HadronHP") {}
-    virtual ~HadronHPPhysicsFactory() {}
-  };
+    return new G4HadronPhysicsQGSP_BERT_HP("hadronHP", true);
+  }
 
-  class StoppingPhysicsFactory : public CustomPhysicsFactory<G4StoppingPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4StoppingPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4StoppingPhysics("stopping");}
-    StoppingPhysicsFactory() : CustomPhysicsFactory<G4StoppingPhysics>("Stopping") {}
-    virtual ~StoppingPhysicsFactory() {};
-  };
+    return new G4StoppingPhysics("stopping");
+  }
 
-  class IonPhysicsFactory : public CustomPhysicsFactory<G4IonPhysics>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4IonPhysics>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4IonPhysics("ion");}
-    IonPhysicsFactory() : CustomPhysicsFactory<G4IonPhysics>("Ion") {}
-    virtual ~IonPhysicsFactory() {};
-  };
+    return new G4IonPhysics("ion");
+  }
 
-  class NeutronTrackingCutFactory : public CustomPhysicsFactory<G4NeutronTrackingCut>
+  template <>
+  G4VPhysicsConstructor*
+  CustomPhysicsFactory<G4NeutronTrackingCut>::Build() const
   {
-  public:
-    G4VPhysicsConstructor * Build()  {return new G4NeutronTrackingCut("Neutron tracking cut",0);}
-    NeutronTrackingCutFactory() : CustomPhysicsFactory<G4NeutronTrackingCut>("NeutronTrackingCut") {}
-    virtual ~NeutronTrackingCutFactory() {};
-  };
-
-  class LowEnergyEmFactory : public CustomPhysicsFactory<G4EmLivermorePhysics>
-  {
-  public:
-    G4VPhysicsConstructor * Build() {return new G4EmLivermorePhysics();}
-    LowEnergyEmFactory() : CustomPhysicsFactory<G4EmLivermorePhysics>("LowEnergyEm"){}
-    virtual ~LowEnergyEmFactory() {}
-  };
-
-
+    return new G4NeutronTrackingCut("Neutron tracking cut", 0);
+  }
 }
 
-
-
-
-
-// Sept 2009 - Ben Jones, MIT
+#endif

@@ -38,42 +38,57 @@
 ///   readouts.  Geant4 allows the construction of multiple parallel
 ///   readouts, so this mechanism is relatively easy to extend for
 ///   each type of readout.
+///
+/// =================================================================
+/// N.B. At the beginning of each event, the clock data pointer must
+///      be set to the event currently being processed.  This is a
+///      thread-safety problem which should be reconciled for the
+///      larg4 package if it has not already been.  The way that is
+///      done for the LArG4_module is for the LArVoxelReadoutGeometry
+///      object to update the state of the LArVoxelReadout object
+///      through a sentry object.
+/// =================================================================
 
 #ifndef LArG4_LArVoxelReadout_h
 #define LArG4_LArVoxelReadout_h
 
+#include <algorithm> // std::max()
 #include <stddef.h>
 #include <vector>
-#include <algorithm> // std::max()
 
-#include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "lardataobj/Simulation/SimChannel.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/Simulation/LArG4Parameters.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
-#include "lardataalg/DetectorInfo/ElecClock.h"
+#include "lardataobj/Simulation/SimChannel.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
 
 // Forward declarations
 class G4HCofThisEvent;
 class G4TouchableHistory;
 class G4Step;
 
-namespace CLHEP { class HepRandomEngine; }
+namespace CLHEP {
+  class HepRandomEngine;
+}
 
 namespace larg4 {
 
   /// Simple structure holding a TPC and cryostat number
   struct TPCID_t {
     unsigned short int Cryostat, TPC;
-    bool operator< (const TPCID_t& than) const
-      {
-        return (Cryostat < than.Cryostat)
-          || ((Cryostat == than.Cryostat) && (TPC < than.TPC));
-      } // operator< ()
-  }; // TPCID_t
+    bool
+    operator<(const TPCID_t& than) const
+    {
+      return (Cryostat < than.Cryostat) || ((Cryostat == than.Cryostat) && (TPC < than.TPC));
+    } // operator< ()
+  };  // TPCID_t
 
   /**
    * @brief A G4PVPlacement with an additional identificator
@@ -89,22 +104,23 @@ namespace larg4 {
    * to the good will of the compiler, despite the destructor is specified.
    */
   template <class IDTYPE>
-  class G4PVPlacementWithID: public G4PVPlacement {
-      public:
+  class G4PVPlacementWithID : public G4PVPlacement {
+  public:
     typedef IDTYPE ID_t;
 
     ID_t ID; ///< Physical Volume identificator
 
     /// Constructor
-    G4PVPlacementWithID(const G4Transform3D& Transform3D, const G4String &pName,
-      G4LogicalVolume* pLogical, G4VPhysicalVolume* pMother,
-      G4bool pMany, G4int pCopyNo, G4bool pSurfChk = false,
-      ID_t id = ID_t()
-      ):
-      G4PVPlacement
-        (Transform3D, pName, pLogical, pMother, pMany, pCopyNo, pSurfChk),
-      ID(id)
-      {}
+    G4PVPlacementWithID(const G4Transform3D& Transform3D,
+                        const G4String& pName,
+                        G4LogicalVolume* pLogical,
+                        G4VPhysicalVolume* pMother,
+                        G4bool pMany,
+                        G4int pCopyNo,
+                        G4bool pSurfChk = false,
+                        ID_t id = ID_t())
+      : G4PVPlacement(Transform3D, pName, pLogical, pMother, pMany, pCopyNo, pSurfChk), ID(id)
+    {}
 
     /// Virtual destructor: does nothing more
     virtual ~G4PVPlacementWithID() {}
@@ -112,7 +128,6 @@ namespace larg4 {
 
   /// A physical volume with a TPC ID
   typedef G4PVPlacementWithID<TPCID_t> G4PVPlacementInTPC;
-
 
   /**
    * @brief Transports energy depositions from GEANT4 to TPC channels.
@@ -152,8 +167,7 @@ namespace larg4 {
    *   is lost (with a warning)
    *
    */
-  class LArVoxelReadout : public G4VSensitiveDetector
-  {
+  class LArVoxelReadout : public G4VSensitiveDetector {
   public:
     /// Type of map channel -> sim::SimChannel
     typedef std::map<unsigned int, sim::SimChannel> ChannelMap_t;
@@ -168,16 +182,11 @@ namespace larg4 {
       double offPlaneMargin = 0.0;
     }; // struct Setup_t
 
-
     /// Constructor. Can detect which TPC to cover by the name
     LArVoxelReadout(std::string const& name);
 
     /// Constructor. Sets which TPC to work on
-    LArVoxelReadout
-      (std::string const& name, unsigned int cryostat, unsigned int tpc);
-
-    // Destructor
-    virtual ~LArVoxelReadout();
+    LArVoxelReadout(std::string const& name, unsigned int cryostat, unsigned int tpc);
 
     /// Reads all the configuration elements from `setupData`
     void Setup(Setup_t const& setupData);
@@ -200,7 +209,7 @@ namespace larg4 {
     // The key method of this class.  It's called by Geant4 for each
     // step within the read-out geometry.  It accumulates the energy
     // in the G4Step in the LArVoxelList.
-    virtual G4bool ProcessHits( G4Step*, G4TouchableHistory* );
+    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
 
     // Empty methods; they have to be defined, but they're rarely
     // used in Geant4 applications.
@@ -218,8 +227,7 @@ namespace larg4 {
     std::vector<sim::SimChannel> GetSimChannels() const;
 
     /// Creates a list with the accumulated information for specified TPC
-    std::vector<sim::SimChannel> GetSimChannels
-      (unsigned short cryo, unsigned short tpc) const;
+    std::vector<sim::SimChannel> GetSimChannels(unsigned short cryo, unsigned short tpc) const;
 
     //@{
     /// Returns the accumulated channel -> SimChannel map for the single TPC
@@ -229,13 +237,27 @@ namespace larg4 {
 
     //@{
     /// Returns the accumulated channel -> SimChannel map for the specified TPC
-    const ChannelMap_t& GetSimChannelMap
-      (unsigned short cryo, unsigned short tpc) const;
+    const ChannelMap_t& GetSimChannelMap(unsigned short cryo, unsigned short tpc) const;
     ChannelMap_t& GetSimChannelMap(unsigned short cryo, unsigned short tpc);
     //@}
 
-
   private:
+    // N.B. This code is not thread-safe, as it presupposes that there
+    // is a "current" clock-data object.  Such a pattern should be
+    // avoided for the users of larg4.
+    friend class LArVoxelReadoutGeometry;
+
+    void
+    SetClockData(detinfo::DetectorClocksData const* const clockData) noexcept
+    {
+      fClockData = clockData;
+    }
+
+    void
+    SetPropertiesData(detinfo::DetectorPropertiesData const* const detProp) noexcept
+    {
+      fDetProp = detProp;
+    }
 
     /**
      * @brief Sets the margin for recovery of charge drifted off-plane.
@@ -246,12 +268,14 @@ namespace larg4 {
      *
      * This method is used by `LArVoxelReadout::Setup()`.
      */
-    void SetOffPlaneChargeRecoveryMargin(double margin)
-      { fOffPlaneMargin = std::max(margin, 0.0); }
+    void
+    SetOffPlaneChargeRecoveryMargin(double margin)
+    {
+      fOffPlaneMargin = std::max(margin, 0.0);
+    }
 
     /// Sets the random generators to be used.
     void SetRandomEngines(CLHEP::HepRandomEngine* pPropGen);
-
 
     /**
      * @brief Returns the point on the specified plane closest to position.
@@ -291,53 +315,55 @@ namespace larg4 {
      * would take.
      *
      */
-    geo::Point_t RecoverOffPlaneDeposit
-      (geo::Point_t const& pos, geo::PlaneGeo const& plane) const;
+    geo::Point_t RecoverOffPlaneDeposit(geo::Point_t const& pos, geo::PlaneGeo const& plane) const;
 
-    void DriftIonizationElectrons(G4ThreeVector stepMidPoint,
+    void DriftIonizationElectrons(detinfo::DetectorClocksData const& clockData,
+                                  G4ThreeVector stepMidPoint,
                                   const double simTime,
                                   int trackID,
-                                  unsigned short int cryostat, unsigned short int tpc);
+                                  unsigned short int cryostat,
+                                  unsigned short int tpc);
 
-    bool Has(std::vector<unsigned short int> v, unsigned short int tpc) const
+    bool
+    Has(std::vector<unsigned short int> v, unsigned short int tpc) const
     {
-    	for (auto c: v) if (c == tpc) return true;
-    	return false;
+      for (auto c : v)
+        if (c == tpc) return true;
+      return false;
     }
 
     // Used in electron-cluster calculations
     // External parameters for the electron-cluster calculation.
     // obtained from LArG4Parameters, LArProperties, and DetectorProperties services
-    double                                    fDriftVelocity[3];
-    double                                    fLongitudinalDiffusion;
-    double                                    fTransverseDiffusion;
-    double                                    fElectronLifetime;
-    double                                    fElectronClusterSize;
-    int					      fMinNumberOfElCluster;
-    // for c2: unused private data members
-    //double                                    fSampleRate;
-    //int                                       fTriggerOffset;
-    bool                                      fDontDriftThem;
-    std::vector<unsigned short int>           fSkipWireSignalInTPCs;
+    double fDriftVelocity[3];
+    double fLongitudinalDiffusion;
+    double fTransverseDiffusion;
+    double fElectronLifetime;
+    double fElectronClusterSize;
+    int fMinNumberOfElCluster;
+    bool fDontDriftThem;
+    std::vector<unsigned short int> fSkipWireSignalInTPCs;
     /// Charge deposited within this many [cm] from the plane is lead onto it.
-    double                                    fOffPlaneMargin = 0.0;
+    double fOffPlaneMargin = 0.0;
 
-    std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
-    art::ServiceHandle<geo::Geometry const>         fGeoHandle;  ///< Handle to the Geometry service
-    art::ServiceHandle<sim::LArG4Parameters const>  fLgpHandle;  ///< Handle to the LArG4 parameters service
-    unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
-    unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
-    bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
+    std::vector<std::vector<ChannelMap_t>> fChannelMaps; ///< Maps of cryostat, tpc to channel data
+    art::ServiceHandle<geo::Geometry const> fGeoHandle;  ///< Handle to the Geometry service
+    art::ServiceHandle<sim::LArG4Parameters const>
+      fLgpHandle;        ///< Handle to the LArG4 parameters service
+    unsigned int fTPC;   ///< which TPC this LArVoxelReadout corresponds to
+    unsigned int fCstat; ///< and in which cryostat (if bSingleTPC is true)
+    bool bSingleTPC;     ///< true if this readout is associated with a single TPC
 
-    CLHEP::HepRandomEngine*                   fPropGen = nullptr;  ///< random engine for charge propagation
+    CLHEP::HepRandomEngine* fPropGen = nullptr; ///< random engine for charge propagation
 
-    ::detinfo::ElecClock                         fClock;      ///< TPC electronics clock
+    detinfo::DetectorClocksData const* fClockData{nullptr};
+    detinfo::DetectorPropertiesData const* fDetProp{nullptr};
 
     //these are the things for doing the separated EDeps
     void ProcessStep(G4Step*);
 
-    G4ThreeVector                             fStepStart;
-    G4ThreeVector                             fStepEnd;
+    G4ThreeVector fStepStart;
+    G4ThreeVector fStepEnd;
     size_t fNSteps;
   };
 

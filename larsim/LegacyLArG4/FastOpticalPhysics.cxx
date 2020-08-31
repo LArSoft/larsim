@@ -41,7 +41,6 @@
 //
 
 #include "larsim/LegacyLArG4/FastOpticalPhysics.h"
-#include "larsim/LegacyLArG4/CustomPhysicsFactory.hh"
 #include "larsim/LegacyLArG4/OpBoundaryProcessSimple.hh"
 #include "larsim/LegacyLArG4/OpFastScintillation.hh"
 
@@ -50,57 +49,47 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4ProcessManager.hh"
-#include "Geant4/G4LossTableManager.hh"
 
-#include "Geant4/G4Gamma.hh"
-#include "Geant4/G4Electron.hh"
-#include "Geant4/G4Positron.hh"
-#include "Geant4/G4MuonPlus.hh"
-#include "Geant4/G4MuonMinus.hh"
-#include "Geant4/G4PionPlus.hh"
-#include "Geant4/G4PionMinus.hh"
-#include "Geant4/G4KaonPlus.hh"
-#include "Geant4/G4KaonMinus.hh"
-#include "Geant4/G4Proton.hh"
+#include "Geant4/G4Alpha.hh"
 #include "Geant4/G4AntiProton.hh"
 #include "Geant4/G4Deuteron.hh"
-#include "Geant4/G4Triton.hh"
-#include "Geant4/G4He3.hh"
-#include "Geant4/G4Alpha.hh"
+#include "Geant4/G4Electron.hh"
+#include "Geant4/G4Gamma.hh"
 #include "Geant4/G4GenericIon.hh"
+#include "Geant4/G4He3.hh"
+#include "Geant4/G4KaonMinus.hh"
+#include "Geant4/G4KaonPlus.hh"
+#include "Geant4/G4MuonMinus.hh"
+#include "Geant4/G4MuonPlus.hh"
 #include "Geant4/G4OpticalPhoton.hh"
+#include "Geant4/G4PionMinus.hh"
+#include "Geant4/G4PionPlus.hh"
+#include "Geant4/G4Positron.hh"
+#include "Geant4/G4Proton.hh"
+#include "Geant4/G4Triton.hh"
 
 #include "Geant4/G4Cerenkov.hh"
 #include "Geant4/G4OpAbsorption.hh"
-#include "Geant4/G4OpWLS.hh"
 #include "Geant4/G4OpRayleigh.hh"
-
-//Register optical physics in custom physics list
+#include "Geant4/G4OpWLS.hh"
 
 namespace larg4 {
 
-  CustomPhysicsFactory<FastOpticalPhysics> fastoptical_factory("FastOptical");
-
   //-----------------------------------------------------------
-  FastOpticalPhysics::FastOpticalPhysics(G4int ver, const G4String& name)
-    : G4VPhysicsConstructor(name), verbose(ver)
+  FastOpticalPhysics::FastOpticalPhysics(G4int /*verbose*/, const G4String& name)
+    : G4VPhysicsConstructor(name)
   {
     G4LossTableManager::Instance();
     mf::LogInfo("FastOpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
 
-
   //-----------------------------------------------------------
-  FastOpticalPhysics::~FastOpticalPhysics()
-  {
-    delete fTheScintillationProcess;
-  }
-
-  //-----------------------------------------------------------
-  void FastOpticalPhysics::ConstructParticle()
+  void
+  FastOpticalPhysics::ConstructParticle()
   {
     MF_LOG_DEBUG("FastOpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
     // optical photon
@@ -133,18 +122,19 @@ namespace larg4 {
     G4GenericIon::GenericIonDefinition();
   }
 
-   //-----------------------------------------------------------
-  void FastOpticalPhysics::ConstructProcess()
-    {
+  //-----------------------------------------------------------
+  void
+  FastOpticalPhysics::ConstructProcess()
+  {
     // Add standard EM Processes
     MF_LOG_DEBUG("FastOpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
 
-    fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
-    fTheAbsorptionProcess          = new G4OpAbsorption();
-    fTheRayleighScatteringProcess  = new G4OpRayleigh();
-    fTheBoundaryProcess            = new OpBoundaryProcessSimple();
-    fTheWLSProcess                 = new G4OpWLS();
-    fTheScintillationProcess       = new OpFastScintillation("FastScintillation");
+    fTheCerenkovProcess = new G4Cerenkov("Cerenkov");
+    fTheAbsorptionProcess = new G4OpAbsorption();
+    fTheRayleighScatteringProcess = new G4OpRayleigh();
+    fTheBoundaryProcess = new OpBoundaryProcessSimple();
+    fTheWLSProcess = new G4OpWLS();
+    fTheScintillationProcess = std::make_unique<OpFastScintillation>("FastScintillation");
 
     fTheCerenkovProcess->SetMaxNumPhotonsPerStep(700);
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
@@ -155,34 +145,32 @@ namespace larg4 {
 
     mf::LogInfo("FastOpticalPhysics") << "Cerenkov enabled : " << CerenkovEnabled;
     static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
-    aParticleIterator=fParticleTable->GetIterator();
+    G4ParticleTable::G4PTblDicIterator* aParticleIterator;
+    aParticleIterator = fParticleTable->GetIterator();
     aParticleIterator->reset();
-    while( (*aParticleIterator)() ){
+    while ((*aParticleIterator)()) {
       G4ParticleDefinition* particle = aParticleIterator->value();
       G4ProcessManager* pmanager = particle->GetProcessManager();
       G4String particleName = particle->GetParticleName();
 
-      if (fTheCerenkovProcess->IsApplicable(*particle)&&CerenkovEnabled) {
-	pmanager->AddProcess(fTheCerenkovProcess);
-	pmanager->SetProcessOrdering(fTheCerenkovProcess,idxPostStep);
-
+      if (fTheCerenkovProcess->IsApplicable(*particle) && CerenkovEnabled) {
+        pmanager->AddProcess(fTheCerenkovProcess);
+        pmanager->SetProcessOrdering(fTheCerenkovProcess, idxPostStep);
       }
       if (fTheScintillationProcess->IsApplicable(*particle)) {
-	pmanager->AddProcess(fTheScintillationProcess);
-	pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxAtRest);
-	pmanager->SetProcessOrderingToLast(fTheScintillationProcess, idxPostStep);
-
+        auto ptr = fTheScintillationProcess.get();
+        pmanager->AddProcess(ptr);
+        pmanager->SetProcessOrderingToLast(ptr, idxAtRest);
+        pmanager->SetProcessOrderingToLast(ptr, idxPostStep);
       }
 
-     if (particleName == "opticalphoton") {
-       mf::LogInfo("FastOptical") << " AddDiscreteProcess to OpticalPhoton ";
-       pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
-       pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
-       pmanager->AddDiscreteProcess(fTheBoundaryProcess);
-       pmanager->AddDiscreteProcess(fTheWLSProcess);
-     }
+      if (particleName == "opticalphoton") {
+        mf::LogInfo("FastOptical") << " AddDiscreteProcess to OpticalPhoton ";
+        pmanager->AddDiscreteProcess(fTheAbsorptionProcess);
+        pmanager->AddDiscreteProcess(fTheRayleighScatteringProcess);
+        pmanager->AddDiscreteProcess(fTheBoundaryProcess);
+        pmanager->AddDiscreteProcess(fTheWLSProcess);
+      }
     }
-
   }
 }

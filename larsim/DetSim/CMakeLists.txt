@@ -8,6 +8,7 @@ simple_plugin(SimWireAna "module"
               ROOT::Hist)
 
 simple_plugin(SimWire "module"
+              lardataalg_DetectorInfo
               lardataobj_RawData
               lardataobj_Simulation
               larcorealg_Geometry

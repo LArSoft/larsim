@@ -19,7 +19,6 @@
 //
 // This class is based on the G4OpBoundaryProcess class in Geant4
 
-
 //
 // ********************************************************************
 // * License and Disclaimer                                           *
@@ -49,12 +48,12 @@
 // Optical Photon Boundary Process Class Implementation
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geant4/G4ios.hh"
-#include "Geant4/G4OpProcessSubType.hh"
 #include "Geant4/G4GeometryTolerance.hh"
 #include "Geant4/G4Navigator.hh"
-#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4OpProcessSubType.hh"
 #include "Geant4/G4RandomTools.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4ios.hh"
 
 #include "larsim/LegacyLArG4/OpBoundaryProcessSimple.hh"
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -63,39 +62,17 @@
 
 namespace larg4 {
 
-  //Constructor
-
-  OpBoundaryProcessSimple::OpBoundaryProcessSimple(const G4String& processName,
-               G4ProcessType type)
+  OpBoundaryProcessSimple::OpBoundaryProcessSimple(const G4String& processName, G4ProcessType type)
     : G4VDiscreteProcess(processName, type)
   {
-    if ( 1 > 0) {
-      G4cout << GetProcessName() << " is created " << G4endl;
-    }
-
+    G4cout << GetProcessName() << " is created " << G4endl;
 
     SetProcessSubType(fOpBoundary);
 
     fTheStatus = Undefined;
 
-    fCarTolerance = G4GeometryTolerance::GetInstance()
-      ->GetSurfaceTolerance();
-
+    fCarTolerance = G4GeometryTolerance::GetInstance()->GetSurfaceTolerance();
   }
-
-  // OpBoundaryProcessSimple::OpBoundaryProcessSimple(const OpBoundaryProcessSimple &right)
-  // {
-  // }
-
-
-  //Destructor
-
-  OpBoundaryProcessSimple::~OpBoundaryProcessSimple()
-  {
-  }
-
-
-
 
   //Action to take after making each step of an optical photon - described in file header.
 
@@ -111,187 +88,149 @@ namespace larg4 {
     fTheStatus = Undefined;
     aParticleChange.Initialize(aTrack);
 
-
-    G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
+    G4StepPoint* pPreStepPoint = aStep.GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();
 
-
-    if (pPostStepPoint->GetStepStatus() != fGeomBoundary){
+    if (pPostStepPoint->GetStepStatus() != fGeomBoundary) {
       fTheStatus = NotAtBoundary;
       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
     }
-    if (aTrack.GetStepLength()<=fCarTolerance/2){
+    if (aTrack.GetStepLength() <= fCarTolerance / 2) {
       fTheStatus = StepTooSmall;
       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
     }
 
-    G4Material* Material1 = pPreStepPoint  -> GetMaterial();
-    G4Material* Material2 = pPostStepPoint -> GetMaterial();
+    G4Material* Material1 = pPreStepPoint->GetMaterial();
+    G4Material* Material2 = pPostStepPoint->GetMaterial();
 
+    if (Material1 != Material2) {
 
-    if(Material1 != Material2)
-      {
+      art::ServiceHandle<sim::LArG4Parameters const> lgp;
 
-  art::ServiceHandle<sim::LArG4Parameters const> lgp;
+      fVerbosity = lgp->OpVerbosity();
 
-  fVerbosity = lgp->OpVerbosity();
+      G4ThreeVector NewMomentum;
+      G4ThreeVector NewPolarization;
 
+      G4ThreeVector theGlobalNormal;
+      G4ThreeVector theFacetNormal;
 
+      std::string Material1Name = Material1->GetName();
+      std::string Material2Name = Material2->GetName();
 
-  G4double thePhotonMomentum;
+      const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+      G4double thePhotonMomentum = aParticle->GetTotalMomentum();
+      G4ThreeVector OldMomentum = aParticle->GetMomentumDirection();
+      G4ThreeVector OldPolarization = aParticle->GetPolarization();
 
-  G4ThreeVector OldMomentum;
-  G4ThreeVector OldPolarization;
+      if (fVerbosity > 9)
+        std::cout << "OpBoundaryProcessSimple Debug: Photon " << aTrack.GetTrackID() << " momentum "
+                  << thePhotonMomentum << " Material1 " << Material1Name.c_str() << " Material 2 "
+                  << Material2Name.c_str() << std::endl;
 
-  G4ThreeVector NewMomentum;
-  G4ThreeVector NewPolarization;
+      G4ThreeVector theGlobalPoint = pPostStepPoint->GetPosition();
 
-  G4ThreeVector theGlobalNormal;
-  G4ThreeVector theFacetNormal;
+      G4Navigator* theNavigator =
+        G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
 
-  std::string Material1Name = Material1->GetName();
-  std::string Material2Name = Material2->GetName();
+      G4ThreeVector theLocalPoint =
+        theNavigator->GetGlobalToLocalTransform().TransformPoint(theGlobalPoint);
 
-  const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+      // Normal points back into volume
+      G4bool valid;
+      G4ThreeVector theLocalNormal = theNavigator->GetLocalExitNormal(&valid);
 
+      if (valid) { theLocalNormal = -theLocalNormal; }
+      else {
+        G4cerr << " OpBoundaryProcessSimple/PostStepDoIt(): "
+               << " The Navigator reports that it returned an invalid normal" << G4endl;
+      }
 
-  thePhotonMomentum = aParticle->GetTotalMomentum();
-  OldMomentum       = aParticle->GetMomentumDirection();
-  OldPolarization   = aParticle->GetPolarization();
+      theGlobalNormal = theNavigator->GetLocalToGlobalTransform().TransformAxis(theLocalNormal);
 
-
-
-  if (fVerbosity>9) std::cout<<"OpBoundaryProcessSimple Debug: Photon " <<aTrack.GetTrackID() <<" momentum "<<thePhotonMomentum << " Material1 " << Material1Name.c_str() << " Material 2 " << Material2Name.c_str() << std::endl;
-
-  G4ThreeVector theGlobalPoint = pPostStepPoint->GetPosition();
-
-  G4Navigator* theNavigator =
-    G4TransportationManager::GetTransportationManager()->
-    GetNavigatorForTracking();
-
-  G4ThreeVector theLocalPoint = theNavigator->
-    GetGlobalToLocalTransform().
-    TransformPoint(theGlobalPoint);
-
-  G4ThreeVector theLocalNormal;   // Normal points back into volume
-
-  G4bool valid;
-  theLocalNormal = theNavigator->GetLocalExitNormal(&valid);
-
-  if (valid) {
-    theLocalNormal = -theLocalNormal;
-  }
-  else {
-    G4cerr << " OpBoundaryProcessSimple/PostStepDoIt(): "
-     << " The Navigator reports that it returned an invalid normal"
-     << G4endl;
-  }
-
-  theGlobalNormal = theNavigator->GetLocalToGlobalTransform().
-    TransformAxis(theLocalNormal);
-
-  if (OldMomentum * theGlobalNormal > 0.0) {
+      if (OldMomentum * theGlobalNormal > 0.0) {
 #ifdef G4DEBUG_OPTICAL
-    G4cerr << " OpBoundaryProcessSimple/PostStepDoIt(): "
-     << " theGlobalNormal points the wrong direction "
-     << G4endl;
+        G4cerr << " OpBoundaryProcessSimple/PostStepDoIt(): "
+               << " theGlobalNormal points the wrong direction " << G4endl;
 #endif
-    theGlobalNormal = -theGlobalNormal;
-  }
-
-  G4MaterialPropertiesTable* aMaterialPropertiesTable;
-  G4MaterialPropertyVector* Reflectance;
-  G4MaterialPropertyVector* DiffuseReflectanceFraction;
-
-
-  aMaterialPropertiesTable = Material1->GetMaterialPropertiesTable();
-
-
-  if (aMaterialPropertiesTable) {
-
-   std::stringstream PropertyName;
-   PropertyName<<"REFLECTANCE_"<<Material2Name.c_str();
-   Reflectance =         aMaterialPropertiesTable->GetProperty(PropertyName.str().c_str());
-
-   PropertyName.str("");
-   PropertyName<<"DIFFUSE_REFLECTANCE_FRACTION_"<<Material2Name.c_str();
-   DiffuseReflectanceFraction=aMaterialPropertiesTable->GetProperty(PropertyName.str().c_str());
-
-    if (Reflectance)
-      {
-        double theReflectance = Reflectance->Value(thePhotonMomentum);
-        if( G4BooleanRand(theReflectance))
-    {
-      if(DiffuseReflectanceFraction)
-        {
-          double theDiffuseReflectanceFraction = DiffuseReflectanceFraction->Value(thePhotonMomentum);
-          if(G4BooleanRand(theDiffuseReflectanceFraction))
-      {
-        fTheStatus=SimpleDiffuse;
+        theGlobalNormal = -theGlobalNormal;
       }
-          else
-      {
-        fTheStatus=SimpleSpecular;
-      }
+
+      G4MaterialPropertiesTable* aMaterialPropertiesTable;
+      G4MaterialPropertyVector* Reflectance;
+      G4MaterialPropertyVector* DiffuseReflectanceFraction;
+
+      aMaterialPropertiesTable = Material1->GetMaterialPropertiesTable();
+
+      if (aMaterialPropertiesTable) {
+
+        std::stringstream PropertyName;
+        PropertyName << "REFLECTANCE_" << Material2Name.c_str();
+        Reflectance = aMaterialPropertiesTable->GetProperty(PropertyName.str().c_str());
+
+        PropertyName.str("");
+        PropertyName << "DIFFUSE_REFLECTANCE_FRACTION_" << Material2Name.c_str();
+        DiffuseReflectanceFraction =
+          aMaterialPropertiesTable->GetProperty(PropertyName.str().c_str());
+
+        if (Reflectance) {
+          double theReflectance = Reflectance->Value(thePhotonMomentum);
+          if (G4BooleanRand(theReflectance)) {
+            if (DiffuseReflectanceFraction) {
+              double theDiffuseReflectanceFraction =
+                DiffuseReflectanceFraction->Value(thePhotonMomentum);
+              if (G4BooleanRand(theDiffuseReflectanceFraction)) { fTheStatus = SimpleDiffuse; }
+              else {
+                fTheStatus = SimpleSpecular;
+              }
+            }
+            else {
+              fTheStatus = SimpleSpecular;
+            }
+          }
+          else {
+            fTheStatus = SimpleAbsorbed;
+          }
         }
+        else {
+          fTheStatus = SimpleAbsorbedNoRefl;
+        }
+      }
+
+      // Take action according to track status
+
+      if (fTheStatus == SimpleDiffuse) {
+        NewMomentum = G4LambertianRand(theGlobalNormal);
+        theFacetNormal = (NewMomentum - OldMomentum).unit();
+      }
+
+      else if (fTheStatus == SimpleSpecular) {
+        theFacetNormal = theGlobalNormal;
+        G4double PdotN = OldMomentum * theFacetNormal;
+        NewMomentum = OldMomentum - (2. * PdotN) * theFacetNormal;
+      }
+
+      else if ((fTheStatus == SimpleAbsorbed) || (fTheStatus == SimpleAbsorbedNoRefl)) {
+        aParticleChange.ProposeTrackStatus(fStopAndKill);
+      }
+
+      else if ((fTheStatus == NotAtBoundary) || (fTheStatus == StepTooSmall)) {
+        NewMomentum = OldMomentum;
+      }
       else
-        {
-          fTheStatus=SimpleSpecular;
-        }
+        aParticleChange.ProposeTrackStatus(fStopAndKill);
+
+      NewMomentum = NewMomentum.unit();
+      aParticleChange.ProposeMomentumDirection(NewMomentum);
     }
-        else
-    {
-        fTheStatus=SimpleAbsorbed;
-    }
-
-      }
-    else
-      {
-        fTheStatus=SimpleAbsorbedNoRefl;
-      }
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
-
-
-
-
-  // Take action according to track status
-
-  if ( fTheStatus == SimpleDiffuse ) {
-    NewMomentum = G4LambertianRand(theGlobalNormal);
-    theFacetNormal = (NewMomentum - OldMomentum).unit();
-  }
-
-  else if (fTheStatus==SimpleSpecular) {
-    theFacetNormal = theGlobalNormal;
-    G4double PdotN = OldMomentum * theFacetNormal;
-    NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
-  }
-
-  else if ((fTheStatus==SimpleAbsorbed) || (fTheStatus==SimpleAbsorbedNoRefl)) {
-    aParticleChange.ProposeTrackStatus(fStopAndKill);
-  }
-
-  else if ((fTheStatus==NotAtBoundary)||(fTheStatus==StepTooSmall))
-    {
-      NewMomentum=OldMomentum;
-    }
-  else aParticleChange.ProposeTrackStatus(fStopAndKill);
-
-  NewMomentum = NewMomentum.unit();
-  aParticleChange.ProposeMomentumDirection(NewMomentum);
-      }
-    return G4VDiscreteProcess::PostStepDoIt(aTrack,aStep);
-
-  }
-
-
 
   // Compulsary method for G4DiscreteProcesses.  Serves no actual function here.
 
   // GetMeanFreePath
-  G4double OpBoundaryProcessSimple::GetMeanFreePath(const G4Track& ,
-                G4double ,
-                G4ForceCondition* condition)
+  G4double
+  OpBoundaryProcessSimple::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition)
   {
     *condition = Forced;
 

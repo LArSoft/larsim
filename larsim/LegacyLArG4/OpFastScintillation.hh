@@ -83,25 +83,24 @@
 // Includes
 /////////////
 
-#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 
-#include "Geant4/G4ThreeVector.hh"
-#include "Geant4/G4VRestDiscreteProcess.hh"
-#include "Geant4/G4PhysicsTable.hh"
-#include "Geant4/G4PhysicsOrderedFreeVector.hh"
 #include "Geant4/G4ForceCondition.hh"
 #include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4PhysicsOrderedFreeVector.hh"
+#include "Geant4/G4PhysicsTable.hh"
 #include "Geant4/G4ProcessType.hh"
 #include "Geant4/G4String.hh"
+#include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4Types.hh"
+#include "Geant4/G4VRestDiscreteProcess.hh"
 
 #include "TF1.h"
 #include "TVector3.h"
 
 #include <memory> // std::unique_ptr
-
 
 class G4EmSaturation;
 class G4Step;
@@ -110,8 +109,12 @@ class G4VParticleChange;
 namespace CLHEP {
   class RandGeneral;
 }
-namespace geo { class GeometryCore; }
-namespace phot { class PhotonVisibilityService; }
+namespace geo {
+  class GeometryCore;
+}
+namespace phot {
+  class PhotonVisibilityService;
+}
 
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
@@ -127,7 +130,6 @@ namespace larg4 {
   class OpFastScintillation : public G4VRestDiscreteProcess {
 
   private:
-
     //////////////
     // Operators
     //////////////
@@ -135,7 +137,6 @@ namespace larg4 {
     // OpFastScintillation& operator=(const OpFastScintillation &right);
 
   public: // Without description
-
     ////////////////////////////////
     // Constructors and Destructor
     ////////////////////////////////
@@ -150,7 +151,6 @@ namespace larg4 {
     ////////////
 
   public: // With description
-
     // OpFastScintillation Process has both PostStepDoIt (for energy
     // deposition of particles in flight) and AtRestDoIt (for energy
     // given to the medium by particles at rest)
@@ -159,24 +159,18 @@ namespace larg4 {
     // Returns true -> 'is applicable', for any particle type except
     // for an 'opticalphoton' and for short-lived particles
 
-    G4double GetMeanFreePath(const G4Track& aTrack,
-                             G4double,
-                             G4ForceCondition* );
+    G4double GetMeanFreePath(const G4Track& aTrack, G4double, G4ForceCondition*);
     // Returns infinity; i. e. the process does not limit the step,
     // but sets the 'StronglyForced' condition for the DoIt to be
     // invoked at every step.
 
-
-    G4double GetMeanLifeTime(const G4Track& aTrack,
-                             G4ForceCondition* );
+    G4double GetMeanLifeTime(const G4Track& aTrack, G4ForceCondition*);
     // Returns infinity; i. e. the process does not limit the time,
     // but sets the 'StronglyForced' condition for the DoIt to be
     // invoked at every step.
 
-    virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
-                                            const G4Step&  aStep);
-    virtual G4VParticleChange* AtRestDoIt (const G4Track& aTrack,
-                                           const G4Step& aStep);
+    virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, const G4Step& aStep);
+    virtual G4VParticleChange* AtRestDoIt(const G4Track& aTrack, const G4Step& aStep);
 
     // These are the methods implementing the scintillation process.
 
@@ -218,29 +212,33 @@ namespace larg4 {
     G4PhysicsTable* GetSlowIntegralTable() const;
     // Returns the address of the slow scintillation integral table.
 
-    void AddSaturation(G4EmSaturation* sat)
+    void
+    AddSaturation(G4EmSaturation* sat)
     {
       emSaturation = sat;
     }
     // Adds Birks Saturation to the process.
 
-    void RemoveSaturation()
+    void
+    RemoveSaturation()
     {
       emSaturation = NULL;
     }
     // Removes the Birks Saturation from the process.
 
-    G4EmSaturation* GetSaturation() const
+    G4EmSaturation*
+    GetSaturation() const
     {
       return emSaturation;
     }
     // Returns the Birks Saturation.
 
-    void SetScintillationByParticleType(const G4bool );
+    void SetScintillationByParticleType(const G4bool);
     // Called by the user to set the scintillation yield as a function
     // of energy deposited by particle type
 
-    G4bool GetScintillationByParticleType() const
+    G4bool
+    GetScintillationByParticleType() const
     {
       return scintillationByParticleType;
     }
@@ -258,21 +256,17 @@ namespace larg4 {
     void generateParam(const size_t index);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
-    void getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint,
-                    TVector3 OpDetPoint);
+    void getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint, TVector3 OpDetPoint);
     // Visible component timing parameterisation
 
   protected:
-
     void BuildThePhysicsTable();
     // It builds either the fast or slow scintillation integral table;
     // or both.
 
-
     bool RecordPhotonsProduced(const G4Step& aStep, double N);
     // Note the production of N photons in at point xyz.
     //  pass on to generate detector response, etc.
-
 
     ///////////////////////
     // Class Data Members
@@ -291,7 +285,6 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
-
     /// Returns whether the semi-analytic visibility parametrization is being used.
     bool usesSemiAnalyticModel() const;
 
@@ -321,8 +314,10 @@ namespace larg4 {
     G4double scint_time(const G4Step& aStep,
                         G4double ScintillationTime,
                         G4double ScintillationRiseTime) const;
-    void propagationTime(std::vector<double>& arrival_time_dist, G4ThreeVector x0,
-                         const size_t OpChannel, bool Reflected = false); //const;
+    void propagationTime(std::vector<double>& arrival_time_dist,
+                         G4ThreeVector x0,
+                         const size_t OpChannel,
+                         bool Reflected = false); //const;
 
     // emission time distribution when there is a finite rise time
     G4double sample_time(const G4double tau1, const G4double tau2) const;
@@ -330,9 +325,9 @@ namespace larg4 {
     // Facility for TPB emission energies
     double reemission_energy() const;
     std::map<double, double> tpbemission;
-    CLHEP::RandGeneral *rgen0;
+    CLHEP::RandGeneral* rgen0;
 
-    void average_position(G4Step const& aStep, double *xzyPos) const;
+    void average_position(G4Step const& aStep, double* xzyPos) const;
 
     G4EmSaturation* emSaturation;
     // functions and parameters for the propagation time parametrization
@@ -368,22 +363,21 @@ namespace larg4 {
       double w, h; // w = width; h = height
     };
     // solid angle of rectangular aperture calculation functions
-    double Rectangle_SolidAngle(const double a, const double b,
-                                const double d);
+    double Rectangle_SolidAngle(const double a, const double b, const double d);
     double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
     //For VUV semi-analytic hits
-    G4double Gaisser_Hillas(const double x, const double *par);
+    G4double Gaisser_Hillas(const double x, const double* par);
     //array of correction for the VUV Nhits estimation
-    std::vector<std::vector<double> > fGHvuvpars;
+    std::vector<std::vector<double>> fGHvuvpars;
     //To account for the border effects
     std::vector<double> fborder_corr;
     double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
     // For VIS semi-analytic hits
-    constexpr double Pol_5(const double x, double *par);
+    constexpr double Pol_5(const double x, double* par);
     bool fStoreReflected;
     // array of corrections for VIS Nhits estimation
     std::vector<std::vector<double>> fvispars;
@@ -395,7 +389,7 @@ namespace larg4 {
     std::string fVisBorderCorrectionType;
 
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-    TVector3  fcathode_centre;
+    TVector3 fcathode_centre;
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
@@ -403,12 +397,12 @@ namespace larg4 {
     dims detPoint, cathode_plane;
     int fdelta_angulo, fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
-    std::vector<int>  fOpDetType;
-    std::vector<double>  fOpDetLength;
-    std::vector<double>  fOpDetHeight;
+    std::vector<int> fOpDetType;
+    std::vector<double> fOpDetLength;
+    std::vector<double> fOpDetHeight;
     //double fGlobalTimeOffset;
 
-    void ProcessStep( const G4Step& step);
+    void ProcessStep(const G4Step& step);
 
     bool const bPropagate; ///< Whether propagation of photons is enabled.
 
@@ -425,21 +419,22 @@ namespace larg4 {
     /// Whether the cathodes are fully opaque; currently hard coded "no".
     bool const fOpaqueCathode = false;
 
-    bool isOpDetInSameTPC
-      (geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
-    double interpolate(const std::vector<double> &xData,
-                       const std::vector<double> &yData,
-                       double x, bool extrapolate, size_t i=0);
-    void interpolate3(std::array<double, 3> &inter,
-                      const std::vector<double> &xData,
-                      const std::vector<double> &yData1,
-                      const std::vector<double> &yData2,
-                      const std::vector<double> &yData3,
-                      double x, bool extrapolate);
+    double interpolate(const std::vector<double>& xData,
+                       const std::vector<double>& yData,
+                       double x,
+                       bool extrapolate,
+                       size_t i = 0);
+    void interpolate3(std::array<double, 3>& inter,
+                      const std::vector<double>& xData,
+                      const std::vector<double>& yData1,
+                      const std::vector<double>& yData2,
+                      const std::vector<double>& yData3,
+                      double x,
+                      bool extrapolate);
 
-    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes
-      (geo::GeometryCore const& geom);
+    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
 
   }; // class OpFastScintillation
 
@@ -449,15 +444,16 @@ namespace larg4 {
   double model_far(double*, double*);
 
   static const size_t acos_bins = 2000000;
-  static std::array<double, acos_bins+1> acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
+  static std::array<double, acos_bins + 1>
+    acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
   constexpr double acos_table(const double x);
   double fast_acos(const double x);
 
   ////////////////////
   // Inline methods
   ////////////////////
-  inline
-  G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
+  inline G4bool
+  OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
   {
     if (aParticleType.GetParticleName() == "opticalphoton") return false;
     if (aParticleType.IsShortLived()) return false;
@@ -465,163 +461,160 @@ namespace larg4 {
     return true;
   }
 
-  inline
-  void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
+  inline void
+  OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
   {
     fTrackSecondariesFirst = state;
   }
 
-  inline
-  void OpFastScintillation::SetFiniteRiseTime(const G4bool state)
+  inline void
+  OpFastScintillation::SetFiniteRiseTime(const G4bool state)
   {
     fFiniteRiseTime = state;
   }
 
-  inline
-  G4bool OpFastScintillation::GetTrackSecondariesFirst() const
+  inline G4bool
+  OpFastScintillation::GetTrackSecondariesFirst() const
   {
     return fTrackSecondariesFirst;
   }
 
-  inline
-  G4bool OpFastScintillation::GetFiniteRiseTime() const
+  inline G4bool
+  OpFastScintillation::GetFiniteRiseTime() const
   {
     return fFiniteRiseTime;
   }
 
-  inline
-  void OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
+  inline void
+  OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
   {
     YieldFactor = yieldfactor;
   }
 
-  inline
-  G4double OpFastScintillation::GetScintillationYieldFactor() const
+  inline G4double
+  OpFastScintillation::GetScintillationYieldFactor() const
   {
     return YieldFactor;
   }
 
-  inline
-  void OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
+  inline void
+  OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
   {
     ExcitationRatio = excitationratio;
   }
 
-  inline
-  G4double OpFastScintillation::GetScintillationExcitationRatio() const
+  inline G4double
+  OpFastScintillation::GetScintillationExcitationRatio() const
   {
     return ExcitationRatio;
   }
 
-  inline
-  G4PhysicsTable* OpFastScintillation::GetSlowIntegralTable() const
+  inline G4PhysicsTable*
+  OpFastScintillation::GetSlowIntegralTable() const
   {
     return theSlowIntegralTable.get();
   }
 
-  inline
-  G4PhysicsTable* OpFastScintillation::GetFastIntegralTable() const
+  inline G4PhysicsTable*
+  OpFastScintillation::GetFastIntegralTable() const
   {
     return theFastIntegralTable.get();
   }
 
-  inline
-  void OpFastScintillation::DumpPhysicsTable() const
+  inline void
+  OpFastScintillation::DumpPhysicsTable() const
   {
     if (theFastIntegralTable) {
       G4int PhysicsTableSize = theFastIntegralTable->entries();
-      G4PhysicsOrderedFreeVector *v;
-      for (G4int i = 0 ; i < PhysicsTableSize ; i++ ) {
+      G4PhysicsOrderedFreeVector* v;
+      for (G4int i = 0; i < PhysicsTableSize; i++) {
         v = (G4PhysicsOrderedFreeVector*)(*theFastIntegralTable)[i];
         v->DumpValues();
       }
     }
     if (theSlowIntegralTable) {
       G4int PhysicsTableSize = theSlowIntegralTable->entries();
-      G4PhysicsOrderedFreeVector *v;
-      for (G4int i = 0 ; i < PhysicsTableSize ; i++ ) {
+      G4PhysicsOrderedFreeVector* v;
+      for (G4int i = 0; i < PhysicsTableSize; i++) {
         v = (G4PhysicsOrderedFreeVector*)(*theSlowIntegralTable)[i];
         v->DumpValues();
       }
     }
   }
 
-  template<typename TReal> inline constexpr
-  double dist(const TReal* x, const TReal* y, const unsigned int dimension)
+  template <typename TReal>
+  inline constexpr double
+  dist(const TReal* x, const TReal* y, const unsigned int dimension)
   {
     double d = 0.;
-    for (unsigned int p=0; p<dimension; ++p){
-      d += (*(x+p) - *(y+p)) * (*(x+p) - *(y+p));
+    for (unsigned int p = 0; p < dimension; ++p) {
+      d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
     }
     return std::sqrt(d);
   }
 
   // implements relative method - do not use for comparing with zero
   // use this most of the time, tolerance needs to be meaningful in your context
-  template<typename TReal> inline constexpr
-  static bool isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  template <typename TReal>
+  inline constexpr static bool
+  isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = std::fabs(a - b);
-    if (diff <= tolerance)
-      return true;
-    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
-      return true;
+    if (diff <= tolerance) return true;
+    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
     return false;
   }
 
   // supply tolerance that is meaningful in your context
   // for example, default tolerance may not work if you are comparing double with float
-  template<typename TReal> inline constexpr
-  static bool isApproximatelyZero(TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  template <typename TReal>
+  inline constexpr static bool
+  isApproximatelyZero(TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
-    if (std::fabs(a) <= tolerance)
-      return true;
+    if (std::fabs(a) <= tolerance) return true;
     return false;
   }
-
 
   // use this when you want to be on safe side
   // for example, don't start rover unless signal is above 1
-  template<typename TReal> inline constexpr
-  static bool isDefinitelyLessThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  template <typename TReal>
+  inline constexpr static bool
+  isDefinitelyLessThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = a - b;
-    if (diff < tolerance)
-      return true;
-    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
-      return true;
+    if (diff < tolerance) return true;
+    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
     return false;
   }
 
-  template<typename TReal> inline constexpr
-  static bool isDefinitelyGreaterThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  template <typename TReal>
+  inline constexpr static bool
+  isDefinitelyGreaterThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     TReal diff = a - b;
-    if (diff > tolerance)
-      return true;
-    if (diff > std::fmax(std::fabs(a), std::fabs(b)) * tolerance)
-      return true;
+    if (diff > tolerance) return true;
+    if (diff > std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
     return false;
   }
 
-    // template<typename Function, typename... Args>
-    // auto OpFastScintillation::invoke_memoized(Function function, Args... args)
-    // {
-    //   using key_type   = std::tuple<Args...>;
-    //   using value_type = std::invoke_result_t<Function, Args...>;
-    //   static_assert(! std::is_same_v<Function, std::function<value_type(Args...)>>,
-    //                 "cannot memoize on std::function (use a lambda instead)");
-    //   static_assert(! std::is_same_v<Function, value_type(*)(Args...)>,
-    //                 "cannot memoize on function pointer (use a lambda instead)");
-    //   static std::mutex mutex;
-    //   static std::map<key_type, value_type> cache;
-    //   auto key  = std::tuple(args...);
-    //   auto lock = std::lock_guard<std::mutex>(mutex);
-    //   if (cache.count(key)){
-    //     return cache[key];
-    //   }
-    //   return cache[key] = std::apply(function, key);
-    // }
+  // template<typename Function, typename... Args>
+  // auto OpFastScintillation::invoke_memoized(Function function, Args... args)
+  // {
+  //   using key_type   = std::tuple<Args...>;
+  //   using value_type = std::invoke_result_t<Function, Args...>;
+  //   static_assert(! std::is_same_v<Function, std::function<value_type(Args...)>>,
+  //                 "cannot memoize on std::function (use a lambda instead)");
+  //   static_assert(! std::is_same_v<Function, value_type(*)(Args...)>,
+  //                 "cannot memoize on function pointer (use a lambda instead)");
+  //   static std::mutex mutex;
+  //   static std::map<key_type, value_type> cache;
+  //   auto key  = std::tuple(args...);
+  //   auto lock = std::lock_guard<std::mutex>(mutex);
+  //   if (cache.count(key)){
+  //     return cache[key];
+  //   }
+  //   return cache[key] = std::apply(function, key);
+  // }
 
 } // namespace larg4
 

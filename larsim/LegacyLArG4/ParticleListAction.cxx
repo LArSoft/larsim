@@ -6,23 +6,23 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/LegacyLArG4/ParticleListAction.h"
-#include "nug4/G4Base/PrimaryParticleInformation.h"
 #include "lardataobj/Simulation/sim.h" // sim::NoParticleId
+#include "nug4/G4Base/PrimaryParticleInformation.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Geant4/G4Track.hh"
-#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4DynamicParticle.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4PrimaryParticle.hh"
-#include "Geant4/G4DynamicParticle.hh"
-#include "Geant4/G4VUserPrimaryParticleInformation.hh"
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4StepPoint.hh"
-#include "Geant4/G4VProcess.hh"
 #include "Geant4/G4String.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4VProcess.hh"
+#include "Geant4/G4VUserPrimaryParticleInformation.hh"
 
 #include <TLorentzVector.h>
 
@@ -46,28 +46,29 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   // Dropped particle test
 
-  bool ParticleListAction::isDropped(simb::MCParticle const* p) {
+  bool
+  ParticleListAction::isDropped(simb::MCParticle const* p)
+  {
     return !p || p->Trajectory().empty();
   } // ParticleListAction::isDropped()
-
 
   //----------------------------------------------------------------------------
   // Constructor.
   ParticleListAction::ParticleListAction(double energyCut,
-                                         bool   storeTrajectories,
-                                         bool   keepEMShowerDaughters,
-                                         bool   keepMCParticleList /* = true */
+                                         bool storeTrajectories,
+                                         bool keepEMShowerDaughters,
+                                         bool keepMCParticleList /* = true */
                                          )
-  : fenergyCut(energyCut * CLHEP::GeV)
-  , fparticleList(keepMCParticleList? std::make_unique<sim::ParticleList>(): nullptr)
-  , fstoreTrajectories(storeTrajectories)
-  , fKeepEMShowerDaughters(keepEMShowerDaughters)
-  {
-  }
+    : fenergyCut(energyCut * CLHEP::GeV)
+    , fparticleList(keepMCParticleList ? std::make_unique<sim::ParticleList>() : nullptr)
+    , fstoreTrajectories(storeTrajectories)
+    , fKeepEMShowerDaughters(keepEMShowerDaughters)
+  {}
 
   //----------------------------------------------------------------------------
   // Begin the event
-  void ParticleListAction::BeginOfEventAction(const G4Event*)
+  void
+  ParticleListAction::BeginOfEventAction(const G4Event*)
   {
     // Clear any previous particle information.
     fCurrentParticle.clear();
@@ -82,17 +83,16 @@ namespace larg4 {
   // trackid
   // assume that the current track id has already been added to
   // the fParentIDMap
-  int ParticleListAction::GetParentage(int trackid) const
+  int
+  ParticleListAction::GetParentage(int trackid) const
   {
     int parentid = sim::NoParticleId;
 
     // search the fParentIDMap recursively until we have the parent id
     // of the first EM particle that led to this one
-    std::map<int,int>::const_iterator itr = fParentIDMap.find(trackid);
-    while( itr != fParentIDMap.end() ){
-      MF_LOG_DEBUG("ParticleListAction")
-      << "parentage for " << trackid
-      << " " << (*itr).second;
+    std::map<int, int>::const_iterator itr = fParentIDMap.find(trackid);
+    while (itr != fParentIDMap.end()) {
+      MF_LOG_DEBUG("ParticleListAction") << "parentage for " << trackid << " " << (*itr).second;
 
       // set the parentid to the current parent ID, when the loop ends
       // this id will be the first EM particle
@@ -106,7 +106,8 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // Create our initial simb::MCParticle object and add it to the sim::ParticleList.
-  void ParticleListAction::PreTrackingAction(const G4Track* track)
+  void
+  ParticleListAction::PreTrackingAction(const G4Track* track)
   {
     // Particle type.
     G4ParticleDefinition* particleDefinition = track->GetDefinition();
@@ -135,10 +136,11 @@ namespace larg4 {
     const G4DynamicParticle* dynamicParticle = track->GetDynamicParticle();
     const G4PrimaryParticle* primaryParticle = dynamicParticle->GetPrimaryParticle();
     simb::GeneratedParticleIndex_t primaryIndex = simb::NoGeneratedParticleIndex;
-    if ( primaryParticle != 0 ){
+    if (primaryParticle != 0) {
       const G4VUserPrimaryParticleInformation* gppi = primaryParticle->GetUserInformation();
-      const g4b::PrimaryParticleInformation* ppi = dynamic_cast<const g4b::PrimaryParticleInformation*>(gppi);
-      if ( ppi != 0 ){
+      const g4b::PrimaryParticleInformation* ppi =
+        dynamic_cast<const g4b::PrimaryParticleInformation*>(gppi);
+      if (ppi != 0) {
         primaryIndex = ppi->MCParticleIndex();
 
         // If we've made it this far, a PrimaryParticleInformation
@@ -150,9 +152,9 @@ namespace larg4 {
         // are multiple MCTruths for this event
         parentID = 0;
       } // end else no primary particle information
-    } // Is there a G4PrimaryParticle?
+    }   // Is there a G4PrimaryParticle?
     // If this is not a primary particle...
-    else{
+    else {
       // check if this particle was made in an EM shower, don't put it in the particle
       // list as we don't care about secondaries, tertiaries, etc for these showers
       // figure out what process is making this track - skip it if it is
@@ -160,24 +162,22 @@ namespace larg4 {
       // bremstrahlung, annihilation, any ionization - who wants to save
       // a buttload of electrons that arent from a CC interaction?
       process_name = track->GetCreatorProcess()->GetProcessName();
-      if( !fKeepEMShowerDaughters
-         && (process_name.find("conv")               != std::string::npos
-             || process_name.find("LowEnConversion") != std::string::npos
-             || process_name.find("Pair")            != std::string::npos
-             || process_name.find("compt")           != std::string::npos
-             || process_name.find("Compt")           != std::string::npos
-             || process_name.find("Brem")            != std::string::npos
-             || process_name.find("phot")            != std::string::npos
-             || process_name.find("Photo")           != std::string::npos
-             || process_name.find("Ion")             != std::string::npos
-             || process_name.find("annihil")         != std::string::npos)
-         ){
+      if (!fKeepEMShowerDaughters && (process_name.find("conv") != std::string::npos ||
+                                      process_name.find("LowEnConversion") != std::string::npos ||
+                                      process_name.find("Pair") != std::string::npos ||
+                                      process_name.find("compt") != std::string::npos ||
+                                      process_name.find("Compt") != std::string::npos ||
+                                      process_name.find("Brem") != std::string::npos ||
+                                      process_name.find("phot") != std::string::npos ||
+                                      process_name.find("Photo") != std::string::npos ||
+                                      process_name.find("Ion") != std::string::npos ||
+                                      process_name.find("annihil") != std::string::npos)) {
 
         // figure out the ultimate parentage of this particle
         // first add this track id and its parent to the fParentIDMap
         fParentIDMap[trackID] = parentID;
 
-        fCurrentTrackID = -1*this->GetParentage(trackID);
+        fCurrentTrackID = -1 * this->GetParentage(trackID);
 
         // check that fCurrentTrackID is in the particle list - it is possible
         // that this particle's parent is a particle that did not get tracked.
@@ -186,8 +186,7 @@ namespace larg4 {
         // isn't saved in the particle list because it is below the energy cut
         // which will put a bogus track id value into the sim::IDE object for
         // the sim::SimChannel if we don't check it.
-        if(!fparticleList->KnownParticle(fCurrentTrackID))
-          fCurrentTrackID = sim::NoParticleId;
+        if (!fparticleList->KnownParticle(fCurrentTrackID)) fCurrentTrackID = sim::NoParticleId;
 
         // clear current particle as we are not stepping this particle and
         // adding trajectory points to it
@@ -199,14 +198,14 @@ namespace larg4 {
       // Check the energy of the particle.  If it falls below the energy
       // cut, don't add it to our list.
       G4double energy = track->GetKineticEnergy();
-      if( energy < fenergyCut ){
+      if (energy < fenergyCut) {
         fCurrentParticle.clear();
 
         // do add the particle to the parent id map though
         // and set the current track id to be it's ultimate parent
         fParentIDMap[trackID] = parentID;
 
-        fCurrentTrackID = -1*this->GetParentage(trackID);
+        fCurrentTrackID = -1 * this->GetParentage(trackID);
 
         return;
       }
@@ -215,7 +214,7 @@ namespace larg4 {
       // if not, then see if it is possible to walk up the fParentIDMap to find the
       // ultimate parent of this particle.  Use that ID as the parent ID for this
       // particle
-      if( !fparticleList->KnownParticle(parentID) ){
+      if (!fparticleList->KnownParticle(parentID)) {
         // do add the particle to the parent id map
         // just in case it makes a daughter that we have to track as well
         fParentIDMap[trackID] = parentID;
@@ -223,45 +222,42 @@ namespace larg4 {
 
         // if we still can't find the parent in the particle navigator,
         // we have to give up
-        if( !fparticleList->KnownParticle(pid) ){
+        if (!fparticleList->KnownParticle(pid)) {
           MF_LOG_WARNING("ParticleListAction")
-          << "can't find parent id: "
-          << parentID
-          << " in the particle list, or fParentIDMap."
-          << " Make " << parentID << " the mother ID for"
-          << " track ID " << fCurrentTrackID
-          << " in the hope that it will aid debugging.";
+            << "can't find parent id: " << parentID << " in the particle list, or fParentIDMap."
+            << " Make " << parentID << " the mother ID for"
+            << " track ID " << fCurrentTrackID << " in the hope that it will aid debugging.";
         }
         else
           parentID = pid;
       }
 
-    }// end if not a primary particle
+    } // end if not a primary particle
 
-      // This is probably the PDG mass, but just in case:
-    double mass = dynamicParticle->GetMass()/CLHEP::GeV;
+    // This is probably the PDG mass, but just in case:
+    double mass = dynamicParticle->GetMass() / CLHEP::GeV;
 
-      // Create the sim::Particle object.
+    // Create the sim::Particle object.
     fCurrentParticle.clear();
-    fCurrentParticle.particle
-    = new simb::MCParticle( trackID, pdgCode, process_name, parentID, mass);
+    fCurrentParticle.particle =
+      new simb::MCParticle(trackID, pdgCode, process_name, parentID, mass);
     fCurrentParticle.truthIndex = primaryIndex;
 
-      // if we are not filtering, we have a decision already
+    // if we are not filtering, we have a decision already
     if (!fFilter) fCurrentParticle.keep = true;
 
-      // Polarization.
+    // Polarization.
     const G4ThreeVector& polarization = track->GetPolarization();
-    fCurrentParticle.particle->SetPolarization( TVector3( polarization.x(),
-                                                         polarization.y(),
-                                                         polarization.z() ) );
+    fCurrentParticle.particle->SetPolarization(
+      TVector3(polarization.x(), polarization.y(), polarization.z()));
 
-      // Save the particle in the ParticleList.
-    fparticleList->Add( fCurrentParticle.particle.get() );
+    // Save the particle in the ParticleList.
+    fparticleList->Add(fCurrentParticle.particle.get());
   }
 
   //----------------------------------------------------------------------------
-  void ParticleListAction::PostTrackingAction( const G4Track* aTrack)
+  void
+  ParticleListAction::PostTrackingAction(const G4Track* aTrack)
   {
     if (!fCurrentParticle.hasParticle()) return;
     assert(fparticleList);
@@ -275,52 +271,48 @@ namespace larg4 {
       return;
     }
 
-    if(aTrack){
+    if (aTrack) {
       fCurrentParticle.particle->SetWeight(aTrack->GetWeight());
-      G4String process = aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+      G4String process =
+        aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
       fCurrentParticle.particle->SetEndProcess(process);
-
-
     }
 
     // store truth record pointer, only if it is available
     if (fCurrentParticle.isPrimary()) {
-      fPrimaryTruthMap[fCurrentParticle.particle->TrackId()]
-        = fCurrentParticle.truthInfoIndex();
+      fPrimaryTruthMap[fCurrentParticle.particle->TrackId()] = fCurrentParticle.truthInfoIndex();
     }
 
     return;
   }
 
-
   //----------------------------------------------------------------------------
   // With every step, add to the particle's trajectory.
-  void ParticleListAction::SteppingAction(const G4Step* step)
+  void
+  ParticleListAction::SteppingAction(const G4Step* step)
   {
 
-    if ( !fCurrentParticle.hasParticle() ) {
-      return;
-    }
+    if (!fCurrentParticle.hasParticle()) { return; }
 
     // Temporary fix for problem where  DeltaTime on the first step
     // of optical photon propagation is calculated incorrectly. -wforeman
     globalTime = step->GetTrack()->GetGlobalTime();
     velocity_G4 = step->GetTrack()->GetVelocity();
     velocity_step = step->GetStepLength() / step->GetDeltaTime();
-    if ( (step->GetTrack()->GetDefinition()->GetPDGEncoding()==0) &&
-         fabs(velocity_G4 - velocity_step) > 0.0001 ) {
+    if ((step->GetTrack()->GetDefinition()->GetPDGEncoding() == 0) &&
+        fabs(velocity_G4 - velocity_step) > 0.0001) {
       // Subtract the faulty step time from the global time,
       // and add the correct step time based on G4 velocity.
-      step->GetPostStepPoint()->SetGlobalTime(globalTime - step->GetDeltaTime() + step->GetStepLength()/velocity_G4);
+      step->GetPostStepPoint()->SetGlobalTime(globalTime - step->GetDeltaTime() +
+                                              step->GetStepLength() / velocity_G4);
     }
-
 
     // For the most part, we just want to add the post-step
     // information to the particle's trajectory.  There's one
     // exception: In PreTrackingAction, the correct time information
     // is not available.  So add the correct vertex information here.
 
-    if ( fCurrentParticle.particle->NumberTrajectoryPoints() == 0 ){
+    if (fCurrentParticle.particle->NumberTrajectoryPoints() == 0) {
 
       // Get the pre/along-step information from the G4Step.
       const G4StepPoint* preStepPoint = step->GetPreStepPoint();
@@ -342,7 +334,7 @@ namespace larg4 {
                              energy / CLHEP::GeV);
 
       // Add the first point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom, "Start" );
+      AddPointToCurrentParticle(fourPos, fourMom, "Start");
 
     } // end if this is the first step
 
@@ -356,17 +348,14 @@ namespace larg4 {
     G4bool ignoreProcess = process.contains("LArVoxel") || process.contains("OpDetReadout");
 
     MF_LOG_DEBUG("ParticleListAction::SteppingAction")
-    << ": DEBUG - process='"
-    << process << "'"
-    << " ignoreProcess=" << ignoreProcess
-    << " fstoreTrajectories="
-    << fstoreTrajectories;
+      << ": DEBUG - process='" << process << "'"
+      << " ignoreProcess=" << ignoreProcess << " fstoreTrajectories=" << fstoreTrajectories;
 
     // We store the initial creation point of the particle
     // and its final position (ie where it has no more energy, or at least < 1 eV) no matter
     // what, but whether we store the rest of the trajectory depends
     // on the process, and on a user switch.
-    if ( fstoreTrajectories  &&  !ignoreProcess ){
+    if (fstoreTrajectories && !ignoreProcess) {
       // Get the post-step information from the G4Step.
       const G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
@@ -374,21 +363,20 @@ namespace larg4 {
       G4double time = postStepPoint->GetGlobalTime();
 
       // Remember that LArSoft uses cm, ns, GeV.
-      TLorentzVector fourPos( position.x() / CLHEP::cm,
+      TLorentzVector fourPos(position.x() / CLHEP::cm,
                              position.y() / CLHEP::cm,
                              position.z() / CLHEP::cm,
-                             time / CLHEP::ns );
+                             time / CLHEP::ns);
 
       const G4ThreeVector momentum = postStepPoint->GetMomentum();
       const G4double energy = postStepPoint->GetTotalEnergy();
-      TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
+      TLorentzVector fourMom(momentum.x() / CLHEP::GeV,
                              momentum.y() / CLHEP::GeV,
                              momentum.z() / CLHEP::GeV,
-                             energy / CLHEP::GeV );
+                             energy / CLHEP::GeV);
 
       // Add another point in the trajectory.
-      AddPointToCurrentParticle( fourPos, fourMom, std::string(process) );
-
+      AddPointToCurrentParticle(fourPos, fourMom, std::string(process));
     }
   }
 
@@ -396,14 +384,16 @@ namespace larg4 {
   /// Utility class for the EndOfEventAction method: update the
   /// daughter relationships in the particle list.
   class UpdateDaughterInformation
-    : public std::unary_function<sim::ParticleList::value_type, void>
-  {
+    : public std::unary_function<sim::ParticleList::value_type, void> {
   public:
-    UpdateDaughterInformation()
-      : particleList(0)
-    {}
-    void SetParticleList( sim::ParticleList* p ) { particleList = p; }
-    void operator()( sim::ParticleList::value_type& particleListEntry )
+    UpdateDaughterInformation() : particleList(0) {}
+    void
+    SetParticleList(sim::ParticleList* p)
+    {
+      particleList = p;
+    }
+    void
+    operator()(sim::ParticleList::value_type& particleListEntry)
     {
       // We're looking at this Particle in the list.
       int particleID = particleListEntry.first;
@@ -414,15 +404,15 @@ namespace larg4 {
       int parentID = particleList->GetMotherOf(particleID);
 
       // If the parentID <= 0, this is a primary particle.
-      if ( parentID <= 0 ) return;
+      if (parentID <= 0) return;
 
       // If we get here, this particle is somebody's daughter.  Add
       // it to the list of daughter particles for that parent.
 
       // Get the parent particle from the list.
-      sim::ParticleList::iterator parentEntry = particleList->find( parentID );
+      sim::ParticleList::iterator parentEntry = particleList->find(parentID);
 
-      if ( parentEntry == particleList->end() ){
+      if (parentEntry == particleList->end()) {
         // We have an "orphan": a particle whose parent isn't
         // recorded in the particle list.  This is not signficant;
         // it's possible for a particle not to be saved in the list
@@ -430,13 +420,14 @@ namespace larg4 {
         // daughter that passed the cut (e.g., a nuclear decay).
         return;
       }
-      if ( !parentEntry->second ) return; // particle archived, nothing to update
+      if (!parentEntry->second) return; // particle archived, nothing to update
 
       // Add the current particle to the daughter list of the
       // parent.
       simb::MCParticle* parent = (*parentEntry).second;
-      parent->AddDaughter( particleID );
+      parent->AddDaughter(particleID);
     }
+
   private:
     sim::ParticleList* particleList;
   };
@@ -445,7 +436,8 @@ namespace larg4 {
   // There's one last thing to do: All the particles have their
   // parent IDs set (in PostTrackingAction), but we haven't set the
   // daughters yet.  That's done in this method.
-  void ParticleListAction::EndOfEventAction(const G4Event*)
+  void
+  ParticleListAction::EndOfEventAction(const G4Event*)
   {
     if (!fparticleList) return;
 
@@ -455,17 +447,16 @@ namespace larg4 {
     // "for_each" instead of the C++ "for loop" because it's supposed
     // to be faster.
     UpdateDaughterInformation updateDaughterInformation;
-    updateDaughterInformation.SetParticleList( fparticleList.get() );
+    updateDaughterInformation.SetParticleList(fparticleList.get());
 
     // Update the daughter information for each particle in the list.
-    std::for_each(fparticleList->begin(),
-                  fparticleList->end(),
-                  updateDaughterInformation);
+    std::for_each(fparticleList->begin(), fparticleList->end(), updateDaughterInformation);
   }
 
   //----------------------------------------------------------------------------
   // Returns the ParticleList accumulated during the current event.
-  const sim::ParticleList* ParticleListAction::GetList() const
+  const sim::ParticleList*
+  ParticleListAction::GetList() const
   {
     if (!fparticleList) return nullptr;
 
@@ -473,28 +464,27 @@ namespace larg4 {
     // so grab the highest track id value from it to
     // add to the fTrackIDOffset
     int highestID = 0;
-    for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
-      if( (*pn).first > highestID ) highestID = (*pn).first;
+    for (auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
+      if ((*pn).first > highestID) highestID = (*pn).first;
 
     //Only change the fTrackIDOffset if there is in fact a particle to add to the event
-    if( (fparticleList->size())!=0){ fTrackIDOffset = highestID + 1; }
+    if ((fparticleList->size()) != 0) { fTrackIDOffset = highestID + 1; }
 
     return fparticleList.get();
   }
 
   //----------------------------------------------------------------------------
-  simb::GeneratedParticleIndex_t ParticleListAction::GetPrimaryTruthIndex
-    (int trackId) const
+  simb::GeneratedParticleIndex_t
+  ParticleListAction::GetPrimaryTruthIndex(int trackId) const
   {
     auto const iInfo = GetPrimaryTruthMap().find(trackId);
-    return (iInfo == GetPrimaryTruthMap().end())
-      ? simb::NoGeneratedParticleIndex: iInfo->second;
+    return (iInfo == GetPrimaryTruthMap().end()) ? simb::NoGeneratedParticleIndex : iInfo->second;
   } // ParticleListAction::GetPrimaryTruthIndex()
-
 
   //----------------------------------------------------------------------------
   // Yields the ParticleList accumulated during the current event.
-  sim::ParticleList&& ParticleListAction::YieldList()
+  sim::ParticleList&&
+  ParticleListAction::YieldList()
   {
     if (!fparticleList) {
       // check with `hasList()` before calling this method
@@ -505,31 +495,29 @@ namespace larg4 {
     // so grab the highest track id value from it to
     // add to the fTrackIDOffset
     int highestID = 0;
-    for( auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
-      if( (*pn).first > highestID ) highestID = (*pn).first;
+    for (auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
+      if ((*pn).first > highestID) highestID = (*pn).first;
 
     //Only change the fTrackIDOffset if there is in fact a particle to add to the event
-    if( (fparticleList->size())!=0 ){ fTrackIDOffset = highestID + 1; }
+    if ((fparticleList->size()) != 0) { fTrackIDOffset = highestID + 1; }
 
     return std::move(*fparticleList);
   } // ParticleList&& ParticleListAction::YieldList()
 
-
   //----------------------------------------------------------------------------
-  void ParticleListAction::AddPointToCurrentParticle(TLorentzVector const& pos,
-                                                     TLorentzVector const& mom,
-                                                     std::string    const& process)
+  void
+  ParticleListAction::AddPointToCurrentParticle(TLorentzVector const& pos,
+                                                TLorentzVector const& mom,
+                                                std::string const& process)
   {
 
     // Add the first point in the trajectory.
     fCurrentParticle.particle->AddTrajectoryPoint(pos, mom, process);
 
     // also see if we can decide to keep the particle
-    if (!fCurrentParticle.keep)
-        fCurrentParticle.keep = fFilter->mustKeep(pos);
+    if (!fCurrentParticle.keep) fCurrentParticle.keep = fFilter->mustKeep(pos);
 
   } // ParticleListAction::AddPointToCurrentParticle()
-
 
   //----------------------------------------------------------------------------
 

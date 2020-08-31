@@ -17,65 +17,61 @@
 // \author  W. Foreman, May 2020
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4EmSaturation.hh"
+#include "Geant4/G4LossTableManager.hh"
 #include "Geant4/G4ParticleTypes.hh"
 
 #include "larcore/CoreUtils/ServiceUtil.h"
-#include "larsim/LegacyLArG4/ISCalculationCorrelated.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "larsim/LegacyLArG4/ISCalculationCorrelated.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
-
-namespace larg4{
+namespace larg4 {
 
   //----------------------------------------------------------------------------
-  ISCalculationCorrelated::ISCalculationCorrelated(CLHEP::HepRandomEngine&)
+  ISCalculationCorrelated::ISCalculationCorrelated(detinfo::DetectorPropertiesData const& detProp)
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
-    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
-    const detinfo::DetectorProperties* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
-    double density        = detprop->Density(detprop->Temperature());
-    fEfield               = detprop->Efield();
+    double density = detProp.Density(detProp.Temperature());
+    fEfield = detProp.Efield();
 
     // ionization work function
-    fWion                 = 1./lgpHandle->GeVToElectrons() * 1e3; // MeV
+    fWion = 1. / lgpHandle->GeVToElectrons() * 1e3; // MeV
 
     // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
-    fWph                  = 19.5 * 1e-6; // MeV
-
-    // get scintillation pre-scale
-    fScintPreScale        = larp->ScintPreScale();
+    fWph = 19.5 * 1e-6; // MeV
 
     // the recombination coefficient is in g/(MeVcm^2), but
     // we report energy depositions in MeV/cm, need to divide
     // Recombk from the LArG4Parameters service by the density
     // of the argon we got above.
-    fRecombA             = lgpHandle->RecombA();
-    fRecombk             = lgpHandle->Recombk()/density;
-    fModBoxA             = lgpHandle->ModBoxA();
-    fModBoxB             = lgpHandle->ModBoxB()/density;
-    fUseModBoxRecomb     = lgpHandle->UseModBoxRecomb();
+    fRecombA = lgpHandle->RecombA();
+    fRecombk = lgpHandle->Recombk() / density;
+    fModBoxA = lgpHandle->ModBoxA();
+    fModBoxB = lgpHandle->ModBoxB() / density;
+    fUseModBoxRecomb = lgpHandle->UseModBoxRecomb();
 
     // determine the step size using the voxel sizes
     art::ServiceHandle<sim::LArVoxelCalculator const> lvc;
-    double maxsize = std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * CLHEP::cm;
+    double maxsize =
+      std::max(lvc->VoxelSizeX(), std::max(lvc->VoxelSizeY(), lvc->VoxelSizeZ())) * CLHEP::cm;
 
     fStepSize = 0.1 * maxsize;
   }
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationCorrelated::Reset()
+  void
+  ISCalculationCorrelated::Reset()
   {
-    fEnergyDeposit   = 0.;
+    fEnergyDeposit = 0.;
     fNumScintPhotons = 0.;
     fNumIonElectrons = 0.;
 
@@ -84,9 +80,10 @@ namespace larg4{
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationCorrelated::CalculateIonizationAndScintillation(const G4Step* step)
+  void
+  ISCalculationCorrelated::CalculateIonizationAndScintillation(const G4Step* step)
   {
-    fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
+    fEnergyDeposit = step->GetTotalEnergyDeposit() / CLHEP::MeV;
 
     // calculate total quanta (ions + excitons)
     double Nq = fEnergyDeposit / fWph;
@@ -104,29 +101,29 @@ namespace larg4{
 
     G4ThreeVector totstep = step->GetPostStepPoint()->GetPosition();
     totstep -= step->GetPreStepPoint()->GetPosition();
-    double dx     = totstep.mag()/CLHEP::cm;
-    double dEdx   = (dx == 0.0)? 0.0: fEnergyDeposit/dx;
-    double EFieldStep = EFieldAtStep(fEfield,step);
+    double dx = totstep.mag() / CLHEP::cm;
+    double dEdx = (dx == 0.0) ? 0.0 : fEnergyDeposit / dx;
+    double EFieldStep = EFieldAtStep(fEfield, step);
 
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
-    if(dEdx < 1.) dEdx = 1.;
+    if (dEdx < 1.) dEdx = 1.;
 
     // calculate the recombination survival fraction
     double recomb = 0.;
-    if(fUseModBoxRecomb) {
-      if (dx){
+    if (fUseModBoxRecomb) {
+      if (dx) {
         double Xi = fModBoxB * dEdx / EFieldStep;
         recomb = log(fModBoxA + Xi) / Xi;
       }
       else
         recomb = 0;
     }
-    else{
-      recomb = fRecombA/(1. + dEdx * fRecombk / EFieldStep);
+    else {
+      recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
     // using this recombination, calculate number of ionization electrons
-    fNumIonElectrons = ( fEnergyDeposit / fWion ) * recomb;
+    fNumIonElectrons = (fEnergyDeposit / fWion) * recomb;
 
     // calculate scintillation photons
     fNumScintPhotons = Nq - fNumIonElectrons;
@@ -135,14 +132,12 @@ namespace larg4{
     // the particle-specific scintillation yields)
     fNumScintPhotons *= fScintPreScale;
 
-    MF_LOG_DEBUG("ISCalculationCorrelated") << " Electrons produced for " << fEnergyDeposit
-                                       << " MeV deposited with "     << recomb
-                                       << " recombination: "         << fNumIonElectrons;
+    MF_LOG_DEBUG("ISCalculationCorrelated")
+      << " Electrons produced for " << fEnergyDeposit << " MeV deposited with " << recomb
+      << " recombination: " << fNumIonElectrons;
     MF_LOG_DEBUG("ISCalculationCorrelated") << "number photons: " << fNumScintPhotons;
 
     return;
-
   }
 
-
-}// namespace
+} // namespace

@@ -60,15 +60,11 @@
 #ifndef FastOpticalPhysics_h
 #define FastOpticalPhysics_h 1
 
-
-#include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Types.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 
-#if defined __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wunused-private-field"
-#endif
+#include <memory>
 
 class G4Cerenkov;
 class G4OpAbsorption;
@@ -80,28 +76,22 @@ namespace larg4 {
   class OpFastScintillation;
   class OpBoundaryProcessSimple;
 
-  class FastOpticalPhysics : public G4VPhysicsConstructor
-  {
+  class FastOpticalPhysics : public G4VPhysicsConstructor {
   public:
     FastOpticalPhysics(G4int ver = 0, const G4String& name = "FastOptical");
-    virtual ~FastOpticalPhysics();
 
-    virtual void ConstructParticle();
-    virtual void ConstructProcess();
+    void ConstructParticle() override;
+    void ConstructProcess() override;
 
   private:
-    G4int  verbose;
-    G4Cerenkov*              fTheCerenkovProcess;
-    OpFastScintillation*     fTheScintillationProcess;
-    G4OpAbsorption*          fTheAbsorptionProcess;
-    G4OpRayleigh*            fTheRayleighScatteringProcess;
+    G4Cerenkov* fTheCerenkovProcess;
+    std::unique_ptr<OpFastScintillation> fTheScintillationProcess;
+    G4OpAbsorption* fTheAbsorptionProcess;
+    G4OpRayleigh* fTheRayleighScatteringProcess;
     OpBoundaryProcessSimple* fTheBoundaryProcess;
-    G4OpWLS *                fTheWLSProcess;
+    G4OpWLS* fTheWLSProcess;
   };
 
 }
-#if defined __clang__
-  #pragma clang diagnostic pop
-#endif
 
 #endif
