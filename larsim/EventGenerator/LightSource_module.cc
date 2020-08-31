@@ -172,12 +172,12 @@ namespace evgen {
 
     /// Throws an exception if any of the configured materials is not present.
     void checkMaterials() const;
-    
-    
+
+
     /// Reads from `fInputFile` all other parameters in one line.
     /// @return whether all reading were successful (`ifstream::good()`).
     bool readParametersFromInputFile();
-  
+
     // for c2: fSeed is unused
     //int               fSeed;              //random number seed
     std::string fVersion; //version of the configuration
@@ -386,7 +386,7 @@ namespace evgen {
   {
     if(fSourceMode==kFILE) {
       //  Each event, read coordinates of gun and number of photons to shoot from file
-        
+
       // read in one line
       if(!readParametersFromInputFile()){
         // Loop file if required
@@ -395,12 +395,12 @@ namespace evgen {
         fInputFile.clear();
         fInputFile.seekg(0, std::ios::beg);
         fInputFile.getline(fDummyString, 256);
-        
+
         if(!readParametersFromInputFile()) {
           throw cet::exception("LightSource") << "EVGEN Light Source : File error in "
                                               << fFileName << "\n";
         }
-        
+
       }
 
       fThePhotonVoxelDef = sim::PhotonVoxelDef(fCenter.X() - fSigmaX,
@@ -613,8 +613,8 @@ namespace evgen {
                                 << (material ? material->GetName() : "not found");
     return material ? (fMaterials.count(material->GetName()) > 0) : false;
   } // LightSource::MaterialPointFilter::accept()
-  
-  
+
+
   //----------------------------------------------------------------------------
   bool LightSource::readParametersFromInputFile() {
     double x, y, z;
@@ -623,13 +623,13 @@ namespace evgen {
       >> fP >> fSigmaP >> fN;
     fCenter = { x, y, z };
     if (!fInputFile.good()) return false;
-    
+
     std::string dummy;
     std::getline(fInputFile, dummy); // this can fail for what I care
     return true;
   } // LightSource::readParametersFromInputFile()
-  
-  
+
+
   // ---------------------------------------------------------------------------
 
 } // namespace evgen
