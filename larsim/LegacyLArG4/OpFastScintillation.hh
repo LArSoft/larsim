@@ -331,7 +331,7 @@ namespace larg4 {
     // Facility for TPB emission energies
     double reemission_energy() const;
     std::map<double, double> tpbemission;
-    CLHEP::RandGeneral* rgen0;
+    std::unique_ptr<CLHEP::RandGeneral> fTPBEm;
 
     void average_position(G4Step const& aStep, double* xzyPos) const;
 

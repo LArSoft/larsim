@@ -369,14 +369,13 @@ namespace larg4 {
       }
     }
     tpbemission = lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const size_t nbins = tpbemission.size();
-    double* parent = new double[nbins];
-    size_t ii = 0;
+    std::vector<double> parent;
+    parent.reserve(tpbemission.size());
     for (auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
-      parent[ii++] = (*iter).second;
+      parent.push_back(iter->second);
     }
-    rgen0 = new CLHEP::RandGeneral(parent, nbins);
-    delete[] parent;
+    fTPBEm = std::make_unique<CLHEP::RandGeneral>
+      (parent.data(), parent.size());
   }
 
   ////////////////
@@ -1077,7 +1076,7 @@ namespace larg4 {
   double
   OpFastScintillation::reemission_energy() const
   {
-    return rgen0->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
+    return fTPBEm->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
            (*tpbemission.begin()).first;
   }
 
