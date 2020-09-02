@@ -65,6 +65,11 @@ namespace cheat {
         fhicl::Comment("Option when overlaying simulation on real data, to tell the "
                        "backtracker to continue even if event looks like data."),
         false};
+      fhicl::Atom<double> HitTimeRMS{
+        fhicl::Name("HitTimeRMS"),
+        fhicl::Comment("The number of RMS units to move away"
+                       "from a Hit peak time for searching IDE."),
+        1.0};
     };
 
     BackTracker(const fhiclConfig& config,
@@ -245,6 +250,7 @@ namespace cheat {
     const art::InputTag fHitLabel;
     const double fMinHitEnergyFraction;
     const bool fOverrideRealData;
+    const double fHitTimeRMS;
 
     mutable std::vector<art::Ptr<sim::SimChannel>> fSimChannels;
 
