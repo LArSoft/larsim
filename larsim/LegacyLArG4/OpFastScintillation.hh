@@ -285,6 +285,14 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
+
+    struct OpticalDetector {
+      double h; // height
+      double w; // width
+      geo::Point_t OpDetPoint;
+      int type;
+    };
+
     /// Returns whether the semi-analytic visibility parametrization is being used.
     bool usesSemiAnalyticModel() const;
 
@@ -297,13 +305,11 @@ namespace larg4 {
 
     int VUVHits(const double Nphotons_created,
                 geo::Point_t const& ScintPoint,
-                geo::Point_t const& OpDetPoint,
-                const int optical_detector_type);
+                OpticalDetector const& opDet);
     // Calculates semi-analytic model number of hits for vuv component
 
     int VISHits(geo::Point_t const& ScintPoint,
-                geo::Point_t const& OpDetPoint,
-                const int optical_detector_type,
+                OpticalDetector const& opDet,
                 const double cathode_hits_rec,
                 const std::array<double, 3> hotspot);
     // Calculates semi-analytic model number of hits for visible component
@@ -325,7 +331,7 @@ namespace larg4 {
     // Facility for TPB emission energies
     double reemission_energy() const;
     std::map<double, double> tpbemission;
-    CLHEP::RandGeneral* rgen0;
+    std::unique_ptr<CLHEP::RandGeneral> fTPBEm;
 
     void average_position(G4Step const& aStep, double* xzyPos) const;
 
@@ -358,13 +364,13 @@ namespace larg4 {
     std::vector<std::vector<double>> fcut_off_pars;
     std::vector<std::vector<double>> ftau_pars;
 
-    // structure definition for solid angle of rectangle function
-    struct dims {
-      double w, h; // w = width; h = height
+    struct Dims {
+      double h, w; // height, width
     };
+
     // solid angle of rectangular aperture calculation functions
     double Rectangle_SolidAngle(const double a, const double b, const double d);
-    double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
+    double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
@@ -393,8 +399,8 @@ namespace larg4 {
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
-    double fydimension, fzdimension, fradius;
-    dims detPoint, cathode_plane;
+    double fradius;
+    Dims fcathode_plane;
     int fdelta_angulo, fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int> fOpDetType;
