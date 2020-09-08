@@ -69,8 +69,7 @@ namespace sim {
 
   private:
     int  const               fOpVerbosity;           ///< Verbosity of optical simulation - soon to be depricated
-    double const             fParticleKineticECut;   ///< Minimum energy a particle needs before asking Geant4
-                                                     ///< to track it, GeV
+    double const             fParticleKineticECut;   ///< Minimum energy a particle needs in order to be stored in the particle list [GeV]
     bool const               fStoreTrajectories;     ///< Whether to store full trajectories for every particle
                                                      ///< simulated by Geant4
     bool const               fDrawNeutrals;          ///< depricated
