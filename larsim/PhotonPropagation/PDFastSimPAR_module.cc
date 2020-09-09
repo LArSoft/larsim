@@ -396,6 +396,9 @@ private:
   std::vector<double> fOpDetLength;
   std::vector<double> fOpDetHeight;
 
+  // Photon visibility service instance.
+  PhotonVisibilityService const *const fPVS;
+
   MappedFunctions_t ParPropTimeTF1;
 };
 
@@ -410,7 +413,8 @@ PDFastSimPAR::PDFastSimPAR(fhicl::ParameterSet const &pset)
           *this, "HepJamesRandom", "photon", pset, "SeedPhoton")),
       fScintTimeEngine(
           art::ServiceHandle<rndm::NuRandomService>()->createEngine(
-              *this, "HepJamesRandom", "scinttime", pset, "SeedScintTime")) {
+              *this, "HepJamesRandom", "scinttime", pset, "SeedScintTime")),
+      fPVS(art::ServiceHandle<PhotonVisibilityService const>().get()) {
   std::cout << "PDFastSimPAR Module Construct" << std::endl;
 
   Initialization();
@@ -422,10 +426,9 @@ PDFastSimPAR::PDFastSimPAR(fhicl::ParameterSet const &pset)
 void PDFastSimPAR::produce(art::Event &event) {
   std::cout << "PDFastSimPAR Module Producer" << std::endl;
 
-  art::ServiceHandle<PhotonVisibilityService const> pvs;
   // unused auto const* larp =
   // lar::providerFrom<detinfo::LArPropertiesService>();
-  auto const nOpChannels = pvs->NOpChannels();
+  auto const nOpChannels = fPVS->NOpChannels();
 
   CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
   CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
@@ -471,7 +474,7 @@ void PDFastSimPAR::produce(art::Event &event) {
     num_fastph += nphot_fast;
     num_slowph += nphot_slow;
 
-    // ParPropTimeTF1 = pvs->GetTimingTF1(pos);
+    // ParPropTimeTF1 = fPVS->GetTimingTF1(pos);
     geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
     for (size_t channel = 0; channel < nOpChannels; channel++) {
       sim::OpDetBacktrackerRecord tmpbtr(channel);
@@ -555,7 +558,6 @@ void PDFastSimPAR::Initialization() {
   std::cout << "Simulate using semi-analytic model for number of hits."
             << std::endl;
 
-  art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
   static art::ServiceHandle<geo::Geometry const> geo;
 
   // Find boundary of active volume
@@ -609,11 +611,12 @@ void PDFastSimPAR::Initialization() {
     //           << std::endl;
   }
 
-  if (pvs->IncludePropTime()) {
+  if (fPVS->IncludePropTime()) {
     std::cout << "Using parameterisation of timings." << std::endl;
     // VUV time parapetrization
-    pvs->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d, fvuv_vgroup_mean,
-                              fvuv_vgroup_max, finflexion_point_distance);
+    fPVS->LoadTimingsForVUVPar(fparameters, fstep_size, fmax_d,
+                               fvuv_vgroup_mean, fvuv_vgroup_max,
+                               finflexion_point_distance);
 
     // create vector of empty TF1s that will be replaces with the
     // parameterisations that are generated as they are required
@@ -636,9 +639,9 @@ void PDFastSimPAR::Initialization() {
 
     // TODO: Include this when it's possible
     // // VIS time parameterisation
-    // if (pvs->StoreReflected()) {
+    // if (fPVS->StoreReflected()) {
     //   // load parameters
-    //   pvs->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
+    //   fPVS->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
     //                             fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
     // }
   }
@@ -654,11 +657,11 @@ void PDFastSimPAR::Initialization() {
   fL_abs_vuv = std::round(interpolate(
       x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
 
-  std::cout << "UseNhitsModel: " << pvs->UseNhitsModel() << std::endl;
+  std::cout << "UseNhitsModel: " << fPVS->UseNhitsModel() << std::endl;
 
   // Load Gaisser-Hillas corrections for VUV semi-analytic hits
   std::cout << "Loading the GH corrections" << std::endl;
-  pvs->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
+  fPVS->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
 
   fdelta_angle = 10.; // angle bin size
 
@@ -876,11 +879,10 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
 void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
                                    G4ThreeVector x0, const size_t OpChannel,
                                    bool Reflected) {
-  static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-  if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
+  if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
     throw cet::exception("OpFastScintillation")
         << "Cannot have both propagation time models simultaneously.";
-  } else if (pvs->IncludeParPropTime() &&
+  } else if (fPVS->IncludeParPropTime() &&
              !(ParPropTimeTF1 && (ParPropTimeTF1[OpChannel].GetNdim() == 1))) {
     // Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or
     // it is the default one. This will fix a segfault when using timing and
@@ -888,14 +890,14 @@ void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
     G4cout << "WARNING: Requested parameterized timing, but no function found. "
               "Not applying propagation time."
            << G4endl;
-  } else if (pvs->IncludeParPropTime()) {
+  } else if (fPVS->IncludeParPropTime()) {
     if (Reflected)
       throw cet::exception("OpFastScintillation")
           << "No parameterized propagation time for reflected light";
     for (size_t i = 0; i < arrival_time_dist.size(); ++i) {
       arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
     }
-  } else if (pvs->IncludePropTime()) {
+  } else if (fPVS->IncludePropTime()) {
     // Get VUV photons arrival time distribution from the parametrization
     geo::Point_t const &opDetCenter = fOpDetCenter.at(OpChannel);
     if (!Reflected) {
