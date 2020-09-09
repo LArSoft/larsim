@@ -362,6 +362,7 @@ private:
   double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode,
       fZcathode;
   double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
+  std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
   // array of corrections for VIS Nhits estimation
   std::vector<std::vector<double>> fvispars;
   std::vector<double> fvis_border_distances_x;
@@ -387,6 +388,22 @@ private:
   PhotonVisibilityService const *const fPVS;
 
   MappedFunctions_t ParPropTimeTF1;
+
+  /// Whether the semi-analytic model is being used for photon visibility.
+  bool const fUseNhitsModel = false;
+  /// Whether photon propagation is performed only from active volumes
+  bool const fOnlyActiveVolume = false;
+  /// Allows running even if light on cryostats `C:1` and higher is not supported.
+  /// Currently hard coded "no"
+  bool const fOnlyOneCryostat = false;
+  /// Whether the cathodes are fully opaque; currently hard coded "no".
+  bool const fOpaqueCathode = false;
+
+  bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+  bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
+
+  static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
+
 };
 
 //......................................................................
@@ -401,6 +418,7 @@ PDFastSimPAR::PDFastSimPAR(fhicl::ParameterSet const &pset)
       fScintTimeEngine(
           art::ServiceHandle<rndm::NuRandomService>()->createEngine(
               *this, "HepJamesRandom", "scinttime", pset, "SeedScintTime")),
+      fActiveVolumes{extractActiveVolumes(*(lar::providerFrom<geo::Geometry>()))},
       fPVS(art::ServiceHandle<PhotonVisibilityService const>().get()) {
   std::cout << "PDFastSimPAR Module Construct" << std::endl;
 
@@ -451,6 +469,8 @@ void PDFastSimPAR::produce(art::Event &event) {
     double nphot = edepi.NumPhotons();
     double edeposit = edepi.Energy() / nphot;
     double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
+    geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
+    if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
 
     double nphot_fast = edepi.NumFPhotons();
     double nphot_slow = edepi.NumSPhotons();
@@ -459,8 +479,8 @@ void PDFastSimPAR::produce(art::Event &event) {
     num_slowph += nphot_slow;
 
     // ParPropTimeTF1 = fPVS->GetTimingTF1(pos);
-    geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
     for (size_t channel = 0; channel < nOpChannels; channel++) {
+      if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
       sim::OpDetBacktrackerRecord tmpbtr(channel);
 
       if (nphot_fast > 0) {
@@ -859,6 +879,23 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
   }
 
   return hits_vis;
+}
+
+bool PDFastSimPAR::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
+                                    geo::Point_t const& OpDetPoint) const {
+  // check optical channel is in same TPC as scintillation light, if not return 0 hits
+  // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
+  // check x coordinate has same sign or is close to zero, otherwise return 0 hits
+  if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
+      std::abs(OpDetPoint.X()) > 10.) { // TODO: unhardcode
+    return false;
+    }
+  return true;
+}
+
+bool PDFastSimPAR::isScintInActiveVolume(geo::Point_t const& ScintPoint) {
+  //semi-analytic approach only works in the active volume
+  return fActiveVolumes[0].ContainsPosition(ScintPoint);
 }
 
 //......................................................................
@@ -1368,6 +1405,28 @@ double PDFastSimPAR::Rectangle_SolidAngle(Dims const &o,
   // std::cout << "Warning: invalid solid angle call." << std::endl;
   return 0.;
 }
+
+// ---------------------------------------------------------------------------
+std::vector<geo::BoxBoundedGeo> PDFastSimPAR::extractActiveVolumes(geo::GeometryCore const& geom){
+  std::vector<geo::BoxBoundedGeo> activeVolumes;
+  activeVolumes.reserve(geom.Ncryostats());
+
+  for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+
+    // can't use it default-constructed since it would always include origin
+    geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
+
+    for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
+      box.ExtendToInclude(TPC.ActiveBoundingBox());
+
+    activeVolumes.push_back(std::move(box));
+
+  } // for cryostats
+
+  return activeVolumes;
+} // OpFastScintillation::extractActiveVolumes()
+
+  // ---------------------------------------------------------------------------
 
 } // namespace phot
 
