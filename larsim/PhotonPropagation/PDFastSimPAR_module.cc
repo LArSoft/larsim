@@ -102,9 +102,6 @@ typedef boost::math::policies::policy<
     boost::math::policies::promote_double<false>>
     noLDoublePromote;
 
-
-using namespace std;
-
 namespace {
 //......................................................................
 double finter_d(double *x, double *par) {
