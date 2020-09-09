@@ -107,6 +107,8 @@ namespace larg4 {
 
     fStep = step;
 
+    fISCalc->Reset();
+
     // check the material for this step and be sure it is LAr
     if (step->GetTrack()->GetMaterial()->GetName() != "LAr") return;
 
