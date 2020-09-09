@@ -43,6 +43,8 @@
 
 // LArSoft libraries
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/OpDetGeo.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -50,18 +52,12 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
-
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/OpDetGeo.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
 // Random number engine
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 //#include "CLHEP/Random/RandGauss.h"
-
-#include "TLorentzVector.h"
 
 #include "Geant4/G4DynamicParticle.hh"
 #include "Geant4/G4EmProcessSubType.hh"
@@ -84,10 +80,14 @@
 #include "cetlib_except/exception.h"
 
 #include "Math/SpecFuncMathMore.h"
+#include "TLorentzVector.h"
 #include "TMath.h"
 #include "TRandom3.h"
 #include "TVector3.h"
+
+#include <chrono>
 #include <cmath>
+#include <ctime>
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
@@ -98,8 +98,6 @@ typedef boost::math::policies::policy<
     boost::math::policies::promote_double<false>>
     noLDoublePromote;
 
-#include <chrono>
-#include <ctime>
 
 using namespace std;
 
