@@ -43,8 +43,12 @@
 
 // LArSoft libraries
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h" // geo::vect::fillCoords()
+#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -302,16 +306,23 @@ private:
   void detectedReflecHits(std::map<size_t, int> &ReflDetectedNum,
                           const double Num,
                           const std::array<double, 3> ScintPoint);
+  // structure definition for solid angle of rectangle function
+  struct Dims {
+    double h, w; // height, width
+  };
 
-  int VUVHits(const double Nphotons_created,
-              const std::array<double, 3> ScintPoint,
-              const std::array<double, 3> OpDetPoint,
-              const int optical_detector_type);
+  struct OpticalDetector {
+    double h; // height
+    double w; // width
+    geo::Point_t OpDetPoint;
+    int type;
+  };
 
-  int VISHits(const double Nphotons_created,
-              const std::array<double, 3> ScintPoint,
-              const std::array<double, 3> OpDetPoint,
-              const int optical_detector_type, const double cathode_hits_rec,
+  int VUVHits(const double Nphotons_created, geo::Point_t const &ScintPoint,
+              OpticalDetector const &opDet);
+
+  int VISHits(geo::Point_t const &ScintPoint, OpticalDetector const &opDet,
+              const double cathode_hits_rec,
               const std::array<double, 3> hotspot);
 
   void propagationTime(std::vector<double> &arrival_time_dist, G4ThreeVector x0,
@@ -328,13 +339,9 @@ private:
                     const std::vector<double> &yData3, double x,
                     bool extrapolate);
 
-  // structure definition for solid angle of rectangle function
-  struct dims {
-    double w, h; // w = width; h = height
-  };
   // solid angle of rectangular aperture calculation functions
   double Rectangle_SolidAngle(const double a, const double b, const double d);
-  double Rectangle_SolidAngle(const dims o, const std::array<double, 3> v);
+  double Rectangle_SolidAngle(Dims const &o, const std::array<double, 3> v);
   // solid angle of circular aperture calculation functions
   double Disk_SolidAngle(const double d, const double h, const double b);
 
@@ -384,10 +391,10 @@ private:
 
   // Optical detector properties for semi-analytic hits
   double fradius;
-  dims detPoint, cathode_plane;
+  Dims fcathode_plane;
   int fdelta_angle;
   int fL_abs_vuv;
-  std::vector<std::array<double, 3>> fOpDetCenter;
+  std::vector<geo::Point_t> fOpDetCenter;
   std::vector<int> fOpDetType;
   std::vector<double> fOpDetLength;
   std::vector<double> fOpDetHeight;
@@ -468,17 +475,15 @@ void PDFastSimPAR::produce(art::Event &event) {
     num_slowph += nphot_slow;
 
     // ParPropTimeTF1 = pvs->GetTimingTF1(pos);
-    const std::array<double, 3> ScintPoint = {pos[0], pos[1], pos[2]};
+    geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
     for (size_t channel = 0; channel < nOpChannels; channel++) {
       sim::OpDetBacktrackerRecord tmpbtr(channel);
 
-      // set detector struct for solid angle function
-      detPoint.h = fOpDetHeight.at(channel);
-      detPoint.w = fOpDetLength.at(channel);
-
       if (nphot_fast > 0) {
-        auto n = VUVHits(nphot_slow, ScintPoint, fOpDetCenter.at(channel),
-                         fOpDetType.at(channel));
+        const PDFastSimPAR::OpticalDetector op{
+            fOpDetHeight.at(channel), fOpDetLength.at(channel),
+            fOpDetCenter.at(channel), fOpDetType.at(channel)};
+        auto n = VUVHits(nphot_fast, ScintPoint, op);
         num_fastdp += n;
         for (long i = 0; i < n; ++i) {
           // calculates the time at which the photon was produced
@@ -491,8 +496,10 @@ void PDFastSimPAR::produce(art::Event &event) {
       }
 
       if ((nphot_slow > 0) && fDoSlowComponent) {
-        auto n = VUVHits(nphot_slow, ScintPoint, fOpDetCenter.at(channel),
-                         fOpDetType.at(channel));
+        const PDFastSimPAR::OpticalDetector op{
+            fOpDetHeight.at(channel), fOpDetLength.at(channel),
+            fOpDetCenter.at(channel), fOpDetType.at(channel)};
+        auto n = VUVHits(nphot_slow, ScintPoint, op);
         num_slowdp += n;
         for (long i = 0; i < n; ++i) {
           fScintTime->GenScintTime(false, fScintTimeEngine);
@@ -586,32 +593,23 @@ void PDFastSimPAR::Initialization() {
   std::cout << "Cathode_centre: " << Cathode_centre.X() << ",  "
             << Cathode_centre.Y() << ",  " << Cathode_centre.Z() << std::endl;
 
-  for (size_t i = 0; i != pvs->NOpChannels(); i++) {
-    double OpDetCenter_i[3];
-    geo->OpDetGeoFromOpDet(i).GetCenter(OpDetCenter_i);
-    std::array<double, 3> OpDetCenter_a;
-    std::move(std::begin(OpDetCenter_i), std::end(OpDetCenter_i),
-              OpDetCenter_a.begin());
-    fOpDetCenter.push_back(OpDetCenter_a);
-
-    int type_i = -1;
-    if (strcmp(geo->OpDetGeoFromOpDet(i).Shape()->IsA()->GetName(),
-               "TGeoBBox") == 0) {
-      type_i = 0; // Arapucas
-      fOpDetLength.push_back(geo->OpDetGeoFromOpDet(i).Length());
-      fOpDetHeight.push_back(geo->OpDetGeoFromOpDet(i).Height());
+  for (size_t const i : util::counter(fPVS->NOpChannels())) {
+    geo::OpDetGeo const &opDet = geo->OpDetGeoFromOpDet(i);
+    fOpDetCenter.push_back(opDet.GetCenter());
+    if (opDet.isBar()) {
+      fOpDetType.push_back(0); // Arapucas
+      fOpDetLength.push_back(opDet.Length());
+      fOpDetHeight.push_back(opDet.Height());
     } else {
-      type_i = 1; // PMTs
-      //    std::cout<<"Radio: "<<geo->OpDetGeoFromOpDet(i).RMax()<<std::endl;
+      fOpDetType.push_back(1); // PMTs
+      //    std::cout<<"Radio: "<<geom.OpDetGeoFromOpDet(i).RMax()<<std::endl;
       fOpDetLength.push_back(-1);
       fOpDetHeight.push_back(-1);
     }
-    fOpDetType.push_back(type_i);
-
-    std::cout << "OpChannel: " << i << "  Optical_Detector_Type: " << type_i
-              << "  APERTURE_height: " << geo->OpDetGeoFromOpDet(i).Height()
-              << "  APERTURE_width: " << geo->OpDetGeoFromOpDet(i).Length()
-              << std::endl;
+    // std::cout << "OpChannel: " << i << "  Optical_Detector_Type: " << type_i
+    //           << "  APERTURE_height: " << geo->OpDetGeoFromOpDet(i).Height()
+    //           << "  APERTURE_width: " << geo->OpDetGeoFromOpDet(i).Length()
+    //           << std::endl;
   }
 
   if (pvs->IncludePropTime()) {
@@ -688,9 +686,15 @@ void PDFastSimPAR::Initialization() {
 //......................................................................
 // VUV semi-analytic hits calculation
 int PDFastSimPAR::VUVHits(const double Nphotons_created,
-                          const std::array<double, 3> ScintPoint,
-                          const std::array<double, 3> OpDetPoint,
-                          const int optical_detector_type) {
+                          geo::Point_t const &ScintPoint_v,
+                          OpticalDetector const &opDet) {
+  // the interface has been converted into geo::Point_t, the implementation not
+  // yet
+  std::array<double, 3U> ScintPoint;
+  std::array<double, 3U> OpDetPoint;
+  geo::vect::fillCoords(ScintPoint, ScintPoint_v);
+  geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
+
   // distance and angle between ScintPoint and OpDetPoint
   double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
   double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
@@ -700,17 +704,17 @@ int PDFastSimPAR::VUVHits(const double Nphotons_created,
   // calculate solid angle:
   double solid_angle = 0;
   // Arapucas
-  if (optical_detector_type == 0) {
+  if (opDet.type == 0) {
     // get scintillation point coordinates relative to arapuca window centre
     std::array<double, 3> ScintPoint_rel = {
         std::abs(ScintPoint[0] - OpDetPoint[0]),
         std::abs(ScintPoint[1] - OpDetPoint[1]),
         std::abs(ScintPoint[2] - OpDetPoint[2])};
     // calculate solid angle
-    solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
+    solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, ScintPoint_rel);
   }
   // PMTs
-  else if (optical_detector_type == 1) {
+  else if (opDet.type == 1) {
     // offset in z-y plane
     double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
     // drift distance (in x)
@@ -755,12 +759,11 @@ int PDFastSimPAR::VUVHits(const double Nphotons_created,
 
 //......................................................................
 // VIS hits semi-analytic model calculation
-int PDFastSimPAR::VISHits(const double Nphotons_created,
-                          const std::array<double, 3> ScintPoint,
-                          const std::array<double, 3> OpDetPoint,
-                          const int optical_detector_type,
+int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
+                          OpticalDetector const &opDet,
                           const double cathode_hits_rec,
                           const std::array<double, 3> hotspot) {
+
   // 1). calculate total number of hits of VUV photons on reflective
   // foils via solid angle + Gaisser-Hillas corrections.
   // Done outside as it doesn't depend on OpDetPoint
@@ -768,20 +771,28 @@ int PDFastSimPAR::VISHits(const double Nphotons_created,
   // 2). calculate number of these hits which reach the optical
   // detector from the hotspot via solid angle
 
+  // the interface has been converted into geo::Point_t, the implementation not
+  // yet
+  std::array<double, 3U> ScintPoint;
+  std::array<double, 3U> OpDetPoint;
+  geo::vect::fillCoords(ScintPoint, ScintPoint_v);
+  geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
+
   // calculate solid angle of optical channel
   double solid_angle_detector = 0;
   // rectangular aperture
-  if (optical_detector_type == 0) {
-    // get hotspot coordinates relative to detpoint
+  if (opDet.type == 0) {
+    // get hotspot coordinates relative to opDet
     std::array<double, 3> emission_relative = {
         std::abs(hotspot[0] - OpDetPoint[0]),
         std::abs(hotspot[1] - OpDetPoint[1]),
         std::abs(hotspot[2] - OpDetPoint[2])};
     // calculate solid angle
-    solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
+    solid_angle_detector =
+        Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, emission_relative);
   }
   // disk aperture
-  else if (optical_detector_type == 1) {
+  else if (opDet.type == 1) {
     // offset in z-y plane
     double d = dist(&hotspot[1], &OpDetPoint[1], 2);
     // drift distance (in x)
@@ -889,20 +900,19 @@ void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
     }
   } else if (pvs->IncludePropTime()) {
     // Get VUV photons arrival time distribution from the parametrization
-    const G4ThreeVector OpDetPoint(fOpDetCenter.at(OpChannel)[0] * CLHEP::cm,
-                                   fOpDetCenter.at(OpChannel)[1] * CLHEP::cm,
-                                   fOpDetCenter.at(OpChannel)[2] * CLHEP::cm);
+    geo::Point_t const &opDetCenter = fOpDetCenter.at(OpChannel);
     if (!Reflected) {
+      const G4ThreeVector OpDetPoint(opDetCenter.X() * CLHEP::cm,
+                                     opDetCenter.Y() * CLHEP::cm,
+                                     opDetCenter.Z() * CLHEP::cm);
       double distance_in_cm =
           (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
       getVUVTimes(arrival_time_dist, distance_in_cm); // in ns
     } else {
-      TVector3 ScintPoint(x0[0] / CLHEP::cm, x0[1] / CLHEP::cm,
-                          x0[2] / CLHEP::cm); // in cm
-      TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0],
-                              fOpDetCenter.at(OpChannel)[1],
-                              fOpDetCenter.at(OpChannel)[2]);     // in cm
-      getVISTimes(arrival_time_dist, ScintPoint, OpDetPoint_tv3); // in ns
+      TVector3 const ScintPoint(x0[0] / CLHEP::cm, x0[1] / CLHEP::cm,
+                                x0[2] / CLHEP::cm); // in cm
+      getVISTimes(arrival_time_dist, ScintPoint,
+                  geo::vect::toTVector3(opDetCenter)); // in ns
     }
   }
 }
@@ -1376,7 +1386,7 @@ double PDFastSimPAR::Rectangle_SolidAngle(const double a, const double b,
   return 4. * fast_acos(std::sqrt(aux));
 }
 
-double PDFastSimPAR::Rectangle_SolidAngle(const dims o,
+double PDFastSimPAR::Rectangle_SolidAngle(Dims const &o,
                                           const std::array<double, 3> v) {
   // v is the position of the track segment with respect to
   // the center position of the arapuca window
