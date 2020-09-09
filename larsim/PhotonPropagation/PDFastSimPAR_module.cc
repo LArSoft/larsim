@@ -278,15 +278,6 @@ public:
 
   void Initialization();
 
-  // int VUVHits(int Nphotons_created, TVector3 ScintPoint, TVector3 OpDetPoint,
-  // int optical_detector_type); int VISHits(int Nphotons_created, TVector3
-  // ScintPoint, TVector3 OpDetPoint, int optical_detector_type);
-
-  // std::vector<double> propagationtime(G4ThreeVector x0, int OpChannel, int
-  // NPhotons, bool Reflected); std::vector<double> getVUVTime(double distance,
-  // int number_photons); std::vector<double> getVISTime(TVector3 ScintPoint,
-  // TVector3 OpDetPoint, int number_photons);
-
   void getVUVTimes(std::vector<double> &arrivalTimes, double distance_in_cm);
   void getVISTimes(std::vector<double> &arrivalTimes, TVector3 ScintPoint,
                    TVector3 OpDetPoint);
@@ -298,11 +289,6 @@ public:
                    sim::OpDetBacktrackerRecord btr);
 
 private:
-  void detectedDirectHits(std::map<size_t, int> &DetectedNum, const double Num,
-                          const std::array<double, 3> ScintPoint);
-  void detectedReflecHits(std::map<size_t, int> &ReflDetectedNum,
-                          const double Num,
-                          const std::array<double, 3> ScintPoint);
   // structure definition for solid angle of rectangle function
   struct Dims {
     double h, w; // height, width
@@ -915,67 +901,6 @@ void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
     }
   }
 }
-
-// std::vector<double> PDFastSimPAR::propagationtime(G4ThreeVector x0, int
-// OpChannel, int NPhotons, bool Reflected)
-// {
-
-//   static art::ServiceHandle<phot::PhotonVisibilityService const> pvs;
-
-//   // Initialize vector of the right length with all 0's
-//   std::vector<double> arrival_time_dist(NPhotons, 0);
-
-//   if (pvs->IncludeParPropTime() && pvs->IncludePropTime())
-//   {
-//     throw cet::exception("OpFastScintillation") << "Cannot have both
-//     propagation time models simultaneously.";
-//   }
-//   else if (pvs->IncludeParPropTime() && !(ParPropTimeTF1  &&
-//   (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
-//   {
-//     //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or
-//     it is the default one.
-//     //This will fix a segfault when using timing and interpolation.
-//     G4cout << "WARNING: Requested parameterized timing, but no function
-//     found. Not applying propagation time." << G4endl;
-//   }
-//   else if (pvs->IncludeParPropTime())
-//   {
-//     if (Reflected)
-//     {
-//       throw cet::exception("OpFastScintillation") << "No parameterized
-//       propagation time for reflected light";
-//     }
-
-//     for (int i = 0; i < NPhotons; i++)
-//     {
-//       arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
-//     }
-//   }
-//   else if (pvs->IncludePropTime())
-//   {
-//     // Get VUV photons arrival time distribution from the parametrization
-//     G4ThreeVector
-//     OpDetPoint(fOpDetCenter.at(OpChannel)[0]*CLHEP::cm,fOpDetCenter.at(OpChannel)[1]*CLHEP::cm,fOpDetCenter.at(OpChannel)[2]*CLHEP::cm);
-
-//     if (!Reflected)
-//     {
-//       double distance_in_cm = (x0 - OpDetPoint).mag()/CLHEP::cm; // this must
-//       be in CENTIMETERS! arrival_time_dist     = getVUVTime(distance_in_cm,
-//       NPhotons); // in ns
-//     }
-//     else
-//     {
-//       TVector3 ScintPoint( x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm
-//       ); // in cm TVector3 OpDetPoint_tv3(fOpDetCenter.at(OpChannel)[0],
-//       fOpDetCenter.at(OpChannel)[1], fOpDetCenter.at(OpChannel)[2]); // in cm
-//       arrival_time_dist = getVISTime(ScintPoint, OpDetPoint_tv3, NPhotons);
-//       // in ns
-//     }
-//   }
-
-//   return arrival_time_dist;
-// }
 
 //......................................................................
 // VUV arrival times calculation function
