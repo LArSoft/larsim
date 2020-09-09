@@ -58,7 +58,7 @@
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
-// Random number engine
+// Random numbers
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 //#include "CLHEP/Random/RandGauss.h"
@@ -86,7 +86,6 @@
 #include "Math/SpecFuncMathMore.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
-#include "TRandom3.h"
 #include "TVector3.h"
 
 #include <chrono>
@@ -332,8 +331,10 @@ private:
   art::InputTag simTag;
   std::unique_ptr<ScintTime>
       fScintTime; // Tool to retrive timinig of scintillation
-  CLHEP::HepRandomEngine &fPhotonEngine;
-  CLHEP::HepRandomEngine &fScintTimeEngine;
+  CLHEP::HepRandomEngine& fPhotonEngine;
+  std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
+  CLHEP::HepRandomEngine& fScintTimeEngine;
+
   std::map<int, int> PDChannelToSOCMap; // Where each OpChan is.
 
   // For new VUV time parametrization
@@ -415,9 +416,6 @@ void PDFastSimPAR::produce(art::Event &event) {
   // unused auto const* larp =
   // lar::providerFrom<detinfo::LArPropertiesService>();
   auto const nOpChannels = fPVS->NOpChannels();
-
-  CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
-  CLHEP::RandFlat randflatscinttime{fScintTimeEngine};
 
   std::unique_ptr<std::vector<sim::OpDetBacktrackerRecord>> opbtr(
       new std::vector<sim::OpDetBacktrackerRecord>);
@@ -543,6 +541,8 @@ void PDFastSimPAR::Initialization() {
   std::cout << "Initializing the geometry of the detector." << std::endl;
   std::cout << "Simulate using semi-analytic model for number of hits."
             << std::endl;
+
+  fRandPoissPhot = std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine);
 
   static art::ServiceHandle<geo::Geometry const> geo;
 
@@ -736,7 +736,7 @@ int PDFastSimPAR::VUVHits(const double Nphotons_created,
           fborder_corr[1] * (distance_to_corner - fReference_to_corner),
       fGHvuvpars[2][j], fGHvuvpars[3][j]};
   double GH_correction = Gaisser_Hillas(distance, pars_ini_);
-  double hits_rec = gRandom->Poisson(GH_correction * hits_geo / cosine);
+  double hits_rec = fRandPoissPhot->fire(GH_correction * hits_geo / cosine);
   // round to integer value, cannot have non-integer number of hits
   int hits_vuv = std::round(hits_rec);
 
@@ -811,7 +811,7 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
   double pars_ini_vis[6] = {fvispars[0][k], fvispars[1][k], fvispars[2][k],
                             fvispars[3][k], fvispars[4][k], fvispars[5][k]};
   double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
-  double hits_rec = gRandom->Poisson(geo_correction * hits_geo / cosine_vis);
+  double hits_rec = fRandPoissPhot->fire(geo_correction * hits_geo / cosine_vis);
 
   // apply border correction
   int hits_vis = 0;
@@ -1043,7 +1043,7 @@ void PDFastSimPAR::getVISTimes(std::vector<double> &arrivalTimes,
           break;
         } else {
           // generate random number in appropriate range
-          double x = gRandom->Uniform(0.5, 1.0); // TODO: unhardcode
+          double x = CLHEP::RandFlat::shoot(&fScintTimeEngine, 0.5, 1.0);
           // apply the exponential smearing
           arrival_time_smeared =
               arrivalTimes[i] +
