@@ -285,7 +285,7 @@ public:
   void generateParam(const size_t index);
 
   void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord> &opbtr,
-                   std::map<int, int> &ChannelMap,
+                   std::map<size_t, int> &ChannelMap,
                    sim::OpDetBacktrackerRecord btr);
 
 private:
@@ -336,7 +336,7 @@ private:
   std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
   CLHEP::HepRandomEngine& fScintTimeEngine;
 
-  std::map<int, int> PDChannelToSOCMap; // Where each OpChan is.
+  std::map<size_t, int> PDChannelToSOCMap; // Where each OpChan is.
 
   // For new VUV time parametrization
   double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max,
@@ -473,8 +473,8 @@ void PDFastSimPAR::produce(art::Event &event) {
     double nphot_fast = edepi.NumFPhotons();
     double nphot_slow = edepi.NumSPhotons();
 
-    num_fastph += nphot_fast;
-    num_slowph += nphot_slow;
+    num_fastph += nphot_fast;// TODO: warning: conversion from double to int
+    num_slowph += nphot_slow;// TODO: warning: conversion from double to int
 
     // ParPropTimeTF1 = fPVS->GetTimingTF1(pos);
     for (size_t channel = 0; channel < nOpChannels; channel++) {
@@ -531,10 +531,10 @@ void PDFastSimPAR::produce(art::Event &event) {
 
 //......................................................................
 void PDFastSimPAR::AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord> &opbtr,
-                               std::map<int, int> &ChannelMap,
+                               std::map<size_t, int> &ChannelMap,
                                sim::OpDetBacktrackerRecord btr) {
-  int iChan = btr.OpDetNum();
-  std::map<int, int>::iterator channelPosition = ChannelMap.find(iChan);
+  size_t iChan = btr.OpDetNum();
+  auto channelPosition = ChannelMap.find(iChan);
 
   if (channelPosition == ChannelMap.end()) {
     ChannelMap[iChan] = opbtr.size();
@@ -607,6 +607,7 @@ void PDFastSimPAR::Initialization() {
     // default TF1() constructor gives function with 0 dimensions,
     // can then check numDim to qucikly see if a parameterisation
     // has been generated
+    // TODO: warning: conversion from double to int
     int num_params = (fmax_d - 25) /
                      fstep_size; // for d < 25cm, no parameterisaton, a delta
                                  // function is used instead // TODO: unhardcode
@@ -714,7 +715,7 @@ int PDFastSimPAR::VUVHits(const double Nphotons_created,
 
   // apply Gaisser-Hillas correction for Rayleigh scattering distance
   // and angular dependence offset angle bin
-  const size_t j = (theta / fdelta_angle);
+  const size_t j = (theta / fdelta_angle);// TODO: warning: conversion from double to int
 
   // Accounting for border effects
   double z_to_corner =
@@ -730,9 +731,7 @@ int PDFastSimPAR::VUVHits(const double Nphotons_created,
           fborder_corr[1] * (distance_to_corner - fReference_to_corner),
       fGHvuvpars[2][j], fGHvuvpars[3][j]};
   double GH_correction = Gaisser_Hillas(distance, pars_ini_);
-  double hits_rec = fRandPoissPhot->fire(GH_correction * hits_geo / cosine);
-  // round to integer value, cannot have non-integer number of hits
-  int hits_vuv = std::round(hits_rec);
+  int hits_vuv = fRandPoissPhot->fire(GH_correction * hits_geo / cosine);
 
   return hits_vuv;
 }
@@ -801,13 +800,13 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
   double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
   // double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
   double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
-  const size_t k = (theta_vis / fdelta_angle);
+  const size_t k = (theta_vis / fdelta_angle);// TODO: warning: conversion from double to int
 
   // apply geometric correction
   double pars_ini_vis[6] = {fvispars[0][k], fvispars[1][k], fvispars[2][k],
                             fvispars[3][k], fvispars[4][k], fvispars[5][k]};
   double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
-  double hits_rec = fRandPoissPhot->fire(geo_correction * hits_geo / cosine_vis);
+  int hits_rec = fRandPoissPhot->fire(geo_correction * hits_geo / cosine_vis);
 
   // apply border correction
   int hits_vis = 0;
@@ -851,7 +850,7 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
     hits_vis = std::round(hits_rec_borders);
   } else {
     // round final result
-    hits_vis = std::round(hits_rec);
+    hits_vis = hits_rec;
   }
 
   return hits_vis;
@@ -1021,7 +1020,7 @@ void PDFastSimPAR::getVISTimes(std::vector<double> &arrivalTimes,
   //     times caused by exponential distance to cathode
   double distance_cathode_plane = std::abs(plane_depth - ScintPoint[0]);
   // angular bin
-  size_t alpha_bin = alpha / 10; // TODO: unhardcode
+  size_t alpha_bin = alpha / 10; // TODO: unhardcode // TODO: warning: conversion from double to int
   if (alpha_bin >= ftau_pars.size()) {
     alpha_bin =
         ftau_pars.size() - 1; // default to the largest available bin if alpha
