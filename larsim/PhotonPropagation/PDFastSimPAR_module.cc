@@ -566,7 +566,7 @@ void PDFastSimPAR::Initialization() {
 
   {
     auto log = mf::LogTrace("PDFastSimPAR")
-      << "OpFastScintillation: active volume boundaries from "
+      << "PDFastSimPAR: active volume boundaries from "
       << fActiveVolumes.size() << " volumes:";
     for (auto const& [ iCryo, box ]: util::enumerate(fActiveVolumes)) {
       log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
@@ -878,7 +878,7 @@ void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
                                    G4ThreeVector x0, const size_t OpChannel,
                                    bool Reflected) {
   if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
-    throw cet::exception("OpFastScintillation")
+    throw cet::exception("PDFastSimPAR")
         << "Cannot have both propagation time models simultaneously.";
   } else if (fPVS->IncludeParPropTime() &&
              !(ParPropTimeTF1 && (ParPropTimeTF1[OpChannel].GetNdim() == 1))) {
@@ -890,7 +890,7 @@ void PDFastSimPAR::propagationTime(std::vector<double> &arrival_time_dist,
            << G4endl;
   } else if (fPVS->IncludeParPropTime()) {
     if (Reflected)
-      throw cet::exception("OpFastScintillation")
+      throw cet::exception("PDFastSimPAR")
           << "No parameterized propagation time for reflected light";
     for (size_t i = 0; i < arrival_time_dist.size(); ++i) {
       arrival_time_dist[i] = ParPropTimeTF1[OpChannel].GetRandom();
@@ -1260,7 +1260,7 @@ double PDFastSimPAR::Disk_SolidAngle(const double d, const double h,
               boost::math::ellint_1(bb, noLDoublePromote()));
     } catch (std::domain_error &e) {
       if (isApproximatelyEqual(d, b, 1e-9)) {
-        mf::LogWarning("OpFastScintillation")
+        mf::LogWarning("PDFastSimPAR")
             << "Elliptic Integral in Disk_SolidAngle() given parameters "
                "outside domain."
             << "\nbb: " << bb << "\ncc: " << cc
@@ -1269,7 +1269,7 @@ double PDFastSimPAR::Disk_SolidAngle(const double d, const double h,
         return CLHEP::pi -
                2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
       } else {
-        mf::LogError("OpFastScintillation")
+        mf::LogError("PDFastSimPAR")
             << "Elliptic Integral inside Disk_SolidAngle() given parameters "
                "outside domain.\n"
             << "\nbb: " << bb << "\ncc: " << cc
@@ -1287,7 +1287,7 @@ double PDFastSimPAR::Disk_SolidAngle(const double d, const double h,
                       boost::math::ellint_3(bb, cc, noLDoublePromote()));
     } catch (std::domain_error &e) {
       if (isApproximatelyEqual(d, b, 1e-9)) {
-        mf::LogWarning("OpFastScintillation")
+        mf::LogWarning("PDFastSimPAR")
             << "Elliptic Integral in Disk_SolidAngle() given parameters "
                "outside domain."
             << "\nbb: " << bb << "\ncc: " << cc
@@ -1296,7 +1296,7 @@ double PDFastSimPAR::Disk_SolidAngle(const double d, const double h,
         return CLHEP::pi -
                2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
       } else {
-        mf::LogError("OpFastScintillation")
+        mf::LogError("PDFastSimPAR")
             << "Elliptic Integral inside Disk_SolidAngle() given parameters "
                "outside domain.\n"
             << "\nbb: " << bb << "\ncc: " << cc
@@ -1399,7 +1399,7 @@ std::vector<geo::BoxBoundedGeo> PDFastSimPAR::extractActiveVolumes(geo::Geometry
   } // for cryostats
 
   return activeVolumes;
-} // OpFastScintillation::extractActiveVolumes()
+} // PDFastSimPAR::extractActiveVolumes()
 
   // ---------------------------------------------------------------------------
 
