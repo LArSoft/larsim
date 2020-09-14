@@ -88,6 +88,7 @@
 #include "TMath.h"
 #include "TVector3.h"
 
+#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <ctime>
@@ -359,8 +360,8 @@ private:
   std::vector<std::vector<double>> fGHvuvpars;
   // To account for the border effects
   std::vector<double> fborder_corr;
-  double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode,
-      fZcathode;
+  double fYactive_corner, fZactive_corner, fReference_to_corner;
+
   double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
   std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
   // array of corrections for VIS Nhits estimation
@@ -372,7 +373,7 @@ private:
   std::string fVisBorderCorrectionType;
 
   double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-  TVector3 fcathode_centre;
+  geo::Point_t fCathode_centre;
 
   // Optical detector properties for semi-analytic hits
   double fradius;
@@ -389,8 +390,6 @@ private:
 
   MappedFunctions_t ParPropTimeTF1;
 
-  /// Whether the semi-analytic model is being used for photon visibility.
-  bool const fUseNhitsModel = false;
   /// Whether photon propagation is performed only from active volumes
   bool const fOnlyActiveVolume = false;
   /// Allows running even if light on cryostats `C:1` and higher is not supported.
@@ -453,7 +452,6 @@ void PDFastSimPAR::produce(art::Event &event) {
     return;
   }
 
-  art::ServiceHandle<geo::Geometry> geom;
   auto const &edeps = edepHandle;
 
   int num_points = 0;
@@ -562,44 +560,24 @@ void PDFastSimPAR::Initialization() {
   std::cout << "Simulate using semi-analytic model for number of hits."
             << std::endl;
 
+  assert(fPVS);
   fRandPoissPhot = std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine);
+  geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
-  static art::ServiceHandle<geo::Geometry const> geo;
+  {
+    auto log = mf::LogTrace("PDFastSimPAR")
+      << "OpFastScintillation: active volume boundaries from "
+      << fActiveVolumes.size() << " volumes:";
+    for (auto const& [ iCryo, box ]: util::enumerate(fActiveVolumes)) {
+      log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+    }
+  } // local scope
 
-  // Find boundary of active volume
-  fminx = 1e9;
-  fmaxx = -1e9;
-  fminy = 1e9;
-  fmaxy = -1e9;
-  fminz = 1e9;
-  fmaxz = -1e9;
-  for (size_t i = 0; i < geo->NTPC(); ++i) {
-    const geo::TPCGeo &tpc = geo->TPC(i);
-    if (fminx > tpc.MinX())
-      fminx = tpc.MinX();
-    if (fmaxx < tpc.MaxX())
-      fmaxx = tpc.MaxX();
-    if (fminy > tpc.MinY())
-      fminy = tpc.MinY();
-    if (fmaxy < tpc.MaxY())
-      fmaxy = tpc.MaxY();
-    if (fminz > tpc.MinZ())
-      fminz = tpc.MinZ();
-    if (fmaxz < tpc.MaxZ())
-      fmaxz = tpc.MaxZ();
-  }
-  std::cout << "Active volume boundaries:" << std::endl;
-  std::cout << "minx: " << fminx << "  maxx: " << fmaxx << std::endl;
-  std::cout << "miny: " << fminy << "  maxy: " << fmaxy << std::endl;
-  std::cout << "minz: " << fminz << "  maxz: " << fmaxz << std::endl;
-
-  TVector3 Cathode_centre(geo->TPC(0, 0).GetCathodeCenter().X(),
-                          (fminy + fmaxy) / 2., (fminz + fmaxz) / 2.);
-  std::cout << "Cathode_centre: " << Cathode_centre.X() << ",  "
-            << Cathode_centre.Y() << ",  " << Cathode_centre.Z() << std::endl;
+  fCathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(), fActiveVolumes[0].CenterY(), fActiveVolumes[0].CenterZ()};
+  mf::LogTrace("PDFastSimPAR") << "fCathode_centre: " << fCathode_centre << " cm";
 
   for (size_t const i : util::counter(fPVS->NOpChannels())) {
-    geo::OpDetGeo const &opDet = geo->OpDetGeoFromOpDet(i);
+    geo::OpDetGeo const &opDet = geom.OpDetGeoFromOpDet(i);
     fOpDetCenter.push_back(opDet.GetCenter());
     if (opDet.isBar()) {
       fOpDetType.push_back(0); // Arapucas
@@ -612,8 +590,8 @@ void PDFastSimPAR::Initialization() {
       fOpDetHeight.push_back(-1);
     }
     // std::cout << "OpChannel: " << i << "  Optical_Detector_Type: " << type_i
-    //           << "  APERTURE_height: " << geo->OpDetGeoFromOpDet(i).Height()
-    //           << "  APERTURE_width: " << geo->OpDetGeoFromOpDet(i).Length()
+    //           << "  APERTURE_height: " << opDet.Height()
+    //           << "  APERTURE_width: "  << opDet.Length()
     //           << std::endl;
   }
 
@@ -663,8 +641,6 @@ void PDFastSimPAR::Initialization() {
   fL_abs_vuv = std::round(interpolate(
       x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
 
-  std::cout << "UseNhitsModel: " << fPVS->UseNhitsModel() << std::endl;
-
   // Load Gaisser-Hillas corrections for VUV semi-analytic hits
   std::cout << "Loading the GH corrections" << std::endl;
   fPVS->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
@@ -675,15 +651,13 @@ void PDFastSimPAR::Initialization() {
   fYactive_corner = (fmaxy - fminy) / 2.;
   fZactive_corner = (fmaxz - fminz) / 2.;
 
-  fYcathode = Cathode_centre.Y();
-  fZcathode = Cathode_centre.Z();
   fReference_to_corner = std::sqrt(fYactive_corner * fYactive_corner +
                                    fZactive_corner * fZactive_corner);
 
   std::cout << "For border corrections: " << fborder_corr[0] << "  "
             << fborder_corr[1] << std::endl;
-  std::cout << "Photocathode-plane centre (z,y) = (" << fZcathode << ", "
-            << fYcathode << ") "
+  std::cout << "Photocathode-plane centre (z,y) = (" << fCathode_centre.Z() << ", "
+            << fCathode_centre.Y() << ") "
             << "and corner (z, y) = (" << fZactive_corner << ", "
             << fYactive_corner << ")" << std::endl;
   std::cout << "Reference_to_corner: " << fReference_to_corner << std::endl;
@@ -781,8 +755,10 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
   // yet
   std::array<double, 3U> ScintPoint;
   std::array<double, 3U> OpDetPoint;
+  std::array<double, 3U> cathode_centre;
   geo::vect::fillCoords(ScintPoint, ScintPoint_v);
   geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
+  geo::vect::fillCoords(cathode_centre, fCathode_centre);
 
   // calculate solid angle of optical channel
   double solid_angle_detector = 0;
@@ -839,7 +815,7 @@ int PDFastSimPAR::VISHits(geo::Point_t const &ScintPoint_v,
     // calculate distance for interpolation depending on model
     double r = 0;
     if (fVisBorderCorrectionType == "Radial") {
-      r = dist(&ScintPoint[1], &fcathode_centre[1], 2);
+      r = dist(&ScintPoint[1], &cathode_centre[1], 2);
     } else if (fVisBorderCorrectionType == "Vertical") {
       r = std::abs(ScintPoint[1]);
     } else {
