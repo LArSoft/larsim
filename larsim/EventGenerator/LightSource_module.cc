@@ -173,6 +173,11 @@ namespace evgen {
     /// Throws an exception if any of the configured materials is not present.
     void checkMaterials() const;
 
+
+    /// Reads from `fInputFile` all other parameters in one line.
+    /// @return whether all reading were successful (`ifstream::good()`).
+    bool readParametersFromInputFile();
+
     // for c2: fSeed is unused
     //int               fSeed;              //random number seed
     std::string fVersion; //version of the configuration
@@ -379,39 +384,36 @@ namespace evgen {
   void
   LightSource::produce(art::Event& evt)
   {
-    if (fSourceMode == kFILE) {
+    if(fSourceMode==kFILE) {
       //  Each event, read coordinates of gun and number of photons to shoot from file
-      // Loop file if required
-      if (fInputFile.eof()) {
+
+      // read in one line
+      if(!readParametersFromInputFile()){
+        // Loop file if required
         mf::LogWarning("LightSource") << "EVGEN Light Source : Warning, reached end of file,"
                                       << " looping back to beginning";
-        fInputFile.seekg(0, std::ios::beg);
         fInputFile.clear();
-      }
-
-      if (!fInputFile.is_open() || fInputFile.fail()) {
-        throw cet::exception("LightSource")
-          << "EVGEN Light Source : File error in " << fFileName << "\n";
-      }
-      else {
-        // read in one line
-        double x, y, z;
-        fInputFile >> x >> y >> z >> fT >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT >> fP >>
-          fSigmaP >> fN;
+        fInputFile.seekg(0, std::ios::beg);
         fInputFile.getline(fDummyString, 256);
-        fCenter = {x, y, z};
-        fThePhotonVoxelDef = sim::PhotonVoxelDef(fCenter.X() - fSigmaX,
-                                                 fCenter.X() + fSigmaX,
-                                                 1,
-                                                 fCenter.Y() - fSigmaY,
-                                                 fCenter.Y() + fSigmaY,
-                                                 1,
-                                                 fCenter.Z() - fSigmaZ,
-                                                 fCenter.Z() + fSigmaZ,
-                                                 1);
 
-        fCurrentVoxel = 0;
+        if(!readParametersFromInputFile()) {
+          throw cet::exception("LightSource") << "EVGEN Light Source : File error in "
+                                              << fFileName << "\n";
+        }
+
       }
+
+      fThePhotonVoxelDef = sim::PhotonVoxelDef(fCenter.X() - fSigmaX,
+                                               fCenter.X() + fSigmaX,
+                                               1,
+                                               fCenter.Y() - fSigmaY,
+                                               fCenter.Y() + fSigmaY,
+                                               1,
+                                               fCenter.Z() - fSigmaZ,
+                                               fCenter.Z() + fSigmaZ,
+                                               1);
+
+      fCurrentVoxel=0;
     }
     else if (fSourceMode == kSCAN) {
       //  Step through detector using a number of steps provided in the config file
@@ -611,6 +613,22 @@ namespace evgen {
                                 << (material ? material->GetName() : "not found");
     return material ? (fMaterials.count(material->GetName()) > 0) : false;
   } // LightSource::MaterialPointFilter::accept()
+
+
+  //----------------------------------------------------------------------------
+  bool LightSource::readParametersFromInputFile() {
+    double x, y, z;
+    fInputFile >> x >> y >> z >> fT
+      >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT
+      >> fP >> fSigmaP >> fN;
+    fCenter = { x, y, z };
+    if (!fInputFile.good()) return false;
+
+    std::string dummy;
+    std::getline(fInputFile, dummy); // this can fail for what I care
+    return true;
+  } // LightSource::readParametersFromInputFile()
+
 
   // ---------------------------------------------------------------------------
 

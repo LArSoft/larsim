@@ -360,8 +360,8 @@ namespace larg4 {
           fcathode_ydimension = fActiveVolumes[0].SizeY();
           fcathode_zdimension = fActiveVolumes[0].SizeZ();
           // set cathode plane struct for solid angle function
-          cathode_plane.h = fcathode_ydimension;
-          cathode_plane.w = fcathode_zdimension;
+          fcathode_plane.h = fcathode_ydimension;
+          fcathode_plane.w = fcathode_zdimension;
           fplane_depth = std::abs(fcathode_centre[0]);
         }
         else
@@ -369,14 +369,13 @@ namespace larg4 {
       }
     }
     tpbemission = lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const size_t nbins = tpbemission.size();
-    double* parent = new double[nbins];
-    size_t ii = 0;
+    std::vector<double> parent;
+    parent.reserve(tpbemission.size());
     for (auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
-      parent[ii++] = (*iter).second;
+      parent.push_back(iter->second);
     }
-    rgen0 = new CLHEP::RandGeneral(parent, nbins);
-    delete[] parent;
+    fTPBEm = std::make_unique<CLHEP::RandGeneral>
+      (parent.data(), parent.size());
   }
 
   ////////////////
@@ -1077,7 +1076,7 @@ namespace larg4 {
   double
   OpFastScintillation::reemission_energy() const
   {
-    return rgen0->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
+    return fTPBEm->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
            (*tpbemission.begin()).first;
   }
 
@@ -1493,12 +1492,11 @@ namespace larg4 {
     for (size_t const OpDet : util::counter(NOpChannels)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
-      fydimension = fOpDetHeight.at(OpDet);
-      fzdimension = fOpDetLength.at(OpDet);
       // set detector struct for solid angle function
-      detPoint.h = fydimension;
-      detPoint.w = fzdimension;
-      int const DetThis = VUVHits(Num, ScintPoint, fOpDetCenter[OpDet], fOpDetType[OpDet]);
+      const OpFastScintillation::OpticalDetector op{
+        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
+        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+      const int DetThis = VUVHits(Num, ScintPoint, op);
       if (DetThis > 0) {
         DetectedNum[OpDet] = DetThis;
         //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
@@ -1529,7 +1527,7 @@ namespace larg4 {
                                                  std::abs(ScintPoint.Y() - fcathode_centre[1]),
                                                  std::abs(ScintPoint.Z() - fcathode_centre[2])};
     // calculate solid angle of cathode from the scintillation point
-    double solid_angle_cathode = Rectangle_SolidAngle(cathode_plane, ScintPoint_relative);
+    double solid_angle_cathode = Rectangle_SolidAngle(fcathode_plane, ScintPoint_relative);
     // calculate distance and angle between ScintPoint and hotspot
     // vast majority of hits in hotspot region directly infront of scintpoint,
     // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
@@ -1550,8 +1548,13 @@ namespace larg4 {
     for (size_t const OpDet : util::counter(NOpChannels)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
+      // set detector struct for solid angle function
+      const  OpFastScintillation::OpticalDetector op{
+        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
+        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+
       int const ReflDetThis =
-        VISHits(ScintPoint, fOpDetCenter[OpDet], fOpDetType[OpDet], cathode_hits_rec, hotspot);
+        VISHits(ScintPoint, op, cathode_hits_rec, hotspot);
       if (ReflDetThis > 0) { ReflDetectedNum[OpDet] = ReflDetThis; }
     }
   }
@@ -1560,14 +1563,13 @@ namespace larg4 {
   int
   OpFastScintillation::VUVHits(const double Nphotons_created,
                                geo::Point_t const& ScintPoint_v,
-                               geo::Point_t const& OpDetPoint_v,
-                               const int optical_detector_type)
+                               OpticalDetector const& opDet)
   {
     // the interface has been converted into geo::Point_t, the implementation not yet
     std::array<double, 3U> ScintPoint;
     std::array<double, 3U> OpDetPoint;
     geo::vect::fillCoords(ScintPoint, ScintPoint_v);
-    geo::vect::fillCoords(OpDetPoint, OpDetPoint_v);
+    geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
 
     // distance and angle between ScintPoint and OpDetPoint
     double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
@@ -1578,16 +1580,16 @@ namespace larg4 {
     // calculate solid angle:
     double solid_angle = 0;
     // Arapucas
-    if (optical_detector_type == 0) {
+    if (opDet.type == 0) {
       // get scintillation point coordinates relative to arapuca window centre
       std::array<double, 3> ScintPoint_rel = {std::abs(ScintPoint[0] - OpDetPoint[0]),
                                               std::abs(ScintPoint[1] - OpDetPoint[1]),
                                               std::abs(ScintPoint[2] - OpDetPoint[2])};
       // calculate solid angle
-      solid_angle = Rectangle_SolidAngle(detPoint, ScintPoint_rel);
+      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, ScintPoint_rel);
     }
     // PMTs
-    else if (optical_detector_type == 1) {
+    else if (opDet.type == 1) {
       // offset in z-y plane
       double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
       // drift distance (in x)
@@ -1627,8 +1629,7 @@ namespace larg4 {
   // VIS hits semi-analytic model calculation
   int
   OpFastScintillation::VISHits(geo::Point_t const& ScintPoint_v,
-                               geo::Point_t const& OpDetPoint_v,
-                               const int optical_detector_type,
+                               OpticalDetector const& opDet,
                                const double cathode_hits_rec,
                                const std::array<double, 3> hotspot)
   {
@@ -1643,21 +1644,21 @@ namespace larg4 {
     std::array<double, 3U> ScintPoint;
     std::array<double, 3U> OpDetPoint;
     geo::vect::fillCoords(ScintPoint, ScintPoint_v);
-    geo::vect::fillCoords(OpDetPoint, OpDetPoint_v);
+    geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
 
     // calculate solid angle of optical channel
     double solid_angle_detector = 0;
     // rectangular aperture
-    if (optical_detector_type == 0) {
-      // get hotspot coordinates relative to detpoint
+    if (opDet.type == 0) {
+      // get hotspot coordinates relative to opDet
       std::array<double, 3> emission_relative = {std::abs(hotspot[0] - OpDetPoint[0]),
                                                  std::abs(hotspot[1] - OpDetPoint[1]),
                                                  std::abs(hotspot[2] - OpDetPoint[2])};
       // calculate solid angle
-      solid_angle_detector = Rectangle_SolidAngle(detPoint, emission_relative);
+      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, emission_relative);
     }
     // disk aperture
-    else if (optical_detector_type == 1) {
+    else if (opDet.type == 1) {
       // offset in z-y plane
       double d = dist(&hotspot[1], &OpDetPoint[1], 2);
       // drift distance (in x)
@@ -2020,7 +2021,7 @@ namespace larg4 {
 
   // TODO: allow greater tolerance in comparisons, see note above on Disk_SolidAngle()
   double
-  OpFastScintillation::Rectangle_SolidAngle(const dims o, const std::array<double, 3> v)
+  OpFastScintillation::Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window

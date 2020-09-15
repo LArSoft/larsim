@@ -22,7 +22,12 @@ namespace larg4 {
     }
     CustomPhysicsFactory(detinfo::DetectorPropertiesData const& detProp)
       : CustomPhysicsFactoryBase{"Optical"}, fDetProp{detProp}
-    {}
+    {
+      // register self in physics table - note, factory is actually registered
+      // in static TheCustomPhysicsTable, not the instance created below
+      // which just acts to pass information along
+      new CustomPhysicsTable(this);
+    }
 
   private:
     detinfo::DetectorPropertiesData const& fDetProp;

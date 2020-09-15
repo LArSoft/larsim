@@ -32,6 +32,7 @@ namespace cheat {
     , fHitLabel(config.DefaultHitModuleLabel())
     , fMinHitEnergyFraction(config.MinHitEnergyFraction())
     , fOverrideRealData(config.OverrideRealData())
+    , fHitTimeRMS(config.HitTimeRMS())
   {}
 
   //-----------------------------------------------------------------------
@@ -46,6 +47,7 @@ namespace cheat {
     fHitLabel(pSet.get<art::InputTag>("DefaultHitModuleLabel", "hitfd"))
     , fMinHitEnergyFraction(pSet.get<double>("MinHitEnergyFraction", 0.010))
     , fOverrideRealData(pSet.get<bool>("OverrideRealData", false))
+    , fHitTimeRMS(pSet.get<double>("HitTimeRMS", 1.0))
   {}
 
   //-----------------------------------------------------------------------
@@ -175,8 +177,8 @@ namespace cheat {
   BackTracker::HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
                               recob::Hit const& hit) const
   {
-    const double start = hit.PeakTimeMinusRMS();
-    const double end = hit.PeakTimePlusRMS();
+    const double start = hit.PeakTimeMinusRMS(fHitTimeRMS);
+    const double end = hit.PeakTimePlusRMS(fHitTimeRMS);
     return this->ChannelToTrackIDEs(clockData, hit.Channel(), start, end);
   }
 
@@ -244,7 +246,7 @@ namespace cheat {
       trackIDE.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
       trackIDE = this->ChannelToTrackIDEs(
-        clockData, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
+        clockData, hit->Channel(), hit->PeakTimeMinusRMS(fHitTimeRMS), hit->PeakTimePlusRMS(fHitTimeRMS));
       for (auto itr_trakIDE = trackIDE.begin(); itr_trakIDE != trackIDE.end(); ++itr_trakIDE) {
         if (itr_trakIDE->trackID == tkId && itr_trakIDE->energyFrac > fMinHitEnergyFraction)
           hitList.push_back(hit);
@@ -271,7 +273,7 @@ namespace cheat {
       tids.clear();
       art::Ptr<recob::Hit> const& hit = *itr;
       tids = this->ChannelToTrackIDEs(
-        clockData, hit->Channel(), hit->PeakTimeMinusRMS(), hit->PeakTimePlusRMS());
+        clockData, hit->Channel(), hit->PeakTimeMinusRMS(fHitTimeRMS), hit->PeakTimePlusRMS(fHitTimeRMS));
       for (auto itid = tids.begin(); itid != tids.end(); ++itid) {
         for (auto itkid = tkIds.begin(); itkid != tkIds.end(); ++itkid) {
           if (itid->trackID == *itkid) {
@@ -304,8 +306,8 @@ namespace cheat {
   {
     // Get services.
 
-    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS());
-    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS());
+    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS(fHitTimeRMS));
+    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS(fHitTimeRMS));
     if (start_tdc < 0) start_tdc = 0;
     if (end_tdc < 0) end_tdc = 0;
 
@@ -318,8 +320,8 @@ namespace cheat {
                                recob::Hit const& hit) const
   {
     std::vector<const sim::IDE*> retVec;
-    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS());
-    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS());
+    int start_tdc = clockData.TPCTick2TDC(hit.PeakTimeMinusRMS(fHitTimeRMS));
+    int end_tdc = clockData.TPCTick2TDC(hit.PeakTimePlusRMS(fHitTimeRMS));
     if (start_tdc < 0) start_tdc = 0;
     if (end_tdc < 0) end_tdc = 0;
 
@@ -532,8 +534,8 @@ namespace cheat {
   {
     std::set<int> tids;
     for (const auto& hit : hits) {
-      const double start = hit->PeakTimeMinusRMS();
-      const double end = hit->PeakTimePlusRMS();
+      const double start = hit->PeakTimeMinusRMS(fHitTimeRMS);
+      const double end = hit->PeakTimePlusRMS(fHitTimeRMS);
       std::vector<sim::TrackIDE> trackIDEs =
         this->ChannelToTrackIDEs(clockData, hit->Channel(), start, end);
       for (const auto& ide : trackIDEs) {

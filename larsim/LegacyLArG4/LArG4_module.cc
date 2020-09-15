@@ -348,6 +348,7 @@ namespace larg4 {
     CLHEP::HepRandomEngine& fEngine; ///< Random-number engine for IonizationAndScintillation
                                      ///< initialization
 
+    detinfo::DetectorPropertiesData fDetProp; ///< Must outlive fAllPhysicsLists!
     AllPhysicsLists fAllPhysicsLists;
     LArVoxelReadoutGeometry* fVoxelReadoutGeometry{
       nullptr}; /// Pointer used for correctly updating the clock data state.
@@ -413,7 +414,8 @@ namespace larg4 {
     , fSparsifyTrajectories(pset.get<bool>("SparsifyTrajectories", false))
     , fEngine(art::ServiceHandle<rndm::NuRandomService> {}
                 ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed"))
-    , fAllPhysicsLists{art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob()}
+    , fDetProp{art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob()}
+    , fAllPhysicsLists{fDetProp}
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
     art::ServiceHandle<art::RandomNumberGenerator const> rng;
