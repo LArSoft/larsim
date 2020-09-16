@@ -123,6 +123,31 @@ namespace phot {
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5],
                                           double& t0_max,
                                           double& t0_break_point) const;
+    void LoadTimingsForVUVPar(std::vector<std::vector<double>> v[7],
+                              double& step_size,
+                              double& max_d,
+                              double& min_d,
+                              double& vuv_vgroup_mean,
+                              double& vuv_vgroup_max,
+                              double& inflexion_point_distance,
+                              double& angle_bin_timing_vuv) const;
+    void LoadTimingsForVISPar(std::vector<double>& distances,
+                              std::vector<double>& radial_distances,
+                              std::vector<std::vector<std::vector<double>>>& cut_off,
+                              std::vector<std::vector<std::vector<double>>>& tau,
+                              double& vis_vmean,
+                              double& angle_bin_timing_vis) const;
+    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
+                                std::vector<double>& border,
+                                double& r_pmt) const;
+    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r_pmt) const;
+    void LoadParsForVISBorderCorrection(
+      std::vector<double>& border_distances_x,
+      std::vector<double>& border_distances_r,
+      std::vector<std::vector<std::vector<double>>>& border_correction) const;
+
+    // placeholder functions for loading old style parameterisations
+    // timings
     void LoadTimingsForVUVPar(std::vector<double> v[9],
                               double& step_size,
                               double& max_d,
@@ -135,14 +160,7 @@ namespace phot {
                               double& vis_vmean,
                               double& n_vis,
                               double& n_vuv) const;
-    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
-                                std::vector<double>& border,
-                                double& r_pmt) const;
-    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r_pmt) const;
-    void LoadParsForVISBorderCorrection(
-      std::vector<double>& border_distances_x,
-      std::vector<double>& border_distances_r,
-      std::vector<std::vector<std::vector<double>>>& border_correction) const;
+
 
     bool
     IsBuildJob() const
@@ -256,19 +274,20 @@ namespace phot {
     double fT0_max, fT0_break_point;
 
     //for vuv time parametrization
-    std::vector<double> fDistances_all;
-    std::vector<double> fNorm_over_entries;
-    std::vector<double> fMpv;
-    std::vector<double> fWidth;
-    std::vector<double> fDistances;
-    std::vector<double> fSlope;
-    std::vector<double> fExpo_over_Landau_norm[3];
-    double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
+    std::vector<double> fDistances_landau;
+    std::vector<std::vector<double>> fNorm_over_entries;
+    std::vector<std::vector<double>> fMpv;
+    std::vector<std::vector<double>> fWidth;
+    std::vector<double> fDistances_exp;
+    std::vector<std::vector<double>> fSlope;
+    std::vector<std::vector<double>> fExpo_over_Landau_norm;
+    double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
     // for vis time parameterisation (exists for SBND, DUNE-SP)
     std::vector<double> fDistances_refl;
-    std::vector<std::vector<double>> fCut_off;
-    std::vector<std::vector<double>> fTau;
-    double fvis_vmean, fn_LAr_VUV, fn_LAr_vis;
+    std::vector<double> fDistances_radial_refl;
+    std::vector<std::vector<std::vector<double>>> fCut_off;
+    std::vector<std::vector<std::vector<double>>> fTau;
+    double fvis_vmean, fangle_bin_timing_vis;
 
     //for the semi-analytic vuv/direct light signal (number of hits) correction
     //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)

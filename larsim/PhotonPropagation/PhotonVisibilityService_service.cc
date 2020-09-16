@@ -313,31 +313,31 @@ namespace phot {
 
       // load VUV arrival time distribution parametrization (no detector dependent at first order)
       std::cout << "Loading the VUV time parametrization" << std::endl;
-      fDistances_all = p.get<std::vector<double>>("Distances_landau");
-      fNorm_over_entries = p.get<std::vector<double>>("Norm_over_entries");
-      fMpv = p.get<std::vector<double>>("Mpv");
-      fWidth = p.get<std::vector<double>>("Width");
-      fDistances = p.get<std::vector<double>>("Distances_exp");
-      fSlope = p.get<std::vector<double>>("Slope");
-      fExpo_over_Landau_norm[0] = p.get<std::vector<double>>("Expo_over_Landau_norm_0");
-      fExpo_over_Landau_norm[1] = p.get<std::vector<double>>("Expo_over_Landau_norm_30");
-      fExpo_over_Landau_norm[2] = p.get<std::vector<double>>("Expo_over_Landau_norm_60");
+      fDistances_landau = p.get<std::vector<double>>("Distances_landau");
+      fNorm_over_entries = p.get<std::vector<std::vector<double>>>("Norm_over_entries");
+      fMpv = p.get<std::vector<std::vector<double>>>("Mpv");
+      fWidth = p.get<std::vector<std::vector<double>>>("Width");
+      fDistances_exp = p.get<std::vector<double>>("Distances_exp");
+      fSlope = p.get<std::vector<std::vector<double>>>("Slope");
+      fExpo_over_Landau_norm = p.get<std::vector<std::vector<double>>>("Expo_over_Landau_norm");
       fstep_size = p.get<double>("step_size");
       fmax_d = p.get<double>("max_d");
+      fmin_d = p.get<double>("min_d");
       fvuv_vgroup_mean = p.get<double>("vuv_vgroup_mean");
       fvuv_vgroup_max = p.get<double>("vuv_vgroup_max");
       finflexion_point_distance = p.get<double>("inflexion_point_distance");
+      fangle_bin_timing_vuv = p.get<double>("angle_bin_timing_vuv");
 
       if (fStoreReflected) {
 
         // load VIS arrival time distribution paramterisation
         std::cout << "Loading the VIS time paramterisation" << std::endl;
         fDistances_refl = p.get<std::vector<double>>("Distances_refl");
-        fCut_off = p.get<std::vector<std::vector<double>>>("Cut_off");
-        fTau = p.get<std::vector<std::vector<double>>>("Tau");
+        fDistances_radial_refl = p.get<std::vector<double>>("Distances_radial_refl");
+        fCut_off = p.get<std::vector<std::vector<std::vector<double>>>>("Cut_off");
+        fTau = p.get<std::vector<std::vector<std::vector<double>>>>("Tau");
         fvis_vmean = p.get<double>("vis_vmean");
-        fn_LAr_VUV = p.get<double>("n_LAr_VUV");
-        fn_LAr_vis = p.get<double>("n_LAr_vis");
+        fangle_bin_timing_vis = p.get<double>("angle_bin_timing_vis");
       }
     }
 
@@ -733,45 +733,49 @@ namespace phot {
 
   //------------------------------------------------------
   void
-  PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9],
+  PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<std::vector<double>> v[7],
                                                 double& step_size,
                                                 double& max_d,
+                                                double& min_d,
                                                 double& vuv_vgroup_mean,
                                                 double& vuv_vgroup_max,
-                                                double& inflexion_point_distance) const
+                                                double& inflexion_point_distance,
+                                                double& angle_bin_timing_vuv) const
   {
-    v[0] = fDistances_all;
+    std::vector<std::vector<double>> temp_landau; temp_landau.push_back(fDistances_landau);
+    std::vector<std::vector<double>> temp_exp; temp_exp.push_back(fDistances_exp);
+    v[0] = temp_landau;
     v[1] = fNorm_over_entries;
     v[2] = fMpv;
     v[3] = fWidth;
-    v[4] = fDistances;
+    v[4] = temp_exp;
     v[5] = fSlope;
-    v[6] = fExpo_over_Landau_norm[0];
-    v[7] = fExpo_over_Landau_norm[1];
-    v[8] = fExpo_over_Landau_norm[2];
-
+    v[6] = fExpo_over_Landau_norm;
+    
     step_size = fstep_size;
     max_d = fmax_d;
+    min_d = fmin_d;
     vuv_vgroup_mean = fvuv_vgroup_mean;
     vuv_vgroup_max = fvuv_vgroup_max;
     inflexion_point_distance = finflexion_point_distance;
+    angle_bin_timing_vuv = fangle_bin_timing_vuv;
   }
 
   void
   PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
-                                                std::vector<std::vector<double>>& cut_off,
-                                                std::vector<std::vector<double>>& tau,
+                                                std::vector<double>& radial_distances,
+                                                std::vector<std::vector<std::vector<double>>>& cut_off,
+                                                std::vector<std::vector<std::vector<double>>>& tau,
                                                 double& vis_vmean,
-                                                double& n_vis,
-                                                double& n_vuv) const
+                                                double& angle_bin_timing_vis) const
   {
     distances = fDistances_refl;
+    radial_distances = fDistances_radial_refl;
     cut_off = fCut_off;
     tau = fTau;
 
     vis_vmean = fvis_vmean;
-    n_vis = fn_LAr_vis;
-    n_vuv = fn_LAr_VUV;
+    angle_bin_timing_vis = fangle_bin_timing_vis;
   }
 
   void
@@ -804,6 +808,51 @@ namespace phot {
     border_correction = fVIS_BORDER_correction;
   }
 
+  // placeholder functions for loading old defunct sets of parameterisations
+  // calls to these functions to be replaced in new LArG4 once updated to new method, and placeholders removed
+  // timings
+  void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9],
+                            double& step_size,
+                            double& max_d,
+                            double& vuv_vgroup_mean,
+                            double& vuv_vgroup_max,
+                            double& inflexion_point_distance) const
+  {
+    std::vector<double> placeholder_vector = {0, 0};
+    v[0] = placeholder_vector;
+    v[1] = placeholder_vector;
+    v[2] = placeholder_vector;
+    v[3] = placeholder_vector;
+    v[4] = placeholder_vector;
+    v[5] = placeholder_vector;
+    v[6] = placeholder_vector;
+    v[7] = placeholder_vector;
+    v[8] = placeholder_vector;
+
+    step_size = fstep_size;
+    max_d = fmax_d;
+    vuv_vgroup_mean = fvuv_vgroup_mean;
+    vuv_vgroup_max = fvuv_vgroup_max;
+    inflexion_point_distance = finflexion_point_distance;
+  }
+  void PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
+                            std::vector<std::vector<double>>& cut_off,
+                            std::vector<std::vector<double>>& tau,
+                            double& vis_vmean,
+                            double& n_vis,
+                            double& n_vuv) const
+  {
+    std::vector<double> placeholder_vector = {0, 0};
+    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
+    distances = placeholder_vector;
+    cut_off = placeholder_vector_vector;
+    tau = placeholder_vector_vector;
+
+    vis_vmean = fvis_vmean;
+    n_vis = 1;
+    n_vuv = 1;
+
+  }
   //------------------------------------------------------
   /***
    * Preform any necessary transformations on the coordinates before trying to access
