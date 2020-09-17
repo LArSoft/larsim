@@ -270,7 +270,7 @@ namespace phot {
     fVISBorderCorrectionType = p.get<std::string>("VIS_BORDER_correction_type", "");
 
     // Voxel parameters
-    fUseCryoBoundary = p.get<bool>("UseCryoBoundary", false);
+    fUseCryoBoundary = p.get<bool>("UseCryoBoundary", false); 
     fInterpolate = p.get<bool>("Interpolate", false);
     fReflectOverZeroX = p.get<bool>("ReflectOverZeroX", false);
 
@@ -344,26 +344,35 @@ namespace phot {
     if (fUseNhitsModel) {
       std::cout << "Loading semi-analytic mode models" << std::endl;
       // VUV
-      fGH_PARS = p.get<std::vector<std::vector<double>>>("GH_PARS");
-      std::vector<double> v0(2, 0.0);
-      fBORDER_correction = p.get<std::vector<double>>("BORDER_correction", v0);
+      fIsFlatPDCorr = p.get<bool>("FlatPDCorr", false);
+      fIsDomePDCorr = p.get<bool>("DomePDCorr", false);
+      fdelta_angulo_vuv = p.get<double>("delta_angulo_vuv");
+      if(fIsFlatPDCorr) {
+        fGHvuvpars_flat = p.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+        fborder_corr_angulo_flat = p.get<std::vector<double>>("GH_border_angulo_flat");
+        fborder_corr_flat = p.get<std::vector<std::vector<double>>>("GH_border_flat");
+      }
+      if(fIsDomePDCorr) {
+        fGHvuvpars_dome = p.get<std::vector<std::vector<double>>>("GH_PARS_dome");
+        fborder_corr_angulo_dome = p.get<std::vector<double>>("GH_border_angulo_dome");
+        fborder_corr_dome = p.get<std::vector<std::vector<double>>>("GH_border_dome");
+      }
+
       if (fStoreReflected) {
-        // VIS
-        fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-        // VIS border correction
-        if (fApplyVISBorderCorrection) {
-          std::vector<double> vx(19, 0.0);
-          std::vector<double> vr(5, 0.0);
-          std::vector<std::vector<double>> vxr(5, vx);
-          std::vector<std::vector<std::vector<double>>> vc(9, vxr);
-          fVIS_BORDER_distances_x = p.get<std::vector<double>>("VIS_BORDER_distances_x", vx);
-          fVIS_BORDER_distances_r = p.get<std::vector<double>>("VIS_BORDER_distances_r", vr);
-          fVIS_BORDER_correction =
-            p.get<std::vector<std::vector<std::vector<double>>>>("VIS_BORDER_correction", vc);
+        fdelta_angulo_vis = p.get<double>("delta_angulo_vis");
+        if(fIsFlatPDCorr) {
+          fvis_distances_x_flat = p.get<std::vector<double>>("VIS_distances_x_flat");
+          fvis_distances_r_flat = p.get<std::vector<double>>("VIS_distances_r_flat");
+          fvispars_flat = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+        }
+        if(fIsDomePDCorr) {
+          fvis_distances_x_dome = p.get<std::vector<double>>("VIS_distances_x_dome");
+          fvis_distances_r_dome = p.get<std::vector<double>>("VIS_distances_r_dome");
+          fvispars_dome = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
         }
       }
       // optical detector information
-      fPMT_radius = p.get<double>("PMT_radius", 10.16);
+      fradius = p.get<double>("PMT_radius", 10.16);
     }
 
     return;
@@ -778,37 +787,58 @@ namespace phot {
     angle_bin_timing_vis = fangle_bin_timing_vis;
   }
 
-  void
-  PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
-                                                  std::vector<double>& border,
-                                                  double& r) const
+  void PhotonVisibilityService::LoadVUVSemiAnalyticProperties ( bool &isFlatPDCorr,
+                                         bool &isDomePDCorr,
+                                         double &delta_angulo_vuv,
+                                         double &radius) const
   {
-
-    v = fGH_PARS;
-    border = fBORDER_correction;
-    r = fPMT_radius;
+    isFlatPDCorr = fIsFlatPDCorr;
+    isDomePDCorr = fIsDomePDCorr;
+    delta_angulo_vuv = fdelta_angulo_vuv;
+    radius = fradius;
+  }
+  void PhotonVisibilityService::LoadGHFlat( std::vector<std::vector<double>>  &GHvuvpars_flat,
+                   std::vector<double> &border_corr_angulo_flat,
+                   std::vector<std::vector<double>> &border_corr_flat) const
+  {
+    GHvuvpars_flat = fGHvuvpars_flat;
+    border_corr_angulo_flat = fborder_corr_angulo_flat;
+    border_corr_flat = fborder_corr_flat;
+  }
+  void PhotonVisibilityService::LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
+                   std::vector<double> &border_corr_angulo_dome,
+                   std::vector<std::vector<double>> &border_corr_dome) const 
+  {
+    GHvuvpars_dome = fGHvuvpars_dome;
+    border_corr_angulo_dome = fborder_corr_angulo_dome;
+    border_corr_dome = fborder_corr_dome;
+  }
+  void PhotonVisibilityService::LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
+                                       double &radius) const 
+  {
+    delta_angulo_vis = fdelta_angulo_vis;
+    radius = fradius;
+  }
+  void PhotonVisibilityService::LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
+                       std::vector<double> &vis_distances_r_flat,
+                       std::vector<std::vector<std::vector<double>>> &vispars_flat) const 
+  {
+    vis_distances_x_flat = fvis_distances_x_flat;
+    vis_distances_r_flat = fvis_distances_r_flat;
+    vispars_flat = fvispars_flat;
+  }
+  void PhotonVisibilityService::LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
+                       std::vector<double> &vis_distances_r_dome,
+                       std::vector<std::vector<std::vector<double>>> &vispars_dome) const 
+  {
+    vis_distances_x_dome = fvis_distances_x_dome;
+    vis_distances_r_dome = fvis_distances_r_dome;
+    vispars_dome = fvispars_dome;
   }
 
-  void
-  PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v,
-                                                    double& r) const
-  {
-    v = fVIS_PARS;
-    r = fPMT_radius;
-  }
-
-  void
-  PhotonVisibilityService::LoadParsForVISBorderCorrection(
-    std::vector<double>& border_distances_x,
-    std::vector<double>& border_distances_r,
-    std::vector<std::vector<std::vector<double>>>& border_correction) const
-  {
-    border_distances_x = fVIS_BORDER_distances_x;
-    border_distances_r = fVIS_BORDER_distances_r;
-    border_correction = fVIS_BORDER_correction;
-  }
 
   // placeholder functions for loading old defunct sets of parameterisations
+  // required to allow (not yet in use) new LArG4 semi-analytic model to compile
   // calls to these functions to be replaced in new LArG4 once updated to new method, and placeholders removed
   // timings
   void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9],
@@ -852,6 +882,42 @@ namespace phot {
     n_vis = 1;
     n_vuv = 1;
 
+  }
+  // hits
+  void
+  PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
+                                                  std::vector<double>& border,
+                                                  double& r) const
+  {
+    std::vector<double> placeholder_vector = {0, 0};
+    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
+    v = placeholder_vector_vector;
+    border = placeholder_vector;
+    r = fradius;
+  }
+
+  void
+  PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v,
+                                                    double& r) const
+  {
+    std::vector<double> placeholder_vector = {0, 0};
+    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
+    v = placeholder_vector_vector;
+    r = fradius;
+  }
+
+  void
+  PhotonVisibilityService::LoadParsForVISBorderCorrection(
+    std::vector<double>& border_distances_x,
+    std::vector<double>& border_distances_r,
+    std::vector<std::vector<std::vector<double>>>& border_correction) const
+  {
+    std::vector<double> placeholder_vector = {0, 0};
+    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
+    std::vector<std::vector<std::vector<double>>> placeholder_vector_vector_vector; placeholder_vector_vector_vector.push_back(placeholder_vector_vector);
+    border_distances_x = placeholder_vector;
+    border_distances_r = placeholder_vector;
+    border_correction = placeholder_vector_vector_vector;
   }
   //------------------------------------------------------
   /***

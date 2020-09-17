@@ -374,35 +374,48 @@ namespace larg4 {
     double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
+    // solid angle of a dome aperture calculation functions
+    double Omega_Dome_Model(const double &distance, const double &theta) const;
 
-    //For VUV semi-analytic hits
+    // For VUV semi-analytic hits
+    // Gaisser-Hillas correction parameters for VUV Nhits estimation
     G4double Gaisser_Hillas(const double x, const double* par);
-    //array of correction for the VUV Nhits estimation
-    std::vector<std::vector<double>> fGHvuvpars;
-    //To account for the border effects
-    std::vector<double> fborder_corr;
-    double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
-    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
+    double fdelta_angulo_vuv;
+    // flat PDs
+    bool fIsFlatPDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_flat;
+    std::vector<double> fborder_corr_angulo_flat;
+    std::vector<std::vector<double>> fborder_corr_flat;
+    // dome PDs 
+    bool fIsDomePDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_dome;
+    std::vector<double> fborder_corr_angulo_dome;
+    std::vector<std::vector<double>> fborder_corr_dome;
+    
     // For VIS semi-analytic hits
-    constexpr double Pol_5(const double x, double* par);
     bool fStoreReflected;
-    // array of corrections for VIS Nhits estimation
-    std::vector<std::vector<double>> fvispars;
-    //TF1* VIS_pol[9]; // unused
-    std::vector<double> fvis_border_distances_x;
-    std::vector<double> fvis_border_distances_r;
-    std::vector<std::vector<std::vector<double>>> fvis_border_correction;
-    bool fApplyVisBorderCorrection;
-    std::string fVisBorderCorrectionType;
-
+    // correction parameters for VIS Nhits estimation
+    double fdelta_angulo_vis;
+    // flat PDs
+    std::vector<double> fvis_distances_x_flat;
+    std::vector<double> fvis_distances_r_flat;
+    std::vector<std::vector<std::vector<double>>> fvispars_flat;
+    // dome PDs
+    std::vector<double> fvis_distances_x_dome;
+    std::vector<double> fvis_distances_r_dome;
+    std::vector<std::vector<std::vector<double>>> fvispars_dome;
+    
+    // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
+    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;   
+
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
     double fradius;
     Dims fcathode_plane;
-    int fdelta_angulo, fL_abs_vuv;
+    int fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int> fOpDetType;
     std::vector<double> fOpDetLength;
