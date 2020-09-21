@@ -369,7 +369,6 @@ namespace phot {
     std::vector<double> fborder_corr;
     double fYactive_corner, fZactive_corner, fReference_to_corner;
 
-    double fminx, fmaxx, fminy, fmaxy, fminz, fmaxz;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
     // array of corrections for VIS Nhits estimation
     std::vector<std::vector<double>> fvispars;
@@ -379,12 +378,12 @@ namespace phot {
     bool fApplyVisBorderCorrection;
     std::string fVisBorderCorrectionType;
 
-    double fplane_depth, fcathode_zdimension, fcathode_ydimension;
+    double fplane_depth;
     geo::Point_t fCathode_centre;
 
     // Optical detector properties for semi-analytic hits
     double fradius;
-    Dims fcathode_plane;
+    // Dims fcathode_plane; TODO: uncomment when reflected light gets added
     int fdelta_angle;
     int fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
@@ -583,6 +582,25 @@ namespace phot {
       }
     } // local scope
 
+    if (geom.Ncryostats() > 1U) {
+      if (fOnlyOneCryostat) {
+        mf::LogWarning("OpFastScintillation")
+          << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
+          << " cryostats is configured"
+          << " , and semi-analytic model is requested for scintillation photon propagation."
+          << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
+          << " (e.g. scintillation may be detected only in cryostat #0)."
+          << "\nThis would be normally a fatal error, but it has been forcibly overridden."
+          << "\n"
+          << std::string(80, '=');
+      }
+      else {
+        throw art::Exception(art::errors::Configuration)
+          << "Photon propagation via semi-analytic model is not supported yet"
+          << " on detectors with more than one cryostat.";
+      }
+    }
+
     fCathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
@@ -660,12 +678,14 @@ namespace phot {
     // Load Gaisser-Hillas corrections for VUV semi-analytic hits
     std::cout << "Loading the GH corrections" << std::endl;
     fPVS->LoadGHForVUVCorrection(fGHvuvpars, fborder_corr, fradius);
+    assert(!fGHvuvpars.empty());
+    assert(!fborder_corr.empty());
 
     fdelta_angle = 10.; // angle bin size
 
     // Needed for Nhits-model border corrections (in cm)
-    fYactive_corner = (fmaxy - fminy) / 2.;
-    fZactive_corner = (fmaxz - fminz) / 2.;
+    fYactive_corner = fActiveVolumes[0].HalfSizeY();
+    fZactive_corner = fActiveVolumes[0].HalfSizeZ();
 
     fReference_to_corner =
       std::sqrt(fYactive_corner * fYactive_corner + fZactive_corner * fZactive_corner);
