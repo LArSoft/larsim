@@ -940,8 +940,10 @@ namespace larg4 {
       }
     } // Loop over AuxDets
 
-    mf::LogInfo("LArG4") << "Geant4 simulated " << nGeneratedParticles << " MC particles, we keep "
-                         << partCol->size() << " .";
+    if (partCol) {
+      mf::LogInfo("LArG4") << "Geant4 simulated " << nGeneratedParticles << " MC particles, we keep "
+                           << partCol->size() << " .";
+    }
 
     if (fdumpSimChannels) {
       mf::LogVerbatim("DumpSimChannels")
