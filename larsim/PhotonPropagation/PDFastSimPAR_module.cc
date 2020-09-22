@@ -216,17 +216,6 @@ namespace {
     return negate * 3.14159265358979 + ret;
   }
 
-  template <typename TReal>
-  inline constexpr double
-  dist(const TReal* x, const TReal* y, const unsigned int dimension)
-  {
-    double d = 0.;
-    for (unsigned int p = 0; p < dimension; ++p) {
-      d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
-    }
-    return std::sqrt(d);
-  }
-
   // implements relative method - do not use for comparing with zero
   // use this most of the time, tolerance needs to be meaningful in your context
   template <typename TReal>
@@ -311,7 +300,7 @@ namespace phot {
     int VISHits(geo::Point_t const& ScintPoint,
                 OpticalDetector const& opDet,
                 const double cathode_hits_rec,
-                const std::array<double, 3> hotspot);
+                geo::Point_t const& hotspot);
 
     void propagationTime(std::vector<double>& arrival_time_dist,
                          G4ThreeVector x0,
@@ -333,7 +322,7 @@ namespace phot {
 
     // solid angle of rectangular aperture calculation functions
     double Rectangle_SolidAngle(const double a, const double b, const double d);
-    double Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v);
+    double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
 
@@ -703,41 +692,29 @@ namespace phot {
   // VUV semi-analytic hits calculation
   int
   PDFastSimPAR::VUVHits(const double Nphotons_created,
-                        geo::Point_t const& ScintPoint_v,
+                        geo::Point_t const& ScintPoint,
                         OpticalDetector const& opDet)
   {
-    // the interface has been converted into geo::Point_t, the implementation not
-    // yet
-    std::array<double, 3U> ScintPoint;
-    std::array<double, 3U> OpDetPoint;
-    geo::vect::fillCoords(ScintPoint, ScintPoint_v);
-    geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
-
     // distance and angle between ScintPoint and OpDetPoint
-    double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
-    double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
-    // double theta = std::acos(cosine) * 180. / CLHEP::pi;
-    double theta = fast_acos(cosine) * 180. / CLHEP::pi;
+    geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
+    const double distance = relative.R();
+    const double cosine = std::abs(relative.X()) / distance;
+    // const double theta = std::acos(cosine) * 180. / CLHEP::pi;
+    const double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
-    // calculate solid angle:
-    double solid_angle = 0;
-    // Arapucas
+    double solid_angle = 0.;
+    // ARAPUCAS
     if (opDet.type == 0) {
       // get scintillation point coordinates relative to arapuca window centre
-      std::array<double, 3> ScintPoint_rel = {std::abs(ScintPoint[0] - OpDetPoint[0]),
-                                              std::abs(ScintPoint[1] - OpDetPoint[1]),
-                                              std::abs(ScintPoint[2] - OpDetPoint[2])};
-      // calculate solid angle
-      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, ScintPoint_rel);
+      geo::Vector_t const abs_relative{
+        std::abs(relative.X()), std::abs(relative.Y()), std::abs(relative.Z())};
+      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative);
     }
     // PMTs
     else if (opDet.type == 1) {
-      // offset in z-y plane
-      double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
-      // drift distance (in x)
-      double h = std::abs(ScintPoint[0] - OpDetPoint[0]);
-      // Solid angle of a disk
-      solid_angle = Disk_SolidAngle(d, h, fradius);
+      const double zy_offset = std::sqrt(relative.Y() * relative.Y() + relative.Z() * relative.Z());
+      const double x_distance = std::abs(relative.X());
+      solid_angle = Disk_SolidAngle(zy_offset, x_distance, fradius);
     }
     else {
       std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" << std::endl;
@@ -753,8 +730,8 @@ namespace phot {
     const size_t j = (theta / fdelta_angle); // TODO: warning: conversion from double to int
 
     // Accounting for border effects
-    double z_to_corner = std::abs(ScintPoint[2] - fZactive_corner) - fZactive_corner;
-    double y_to_corner = std::abs(ScintPoint[1]) - fYactive_corner;
+    double z_to_corner = std::abs(ScintPoint.Z() - fZactive_corner) - fZactive_corner;
+    double y_to_corner = std::abs(ScintPoint.Y()) - fYactive_corner;
     double distance_to_corner =
       std::sqrt(y_to_corner * y_to_corner + z_to_corner * z_to_corner); // in the ph-cathode plane
     double pars_ini_[4] = {
@@ -771,10 +748,10 @@ namespace phot {
   //......................................................................
   // VIS hits semi-analytic model calculation
   int
-  PDFastSimPAR::VISHits(geo::Point_t const& ScintPoint_v,
+  PDFastSimPAR::VISHits(geo::Point_t const& ScintPoint,
                         OpticalDetector const& opDet,
                         const double cathode_hits_rec,
-                        const std::array<double, 3> hotspot)
+                        geo::Point_t const& hotspot)
   {
 
     // 1). calculate total number of hits of VUV photons on reflective
@@ -784,34 +761,24 @@ namespace phot {
     // 2). calculate number of these hits which reach the optical
     // detector from the hotspot via solid angle
 
-    // the interface has been converted into geo::Point_t, the implementation not
-    // yet
-    std::array<double, 3U> ScintPoint;
-    std::array<double, 3U> OpDetPoint;
-    std::array<double, 3U> cathode_centre;
-    geo::vect::fillCoords(ScintPoint, ScintPoint_v);
-    geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
-    geo::vect::fillCoords(cathode_centre, fCathode_centre);
+    geo::Vector_t const emission_relative = hotspot - opDet.OpDetPoint;
 
     // calculate solid angle of optical channel
-    double solid_angle_detector = 0;
-    // rectangular aperture
+    double solid_angle_detector = 0.;
+    // ARAPUCAS
     if (opDet.type == 0) {
       // get hotspot coordinates relative to opDet
-      std::array<double, 3> emission_relative = {std::abs(hotspot[0] - OpDetPoint[0]),
-                                                 std::abs(hotspot[1] - OpDetPoint[1]),
-                                                 std::abs(hotspot[2] - OpDetPoint[2])};
-      // calculate solid angle
-      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, emission_relative);
+      geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
+                                                std::abs(emission_relative.Y()),
+                                                std::abs(emission_relative.Z())};
+      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative);
     }
-    // disk aperture
+    // PMTs
     else if (opDet.type == 1) {
-      // offset in z-y plane
-      double d = dist(&hotspot[1], &OpDetPoint[1], 2);
-      // drift distance (in x)
-      double h = std::abs(hotspot[0] - OpDetPoint[0]);
-      // calculate solid angle
-      solid_angle_detector = Disk_SolidAngle(d, h, fradius);
+      const double zy_offset = std::sqrt(emission_relative.Y() * emission_relative.Y() +
+                                         emission_relative.Z() * emission_relative.Z());
+      const double x_distance = std::abs(emission_relative.X());
+      solid_angle_detector = Disk_SolidAngle(zy_offset, x_distance, fradius);
     }
     else {
       std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" << std::endl;
@@ -823,13 +790,13 @@ namespace phot {
 
     // calculate distances and angles for application of corrections
     // distance to hotspot
-    double distance_vuv = dist(&ScintPoint[0], &hotspot[0], 3);
+    const double distance_vuv = (ScintPoint - hotspot).R();
     // distance from hotspot to optical detector
-    double distance_vis = dist(&hotspot[0], &OpDetPoint[0], 3);
+    const double distance_vis = emission_relative.R();
     //  angle between hotspot and optical detector
-    double cosine_vis = std::abs(hotspot[0] - OpDetPoint[0]) / distance_vis;
-    // double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
-    double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
+    const double cosine_vis = std::abs(emission_relative.X()) / distance_vis;
+    // const double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
+    const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
     const size_t k = (theta_vis / fdelta_angle); // TODO: warning: conversion from double to int
 
     // apply geometric correction
@@ -846,10 +813,13 @@ namespace phot {
     int hits_vis = 0;
     if (fApplyVisBorderCorrection) {
       // calculate distance for interpolation depending on model
-      double r = 0;
-      if (fVisBorderCorrectionType == "Radial") { r = dist(&ScintPoint[1], &cathode_centre[1], 2); }
+      double r = 0.;
+      if (fVisBorderCorrectionType == "Radial") {
+        r = std::sqrt(std::pow(ScintPoint.Y() - fCathode_centre.Y(), 2) +
+                      std::pow(ScintPoint.Z() - fCathode_centre.Z(), 2));
+      }
       else if (fVisBorderCorrectionType == "Vertical") {
-        r = std::abs(ScintPoint[1]);
+        r = std::abs(ScintPoint.Y());
       }
       else {
         std::cout << "Invalid border correction type - defaulting to using "
@@ -862,16 +832,16 @@ namespace phot {
       {
         size_t idx = 0;
         size_t size = fvis_border_distances_x.size();
-        if (std::abs(ScintPoint[0]) >= fvis_border_distances_x[size - 2])
+        if (std::abs(ScintPoint.X()) >= fvis_border_distances_x[size - 2])
           idx = size - 2;
         else {
-          while (std::abs(ScintPoint[0]) > fvis_border_distances_x[idx + 1])
+          while (std::abs(ScintPoint.X()) > fvis_border_distances_x[idx + 1])
             idx++;
         }
         for (size_t i = 0; i < nbins_r; ++i) {
           interp_vals[i] = interpolate(fvis_border_distances_x,
                                        fvis_border_correction[k][i],
-                                       std::abs(ScintPoint[0]),
+                                       std::abs(ScintPoint.X()),
                                        false,
                                        idx);
         }
@@ -885,7 +855,6 @@ namespace phot {
       hits_vis = std::round(hits_rec_borders);
     }
     else {
-      // round final result
       hits_vis = hits_rec;
     }
 
@@ -1376,52 +1345,52 @@ namespace phot {
   }
 
   double
-  PDFastSimPAR::Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v)
+  PDFastSimPAR::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
 
     // arapuca plane fixed in x direction
-    if (isApproximatelyZero(v[1]) && isApproximatelyZero(v[2])) {
-      return Rectangle_SolidAngle(o.h, o.w, v[0]);
+    if (isApproximatelyZero(v.Y()) && isApproximatelyZero(v.Z())) {
+      return Rectangle_SolidAngle(o.h, o.w, v.X());
     }
-    if (isDefinitelyGreaterThan(v[1], o.h * .5) && isDefinitelyGreaterThan(v[2], o.w * .5)) {
-      double A = v[1] - o.h * .5;
-      double B = v[2] - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v[0]) -
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) *
+    if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
+      double A = v.Y() - o.h * .5;
+      double B = v.Z() - o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) +
+                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
-    if ((v[1] <= o.h * .5) && (v[2] <= o.w * .5)) {
-      double A = -v[1] + o.h * .5;
-      double B = -v[2] + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v[0]) +
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) *
+    if ((v.Y() <= o.h * .5) && (v.Z() <= o.w * .5)) {
+      double A = -v.Y() + o.h * .5;
+      double B = -v.Z() + o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
+                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
-    if (isDefinitelyGreaterThan(v[1], o.h * .5) && (v[2] <= o.w * .5)) {
-      double A = v[1] - o.h * .5;
-      double B = -v[2] + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v[0]) +
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) *
+    if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && (v.Z() <= o.w * .5)) {
+      double A = v.Y() - o.h * .5;
+      double B = -v.Z() + o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), v.X()) -
+                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) -
+                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
-    if ((v[1] <= o.h * .5) && isDefinitelyGreaterThan(v[2], o.w * .5)) {
-      double A = -v[1] + o.h * .5;
-      double B = v[2] - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), v[0]) -
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v[0]) +
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v[0]) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v[0])) *
+    if ((v.Y() <= o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
+      double A = -v.Y() + o.h * .5;
+      double B = v.Z() - o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
+                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
