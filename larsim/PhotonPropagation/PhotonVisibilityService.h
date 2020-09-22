@@ -156,7 +156,7 @@ namespace phot {
                          std::vector<double> &vis_distances_r_dome,
                          std::vector<std::vector<std::vector<double>>> &vispars_dome) const;
 
-  
+
     // placeholder functions for loading old style parameterisations
     // timings
     void LoadTimingsForVUVPar(std::vector<double> v[9],
@@ -333,7 +333,7 @@ namespace phot {
     std::vector<double> fvis_distances_x_dome;
     std::vector<double> fvis_distances_r_dome;
     std::vector<std::vector<std::vector<double>>> fvispars_dome;
-    
+
     // optical detector information, rest using geometry service
     double fradius;
 

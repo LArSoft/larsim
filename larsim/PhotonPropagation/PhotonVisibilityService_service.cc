@@ -270,7 +270,7 @@ namespace phot {
     fVISBorderCorrectionType = p.get<std::string>("VIS_BORDER_correction_type", "");
 
     // Voxel parameters
-    fUseCryoBoundary = p.get<bool>("UseCryoBoundary", false); 
+    fUseCryoBoundary = p.get<bool>("UseCryoBoundary", false);
     fInterpolate = p.get<bool>("Interpolate", false);
     fReflectOverZeroX = p.get<bool>("ReflectOverZeroX", false);
 
@@ -760,7 +760,7 @@ namespace phot {
     v[4] = temp_exp;
     v[5] = fSlope;
     v[6] = fExpo_over_Landau_norm;
-    
+
     step_size = fstep_size;
     max_d = fmax_d;
     min_d = fmin_d;
@@ -807,21 +807,21 @@ namespace phot {
   }
   void PhotonVisibilityService::LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
                    std::vector<double> &border_corr_angulo_dome,
-                   std::vector<std::vector<double>> &border_corr_dome) const 
+                   std::vector<std::vector<double>> &border_corr_dome) const
   {
     GHvuvpars_dome = fGHvuvpars_dome;
     border_corr_angulo_dome = fborder_corr_angulo_dome;
     border_corr_dome = fborder_corr_dome;
   }
   void PhotonVisibilityService::LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
-                                       double &radius) const 
+                                       double &radius) const
   {
     delta_angulo_vis = fdelta_angulo_vis;
     radius = fradius;
   }
   void PhotonVisibilityService::LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
                        std::vector<double> &vis_distances_r_flat,
-                       std::vector<std::vector<std::vector<double>>> &vispars_flat) const 
+                       std::vector<std::vector<std::vector<double>>> &vispars_flat) const
   {
     vis_distances_x_flat = fvis_distances_x_flat;
     vis_distances_r_flat = fvis_distances_r_flat;
@@ -829,7 +829,7 @@ namespace phot {
   }
   void PhotonVisibilityService::LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
                        std::vector<double> &vis_distances_r_dome,
-                       std::vector<std::vector<std::vector<double>>> &vispars_dome) const 
+                       std::vector<std::vector<std::vector<double>>> &vispars_dome) const
   {
     vis_distances_x_dome = fvis_distances_x_dome;
     vis_distances_r_dome = fvis_distances_r_dome;
@@ -848,16 +848,15 @@ namespace phot {
                             double& vuv_vgroup_max,
                             double& inflexion_point_distance) const
   {
-    std::vector<double> placeholder_vector = {0, 0};
-    v[0] = placeholder_vector;
-    v[1] = placeholder_vector;
-    v[2] = placeholder_vector;
-    v[3] = placeholder_vector;
-    v[4] = placeholder_vector;
-    v[5] = placeholder_vector;
-    v[6] = placeholder_vector;
-    v[7] = placeholder_vector;
-    v[8] = placeholder_vector;
+    v[0] = fDistances_landau;
+    v[1] = fNorm_over_entries[0];
+    v[2] = fMpv[0];
+    v[3] = fWidth[0];
+    v[4] = fDistances_exp;
+    v[5] = fSlope[0];
+    v[6] = fExpo_over_Landau_norm[0];
+    v[7] = fExpo_over_Landau_norm[0];
+    v[8] = fExpo_over_Landau_norm[0];
 
     step_size = fstep_size;
     max_d = fmax_d;
@@ -872,16 +871,13 @@ namespace phot {
                             double& n_vis,
                             double& n_vuv) const
   {
-    std::vector<double> placeholder_vector = {0, 0};
-    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
-    distances = placeholder_vector;
-    cut_off = placeholder_vector_vector;
-    tau = placeholder_vector_vector;
+    distances = fDistances_refl;
+    cut_off = fCut_off[0];
+    tau = fTau[0];
 
     vis_vmean = fvis_vmean;
-    n_vis = 1;
+    n_vis = 2;
     n_vuv = 1;
-
   }
   // hits
   void
@@ -889,10 +885,8 @@ namespace phot {
                                                   std::vector<double>& border,
                                                   double& r) const
   {
-    std::vector<double> placeholder_vector = {0, 0};
-    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
-    v = placeholder_vector_vector;
-    border = placeholder_vector;
+    v = fGHvuvpars_flat;
+    border = fborder_corr_flat[0];
     r = fradius;
   }
 
@@ -900,9 +894,7 @@ namespace phot {
   PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v,
                                                     double& r) const
   {
-    std::vector<double> placeholder_vector = {0, 0};
-    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
-    v = placeholder_vector_vector;
+    v = fvispars_flat[0];
     r = fradius;
   }
 
@@ -912,12 +904,9 @@ namespace phot {
     std::vector<double>& border_distances_r,
     std::vector<std::vector<std::vector<double>>>& border_correction) const
   {
-    std::vector<double> placeholder_vector = {0, 0};
-    std::vector<std::vector<double>> placeholder_vector_vector; placeholder_vector_vector.push_back(placeholder_vector);
-    std::vector<std::vector<std::vector<double>>> placeholder_vector_vector_vector; placeholder_vector_vector_vector.push_back(placeholder_vector_vector);
-    border_distances_x = placeholder_vector;
-    border_distances_r = placeholder_vector;
-    border_correction = placeholder_vector_vector_vector;
+    border_distances_x = fvis_distances_x_flat;
+    border_distances_r = fvis_distances_r_flat;
+    border_correction = fvispars_flat;
   }
   //------------------------------------------------------
   /***

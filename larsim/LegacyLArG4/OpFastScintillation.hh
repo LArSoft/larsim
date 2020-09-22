@@ -386,12 +386,12 @@ namespace larg4 {
     std::vector<std::vector<double>> fGHvuvpars_flat;
     std::vector<double> fborder_corr_angulo_flat;
     std::vector<std::vector<double>> fborder_corr_flat;
-    // dome PDs 
+    // dome PDs
     bool fIsDomePDCorr;
     std::vector<std::vector<double>> fGHvuvpars_dome;
     std::vector<double> fborder_corr_angulo_dome;
     std::vector<std::vector<double>> fborder_corr_dome;
-    
+
     // For VIS semi-analytic hits
     bool fStoreReflected;
     // correction parameters for VIS Nhits estimation
@@ -404,11 +404,11 @@ namespace larg4 {
     std::vector<double> fvis_distances_x_dome;
     std::vector<double> fvis_distances_r_dome;
     std::vector<std::vector<std::vector<double>>> fvispars_dome;
-    
+
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
-    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;   
+    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
 
 
     // Optical detector properties for semi-analytic hits

@@ -144,6 +144,7 @@
 
 #include "TMath.h"
 #include "TRandom3.h"
+#include "TGeoSphere.h"
 
 #include <cassert>
 #include <cmath>
@@ -250,19 +251,23 @@ namespace larg4 {
       for (size_t const i : util::counter(fPVS->NOpChannels())) {
         geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
         fOpDetCenter.push_back(opDet.GetCenter());
-        if (opDet.isBar()) {
+
+        if (dynamic_cast<TGeoSphere const*>(opDet.Shape()) != nullptr) {  // sphere/dome
+          fOpDetType.push_back(1); // Dome PMTs
+          fOpDetLength.push_back(-1);
+          fOpDetHeight.push_back(-1);
+        }
+        else if (opDet.isBar()) {  // box
           fOpDetType.push_back(0); //Arapucas
           fOpDetLength.push_back(opDet.Length());
           fOpDetHeight.push_back(opDet.Height());
         }
-        else {
-          fOpDetType.push_back(1); //PMTs
+        else {  // disk
+          fOpDetType.push_back(2); // Disk PMTs
           //    std::cout<<"Radio: "<<geom.OpDetGeoFromOpDet(i).RMax()<<std::endl;
           fOpDetLength.push_back(-1);
           fOpDetHeight.push_back(-1);
         }
-        // std::cout <<"OpChannel: "<<i<<"  Optical_Detector_Type: "<< fOpDetType.back() <<"  APERTURE_height: "
-        // <<opDet.Height()<<"  APERTURE_width: "<<opDet.Length()<< std::endl;
       }
 
       if (fPVS->IncludePropTime()) {
@@ -286,9 +291,9 @@ namespace larg4 {
         size_t num_angles = std::round(90/fangle_bin_timing_vuv);
         std::vector<TF1> VUV_timing_temp(num_params, TF1());
         for (size_t i = 0; i < num_angles; ++i) {
-          VUV_timing.push_back(VUV_timing_temp);    
-        }  
-       
+          VUV_timing.push_back(VUV_timing_temp);
+        }
+
         // initialise vectors to contain range parameterisations sampled to in each case
         // when using TF1->GetRandom(xmin,xmax), must be in same range otherwise sampling is regenerated, this is the slow part!
         std::vector<double> VUV_empty(num_params, 0);
@@ -300,10 +305,10 @@ namespace larg4 {
         // VIS time parameterisation
         if (fPVS->StoreReflected()) {
           // load parameters
-          fPVS->LoadTimingsForVISPar( fdistances_refl, 
-                                      fradial_distances_refl, 
-                                      fcut_off_pars, 
-                                      ftau_pars, 
+          fPVS->LoadTimingsForVISPar( fdistances_refl,
+                                      fradial_distances_refl,
+                                      fcut_off_pars,
+                                      ftau_pars,
                                       fvis_vmean,
                                       fangle_bin_timing_vis);
         }
@@ -346,7 +351,7 @@ namespace larg4 {
         fcathode_centre = geom.TPC(0, 0).GetCathodeCenter();
         fcathode_centre[1] = fActiveVolumes[0].CenterY();
         fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
-                                      
+
 
         if (fPVS->StoreReflected()) {
           fStoreReflected = true;
@@ -367,11 +372,11 @@ namespace larg4 {
                                   fvispars_dome
                                 );
           }
-          
-          // cathode dimensions          
+
+          // cathode dimensions
           fcathode_ydimension = fActiveVolumes[0].SizeY();
           fcathode_zdimension = fActiveVolumes[0].SizeZ();
-          
+
           // set cathode plane struct for solid angle function
           fcathode_plane.h = fcathode_ydimension;
           fcathode_plane.w = fcathode_zdimension;
@@ -1348,7 +1353,7 @@ namespace larg4 {
   void
   OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, const double &distance, const size_t &angle_bin)
   {
-    if (distance < fmin_d) { 
+    if (distance < fmin_d) {
       // times are fixed shift i.e. direct path only
       double t_prop_correction = distance / fvuv_vgroup_mean;
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
@@ -1386,7 +1391,7 @@ namespace larg4 {
 
     // calculate point of reflection for shortest path
     TVector3 bounce_point(plane_depth,ScintPoint[1],ScintPoint[2]);
-    
+
     // calculate distance travelled by VUV light and by vis light
     double VUVdist = (bounce_point - ScintPoint).Mag();
     double Visdist = (OpDetPoint - bounce_point).Mag();
@@ -1433,7 +1438,7 @@ namespace larg4 {
     size_t theta_bin = theta / fangle_bin_timing_vis;
     // radial distance from centre of TPC (y,z plane)
     double r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) + std::pow(ScintPoint[2] - fcathode_centre[2], 2));
-    
+
     // cut-off and tau
     // cut-off
     // interpolate in d_c for each r bin
@@ -1443,7 +1448,7 @@ namespace larg4 {
     }
     // interpolate in r
     double cutoff = interpolate(fradial_distances_refl, interp_vals, r, true);
-    
+
     // tau
     // interpolate in x for each r bin
     std::vector<double> interp_vals_tau(ftau_pars[theta_bin].size(), 0.0);
@@ -1452,7 +1457,7 @@ namespace larg4 {
     }
     // interpolate in r
     double tau = interpolate(fradial_distances_refl, interp_vals_tau, r, true);
-    
+
     if (tau < 0) { tau = 0; } // failsafe if tau extrapolate goes wrong
 
     // apply smearing:
@@ -1550,7 +1555,7 @@ namespace larg4 {
     double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) + std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
-    if(fIsFlatPDCorr) {                   
+    if(fIsFlatPDCorr) {
       pars_ini[0] = fGHvuvpars_flat[0][0];
       pars_ini[1] = fGHvuvpars_flat[1][0];
       pars_ini[2] = fGHvuvpars_flat[2][0];
@@ -1560,16 +1565,16 @@ namespace larg4 {
       s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
     }
     else std::cout << "Error: flat optical detector VUV correction required for reflected semi-analytic hits." << std::endl;
-      
+
     // add border correction
     pars_ini[0] = pars_ini[0] + s1 * r;
     pars_ini[1] = pars_ini[1] + s2 * r;
     pars_ini[2] = pars_ini[2] + s3 * r;
     pars_ini[3] = pars_ini[3];
 
-    
+
     // calculate corrected number of hits
-    double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);   
+    double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
     const double cathode_hits_rec = GH_correction * cathode_hits_geo;
 
     // detemine hits on each PD
@@ -1647,7 +1652,7 @@ namespace larg4 {
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 1) && fIsFlatPDCorr){
+    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
       pars_ini[0] = fGHvuvpars_flat[0][j];
       pars_ini[1] = fGHvuvpars_flat[1][j];
       pars_ini[2] = fGHvuvpars_flat[2][j];
@@ -1657,7 +1662,7 @@ namespace larg4 {
       s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
     }
     // dome PDs
-    else if (opDet.type == 2 && fIsDomePDCorr) {
+    else if (opDet.type == 1 && fIsDomePDCorr) {
       pars_ini[0] = fGHvuvpars_dome[0][j];
       pars_ini[1] = fGHvuvpars_dome[1][j];
       pars_ini[2] = fGHvuvpars_dome[2][j];
@@ -1667,7 +1672,7 @@ namespace larg4 {
       s3 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[2], theta, true);
     }
     else std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
-  
+
     // add border correction
     pars_ini[0] = pars_ini[0] + s1 * r;
     pars_ini[1] = pars_ini[1] + s2 * r;
@@ -1676,7 +1681,7 @@ namespace larg4 {
 
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
-    
+
     // calculate number photons
     double hits_rec = GH_correction * hits_geo / cosine;
     int hits_vuv = std::round(G4Poisson(hits_rec));
@@ -1694,6 +1699,13 @@ namespace larg4 {
     // 1). calculate total number of hits of VUV photons on reflective
     // foils via solid angle + Gaisser-Hillas corrections.
     // Done outside as it doesn't depend on OpDetPoint
+
+     // set plane_depth for correct TPC:
+    double plane_depth;
+    if (ScintPoint_v.X() < 0.) { plane_depth = -fplane_depth; }
+    else {
+      plane_depth = fplane_depth;
+    }
 
     // 2). calculate number of these hits which reach the optical
     // detector from the hotspot via solid angle
@@ -1746,10 +1758,10 @@ namespace larg4 {
     // determine correction factor, depending on PD type
     const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
     double r = dist(&ScintPoint[1], &fcathode_centre[1], 2);  // radial distance from centre of detector (Y-Z)
-    double d_c = std::abs(ScintPoint[0] - fplane_depth);      // distance to cathode
+    double d_c = std::abs(ScintPoint[0] - plane_depth);      // distance to cathode
     double border_correction = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 1) && fIsFlatPDCorr){
+    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
       // interpolate in d_c for each r bin
       const size_t nbins_r = fvispars_flat[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
@@ -1774,7 +1786,7 @@ namespace larg4 {
       border_correction = interpolate(fvis_distances_r_flat, interp_vals, r, false);
     }
     // dome PDs
-    else if (opDet.type == 2 && fIsDomePDCorr) {
+    else if (opDet.type == 1 && fIsDomePDCorr) {
       // interpolate in d_c for each r bin
       const size_t nbins_r = fvispars_dome[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
@@ -2133,12 +2145,12 @@ namespace larg4 {
   // as a correction to the analytic formula of the on-axix solid angle,
   // as we move off-axis an angle theta. We have used 9-angular bins
   // with delta_theta width.
-  
+
   // par0 = Radius correction close
   // par1 = Radius correction far
   // par2 = breaking distance betwween "close" and "far"
 
-  double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221}; 
+  double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
   double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
   const double delta_theta = 10.;
   int j = int(theta/delta_theta);
@@ -2146,11 +2158,11 @@ namespace larg4 {
   const double b = fradius; // cm
   // distance form which the model parameters break (empirical value)
   const double d_break = 5*b; //par2
-  
+
   if(distance >= d_break) {
     double R_apparent_far = b - par1[j];
     return  (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_far/distance,2))));
-    
+
   }
   else {
     double R_apparent_close = b - par0[j];
