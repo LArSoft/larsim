@@ -289,18 +289,12 @@ namespace larg4 {
         // default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated
         const size_t num_params = (fmax_d - fmin_d) / fstep_size; // for d < fmin_d, no parameterisaton, a delta function is used instead
         size_t num_angles = std::round(90/fangle_bin_timing_vuv);
-        std::vector<TF1> VUV_timing_temp(num_params, TF1());
-        for (size_t i = 0; i < num_angles; ++i) {
-          VUV_timing.push_back(VUV_timing_temp);
-        }
+        VUV_timing = std::vector(num_angles, std::vector(num_params, TF1()));
 
         // initialise vectors to contain range parameterisations sampled to in each case
         // when using TF1->GetRandom(xmin,xmax), must be in same range otherwise sampling is regenerated, this is the slow part!
-        std::vector<double> VUV_empty(num_params, 0);
-        for (size_t i = 0; i < num_angles; ++i) {
-          VUV_max.push_back(VUV_empty);
-          VUV_min.push_back(VUV_empty);
-        }
+        VUV_max = std::vector(num_angles, std::vector(num_params, 0.0));
+        VUV_min = std::vector(num_angles, std::vector(num_params, 0.0));
 
         // VIS time parameterisation
         if (fPVS->StoreReflected()) {
@@ -335,6 +329,10 @@ namespace larg4 {
                                             fdelta_angulo_vuv,
                                             fradius
                                           );
+        if (!fIsFlatPDCorr && !fIsDomePDCorr) {
+          throw cet::exception("OpFastScintillation")
+              << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+        }
         if (fIsFlatPDCorr) {
           fPVS->LoadGHFlat(fGHvuvpars_flat,
                            fborder_corr_angulo_flat,
@@ -1252,7 +1250,7 @@ namespace larg4 {
   // New Parametrization code
   // parameterisation generation function
   void
-  OpFastScintillation::generateParam(const size_t &index, const size_t &angle_bin)
+  OpFastScintillation::generateParam(const size_t index, const size_t angle_bin)
   {
     // get distance
     double distance_in_cm = (index * fstep_size) + fmin_d;
@@ -1351,7 +1349,7 @@ namespace larg4 {
 
   // VUV arrival times calculation function
   void
-  OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, const double &distance, const size_t &angle_bin)
+  OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, const double distance, const size_t angle_bin)
   {
     if (distance < fmin_d) {
       // times are fixed shift i.e. direct path only
@@ -2140,7 +2138,7 @@ namespace larg4 {
     return 0.;
   }
 
-  double OpFastScintillation::Omega_Dome_Model(const double &distance, const double &theta) const {
+  double OpFastScintillation::Omega_Dome_Model(const double distance, const double theta) const {
   // this function calculates the solid angle of a semi-sphere of radius b,
   // as a correction to the analytic formula of the on-axix solid angle,
   // as we move off-axis an angle theta. We have used 9-angular bins

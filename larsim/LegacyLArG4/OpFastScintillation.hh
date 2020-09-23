@@ -252,8 +252,8 @@ namespace larg4 {
       std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
     // old timings -- to be deleted
 
-    void getVUVTimes(std::vector<double>& arrivalTimes, const double &distance_in_cm, const size_t &angle_bin);
-    void generateParam(const size_t &index, const size_t &angle_bin);
+    void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void generateParam(const size_t index, const size_t angle_bin);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
     void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
@@ -375,7 +375,7 @@ namespace larg4 {
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
     // solid angle of a dome aperture calculation functions
-    double Omega_Dome_Model(const double &distance, const double &theta) const;
+    double Omega_Dome_Model(const double distance, const double theta) const;
 
     // For VUV semi-analytic hits
     // Gaisser-Hillas correction parameters for VUV Nhits estimation
