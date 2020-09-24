@@ -313,57 +313,66 @@ namespace phot {
 
       // load VUV arrival time distribution parametrization (no detector dependent at first order)
       std::cout << "Loading the VUV time parametrization" << std::endl;
-      fDistances_all = p.get<std::vector<double>>("Distances_landau");
-      fNorm_over_entries = p.get<std::vector<double>>("Norm_over_entries");
-      fMpv = p.get<std::vector<double>>("Mpv");
-      fWidth = p.get<std::vector<double>>("Width");
-      fDistances = p.get<std::vector<double>>("Distances_exp");
-      fSlope = p.get<std::vector<double>>("Slope");
-      fExpo_over_Landau_norm[0] = p.get<std::vector<double>>("Expo_over_Landau_norm_0");
-      fExpo_over_Landau_norm[1] = p.get<std::vector<double>>("Expo_over_Landau_norm_30");
-      fExpo_over_Landau_norm[2] = p.get<std::vector<double>>("Expo_over_Landau_norm_60");
+      fDistances_landau = p.get<std::vector<double>>("Distances_landau");
+      fNorm_over_entries = p.get<std::vector<std::vector<double>>>("Norm_over_entries");
+      fMpv = p.get<std::vector<std::vector<double>>>("Mpv");
+      fWidth = p.get<std::vector<std::vector<double>>>("Width");
+      fDistances_exp = p.get<std::vector<double>>("Distances_exp");
+      fSlope = p.get<std::vector<std::vector<double>>>("Slope");
+      fExpo_over_Landau_norm = p.get<std::vector<std::vector<double>>>("Expo_over_Landau_norm");
       fstep_size = p.get<double>("step_size");
       fmax_d = p.get<double>("max_d");
+      fmin_d = p.get<double>("min_d");
       fvuv_vgroup_mean = p.get<double>("vuv_vgroup_mean");
       fvuv_vgroup_max = p.get<double>("vuv_vgroup_max");
       finflexion_point_distance = p.get<double>("inflexion_point_distance");
+      fangle_bin_timing_vuv = p.get<double>("angle_bin_timing_vuv");
 
       if (fStoreReflected) {
 
         // load VIS arrival time distribution paramterisation
         std::cout << "Loading the VIS time paramterisation" << std::endl;
         fDistances_refl = p.get<std::vector<double>>("Distances_refl");
-        fCut_off = p.get<std::vector<std::vector<double>>>("Cut_off");
-        fTau = p.get<std::vector<std::vector<double>>>("Tau");
+        fDistances_radial_refl = p.get<std::vector<double>>("Distances_radial_refl");
+        fCut_off = p.get<std::vector<std::vector<std::vector<double>>>>("Cut_off");
+        fTau = p.get<std::vector<std::vector<std::vector<double>>>>("Tau");
         fvis_vmean = p.get<double>("vis_vmean");
-        fn_LAr_VUV = p.get<double>("n_LAr_VUV");
-        fn_LAr_vis = p.get<double>("n_LAr_vis");
+        fangle_bin_timing_vis = p.get<double>("angle_bin_timing_vis");
       }
     }
 
     if (fUseNhitsModel) {
       std::cout << "Loading semi-analytic mode models" << std::endl;
       // VUV
-      fGH_PARS = p.get<std::vector<std::vector<double>>>("GH_PARS");
-      std::vector<double> v0(2, 0.0);
-      fBORDER_correction = p.get<std::vector<double>>("BORDER_correction", v0);
+      fIsFlatPDCorr = p.get<bool>("FlatPDCorr", false);
+      fIsDomePDCorr = p.get<bool>("DomePDCorr", false);
+      fdelta_angulo_vuv = p.get<double>("delta_angulo_vuv");
+      if(fIsFlatPDCorr) {
+        fGHvuvpars_flat = p.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+        fborder_corr_angulo_flat = p.get<std::vector<double>>("GH_border_angulo_flat");
+        fborder_corr_flat = p.get<std::vector<std::vector<double>>>("GH_border_flat");
+      }
+      if(fIsDomePDCorr) {
+        fGHvuvpars_dome = p.get<std::vector<std::vector<double>>>("GH_PARS_dome");
+        fborder_corr_angulo_dome = p.get<std::vector<double>>("GH_border_angulo_dome");
+        fborder_corr_dome = p.get<std::vector<std::vector<double>>>("GH_border_dome");
+      }
+
       if (fStoreReflected) {
-        // VIS
-        fVIS_PARS = p.get<std::vector<std::vector<double>>>("VIS_PARS");
-        // VIS border correction
-        if (fApplyVISBorderCorrection) {
-          std::vector<double> vx(19, 0.0);
-          std::vector<double> vr(5, 0.0);
-          std::vector<std::vector<double>> vxr(5, vx);
-          std::vector<std::vector<std::vector<double>>> vc(9, vxr);
-          fVIS_BORDER_distances_x = p.get<std::vector<double>>("VIS_BORDER_distances_x", vx);
-          fVIS_BORDER_distances_r = p.get<std::vector<double>>("VIS_BORDER_distances_r", vr);
-          fVIS_BORDER_correction =
-            p.get<std::vector<std::vector<std::vector<double>>>>("VIS_BORDER_correction", vc);
+        fdelta_angulo_vis = p.get<double>("delta_angulo_vis");
+        if(fIsFlatPDCorr) {
+          fvis_distances_x_flat = p.get<std::vector<double>>("VIS_distances_x_flat");
+          fvis_distances_r_flat = p.get<std::vector<double>>("VIS_distances_r_flat");
+          fvispars_flat = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+        }
+        if(fIsDomePDCorr) {
+          fvis_distances_x_dome = p.get<std::vector<double>>("VIS_distances_x_dome");
+          fvis_distances_r_dome = p.get<std::vector<double>>("VIS_distances_r_dome");
+          fvispars_dome = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
         }
       }
       // optical detector information
-      fPMT_radius = p.get<double>("PMT_radius", 10.16);
+      fradius = p.get<double>("PMT_radius", 10.16);
     }
 
     return;
@@ -733,22 +742,123 @@ namespace phot {
 
   //------------------------------------------------------
   void
-  PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> v[9],
+  PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<std::vector<double>> (&v)[7],
                                                 double& step_size,
                                                 double& max_d,
+                                                double& min_d,
                                                 double& vuv_vgroup_mean,
                                                 double& vuv_vgroup_max,
-                                                double& inflexion_point_distance) const
+                                                double& inflexion_point_distance,
+                                                double& angle_bin_timing_vuv) const
   {
-    v[0] = fDistances_all;
+    v[0] = std::vector(1, fDistances_landau);
     v[1] = fNorm_over_entries;
     v[2] = fMpv;
     v[3] = fWidth;
-    v[4] = fDistances;
+    v[4] = std::vector(1, fDistances_exp);
     v[5] = fSlope;
+    v[6] = fExpo_over_Landau_norm;
+
+    step_size = fstep_size;
+    max_d = fmax_d;
+    min_d = fmin_d;
+    vuv_vgroup_mean = fvuv_vgroup_mean;
+    vuv_vgroup_max = fvuv_vgroup_max;
+    inflexion_point_distance = finflexion_point_distance;
+    angle_bin_timing_vuv = fangle_bin_timing_vuv;
+  }
+
+  void
+  PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
+                                                std::vector<double>& radial_distances,
+                                                std::vector<std::vector<std::vector<double>>>& cut_off,
+                                                std::vector<std::vector<std::vector<double>>>& tau,
+                                                double& vis_vmean,
+                                                double& angle_bin_timing_vis) const
+  {
+    distances = fDistances_refl;
+    radial_distances = fDistances_radial_refl;
+    cut_off = fCut_off;
+    tau = fTau;
+
+    vis_vmean = fvis_vmean;
+    angle_bin_timing_vis = fangle_bin_timing_vis;
+  }
+
+  void PhotonVisibilityService::LoadVUVSemiAnalyticProperties ( bool &isFlatPDCorr,
+                                         bool &isDomePDCorr,
+                                         double &delta_angulo_vuv,
+                                         double &radius) const
+  {
+    isFlatPDCorr = fIsFlatPDCorr;
+    isDomePDCorr = fIsDomePDCorr;
+    delta_angulo_vuv = fdelta_angulo_vuv;
+    radius = fradius;
+  }
+  void PhotonVisibilityService::LoadGHFlat( std::vector<std::vector<double>>  &GHvuvpars_flat,
+                   std::vector<double> &border_corr_angulo_flat,
+                   std::vector<std::vector<double>> &border_corr_flat) const
+  {
+    if (!fIsFlatPDCorr) return;
+    GHvuvpars_flat = fGHvuvpars_flat;
+    border_corr_angulo_flat = fborder_corr_angulo_flat;
+    border_corr_flat = fborder_corr_flat;
+  }
+  void PhotonVisibilityService::LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
+                   std::vector<double> &border_corr_angulo_dome,
+                   std::vector<std::vector<double>> &border_corr_dome) const
+  {
+    if (!fIsDomePDCorr) return;
+    GHvuvpars_dome = fGHvuvpars_dome;
+    border_corr_angulo_dome = fborder_corr_angulo_dome;
+    border_corr_dome = fborder_corr_dome;
+  }
+  void PhotonVisibilityService::LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
+                                       double &radius) const
+  {
+    delta_angulo_vis = fdelta_angulo_vis;
+    radius = fradius;
+  }
+  void PhotonVisibilityService::LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
+                       std::vector<double> &vis_distances_r_flat,
+                       std::vector<std::vector<std::vector<double>>> &vispars_flat) const
+  {
+    if (!fIsFlatPDCorr) return;
+    vis_distances_x_flat = fvis_distances_x_flat;
+    vis_distances_r_flat = fvis_distances_r_flat;
+    vispars_flat = fvispars_flat;
+  }
+  void PhotonVisibilityService::LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
+                       std::vector<double> &vis_distances_r_dome,
+                       std::vector<std::vector<std::vector<double>>> &vispars_dome) const
+  {
+    if (!fIsDomePDCorr) return;
+    vis_distances_x_dome = fvis_distances_x_dome;
+    vis_distances_r_dome = fvis_distances_r_dome;
+    vispars_dome = fvispars_dome;
+  }
+
+
+  // placeholder functions for loading old defunct sets of parameterisations
+  // required to allow (not yet in use) new LArG4 semi-analytic model to compile
+  // calls to these functions to be replaced in new LArG4 once updated to new method, and placeholders removed
+  // timings
+  void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<double> (&v)[9],
+                            double& step_size,
+                            double& max_d,
+                            double& vuv_vgroup_mean,
+                            double& vuv_vgroup_max,
+                            double& inflexion_point_distance) const
+  {
+    v[0] = fDistances_landau;
+    v[1] = fNorm_over_entries[0];
+    v[2] = fMpv[0];
+    v[3] = fWidth[0];
+    v[4] = fDistances_exp;
+    v[5] = fSlope[0];
     v[6] = fExpo_over_Landau_norm[0];
-    v[7] = fExpo_over_Landau_norm[1];
-    v[8] = fExpo_over_Landau_norm[2];
+    v[7] = fExpo_over_Landau_norm[0];
+    v[8] = fExpo_over_Landau_norm[0];
 
     step_size = fstep_size;
     max_d = fmax_d;
@@ -756,41 +866,38 @@ namespace phot {
     vuv_vgroup_max = fvuv_vgroup_max;
     inflexion_point_distance = finflexion_point_distance;
   }
-
-  void
-  PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
-                                                std::vector<std::vector<double>>& cut_off,
-                                                std::vector<std::vector<double>>& tau,
-                                                double& vis_vmean,
-                                                double& n_vis,
-                                                double& n_vuv) const
+  void PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
+                            std::vector<std::vector<double>>& cut_off,
+                            std::vector<std::vector<double>>& tau,
+                            double& vis_vmean,
+                            double& n_vis,
+                            double& n_vuv) const
   {
     distances = fDistances_refl;
-    cut_off = fCut_off;
-    tau = fTau;
+    cut_off = fCut_off[0];
+    tau = fTau[0];
 
     vis_vmean = fvis_vmean;
-    n_vis = fn_LAr_vis;
-    n_vuv = fn_LAr_VUV;
+    n_vis = 2;
+    n_vuv = 1;
   }
-
+  // hits
   void
   PhotonVisibilityService::LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
                                                   std::vector<double>& border,
                                                   double& r) const
   {
-
-    v = fGH_PARS;
-    border = fBORDER_correction;
-    r = fPMT_radius;
+    v = fGHvuvpars_flat;
+    border = fborder_corr_flat[0];
+    r = fradius;
   }
 
   void
   PhotonVisibilityService::LoadParsForVISCorrection(std::vector<std::vector<double>>& v,
                                                     double& r) const
   {
-    v = fVIS_PARS;
-    r = fPMT_radius;
+    v = fvispars_flat[0];
+    r = fradius;
   }
 
   void
@@ -799,11 +906,10 @@ namespace phot {
     std::vector<double>& border_distances_r,
     std::vector<std::vector<std::vector<double>>>& border_correction) const
   {
-    border_distances_x = fVIS_BORDER_distances_x;
-    border_distances_r = fVIS_BORDER_distances_r;
-    border_correction = fVIS_BORDER_correction;
+    border_distances_x = fvis_distances_x_flat;
+    border_distances_r = fvis_distances_r_flat;
+    border_correction = fvispars_flat;
   }
-
   //------------------------------------------------------
   /***
    * Preform any necessary transformations on the coordinates before trying to access

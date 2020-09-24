@@ -4,30 +4,24 @@
 BEGIN_PROLOG
 
 # VUV/DIRECT LIGHT: TIMING PARAMETERISATION
-# Parameters of the Landau + Exponential (<= 300 cm) and Landau (> 300 cm) models
-  # Landau parameters
-  Distances_landau_all: [62.5, 87.5, 112.5, 137.5, 162.5, 187.5, 212.5, 237.5, 262.5, 287.5, 312.5, 337.5, 362.5, 387.5, 412.5, 437.5,
-			 462.5, 487.5, 512.5, 537.5, 562.5, 587.5, 612.5, 637.5, 662.5, 687.5, 712.5, 737.5, 762.5, 787.5, 812.5, 837.5,
-			 862.5, 887.5, 912.5, 937.5, 962.5, 987.5, 1012.5]
-  Norm_over_entries_all: [1.46739, 0.880294, 0.571107, 0.344403, 0.261388, 0.20993, 0.170956, 0.152152, 0.136094, 0.120939, 0.109945, 0.10561,
-			 0.0958589, 0.0904341, 0.0839861, 0.0803693, 0.0761224, 0.0716448, 0.0689223, 0.0668696, 0.0635322, 0.0616896, 0.0600554,
-			 0.0577425, 0.0561707, 0.0539962, 0.0517729, 0.050872, 0.0488119, 0.0469635, 0.0466058, 0.0453283, 0.04366, 0.0425648, 0.0411353,
-			 0.0396493, 0.0388351, 0.0383864, 0.0385728]
-  Mpv_all: [6.05668, 9.05062, 12.3438, 17.1553, 21.9225, 26.9042, 33.1595, 37.1543, 43.6424, 49.9016, 55.7976, 59.7093, 66.7296, 72.5434, 78.6925, 84.1388,
-			 90.0175, 97.1053, 101.911, 107.799, 113.748, 119.527, 124.167, 130.438, 134.988, 141.886, 147.848, 153.056, 160.653, 168.234, 171.821,
-			 178.68, 186.341, 193.222, 202.61, 212.357, 222.014, 232.012, 235.169]
-  Width_all: [0.977654, 1.57296, 2.42236, 4.15371, 5.76189, 7.49866, 9.87714, 10.9349, 13.4434, 15.5028, 19.8005, 20.6927, 22.9557, 24.5475, 26.2879, 27.7879, 29.296,
-			 31.1889, 32.5755, 33.5919, 35.4932, 36.7544, 37.8536, 39.5658, 40.8131, 42.6414, 44.6617, 45.9231, 48.2682, 50.799, 51.9537, 54.1583, 57.8934,
-			 61.4115, 65.4056, 70.7218, 74.6922, 79.6439, 81.8717]
-  # Exponential parameters
-  Distances_exp_all: [55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 165, 175, 185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285, 295]
-  Slope_all: [-0.0885849, -0.0688936, -0.0519349, -0.0481695, -0.0408145, -0.0359584, -0.0341716, -0.0302902, -0.0282722, -0.026348, -0.0240983, -0.023172, -0.0220861,
-			 -0.0207058, -0.0197934, -0.0193794, -0.0182472, -0.0175204, -0.0173492, -0.0163832, -0.0164717, -0.0160823,-0.0153199, -0.0149124, -0.0142298]
-  # Line fit to the profiles of the ratio between the normalization parameters of the exponential and the landau functions vs distance (<= 300 cm)
-  # Fits made to profiles in three different offset angle bins [0, 30deg], [30deg, 60deg] and [60deg, 90 deg]
-  Expo_over_Landau_norm_0_all:  [-4.44152e-02, 1.25321e-03]
-  Expo_over_Landau_norm_30_all: [-2.74406e-02, 1.27240e-03]
-  Expo_over_Landau_norm_60_all: [ 3.48944e-02, 1.27080e-03]
+# Parameters of the Landau + Exponential (<= 350 cm) and Landau (> 350 cm) models
+# Landau parameters
+Distances_landau_generic: [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 525, 550]
+Norm_over_entries_generic: [ [4.64837, 4.64837, 2.86581, 1.4143, 0.974871, 0.71311, 0.55772, 0.461078, 0.411807, 0.364951, 0.325477, 0.297132, 0.297132, 0.297132, 0.297132, 0.297132,0.297132, 0.297132,
+		0.297132, 0.297132, 0.297132, 0.297132, 0.297132],
+		[3.43562, 3.43562, 1.61042, 0.981127, 0.64465, 0.476552, 0.369063, 0.310461, 0.264819, 0.231387, 0.215373, 0.199128, 0.189638, 0.170387, 0.159308, 0.151498,0.140134, 0.135217, 0.131114, 0.129511, 0.126329, 0.12452, 0.124595] ]
+Mpv_generic: [	[2.73373, 2.73373, 3.599, 5.80141, 7.57883, 9.56959, 11.6047, 13.6676, 15.6126, 17.5389, 19.492, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254, 21.3254,
+		21.3254, 21.3254],
+		[2.19076, 2.19076, 4.0163, 5.86531, 8.09466, 10.4547, 12.9261, 15.2731, 17.7939, 20.6664, 22.99, 25.7017, 27.9139, 30.9469, 33.6378, 36.1413, 39.8435, 42.1625, 44.6396, 46.5133, 48.6331, 50.6754, 53.3949] ]
+Width_generic: [ [0.198303, 0.198303, 0.347397, 0.562874, 0.750881, 0.998318, 1.2622, 1.55553, 1.79799, 2.05579, 2.3295, 2.57611, 2.57611, 2.57611, 2.57611, 2.57611,2.57611, 2.57611, 2.57611, 2.57611,
+		2.57611, 2.57611, 2.57611],
+		[0.305766, 0.305766, 0.508544, 0.747765, 1.12059, 1.57047, 2.07501, 2.54661, 3.09789, 3.79078, 4.19731, 4.74438, 5.09894, 5.83702, 6.36225, 6.80253, 8.278, 8.717, 9.2568, 9.7239, 10.5865, 11.3262, 10.8101] ]
+# Exponential parameters
+Distances_exp_generic: [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375]
+Slope_generic: [ [-0.181318, -0.181318, -0.148935, -0.126243, -0.10837, -0.0860558, -0.0759728, -0.0706126, -0.0672814, -0.0622897, -0.0577351, -0.0546709, -0.0546709, -0.0546709, -0.0546709, -0.0546709],
+			[-0.169274, -0.169274, -0.119906, -0.0983691, -0.0781793, -0.0659805, -0.0587059, -0.0545288, -0.0514041, -0.0489773, -0.047259, -0.0454668, -0.0439597, -0.0415122, -0.0396851, -0.0378005] ]
+Expo_over_Landau_norm_generic: [ [0.0149644, 0.0149644, 0.0337403, 0.0967895, 0.152669, 0.181732, 0.23025, 0.290033, 0.338948, 0.372986, 0.404828, 0.441243, 0.441243, 0.441243, 0.441243, 0.441243],
+							[0.0252807, 0.0252807, 0.0638727, 0.113343, 0.165669, 0.216794, 0.274868, 0.325299, 0.38959, 0.466117, 0.515046, 0.578897, 0.621872, 0.689713, 0.742833, 0.773619] ]
 
 
 # *************************************************************************************************
@@ -38,31 +32,33 @@ common_vuv_timing_parameterization:
 {
   # Timing parameterisaion:
   #
-  # Parameters of the Landau + Exponential (<= 300 cm) and Landau (> 300 cm) models
+  # Parameters of the Landau + Exponential (<= 350 cm) and Landau (> 350 cm) models
   # Landau parameters
-  Distances_landau: @local::Distances_landau_all
-  Norm_over_entries: @local::Norm_over_entries_all
-  Mpv: @local::Mpv_all
-  Width: @local::Width_all
+  Distances_landau: @local::Distances_landau_generic
+  Norm_over_entries: @local::Norm_over_entries_generic
+  Mpv: @local::Mpv_generic
+  Width: @local::Width_generic
 
   # Exponential parameters
-  Distances_exp: @local::Distances_exp_all
-  Slope: @local::Slope_all
+  Distances_exp: @local::Distances_exp_generic
+  Slope: @local::Slope_generic
 
   # Normalisations
-  Expo_over_Landau_norm_0:  @local::Expo_over_Landau_norm_0_all
-  Expo_over_Landau_norm_30: @local::Expo_over_Landau_norm_30_all
-  Expo_over_Landau_norm_60: @local::Expo_over_Landau_norm_60_all
+  Expo_over_Landau_norm:  @local::Expo_over_Landau_norm_generic
 
   # Discretisation step size in cm
   step_size: 1.
-  # Maximum distance in cm parameterisations are generated for (only generated when required to prevent long initial loading time)
+  # Min and maximum distance in cm parameterisations are generated for (only generated when required to prevent long initial loading time)
   max_d: 2500.
+  min_d: 25.
   # VUV group velocity in cm/ns
-  vuv_vgroup_mean: 10.13
-  vuv_vgroup_max: 15.
+  vuv_vgroup_mean: 13.5
+  vuv_vgroup_max: 18.
   # Distance in cm from "Landau + Expo" -> "Single Landau" model
-  inflexion_point_distance: 300.
+  inflexion_point_distance: 350.
+
+  # angular bin size in deg, must correspond to parameterisation set
+  angle_bin_timing_vuv: 45
 }
 
 

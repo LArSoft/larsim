@@ -123,7 +123,43 @@ namespace phot {
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5],
                                           double& t0_max,
                                           double& t0_break_point) const;
-    void LoadTimingsForVUVPar(std::vector<double> v[9],
+    void LoadTimingsForVUVPar(std::vector<std::vector<double>> (&v)[7],
+                              double& step_size,
+                              double& max_d,
+                              double& min_d,
+                              double& vuv_vgroup_mean,
+                              double& vuv_vgroup_max,
+                              double& inflexion_point_distance,
+                              double& angle_bin_timing_vuv) const;
+    void LoadTimingsForVISPar(std::vector<double>& distances,
+                              std::vector<double>& radial_distances,
+                              std::vector<std::vector<std::vector<double>>>& cut_off,
+                              std::vector<std::vector<std::vector<double>>>& tau,
+                              double& vis_vmean,
+                              double& angle_bin_timing_vis) const;
+    void LoadVUVSemiAnalyticProperties ( bool &isFlatPDCorr,
+                                         bool &isDomePDCorr,
+                                         double &delta_angulo_vuv,
+                                         double &radius) const;
+    void LoadGHFlat( std::vector<std::vector<double>>  &GHvuvpars_flat,
+                     std::vector<double> &border_corr_angulo_flat,
+                     std::vector<std::vector<double>> &border_corr_flat) const;
+    void LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
+                     std::vector<double> &border_corr_angulo_dome,
+                     std::vector<std::vector<double>> &border_corr_dome) const;
+    void LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
+                                         double &radius) const;
+    void LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
+                         std::vector<double> &vis_distances_r_flat,
+                         std::vector<std::vector<std::vector<double>>> &vispars_flat) const;
+    void LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
+                         std::vector<double> &vis_distances_r_dome,
+                         std::vector<std::vector<std::vector<double>>> &vispars_dome) const;
+
+
+    // placeholder functions for loading old style parameterisations
+    // timings
+    void LoadTimingsForVUVPar(std::vector<double> (&v)[9],
                               double& step_size,
                               double& max_d,
                               double& vuv_vgroup_mean,
@@ -135,6 +171,7 @@ namespace phot {
                               double& vis_vmean,
                               double& n_vis,
                               double& n_vuv) const;
+    // hits
     void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
                                 std::vector<double>& border,
                                 double& r_pmt) const;
@@ -143,6 +180,8 @@ namespace phot {
       std::vector<double>& border_distances_x,
       std::vector<double>& border_distances_r,
       std::vector<std::vector<std::vector<double>>>& border_correction) const;
+
+
 
     bool
     IsBuildJob() const
@@ -256,33 +295,47 @@ namespace phot {
     double fT0_max, fT0_break_point;
 
     //for vuv time parametrization
-    std::vector<double> fDistances_all;
-    std::vector<double> fNorm_over_entries;
-    std::vector<double> fMpv;
-    std::vector<double> fWidth;
-    std::vector<double> fDistances;
-    std::vector<double> fSlope;
-    std::vector<double> fExpo_over_Landau_norm[3];
-    double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
+    std::vector<double> fDistances_landau;
+    std::vector<std::vector<double>> fNorm_over_entries;
+    std::vector<std::vector<double>> fMpv;
+    std::vector<std::vector<double>> fWidth;
+    std::vector<double> fDistances_exp;
+    std::vector<std::vector<double>> fSlope;
+    std::vector<std::vector<double>> fExpo_over_Landau_norm;
+    double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
     // for vis time parameterisation (exists for SBND, DUNE-SP)
     std::vector<double> fDistances_refl;
-    std::vector<std::vector<double>> fCut_off;
-    std::vector<std::vector<double>> fTau;
-    double fvis_vmean, fn_LAr_VUV, fn_LAr_vis;
+    std::vector<double> fDistances_radial_refl;
+    std::vector<std::vector<std::vector<double>>> fCut_off;
+    std::vector<std::vector<std::vector<double>>> fTau;
+    double fvis_vmean, fangle_bin_timing_vis;
 
     //for the semi-analytic vuv/direct light signal (number of hits) correction
-    //parametrization exists for DUNE SP & DP and for SBN-like detectors (SBND, MicroBooNE, ICARUS)
-    std::vector<std::vector<double>> fGH_PARS;
-    //parameters to correct for border effects
-    std::vector<double> fBORDER_correction;
+    bool fIsFlatPDCorr, fIsDomePDCorr;
+    //parametrization exists for DUNE-SP and for SBND
+    double fdelta_angulo_vuv;
+    // flat PDs
+    std::vector<std::vector<double>> fGHvuvpars_flat;
+    std::vector<double> fborder_corr_angulo_flat;
+    std::vector<std::vector<double>> fborder_corr_flat;
+    // dome PDs
+    std::vector<std::vector<double>> fGHvuvpars_dome;
+    std::vector<double> fborder_corr_angulo_dome;
+    std::vector<std::vector<double>> fborder_corr_dome;
     // for the semi-analytic visible/reflection light hits correction
     // parameterization exists for DUNE-SP and SBND
-    std::vector<std::vector<double>> fVIS_PARS;
-    std::vector<double> fVIS_BORDER_distances_x;
-    std::vector<double> fVIS_BORDER_distances_r;
-    std::vector<std::vector<std::vector<double>>> fVIS_BORDER_correction;
+    double fdelta_angulo_vis;
+    // flat PDs
+    std::vector<double> fvis_distances_x_flat;
+    std::vector<double> fvis_distances_r_flat;
+    std::vector<std::vector<std::vector<double>>> fvispars_flat;
+    // dome PDs
+    std::vector<double> fvis_distances_x_dome;
+    std::vector<double> fvis_distances_r_dome;
+    std::vector<std::vector<std::vector<double>>> fvispars_dome;
+
     // optical detector information, rest using geometry service
-    double fPMT_radius;
+    double fradius;
 
     std::string fLibraryFile;
     mutable IPhotonLibrary* fTheLibrary;

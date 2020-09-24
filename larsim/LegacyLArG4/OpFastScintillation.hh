@@ -252,11 +252,11 @@ namespace larg4 {
       std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
     // old timings -- to be deleted
 
-    void getVUVTimes(std::vector<double>& arrivalTimes, double distance_in_cm);
-    void generateParam(const size_t index);
+    void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void generateParam(const size_t index, const size_t angle_bin);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
-    void getVISTimes(std::vector<double>& arrivalTimes, TVector3 ScintPoint, TVector3 OpDetPoint);
+    void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
     // Visible component timing parameterisation
 
   protected:
@@ -350,19 +350,20 @@ namespace larg4 {
     size_t NOpChannels;
 
     //For new VUV time parametrization
-    double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
-    std::vector<double> fparameters[9];
+    double fstep_size, fmin_d, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
+    std::vector<std::vector<double>> fparameters[7];
     // vector containing generated VUV timing parameterisations
-    std::vector<TF1> VUV_timing;
+    std::vector<std::vector<TF1>> VUV_timing;
     // vector containing min and max range VUV timing parameterisations are sampled to
-    std::vector<double> VUV_max;
-    std::vector<double> VUV_min;
+    std::vector<std::vector<double>> VUV_max;
+    std::vector<std::vector<double>> VUV_min;
 
     // For new VIS time parameterisation
-    double fvis_vmean, fn_LAr_vis, fn_LAr_vuv;
+    double fvis_vmean, fangle_bin_timing_vis;
     std::vector<double> fdistances_refl;
-    std::vector<std::vector<double>> fcut_off_pars;
-    std::vector<std::vector<double>> ftau_pars;
+    std::vector<double> fradial_distances_refl;
+    std::vector<std::vector<std::vector<double>>> fcut_off_pars;
+    std::vector<std::vector<std::vector<double>>> ftau_pars;
 
     struct Dims {
       double h, w; // height, width
@@ -373,35 +374,48 @@ namespace larg4 {
     double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
+    // solid angle of a dome aperture calculation functions
+    double Omega_Dome_Model(const double distance, const double theta) const;
 
-    //For VUV semi-analytic hits
+    // For VUV semi-analytic hits
+    // Gaisser-Hillas correction parameters for VUV Nhits estimation
     G4double Gaisser_Hillas(const double x, const double* par);
-    //array of correction for the VUV Nhits estimation
-    std::vector<std::vector<double>> fGHvuvpars;
-    //To account for the border effects
-    std::vector<double> fborder_corr;
-    double fYactive_corner, fZactive_corner, fReference_to_corner, fYcathode, fZcathode;
-    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
-    // For VIS semi-analytic hits
-    constexpr double Pol_5(const double x, double* par);
-    bool fStoreReflected;
-    // array of corrections for VIS Nhits estimation
-    std::vector<std::vector<double>> fvispars;
-    //TF1* VIS_pol[9]; // unused
-    std::vector<double> fvis_border_distances_x;
-    std::vector<double> fvis_border_distances_r;
-    std::vector<std::vector<std::vector<double>>> fvis_border_correction;
-    bool fApplyVisBorderCorrection;
-    std::string fVisBorderCorrectionType;
+    double fdelta_angulo_vuv;
+    // flat PDs
+    bool fIsFlatPDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_flat;
+    std::vector<double> fborder_corr_angulo_flat;
+    std::vector<std::vector<double>> fborder_corr_flat;
+    // dome PDs
+    bool fIsDomePDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_dome;
+    std::vector<double> fborder_corr_angulo_dome;
+    std::vector<std::vector<double>> fborder_corr_dome;
 
+    // For VIS semi-analytic hits
+    bool fStoreReflected;
+    // correction parameters for VIS Nhits estimation
+    double fdelta_angulo_vis;
+    // flat PDs
+    std::vector<double> fvis_distances_x_flat;
+    std::vector<double> fvis_distances_r_flat;
+    std::vector<std::vector<std::vector<double>>> fvispars_flat;
+    // dome PDs
+    std::vector<double> fvis_distances_x_dome;
+    std::vector<double> fvis_distances_r_dome;
+    std::vector<std::vector<std::vector<double>>> fvispars_dome;
+
+    // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
+    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
+
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
     double fradius;
     Dims fcathode_plane;
-    int fdelta_angulo, fL_abs_vuv;
+    int fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int> fOpDetType;
     std::vector<double> fOpDetLength;
