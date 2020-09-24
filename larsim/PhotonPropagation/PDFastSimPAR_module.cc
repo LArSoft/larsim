@@ -426,7 +426,8 @@ namespace phot {
   void
   PDFastSimPAR::produce(art::Event& event)
   {
-    std::cout << "PDFastSimPAR Module Producer" << std::endl;
+    mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
+                                 << "EventID: " << event.event();
 
     // unused auto const* larp =
     // lar::providerFrom<detinfo::LArPropertiesService>();
@@ -512,10 +513,11 @@ namespace phot {
       }
     }
 
-    std::cout << "Total points: " << num_points << ", total fast photons: " << num_fastph
-              << ", total slow photons: " << num_slowph << std::endl;
-    std::cout << "detected fast photons: " << num_fastdp
-              << ", detected slow photons: " << num_slowdp << std::endl;
+    mf::LogTrace("PDFastSimPAR") << "Total points: " << num_points
+                                 << ", total fast photons: " << num_fastph
+                                 << ", total slow photons: " << num_slowph
+                                 << "\ndetected fast photons: " << num_fastdp
+                                 << ", detected slow photons: " << num_slowdp;
 
     PDChannelToSOCMap.clear();
     event.put(move(phlit), "par");
@@ -573,7 +575,7 @@ namespace phot {
 
     if (geom.Ncryostats() > 1U) {
       if (fOnlyOneCryostat) {
-        mf::LogWarning("OpFastScintillation")
+        mf::LogWarning("PDFastSimPAR")
           << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
           << " cryostats is configured"
           << " , and semi-analytic model is requested for scintillation photon propagation."
