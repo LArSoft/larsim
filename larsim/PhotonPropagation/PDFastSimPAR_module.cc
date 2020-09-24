@@ -611,7 +611,7 @@ namespace phot {
         fOpDetLength.push_back(-1);
         fOpDetHeight.push_back(-1);
       }
-      // std::cout << "OpChannel: " << i << "  Optical_Detector_Type: " << type_i
+      // std::cout << "OpChannel: " << i << "  Optical_Detector_Type: " << fOpDetType.at(i)
       //           << "  APERTURE_height: " << opDet.Height()
       //           << "  APERTURE_width: "  << opDet.Length()
       //           << std::endl;
