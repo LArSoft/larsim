@@ -259,6 +259,13 @@ namespace larg4 {
     void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
     // Visible component timing parameterisation
 
+    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint);
+    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint);
+
   protected:
     void BuildThePhysicsTable();
     // It builds either the fast or slow scintillation integral table;
@@ -295,13 +302,6 @@ namespace larg4 {
 
     /// Returns whether the semi-analytic visibility parametrization is being used.
     bool usesSemiAnalyticModel() const;
-
-    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
-                            const double Num,
-                            geo::Point_t const& ScintPoint);
-    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
-                            const double Num,
-                            geo::Point_t const& ScintPoint);
 
     int VUVHits(const double Nphotons_created,
                 geo::Point_t const& ScintPoint,
