@@ -1501,7 +1501,7 @@ namespace larg4 {
                                           const double Num,
                                           geo::Point_t const& ScintPoint)
   {
-    for (size_t const OpDet : util::counter(NOpChannels)) {
+    for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // set detector struct for solid angle function
@@ -1577,7 +1577,7 @@ namespace larg4 {
 
     // detemine hits on each PD
     const std::array<double, 3> hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
-    for (size_t const OpDet : util::counter(NOpChannels)) {
+    for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // set detector struct for solid angle function
