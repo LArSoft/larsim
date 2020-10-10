@@ -464,8 +464,8 @@ namespace larg4 {
   double model_far(double*, double*);
 
   static const size_t acos_bins = 2000000;
-  static std::array<double, acos_bins + 1>
-    acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
+  // static std::array<double, acos_bins + 1>
+  //   acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
   constexpr double acos_table(const double x);
   double fast_acos(const double x);
 

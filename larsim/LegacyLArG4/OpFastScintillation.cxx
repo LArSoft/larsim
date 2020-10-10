@@ -2192,15 +2192,15 @@ namespace larg4 {
 
   // ---------------------------------------------------------------------------
 
-  constexpr double
-  acos_table(const double x)
-  {
-    if (x < 0. || x > 1.) {
-      std::cout << "Range out of bounds in acos_table, only defined in [0, 1]" << std::endl;
-      exit(0);
-    }
-    return acos_arr[std::round(acos_bins * x)];
-  }
+  // constexpr double
+  // acos_table(const double x)
+  // {
+  //   if (x < 0. || x > 1.) {
+  //     std::cout << "Range out of bounds in acos_table, only defined in [0, 1]" << std::endl;
+  //     exit(0);
+  //   }
+  //   return acos_arr[std::round(acos_bins * x)];
+  // }
 
   double
   fast_acos(double x)
