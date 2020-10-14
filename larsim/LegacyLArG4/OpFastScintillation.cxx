@@ -1499,7 +1499,7 @@ namespace larg4 {
   void
   OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
                                           const double Num,
-                                          geo::Point_t const& ScintPoint)
+                                          geo::Point_t const& ScintPoint) const
   {
     for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
@@ -1521,7 +1521,7 @@ namespace larg4 {
   void
   OpFastScintillation::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
                                           const double Num,
-                                          geo::Point_t const& ScintPoint)
+                                          geo::Point_t const& ScintPoint) const
   {
     // 1). calculate total number of hits of VUV photons on
     // reflective foils via solid angle + Gaisser-Hillas
@@ -1595,7 +1595,7 @@ namespace larg4 {
   int
   OpFastScintillation::VUVHits(const double Nphotons_created,
                                geo::Point_t const& ScintPoint_v,
-                               OpticalDetector const& opDet)
+                               OpticalDetector const& opDet) const
   {
     // the interface has been converted into geo::Point_t, the implementation not yet
     std::array<double, 3U> ScintPoint;
@@ -1646,7 +1646,7 @@ namespace larg4 {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z)
-    double r = dist(&ScintPoint[1], &fcathode_centre[1], 2);
+    double r = dist(ScintPoint, fcathode_centre, 2, 1);
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
     // flat PDs
@@ -1692,7 +1692,7 @@ namespace larg4 {
   OpFastScintillation::VISHits(geo::Point_t const& ScintPoint_v,
                                OpticalDetector const& opDet,
                                const double cathode_hits_rec,
-                               const std::array<double, 3> hotspot)
+                               const std::array<double, 3> hotspot) const
   {
     // 1). calculate total number of hits of VUV photons on reflective
     // foils via solid angle + Gaisser-Hillas corrections.
@@ -1755,7 +1755,7 @@ namespace larg4 {
 
     // determine correction factor, depending on PD type
     const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
-    double r = dist(&ScintPoint[1], &fcathode_centre[1], 2);  // radial distance from centre of detector (Y-Z)
+    double r = dist(ScintPoint, fcathode_centre, 2, 1);      // radial distance from centre of detector (Y-Z)
     double d_c = std::abs(ScintPoint[0] - plane_depth);      // distance to cathode
     double border_correction = 0;
     // flat PDs
@@ -1854,7 +1854,7 @@ namespace larg4 {
   }
 
   G4double
-  OpFastScintillation::Gaisser_Hillas(const double x, const double* par)
+  OpFastScintillation::Gaisser_Hillas(const double x, const double* par) const
   {
     double X_mu_0 = par[3];
     double Normalization = par[0];
@@ -1934,7 +1934,7 @@ namespace larg4 {
                                    const std::vector<double>& yData,
                                    double x,
                                    bool extrapolate,
-                                   size_t i)
+                                   size_t i) const
   {
     if (i == 0) {
       size_t size = xData.size();
@@ -1965,7 +1965,7 @@ namespace larg4 {
                                     const std::vector<double>& yData2,
                                     const std::vector<double>& yData3,
                                     double x,
-                                    bool extrapolate)
+                                    bool extrapolate) const
   {
     size_t size = xData.size();
     size_t i = 0;               // find left end of interval for interpolation
@@ -2011,7 +2011,7 @@ namespace larg4 {
   // that's an unrealistic small number, better setting
   // constexpr double tolerance = 0.0000001; // 1 nm
   double
-  OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b)
+  OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b) const
   {
     if (b <= 0. || d < 0. || h <= 0.) return 0.;
     const double leg2 = (b + d) * (b + d);
@@ -2073,7 +2073,7 @@ namespace larg4 {
 
   // solid angle of rectangular aperture
   double
-  OpFastScintillation::Rectangle_SolidAngle(const double a, const double b, const double d)
+  OpFastScintillation::Rectangle_SolidAngle(const double a, const double b, const double d) const
   {
     double aa = a / (2. * d);
     double bb = b / (2. * d);
@@ -2084,7 +2084,7 @@ namespace larg4 {
 
   // TODO: allow greater tolerance in comparisons, see note above on Disk_SolidAngle()
   double
-  OpFastScintillation::Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v)
+  OpFastScintillation::Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v) const
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
