@@ -347,8 +347,6 @@ namespace larg4 {
      double ftf1_sampling_factor;
      double ft0_max, ft0_break_point;*/
 
-    size_t NOpChannels;
-
     //For new VUV time parametrization
     double fstep_size, fmin_d, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
     std::vector<std::vector<double>> fparameters[7];

@@ -581,7 +581,6 @@ namespace larg4 {
 
     // Get the visibility vector for this point
     assert(fPVS);
-    NOpChannels = fPVS->NOpChannels();
 
     G4int nscnt = 1;
     if (Fast_Intensity && Slow_Intensity) nscnt = 2;
@@ -740,7 +739,7 @@ namespace larg4 {
       //std::cout << "++++++++++++" << Num << "++++++++++" << std::endl;
 
       // here we go: now if visibilities are invalid, we are in trouble
-      //if (!Visibilities && (NOpChannels > 0)) {
+      //if (!Visibilities && (fPVS->NOpChannels() > 0)) {
       //  throw cet::exception("OpFastScintillator")
       //    << "Photon library does not cover point " << ScintPoint << " cm.\n";
       //}
@@ -750,7 +749,7 @@ namespace larg4 {
       // detected photons from direct light
       std::map<size_t, int> DetectedNum;
       if (Visibilities && !usesSemiAnalyticModel()) {
-        for (size_t const OpDet : util::counter(NOpChannels)) {
+        for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
           if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
           int const DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
           if (DetThis > 0) DetectedNum[OpDet] = DetThis;
@@ -764,7 +763,7 @@ namespace larg4 {
       std::map<size_t, int> ReflDetectedNum;
       if (fPVS->StoreReflected()) {
         if (!usesSemiAnalyticModel()) {
-          for (size_t const OpDet : util::counter(NOpChannels)) {
+          for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
             if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
             int const ReflDetThis = std::round(G4Poisson(ReflVisibilities[OpDet] * Num));
             if (ReflDetThis > 0) ReflDetectedNum[OpDet] = ReflDetThis;
