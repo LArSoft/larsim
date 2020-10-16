@@ -292,21 +292,29 @@ namespace phot {
       int type;
     };
 
-    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
-                            const double Num,
+    void detectedDirectHits(std::map<size_t, int>& DetectedNumFast,
+                            std::map<size_t, int>& DetectedNumSlow,
+                            const double NumFast,
+                            const double NumSlow,
                             geo::Point_t const& ScintPoint);
-    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
-                            const double Num,
+    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNumFast,
+                            std::map<size_t, int>& ReflDetectedNumSlow,
+                            const double NumFast,
+                            const double NumSlow,
                             geo::Point_t const& ScintPoint);
 
-    int VUVHits(const double Nphotons_created,
+    void VUVHits(const double NumFast,
+                const double NumSlow,
                 geo::Point_t const& ScintPoint,
-                OpticalDetector const& opDet);
-
-    int VISHits(geo::Point_t const& ScintPoint,
                 OpticalDetector const& opDet,
-                const double cathode_hits_rec,
-                geo::Point_t const& hotspot);
+                std::vector<int> &DetThis);
+
+    void VISHits(geo::Point_t const& ScintPoint,
+                OpticalDetector const& opDet,
+                const double cathode_hits_rec_fast,
+                const double cathode_hits_rec_slow,
+                geo::Point_t const& hotspot,
+                std::vector<int> &ReflDetThis);
 
     void propagationTime(std::vector<double>& arrival_time_dist,
                          G4ThreeVector x0,
@@ -390,8 +398,7 @@ namespace phot {
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
-    geo::Point_t fCathode_centre;
-
+    
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
@@ -409,8 +416,8 @@ namespace phot {
     /// Allows running even if light on cryostats `C:1` and higher is not supported.
     /// Currently hard coded "no"
     bool const fOnlyOneCryostat = false;
-    /// Whether the cathodes are fully opaque; currently hard coded "no".
-    bool const fOpaqueCathode = false;
+    /// Whether the cathodes are fully opaque; currently hard coded "true".
+    bool const fOpaqueCathode = true;
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
@@ -495,48 +502,44 @@ namespace phot {
 
       // direct light
       std::map<size_t, int> DetectedNumFast;
-      if (nphot_fast > 0) detectedDirectHits(DetectedNumFast, nphot_fast, ScintPoint);
-      
       std::map<size_t, int> DetectedNumSlow;
-      if (nphot_fast > 0) detectedDirectHits(DetectedNumSlow, nphot_slow, ScintPoint);
-
-      std::vector<double> arrival_time_dist;
+      if (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)) 
+        detectedDirectHits(DetectedNumFast, DetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
+      
+      // propagation time
+      std::vector<double> transport_time;
 
       for (size_t channel = 0; channel < nOpChannels; channel++) {
+        
         if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
         sim::OpDetBacktrackerRecord tmpbtr(channel);
 
+        // calculate propagation time, does not matter whether fast or slow photon
+        transport_time.resize(DetectedNumFast[channel] + DetectedNumSlow[channel]);
+        if (fPVS->IncludePropTime() && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
+          propagationTime(transport_time, ScintPoint_v, channel, false);
+        
         if (nphot_fast > 0) {
           int n = DetectedNumFast[channel];
           num_fastdp += n;
-          // propagation time
-          if (fPVS->IncludePropTime()) {
-            arrival_time_dist.resize(nphot_fast);
-            propagationTime(arrival_time_dist, ScintPoint_v, channel, false);
-          }
           for (long i = 0; i < n; ++i) {
             // calculates the time at which the photon was produced
             fScintTime->GenScintTime(true, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrival_time_dist[i]);
+            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
             ++photonLiteCollection[channel].DetectedPhotons[time];
             tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
           }
-        }
-
-        if ((nphot_slow > 0) && fDoSlowComponent) {
+        }        
+        if (nphot_slow > 0 && fDoSlowComponent) {
           int n = DetectedNumSlow[channel];
           num_slowdp += n;
-          if (fPVS->IncludePropTime()) {
-            arrival_time_dist.resize(nphot_slow);
-            propagationTime(arrival_time_dist, ScintPoint_v, channel, false);
-          }
           for (long i = 0; i < n; ++i) {
             fScintTime->GenScintTime(false, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrival_time_dist[i]);            
+            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[DetectedNumFast[channel] + i]);            
             ++photonLiteCollection[channel].DetectedPhotons[time];
             tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
           }
-        }
+        } 
 
         AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
       }
@@ -624,10 +627,10 @@ namespace phot {
       }
     }
 
-    fCathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
+    fcathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
-    mf::LogTrace("PDFastSimPAR") << "fCathode_centre: " << fCathode_centre << " cm";
+    //mf::LogTrace("PDFastSimPAR") << "fCathode_centre: " << fcathode_centre.X() << ", " << fcathode_centre.Y() << ", " << fcathode_centre.Z() << " cm";
 
     for (size_t const i : util::counter(fPVS->NOpChannels())) {
       geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
@@ -707,7 +710,7 @@ namespace phot {
       std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
 
     // Load Gaisser-Hillas corrections for VUV semi-analytic hits
-    std::cout << "Loading the GH corrections" << std::endl;
+    std::cout << "Loading the direct light corrections" << std::endl;
     fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr,
                                         fIsDomePDCorr,
                                         fdelta_angulo_vuv,
@@ -767,9 +770,11 @@ namespace phot {
   //......................................................................
   // VUV semi-analytic hits calculation
   void
-  PDFastSimPAR::detectedDirectHits(std::map<size_t, int>& DetectedNum,
-                                          const double Num,
-                                          geo::Point_t const& ScintPoint)
+  PDFastSimPAR::detectedDirectHits(std::map<size_t, int>& DetectedNumFast,
+                                   std::map<size_t, int>& DetectedNumSlow,
+                                   const double NumFast,
+                                   const double NumSlow,
+                                   geo::Point_t const& ScintPoint)
   {
     for (size_t const OpDet : util::counter(nOpChannels)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
@@ -778,20 +783,25 @@ namespace phot {
       const PDFastSimPAR::OpticalDetector op{
         fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
         fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
-      const int DetThis = VUVHits(Num, ScintPoint, op);
-      if (DetThis > 0) {
-        DetectedNum[OpDet] = DetThis;
-        //   mf::LogInfo("PDFastSimPAR") << "FastScint: " <<
-        //   //   it->second<<" " << Num << " " << DetThisPMT;
-        //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
-      }
+      
+      std::vector<int> DetThis(2, 0);
+      VUVHits(NumFast, NumSlow, ScintPoint, op, DetThis);
+      
+      DetectedNumFast[OpDet] = DetThis[0];
+      DetectedNumSlow[OpDet] = DetThis[1];
+        
+      //   mf::LogInfo("PDFastSimPAR") << "FastScint: " <<
+      //   //   it->second<<" " << Num << " " << DetThisPMT;
+      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT        
     }
   }
 
-  int
-  PDFastSimPAR::VUVHits(const double Nphotons_created,
+  void
+  PDFastSimPAR::VUVHits(const double NumFast,
+                        const double NumSlow,
                         geo::Point_t const& ScintPoint,
-                        OpticalDetector const& opDet)
+                        OpticalDetector const& opDet,
+                        std::vector<int>& DetThis)
   {
     // the interface has been converted into geo::Point_t, the implementation not yet
     std::array<double, 3U> ScintPoint_v;
@@ -828,10 +838,12 @@ namespace phot {
       std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk" << std::endl;
     }
 
-    // calculate number of photons hits by geometric acceptance: accounting for
-    // solid angle and LAr absorbtion length
-    double hits_geo =
-      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
+    // calculate number of photons hits by geometric acceptance for fast and slow components
+    // accounting for solid angle and LAr absorbtion length
+    double hits_geo_fast =
+      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * NumFast;
+    double hits_geo_slow =
+      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * NumSlow;  
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance
     // and angular dependence offset angle bin
@@ -873,18 +885,19 @@ namespace phot {
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
 
-    // calculate number photons
-    int hits_vuv = fRandPoissPhot->fire(GH_correction * hits_geo / cosine);
-
-    return hits_vuv;
+    // calculate number photons for fast and slow componenets
+    DetThis[0] = fRandPoissPhot->fire(GH_correction * hits_geo_fast / cosine);
+    DetThis[1] = fRandPoissPhot->fire(GH_correction * hits_geo_slow / cosine); 
   }
 
   //......................................................................
   // VIS hits semi-analytic model calculation
   void
-  PDFastSimPAR::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
-                                          const double Num,
-                                          geo::Point_t const& ScintPoint)
+  PDFastSimPAR::detectedReflecHits(std::map<size_t, int>& ReflDetectedNumFast,
+                                   std::map<size_t, int>& ReflDetectedNumSlow,
+                                   const double NumFast,
+                                   const double NumSlow,
+                                   geo::Point_t const& ScintPoint)
   {
     // 1). calculate total number of hits of VUV photons on
     // reflective foils via solid angle + Gaisser-Hillas
@@ -909,8 +922,11 @@ namespace phot {
     // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
     double distance_cathode = std::abs(plane_depth - ScintPoint.X());
     // calculate hits on cathode plane via geometric acceptance
-    double cathode_hits_geo = std::exp(-1. * distance_cathode / fL_abs_vuv) *
-                              (solid_angle_cathode / (4. * CLHEP::pi)) * Num;
+    double cathode_hits_geo_fast = std::exp(-1. * distance_cathode / fL_abs_vuv) *
+                              (solid_angle_cathode / (4. * CLHEP::pi)) * NumFast;
+    double cathode_hits_geo_slow = std::exp(-1. * distance_cathode / fL_abs_vuv) *
+                              (solid_angle_cathode / (4. * CLHEP::pi)) * NumSlow;
+    
     // determine Gaisser-Hillas correction including border effects
     // use flat correction
     double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) + std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
@@ -936,7 +952,8 @@ namespace phot {
 
     // calculate corrected number of hits
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
-    const double cathode_hits_rec = GH_correction * cathode_hits_geo;
+    const double cathode_hits_rec_fast = GH_correction * cathode_hits_geo_fast;
+    const double cathode_hits_rec_slow = GH_correction * cathode_hits_geo_slow;
 
     // detemine hits on each PD
     const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
@@ -948,16 +965,21 @@ namespace phot {
         fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
         fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
 
-      int const ReflDetThis =
-        VISHits(ScintPoint, op, cathode_hits_rec, hotspot);
-      if (ReflDetThis > 0) { ReflDetectedNum[OpDet] = ReflDetThis; }
+      std::vector<int> ReflDetThis(2, 0);
+      VISHits(ScintPoint, op, cathode_hits_rec_fast, cathode_hits_rec_slow, hotspot, ReflDetThis);
+      
+      ReflDetectedNumFast[OpDet] = ReflDetThis[0];
+      ReflDetectedNumSlow[OpDet] = ReflDetThis[1];
     }
   }
-  int
+
+  void
   PDFastSimPAR::VISHits(geo::Point_t const& ScintPoint,
                         OpticalDetector const& opDet,
-                        const double cathode_hits_rec,
-                        geo::Point_t const& hotspot)
+                        const double cathode_hits_rec_fast,
+                        const double cathode_hits_rec_slow,
+                        geo::Point_t const& hotspot,
+                        std::vector<int> &ReflDetThis)
   {
 
     // 1). calculate total number of hits of VUV photons on reflective
@@ -1018,8 +1040,10 @@ namespace phot {
     }
 
     // calculate number of hits via geometeric acceptance
-    double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) *
-                      cathode_hits_rec; // 2*pi due to presence of reflective foils
+    double hits_geo_fast = (solid_angle_detector / (2. * CLHEP::pi)) *
+                      cathode_hits_rec_fast; // 2*pi due to presence of reflective foils
+    double hits_geo_slow = (solid_angle_detector / (2. * CLHEP::pi)) *
+                      cathode_hits_rec_slow; // 2*pi due to presence of reflective foils
 
     // determine correction factor, depending on PD type
     const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
@@ -1080,9 +1104,8 @@ namespace phot {
      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
     }
 
-    int hits_vis = fRandPoissPhot->fire(border_correction * hits_geo / cosine_vis);   
-
-    return hits_vis;
+    ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_fast / cosine_vis);
+    ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);   
   }
 
   bool
