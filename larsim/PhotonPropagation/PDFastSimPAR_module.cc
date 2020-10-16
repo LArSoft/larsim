@@ -459,8 +459,7 @@ namespace phot {
     // lar::providerFrom<detinfo::LArPropertiesService>();
     nOpChannels = fPVS->NOpChannels();
 
-    std::unique_ptr<std::vector<sim::OpDetBacktrackerRecord>> opbtr(
-      new std::vector<sim::OpDetBacktrackerRecord>);
+    std::unique_ptr<std::vector<sim::OpDetBacktrackerRecord>> opbtr(new std::vector<sim::OpDetBacktrackerRecord>);
     std::unique_ptr<std::vector<sim::SimPhotonsLite>> phlit(new std::vector<sim::SimPhotonsLite>);
 
     auto& photonLiteCollection(*phlit);
@@ -505,47 +504,64 @@ namespace phot {
       std::map<size_t, int> DetectedNumSlow;
       if (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)) 
         detectedDirectHits(DetectedNumFast, DetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
+
+      // reflected light
+      std::map<size_t, int> ReflDetectedNumFast;
+      std::map<size_t, int> ReflDetectedNumSlow;
+      if (fStoreReflected && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent))) 
+        detectedReflecHits(ReflDetectedNumFast, ReflDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);    
       
       // propagation time
       std::vector<double> transport_time;
 
-      for (size_t channel = 0; channel < nOpChannels; channel++) {
+      // loop through direct and reflected photons
+      for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
         
-        if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
-        sim::OpDetBacktrackerRecord tmpbtr(channel);
+        // only do the reflected loop if including reflected light
+        if (Reflected && !fStoreReflected) continue;
 
-        // calculate propagation time, does not matter whether fast or slow photon
-        transport_time.resize(DetectedNumFast[channel] + DetectedNumSlow[channel]);
-        if (fPVS->IncludePropTime() && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
-          propagationTime(transport_time, ScintPoint_v, channel, false);
-        
-        if (nphot_fast > 0) {
-          int n = DetectedNumFast[channel];
-          num_fastdp += n;
-          for (long i = 0; i < n; ++i) {
-            // calculates the time at which the photon was produced
-            fScintTime->GenScintTime(true, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
-            ++photonLiteCollection[channel].DetectedPhotons[time];
-            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
-          }
-        }        
-        if (nphot_slow > 0 && fDoSlowComponent) {
-          int n = DetectedNumSlow[channel];
-          num_slowdp += n;
-          for (long i = 0; i < n; ++i) {
-            fScintTime->GenScintTime(false, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[DetectedNumFast[channel] + i]);            
-            ++photonLiteCollection[channel].DetectedPhotons[time];
-            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
-          }
-        } 
+        for (size_t channel = 0; channel < nOpChannels; channel++) {
+          
+          if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
+          sim::OpDetBacktrackerRecord tmpbtr(channel);
 
-        AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
+          int ndetected_fast = DetectedNumFast[channel];
+          int ndetected_slow = DetectedNumSlow[channel];
+          if (Reflected) {
+            ndetected_fast = ReflDetectedNumFast[channel];
+            ndetected_slow = ReflDetectedNumSlow[channel];
+          }
+
+          // calculate propagation time, does not matter whether fast or slow photon
+          transport_time.resize(ndetected_fast + ndetected_slow);
+          if (fPVS->IncludePropTime() && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
+            propagationTime(transport_time, ScintPoint_v, channel, Reflected);
+          
+          if (ndetected_fast > 0) {
+            int n = ndetected_fast;
+            num_fastdp += n;
+            for (long i = 0; i < n; ++i) {
+              // calculates the time at which the photon was produced
+              fScintTime->GenScintTime(true, fScintTimeEngine);
+              auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
+              ++photonLiteCollection[channel].DetectedPhotons[time];
+              tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+            }
+          }        
+          if (ndetected_slow > 0 && fDoSlowComponent) {
+            int n = ndetected_slow;
+            num_slowdp += n;
+            for (long i = 0; i < n; ++i) {
+              fScintTime->GenScintTime(false, fScintTimeEngine);
+              auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);            
+              ++photonLiteCollection[channel].DetectedPhotons[time];
+              tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+            }
+          } 
+
+          AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
+        }
       }
-
-      // reflected light
-      // ADD HERE
     }
 
     mf::LogTrace("PDFastSimPAR") << "Total points: " << num_points
@@ -553,6 +569,12 @@ namespace phot {
                                  << ", total slow photons: " << num_slowph
                                  << "\ndetected fast photons: " << num_fastdp
                                  << ", detected slow photons: " << num_slowdp;
+
+    std::cout << "Total points: " << num_points
+                                 << ", total fast photons: " << num_fastph
+                                 << ", total slow photons: " << num_slowph
+                                 << "\ndetected fast photons: " << num_fastdp
+                                 << ", detected slow photons: " << num_slowdp << std::endl;
 
     PDChannelToSOCMap.clear();
     event.put(move(phlit), "par");
@@ -565,7 +587,8 @@ namespace phot {
   void
   PDFastSimPAR::AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
                             std::map<size_t, int>& ChannelMap,
-                            sim::OpDetBacktrackerRecord btr)
+                            sim::OpDetBacktrackerRecord btr
+                            )
   {
     size_t iChan = btr.OpDetNum();
     auto channelPosition = ChannelMap.find(iChan);
@@ -1105,7 +1128,7 @@ namespace phot {
     }
 
     ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_fast / cosine_vis);
-    ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);   
+    ReflDetThis[1] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);   
   }
 
   bool
