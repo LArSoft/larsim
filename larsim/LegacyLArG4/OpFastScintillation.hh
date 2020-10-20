@@ -259,6 +259,13 @@ namespace larg4 {
     void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
     // Visible component timing parameterisation
 
+    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint) const;
+    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint) const;
+
   protected:
     void BuildThePhysicsTable();
     // It builds either the fast or slow scintillation integral table;
@@ -296,22 +303,15 @@ namespace larg4 {
     /// Returns whether the semi-analytic visibility parametrization is being used.
     bool usesSemiAnalyticModel() const;
 
-    void detectedDirectHits(std::map<size_t, int>& DetectedNum,
-                            const double Num,
-                            geo::Point_t const& ScintPoint);
-    void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
-                            const double Num,
-                            geo::Point_t const& ScintPoint);
-
     int VUVHits(const double Nphotons_created,
                 geo::Point_t const& ScintPoint,
-                OpticalDetector const& opDet);
+                OpticalDetector const& opDet) const;
     // Calculates semi-analytic model number of hits for vuv component
 
     int VISHits(geo::Point_t const& ScintPoint,
                 OpticalDetector const& opDet,
                 const double cathode_hits_rec,
-                const std::array<double, 3> hotspot);
+                const std::array<double, 3> hotspot) const;
     // Calculates semi-analytic model number of hits for visible component
 
     G4double single_exp(const G4double t, const G4double tau2) const;
@@ -347,8 +347,6 @@ namespace larg4 {
      double ftf1_sampling_factor;
      double ft0_max, ft0_break_point;*/
 
-    size_t NOpChannels;
-
     //For new VUV time parametrization
     double fstep_size, fmin_d, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
     std::vector<std::vector<double>> fparameters[7];
@@ -370,16 +368,16 @@ namespace larg4 {
     };
 
     // solid angle of rectangular aperture calculation functions
-    double Rectangle_SolidAngle(const double a, const double b, const double d);
-    double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v);
+    double Rectangle_SolidAngle(const double a, const double b, const double d) const;
+    double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v) const;
     // solid angle of circular aperture calculation functions
-    double Disk_SolidAngle(const double d, const double h, const double b);
+    double Disk_SolidAngle(const double d, const double h, const double b) const;
     // solid angle of a dome aperture calculation functions
     double Omega_Dome_Model(const double distance, const double theta) const;
 
     // For VUV semi-analytic hits
     // Gaisser-Hillas correction parameters for VUV Nhits estimation
-    G4double Gaisser_Hillas(const double x, const double* par);
+    G4double Gaisser_Hillas(const double x, const double* par) const;
     double fdelta_angulo_vuv;
     // flat PDs
     bool fIsFlatPDCorr;
@@ -445,14 +443,14 @@ namespace larg4 {
                        const std::vector<double>& yData,
                        double x,
                        bool extrapolate,
-                       size_t i = 0);
+                       size_t i = 0) const;
     void interpolate3(std::array<double, 3>& inter,
                       const std::vector<double>& xData,
                       const std::vector<double>& yData1,
                       const std::vector<double>& yData2,
                       const std::vector<double>& yData3,
                       double x,
-                      bool extrapolate);
+                      bool extrapolate) const;
 
     static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
 
@@ -464,8 +462,6 @@ namespace larg4 {
   double model_far(double*, double*);
 
   static const size_t acos_bins = 2000000;
-  static std::array<double, acos_bins + 1>
-    acos_arr; // to get minimum resolution of 0.0000005 in [0,1]
   constexpr double acos_table(const double x);
   double fast_acos(const double x);
 
@@ -569,6 +565,17 @@ namespace larg4 {
     double d = 0.;
     for (unsigned int p = 0; p < dimension; ++p) {
       d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
+    }
+    return std::sqrt(d);
+  }
+
+  template <typename TVector3>
+  inline constexpr double
+  dist(const std::array<double, 3> x, const TVector3 y, const unsigned int dimension, const unsigned int start)
+  {
+    double d = 0.;
+    for (unsigned int p = start; p < dimension; ++p) {
+      d += (x[p] - y[p]) * (x[p] - y[p]);
     }
     return std::sqrt(d);
   }
