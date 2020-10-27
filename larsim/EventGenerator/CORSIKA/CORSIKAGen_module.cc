@@ -272,6 +272,7 @@ namespace evgen {
     //fcl parameters
     double fProjectToHeight=0.; ///< Height to which particles will be projected [cm]
     std::vector< std::string > fShowerInputFiles; ///< Set of CORSIKA shower data files to use
+    std::string fShowerCopyType; // ifdh file selection and copying (default) or direct file path
     std::vector< double > fShowerFluxConstants; ///< Set of flux constants to be associated with each shower data file
     double fSampleTime=0.; ///< Duration of sample [s]
     double fToffset=0.; ///< Time offset of sample, defaults to zero (no offset) [s]
@@ -290,6 +291,7 @@ namespace evgen{
     : EDProducer{p},
       fProjectToHeight(p.get< double >("ProjectToHeight",0.)),
       fShowerInputFiles(p.get< std::vector< std::string > >("ShowerInputFiles")),
+      fShowerCopyType(p.get< std::string >("ShowerCopyType", "IFDH")),
       fShowerFluxConstants(p.get< std::vector< double > >("ShowerFluxConstants")),
       fSampleTime(p.get< double >("SampleTime",0.)),
       fToffset(p.get< double >("TimeOffset",0.)),
@@ -392,6 +394,7 @@ namespace evgen{
         mf::LogInfo("CorsikaGen") << "Selected"<<selectedflist.back().first<<"\n";
           }else{
         //use findMatchingFiles
+        //default to IFDH approach when wildcards in path
         std::vector<std::pair<std::string,long>> flist;
                 std::string path(gSystem->DirName(fShowerInputFiles[i].c_str()));
                 std::string pattern(gSystem->BaseName(fShowerInputFiles[i].c_str()));
@@ -418,9 +421,17 @@ namespace evgen{
     for(unsigned int i=0; i<selectedflist.size(); i++){
       mf::LogInfo("CorsikaGen")
         << "Fetching: "<<selectedflist[i].first<<" "<<selectedflist[i].second<<"\n";
-      std::string fetchedfile(fIFDH->fetchInput(selectedflist[i].first));
-      MF_LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile;
-      locallist.push_back(fetchedfile);
+      if (fShowerCopyType == "IFDH") {
+        std::string fetchedfile(fIFDH->fetchInput(selectedflist[i].first));
+        MF_LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile << "; copy type: IFDH";
+        locallist.push_back(fetchedfile);
+      }
+      else if (fShowerCopyType == "DIRECT") {
+        std::string fetchedfile(selectedflist[i].first);
+        MF_LOG_DEBUG("CorsikaGen") << "Fetched; local path: "<<fetchedfile << "; copy type: DIRECT";
+        locallist.push_back(fetchedfile);
+      }
+      else throw cet::exception("CORSIKAGen") << "Error copying shower db: ShowerCopyType must be \"IFDH\" or \"DIRECT\"\n";
     }
 
     //open the files in fShowerInputFilesLocalPaths with sqlite3
