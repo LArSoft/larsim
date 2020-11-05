@@ -112,30 +112,6 @@ namespace {
 
     return TMath::Abs(y1 - y2);
   }
-  //  double LandauPlusExpoFinal(double *x, double *par)
-  //  {
-  //        // par0 = joining point
-  //        // par1 = Landau MPV
-  //        // par2 = Landau widt
-  //        // par3 = normalization
-  //        // par4 = Expo cte
-  //        // par5 = Expo tau
-  //        double y1 = par[3]*TMath::Landau(x[0],par[1],par[2]);
-  //        double y2 = TMath::Exp(par[4]+x[0]*par[5]);
-  //        if(x[0] > par[0]) y1 = 0.;
-  //        if(x[0] < par[0]) y2 = 0.;
-  //
-  //        return (y1 + y2);
-  //  }
-
-  //......................................................................
-  //  double finter_r(double *x, double *par)
-  //  {
-  //        double y1 = par[2]*TMath::Landau(x[0],par[0],par[1]);
-  //        double y2 = par[5]*TMath::Landau(x[0],par[3],par[4]);
-  //
-  //        return TMath::Abs(y1 - y2);
-  //  }
 
   double
   model_close(double* x, double* par)
@@ -182,19 +158,6 @@ namespace {
     double Exponential = std::exp((par[1] - x) / par[2]);
 
     return (Normalization * Term * Exponential);
-  }
-
-  //......................................................................
-  double
-  Pol_5(const double x, double* par)
-  {
-    // 5th order polynomial function
-    double xpow = 1.;
-    for (unsigned i = 1; i <= 5; ++i) {
-      xpow *= x;
-      par[0] += par[i] * xpow;
-    }
-    return par[0];
   }
 
   //......................................................................
@@ -261,6 +224,26 @@ namespace {
     return false;
   }
 
+  template <typename TReal>
+  inline constexpr double
+  dist(const TReal* x, const TReal* y, const unsigned int dimension)
+  {
+    double d = 0.;
+    for (unsigned int p = 0; p < dimension; ++p) {
+      d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
+    }
+    return std::sqrt(d);
+  }
+  template <typename TVector3>
+  inline constexpr double
+  dist(const std::array<double, 3> x, const TVector3 y, const unsigned int dimension, const unsigned int start)
+  {
+    double d = 0.;
+    for (unsigned int p = start; p < dimension; ++p) {
+      d += (x[p] - y[p]) * (x[p] - y[p]);
+    }
+    return std::sqrt(d);
+  }
 } // namespace
 
 namespace phot {
@@ -293,19 +276,10 @@ namespace phot {
       int type;
     };
 
-    int VUVHits(const double Nphotons_created,
-                geo::Point_t const& ScintPoint,
-                OpticalDetector const& opDet);
+    int VUVHits(const double Nphotons_created,   geo::Point_t const& ScintPoint, OpticalDetector const& opDet);
+    int VISHits(const double Nphotons_created,   geo::Point_t const& ScintPoint, OpticalDetector const& opDet);
 
-    int VISHits(geo::Point_t const& ScintPoint,
-                OpticalDetector const& opDet,
-                const double cathode_hits_rec,
-                geo::Point_t const& hotspot);
-
-    void propagationTime(std::vector<double>& arrival_time_dist,
-                         G4ThreeVector x0,
-                         const size_t OpChannel,
-                         bool Reflected = false); // const;
+    std::vector<double> PropTime(geo::Point_t ScintPoint, int OpChannel, int NPhotons, bool is_refl); // const;
 
     double interpolate(const std::vector<double>& xData,
                        const std::vector<double>& yData,
@@ -321,10 +295,11 @@ namespace phot {
                       bool extrapolate);
 
     // solid angle of rectangular aperture calculation functions
-    double Rectangle_SolidAngle(const double a, const double b, const double d);
+    double Rectangle_SolidAngle_Cal(const double a, const double b, const double d);
     double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
+    double Omega_Dome_Model(const double distance, const double theta);
 
     bool fDoSlowComponent;
     art::InputTag simTag;
@@ -333,7 +308,8 @@ namespace phot {
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
 
-    std::map<size_t, int> PDChannelToSOCMap; // Where each OpChan is.
+    std::map<size_t, int> PDChannelToSOCMapDirect; // Where each OpChan is.
+    std::map<size_t, int> PDChannelToSOCMapReflect; // Where each OpChan is.
 
     // For new VUV time parametrization
     double fstep_size, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance;
@@ -360,7 +336,7 @@ namespace phot {
 
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
     // array of corrections for VIS Nhits estimation
-    std::vector<std::vector<double>> fvispars;
+//    std::vector<std::vector<double>> fvispars;
     std::vector<double> fvis_border_distances_x;
     std::vector<double> fvis_border_distances_r;
     std::vector<std::vector<std::vector<double>>> fvis_border_correction;
@@ -372,13 +348,43 @@ namespace phot {
 
     // Optical detector properties for semi-analytic hits
     double fradius;
-    // Dims fcathode_plane; TODO: uncomment when reflected light gets added
+    Dims fcathode_plane;
+    
     int fdelta_angle;
     int fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int> fOpDetType;
     std::vector<double> fOpDetLength;
     std::vector<double> fOpDetHeight;
+
+
+    // For VUV semi-analytic hits
+    double fdelta_angulo_vuv;
+    // flat PDs
+    bool fIsFlatPDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_flat;
+    std::vector<double> fborder_corr_angulo_flat;
+    std::vector<std::vector<double>> fborder_corr_flat;
+    // dome PDs
+    bool fIsDomePDCorr;
+    std::vector<std::vector<double>> fGHvuvpars_dome;
+    std::vector<double> fborder_corr_angulo_dome;
+    std::vector<std::vector<double>> fborder_corr_dome;
+
+    // For VIS semi-analytic hits
+    bool fStoreReflected;
+    // correction parameters for VIS Nhits estimation
+    double fdelta_angulo_vis;
+    // flat PDs
+    std::vector<double> fvis_distances_x_flat;
+    std::vector<double> fvis_distances_r_flat;
+    std::vector<std::vector<std::vector<double>>> fvispars_flat;
+    // dome PDs
+    std::vector<double> fvis_distances_x_dome;
+    std::vector<double> fvis_distances_r_dome;
+    std::vector<std::vector<std::vector<double>>> fvispars_dome;
+    
+    double fcathode_zdimension, fcathode_ydimension;
 
     // Photon visibility service instance.
     PhotonVisibilityService const* const fPVS;
@@ -414,116 +420,264 @@ namespace phot {
                                                                                  "SeedScintTime"))
     , fActiveVolumes{extractActiveVolumes(*(lar::providerFrom<geo::Geometry>()))}
     , fPVS(art::ServiceHandle<PhotonVisibilityService const>().get())
-  {
-    std::cout << "PDFastSimPAR Module Construct" << std::endl;
-
-    Initialization();
-    produces<std::vector<sim::SimPhotonsLite>>("par");
-    produces<std::vector<sim::OpDetBacktrackerRecord>>("par");
-  }
-
+    {
+        std::cout << "PDFastSimPAR Module Construct" << std::endl;
+        
+        Initialization();
+        art::ServiceHandle<sim::LArG4Parameters const> lgp;        
+        if (lgp->UseLitePhotons())
+        {
+            std::cout << "Use Lite Photon." << std::endl;
+            produces< std::vector<sim::SimPhotonsLite> >();
+            produces< std::vector<sim::OpDetBacktrackerRecord> >();
+            
+            if(fPVS->StoreReflected())
+            {
+                std::cout << "Store Reflected Photons" << std::endl;
+                produces< std::vector<sim::SimPhotonsLite> >("Reflected");
+                produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");     
+            }            
+        }
+        else
+        {
+            std::cout << "Use Sim Photon." << std::endl;
+            produces< std::vector<sim::SimPhotons> >();
+            if(fPVS->StoreReflected())
+            {
+                std::cout << "Store Reflected Photons" << std::endl;            
+                produces< std::vector<sim::SimPhotons> >("Reflected");     
+            }            
+        }        
+    }
   //......................................................................
   void
   PDFastSimPAR::produce(art::Event& event)
   {
-    mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
-                                 << "EventID: " << event.event();
-
-    // unused auto const* larp =
-    // lar::providerFrom<detinfo::LArPropertiesService>();
-    auto const nOpChannels = fPVS->NOpChannels();
-
-    std::unique_ptr<std::vector<sim::OpDetBacktrackerRecord>> opbtr(
-      new std::vector<sim::OpDetBacktrackerRecord>);
-    std::unique_ptr<std::vector<sim::SimPhotonsLite>> phlit(new std::vector<sim::SimPhotonsLite>);
-
-    auto& photonLiteCollection(*phlit);
-    photonLiteCollection.resize(nOpChannels);
-    for (unsigned int i = 0; i < nOpChannels; i++) {
-      photonLiteCollection[i].OpChannel = i;
-    }
-
-    art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
-    if (!event.getByLabel(simTag, edepHandle)) {
-      std::cout << "PDFastSimPAR Module Cannot getByLabel: " << simTag << std::endl;
-      return;
-    }
-
-    auto const& edeps = edepHandle;
-
-    int num_points = 0;
-    int num_fastph = 0;
-    int num_slowph = 0;
-    int num_fastdp = 0;
-    int num_slowdp = 0;
-
-    for (auto const& edepi : *edeps) {
-      num_points++;
-
-      int trackID = edepi.TrackID();
-      double nphot = edepi.NumPhotons();
-      double edeposit = edepi.Energy() / nphot;
-      double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
-      geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
-      if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
-
-      double nphot_fast = edepi.NumFPhotons();
-      double nphot_slow = edepi.NumSPhotons();
-
-      num_fastph += nphot_fast; // TODO: warning: conversion from double to int
-      num_slowph += nphot_slow; // TODO: warning: conversion from double to int
-
-      // ParPropTimeTF1 = fPVS->GetTimingTF1(pos);
-      for (size_t channel = 0; channel < nOpChannels; channel++) {
-        if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
-        sim::OpDetBacktrackerRecord tmpbtr(channel);
-
-        if (nphot_fast > 0) {
-          const PDFastSimPAR::OpticalDetector op{fOpDetHeight.at(channel),
-                                                 fOpDetLength.at(channel),
-                                                 fOpDetCenter.at(channel),
-                                                 fOpDetType.at(channel)};
-          auto n = VUVHits(nphot_fast, ScintPoint, op);
-          num_fastdp += n;
-          for (long i = 0; i < n; ++i) {
-            // calculates the time at which the photon was produced
-            fScintTime->GenScintTime(true, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
-            ++photonLiteCollection[channel].DetectedPhotons[time];
-            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
-          }
-        }
-
-        if ((nphot_slow > 0) && fDoSlowComponent) {
-          const PDFastSimPAR::OpticalDetector op{fOpDetHeight.at(channel),
-                                                 fOpDetLength.at(channel),
-                                                 fOpDetCenter.at(channel),
-                                                 fOpDetType.at(channel)};
-          auto n = VUVHits(nphot_slow, ScintPoint, op);
-          num_slowdp += n;
-          for (long i = 0; i < n; ++i) {
-            fScintTime->GenScintTime(false, fScintTimeEngine);
-            auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
-            ++photonLiteCollection[channel].DetectedPhotons[time];
-            tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
-          }
-        }
-
-        AddOpDetBTR(*opbtr, PDChannelToSOCMap, tmpbtr);
+      std::cout << "PDFastSimPAR Module Producer" << std::endl;
+      
+      art::ServiceHandle<sim::LArG4Parameters const> lgp;
+      
+      auto const nOpChannels = fPVS->NOpChannels();
+      
+      std::unique_ptr< std::vector< sim::SimPhotons > >             phot   (new std::vector<sim::SimPhotons>);
+      std::unique_ptr< std::vector< sim::SimPhotonsLite > >         phlit  (new std::vector<sim::SimPhotonsLite>);
+      std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr  (new std::vector<sim::OpDetBacktrackerRecord>);
+      
+      std::unique_ptr< std::vector< sim::SimPhotons > >             phot_ref   (new std::vector<sim::SimPhotons>);
+      std::unique_ptr< std::vector< sim::SimPhotonsLite > >         phlit_ref  (new std::vector<sim::SimPhotonsLite>);
+      std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr_ref  (new std::vector<sim::OpDetBacktrackerRecord>);
+      
+      auto& dir_photcol(*phot);
+      auto& ref_photcol(*phot_ref);
+      auto& dir_phlitcol(*phlit);
+      auto& ref_phlitcol(*phlit_ref);
+      dir_photcol.resize(nOpChannels);
+      ref_photcol.resize(nOpChannels);
+      dir_phlitcol.resize(nOpChannels);
+      ref_phlitcol.resize(nOpChannels);
+      for (unsigned int i = 0; i < nOpChannels; i ++)
+      {
+          dir_photcol[i].fOpChannel  = i;
+          ref_photcol[i].fOpChannel  = i;
+          dir_phlitcol[i].OpChannel  = i;
+          ref_phlitcol[i].OpChannel  = i;
       }
-    }
 
-    mf::LogTrace("PDFastSimPAR") << "Total points: " << num_points
-                                 << ", total fast photons: " << num_fastph
-                                 << ", total slow photons: " << num_slowph
-                                 << "\ndetected fast photons: " << num_fastdp
-                                 << ", detected slow photons: " << num_slowdp;
+      art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
+      if (!event.getByLabel(simTag, edepHandle))
+      {
+          std::cout << "PDFastSimPAR Module Cannot getByLabel: " << simTag << std::endl;
+          return;
+      }
 
-    PDChannelToSOCMap.clear();
-    event.put(move(phlit), "par");
-    event.put(move(opbtr), "par");
+      auto const& edeps = edepHandle;
+      
+      int num_points    = 0;
+      for (auto const& edepi : *edeps) 
+      {
+          num_points++;
+    
+          int trackID = edepi.TrackID();
+          double nphot = edepi.NumPhotons();
+          double edeposit = edepi.Energy() / nphot;
+          double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
+          geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
+          if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint))
+          {
+              continue;
+          }
+          
+          double nphot_fast = edepi.NumFPhotons();
+          double nphot_slow = edepi.NumSPhotons();
+          
+          for(unsigned int channel = 0; channel< nOpChannels; channel++)
+          {
+              if(fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel)))
+              {
+                  continue;
+              }
+              const PDFastSimPAR::OpticalDetector op{fOpDetHeight.at(channel),
+                                                     fOpDetLength.at(channel),
+                                                     fOpDetCenter.at(channel),
+                                                     fOpDetType.at(channel)};                          
+              if (lgp->UseLitePhotons())
+              {
+                  sim::OpDetBacktrackerRecord tmpbtr(channel);
+                  if (nphot_fast > 0)
+                  {
+                      auto n = VUVHits(nphot_fast, ScintPoint, op);
+                      std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, false);
+                      for (long i = 0; i < n; ++i)
+                      {
+                          //calculates the time at which the photon was produced
+                          fScintTime->GenScintTime(true, fScintTimeEngine);
+                          auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                          ++ dir_phlitcol[channel].DetectedPhotons[time];
+                          tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                      }
+                  }
+                  
+                  if ((nphot_slow > 0) && fDoSlowComponent)
+                  {
+                      auto n = VUVHits(nphot_slow, ScintPoint, op);
+                      std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, false);
+                      for (long i = 0; i < n; ++i)
+                      {
+                          fScintTime->GenScintTime(false, fScintTimeEngine);
+                          auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                          ++ dir_phlitcol[channel].DetectedPhotons[time];
+                          tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                      }
+                  }
+                  
+                  AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
+                  
+                  if(fPVS->StoreReflected())
+                  {
+                      sim::OpDetBacktrackerRecord tmpbtr_ref(channel); 
+                      if (nphot_fast > 0)
+                      {
+                          auto n = VISHits(nphot_fast, ScintPoint, op);
+                          std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, true);
+                          for (long i = 0; i < n; ++i)
+                          {
+                              //calculates the time at which the photon was produced
+                              fScintTime->GenScintTime(true, fScintTimeEngine);
+                              auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                              ++ ref_phlitcol[channel].DetectedPhotons[time];
+                              tmpbtr_ref.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                          }
+                      }
+                      
+                      if ((nphot_slow > 0) && fDoSlowComponent)
+                      {
+                          auto n = VISHits(nphot_slow, ScintPoint, op);
+                          std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, true);
+                          for (long i = 0; i < n; ++i)
+                          {
+                              fScintTime->GenScintTime(false, fScintTimeEngine);
+                              auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                              ++ ref_phlitcol[channel].DetectedPhotons[time];
+                              tmpbtr_ref.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                          }
+                      }
+                      
+                      AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr_ref);
+                  }
+              }
+              else
+              {
+                  sim::OnePhoton photon;
+                  photon.SetInSD         = false;
+                  photon.InitialPosition = edepi.End();
+                  photon.Energy          = 9.7e-6;
+                  
+                  if (nphot_fast > 0)
+                  {
+                      auto n = VUVHits(nphot_fast, ScintPoint, op);
+                      std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, false);
+                      for (long i = 0; i < n; ++i)
+                      {
+                          fScintTime->GenScintTime(true, fScintTimeEngine);
+                          auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                          photon.Time = time;
+                          dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
+                      }
+                  }
+                  
+                  if ((nphot_slow > 0) && fDoSlowComponent)
+                  {
+                      auto n = VUVHits(nphot_slow, ScintPoint, op);
+                      std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, false);
+                      for (long i = 0; i < n; ++i)
+                      {
+                          fScintTime->GenScintTime(false, fScintTimeEngine);
+                          auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                          photon.Time = time;
+                          dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
+                      }
+                  }
+                  
+                  if(fPVS->StoreReflected())
+                  {
+                      sim::OnePhoton photon;
+                      photon.SetInSD         = false;
+                      photon.InitialPosition = edepi.End();
+                      photon.Energy          = 2.7e-6;
+                      
+                      if (nphot_fast > 0)
+                      {
+                          auto n = VISHits(nphot_fast, ScintPoint, op);
+                          std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, true);
+                          for (long i = 0; i < n; ++i)
+                          {
+                              fScintTime->GenScintTime(true, fScintTimeEngine);
+                              auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                              photon.Time = time;
+                              ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
+                          }
+                      }
+                      
+                      if ((nphot_slow > 0) && fDoSlowComponent)
+                      {
+                          auto n = VISHits(nphot_slow, ScintPoint, op);
+                          std::vector<double> arrivaltime = PropTime(ScintPoint, channel, n, true);
+                          for (long i = 0; i < n; ++i)
+                          {
+                              fScintTime->GenScintTime(false, fScintTimeEngine);
+                              auto time   = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + arrivaltime[i]);
+                              photon.Time = time;
+                              ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
+                          }
+                      }
+                  }
+              }
+          }
+      }    
 
-    return;
+      PDChannelToSOCMapDirect.clear();
+      PDChannelToSOCMapReflect.clear();
+      
+      if (lgp->UseLitePhotons())
+      {
+          event.put(move(phlit));
+          event.put(move(opbtr));
+          if (fPVS->StoreReflected())
+          {
+              event.put(move(phlit_ref), "Reflected");
+              event.put(move(opbtr_ref), "Reflected");
+          }
+      }
+      else
+      {
+          event.put(move(phot));
+          if (fPVS->StoreReflected())
+          {
+              event.put(move(phot_ref), "Reflected");
+          }
+      }
+      
+      return;
   }
 
   //......................................................................
@@ -592,6 +746,31 @@ namespace phot {
       }
     }
 
+    // Load Gaisser-Hillas corrections for VUV semi-analytic hits
+    std::cout << "Loading the GH corrections" << std::endl;
+    fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr,
+                                        fIsDomePDCorr,
+                                        fdelta_angulo_vuv,
+                                        fradius
+                                      );
+    if (!fIsFlatPDCorr && !fIsDomePDCorr) {
+      throw cet::exception("OpFastScintillation")
+          << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+    }
+    if (fIsFlatPDCorr) {
+      fPVS->LoadGHFlat(fGHvuvpars_flat,
+                       fborder_corr_angulo_flat,
+                       fborder_corr_flat
+                      );
+    }
+    if (fIsDomePDCorr) {
+      fPVS->LoadGHDome(fGHvuvpars_dome,
+                       fborder_corr_angulo_dome,
+                       fborder_corr_dome
+                      );
+    }
+
+
     fCathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
@@ -646,13 +825,32 @@ namespace phot {
       VUV_max = VUV_empty;
       VUV_min = VUV_empty;
 
-      // TODO: Include this when it's possible
-      // // VIS time parameterisation
-      // if (fPVS->StoreReflected()) {
-      //   // load parameters
-      //   fPVS->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,
-      //                             fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
-      // }
+      // VIS time parameterisation
+      if (fPVS->StoreReflected())
+      {
+          fPVS->LoadTimingsForVISPar(fdistances_refl, fcut_off_pars, ftau_pars,fvis_vmean, fn_LAr_vis, fn_LAr_vuv);
+          
+          std::cout << "Loading visible light corrections" << std::endl;
+          fPVS->LoadVisSemiAnalyticProperties(fdelta_angulo_vis,fradius);
+          if (fIsFlatPDCorr)
+          {
+              fPVS->LoadVisParsFlat(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat);
+          }
+          if (fIsDomePDCorr)
+          {
+              fPVS->LoadVisParsDome(fvis_distances_x_dome,fvis_distances_r_dome,fvispars_dome);
+          }
+          
+          // cathode dimensions
+          fcathode_ydimension = fActiveVolumes[0].SizeY();
+          fcathode_zdimension = fActiveVolumes[0].SizeZ();
+          
+          // set cathode plane struct for solid angle function
+          fcathode_plane.h = fcathode_ydimension;
+          fcathode_plane.w = fcathode_zdimension;
+          fplane_depth = std::abs(fCathode_centre.X());
+          
+      }
     }
 
     // LAr absorption length in cm
@@ -749,12 +947,65 @@ namespace phot {
 
   //......................................................................
   // VIS hits semi-analytic model calculation
-  int
-  PDFastSimPAR::VISHits(geo::Point_t const& ScintPoint,
-                        OpticalDetector const& opDet,
-                        const double cathode_hits_rec,
-                        geo::Point_t const& hotspot)
+  int PDFastSimPAR::VISHits(const double Nphotons_created,   geo::Point_t const& ScintPoint, OpticalDetector const& opDet)
   {
+      double plane_depth;
+      if (ScintPoint.X() < 0.)
+      {
+          plane_depth = -fplane_depth;
+      }
+      else
+      {
+          plane_depth = fplane_depth;
+      }
+            
+      // get scintpoint coords relative to centre of cathode plane
+      geo::Vector_t const ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
+                                                 std::abs(ScintPoint.Y() - fCathode_centre.Y()),
+                                                 std::abs(ScintPoint.Z() - fCathode_centre.Z())};
+      
+      // calculate solid angle of cathode from the scintillation point
+      double solid_angle_cathode = Rectangle_SolidAngle(fcathode_plane, ScintPoint_relative);
+      
+      // calculate distance and angle between ScintPoint and hotspot
+      // vast majority of hits in hotspot region directly infront of scintpoint,
+      // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
+      double distance_cathode = std::abs(plane_depth - ScintPoint.X());
+      // calculate hits on cathode plane via geometric acceptance
+      double cathode_hits_geo = std::exp(-1. * distance_cathode / fL_abs_vuv) *(solid_angle_cathode / (4. * CLHEP::pi)) * Nphotons_created;
+      // determine Gaisser-Hillas correction including border effects
+      // use flat correction
+      double r = std::sqrt(std::pow(ScintPoint.Y() - fCathode_centre.Y(), 2) + std::pow(ScintPoint.Z() - fCathode_centre.Z(), 2));
+      double pars_ini[4] = {0, 0, 0, 0};
+      double s1 = 0; double s2 = 0; double s3 = 0;
+      if(fIsFlatPDCorr) 
+      {
+          pars_ini[0] = fGHvuvpars_flat[0][0];
+          pars_ini[1] = fGHvuvpars_flat[1][0];
+          pars_ini[2] = fGHvuvpars_flat[2][0];
+          pars_ini[3] = fGHvuvpars_flat[3][0];
+          s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], 0, true);
+          s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], 0, true);
+          s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
+      }
+      else std::cout << "Error: flat optical detector VUV correction required for reflected semi-analytic hits." << std::endl;
+      
+      // add border correction
+      pars_ini[0] = pars_ini[0] + s1 * r;
+      pars_ini[1] = pars_ini[1] + s2 * r;
+      pars_ini[2] = pars_ini[2] + s3 * r;
+      pars_ini[3] = pars_ini[3];
+      
+      
+      // calculate corrected number of hits
+      double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
+      const double cathode_hits_rec = GH_correction * cathode_hits_geo;
+      
+      // detemine hits on each PD
+      geo::Point_t const hotspot_v = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
+      
+      std::array<double, 3> hotspot;
+      geo::vect::fillCoords(hotspot, hotspot_v);
 
     // 1). calculate total number of hits of VUV photons on reflective
     // foils via solid angle + Gaisser-Hillas corrections.
@@ -763,104 +1014,234 @@ namespace phot {
     // 2). calculate number of these hits which reach the optical
     // detector from the hotspot via solid angle
 
-    geo::Vector_t const emission_relative = hotspot - opDet.OpDetPoint;
+//    geo::Vector_t const emission_relative = hotspot - opDet.OpDetPoint;
 
-    // calculate solid angle of optical channel
-    double solid_angle_detector = 0.;
-    // ARAPUCAS
-    if (opDet.type == 0) {
-      // get hotspot coordinates relative to opDet
-      geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
-                                                std::abs(emission_relative.Y()),
-                                                std::abs(emission_relative.Z())};
-      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative);
-    }
-    // PMTs
-    else if (opDet.type == 1) {
-      const double zy_offset = std::sqrt(emission_relative.Y() * emission_relative.Y() +
-                                         emission_relative.Z() * emission_relative.Z());
-      const double x_distance = std::abs(emission_relative.X());
-      solid_angle_detector = Disk_SolidAngle(zy_offset, x_distance, fradius);
-    }
-    else {
-      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" << std::endl;
-    }
+//    // calculate solid angle of optical channel
+//    double solid_angle_detector = 0.;
+//    // ARAPUCAS
+//    if (opDet.type == 0) {
+//      // get hotspot coordinates relative to opDet
+//      geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
+//                                                std::abs(emission_relative.Y()),
+//                                                std::abs(emission_relative.Z())};
+//      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative);
+//    }
+//    // PMTs
+//    else if (opDet.type == 1) {
+//      const double zy_offset = std::sqrt(emission_relative.Y() * emission_relative.Y() +
+//                                         emission_relative.Z() * emission_relative.Z());
+//      const double x_distance = std::abs(emission_relative.X());
+//      solid_angle_detector = Disk_SolidAngle(zy_offset, x_distance, fradius);
+//    }
+//    else {
+//      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = disk" << std::endl;
+//    }
 
-    // calculate number of hits via geometeric acceptance
-    double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) *
-                      cathode_hits_rec; // 2*pi due to presence of reflective foils
+//    // calculate number of hits via geometeric acceptance
+//    double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) * cathode_hits_rec; // 2*pi due to presence of reflective foils
 
-    // calculate distances and angles for application of corrections
-    // distance to hotspot
-    const double distance_vuv = (ScintPoint - hotspot).R();
-    // distance from hotspot to optical detector
-    const double distance_vis = emission_relative.R();
-    //  angle between hotspot and optical detector
-    const double cosine_vis = std::abs(emission_relative.X()) / distance_vis;
-    // const double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
-    const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
-    const size_t k = (theta_vis / fdelta_angle); // TODO: warning: conversion from double to int
+//    // calculate distances and angles for application of corrections
+//    // distance to hotspot
+//    const double distance_vuv = (ScintPoint - hotspot).R();
+//    // distance from hotspot to optical detector
+//    const double distance_vis = emission_relative.R();
+//    //  angle between hotspot and optical detector
+//    const double cosine_vis = std::abs(emission_relative.X()) / distance_vis;
+//    // const double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
+//    const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
+//    
+//    const size_t k = (theta_vis / fdelta_angle); // TODO: warning: conversion from double to int
+//    // apply geometric correction
+//    double pars_ini_vis[6] = {fvispars[0][k],
+//                              fvispars[1][k],
+//                              fvispars[2][k],
+//                              fvispars[3][k],
+//                              fvispars[4][k],
+//                              fvispars[5][k]};
+//    double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
+//    int hits_rec = fRandPoissPhot->fire(geo_correction * hits_geo / cosine_vis);
+//    
+//    // apply border correction
+//    int hits_vis = 0;
+//    if (fApplyVisBorderCorrection) {
+//      // calculate distance for interpolation depending on model
+//      double r = 0.;
+//      if (fVisBorderCorrectionType == "Radial") {
+//        r = std::sqrt(std::pow(ScintPoint.Y() - fCathode_centre.Y(), 2) +
+//                      std::pow(ScintPoint.Z() - fCathode_centre.Z(), 2));
+//      }
+//      else if (fVisBorderCorrectionType == "Vertical") {
+//        r = std::abs(ScintPoint.Y());
+//      }
+//      else {
+//        std::cout << "Invalid border correction type - defaulting to using "
+//                     "central value"
+//                  << std::endl;
+//      }
+//      // interpolate in x for each r bin
+//      const size_t nbins_r = fvis_border_correction[k].size();
+//      std::vector<double> interp_vals(nbins_r, 0.0);
+//      {
+//        size_t idx = 0;
+//        size_t size = fvis_border_distances_x.size();
+//        if (std::abs(ScintPoint.X()) >= fvis_border_distances_x[size - 2])
+//          idx = size - 2;
+//        else {
+//          while (std::abs(ScintPoint.X()) > fvis_border_distances_x[idx + 1])
+//            idx++;
+//        }
+//        for (size_t i = 0; i < nbins_r; ++i) {
+//          interp_vals[i] = interpolate(fvis_border_distances_x,
+//                                       fvis_border_correction[k][i],
+//                                       std::abs(ScintPoint.X()),
+//                                       false,
+//                                       idx);
+//        }
+//      }
+//      std::cout << "funct 7"  << std::endl;
+//      // interpolate in r
+//      double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
+//      // apply border correction
+//      double hits_rec_borders = border_correction * hits_rec / cosine_vis;
 
-    // apply geometric correction
-    double pars_ini_vis[6] = {fvispars[0][k],
-                              fvispars[1][k],
-                              fvispars[2][k],
-                              fvispars[3][k],
-                              fvispars[4][k],
-                              fvispars[5][k]};
-    double geo_correction = Pol_5(distance_vuv, pars_ini_vis);
-    int hits_rec = fRandPoissPhot->fire(geo_correction * hits_geo / cosine_vis);
+//      // round final result
+//      hits_vis = std::round(hits_rec_borders);
+//    }
+//    else {
+//      hits_vis = hits_rec;
+//    }
 
-    // apply border correction
-    int hits_vis = 0;
-    if (fApplyVisBorderCorrection) {
-      // calculate distance for interpolation depending on model
-      double r = 0.;
-      if (fVisBorderCorrectionType == "Radial") {
-        r = std::sqrt(std::pow(ScintPoint.Y() - fCathode_centre.Y(), 2) +
-                      std::pow(ScintPoint.Z() - fCathode_centre.Z(), 2));
-      }
-      else if (fVisBorderCorrectionType == "Vertical") {
-        r = std::abs(ScintPoint.Y());
-      }
-      else {
-        std::cout << "Invalid border correction type - defaulting to using "
-                     "central value"
-                  << std::endl;
-      }
-      // interpolate in x for each r bin
-      const size_t nbins_r = fvis_border_correction[k].size();
-      std::vector<double> interp_vals(nbins_r, 0.0);
+      // the interface has been converted into geo::Point_t, the implementation not yet
+      std::array<double, 3U> SPoint;
+      std::array<double, 3U> DPoint;
+      geo::vect::fillCoords(SPoint, ScintPoint);
+      geo::vect::fillCoords(DPoint, opDet.OpDetPoint);
+      
+      // calculate distances and angles for application of corrections
+      // distance from hotspot to optical detector
+      double distance_vis = dist(&hotspot[0], &DPoint[0], 3);
+      //  angle between hotspot and optical detector
+      double cosine_vis = std::abs(hotspot[0] - DPoint[0]) / distance_vis;
+      // double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
+      double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
+      
+      // calculate solid angle of optical detector
+      double solid_angle_detector = 0;
+      // rectangular aperture
+      if (opDet.type == 0) 
       {
-        size_t idx = 0;
-        size_t size = fvis_border_distances_x.size();
-        if (std::abs(ScintPoint.X()) >= fvis_border_distances_x[size - 2])
-          idx = size - 2;
-        else {
-          while (std::abs(ScintPoint.X()) > fvis_border_distances_x[idx + 1])
-            idx++;
-        }
-        for (size_t i = 0; i < nbins_r; ++i) {
-          interp_vals[i] = interpolate(fvis_border_distances_x,
-                                       fvis_border_correction[k][i],
-                                       std::abs(ScintPoint.X()),
-                                       false,
-                                       idx);
-        }
+          // get hotspot coordinates relative to opDet
+          std::array<double, 3> emission_relative = {std::abs(hotspot[0] - DPoint[0]),
+                                                     std::abs(hotspot[1] - DPoint[1]),
+                                                     std::abs(hotspot[2] - DPoint[2])};
+
+           geo::Vector_t const abs_emission_relative{std::abs(emission_relative[0]),
+                                                     std::abs(emission_relative[1]),
+                                                     std::abs(emission_relative[2])};
+          // calculate solid angle
+          solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative);
       }
-      // interpolate in r
-      double border_correction = interpolate(fvis_border_distances_r, interp_vals, r, false);
-      // apply border correction
-      double hits_rec_borders = border_correction * hits_rec / cosine_vis;
+      // dome aperture
+      else if (opDet.type == 1) 
+      {
+          solid_angle_detector = Omega_Dome_Model(distance_vis, theta_vis);
+      }
+      // disk aperture
+      else if (opDet.type == 2) 
+      {
+           // offset in z-y plane
+           double d = dist(&hotspot[1], &DPoint[1], 2);
+           // drift distance (in x)
+           double h = std::abs(hotspot[0] - DPoint[0]);
+           // calculate solid angle
+           solid_angle_detector = Disk_SolidAngle(d, h, fradius);
+      }
+      else 
+      {
+          std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk" << std::endl;
+      }
+      
+      // calculate number of hits via geometeric acceptance
+      double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) * cathode_hits_rec; // 2*pi due to presence of reflective foils
+      
+      // determine correction factor, depending on PD type
+      const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
+      TVector3 fcathode_centre;
+      fcathode_centre[0] = fCathode_centre.X();
+      fcathode_centre[1] = fCathode_centre.Y();
+      fcathode_centre[2] = fCathode_centre.Z();
+      double radial = dist(SPoint, fcathode_centre, 2, 1);      // radial distance from centre of detector (Y-Z)
+      double d_c = std::abs(SPoint[0] - plane_depth);      // distance to cathode
+      double border_correction = 0;
+      // flat PDs
+      if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr)
+      {
+          // interpolate in d_c for each r bin
+          const size_t nbins_r = fvispars_flat[k].size();
+          std::vector<double> interp_vals(nbins_r, 0.0);
 
-      // round final result
-      hits_vis = std::round(hits_rec_borders);
-    }
-    else {
-      hits_vis = hits_rec;
-    }
-
-    return hits_vis;
+          size_t idx = 0;
+          size_t size = fvis_distances_x_flat.size();
+          if (d_c >= fvis_distances_x_flat[size - 2])
+          {
+              idx = size - 2;
+          }
+          
+          else 
+          {
+              while (d_c > fvis_distances_x_flat[idx + 1])
+              idx++;
+          }
+          for (size_t i = 0; i < nbins_r; ++i) 
+          {
+              interp_vals[i] = interpolate(fvis_distances_x_flat,
+              fvispars_flat[k][i],
+              d_c,
+              false,
+              idx);
+          }
+          // interpolate in r
+          border_correction = interpolate(fvis_distances_r_flat, interp_vals, radial, false);
+      }
+      // dome PDs
+      else if (opDet.type == 1 && fIsDomePDCorr) 
+      {
+          // interpolate in d_c for each r bin
+          const size_t nbins_r = fvispars_dome[k].size();
+          std::vector<double> interp_vals(nbins_r, 0.0);
+          size_t idx = 0;
+          size_t size = fvis_distances_x_dome.size();
+          if (d_c >= fvis_distances_x_dome[size - 2])
+          {
+              idx = size - 2;
+          }
+          else
+          {
+              while (d_c > fvis_distances_x_dome[idx + 1])
+              idx++;
+          }
+          for (size_t i = 0; i < nbins_r; ++i) 
+          {
+              interp_vals[i] = interpolate(fvis_distances_x_dome,
+              fvispars_dome[k][i],
+              d_c,
+              false,
+              idx);
+          }
+    
+          // interpolate in r
+          border_correction = interpolate(fvis_distances_r_dome, interp_vals, radial, false);
+      }
+      else 
+      {
+          std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
+      }
+      
+      // apply correction factor
+      double hits_rec = border_correction * hits_geo / cosine_vis;
+      double hits_vis = std::round(G4Poisson(hits_rec));
+      
+      return hits_vis;
   }
 
   bool
@@ -885,12 +1266,11 @@ namespace phot {
   }
 
   //......................................................................
-  void
-  PDFastSimPAR::propagationTime(std::vector<double>& arrival_time_dist,
-                                G4ThreeVector x0,
-                                const size_t OpChannel,
-                                bool Reflected)
+  std::vector<double> PDFastSimPAR::PropTime(geo::Point_t ScintPoint, int OpChannel, int NPhotons, bool is_refl)
   {
+      std::vector<double>  arrival_time_dist;
+      arrival_time_dist.resize(NPhotons);
+      
     if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
       throw cet::exception("PDFastSimPAR")
         << "Cannot have both propagation time models simultaneously.";
@@ -905,7 +1285,7 @@ namespace phot {
              << G4endl;
     }
     else if (fPVS->IncludeParPropTime()) {
-      if (Reflected)
+      if (fPVS->StoreReflected())
         throw cet::exception("PDFastSimPAR")
           << "No parameterized propagation time for reflected light";
       for (size_t i = 0; i < arrival_time_dist.size(); ++i) {
@@ -915,19 +1295,21 @@ namespace phot {
     else if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
       geo::Point_t const& opDetCenter = fOpDetCenter.at(OpChannel);
-      if (!Reflected) {
+      if (!(fPVS->StoreReflected())) {
         const G4ThreeVector OpDetPoint(
           opDetCenter.X() * CLHEP::cm, opDetCenter.Y() * CLHEP::cm, opDetCenter.Z() * CLHEP::cm);
-        double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
+
+        const G4ThreeVector ScintPointG4TV (ScintPoint.X() * CLHEP::cm, ScintPoint.Y() * CLHEP::cm, ScintPoint.Z() * CLHEP::cm);
+        double distance_in_cm = (ScintPointG4TV - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
         getVUVTimes(arrival_time_dist, distance_in_cm);              // in ns
       }
-      else {
-        TVector3 const ScintPoint(x0[0] / CLHEP::cm, x0[1] / CLHEP::cm,
-                                  x0[2] / CLHEP::cm); // in cm
-        getVISTimes(arrival_time_dist, ScintPoint,
-                    geo::vect::toTVector3(opDetCenter)); // in ns
+      else 
+      {
+            getVISTimes(arrival_time_dist, geo::vect::toTVector3(ScintPoint), geo::vect::toTVector3(opDetCenter)); // in ns
       }
     }
+
+    return arrival_time_dist;
   }
 
   //......................................................................
@@ -1337,7 +1719,7 @@ namespace phot {
   //......................................................................
   // solid angle of rectangular aperture
   double
-  PDFastSimPAR::Rectangle_SolidAngle(const double a, const double b, const double d)
+  PDFastSimPAR::Rectangle_SolidAngle_Cal(const double a, const double b, const double d)
   {
     double aa = a / (2. * d);
     double bb = b / (2. * d);
@@ -1354,45 +1736,45 @@ namespace phot {
 
     // arapuca plane fixed in x direction
     if (isApproximatelyZero(v.Y()) && isApproximatelyZero(v.Z())) {
-      return Rectangle_SolidAngle(o.h, o.w, v.X());
+      return Rectangle_SolidAngle_Cal(o.h, o.w, v.X());
     }
     if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
       double A = v.Y() - o.h * .5;
       double B = v.Z() - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+      double to_return = (Rectangle_SolidAngle_Cal(2. * (A + o.h), 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * (A + o.h), 2. * B, v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
     if ((v.Y() <= o.h * .5) && (v.Z() <= o.w * .5)) {
       double A = -v.Y() + o.h * .5;
       double B = -v.Z() + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+      double to_return = (Rectangle_SolidAngle_Cal(2. * (o.h - A), 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * (o.h - A), 2. * B, v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
     if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && (v.Z() <= o.w * .5)) {
       double A = v.Y() - o.h * .5;
       double B = -v.Z() + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+      double to_return = (Rectangle_SolidAngle_Cal(2. * (A + o.h), 2. * (o.w - B), v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * (o.w - B), v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * (A + o.h), 2. * B, v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
     if ((v.Y() <= o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
       double A = -v.Y() + o.h * .5;
       double B = v.Z() - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+      double to_return = (Rectangle_SolidAngle_Cal(2. * (o.h - A), 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * (o.h - A), 2. * B, v.X()) +
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * (B + o.w), v.X()) -
+                          Rectangle_SolidAngle_Cal(2. * A, 2. * B, v.X())) *
                          .25;
       return to_return;
     }
@@ -1424,6 +1806,37 @@ namespace phot {
   } // PDFastSimPAR::extractActiveVolumes()
 
   // ---------------------------------------------------------------------------
+    double PDFastSimPAR::Omega_Dome_Model(const double distance, const double theta)
+    {
+        // this function calculates the solid angle of a semi-sphere of radius b,
+        // as a correction to the analytic formula of the on-axix solid angle,
+        // as we move off-axis an angle theta. We have used 9-angular bins
+        // with delta_theta width.
+        
+        // par0 = Radius correction close
+        // par1 = Radius correction far
+        // par2 = breaking distance betwween "close" and "far"
+        
+        double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
+        double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
+        const double delta_theta = 10.;
+        int j = int(theta/delta_theta);
+        // PMT radius
+        const double b = fradius; // cm
+        // distance form which the model parameters break (empirical value)
+        const double d_break = 5*b; //par2
+        
+        if(distance >= d_break)
+        {
+            double R_apparent_far = b - par1[j];
+            return  (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_far/distance,2))));
+        }
+        else
+        {
+            double R_apparent_close = b - par0[j];
+            return (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_close/distance,2))));
+        }
+    }
 
 } // namespace phot
 
