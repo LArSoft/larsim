@@ -399,7 +399,7 @@ namespace phot {
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
-
+    
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
@@ -445,7 +445,7 @@ namespace phot {
     std::cout << "PDFastSimPAR Module Construct" << std::endl;
 
     Initialization();
-    art::ServiceHandle<sim::LArG4Parameters const> lgp;
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;        
     if (lgp->UseLitePhotons())
     {
         std::cout << "Use Lite Photon." << std::endl;
@@ -456,8 +456,8 @@ namespace phot {
         {
             std::cout << "Store Reflected Photons" << std::endl;
             produces< std::vector<sim::SimPhotonsLite> >("Reflected");
-            produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");
-        }
+            produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");     
+        }            
     }
     else
     {
@@ -465,10 +465,10 @@ namespace phot {
         produces< std::vector<sim::SimPhotons> >();
         if(fPVS->StoreReflected())
         {
-            std::cout << "Store Reflected Photons" << std::endl;
-            produces< std::vector<sim::SimPhotons> >("Reflected");
-        }
-    }
+            std::cout << "Store Reflected Photons" << std::endl;            
+            produces< std::vector<sim::SimPhotons> >("Reflected");     
+        }            
+    }        
   }
 
   //......................................................................
@@ -529,41 +529,41 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
       G4ThreeVector ScintPoint_v = {pos[0], pos[1], pos[2]};
-
+      
       if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
 
       double nphot_fast = edepi.NumFPhotons();
       double nphot_slow = edepi.NumSPhotons();
 
-      num_fastph += nphot_fast;
+      num_fastph += nphot_fast; 
       num_slowph += nphot_slow;
 
       // direct light
       std::map<size_t, int> DetectedNumFast;
       std::map<size_t, int> DetectedNumSlow;
-      if (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent))
+      if (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)) 
         detectedDirectHits(DetectedNumFast, DetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
 
       // reflected light, if enabled
       std::map<size_t, int> ReflDetectedNumFast;
       std::map<size_t, int> ReflDetectedNumSlow;
-      if (fStoreReflected && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
-        detectedReflecHits(ReflDetectedNumFast, ReflDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
-
+      if (fStoreReflected && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent))) 
+        detectedReflecHits(ReflDetectedNumFast, ReflDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);    
+      
       // propagation time
       std::vector<double> transport_time;
 
       // loop through direct photons then reflected photons cases
       for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
-
+        
         // only do the reflected loop if including reflected light
         if (Reflected && !fStoreReflected) continue;
 
         for (size_t channel = 0; channel < nOpChannels; channel++) {
-
+          
           if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
-
-
+          
+          
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
           if (Reflected) {
@@ -575,10 +575,10 @@ namespace phot {
           transport_time.resize(ndetected_fast + ndetected_slow);
           if (fPVS->IncludePropTime() && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
             propagationTime(transport_time, ScintPoint_v, channel, Reflected);
-
+          
           // SimPhotonsLite case
           if (lgp->UseLitePhotons()) {
-
+          
             sim::OpDetBacktrackerRecord tmpbtr(channel);
 
             if (ndetected_fast > 0) {
@@ -599,12 +599,12 @@ namespace phot {
               num_slowdp += n;
               for (long i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);            
                 if (Reflected) ++ref_phlitcol[channel].DetectedPhotons[time];
                 else ++dir_phlitcol[channel].DetectedPhotons[time];
                 tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
               }
-            }
+            } 
 
             if (Reflected) AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr);
             else AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
@@ -636,13 +636,13 @@ namespace phot {
               num_slowdp += n;
               for (long i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);            
                 photon.Time = time;
                 if(Reflected) ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
                 else dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
               }
             }
-          }
+          }                   
         }
       }
     }
@@ -653,9 +653,15 @@ namespace phot {
                                  << "\ndetected fast photons: " << num_fastdp
                                  << ", detected slow photons: " << num_slowdp;
 
+    std::cout << "Total points: " << num_points
+                                 << ", total fast photons: " << num_fastph
+                                 << ", total slow photons: " << num_slowph
+                                 << "\ndetected fast photons: " << num_fastdp
+                                 << ", detected slow photons: " << num_slowdp << std::endl;
+    
     PDChannelToSOCMapDirect.clear();
     PDChannelToSOCMapReflect.clear();
-
+    
     if (lgp->UseLitePhotons()) {
         event.put(move(phlit));
         event.put(move(opbtr));
@@ -744,7 +750,7 @@ namespace phot {
     fcathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
-
+    
     for (size_t const i : util::counter(fPVS->NOpChannels())) {
       geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
       fOpDetCenter.push_back(opDet.GetCenter());
@@ -779,9 +785,9 @@ namespace phot {
                                  fangle_bin_timing_vuv
                                 );
 
-      // create vector of empty TF1s that will be replaces with the parameterisations
+      // create vector of empty TF1s that will be replaces with the parameterisations 
       // that are generated as they are required
-      // default TF1() constructor gives function with 0 dimensions, can then check
+      // default TF1() constructor gives function with 0 dimensions, can then check 
       // numDim to qucikly see if a parameterisation has been generated
       const size_t num_params = (fmax_d - fmin_d) / fstep_size; // for d < fmin_d, no parameterisaton, a delta function is used instead
       size_t num_angles = std::round(90/fangle_bin_timing_vuv);
@@ -792,7 +798,7 @@ namespace phot {
       // is regenerated, this is the slow part!
       VUV_max = std::vector(num_angles, std::vector(num_params, 0.0));
       VUV_min = std::vector(num_angles, std::vector(num_params, 0.0));
-
+      
       // VIS time parameterisation
       if (fPVS->StoreReflected()) {
         // load parameters
@@ -872,7 +878,7 @@ namespace phot {
     }
     else {
       fStoreReflected = false;
-    }
+    }         
   }
 
   //......................................................................
@@ -891,16 +897,16 @@ namespace phot {
       const PDFastSimPAR::OpticalDetector op{
         fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
         fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
-
+      
       std::vector<int> DetThis(2, 0);
       VUVHits(NumFast, NumSlow, ScintPoint, op, DetThis);
-
+      
       DetectedNumFast[OpDet] = DetThis[0];
       DetectedNumSlow[OpDet] = DetThis[1];
-
+        
       //   mf::LogInfo("PDFastSimPAR") << "FastScint: " <<
       //   //   it->second<<" " << Num << " " << DetThisPMT;
-      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT        
     }
   }
 
@@ -951,7 +957,7 @@ namespace phot {
     double hits_geo_fast =
       std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * NumFast;
     double hits_geo_slow =
-      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * NumSlow;
+      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * NumSlow;  
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance
     // and angular dependence offset angle bin
@@ -995,8 +1001,8 @@ namespace phot {
 
     // calculate number photons for fast and slow componenets
     DetThis[0] = fRandPoissPhot->fire(GH_correction * hits_geo_fast / cosine);
-    DetThis[1] = fRandPoissPhot->fire(GH_correction * hits_geo_slow / cosine);
-
+    DetThis[1] = fRandPoissPhot->fire(GH_correction * hits_geo_slow / cosine); 
+    
   }
 
   //......................................................................
@@ -1035,7 +1041,7 @@ namespace phot {
                               (solid_angle_cathode / (4. * CLHEP::pi)) * NumFast;
     double cathode_hits_geo_slow = std::exp(-1. * distance_cathode / fL_abs_vuv) *
                               (solid_angle_cathode / (4. * CLHEP::pi)) * NumSlow;
-
+    
     // determine Gaisser-Hillas correction including border effects
     // use flat correction
     double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) + std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
@@ -1076,7 +1082,7 @@ namespace phot {
 
       std::vector<int> ReflDetThis(2, 0);
       VISHits(ScintPoint, op, cathode_hits_rec_fast, cathode_hits_rec_slow, hotspot, ReflDetThis);
-
+      
       ReflDetectedNumFast[OpDet] = ReflDetThis[0];
       ReflDetectedNumSlow[OpDet] = ReflDetThis[1];
     }
@@ -1214,7 +1220,7 @@ namespace phot {
     }
 
     ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_fast / cosine_vis);
-    ReflDetThis[1] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);
+    ReflDetThis[1] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);   
   }
 
   bool
@@ -1312,7 +1318,7 @@ namespace phot {
     else {
       plane_depth = fplane_depth;
     }
-
+    
     // calculate point of reflection for shortest path
     TVector3 bounce_point(plane_depth,ScintPoint[1],ScintPoint[2]);
 
