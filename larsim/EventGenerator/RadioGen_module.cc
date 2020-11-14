@@ -69,6 +69,8 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardataalg/DetectorInfo/DetectorTimings.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataalg/DetectorInfo/DetectorClocksData.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/ROOTGeometryNavigator.h"
 #include "larcorealg/Geometry/GeometryCore.h"
@@ -219,6 +221,7 @@ namespace evgen{
     auto t1 = pset.get< std::vector<double> >("T1", {});
     
     if (fT0.empty() || fT1.empty()) { // better be both empty...
+      assert(fT0.empty() && fT1.empty());
       auto const times = defaulttimewindow();
       t0.push_back(times.first);
       t1.push_back(times.second);
@@ -893,9 +896,9 @@ namespace evgen{
     using namespace detinfo::timescales;
     
     auto const& timings = detinfo::makeDetectorTimings
-      (lar::providerFrom<detinfo::DetectorClocksService>());
-    auto const& detInfo
-      = *(lar::providerFrom<detinfo::DetectorPropertiesService>());
+      (art::ServiceHandle<detinfo::DetectorClocksService>()->DataForJob());
+    detinfo::DetectorPropertiesData const& detInfo
+      = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
     
     //
     // we take a number of (TPC electronics) ticks before the trigger time,
@@ -906,7 +909,7 @@ namespace evgen{
     auto const trigTimeTick
       = timings.toTick<electronics_tick>(timings.TriggerTime());
     electronics_time_ticks const beforeTicks
-      { -int(detInfo.ReadOutWindowSize()) };
+      { -static_cast<int>(detInfo.ReadOutWindowSize()) };
     electronics_time_ticks const afterTicks { detInfo.NumberTimeSamples() };
     
     return {
