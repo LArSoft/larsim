@@ -185,6 +185,9 @@ add_subdirectory(larsim)
 # tests
 add_subdirectory(test)
 
+# example
+add_subdirectory(example)
+
 # ups - table and config files
 add_subdirectory(ups)
 
