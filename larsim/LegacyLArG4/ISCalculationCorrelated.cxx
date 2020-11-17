@@ -38,9 +38,11 @@ namespace larg4 {
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
 
     double density = detProp.Density(detProp.Temperature());
     fEfield = detProp.Efield();
+    fScintPreScale = larp->ScintPreScale();
 
     // ionization work function
     fWion = 1. / lgpHandle->GeVToElectrons() * 1e3; // MeV
@@ -131,7 +133,7 @@ namespace larg4 {
     // apply the scintillation pre-scaling (normally this is already folded into
     // the particle-specific scintillation yields)
     fNumScintPhotons *= fScintPreScale;
-
+    
     MF_LOG_DEBUG("ISCalculationCorrelated")
       << " Electrons produced for " << fEnergyDeposit << " MeV deposited with " << recomb
       << " recombination: " << fNumIonElectrons;
