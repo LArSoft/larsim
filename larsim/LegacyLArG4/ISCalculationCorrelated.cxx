@@ -38,9 +38,11 @@ namespace larg4 {
   {
     std::cout << "LegacyLArG4/ISCalculationCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> lgpHandle;
+    const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
 
     double density = detProp.Density(detProp.Temperature());
     fEfield = detProp.Efield();
+    fScintPreScale = larp->ScintPreScale();
 
     // ionization work function
     fWion = 1. / lgpHandle->GeVToElectrons() * 1e3; // MeV
