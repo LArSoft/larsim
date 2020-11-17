@@ -133,7 +133,7 @@ namespace larg4 {
     // apply the scintillation pre-scaling (normally this is already folded into
     // the particle-specific scintillation yields)
     fNumScintPhotons *= fScintPreScale;
-    
+
     MF_LOG_DEBUG("ISCalculationCorrelated")
       << " Electrons produced for " << fEnergyDeposit << " MeV deposited with " << recomb
       << " recombination: " << fNumIonElectrons;
