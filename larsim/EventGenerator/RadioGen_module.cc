@@ -99,9 +99,89 @@ namespace simb { class MCTruth; }
 
 namespace evgen {
 
-  /// Module to generate particles created by radiological decay, patterend off of SingleGen
-  /// Currently it generates only in rectangular prisms oriented along the x,y,z axes
-
+  /**
+   * @brief Module to generate particles created by radiological decay,
+   *        patterned off of `SingleGen`.
+   * 
+   * The module generates the products of radioactive decay of some known
+   * nuclides.
+   * Each nuclide decay producing a single particle (with exceptions, as for
+   * example argon(A=42)), whose spectrum is specified in a ROOT file to be
+   * found in the `FW_SEARCH_PATH` path, and it can be a alpha, beta, gamma or
+   * neutron. In case multiple decay channels are possible, each decay is
+   * stochastically chosen weighting the channels according to the integral of
+   * their spectrum. The normalization of the spectrum is otherwise ignored.
+   * 
+   * Nuclides can be added by making the proper distributions available in
+   * a file called after the name used for it in the `Nuclide` configuration
+   * parameter (e.g `14C.root` if the nuclide key is `14C`): check the existing
+   * nuclide files for examples.
+   * 
+   * A special treatment is encoded for argon(A=42) and radon(A=222) (and,
+   * "temporary", for nichel(A=59) ).
+   * 
+   * Decays happen only in volumes specified in the configuration, and with a
+   * rate also specified in the configuration. Volumes are always box-shaped,
+   * and can be specified by coordinates or by name. In addition, within each
+   * volume decays will be generated only in the subvolumes matching the
+   * specified materials.
+   * 
+   * 
+   * @note All beta decays emit positrons.
+   * 
+   * 
+   * Configuration parameters
+   * -------------------------
+   * 
+   * * `X0`, `Y0`, `Z0`, `X1`, `Y1`, `Z1` (lists of real numbers, optional):
+   *     if specified, they describe the box volumes where to generate decays;
+   *     all lists must have the same size, and each entry `i` defines the box
+   *     between coordinates `(X0[i], Y0[i], Z0[i])` and `(X1[i], Y1[i], Z1[i])`
+   *     expressed in world coordinates and in centimeters;
+   * * `Volumes` (list of strings, optional): if specified, each entry
+   *     represents all the volumes in the geometry whose name exactly matches
+   *     the entry; the volumes are added _after_ the ones explicitly listed by
+   *     their coordinates (configuration parameters `X0`, `Y0`, `Z0`, `X1`,
+   *     `Y1` and `Z1`); each volume name counts as one entry, even if it
+   *     expands to multiple volumes;
+   *     `Volumes` can be omitted if volumes are specified with the coordinate
+   *     parameters;
+   * * `Nuclide` (list of strings, mandatory): the list of decaying nuclides,
+   *     one per volume entry; note that each of the elements in `X0` (and
+   *     the other 5 coordinate parameters) and each of the elements in
+   *     `Volumes` counts as one entry, even for entries of the latter which
+   *     match multiple volumes (in that case, all matching volumes are
+   *     assigned the same nuclide parameters);
+   *     since documentation is never maintained, refer to the code for a list
+   *     of the supported materials; a subset of them is:
+   *     `39Ar`, `60Co`, `85Kr`, `40K`, `232Th`, `238U`, `222Rn`, `59Ni` and
+   *     `42Ar`;
+   * * `Material` (list of regular expressions, mandatory): for each nuclide,
+   *     the name of the materials allowed to decay in this mode; this name
+   *     is a regular expression (C++ default `std::regex`), which needs to
+   *     match the name of the material as specified in the detector geometry
+   *     (usually in GDML format); a material is mandatory for each nuclide;
+   *     if no material selection is desired, the all-matching pattern `".*"`
+   *     can be used;
+   * * `BqPercc` (list of real numbers, mandatory): activity of the nuclides, in
+   *     the same order as they are in `Nuclide` parameter; each value is
+   *     specified as becquerel per cubic centimeter;
+   * * `T0`, `T1` (list of real values, optional): range of time when the decay
+   *     may happen, in @ref DetectorClocksSimulationTime "simulation time";
+   *     each nuclide is assigned a time range; differently from the other
+   *     parameters, the list of times _can_ be shorter than the number of
+   *     nuclides, in which case all the nuclides with no matching time range
+   *     will be assigned the last range specified; as a specially special case,
+   *     if no time is specified at all, the time window is assigned as from
+   *     one readout window
+   *     (`detinfo::DetectorPropertiesData::ReadOutWindowSize()`) before the
+   *     @ref DetectorClocksHardwareTrigger "nominal hardware trigger time"
+   *     (`detinfo::DetectorClocksData::TriggerTime()`) up to a number of
+   *     ticks after the trigger time equivalent to the full simulated TPC
+   *     waveform (`detinfo::DetectorPropertiesData::NumberTimeSamples()`);
+   *     this makes it a quite poor default, so you may want to avoid it.
+   * 
+   */
   class RadioGen : public art::EDProducer {
   public:
     explicit RadioGen(fhicl::ParameterSet const& pset);
