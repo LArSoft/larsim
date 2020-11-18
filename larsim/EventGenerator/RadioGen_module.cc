@@ -301,10 +301,15 @@ namespace evgen{
     auto t1 = pset.get< std::vector<double> >("T1", {});
     
     if (fT0.empty() || fT1.empty()) { // better be both empty...
-      assert(fT0.empty() && fT1.empty());
-      auto const times = defaulttimewindow();
-      t0.push_back(times.first);
-      t1.push_back(times.second);
+      if (!fT0.empty() || !fT1.empty()) {
+        throw art::Exception(art::errors::Configuration)
+          << "RadioGen T0 and T1 need to be both non-empty, or both empty"
+          " (now T0 has " << fT0.size() << " entries and T1 has " << fT0.size()
+          << ")\n";
+      }
+      auto const [ defaultT0, defaultT1 ] = defaulttimewindow();
+      t0.push_back(defaultT0);
+      t1.push_back(defaultT1);
     }
     
     //
