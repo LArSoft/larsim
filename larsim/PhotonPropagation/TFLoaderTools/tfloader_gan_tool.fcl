@@ -1,0 +1,14 @@
+// tfloader_gan_tool.fcl
+// Oct. 10 2019 Wei Mu
+BEGIN_PROLOG
+
+TFLoaderToolGAN:
+{
+    tool_type: TFLoaderGAN
+    ModelName:   "./models/graph.pb"
+    InputsName:  "dense_1_input"
+    OutputName:  "activation_5/Sigmoid"
+}
+
+
+END_PROLOG

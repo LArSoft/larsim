@@ -1,3 +1,9 @@
+include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
+include_directories ( $ENV{PROTOBUF_INC} )
+include_directories ( $ENV{TENSORFLOW_INC} )
+include_directories ( $ENV{TENSORFLOW_INC}/eigen )
+include_directories ( $ENV{TENSORFLOW_INC}/absl )
+
 art_make(LIB_LIBRARIES larevt_Filters
                        lardataobj_RawData
                        larcorealg_Geometry
@@ -62,3 +68,4 @@ install_scripts()
 add_subdirectory(LibraryBuildTools)
 add_subdirectory(LibraryMappingTools)
 add_subdirectory(ScintTimeTools)
+add_subdirectory(TFLoaderTools)
