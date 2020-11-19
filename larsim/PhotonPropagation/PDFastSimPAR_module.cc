@@ -203,18 +203,6 @@ namespace {
     return negate * 3.14159265358979 + ret;
   }
 
-  // distance comparison between two vectors
-  template <typename TReal>
-  inline constexpr double
-  dist(const TReal* x, const TReal* y, const unsigned int dimension)
-  {
-    double d = 0.;
-    for (unsigned int p = 0; p < dimension; ++p) {
-      d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
-    }
-    return std::sqrt(d);
-  }
-
   // implements relative method - do not use for comparing with zero
   // use this most of the time, tolerance needs to be meaningful in your context
   template <typename TReal>
@@ -317,7 +305,7 @@ namespace phot {
                 std::vector<int> &ReflDetThis);
 
     void propagationTime(std::vector<double>& arrival_time_dist,
-                         G4ThreeVector x0,
+                         geo::Point_t const& x0,
                          const size_t OpChannel,
                          bool Reflected = false); // const;
 
@@ -448,24 +436,24 @@ namespace phot {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     if (lgp->UseLitePhotons())
     {
-        std::cout << "Use Lite Photon." << std::endl;
+        mf::LogInfo("PDFastSimPAR") << "Using Lite Photons";
         produces< std::vector<sim::SimPhotonsLite> >();
         produces< std::vector<sim::OpDetBacktrackerRecord> >();
 
         if(fPVS->StoreReflected())
         {
-            std::cout << "Store Reflected Photons" << std::endl;
+            mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
             produces< std::vector<sim::SimPhotonsLite> >("Reflected");
             produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");
         }
     }
     else
     {
-        std::cout << "Use Sim Photon." << std::endl;
+        mf::LogInfo("PDFastSimPAR") << "Using Sim Photons";
         produces< std::vector<sim::SimPhotons> >();
         if(fPVS->StoreReflected())
         {
-            std::cout << "Store Reflected Photons" << std::endl;
+            mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
             produces< std::vector<sim::SimPhotons> >("Reflected");
         }
     }
@@ -482,13 +470,13 @@ namespace phot {
 
     nOpChannels = fPVS->NOpChannels();
 
-    std::unique_ptr< std::vector< sim::SimPhotons > >             phot   (new std::vector<sim::SimPhotons>);
-    std::unique_ptr< std::vector< sim::SimPhotonsLite > >         phlit  (new std::vector<sim::SimPhotonsLite>);
-    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr  (new std::vector<sim::OpDetBacktrackerRecord>);
+    auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
+    auto phlit = std::make_unique<std::vector<sim::SimPhotonsLite>>();
+    auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
 
-    std::unique_ptr< std::vector< sim::SimPhotons > >             phot_ref   (new std::vector<sim::SimPhotons>);
-    std::unique_ptr< std::vector< sim::SimPhotonsLite > >         phlit_ref  (new std::vector<sim::SimPhotonsLite>);
-    std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > > opbtr_ref  (new std::vector<sim::OpDetBacktrackerRecord>);
+    auto phot_ref = std::make_unique<std::vector<sim::SimPhotons>>();
+    auto phlit_ref = std::make_unique<std::vector<sim::SimPhotonsLite>>();
+    auto opbtr_ref = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
 
     auto& dir_photcol(*phot);
     auto& ref_photcol(*phot_ref);
@@ -528,7 +516,6 @@ namespace phot {
       double edeposit = edepi.Energy() / nphot;
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
-      G4ThreeVector ScintPoint_v = {pos[0], pos[1], pos[2]};
 
       if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
 
@@ -561,8 +548,7 @@ namespace phot {
 
         for (size_t channel = 0; channel < nOpChannels; channel++) {
 
-          if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(channel))) continue;
-
+          if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter[channel])) continue;
 
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
@@ -574,7 +560,7 @@ namespace phot {
           // calculate propagation time, does not matter whether fast or slow photon
           transport_time.resize(ndetected_fast + ndetected_slow);
           if (fPVS->IncludePropTime() && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
-            propagationTime(transport_time, ScintPoint_v, channel, Reflected);
+            propagationTime(transport_time, ScintPoint, channel, Reflected);
 
           // SimPhotonsLite case
           if (lgp->UseLitePhotons()) {
@@ -885,12 +871,12 @@ namespace phot {
                                    geo::Point_t const& ScintPoint)
   {
     for (size_t const OpDet : util::counter(nOpChannels)) {
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
+      if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 
       // set detector struct for solid angle function
       const PDFastSimPAR::OpticalDetector op{
-        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
-        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+        fOpDetHeight[OpDet], fOpDetLength[OpDet],
+        fOpDetCenter[OpDet], fOpDetType[OpDet]};
 
       std::vector<int> DetThis(2, 0);
       VUVHits(NumFast, NumSlow, ScintPoint, op, DetThis);
@@ -911,12 +897,6 @@ namespace phot {
                         OpticalDetector const& opDet,
                         std::vector<int>& DetThis)
   {
-    // the interface has been converted into geo::Point_t, the implementation not yet
-    std::array<double, 3U> ScintPoint_v;
-    std::array<double, 3U> OpDetPoint_v;
-    geo::vect::fillCoords(ScintPoint_v, ScintPoint);
-    geo::vect::fillCoords(OpDetPoint_v, opDet.OpDetPoint);
-
     // distance and angle between ScintPoint and OpDetPoint
     geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
     const double distance = relative.R();
@@ -959,7 +939,8 @@ namespace phot {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z)
-    double r = dist(&ScintPoint_v[1], &fcathode_centre[1], 2);
+    double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
     // flat PDs
@@ -1013,11 +994,7 @@ namespace phot {
     // corrections:
 
     // set plane_depth for correct TPC:
-    double plane_depth;
-    if (ScintPoint.X() < 0.) { plane_depth = -fplane_depth; }
-    else {
-      plane_depth = fplane_depth;
-    }
+    double const plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
 
     // get scintpoint coords relative to centre of cathode plane
     geo::Vector_t const ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
@@ -1038,7 +1015,7 @@ namespace phot {
 
     // determine Gaisser-Hillas correction including border effects
     // use flat correction
-    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) + std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
+    double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
     if(fIsFlatPDCorr) {
@@ -1067,12 +1044,12 @@ namespace phot {
     // detemine hits on each PD
     const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
     for (size_t const OpDet : util::counter(nOpChannels)) {
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
+      if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 
       // set detector struct for solid angle function
       const  PDFastSimPAR::OpticalDetector op{
-        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
-        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+        fOpDetHeight[OpDet], fOpDetLength[OpDet],
+        fOpDetCenter[OpDet], fOpDetType[OpDet]};
 
       std::vector<int> ReflDetThis(2, 0);
       VISHits(ScintPoint, op, cathode_hits_rec_fast, cathode_hits_rec_slow, hotspot, ReflDetThis);
@@ -1091,25 +1068,11 @@ namespace phot {
                         std::vector<int> &ReflDetThis)
   {
 
-    // 1). calculate total number of hits of VUV photons on reflective
-    // foils via solid angle + Gaisser-Hillas corrections.
-    // Done outside as it doesn't depend on OpDetPoint
-
-    // the interface has been converted into geo::Point_t, the implementation not yet
-    std::array<double, 3U> ScintPoint_v;
-    std::array<double, 3U> OpDetPoint_v;
-    geo::vect::fillCoords(ScintPoint_v, ScintPoint);
-    geo::vect::fillCoords(OpDetPoint_v, opDet.OpDetPoint);
-
     // set plane_depth for correct TPC:
-    double plane_depth;
-    if (ScintPoint.X() < 0.) { plane_depth = -fplane_depth; }
-    else {
-      plane_depth = fplane_depth;
-    }
+    double const plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
 
-    // 2). calculate number of these hits which reach the optical
-    // detector from the hotspot via solid angle
+    // calculate number of these hits which reach the optical
+    // detector from the hotspot using solid angle:
 
     geo::Vector_t const emission_relative = hotspot - opDet.OpDetPoint;
 
@@ -1156,8 +1119,8 @@ namespace phot {
 
     // determine correction factor, depending on PD type
     const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
-    double r = dist(&ScintPoint_v[1], &fcathode_centre[1], 2);  // radial distance from centre of detector (Y-Z)
-    double d_c = std::abs(ScintPoint_v[0] - plane_depth);       // distance to cathode
+    double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    double d_c = std::abs(ScintPoint.X() - plane_depth);       // distance to cathode
     double border_correction = 0;
     // flat PDs
     if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
@@ -1241,26 +1204,22 @@ namespace phot {
   //......................................................................
   void
   PDFastSimPAR::propagationTime(std::vector<double>& arrival_time_dist,
-                                G4ThreeVector x0,
+                                geo::Point_t const& x0,
                                 const size_t OpChannel,
                                 bool Reflected)
   {
     if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization
-      geo::Point_t const& opDetCenter = fOpDetCenter.at(OpChannel);
+      geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
       if (!Reflected) {
-        const G4ThreeVector OpDetPoint(
-          opDetCenter.X() * CLHEP::cm, opDetCenter.Y() * CLHEP::cm, opDetCenter.Z() * CLHEP::cm);
-        double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
-        double cosine = std::abs(x0[0]*CLHEP::cm - OpDetPoint[0]*CLHEP::cm) / distance_in_cm;
+        double distance = std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
+        double cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
         double theta = fast_acos(cosine)*180./CLHEP::pi;
         int angle_bin = theta/fangle_bin_timing_vuv;
-        getVUVTimes(arrival_time_dist, distance_in_cm, angle_bin);              // in ns
+        getVUVTimes(arrival_time_dist, distance, angle_bin); // in ns
       }
       else {
-        TVector3 const ScintPoint(x0[0] / CLHEP::cm, x0[1] / CLHEP::cm,
-                                  x0[2] / CLHEP::cm); // in cm
-        getVISTimes(arrival_time_dist, ScintPoint,
+        getVISTimes(arrival_time_dist, geo::vect::toTVector3(x0),
                     geo::vect::toTVector3(opDetCenter)); // in ns
       }
     }
