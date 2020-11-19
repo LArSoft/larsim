@@ -156,33 +156,6 @@ namespace phot {
                          std::vector<double> &vis_distances_r_dome,
                          std::vector<std::vector<std::vector<double>>> &vispars_dome) const;
 
-
-    // placeholder functions for loading old style parameterisations
-    // timings
-    void LoadTimingsForVUVPar(std::vector<double> (&v)[9],
-                              double& step_size,
-                              double& max_d,
-                              double& vuv_vgroup_mean,
-                              double& vuv_vgroup_max,
-                              double& inflexion_point_distance) const;
-    void LoadTimingsForVISPar(std::vector<double>& distances,
-                              std::vector<std::vector<double>>& cut_off,
-                              std::vector<std::vector<double>>& tau,
-                              double& vis_vmean,
-                              double& n_vis,
-                              double& n_vuv) const;
-    // hits
-    void LoadGHForVUVCorrection(std::vector<std::vector<double>>& v,
-                                std::vector<double>& border,
-                                double& r_pmt) const;
-    void LoadParsForVISCorrection(std::vector<std::vector<double>>& v, double& r_pmt) const;
-    void LoadParsForVISBorderCorrection(
-      std::vector<double>& border_distances_x,
-      std::vector<double>& border_distances_r,
-      std::vector<std::vector<std::vector<double>>>& border_correction) const;
-
-
-
     bool
     IsBuildJob() const
     {
