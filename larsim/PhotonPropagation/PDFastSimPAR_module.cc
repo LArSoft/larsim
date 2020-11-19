@@ -1077,8 +1077,6 @@ namespace phot {
     geo::Vector_t const emission_relative = hotspot - opDet.OpDetPoint;
 
     // calculate distances and angles for application of corrections
-    // distance to hotspot
-    const double distance_vuv = (ScintPoint - hotspot).R();
     // distance from hotspot to optical detector
     const double distance_vis = emission_relative.R();
     //  angle between hotspot and optical detector
