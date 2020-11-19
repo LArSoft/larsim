@@ -35,10 +35,14 @@
 #include <cmath>
 #include <memory>
 #include <iterator>
+#include <utility> // std::pair<>
+#include <cassert>
 #include <sys/stat.h>
 #include <TGeoManager.h>
 #include <TGeoMaterial.h>
 #include <TGeoNode.h>
+#include <TGeoVolume.h>
+#include <TGeoBBox.h>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -61,7 +65,21 @@
 #include "nugen/EventGeneratorBase/evgenbase.h"
 
 // lar includes
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardataalg/DetectorInfo/DetectorTimings.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataalg/DetectorInfo/DetectorClocksData.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/ROOTGeometryNavigator.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/GeoNodePath.h"
+#include "larcorealg/Geometry/TransformationMatrix.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h" // geo::...::makeFromCoords()
+#include "larcorealg/CoreUtils/enumerate.h"
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
 // root includes
@@ -81,9 +99,89 @@ namespace simb { class MCTruth; }
 
 namespace evgen {
 
-  /// Module to generate particles created by radiological decay, patterend off of SingleGen
-  /// Currently it generates only in rectangular prisms oriented along the x,y,z axes
-
+  /**
+   * @brief Module to generate particles created by radiological decay,
+   *        patterned off of `SingleGen`.
+   * 
+   * The module generates the products of radioactive decay of some known
+   * nuclides.
+   * Each nuclide decay producing a single particle (with exceptions, as for
+   * example argon(A=42)), whose spectrum is specified in a ROOT file to be
+   * found in the `FW_SEARCH_PATH` path, and it can be a alpha, beta, gamma or
+   * neutron. In case multiple decay channels are possible, each decay is
+   * stochastically chosen weighting the channels according to the integral of
+   * their spectrum. The normalization of the spectrum is otherwise ignored.
+   * 
+   * Nuclides can be added by making the proper distributions available in
+   * a file called after the name used for it in the `Nuclide` configuration
+   * parameter (e.g `14C.root` if the nuclide key is `14C`): check the existing
+   * nuclide files for examples.
+   * 
+   * A special treatment is encoded for argon(A=42) and radon(A=222) (and,
+   * "temporary", for nichel(A=59) ).
+   * 
+   * Decays happen only in volumes specified in the configuration, and with a
+   * rate also specified in the configuration. Volumes are always box-shaped,
+   * and can be specified by coordinates or by name. In addition, within each
+   * volume decays will be generated only in the subvolumes matching the
+   * specified materials.
+   * 
+   * 
+   * @note All beta decays emit positrons.
+   * 
+   * 
+   * Configuration parameters
+   * -------------------------
+   * 
+   * * `X0`, `Y0`, `Z0`, `X1`, `Y1`, `Z1` (lists of real numbers, optional):
+   *     if specified, they describe the box volumes where to generate decays;
+   *     all lists must have the same size, and each entry `i` defines the box
+   *     between coordinates `(X0[i], Y0[i], Z0[i])` and `(X1[i], Y1[i], Z1[i])`
+   *     expressed in world coordinates and in centimeters;
+   * * `Volumes` (list of strings, optional): if specified, each entry
+   *     represents all the volumes in the geometry whose name exactly matches
+   *     the entry; the volumes are added _after_ the ones explicitly listed by
+   *     their coordinates (configuration parameters `X0`, `Y0`, `Z0`, `X1`,
+   *     `Y1` and `Z1`); each volume name counts as one entry, even if it
+   *     expands to multiple volumes;
+   *     `Volumes` can be omitted if volumes are specified with the coordinate
+   *     parameters;
+   * * `Nuclide` (list of strings, mandatory): the list of decaying nuclides,
+   *     one per volume entry; note that each of the elements in `X0` (and
+   *     the other 5 coordinate parameters) and each of the elements in
+   *     `Volumes` counts as one entry, even for entries of the latter which
+   *     match multiple volumes (in that case, all matching volumes are
+   *     assigned the same nuclide parameters);
+   *     since documentation is never maintained, refer to the code for a list
+   *     of the supported materials; a subset of them is:
+   *     `39Ar`, `60Co`, `85Kr`, `40K`, `232Th`, `238U`, `222Rn`, `59Ni` and
+   *     `42Ar`;
+   * * `Material` (list of regular expressions, mandatory): for each nuclide,
+   *     the name of the materials allowed to decay in this mode; this name
+   *     is a regular expression (C++ default `std::regex`), which needs to
+   *     match the name of the material as specified in the detector geometry
+   *     (usually in GDML format); a material is mandatory for each nuclide;
+   *     if no material selection is desired, the all-matching pattern `".*"`
+   *     can be used;
+   * * `BqPercc` (list of real numbers, mandatory): activity of the nuclides, in
+   *     the same order as they are in `Nuclide` parameter; each value is
+   *     specified as becquerel per cubic centimeter;
+   * * `T0`, `T1` (list of real values, optional): range of time when the decay
+   *     may happen, in @ref DetectorClocksSimulationTime "simulation time";
+   *     each nuclide is assigned a time range; differently from the other
+   *     parameters, the list of times _can_ be shorter than the number of
+   *     nuclides, in which case all the nuclides with no matching time range
+   *     will be assigned the last range specified; as a specially special case,
+   *     if no time is specified at all, the time window is assigned as from
+   *     one readout window
+   *     (`detinfo::DetectorPropertiesData::ReadOutWindowSize()`) before the
+   *     @ref DetectorClocksHardwareTrigger "nominal hardware trigger time"
+   *     (`detinfo::DetectorClocksData::TriggerTime()`) up to a number of
+   *     ticks after the trigger time equivalent to the full simulated TPC
+   *     waveform (`detinfo::DetectorPropertiesData::NumberTimeSamples()`);
+   *     this makes it a quite poor default, so you may want to avoid it.
+   * 
+   */
   class RadioGen : public art::EDProducer {
   public:
     explicit RadioGen(fhicl::ParameterSet const& pset);
@@ -96,6 +194,11 @@ namespace evgen {
     typedef int    ti_PDGID;  // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. ti, type integer :JStock
     typedef double td_Mass;   // These typedefs may look odd, and unecessary. I chose to use them to make the tuples I use later more readable. td, type double  :JStock
 
+    /// Adds all volumes with the specified name to the coordinates.
+    /// Volumes must be boxes aligned to the world frame axes.
+    std::size_t addvolume(std::string const& volumeName);
+    
+    /// Checks that the node represents a box well aligned to world frame axes.
     void SampleOne(unsigned int   i,
        simb::MCTruth &mct);
 
@@ -111,6 +214,16 @@ namespace evgen {
 
     // recoded so as to use the LArSoft-managed random number generator
     double samplefromth1d(TH1D& hist);
+    
+    /// Prints the settings for the specified nuclide and volume.
+    template <typename Stream>
+    void dumpNuclideSettings
+      (Stream&& out, std::size_t iNucl, std::string const& volumeName = {})
+      const;
+    
+    
+    /// Returns the start and end of the readout window.
+    std::pair<double, double> defaulttimewindow() const;
 
     // itype = pdg code:  1000020040: alpha.  itype=11: beta. -11: positron,  itype=22: gamma.  -1: error
     // t is the kinetic energy in GeV  (= E-m)
@@ -160,22 +273,18 @@ namespace {
   constexpr double m_neutron = 0.9395654133; // mass of a neutron in GeV
 }
 
+
 namespace evgen{
 
   //____________________________________________________________________________
   RadioGen::RadioGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
-    , fNuclide {pset.get< std::vector<std::string>>("Nuclide")}
-    , fMaterial{pset.get< std::vector<std::string>>("Material")}
-    , fBq{pset.get< std::vector<double> >("BqPercc")}
-    , fT0{pset.get< std::vector<double> >("T0")}
-    , fT1{pset.get< std::vector<double> >("T1")}
-    , fX0{pset.get< std::vector<double> >("X0")}
-    , fY0{pset.get< std::vector<double> >("Y0")}
-    , fZ0{pset.get< std::vector<double> >("Z0")}
-    , fX1{pset.get< std::vector<double> >("X1")}
-    , fY1{pset.get< std::vector<double> >("Y1")}
-    , fZ1{pset.get< std::vector<double> >("Z1")}
+    , fX0{pset.get< std::vector<double> >("X0", {})}
+    , fY0{pset.get< std::vector<double> >("Y0", {})}
+    , fZ0{pset.get< std::vector<double> >("Z0", {})}
+    , fX1{pset.get< std::vector<double> >("X1", {})}
+    , fY1{pset.get< std::vector<double> >("Y1", {})}
+    , fZ1{pset.get< std::vector<double> >("Z1", {})}
     , fIsFirstSignalSpecial{pset.get< bool >("IsFirstSignalSpecial", false)}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
@@ -183,9 +292,79 @@ namespace evgen{
   {
     produces< std::vector<simb::MCTruth> >();
     produces< sumdata::RunData, art::InRun >();
-
+    
+    
+    auto const nuclide = pset.get< std::vector<std::string>>("Nuclide");
+    auto const material = pset.get< std::vector<std::string>>("Material");
+    auto const Bq = pset.get< std::vector<double> >("BqPercc");
+    auto t0 = pset.get< std::vector<double> >("T0", {});
+    auto t1 = pset.get< std::vector<double> >("T1", {});
+    
+    if (fT0.empty() || fT1.empty()) { // better be both empty...
+      if (!fT0.empty() || !fT1.empty()) {
+        throw art::Exception(art::errors::Configuration)
+          << "RadioGen T0 and T1 need to be both non-empty, or both empty"
+          " (now T0 has " << fT0.size() << " entries and T1 has " << fT0.size()
+          << ")\n";
+      }
+      auto const [ defaultT0, defaultT1 ] = defaulttimewindow();
+      t0.push_back(defaultT0);
+      t1.push_back(defaultT1);
+    }
+    
+    //
+    // First, the materials are assigned to the coordinates explicitly
+    // configured; then, each of the remaining materials is assigned to one
+    // of the named volumes.
+    // TODO: reaction to mismatches is "not so great".
+    //
+    mf::LogInfo("RadioGen") << "Configuring activity:";
+    for (std::size_t iCoord: util::counter(fX0.size())) {
+      
+      fNuclide.push_back(nuclide.at(iCoord));
+      fMaterial.push_back(material.at(iCoord));
+      fBq.push_back(Bq.at(iCoord));
+      // replicate the last timing if none is specified
+      fT0.push_back(t0[std::min(iCoord, t0.size() - 1U)]);
+      fT1.push_back(t1[std::min(iCoord, t1.size() - 1U)]);
+      
+      dumpNuclideSettings(mf::LogVerbatim("RadioGen"), iCoord);
+      
+    } // for
+    
+    std::size_t iNext = fX0.size();
+    auto const volumes = pset.get<std::vector<std::string>>("Volumes", {});
+    for (auto&& [ iVolume, volName ]: util::enumerate(volumes)) {
+      // this expands the coordinate vectors
+      auto const nVolumes = addvolume(volName);
+      if (nVolumes == 0) {
+        throw art::Exception(art::errors::Configuration)
+          << "No volume named '" << volName << "' was found!\n";
+      }
+      
+      std::size_t const iVolFirst = fNuclide.size();
+      for (auto iVolInstance: util::counter(nVolumes)) {
+        fNuclide.push_back(nuclide.at(iNext));
+        fMaterial.push_back(material.at(iNext));
+        fBq.push_back(Bq.at(iNext));
+        // replicate the last timing if none is specified
+        fT0.push_back(t0[std::min(iNext, t0.size() - 1U)]);
+        fT1.push_back(t1[std::min(iNext, t1.size() - 1U)]);
+        
+        dumpNuclideSettings
+          (mf::LogVerbatim("RadioGen"), iVolFirst + iVolInstance, volName);
+        
+      }
+      ++iNext;
+    } // for
+    
     // check for consistency of vector sizes
     unsigned int nsize = fNuclide.size();
+    if (nsize == 0) {
+      throw art::Exception(art::errors::Configuration)
+        << "No nuclide configured!\n";
+    }
+    
     if (  fMaterial.size() != nsize ) throw cet::exception("RadioGen") << "Different size Material vector and Nuclide vector\n";
     if (  fBq.size() != nsize ) throw cet::exception("RadioGen") << "Different size Bq vector and Nuclide vector\n";
     if (  fT0.size() != nsize ) throw cet::exception("RadioGen") << "Different size T0 vector and Nuclide vector\n";
@@ -248,6 +427,68 @@ namespace evgen{
     evt.put(std::move(truthcol));
   }
 
+  //____________________________________________________________________________
+  std::size_t RadioGen::addvolume(std::string const& volumeName) {
+    
+    auto const& geom = *(lar::providerFrom<geo::Geometry>());
+    
+    std::vector<geo::GeoNodePath> volumePaths;
+    auto findVolume = [&volumePaths, volumeName](auto& path)
+      {
+        if (path.current().GetVolume()->GetName() == volumeName)
+          volumePaths.push_back(path);
+        return true;
+      };
+    
+    geo::ROOTGeometryNavigator navigator { *(geom.ROOTGeoManager()) };
+    
+    navigator.apply(findVolume);
+    
+    for (geo::GeoNodePath const& path: volumePaths) {
+      
+      //
+      // find the coordinates of the volume in local coordinates
+      //
+      TGeoShape const* pShape = path.current().GetVolume()->GetShape();
+      auto pBox = dynamic_cast<TGeoBBox const*>(pShape);
+      if (!pBox) {
+        throw cet::exception("RadioGen") << "Volume '"
+          << path.current().GetName() << "' is a " << pShape->IsA()->GetName()
+          << ", not a TGeoBBox.\n";
+      }
+      
+      geo::Point_t const origin
+        = geo::vect::makeFromCoords<geo::Point_t>(pBox->GetOrigin());
+      geo::Vector_t const diag
+        = { pBox->GetDX(), pBox->GetDY(), pBox->GetDZ() };
+      
+      //
+      // convert to world coordinates
+      //
+      
+      auto const trans
+        = path.currentTransformation<geo::TransformationMatrix>();
+      
+      geo::Point_t min, max;
+      trans.Transform(origin - diag, min);
+      trans.Transform(origin + diag, max);
+      
+      //
+      // add to the coordinates
+      //
+      fX0.push_back(std::min(min.X(), max.X()));
+      fY0.push_back(std::min(min.Y(), max.Y()));
+      fZ0.push_back(std::min(min.Z(), max.Z()));
+      fX1.push_back(std::max(min.X(), max.X()));
+      fY1.push_back(std::max(min.Y(), max.Y()));
+      fZ1.push_back(std::max(min.Z(), max.Z()));
+      
+    } // for
+    
+    return volumePaths.size();
+  } // RadioGen::addvolume()
+  
+  
   //____________________________________________________________________________
   // Generate radioactive decays per nuclide per volume according to the FCL parameters
 
@@ -713,6 +954,54 @@ namespace evgen{
   //   }
   //return p;
   //}
+
+
+  //____________________________________________________________________________
+  template <typename Stream>
+  void RadioGen::dumpNuclideSettings
+    (Stream&& out, std::size_t iNucl, std::string const& volumeName /* = {} */)
+    const
+  {
+    
+    out << "[#" << iNucl << "]  "
+      << fNuclide[iNucl]
+      << " (" << fBq[iNucl] << " Bq/cm^3)"
+      << " in " << fMaterial[iNucl]
+      << " from " << fT0[iNucl] << " to " << fT1[iNucl] << " ns in ( "
+      << fX0[iNucl] << ", " << fY0[iNucl] << ", " << fZ0[iNucl] << ") to ( "
+      << fX1[iNucl] << ", " << fY1[iNucl] << ", " << fZ1[iNucl] << ")";
+    if (!volumeName.empty()) out << " (\"" << volumeName << "\")";
+    
+  } // RadioGen::dumpNuclideSettings()
+  
+  
+  //____________________________________________________________________________
+  std::pair<double, double> RadioGen::defaulttimewindow() const {
+    // values are in simulation time scale (and therefore in [ns])
+    using namespace detinfo::timescales;
+    
+    auto const& timings = detinfo::makeDetectorTimings
+      (art::ServiceHandle<detinfo::DetectorClocksService>()->DataForJob());
+    detinfo::DetectorPropertiesData const& detInfo
+      = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
+    
+    //
+    // we take a number of (TPC electronics) ticks before the trigger time,
+    // and we go to a number of ticks after the trigger time;
+    // that shift is one readout window size
+    //
+    
+    auto const trigTimeTick
+      = timings.toTick<electronics_tick>(timings.TriggerTime());
+    electronics_time_ticks const beforeTicks
+      { -static_cast<int>(detInfo.ReadOutWindowSize()) };
+    electronics_time_ticks const afterTicks { detInfo.NumberTimeSamples() };
+    
+    return {
+      double(timings.toTimeScale<simulation_time>(trigTimeTick + beforeTicks)),
+      double(timings.toTimeScale<simulation_time>(trigTimeTick + afterTicks))
+      };
+  } // RadioGen::defaulttimewindow()
 
 }//end namespace evgen
 
