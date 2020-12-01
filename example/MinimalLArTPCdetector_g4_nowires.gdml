@@ -1,0 +1,1705 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+  <define/>
+
+  <materials>
+    <isotope N="36" Z="18" name="Ar360x55ed881840d0">
+      <atom unit="g/mole" value="35.9675"/>
+    </isotope>
+    <isotope N="38" Z="18" name="Ar380x55ed88184160">
+      <atom unit="g/mole" value="37.9627"/>
+    </isotope>
+    <isotope N="40" Z="18" name="Ar400x55ed881841d0">
+      <atom unit="g/mole" value="39.9624"/>
+    </isotope>
+    <element name="Ar0x55ed881230d0">
+      <fraction n="0.003365" ref="Ar360x55ed881840d0"/>
+      <fraction n="0.000632" ref="Ar380x55ed88184160"/>
+      <fraction n="0.996003" ref="Ar400x55ed881841d0"/>
+    </element>
+    <material name="G4_lAr0x55ed880c5f10" state="liquid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="188"/>
+      <D unit="g/cm3" value="1.396"/>
+      <fraction n="1" ref="Ar0x55ed881230d0"/>
+    </material>
+    <isotope N="28" Z="14" name="Si280x55ed8812fa00">
+      <atom unit="g/mole" value="27.9769"/>
+    </isotope>
+    <isotope N="29" Z="14" name="Si290x55ed8812fa70">
+      <atom unit="g/mole" value="28.9765"/>
+    </isotope>
+    <isotope N="30" Z="14" name="Si300x55ed8812fb30">
+      <atom unit="g/mole" value="29.9738"/>
+    </isotope>
+    <element name="Si0x55ed8812fb80">
+      <fraction n="0.922296077703922" ref="Si280x55ed8812fa00"/>
+      <fraction n="0.0468319531680468" ref="Si290x55ed8812fa70"/>
+      <fraction n="0.0308719691280309" ref="Si300x55ed8812fb30"/>
+    </element>
+    <material name="G4_Si0x55ed8831a500" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="173"/>
+      <D unit="g/cm3" value="2.33"/>
+      <fraction n="1" ref="Si0x55ed8812fb80"/>
+    </material>
+    <isotope N="12" Z="6" name="C120x55ed881035f0">
+      <atom unit="g/mole" value="12"/>
+    </isotope>
+    <isotope N="13" Z="6" name="C130x55ed88103640">
+      <atom unit="g/mole" value="13.0034"/>
+    </isotope>
+    <element name="C0x55ed88120260">
+      <fraction n="0.9893" ref="C120x55ed881035f0"/>
+      <fraction n="0.0107" ref="C130x55ed88103640"/>
+    </element>
+    <isotope N="1" Z="1" name="H10x55ed881203c0">
+      <atom unit="g/mole" value="1.00782503081372"/>
+    </isotope>
+    <isotope N="2" Z="1" name="H20x55ed8812fac0">
+      <atom unit="g/mole" value="2.01410199966617"/>
+    </isotope>
+    <element name="H0x55ed88120450">
+      <fraction n="0.999885" ref="H10x55ed881203c0"/>
+      <fraction n="0.000115" ref="H20x55ed8812fac0"/>
+    </element>
+    <material name="G4_POLYSTYRENE0x55ed881034c0" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="68.7"/>
+      <D unit="g/cm3" value="1.06"/>
+      <fraction n="0.922577329294378" ref="C0x55ed88120260"/>
+      <fraction n="0.0774226707056217" ref="H0x55ed88120450"/>
+    </material>
+    <isotope N="54" Z="26" name="Fe540x55ed88160d70">
+      <atom unit="g/mole" value="53.9396"/>
+    </isotope>
+    <isotope N="56" Z="26" name="Fe560x55ed88160de0">
+      <atom unit="g/mole" value="55.9349"/>
+    </isotope>
+    <isotope N="57" Z="26" name="Fe570x55ed88160e50">
+      <atom unit="g/mole" value="56.9354"/>
+    </isotope>
+    <isotope N="58" Z="26" name="Fe580x55ed88160ea0">
+      <atom unit="g/mole" value="57.9333"/>
+    </isotope>
+    <element name="Fe0x55ed88160ef0">
+      <fraction n="0.05845" ref="Fe540x55ed88160d70"/>
+      <fraction n="0.91754" ref="Fe560x55ed88160de0"/>
+      <fraction n="0.02119" ref="Fe570x55ed88160e50"/>
+      <fraction n="0.00282" ref="Fe580x55ed88160ea0"/>
+    </element>
+    <isotope N="50" Z="24" name="Cr500x55ed881610c0">
+      <atom unit="g/mole" value="49.946"/>
+    </isotope>
+    <isotope N="52" Z="24" name="Cr520x55ed88161130">
+      <atom unit="g/mole" value="51.9405"/>
+    </isotope>
+    <isotope N="53" Z="24" name="Cr530x55ed881611a0">
+      <atom unit="g/mole" value="52.9407"/>
+    </isotope>
+    <isotope N="54" Z="24" name="Cr540x55ed881611f0">
+      <atom unit="g/mole" value="53.9389"/>
+    </isotope>
+    <element name="Cr0x55ed88161240">
+      <fraction n="0.04345" ref="Cr500x55ed881610c0"/>
+      <fraction n="0.83789" ref="Cr520x55ed88161130"/>
+      <fraction n="0.09501" ref="Cr530x55ed881611a0"/>
+      <fraction n="0.02365" ref="Cr540x55ed881611f0"/>
+    </element>
+    <isotope N="58" Z="28" name="Ni580x55ed88161430">
+      <atom unit="g/mole" value="57.9353"/>
+    </isotope>
+    <isotope N="60" Z="28" name="Ni600x55ed881614a0">
+      <atom unit="g/mole" value="59.9308"/>
+    </isotope>
+    <isotope N="61" Z="28" name="Ni610x55ed88161510">
+      <atom unit="g/mole" value="60.9311"/>
+    </isotope>
+    <isotope N="62" Z="28" name="Ni620x55ed88161560">
+      <atom unit="g/mole" value="61.9283"/>
+    </isotope>
+    <isotope N="64" Z="28" name="Ni640x55ed881615b0">
+      <atom unit="g/mole" value="63.928"/>
+    </isotope>
+    <element name="Ni0x55ed88161650">
+      <fraction n="0.680769" ref="Ni580x55ed88161430"/>
+      <fraction n="0.262231" ref="Ni600x55ed881614a0"/>
+      <fraction n="0.011399" ref="Ni610x55ed88161510"/>
+      <fraction n="0.036345" ref="Ni620x55ed88161560"/>
+      <fraction n="0.009256" ref="Ni640x55ed881615b0"/>
+    </element>
+    <material name="G4_STAINLESS-STEEL0x55ed88160be0" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="282.97693634122"/>
+      <D unit="g/cm3" value="8"/>
+      <fraction n="0.746212874621521" ref="Fe0x55ed88160ef0"/>
+      <fraction n="0.169001044311525" ref="Cr0x55ed88161240"/>
+      <fraction n="0.0847860810669534" ref="Ni0x55ed88161650"/>
+    </material>
+    <isotope N="14" Z="7" name="N140x55ed87e406d0">
+      <atom unit="g/mole" value="14.0031"/>
+    </isotope>
+    <isotope N="15" Z="7" name="N150x55ed87e40740">
+      <atom unit="g/mole" value="15.0001"/>
+    </isotope>
+    <element name="N0x55ed87e407b0">
+      <fraction n="0.99632" ref="N140x55ed87e406d0"/>
+      <fraction n="0.00368" ref="N150x55ed87e40740"/>
+    </element>
+    <isotope N="16" Z="8" name="O160x55ed87e408f0">
+      <atom unit="g/mole" value="15.9949"/>
+    </isotope>
+    <isotope N="17" Z="8" name="O170x55ed87e40940">
+      <atom unit="g/mole" value="16.9991"/>
+    </isotope>
+    <isotope N="18" Z="8" name="O180x55ed87e409b0">
+      <atom unit="g/mole" value="17.9992"/>
+    </isotope>
+    <element name="O0x55ed87e40a00">
+      <fraction n="0.99757" ref="O160x55ed87e408f0"/>
+      <fraction n="0.00038" ref="O170x55ed87e40940"/>
+      <fraction n="0.00205" ref="O180x55ed87e409b0"/>
+    </element>
+    <material name="G4_AIR0x55ed87e40550" state="gas">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="85.7"/>
+      <D unit="g/cm3" value="0.00120479"/>
+      <fraction n="0.000124000124000124" ref="C0x55ed88120260"/>
+      <fraction n="0.755267755267755" ref="N0x55ed87e407b0"/>
+      <fraction n="0.231781231781232" ref="O0x55ed87e40a00"/>
+      <fraction n="0.0128270128270128" ref="Ar0x55ed881230d0"/>
+    </material>
+  </materials>
+
+  <solids>
+    <box lunit="mm" name="TPCActive0x55ed881763c0" x="2563.5" y="2330" z="10368"/>
+    <box lunit="mm" name="TPCPlane0x55ed88122700" x="1.5" y="2330" z="10368"/>
+    <tube aunit="deg" deltaphi="360" lunit="mm" name="PMTVolume0x55ed88176440" rmax="152.4" rmin="0" startphi="0" z="0.3"/>
+    <tube aunit="deg" deltaphi="360" lunit="mm" name="PMT_AcrylicPlate0x55ed88176570" rmax="152.4" rmin="0" startphi="0" z="5"/>
+    <box lunit="mm" name="TPC0x55ed88176700" x="3990" y="3490" z="10990"/>
+    <box lunit="mm" name="Cryostat0x55ed88176680" x="4000" y="3500" z="11000"/>
+    <box lunit="mm" name="AuxDetBox0x55ed88176780" x="190" y="1500" z="5"/>
+    <box lunit="mm" name="DetEnclosure0x55ed88176800" x="9000" y="9000" z="18000"/>
+    <box lunit="mm" name="World0x55ed88176880" x="1000000" y="1060000" z="2073000"/>
+  </solids>
+
+  <structure>
+    <volume name="volTPCActive0x55ed881aee00">
+      <materialref ref="G4_lAr0x55ed880c5f10"/>
+      <solidref ref="TPCActive0x55ed881763c0"/>
+    </volume>
+    <volume name="volTPCPlaneVert0x55ed881141d0">
+      <materialref ref="G4_lAr0x55ed880c5f10"/>
+      <solidref ref="TPCPlane0x55ed88122700"/>
+    </volume>
+    <volume name="volTPCPlane0x55ed8813e200">
+      <materialref ref="G4_lAr0x55ed880c5f10"/>
+      <solidref ref="TPCPlane0x55ed88122700"/>
+    </volume>
+    <volume name="volOpDetSensitive0x55ed88102a80">
+      <materialref ref="G4_Si0x55ed8831a500"/>
+      <solidref ref="PMTVolume0x55ed88176440"/>
+    </volume>
+    <volume name="volPMT0x55ed88120810">
+      <materialref ref="G4_POLYSTYRENE0x55ed881034c0"/>
+      <solidref ref="PMT_AcrylicPlate0x55ed88176570"/>
+      <physvol name="volOpDetSensitive_PV0x55ed88121480">
+        <volumeref ref="volOpDetSensitive0x55ed88102a80"/>
+        <position name="volOpDetSensitive_PV0x55ed88121480_pos" unit="mm" x="0" y="0" z="2.35"/>
+      </physvol>
+    </volume>
+    <volume name="volTPC0x55ed8817b3c0">
+      <materialref ref="G4_lAr0x55ed880c5f10"/>
+      <solidref ref="TPC0x55ed88176700"/>
+      <physvol name="volTPCActive_PV0x55ed8817b470">
+        <volumeref ref="volTPCActive0x55ed881aee00"/>
+      </physvol>
+      <physvol name="volTPCPlaneVert_PV0x55ed88115c50">
+        <volumeref ref="volTPCPlaneVert0x55ed881141d0"/>
+        <position name="volTPCPlaneVert_PV0x55ed88115c50_pos" unit="mm" x="-1282.5" y="0" z="0"/>
+      </physvol>
+      <physvol name="volTPCPlane_PV0x55ed88115ee0">
+        <volumeref ref="volTPCPlane0x55ed8813e200"/>
+        <position name="volTPCPlane_PV0x55ed88115ee0_pos" unit="mm" x="-1284" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="10" name="pvolPMT0x55ed88116270">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88116270_pos" unit="mm" x="-1442.65" y="32" z="-4720"/>
+        <rotation name="pvolPMT0x55ed88116270_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="11" name="pvolPMT0x55ed88116540">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88116540_pos" unit="mm" x="-1442.65" y="32" z="-3280"/>
+        <rotation name="pvolPMT0x55ed88116540_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="11" name="pvolPMT0x55ed88116940">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88116940_pos" unit="mm" x="-1442.65" y="32" z="-2720"/>
+        <rotation name="pvolPMT0x55ed88116940_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="12" name="pvolPMT0x55ed88116d50">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88116d50_pos" unit="mm" x="-1442.65" y="32" z="-1280"/>
+        <rotation name="pvolPMT0x55ed88116d50_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="12" name="pvolPMT0x55ed881333f0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed881333f0_pos" unit="mm" x="-1442.65" y="32" z="-720"/>
+        <rotation name="pvolPMT0x55ed881333f0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="13" name="pvolPMT0x55ed88133830">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88133830_pos" unit="mm" x="-1442.65" y="32" z="720"/>
+        <rotation name="pvolPMT0x55ed88133830_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="13" name="pvolPMT0x55ed88133c40">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88133c40_pos" unit="mm" x="-1442.65" y="32" z="1280"/>
+        <rotation name="pvolPMT0x55ed88133c40_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="14" name="pvolPMT0x55ed88134050">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88134050_pos" unit="mm" x="-1442.65" y="32" z="2720"/>
+        <rotation name="pvolPMT0x55ed88134050_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="14" name="pvolPMT0x55ed881343d0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed881343d0_pos" unit="mm" x="-1442.65" y="32" z="3280"/>
+        <rotation name="pvolPMT0x55ed881343d0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="15" name="pvolPMT0x55ed88134830">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88134830_pos" unit="mm" x="-1442.65" y="32" z="4720"/>
+        <rotation name="pvolPMT0x55ed88134830_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol name="pvolPMT0x55ed881779c0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed881779c0_pos" unit="mm" x="-1442.65" y="-520" z="-4200"/>
+        <rotation name="pvolPMT0x55ed881779c0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="1" name="pvolPMT0x55ed88177dc0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88177dc0_pos" unit="mm" x="-1442.65" y="-520" z="-3640"/>
+        <rotation name="pvolPMT0x55ed88177dc0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="20" name="pvolPMT0x55ed88178140">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88178140_pos" unit="mm" x="-1442.65" y="590" z="-4200"/>
+        <rotation name="pvolPMT0x55ed88178140_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="21" name="pvolPMT0x55ed88178540">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88178540_pos" unit="mm" x="-1442.65" y="590" z="-3640"/>
+        <rotation name="pvolPMT0x55ed88178540_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="1" name="pvolPMT0x55ed88178900">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88178900_pos" unit="mm" x="-1442.65" y="-520" z="-2200"/>
+        <rotation name="pvolPMT0x55ed88178900_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="2" name="pvolPMT0x55ed88178d60">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88178d60_pos" unit="mm" x="-1442.65" y="-520" z="-1640"/>
+        <rotation name="pvolPMT0x55ed88178d60_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="21" name="pvolPMT0x55ed8819e5b0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819e5b0_pos" unit="mm" x="-1442.65" y="590" z="-2200"/>
+        <rotation name="pvolPMT0x55ed8819e5b0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="22" name="pvolPMT0x55ed8819e9a0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819e9a0_pos" unit="mm" x="-1442.65" y="590" z="-1640"/>
+        <rotation name="pvolPMT0x55ed8819e9a0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="2" name="pvolPMT0x55ed8819ed60">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819ed60_pos" unit="mm" x="-1442.65" y="-520" z="-200"/>
+        <rotation name="pvolPMT0x55ed8819ed60_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="3" name="pvolPMT0x55ed8819f1c0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819f1c0_pos" unit="mm" x="-1442.65" y="-520" z="360"/>
+        <rotation name="pvolPMT0x55ed8819f1c0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="22" name="pvolPMT0x55ed8819f540">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819f540_pos" unit="mm" x="-1442.65" y="590" z="-200"/>
+        <rotation name="pvolPMT0x55ed8819f540_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="23" name="pvolPMT0x55ed8819f960">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819f960_pos" unit="mm" x="-1442.65" y="590" z="360"/>
+        <rotation name="pvolPMT0x55ed8819f960_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="3" name="pvolPMT0x55ed8819fd20">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed8819fd20_pos" unit="mm" x="-1442.65" y="-520" z="1800"/>
+        <rotation name="pvolPMT0x55ed8819fd20_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="4" name="pvolPMT0x55ed881818e0">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed881818e0_pos" unit="mm" x="-1442.65" y="-520" z="2360"/>
+        <rotation name="pvolPMT0x55ed881818e0_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="23" name="pvolPMT0x55ed88181c60">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88181c60_pos" unit="mm" x="-1442.65" y="590" z="1800"/>
+        <rotation name="pvolPMT0x55ed88181c60_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="24" name="pvolPMT0x55ed88182060">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88182060_pos" unit="mm" x="-1442.65" y="590" z="2360"/>
+        <rotation name="pvolPMT0x55ed88182060_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="4" name="pvolPMT0x55ed88182420">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88182420_pos" unit="mm" x="-1442.65" y="-520" z="3800"/>
+        <rotation name="pvolPMT0x55ed88182420_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="5" name="pvolPMT0x55ed88182880">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88182880_pos" unit="mm" x="-1442.65" y="-520" z="4360"/>
+        <rotation name="pvolPMT0x55ed88182880_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="24" name="pvolPMT0x55ed88182c00">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88182c00_pos" unit="mm" x="-1442.65" y="590" z="3800"/>
+        <rotation name="pvolPMT0x55ed88182c00_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+      <physvol copynumber="25" name="pvolPMT0x55ed88183020">
+        <volumeref ref="volPMT0x55ed88120810"/>
+        <position name="pvolPMT0x55ed88183020_pos" unit="mm" x="-1442.65" y="590" z="4360"/>
+        <rotation name="pvolPMT0x55ed88183020_rot" unit="deg" x="90" y="-90" z="0"/>
+      </physvol>
+    </volume>
+    <volume name="volCryostat0x55ed881161c0">
+      <materialref ref="G4_STAINLESS-STEEL0x55ed88160be0"/>
+      <solidref ref="Cryostat0x55ed88176680"/>
+      <physvol name="volTPC_PV0x55ed881625b0">
+        <volumeref ref="volTPC0x55ed8817b3c0"/>
+      </physvol>
+    </volume>
+    <volume name="volAuxDet0x55ed88162b90">
+      <materialref ref="G4_POLYSTYRENE0x55ed881034c0"/>
+      <solidref ref="AuxDetBox0x55ed88176780"/>
+    </volume>
+    <volume name="volDetEnclosure0x55ed87e41940">
+      <materialref ref="G4_AIR0x55ed87e40550"/>
+      <solidref ref="DetEnclosure0x55ed88176800"/>
+      <physvol name="volCryostat_PV0x55ed88164040">
+        <volumeref ref="volCryostat0x55ed881161c0"/>
+      </physvol>
+      <physvol name="AuxDetpaddle0x55ed87e41f70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e41f70_pos" unit="mm" x="3600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="1" name="AuxDetpaddle0x55ed87e42440">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e42440_pos" unit="mm" x="3400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="2" name="AuxDetpaddle0x55ed87e427e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e427e0_pos" unit="mm" x="3200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="3" name="AuxDetpaddle0x55ed87e42b90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e42b90_pos" unit="mm" x="3000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="4" name="AuxDetpaddle0x55ed87e42f30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e42f30_pos" unit="mm" x="2800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="5" name="AuxDetpaddle0x55ed87e432f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e432f0_pos" unit="mm" x="2600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="6" name="AuxDetpaddle0x55ed87e43690">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e43690_pos" unit="mm" x="2400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="7" name="AuxDetpaddle0x55ed87e43a30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e43a30_pos" unit="mm" x="2200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="8" name="AuxDetpaddle0x55ed87e43dd0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e43dd0_pos" unit="mm" x="2000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="9" name="AuxDetpaddle0x55ed87e44120">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e44120_pos" unit="mm" x="1800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="10" name="AuxDetpaddle0x55ed87e444c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e444c0_pos" unit="mm" x="1600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="11" name="AuxDetpaddle0x55ed8810d2e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810d2e0_pos" unit="mm" x="1400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="12" name="AuxDetpaddle0x55ed8810d680">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810d680_pos" unit="mm" x="1200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="13" name="AuxDetpaddle0x55ed8810da20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810da20_pos" unit="mm" x="1000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="14" name="AuxDetpaddle0x55ed8810ddc0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810ddc0_pos" unit="mm" x="800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="15" name="AuxDetpaddle0x55ed8810e160">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810e160_pos" unit="mm" x="600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="16" name="AuxDetpaddle0x55ed8810e500">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810e500_pos" unit="mm" x="400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="17" name="AuxDetpaddle0x55ed8810e8a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810e8a0_pos" unit="mm" x="200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="18" name="AuxDetpaddle0x55ed8810ec40">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810ec40_pos" unit="mm" x="0" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="19" name="AuxDetpaddle0x55ed8810efe0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810efe0_pos" unit="mm" x="-200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="20" name="AuxDetpaddle0x55ed8810f380">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810f380_pos" unit="mm" x="-400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="21" name="AuxDetpaddle0x55ed8810f720">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810f720_pos" unit="mm" x="-600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="22" name="AuxDetpaddle0x55ed881bfba0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881bfba0_pos" unit="mm" x="-800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="23" name="AuxDetpaddle0x55ed8810fa50">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810fa50_pos" unit="mm" x="-1000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="24" name="AuxDetpaddle0x55ed8810fda0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8810fda0_pos" unit="mm" x="-1200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="25" name="AuxDetpaddle0x55ed88110140">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88110140_pos" unit="mm" x="-1400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="26" name="AuxDetpaddle0x55ed881104e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881104e0_pos" unit="mm" x="-1600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="27" name="AuxDetpaddle0x55ed88110880">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88110880_pos" unit="mm" x="-1800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="28" name="AuxDetpaddle0x55ed88110c20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88110c20_pos" unit="mm" x="-2000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="29" name="AuxDetpaddle0x55ed88110fc0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88110fc0_pos" unit="mm" x="-2200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="30" name="AuxDetpaddle0x55ed88111360">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88111360_pos" unit="mm" x="-2400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="31" name="AuxDetpaddle0x55ed87e44920">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e44920_pos" unit="mm" x="-2600" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="32" name="AuxDetpaddle0x55ed87e44c80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e44c80_pos" unit="mm" x="-2800" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="33" name="AuxDetpaddle0x55ed87e45020">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e45020_pos" unit="mm" x="-3000" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="34" name="AuxDetpaddle0x55ed87e453c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e453c0_pos" unit="mm" x="-3200" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="35" name="AuxDetpaddle0x55ed87e45760">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e45760_pos" unit="mm" x="-3400" y="-1420" z="-6000"/>
+      </physvol>
+      <physvol copynumber="3" name="AuxDetpaddle0x55ed87e45b00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e45b00_pos" unit="mm" x="3600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="4" name="AuxDetpaddle0x55ed87e45ea0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e45ea0_pos" unit="mm" x="3400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="5" name="AuxDetpaddle0x55ed87e46240">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e46240_pos" unit="mm" x="3200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="6" name="AuxDetpaddle0x55ed87e465e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e465e0_pos" unit="mm" x="3000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="7" name="AuxDetpaddle0x55ed87e46980">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e46980_pos" unit="mm" x="2800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="8" name="AuxDetpaddle0x55ed87e46d20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e46d20_pos" unit="mm" x="2600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="9" name="AuxDetpaddle0x55ed87e470c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e470c0_pos" unit="mm" x="2400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="10" name="AuxDetpaddle0x55ed87e47460">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e47460_pos" unit="mm" x="2200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="11" name="AuxDetpaddle0x55ed87e47800">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e47800_pos" unit="mm" x="2000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="12" name="AuxDetpaddle0x55ed87e47ba0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e47ba0_pos" unit="mm" x="1800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="13" name="AuxDetpaddle0x55ed87e47f40">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e47f40_pos" unit="mm" x="1600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="14" name="AuxDetpaddle0x55ed87e482e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e482e0_pos" unit="mm" x="1400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="15" name="AuxDetpaddle0x55ed8819ddc0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8819ddc0_pos" unit="mm" x="1200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="16" name="AuxDetpaddle0x55ed87e484f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e484f0_pos" unit="mm" x="1000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="17" name="AuxDetpaddle0x55ed87e48880">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e48880_pos" unit="mm" x="800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="18" name="AuxDetpaddle0x55ed87e48c20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed87e48c20_pos" unit="mm" x="600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="19" name="AuxDetpaddle0x55ed881181c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881181c0_pos" unit="mm" x="400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="20" name="AuxDetpaddle0x55ed8811e2c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811e2c0_pos" unit="mm" x="200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="21" name="AuxDetpaddle0x55ed8811e660">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811e660_pos" unit="mm" x="0" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="22" name="AuxDetpaddle0x55ed8811ea00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811ea00_pos" unit="mm" x="-200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="23" name="AuxDetpaddle0x55ed8811eda0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811eda0_pos" unit="mm" x="-400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="24" name="AuxDetpaddle0x55ed8811f140">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811f140_pos" unit="mm" x="-600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="25" name="AuxDetpaddle0x55ed8811f4e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811f4e0_pos" unit="mm" x="-800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="26" name="AuxDetpaddle0x55ed8811f880">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811f880_pos" unit="mm" x="-1000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="27" name="AuxDetpaddle0x55ed8811fc20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811fc20_pos" unit="mm" x="-1200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="28" name="AuxDetpaddle0x55ed8811ffc0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811ffc0_pos" unit="mm" x="-1400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="29" name="AuxDetpaddle0x55ed8817bdd0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817bdd0_pos" unit="mm" x="-1600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="30" name="AuxDetpaddle0x55ed8817c170">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817c170_pos" unit="mm" x="-1800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="31" name="AuxDetpaddle0x55ed8817c510">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817c510_pos" unit="mm" x="-2000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="32" name="AuxDetpaddle0x55ed8817cf00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817cf00_pos" unit="mm" x="-2200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="33" name="AuxDetpaddle0x55ed8817d2a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817d2a0_pos" unit="mm" x="-2400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="34" name="AuxDetpaddle0x55ed8817d640">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817d640_pos" unit="mm" x="-2600" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="35" name="AuxDetpaddle0x55ed8817d9e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817d9e0_pos" unit="mm" x="-2800" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="36" name="AuxDetpaddle0x55ed8817dd80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817dd80_pos" unit="mm" x="-3000" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="37" name="AuxDetpaddle0x55ed8817e120">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817e120_pos" unit="mm" x="-3200" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="38" name="AuxDetpaddle0x55ed8817e4c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817e4c0_pos" unit="mm" x="-3400" y="90" z="-6000"/>
+      </physvol>
+      <physvol copynumber="6" name="AuxDetpaddle0x55ed8817e860">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817e860_pos" unit="mm" x="3600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="7" name="AuxDetpaddle0x55ed8817ec00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817ec00_pos" unit="mm" x="3400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="8" name="AuxDetpaddle0x55ed8817efa0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817efa0_pos" unit="mm" x="3200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="9" name="AuxDetpaddle0x55ed8817f340">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817f340_pos" unit="mm" x="3000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="10" name="AuxDetpaddle0x55ed8817f6e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817f6e0_pos" unit="mm" x="2800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="11" name="AuxDetpaddle0x55ed8817fa80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817fa80_pos" unit="mm" x="2600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="12" name="AuxDetpaddle0x55ed8817fe20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817fe20_pos" unit="mm" x="2400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="13" name="AuxDetpaddle0x55ed881801c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881801c0_pos" unit="mm" x="2200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="14" name="AuxDetpaddle0x55ed88180560">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88180560_pos" unit="mm" x="2000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="15" name="AuxDetpaddle0x55ed88180900">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88180900_pos" unit="mm" x="1800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="16" name="AuxDetpaddle0x55ed88180ca0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88180ca0_pos" unit="mm" x="1600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="17" name="AuxDetpaddle0x55ed88181040">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88181040_pos" unit="mm" x="1400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="18" name="AuxDetpaddle0x55ed881813e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881813e0_pos" unit="mm" x="1200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="19" name="AuxDetpaddle0x55ed88181780">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88181780_pos" unit="mm" x="1000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="20" name="AuxDetpaddle0x55ed881acc70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881acc70_pos" unit="mm" x="800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="21" name="AuxDetpaddle0x55ed881ad010">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ad010_pos" unit="mm" x="600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="22" name="AuxDetpaddle0x55ed881ad3b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ad3b0_pos" unit="mm" x="400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="23" name="AuxDetpaddle0x55ed881ad750">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ad750_pos" unit="mm" x="200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="24" name="AuxDetpaddle0x55ed881adaf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881adaf0_pos" unit="mm" x="0" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="25" name="AuxDetpaddle0x55ed881ade90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ade90_pos" unit="mm" x="-200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="26" name="AuxDetpaddle0x55ed881ae230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ae230_pos" unit="mm" x="-400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="27" name="AuxDetpaddle0x55ed881ae5d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ae5d0_pos" unit="mm" x="-600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="28" name="AuxDetpaddle0x55ed881ae970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ae970_pos" unit="mm" x="-800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="29" name="AuxDetpaddle0x55ed88118530">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88118530_pos" unit="mm" x="-1000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="30" name="AuxDetpaddle0x55ed881188d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881188d0_pos" unit="mm" x="-1200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="31" name="AuxDetpaddle0x55ed88118c70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88118c70_pos" unit="mm" x="-1400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="32" name="AuxDetpaddle0x55ed88119010">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88119010_pos" unit="mm" x="-1600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="33" name="AuxDetpaddle0x55ed881193b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881193b0_pos" unit="mm" x="-1800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="34" name="AuxDetpaddle0x55ed88119750">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88119750_pos" unit="mm" x="-2000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="35" name="AuxDetpaddle0x55ed88119af0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88119af0_pos" unit="mm" x="-2200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="36" name="AuxDetpaddle0x55ed88119e90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88119e90_pos" unit="mm" x="-2400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="37" name="AuxDetpaddle0x55ed8811a230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811a230_pos" unit="mm" x="-2600" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="38" name="AuxDetpaddle0x55ed8811a5d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811a5d0_pos" unit="mm" x="-2800" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="39" name="AuxDetpaddle0x55ed8811a970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811a970_pos" unit="mm" x="-3000" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="40" name="AuxDetpaddle0x55ed8811ad10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811ad10_pos" unit="mm" x="-3200" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="41" name="AuxDetpaddle0x55ed8811b0b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811b0b0_pos" unit="mm" x="-3400" y="1600" z="-6000"/>
+      </physvol>
+      <physvol copynumber="108" name="AuxDetpaddle0x55ed8811b450">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811b450_pos" unit="mm" x="3620" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="109" name="AuxDetpaddle0x55ed8811b7f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811b7f0_pos" unit="mm" x="3420" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="110" name="AuxDetpaddle0x55ed8811bb90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811bb90_pos" unit="mm" x="3220" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="111" name="AuxDetpaddle0x55ed8811bf30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811bf30_pos" unit="mm" x="3020" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="112" name="AuxDetpaddle0x55ed8811c2d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811c2d0_pos" unit="mm" x="2820" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="113" name="AuxDetpaddle0x55ed8811c670">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811c670_pos" unit="mm" x="2620" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="114" name="AuxDetpaddle0x55ed8811ca10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811ca10_pos" unit="mm" x="2420" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="115" name="AuxDetpaddle0x55ed8811cdb0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811cdb0_pos" unit="mm" x="2220" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="116" name="AuxDetpaddle0x55ed8811d150">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811d150_pos" unit="mm" x="2020" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="117" name="AuxDetpaddle0x55ed8811d4f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811d4f0_pos" unit="mm" x="1820" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="118" name="AuxDetpaddle0x55ed8811d890">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811d890_pos" unit="mm" x="1620" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="119" name="AuxDetpaddle0x55ed8811dc30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811dc30_pos" unit="mm" x="1420" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="120" name="AuxDetpaddle0x55ed8811dfd0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8811dfd0_pos" unit="mm" x="1220" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="121" name="AuxDetpaddle0x55ed8808f110">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808f110_pos" unit="mm" x="1020" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="122" name="AuxDetpaddle0x55ed8808f4a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808f4a0_pos" unit="mm" x="820" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="123" name="AuxDetpaddle0x55ed8808f840">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808f840_pos" unit="mm" x="620" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="124" name="AuxDetpaddle0x55ed8808fbe0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808fbe0_pos" unit="mm" x="420" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="125" name="AuxDetpaddle0x55ed8808ff80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808ff80_pos" unit="mm" x="220" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="126" name="AuxDetpaddle0x55ed88090320">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88090320_pos" unit="mm" x="20" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="127" name="AuxDetpaddle0x55ed880906c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed880906c0_pos" unit="mm" x="-180" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="128" name="AuxDetpaddle0x55ed881a6ec0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a6ec0_pos" unit="mm" x="-380" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="129" name="AuxDetpaddle0x55ed881a7220">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a7220_pos" unit="mm" x="-580" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="130" name="AuxDetpaddle0x55ed881a75c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a75c0_pos" unit="mm" x="-780" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="131" name="AuxDetpaddle0x55ed881a7960">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a7960_pos" unit="mm" x="-980" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="132" name="AuxDetpaddle0x55ed881a7d00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a7d00_pos" unit="mm" x="-1180" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="133" name="AuxDetpaddle0x55ed881a80a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a80a0_pos" unit="mm" x="-1380" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="134" name="AuxDetpaddle0x55ed881a8440">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a8440_pos" unit="mm" x="-1580" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="135" name="AuxDetpaddle0x55ed881a87e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a87e0_pos" unit="mm" x="-1780" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="136" name="AuxDetpaddle0x55ed881a8b80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a8b80_pos" unit="mm" x="-1980" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="137" name="AuxDetpaddle0x55ed881a8f20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a8f20_pos" unit="mm" x="-2180" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="138" name="AuxDetpaddle0x55ed881a92c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a92c0_pos" unit="mm" x="-2380" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="139" name="AuxDetpaddle0x55ed881a9660">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a9660_pos" unit="mm" x="-2580" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="140" name="AuxDetpaddle0x55ed881a9a00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a9a00_pos" unit="mm" x="-2780" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="141" name="AuxDetpaddle0x55ed881a9da0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881a9da0_pos" unit="mm" x="-2980" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="142" name="AuxDetpaddle0x55ed881aa140">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881aa140_pos" unit="mm" x="-3180" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="143" name="AuxDetpaddle0x55ed881aa4e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881aa4e0_pos" unit="mm" x="-3380" y="-1430" z="-6050"/>
+      </physvol>
+      <physvol copynumber="111" name="AuxDetpaddle0x55ed881aa880">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881aa880_pos" unit="mm" x="3620" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="112" name="AuxDetpaddle0x55ed881aac20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881aac20_pos" unit="mm" x="3420" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="113" name="AuxDetpaddle0x55ed881aafc0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881aafc0_pos" unit="mm" x="3220" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="114" name="AuxDetpaddle0x55ed881ab360">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ab360_pos" unit="mm" x="3020" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="115" name="AuxDetpaddle0x55ed881ab700">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ab700_pos" unit="mm" x="2820" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="116" name="AuxDetpaddle0x55ed881abaa0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881abaa0_pos" unit="mm" x="2620" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="117" name="AuxDetpaddle0x55ed881abe40">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881abe40_pos" unit="mm" x="2420" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="118" name="AuxDetpaddle0x55ed881ac1e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ac1e0_pos" unit="mm" x="2220" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="119" name="AuxDetpaddle0x55ed881ac580">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ac580_pos" unit="mm" x="2020" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="120" name="AuxDetpaddle0x55ed881ac920">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ac920_pos" unit="mm" x="1820" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="121" name="AuxDetpaddle0x55ed881232d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881232d0_pos" unit="mm" x="1620" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="122" name="AuxDetpaddle0x55ed881293b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881293b0_pos" unit="mm" x="1420" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="123" name="AuxDetpaddle0x55ed88129750">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88129750_pos" unit="mm" x="1220" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="124" name="AuxDetpaddle0x55ed88129af0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88129af0_pos" unit="mm" x="1020" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="125" name="AuxDetpaddle0x55ed88129e90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88129e90_pos" unit="mm" x="820" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="126" name="AuxDetpaddle0x55ed8812a230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8812a230_pos" unit="mm" x="620" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="127" name="AuxDetpaddle0x55ed8812a5d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8812a5d0_pos" unit="mm" x="420" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="128" name="AuxDetpaddle0x55ed8812a970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8812a970_pos" unit="mm" x="220" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="129" name="AuxDetpaddle0x55ed8812ad10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8812ad10_pos" unit="mm" x="20" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="130" name="AuxDetpaddle0x55ed8812b0b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8812b0b0_pos" unit="mm" x="-180" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="131" name="AuxDetpaddle0x55ed88089590">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88089590_pos" unit="mm" x="-380" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="132" name="AuxDetpaddle0x55ed8817c8b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817c8b0_pos" unit="mm" x="-580" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="133" name="AuxDetpaddle0x55ed8817cc50">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8817cc50_pos" unit="mm" x="-780" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="134" name="AuxDetpaddle0x55ed8808a730">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808a730_pos" unit="mm" x="-980" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="135" name="AuxDetpaddle0x55ed8808aa90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808aa90_pos" unit="mm" x="-1180" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="136" name="AuxDetpaddle0x55ed8808adf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808adf0_pos" unit="mm" x="-1380" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="137" name="AuxDetpaddle0x55ed8808b190">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808b190_pos" unit="mm" x="-1580" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="138" name="AuxDetpaddle0x55ed8808b530">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808b530_pos" unit="mm" x="-1780" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="139" name="AuxDetpaddle0x55ed8808b8d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808b8d0_pos" unit="mm" x="-1980" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="140" name="AuxDetpaddle0x55ed8808bc70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808bc70_pos" unit="mm" x="-2180" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="141" name="AuxDetpaddle0x55ed8808c010">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808c010_pos" unit="mm" x="-2380" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="142" name="AuxDetpaddle0x55ed8808c3b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808c3b0_pos" unit="mm" x="-2580" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="143" name="AuxDetpaddle0x55ed8808c750">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808c750_pos" unit="mm" x="-2780" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="144" name="AuxDetpaddle0x55ed8808caf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808caf0_pos" unit="mm" x="-2980" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="145" name="AuxDetpaddle0x55ed8808ce90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808ce90_pos" unit="mm" x="-3180" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="146" name="AuxDetpaddle0x55ed8808d230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808d230_pos" unit="mm" x="-3380" y="80" z="-6050"/>
+      </physvol>
+      <physvol copynumber="114" name="AuxDetpaddle0x55ed8808d5d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808d5d0_pos" unit="mm" x="3620" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="115" name="AuxDetpaddle0x55ed8808d970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808d970_pos" unit="mm" x="3420" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="116" name="AuxDetpaddle0x55ed8808dd10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808dd10_pos" unit="mm" x="3220" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="117" name="AuxDetpaddle0x55ed8808e0b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808e0b0_pos" unit="mm" x="3020" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="118" name="AuxDetpaddle0x55ed8808e450">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808e450_pos" unit="mm" x="2820" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="119" name="AuxDetpaddle0x55ed8808e7f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808e7f0_pos" unit="mm" x="2620" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="120" name="AuxDetpaddle0x55ed8808eb90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808eb90_pos" unit="mm" x="2420" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="121" name="AuxDetpaddle0x55ed8808ef30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8808ef30_pos" unit="mm" x="2220" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="122" name="AuxDetpaddle0x55ed881d6080">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d6080_pos" unit="mm" x="2020" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="123" name="AuxDetpaddle0x55ed881d6420">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d6420_pos" unit="mm" x="1820" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="124" name="AuxDetpaddle0x55ed881d67c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d67c0_pos" unit="mm" x="1620" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="125" name="AuxDetpaddle0x55ed881d6b60">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d6b60_pos" unit="mm" x="1420" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="126" name="AuxDetpaddle0x55ed881d6f00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d6f00_pos" unit="mm" x="1220" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="127" name="AuxDetpaddle0x55ed881d72a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d72a0_pos" unit="mm" x="1020" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="128" name="AuxDetpaddle0x55ed881d7640">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d7640_pos" unit="mm" x="820" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="129" name="AuxDetpaddle0x55ed881d79e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d79e0_pos" unit="mm" x="620" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="130" name="AuxDetpaddle0x55ed881d7d80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d7d80_pos" unit="mm" x="420" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="131" name="AuxDetpaddle0x55ed88123600">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88123600_pos" unit="mm" x="220" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="132" name="AuxDetpaddle0x55ed88123990">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88123990_pos" unit="mm" x="20" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="133" name="AuxDetpaddle0x55ed88123d30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88123d30_pos" unit="mm" x="-180" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="134" name="AuxDetpaddle0x55ed881240d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881240d0_pos" unit="mm" x="-380" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="135" name="AuxDetpaddle0x55ed88124470">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88124470_pos" unit="mm" x="-580" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="136" name="AuxDetpaddle0x55ed88124810">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88124810_pos" unit="mm" x="-780" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="137" name="AuxDetpaddle0x55ed88124bb0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88124bb0_pos" unit="mm" x="-980" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="138" name="AuxDetpaddle0x55ed88124f50">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88124f50_pos" unit="mm" x="-1180" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="139" name="AuxDetpaddle0x55ed881252f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881252f0_pos" unit="mm" x="-1380" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="140" name="AuxDetpaddle0x55ed88125690">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88125690_pos" unit="mm" x="-1580" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="141" name="AuxDetpaddle0x55ed88125a30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88125a30_pos" unit="mm" x="-1780" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="142" name="AuxDetpaddle0x55ed88125dd0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88125dd0_pos" unit="mm" x="-1980" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="143" name="AuxDetpaddle0x55ed88126170">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88126170_pos" unit="mm" x="-2180" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="144" name="AuxDetpaddle0x55ed88126510">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88126510_pos" unit="mm" x="-2380" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="145" name="AuxDetpaddle0x55ed881268b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881268b0_pos" unit="mm" x="-2580" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="146" name="AuxDetpaddle0x55ed88126c50">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88126c50_pos" unit="mm" x="-2780" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="147" name="AuxDetpaddle0x55ed88126ff0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88126ff0_pos" unit="mm" x="-2980" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="148" name="AuxDetpaddle0x55ed88127390">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88127390_pos" unit="mm" x="-3180" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="149" name="AuxDetpaddle0x55ed88127730">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88127730_pos" unit="mm" x="-3380" y="1590" z="-6050"/>
+      </physvol>
+      <physvol copynumber="216" name="AuxDetpaddle0x55ed88127ad0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88127ad0_pos" unit="mm" x="3600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="217" name="AuxDetpaddle0x55ed88127e70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88127e70_pos" unit="mm" x="3400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="218" name="AuxDetpaddle0x55ed88128210">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88128210_pos" unit="mm" x="3200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="219" name="AuxDetpaddle0x55ed881285b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881285b0_pos" unit="mm" x="3000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="220" name="AuxDetpaddle0x55ed88128950">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88128950_pos" unit="mm" x="2800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="221" name="AuxDetpaddle0x55ed88128cf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88128cf0_pos" unit="mm" x="2600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="222" name="AuxDetpaddle0x55ed88129090">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88129090_pos" unit="mm" x="2400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="223" name="AuxDetpaddle0x55ed881c81a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881c81a0_pos" unit="mm" x="2200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="224" name="AuxDetpaddle0x55ed881ce2d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ce2d0_pos" unit="mm" x="2000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="225" name="AuxDetpaddle0x55ed881ce670">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ce670_pos" unit="mm" x="1800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="226" name="AuxDetpaddle0x55ed881cea10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cea10_pos" unit="mm" x="1600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="227" name="AuxDetpaddle0x55ed881cedb0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cedb0_pos" unit="mm" x="1400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="228" name="AuxDetpaddle0x55ed881cf150">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cf150_pos" unit="mm" x="1200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="229" name="AuxDetpaddle0x55ed881cf4f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cf4f0_pos" unit="mm" x="1000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="230" name="AuxDetpaddle0x55ed881cf890">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cf890_pos" unit="mm" x="800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="231" name="AuxDetpaddle0x55ed881cfc30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cfc30_pos" unit="mm" x="600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="232" name="AuxDetpaddle0x55ed881cffd0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cffd0_pos" unit="mm" x="400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="233" name="AuxDetpaddle0x55ed881d0530">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d0530_pos" unit="mm" x="200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="234" name="AuxDetpaddle0x55ed881d08d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d08d0_pos" unit="mm" x="0" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="235" name="AuxDetpaddle0x55ed881d0c70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d0c70_pos" unit="mm" x="-200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="236" name="AuxDetpaddle0x55ed881d1010">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d1010_pos" unit="mm" x="-400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="237" name="AuxDetpaddle0x55ed881d13b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d13b0_pos" unit="mm" x="-600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="238" name="AuxDetpaddle0x55ed881d1750">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d1750_pos" unit="mm" x="-800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="239" name="AuxDetpaddle0x55ed881d1af0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d1af0_pos" unit="mm" x="-1000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="240" name="AuxDetpaddle0x55ed881d1e90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d1e90_pos" unit="mm" x="-1200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="241" name="AuxDetpaddle0x55ed881d2230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d2230_pos" unit="mm" x="-1400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="242" name="AuxDetpaddle0x55ed881d25d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d25d0_pos" unit="mm" x="-1600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="243" name="AuxDetpaddle0x55ed881d2970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d2970_pos" unit="mm" x="-1800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="244" name="AuxDetpaddle0x55ed881d2d10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d2d10_pos" unit="mm" x="-2000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="245" name="AuxDetpaddle0x55ed881d30b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d30b0_pos" unit="mm" x="-2200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="246" name="AuxDetpaddle0x55ed881d3450">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d3450_pos" unit="mm" x="-2400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="247" name="AuxDetpaddle0x55ed881d37f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d37f0_pos" unit="mm" x="-2600" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="248" name="AuxDetpaddle0x55ed881d3b90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d3b90_pos" unit="mm" x="-2800" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="249" name="AuxDetpaddle0x55ed881d3f30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d3f30_pos" unit="mm" x="-3000" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="250" name="AuxDetpaddle0x55ed881d42d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d42d0_pos" unit="mm" x="-3200" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="251" name="AuxDetpaddle0x55ed881d4670">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d4670_pos" unit="mm" x="-3400" y="-1420" z="-6100"/>
+      </physvol>
+      <physvol copynumber="219" name="AuxDetpaddle0x55ed881d4a10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d4a10_pos" unit="mm" x="3600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="220" name="AuxDetpaddle0x55ed881d4db0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d4db0_pos" unit="mm" x="3400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="221" name="AuxDetpaddle0x55ed881d5150">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d5150_pos" unit="mm" x="3200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="222" name="AuxDetpaddle0x55ed881d54f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d54f0_pos" unit="mm" x="3000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="223" name="AuxDetpaddle0x55ed881d5890">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d5890_pos" unit="mm" x="2800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="224" name="AuxDetpaddle0x55ed881d5c30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881d5c30_pos" unit="mm" x="2600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="225" name="AuxDetpaddle0x55ed880909c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed880909c0_pos" unit="mm" x="2400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="226" name="AuxDetpaddle0x55ed88090d60">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88090d60_pos" unit="mm" x="2200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="227" name="AuxDetpaddle0x55ed88091100">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88091100_pos" unit="mm" x="2000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="228" name="AuxDetpaddle0x55ed8815daf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815daf0_pos" unit="mm" x="1800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="229" name="AuxDetpaddle0x55ed8815de90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815de90_pos" unit="mm" x="1600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="230" name="AuxDetpaddle0x55ed8815e230">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815e230_pos" unit="mm" x="1400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="231" name="AuxDetpaddle0x55ed8815e5d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815e5d0_pos" unit="mm" x="1200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="232" name="AuxDetpaddle0x55ed8815e970">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815e970_pos" unit="mm" x="1000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="233" name="AuxDetpaddle0x55ed8815ed10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815ed10_pos" unit="mm" x="800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="234" name="AuxDetpaddle0x55ed8815f0b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815f0b0_pos" unit="mm" x="600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="235" name="AuxDetpaddle0x55ed8815f450">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815f450_pos" unit="mm" x="400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="236" name="AuxDetpaddle0x55ed8815f7f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815f7f0_pos" unit="mm" x="200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="237" name="AuxDetpaddle0x55ed8815fb90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815fb90_pos" unit="mm" x="0" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="238" name="AuxDetpaddle0x55ed8815ff30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed8815ff30_pos" unit="mm" x="-200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="239" name="AuxDetpaddle0x55ed881602d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881602d0_pos" unit="mm" x="-400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="240" name="AuxDetpaddle0x55ed88160670">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88160670_pos" unit="mm" x="-600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="241" name="AuxDetpaddle0x55ed881c9470">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881c9470_pos" unit="mm" x="-800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="242" name="AuxDetpaddle0x55ed881c97c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881c97c0_pos" unit="mm" x="-1000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="243" name="AuxDetpaddle0x55ed881c9b60">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881c9b60_pos" unit="mm" x="-1200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="244" name="AuxDetpaddle0x55ed881c9f00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881c9f00_pos" unit="mm" x="-1400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="245" name="AuxDetpaddle0x55ed881ca2a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ca2a0_pos" unit="mm" x="-1600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="246" name="AuxDetpaddle0x55ed881ca640">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ca640_pos" unit="mm" x="-1800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="247" name="AuxDetpaddle0x55ed881ca9e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ca9e0_pos" unit="mm" x="-2000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="248" name="AuxDetpaddle0x55ed881cad80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cad80_pos" unit="mm" x="-2200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="249" name="AuxDetpaddle0x55ed881cb120">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cb120_pos" unit="mm" x="-2400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="250" name="AuxDetpaddle0x55ed881cb4c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cb4c0_pos" unit="mm" x="-2600" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="251" name="AuxDetpaddle0x55ed881cb860">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cb860_pos" unit="mm" x="-2800" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="252" name="AuxDetpaddle0x55ed881cbc00">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cbc00_pos" unit="mm" x="-3000" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="253" name="AuxDetpaddle0x55ed881cbfa0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cbfa0_pos" unit="mm" x="-3200" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="254" name="AuxDetpaddle0x55ed881cc340">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cc340_pos" unit="mm" x="-3400" y="90" z="-6100"/>
+      </physvol>
+      <physvol copynumber="222" name="AuxDetpaddle0x55ed881cc6e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cc6e0_pos" unit="mm" x="3600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="223" name="AuxDetpaddle0x55ed881cca80">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cca80_pos" unit="mm" x="3400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="224" name="AuxDetpaddle0x55ed881cce20">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cce20_pos" unit="mm" x="3200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="225" name="AuxDetpaddle0x55ed881cd1c0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cd1c0_pos" unit="mm" x="3000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="226" name="AuxDetpaddle0x55ed881cd560">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cd560_pos" unit="mm" x="2800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="227" name="AuxDetpaddle0x55ed881cd900">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cd900_pos" unit="mm" x="2600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="228" name="AuxDetpaddle0x55ed881cdca0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881cdca0_pos" unit="mm" x="2400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="229" name="AuxDetpaddle0x55ed881ce040">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881ce040_pos" unit="mm" x="2200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="230" name="AuxDetpaddle0x55ed881f1ff0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f1ff0_pos" unit="mm" x="2000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="231" name="AuxDetpaddle0x55ed881f2390">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f2390_pos" unit="mm" x="1800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="232" name="AuxDetpaddle0x55ed881f2730">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f2730_pos" unit="mm" x="1600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="233" name="AuxDetpaddle0x55ed881f2ad0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f2ad0_pos" unit="mm" x="1400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="234" name="AuxDetpaddle0x55ed881f2e70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f2e70_pos" unit="mm" x="1200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="235" name="AuxDetpaddle0x55ed881f3210">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f3210_pos" unit="mm" x="1000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="236" name="AuxDetpaddle0x55ed881f35b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f35b0_pos" unit="mm" x="800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="237" name="AuxDetpaddle0x55ed881f3950">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f3950_pos" unit="mm" x="600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="238" name="AuxDetpaddle0x55ed881f3cf0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f3cf0_pos" unit="mm" x="400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="239" name="AuxDetpaddle0x55ed881f4090">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f4090_pos" unit="mm" x="200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="240" name="AuxDetpaddle0x55ed881f4430">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f4430_pos" unit="mm" x="0" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="241" name="AuxDetpaddle0x55ed881f47d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f47d0_pos" unit="mm" x="-200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="242" name="AuxDetpaddle0x55ed881f4b70">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f4b70_pos" unit="mm" x="-400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="243" name="AuxDetpaddle0x55ed881f4f10">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f4f10_pos" unit="mm" x="-600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="244" name="AuxDetpaddle0x55ed881f52b0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f52b0_pos" unit="mm" x="-800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="245" name="AuxDetpaddle0x55ed881f5650">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f5650_pos" unit="mm" x="-1000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="246" name="AuxDetpaddle0x55ed881f59f0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f59f0_pos" unit="mm" x="-1200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="247" name="AuxDetpaddle0x55ed881f5d90">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f5d90_pos" unit="mm" x="-1400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="248" name="AuxDetpaddle0x55ed881f6130">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f6130_pos" unit="mm" x="-1600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="249" name="AuxDetpaddle0x55ed881f64d0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881f64d0_pos" unit="mm" x="-1800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="250" name="AuxDetpaddle0x55ed88157b30">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88157b30_pos" unit="mm" x="-2000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="251" name="AuxDetpaddle0x55ed88157ec0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88157ec0_pos" unit="mm" x="-2200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="252" name="AuxDetpaddle0x55ed88158260">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88158260_pos" unit="mm" x="-2400" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="253" name="AuxDetpaddle0x55ed88158600">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88158600_pos" unit="mm" x="-2600" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="254" name="AuxDetpaddle0x55ed881589a0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881589a0_pos" unit="mm" x="-2800" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="255" name="AuxDetpaddle0x55ed88158d40">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88158d40_pos" unit="mm" x="-3000" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="256" name="AuxDetpaddle0x55ed881590e0">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed881590e0_pos" unit="mm" x="-3200" y="1600" z="-6100"/>
+      </physvol>
+      <physvol copynumber="257" name="AuxDetpaddle0x55ed88159480">
+        <volumeref ref="volAuxDet0x55ed88162b90"/>
+        <position name="AuxDetpaddle0x55ed88159480_pos" unit="mm" x="-3400" y="1600" z="-6100"/>
+      </physvol>
+    </volume>
+    <volume name="volWorld0x55ed87e41d70">
+      <materialref ref="G4_AIR0x55ed87e40550"/>
+      <solidref ref="World0x55ed88176880"/>
+      <physvol name="volDetEnclosure_PV0x55ed88159820">
+        <volumeref ref="volDetEnclosure0x55ed87e41940"/>
+        <position name="volDetEnclosure_PV0x55ed88159820_pos" unit="mm" x="1283.25" y="0" z="5184"/>
+      </physvol>
+    </volume>
+  </structure>
+
+  <setup name="Default" version="1.0">
+    <world ref="volWorld0x55ed87e41d70"/>
+  </setup>
+
+</gdml>
