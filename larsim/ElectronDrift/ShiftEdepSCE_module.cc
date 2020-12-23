@@ -93,6 +93,14 @@ spacecharge::ShiftEdepSCE::produce(art::Event& e)
     if (sce->EnableSimSpatialSCE()) {
       posOffsetsStart = sce->GetPosOffsets({edep.StartX(), edep.StartY(), edep.StartZ()});
       posOffsetsEnd = sce->GetPosOffsets({edep.EndX(), edep.EndY(), edep.EndZ()});
+      if (posOffsetsStart.X() < -1E9 || posOffsetsStart.X() > 1E9 ||
+          posOffsetsStart.Y() < -1E9 || posOffsetsStart.Y() > 1E9 ||
+          posOffsetsStart.Z() < -1E9 || posOffsetsStart.Z() > 1E9 ||
+          posOffsetsEnd.X() < -1E9 || posOffsetsEnd.X() > 1E9 ||
+          posOffsetsEnd.Y() < -1E9 || posOffsetsEnd.Y() > 1E9 ||
+          posOffsetsEnd.Z() < -1E9 || posOffsetsEnd.Z() > 1E9) {
+        continue;
+      }
     }
     auto const isData = fISAlg.CalcIonAndScint(detProp, edep);
     outEdepVec.emplace_back(

@@ -398,6 +398,11 @@ namespace larg4 {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets({xyz[0], xyz[1], xyz[2]});
+        if (posOffsets.X() < -1E9 || posOffsets.X() > 1E9 ||
+            posOffsets.Y() < -1E9 || posOffsets.Y() > 1E9 ||
+            posOffsets.Z() < -1E9 || posOffsets.Z() > 1E9) {
+          return;
+        }
       }
       posOffsets.SetX(-posOffsets.X());
 

@@ -359,6 +359,11 @@ namespace detsim {
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
         posOffsetxyz[2] = posOffsets.Z();
+        if (posOffsetxyz[0] < -1E9 || posOffsetxyz[0] > 1E9 ||
+            posOffsetxyz[1] < -1E9 || posOffsetxyz[1] > 1E9 ||
+            posOffsetxyz[2] < -1E9 || posOffsetxyz[2] > 1E9) {
+          continue;
+        }
       }
 
       double avegagetransversePos1 = 0.;
