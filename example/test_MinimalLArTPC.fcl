@@ -100,6 +100,8 @@ services:
      service_provider : StandardGeometryHelper
      service_type: "ExptGeoHelperInterface"
   }
+  
+  GeometryConfigurationWriter: {}
 
   # -- in larsim
   LArG4Parameters:              @local::standard_largeantparameters
