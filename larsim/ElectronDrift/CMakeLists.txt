@@ -8,6 +8,7 @@ art_make(LIB_LIBRARIES
          MODULE_LIBRARIES
            larsim_ElectronDrift
            larsim_Simulation
+	   larsim_Utils
            larsim_IonizationScintillation
            larcorealg_Geometry
            nurandom_RandomUtils_NuRandomService_service

@@ -58,6 +58,7 @@
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larsim/Simulation/LArG4Parameters.h"
+#include "larsim/Utils/SCEOffsetBounds.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
@@ -356,14 +357,12 @@ namespace detsim {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets(mp);
+	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) {
+          continue;
+	}
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
         posOffsetxyz[2] = posOffsets.Z();
-        if (posOffsetxyz[0] < -1E9 || posOffsetxyz[0] > 1E9 ||
-            posOffsetxyz[1] < -1E9 || posOffsetxyz[1] > 1E9 ||
-            posOffsetxyz[2] < -1E9 || posOffsetxyz[2] > 1E9) {
-          continue;
-        }
       }
 
       double avegagetransversePos1 = 0.;
