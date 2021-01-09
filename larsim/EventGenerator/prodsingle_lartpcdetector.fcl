@@ -40,8 +40,7 @@ services:
   NuRandomService:           @local::per_event_NuRandomService # defined in ${ARTEXTENSIONS_DIR}/fcl/seedservice.fcl
   
   # LArSoft services
-  Geometry:                  @local::standard_geo                  # from geometry.fcl
-  ExptGeoHelperInterface:    @local::standard_geometry_helper      # from geometry.fcl
+                             @table::standard_geometry_services    # from geometry.fcl
   LArPropertiesService:      @local::lartpcdetector_properties     # from larproperties_argoneut.fcl
   DetectorPropertiesService: @local::lartpcdetector_detproperties  # from detectorproperties_lartpcdetector.fcl
   DetectorClocksService:     @local::lartpcdetector_detectorclocks # from detectorclocks_lartpcdetector.fcl
