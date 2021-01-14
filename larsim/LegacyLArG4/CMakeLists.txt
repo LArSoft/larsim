@@ -5,6 +5,7 @@ include_directories($ENV{XERCES_C_INC})
 
 art_make(LIB_LIBRARIES
            larsim_PhotonPropagation_PhotonVisibilityService_service
+	   larsim_Utils
            lardataobj_Simulation
            larcorealg_Geometry
            nug4_G4Base

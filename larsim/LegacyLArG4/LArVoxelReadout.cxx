@@ -35,6 +35,7 @@
 #include "larsim/LegacyLArG4/IonizationAndScintillation.h"
 #include "larsim/LegacyLArG4/LArVoxelReadout.h"
 #include "larsim/LegacyLArG4/ParticleListAction.h"
+#include "larsim/Utils/SCEOffsetBounds.h"
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
@@ -398,6 +399,9 @@ namespace larg4 {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets({xyz[0], xyz[1], xyz[2]});
+	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) {
+          return;
+        }
       }
       posOffsets.SetX(-posOffsets.X());
 

@@ -59,6 +59,7 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/ElectronDrift/ISCalculationSeparate.h"
+#include "larsim/Utils/SCEOffsetBounds.h"
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -291,6 +292,7 @@ namespace detsim {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets(mp);
+	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) continue;
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
         posOffsetxyz[2] = posOffsets.Z();

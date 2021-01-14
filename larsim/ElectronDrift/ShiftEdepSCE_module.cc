@@ -24,6 +24,7 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
+#include "larsim/Utils/SCEOffsetBounds.h"
 
 namespace spacecharge {
   class ShiftEdepSCE;
@@ -93,6 +94,10 @@ spacecharge::ShiftEdepSCE::produce(art::Event& e)
     if (sce->EnableSimSpatialSCE()) {
       posOffsetsStart = sce->GetPosOffsets({edep.StartX(), edep.StartY(), edep.StartZ()});
       posOffsetsEnd = sce->GetPosOffsets({edep.EndX(), edep.EndY(), edep.EndZ()});
+      if (larsim::Utils::SCE::out_of_bounds(posOffsetsStart) ||
+          larsim::Utils::SCE::out_of_bounds(posOffsetsEnd) ) { 
+          continue; 
+        }
     }
     auto const isData = fISAlg.CalcIonAndScint(detProp, edep);
     outEdepVec.emplace_back(
