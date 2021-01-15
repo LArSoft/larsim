@@ -40,6 +40,8 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
+#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 // LArSoft libraries
 #include "larcore/Geometry/Geometry.h"
@@ -53,10 +55,8 @@
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimPhotons.h"
-#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
-#include "larsim/Simulation/LArG4Parameters.h"
 
 // Random numbers
 #include "CLHEP/Random/RandFlat.h"
@@ -87,6 +87,7 @@
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include "TVector3.h"
+#include "TF1.h"
 
 #include <cassert>
 #include <chrono>
@@ -253,19 +254,32 @@ namespace {
 namespace phot {
   class PDFastSimPAR : public art::EDProducer {
   public:
-    explicit PDFastSimPAR(fhicl::ParameterSet const&);
+
+  // Define the fhicl configuration 
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      using DP  = fhicl::DelegatedParameter;
+      using ODP = fhicl::OptionalDelegatedParameter;
+
+      fhicl::Atom<art::InputTag> SimulationLabel  { Name("SimulationLabel"),  Comment("SimEnergyDeposit label.") };
+      fhicl::Atom<bool>          DoSlowComponent  { Name("DoSlowComponent"),  Comment("Simulate slow scintillation light") };
+      fhicl::Atom<bool>          DoReflectedLight { Name("DoReflectedLight"), Comment("Simulate reflected visible light") };
+      fhicl::Atom<bool>          IncludePropTime  { Name("IncludePropTime"),  Comment("Simulate light propagation time") };
+      fhicl::Atom<bool>          UseLitePhotons   { Name("UseLitePhotons"),   Comment("Store SimPhotonsLite/OpDetBTRs instead of SimPhotons") };
+      fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
+      fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
+      DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")}; 
+      ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
+      ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")}; 
+      DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")}; 
+      ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")}; 
+
+    };
+    using Parameters = art::EDProducer::Table<Config>;
+
+    explicit PDFastSimPAR(Parameters const & config);
     void produce(art::Event&) override;
-
-    void Initialization();
-
-    void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
-    void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
-
-    void generateParam(const size_t index, const size_t angle_bin);
-
-    void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
-                     std::map<size_t, int>& ChannelMap,
-                     sim::OpDetBacktrackerRecord btr);
 
   private:
     // structure definition for solid angle of rectangle function
@@ -279,6 +293,17 @@ namespace phot {
       geo::Point_t OpDetPoint;
       int type;
     };
+
+    void Initialization();
+
+    void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
+
+    void generateParam(const size_t index, const size_t angle_bin);
+
+    void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+                     std::map<size_t, int>& ChannelMap,
+                     sim::OpDetBacktrackerRecord btr);
 
     void detectedDirectHits(std::map<size_t, int>& DetectedNumFast,
                             std::map<size_t, int>& DetectedNumSlow,
@@ -330,16 +355,59 @@ namespace phot {
      // solid angle of a dome aperture calculation functions
     double Omega_Dome_Model(const double distance, const double theta) const;
 
-    bool fDoSlowComponent;
-    art::InputTag simTag;
-    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
+
     CLHEP::HepRandomEngine& fPhotonEngine;
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
 
+    size_t nOpDets; // Pulled from geom during Initialization()
+
     std::map<size_t, int> PDChannelToSOCMapDirect; // Where each OpChan is.
     std::map<size_t, int> PDChannelToSOCMapReflect; // Where each OpChan is.
-    size_t nOpChannels;
+
+
+    // geometry properties
+    double fplane_depth, fcathode_zdimension, fcathode_ydimension;
+    TVector3 fcathode_centre;
+    std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+
+    // Optical detector properties for semi-analytic hits
+    double fradius;
+    Dims fcathode_plane;
+    int fL_abs_vuv;
+    std::vector<geo::Point_t> fOpDetCenter;
+    std::vector<int> fOpDetType;
+    std::vector<double> fOpDetLength;
+    std::vector<double> fOpDetHeight;
+
+
+    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
+
+    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
+
+    //////////////////////
+    // Input Parameters //
+    //////////////////////
+
+    // Module behavior
+    art::InputTag simTag;
+    bool fDoSlowComponent;
+    bool fDoReflectedLight;
+    bool fIncludePropTime;
+    bool fUseLitePhotons;
+    bool fOpaqueCathode;
+    bool fOnlyOneCryostat;
+    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
+
+    /// Whether photon propagation is performed only from active volumes (maybe a parameter in the future)
+    bool const fOnlyActiveVolume = true; // PAR fast sim currently only for active volume    
+
+    // Parameterized Simulation
+    fhicl::ParameterSet fVUVTimingParams;
+    fhicl::ParameterSet fVISTimingParams;
+    fhicl::ParameterSet fVUVHitsParams;
+    fhicl::ParameterSet fVISHitsParams;
 
     // For VUV transport time parametrization
     double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
@@ -371,7 +439,6 @@ namespace phot {
     std::vector<std::vector<double>> fborder_corr_dome;
 
     // For VIS semi-analytic hits
-    bool fStoreReflected;
     // correction parameters for VIS Nhits estimation
     double fdelta_angulo_vis;
     // flat PDs
@@ -383,64 +450,58 @@ namespace phot {
     std::vector<double> fvis_distances_r_dome;
     std::vector<std::vector<std::vector<double>>> fvispars_dome;
 
-    // geometry properties
-    double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-    TVector3 fcathode_centre;
-    std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
-
-    // Optical detector properties for semi-analytic hits
-    double fradius;
-    Dims fcathode_plane;
-    int fL_abs_vuv;
-    std::vector<geo::Point_t> fOpDetCenter;
-    std::vector<int> fOpDetType;
-    std::vector<double> fOpDetLength;
-    std::vector<double> fOpDetHeight;
-
-    // Photon visibility service instance.
-    PhotonVisibilityService const* const fPVS;
-
-    /// Whether photon propagation is performed only from active volumes
-    bool const fOnlyActiveVolume = true; // PAR fast sim currently only for active volume
-    /// Allows running even if light on cryostats `C:1` and higher is not supported.
-    /// Currently hard coded "no"
-    bool const fOnlyOneCryostat = false;
-    /// Whether the cathodes are fully opaque; currently hard coded "true".
-    bool const fOpaqueCathode = true;
-
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
-    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
-
-    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
   };
 
   //......................................................................
-  PDFastSimPAR::PDFastSimPAR(fhicl::ParameterSet const& pset)
-    : art::EDProducer{pset}
-    , fDoSlowComponent{pset.get<bool>("DoSlowComponent")}
-    , simTag{pset.get<art::InputTag>("SimulationLabel")}
-    , fScintTime{art::make_tool<ScintTime>(pset.get<fhicl::ParameterSet>("ScintTimeTool"))}
-    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                      ->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
+  PDFastSimPAR::PDFastSimPAR(Parameters const & config)
+    : art::EDProducer{config}
+    , fPhotonEngine(   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, 
+                                                                                 "HepJamesRandom",
+                                                                                 "photon", 
+                                                                                 config.get_PSet(), 
+                                                                                 "SeedPhoton"))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
                                                                                  "HepJamesRandom",
                                                                                  "scinttime",
-                                                                                 pset,
+                                                                                 config.get_PSet(),
                                                                                  "SeedScintTime"))
-    , fActiveVolumes{extractActiveVolumes(*(lar::providerFrom<geo::Geometry>()))}
-    , fPVS(art::ServiceHandle<PhotonVisibilityService const>().get())
+    , simTag(config().SimulationLabel())
+    , fDoSlowComponent(config().DoSlowComponent())
+    , fDoReflectedLight(config().DoReflectedLight())
+    , fIncludePropTime(config().IncludePropTime())
+    , fUseLitePhotons(config().UseLitePhotons())
+    , fOpaqueCathode(config().OpaqueCathode())
+    , fOnlyOneCryostat(config().OnlyOneCryostat())
+    , fScintTime{art::make_tool<ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
+    , fVUVHitsParams(config().VUVHits.get<fhicl::ParameterSet>())
   {
-    std::cout << "PDFastSimPAR Module Construct" << std::endl;
+
+    // Validate configuration options
+    if(fIncludePropTime && !config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams)) {
+      throw art::Exception(art::errors::Configuration)
+          << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
+    }
+    
+    if(fDoReflectedLight && !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
+      throw art::Exception(art::errors::Configuration)
+          << "Reflected light simulation requested, but VisHits not specified." << "\n";
+    }
+
+    if (fDoReflectedLight && fIncludePropTime && !config().VISTiming.get_if_present<fhicl::ParameterSet>(fVISTimingParams)) {
+      throw art::Exception(art::errors::Configuration)
+          << "Reflected light propagation time simulation requested, but VISTiming not specified." << "\n";
+    }
+    
+
 
     Initialization();
-    art::ServiceHandle<sim::LArG4Parameters const> lgp;
-    if (lgp->UseLitePhotons())
+    if (fUseLitePhotons)
     {
         mf::LogInfo("PDFastSimPAR") << "Using Lite Photons";
         produces< std::vector<sim::SimPhotonsLite> >();
         produces< std::vector<sim::OpDetBacktrackerRecord> >();
 
-        if(fPVS->StoreReflected())
+        if(fDoReflectedLight)
         {
             mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
             produces< std::vector<sim::SimPhotonsLite> >("Reflected");
@@ -451,7 +512,7 @@ namespace phot {
     {
         mf::LogInfo("PDFastSimPAR") << "Using Sim Photons";
         produces< std::vector<sim::SimPhotons> >();
-        if(fPVS->StoreReflected())
+        if(fDoReflectedLight)
         {
             mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
             produces< std::vector<sim::SimPhotons> >("Reflected");
@@ -466,10 +527,6 @@ namespace phot {
     mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
                                  << "EventID: " << event.event();
 
-    art::ServiceHandle<sim::LArG4Parameters const> lgp;
-
-    nOpChannels = fPVS->NOpChannels();
-
     auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
     auto phlit = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
@@ -482,11 +539,11 @@ namespace phot {
     auto& ref_photcol(*phot_ref);
     auto& dir_phlitcol(*phlit);
     auto& ref_phlitcol(*phlit_ref);
-    dir_photcol.resize(nOpChannels);
-    ref_photcol.resize(nOpChannels);
-    dir_phlitcol.resize(nOpChannels);
-    ref_phlitcol.resize(nOpChannels);
-    for (unsigned int i = 0; i < nOpChannels; i ++)
+    dir_photcol.resize(nOpDets);
+    ref_photcol.resize(nOpDets);
+    dir_phlitcol.resize(nOpDets);
+    ref_phlitcol.resize(nOpDets);
+    for (unsigned int i = 0; i < nOpDets; i ++)
     {
         dir_photcol[i].fOpChannel  = i;
         ref_photcol[i].fOpChannel  = i;
@@ -496,7 +553,7 @@ namespace phot {
 
     art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
     if (!event.getByLabel(simTag, edepHandle)) {
-      std::cout << "PDFastSimPAR Module Cannot getByLabel: " << simTag << std::endl;
+      mf::LogError("PDFastSimPAR") << "PDFastSimPAR Module Cannot getByLabel: " << simTag;
       return;
     }
 
@@ -534,7 +591,7 @@ namespace phot {
       // reflected light, if enabled
       std::map<size_t, int> ReflDetectedNumFast;
       std::map<size_t, int> ReflDetectedNumSlow;
-      if (fStoreReflected && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
+      if (fDoReflectedLight && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
         detectedReflecHits(ReflDetectedNumFast, ReflDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
 
       // propagation time
@@ -544,9 +601,9 @@ namespace phot {
       for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
 
         // only do the reflected loop if including reflected light
-        if (Reflected && !fStoreReflected) continue;
+        if (Reflected && !fDoReflectedLight) continue;
 
-        for (size_t channel = 0; channel < nOpChannels; channel++) {
+        for (size_t channel = 0; channel < nOpDets; channel++) {
 
           if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter[channel])) continue;
 
@@ -559,11 +616,11 @@ namespace phot {
 
           // calculate propagation time, does not matter whether fast or slow photon
           transport_time.resize(ndetected_fast + ndetected_slow);
-          if (fPVS->IncludePropTime() && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
+          if (fIncludePropTime && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
             propagationTime(transport_time, ScintPoint, channel, Reflected);
 
           // SimPhotonsLite case
-          if (lgp->UseLitePhotons()) {
+          if (fUseLitePhotons) {
 
             sim::OpDetBacktrackerRecord tmpbtr(channel);
 
@@ -642,17 +699,17 @@ namespace phot {
     PDChannelToSOCMapDirect.clear();
     PDChannelToSOCMapReflect.clear();
 
-    if (lgp->UseLitePhotons()) {
+    if (fUseLitePhotons) {
         event.put(move(phlit));
         event.put(move(opbtr));
-        if (fPVS->StoreReflected()) {
+        if (fDoReflectedLight) {
             event.put(move(phlit_ref), "Reflected");
             event.put(move(opbtr_ref), "Reflected");
         }
     }
     else {
         event.put(move(phot));
-        if (fPVS->StoreReflected()) {
+        if (fDoReflectedLight) {
             event.put(move(phot_ref), "Reflected");
         }
     }
@@ -696,9 +753,12 @@ namespace phot {
     std::cout << "Initializing the geometry of the detector." << std::endl;
     std::cout << "Simulate using semi-analytic model for number of hits." << std::endl;
 
-    assert(fPVS);
     fRandPoissPhot = std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine);
     geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+
+    // Store info from the Geometry service
+    nOpDets = geom.NOpDets();
+    fActiveVolumes = extractActiveVolumes(geom);
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
@@ -731,7 +791,7 @@ namespace phot {
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
 
-    for (size_t const i : util::counter(fPVS->NOpChannels())) {
+    for (size_t const i : util::counter(nOpDets)) {
       geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
       fOpDetCenter.push_back(opDet.GetCenter());
 
@@ -752,18 +812,24 @@ namespace phot {
       }
     }
 
-    if (fPVS->IncludePropTime()) {
-      std::cout << "Using parameterisation of timings." << std::endl;
-      // VUV time parapetrization
-      fPVS->LoadTimingsForVUVPar(fparameters,
-                                 fstep_size,
-                                 fmax_d,
-                                 fmin_d,
-                                 fvuv_vgroup_mean,
-                                 fvuv_vgroup_max,
-                                 finflexion_point_distance,
-                                 fangle_bin_timing_vuv
-                                );
+    if (fIncludePropTime) {
+      mf::LogInfo("PDFastSimPAR") << "Using VUV timing parameterization";
+
+      fparameters[0] = std::vector(1, fVUVTimingParams.get<std::vector<double>>("Distances_landau"));
+      fparameters[1] = fVUVTimingParams.get<std::vector<std::vector<double>>>("Norm_over_entries");
+      fparameters[2] = fVUVTimingParams.get<std::vector<std::vector<double>>>("Mpv");
+      fparameters[3] = fVUVTimingParams.get<std::vector<std::vector<double>>>("Width");
+      fparameters[4] = std::vector(1, fVUVTimingParams.get<std::vector<double>>("Distances_exp"));
+      fparameters[5] = fVUVTimingParams.get<std::vector<std::vector<double>>>("Slope");
+      fparameters[6] = fVUVTimingParams.get<std::vector<std::vector<double>>>("Expo_over_Landau_norm");
+
+      fstep_size                = fVUVTimingParams.get<double>("step_size");
+      fmax_d                    = fVUVTimingParams.get<double>("max_d");
+      fmin_d                    = fVUVTimingParams.get<double>("min_d");
+      fvuv_vgroup_mean          = fVUVTimingParams.get<double>("vuv_vgroup_mean");
+      fvuv_vgroup_max           = fVUVTimingParams.get<double>("vuv_vgroup_max");
+      finflexion_point_distance = fVUVTimingParams.get<double>("inflexion_point_distance");
+      fangle_bin_timing_vuv     = fVUVTimingParams.get<double>("angle_bin_timing_vuv");
 
       // create vector of empty TF1s that will be replaces with the parameterisations
       // that are generated as they are required
@@ -780,71 +846,65 @@ namespace phot {
       VUV_min = std::vector(num_angles, std::vector(num_params, 0.0));
 
       // VIS time parameterisation
-      if (fPVS->StoreReflected()) {
+      if (fDoReflectedLight) {
+        mf::LogInfo("PDFastSimPAR") << "Using VIS (reflected) timing parameterization";
+
         // load parameters
-        fPVS->LoadTimingsForVISPar(fdistances_refl,
-                                   fradial_distances_refl,
-                                   fcut_off_pars,
-                                   ftau_pars,
-                                   fvis_vmean,
-                                   fangle_bin_timing_vis
-                                  );
+        fdistances_refl        = fVISTimingParams.get<std::vector<double>>("Distances_refl");
+        fradial_distances_refl = fVISTimingParams.get<std::vector<double>>("Distances_radial_refl");
+        fcut_off_pars          = fVISTimingParams.get<std::vector<std::vector<std::vector<double>>>>("Cut_off");
+        ftau_pars              = fVISTimingParams.get<std::vector<std::vector<std::vector<double>>>>("Tau");
+        fvis_vmean             = fVISTimingParams.get<double>("vis_vmean");
+        fangle_bin_timing_vis  = fVISTimingParams.get<double>("angle_bin_timing_vis");
       }
     }
 
     // LAr absorption length in cm
-    std::map<double, double> abs_length_spectrum =
-      lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+    std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
     std::vector<double> x_v, y_v;
     for (auto elem : abs_length_spectrum) {
       x_v.push_back(elem.first);
       y_v.push_back(elem.second);
     }
-    fL_abs_vuv =
-      std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
+    fL_abs_vuv = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
 
     // Load Gaisser-Hillas corrections for VUV semi-analytic hits
-    std::cout << "Loading the direct light corrections" << std::endl;
-    fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr,
-                                        fIsDomePDCorr,
-                                        fdelta_angulo_vuv,
-                                        fradius
-                                        );
+    mf::LogInfo("PDFastSimPAR") << "Using VUV visibility parameterization";
+    
+    fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
+    fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
+    fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv");
+    fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
+
     if (!fIsFlatPDCorr && !fIsDomePDCorr) {
       throw cet::exception("PDFastSimPAR")
           << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
     }
     if (fIsFlatPDCorr) {
-      fPVS->LoadGHFlat(fGHvuvpars_flat,
-                       fborder_corr_angulo_flat,
-                       fborder_corr_flat
-                      );
+        fGHvuvpars_flat          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+        fborder_corr_angulo_flat = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat");
+        fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
     }
     if (fIsDomePDCorr) {
-      fPVS->LoadGHDome(fGHvuvpars_dome,
-                       fborder_corr_angulo_dome,
-                       fborder_corr_dome
-                      );
+        fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
+        fborder_corr_angulo_dome = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_dome");
+        fborder_corr_dome        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_dome");
     }
 
     // Load corrections for VIS semi-analytic hits
-    if (fPVS->StoreReflected()) {
-      fStoreReflected = true;
-      std::cout << "Loading the reflected light corrections" << std::endl;
-      fPVS->LoadVisSemiAnalyticProperties(fdelta_angulo_vis,
-                                          fradius
-                                         );
+    if (fDoReflectedLight) {
+      mf::LogInfo("PDFastSimPAR") << "Using VIS (reflected) visibility parameterization";
+      fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
+
       if (fIsFlatPDCorr) {
-        fPVS->LoadVisParsFlat(fvis_distances_x_flat,
-                              fvis_distances_r_flat,
-                              fvispars_flat
-                            );
+        fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
+        fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
+        fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
       }
       if (fIsDomePDCorr) {
-        fPVS->LoadVisParsDome(fvis_distances_x_dome,
-                              fvis_distances_r_dome,
-                              fvispars_dome
-                            );
+        fvis_distances_x_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_dome");
+        fvis_distances_r_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_dome");
+        fvispars_dome         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
       }
 
       // cathode dimensions
@@ -855,9 +915,6 @@ namespace phot {
       fcathode_plane.h = fcathode_ydimension;
       fcathode_plane.w = fcathode_zdimension;
       fplane_depth = std::abs(fcathode_centre[0]);
-    }
-    else {
-      fStoreReflected = false;
     }
   }
 
@@ -870,7 +927,7 @@ namespace phot {
                                    const double NumSlow,
                                    geo::Point_t const& ScintPoint)
   {
-    for (size_t const OpDet : util::counter(nOpChannels)) {
+    for (size_t const OpDet : util::counter(nOpDets)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 
       // set detector struct for solid angle function
@@ -1043,7 +1100,7 @@ namespace phot {
 
     // detemine hits on each PD
     const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
-    for (size_t const OpDet : util::counter(nOpChannels)) {
+    for (size_t const OpDet : util::counter(nOpDets)) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 
       // set detector struct for solid angle function
@@ -1206,7 +1263,7 @@ namespace phot {
                                 const size_t OpChannel,
                                 bool Reflected)
   {
-    if (fPVS->IncludePropTime()) {
+    if (fIncludePropTime) {
       // Get VUV photons arrival time distribution from the parametrization
       geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
       if (!Reflected) {
