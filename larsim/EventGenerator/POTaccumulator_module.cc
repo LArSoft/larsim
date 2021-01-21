@@ -220,7 +220,7 @@ sim::POTaccumulator::endJob()
   // here we skip _art_ aggregation mechanism
   // because it can't handle multiple runs
   sumdata::POTSummary totalPOT;
-  for (auto const& POT : fRunPOT | ranges::view::values)
+  for (auto const& POT : fRunPOT | ranges::views::values)
     totalPOT.aggregate(POT.value());
 
   printSummary(totalPOT);
@@ -260,7 +260,7 @@ sim::POTaccumulator::printRunSummary() const
 
   // count subruns in run
   std::map<art::RunID, unsigned int> subrunCount;
-  for (art::SubRunID const& ID : fPresentSubrunFragments | ranges::view::keys)
+  for (art::SubRunID const& ID : fPresentSubrunFragments | ranges::views::keys)
     ++subrunCount[ID.runID()];
 
   mf::LogVerbatim log{fRunOutputCategory};
