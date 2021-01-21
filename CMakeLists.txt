@@ -6,9 +6,7 @@
 #  buildtool [-I /install/path] -bt[i] -jN
 # ======================================================================
 
-
-# use cmake 3.14 or later
-cmake_minimum_required (VERSION 3.12...3.14 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
 
 project(larsim LANGUAGES CXX)
 
