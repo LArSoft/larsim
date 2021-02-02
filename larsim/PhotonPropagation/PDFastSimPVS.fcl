@@ -1,0 +1,14 @@
+#include "scintillationtime_tool.fcl"
+
+BEGIN_PROLOG
+
+standard_pdfastsim_pvs:
+{
+  module_type:            "PDFastSimPVS"
+  SimulationLabel:        "IonAndScint"
+  DoSlowComponent:        true
+  ScintTimeTool:          @local::ScintTimeLAr
+}
+
+
+END_PROLOG

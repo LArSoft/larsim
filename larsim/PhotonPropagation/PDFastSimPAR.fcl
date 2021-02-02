@@ -1,0 +1,25 @@
+#include "opticalsimparameterisations.fcl"
+#include "scintillationtime_tool.fcl"
+
+BEGIN_PROLOG
+
+standard_pdfastsim_par_ar:
+{
+  module_type:           "PDFastSimPAR"
+  SimulationLabel:       "IonAndScint"
+  DoSlowComponent:       true
+  DoReflectedLight:      false
+  IncludePropTime:       true
+  UseLitePhotons:        true
+  OpaqueCathode:         true
+  OnlyOneCryostat:       false
+  ScintTimeTool:         @local::ScintTimeLAr
+
+  VUVTiming: @local::common_vuv_timing_parameterization
+  #VISTiming: 
+  #VUVHits:    # This is detector-specific, and without a real configuration this module won't work
+  #VISHits:   
+}
+
+
+END_PROLOG
