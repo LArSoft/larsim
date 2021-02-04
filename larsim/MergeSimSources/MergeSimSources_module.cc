@@ -80,8 +80,6 @@ private:
 
   static std::string const ReflectedLabel;
 
-  MergeSimSourcesUtility     fMergeUtility;
-
 };
 
 
@@ -93,7 +91,6 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
   , fTrackIDOffsets(params().TrackIDOffsets())
   , fUseLitePhotons(art::ServiceHandle<sim::LArG4Parameters const>()->UseLitePhotons())
   , fStoreReflected(params().StoreReflected())
-  , fMergeUtility(fTrackIDOffsets)
 {
 
   if(fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
@@ -152,7 +149,7 @@ void sim::MergeSimSources::produce(art::Event & e)
   auto tpassn = std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
 
-  fMergeUtility.Reset();
+  MergeSimSourcesUtility MergeUtility { fTrackIDOffsets };
 
   art::PtrMaker<simb::MCParticle> const makePartPtr { e };
 
@@ -160,11 +157,11 @@ void sim::MergeSimSources::produce(art::Event & e)
 
     auto const input_partCol
       = e.getValidHandle<std::vector<simb::MCParticle>>(input_label);
-    fMergeUtility.MergeMCParticles(*partCol,*input_partCol,i_source);
+    MergeUtility.MergeMCParticles(*partCol,*input_partCol,i_source);
 
     //truth-->particle assoc stuff here
     const std::vector<size_t>& assocVectorPrimitive
-      = fMergeUtility.GetMCParticleListMap().at(i_source);
+      = MergeUtility.GetMCParticleListMap().at(i_source);
     art::FindOneP<simb::MCTruth, sim::GeneratedParticleInfo> mctAssn(input_partCol,e,input_label);
     for(auto const i_p: util::counter(mctAssn.size()))
       tpassn->addSingle(mctAssn.at(i_p), makePartPtr(assocVectorPrimitive[i_p]), mctAssn.data(i_p).ref());
@@ -172,21 +169,21 @@ void sim::MergeSimSources::produce(art::Event & e)
 
     auto const& input_scCol
        = e.getByLabel<std::vector<sim::SimChannel>>(input_label);
-    fMergeUtility.MergeSimChannels(*scCol,input_scCol,i_source);
+    MergeUtility.MergeSimChannels(*scCol,input_scCol,i_source);
 
     auto const& input_adCol
       = e.getByLabel<std::vector<sim::AuxDetSimChannel>>(input_label);
-    fMergeUtility.MergeAuxDetSimChannels(*adCol,input_adCol,i_source);
+    MergeUtility.MergeAuxDetSimChannels(*adCol,input_adCol,i_source);
 
     if(!fUseLitePhotons){
       auto const& input_PhotonCol
         = e.getByLabel<std::vector<sim::SimPhotons>>(input_label);
-      fMergeUtility.MergeSimPhotons(*PhotonCol,input_PhotonCol);
+      MergeUtility.MergeSimPhotons(*PhotonCol,input_PhotonCol);
     }
     else{
       auto const& input_LitePhotonCol
        = e.getByLabel<std::vector<sim::SimPhotonsLite>>(input_label);
-      fMergeUtility.MergeSimPhotonsLite(*LitePhotonCol,input_LitePhotonCol);
+      MergeUtility.MergeSimPhotonsLite(*LitePhotonCol,input_LitePhotonCol);
     }
 
     if (fStoreReflected) {
@@ -195,12 +192,12 @@ void sim::MergeSimSources::produce(art::Event & e)
       if(!fUseLitePhotons){
         auto const& input_PhotonCol
           = e.getByLabel<std::vector<sim::SimPhotons>>(input_reflected_label);
-        fMergeUtility.MergeSimPhotons(*ReflPhotonCol,input_PhotonCol);
+        MergeUtility.MergeSimPhotons(*ReflPhotonCol,input_PhotonCol);
       }
       else{
         auto const& input_LitePhotonCol
           = e.getByLabel<std::vector<sim::SimPhotonsLite>>(input_reflected_label);
-        fMergeUtility.MergeSimPhotonsLite(*ReflLitePhotonCol,input_LitePhotonCol);
+        MergeUtility.MergeSimPhotonsLite(*ReflLitePhotonCol,input_LitePhotonCol);
       }
     }
 
