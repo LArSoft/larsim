@@ -14,8 +14,10 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Persistency/Common/PtrMaker.h"
@@ -23,6 +25,7 @@
 #include "canvas/Persistency/Common/FindOneP.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <string>
 #include <utility>
@@ -30,9 +33,11 @@
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "larcorealg/CoreUtils/enumerate.h"
+#include "larcorealg/CoreUtils/zip.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "MergeSimSources.h"
@@ -62,6 +67,18 @@ public:
       false // default
       };
 
+    fhicl::OptionalAtom<bool> FillSimEnergyDeposits {
+      fhicl::Name{ "FillSimEnergyDeposits" },
+      fhicl::Comment
+        { "merges energy deposit collection; if omitted, follows LArG4Parmeters" }
+      };
+
+    fhicl::Sequence<std::string> EnergyDepositInstanceLabels {
+      fhicl::Name{ "EnergyDepositInstanceLabels" },
+      fhicl::Comment{ "labels of sim::SimEnergyDeposit collections to merge" },
+      std::vector<std::string>{ "TPCActive", "Other" } // default
+      };
+
   }; // struct Config
 
   using Parameters = art::EDProducer::Table<Config>;
@@ -77,13 +94,37 @@ private:
   std::vector<int>           const fTrackIDOffsets;
   bool                       const fUseLitePhotons;
   bool                       const fStoreReflected;
+  bool                       const fFillSimEnergyDeposits;
+  std::vector<std::string>   const fEnergyDepositionInstances;
 
   static std::string const ReflectedLabel;
+  
+  void dumpConfiguration() const;
 
 };
 
 
+namespace {
+
+  template <typename Optional>
+  std::optional<typename Optional::value_type>
+  getOptionalValue(Optional const& parameter) {
+
+    using Value_t = typename Optional::value_type;
+
+    if (!parameter.hasValue()) return std::nullopt;
+
+    Value_t value;
+    parameter(value);
+    return { value };
+
+  } // getOptionalValue(Optional& parameter)
+
+} // local namespace
+
+
 std::string const sim::MergeSimSources::ReflectedLabel { "Reflected" };
+
 
 sim::MergeSimSources::MergeSimSources(Parameters const & params)
   : EDProducer{params}
@@ -91,6 +132,11 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
   , fTrackIDOffsets(params().TrackIDOffsets())
   , fUseLitePhotons(art::ServiceHandle<sim::LArG4Parameters const>()->UseLitePhotons())
   , fStoreReflected(params().StoreReflected())
+  , fFillSimEnergyDeposits(
+      getOptionalValue(params().FillSimEnergyDeposits).value_or
+        (art::ServiceHandle<sim::LArG4Parameters const>()->FillSimEnergyDeposits())
+      )
+  , fEnergyDepositionInstances(params().EnergyDepositInstanceLabels())
 {
 
   if(fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
@@ -117,8 +163,15 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
       else
         consumes<std::vector<sim::SimPhotonsLite>>(reflected_tag);
     }
+    
+    if (fFillSimEnergyDeposits) {
+      for (std::string const& edep_inst: fEnergyDepositionInstances) {
+        art::InputTag const edep_tag { tag.label(), edep_inst };
+        consumes<std::vector<sim::SimEnergyDeposit>>(edep_tag);
+      }
+    } // if fill energy deposits
 
-  } // for
+  } // for input labels
 
 
   produces< std::vector<simb::MCParticle> >();
@@ -134,7 +187,14 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
     else                 produces< std::vector<sim::SimPhotonsLite> >(ReflectedLabel);
   }
 
+  if (fFillSimEnergyDeposits) {
+    for (std::string const& edep_inst: fEnergyDepositionInstances)
+      produces< std::vector<sim::SimEnergyDeposit> >(edep_inst);
+  } // if
+
   
+  dumpConfiguration();
+
 }
 
 void sim::MergeSimSources::produce(art::Event & e)
@@ -148,6 +208,11 @@ void sim::MergeSimSources::produce(art::Event & e)
   auto ReflLitePhotonCol = std::make_unique<std::vector<sim::SimPhotonsLite>>();
   auto tpassn = std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
+  std::vector<std::unique_ptr<std::vector<sim::SimEnergyDeposit>>> edepCols;
+  if (fFillSimEnergyDeposits) {
+    for (auto const i [[maybe_unused]]: util::counter(fEnergyDepositionInstances.size()))
+      edepCols.push_back(std::make_unique<std::vector<sim::SimEnergyDeposit>>());
+  } // if
 
   MergeSimSourcesUtility MergeUtility { fTrackIDOffsets };
 
@@ -201,6 +266,17 @@ void sim::MergeSimSources::produce(art::Event & e)
       }
     }
 
+    if (fFillSimEnergyDeposits) {
+      for (auto const& [ edep_inst, edepCol ]
+        : util::zip(fEnergyDepositionInstances, edepCols))
+      {
+        art::InputTag const edep_tag { input_label.label(), edep_inst };
+        auto const& input_EDep
+          = e.getByLabel<std::vector<sim::SimEnergyDeposit>>(edep_tag);
+        MergeUtility.MergeSimEnergyDeposits(*edepCol, input_EDep, i_source);
+      } // for edep
+    } // if fill energy depositions
+
   }
 
   e.put(std::move(partCol));
@@ -214,6 +290,44 @@ void sim::MergeSimSources::produce(art::Event & e)
   }
   e.put(std::move(tpassn));
 
+  if(fFillSimEnergyDeposits) {
+    for (auto&& [ edep_inst, edepCol ]
+      : util::zip(fEnergyDepositionInstances, edepCols))
+    {
+      e.put(std::move(edepCol), edep_inst);
+    } // for
+  } // if fill energy deposits
+
 }
+
+
+void sim::MergeSimSources::dumpConfiguration() const {
+  
+  mf::LogInfo log("MergeSimSources");
+  log << "Configuration:"
+    << "\n - " << fInputSourcesLabels.size() << " input sources:";
+  for (auto const& [ i_source, tag, offset ]
+    : util::enumerate(fInputSourcesLabels, fTrackIDOffsets)
+  ) {
+    log << "\n   [" << i_source << "] '" << tag.encode()
+      << "' (ID offset: " << offset << ")";
+  } // for
+  
+  if (fUseLitePhotons) log << "\n - use photon summary (`SimPhotonsLite`)";
+  else                 log << "\n - use detailed photons (`SimPhotons`)";
+  
+  if (fStoreReflected) log << "\n - also merge reflected light";
+  
+  if (fFillSimEnergyDeposits) {
+    log << "\n - merge simulated energy deposits ("
+      << fEnergyDepositionInstances.size() << " labels:";
+    for (std::string const& label: fEnergyDepositionInstances)
+      log << " '" << label << "'";
+    log << ")";
+  }
+  else log << "\n - do not merge simulated energy deposits";
+  
+} // sim::MergeSimSources::dumpConfiguration()
+
 
 DEFINE_ART_MODULE(sim::MergeSimSources)

@@ -16,16 +16,18 @@
 #include "MergeSimSources.h"
 
 sim::MergeSimSourcesUtility::MergeSimSourcesUtility(const std::vector<int>& offsets)
+  : fG4TrackIDOffsets(offsets)
 {
-  fG4TrackIDOffsets = offsets;
   Reset();
 }
 
 void sim::MergeSimSourcesUtility::Reset()
 {
+  fG4TrackIDRanges.clear();
   fG4TrackIDRanges.resize(fG4TrackIDOffsets.size(),
 			  std::make_pair(std::numeric_limits<int>::max(),
 					 std::numeric_limits<int>::min()));
+  fMCParticleListMap.clear();
   fMCParticleListMap.resize(fG4TrackIDOffsets.size(),
 			    std::vector<size_t>());
 }
@@ -162,6 +164,23 @@ void sim::MergeSimSourcesUtility::MergeSimPhotonsLite( std::vector<sim::SimPhoto
   }
 }
 
+
+void sim::MergeSimSourcesUtility::MergeSimEnergyDeposits(
+  std::vector<sim::SimEnergyDeposit>& dest,
+  const std::vector<sim::SimEnergyDeposit>& src,
+  std::size_t source_index
+) const {
+
+  int const offset = fG4TrackIDOffsets.at(source_index);
+  auto const offsetEDepID = [offset](sim::SimEnergyDeposit const& edep)
+    { return sim::MergeSimSourcesUtility::offsetTrackID(edep, offset); };
+  
+  dest.reserve(dest.size() + src.size());
+  std::transform(begin(src), end(src), back_inserter(dest), offsetEDepID);
+
+}
+
+
 void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newrange, size_t source_index)
 {
   if(source_index >= fG4TrackIDOffsets.size())
@@ -192,3 +211,23 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
 
 
 }
+
+
+sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetTrackID
+  (sim::SimEnergyDeposit const& edep, int offset)
+{
+  return sim::SimEnergyDeposit{
+    edep.NumPhotons(),       // np
+    edep.NumElectrons(),     // ne
+    edep.ScintYieldRatio(),  // sy
+    edep.Energy(),           // e
+    edep.Start(),            // start
+    edep.End(),              // end
+    edep.T0(),               // t0
+    edep.T1(),               // t1
+    edep.TrackID() + offset, // id
+    edep.PdgCode()           // pdg
+    };
+} // sim::MergeSimSourcesUtility::offsetTrackID()
+
+
