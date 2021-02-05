@@ -1,0 +1,3041 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+  <define/>
+
+  <materials>
+    <isotope N="36" Z="18" name="Ar360x18df1e0">
+      <atom unit="g/mole" value="35.9675"/>
+    </isotope>
+    <isotope N="38" Z="18" name="Ar380x18df220">
+      <atom unit="g/mole" value="37.9627"/>
+    </isotope>
+    <isotope N="40" Z="18" name="Ar400x18df380">
+      <atom unit="g/mole" value="39.9624"/>
+    </isotope>
+    <element name="Ar0x18df540">
+      <fraction n="0.003365" ref="Ar360x18df1e0"/>
+      <fraction n="0.000632" ref="Ar380x18df220"/>
+      <fraction n="0.996003" ref="Ar400x18df380"/>
+    </element>
+    <material name="G4_lAr0x18df450" state="liquid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="188"/>
+      <D unit="g/cm3" value="1.396"/>
+      <fraction n="1" ref="Ar0x18df540"/>
+    </material>
+    <isotope N="46" Z="22" name="Ti460x181f2f0">
+      <atom unit="g/mole" value="45.9526"/>
+    </isotope>
+    <isotope N="47" Z="22" name="Ti470x181f250">
+      <atom unit="g/mole" value="46.9518"/>
+    </isotope>
+    <isotope N="48" Z="22" name="Ti480x18ea200">
+      <atom unit="g/mole" value="47.9479"/>
+    </isotope>
+    <isotope N="49" Z="22" name="Ti490x18ea780">
+      <atom unit="g/mole" value="48.9479"/>
+    </isotope>
+    <isotope N="50" Z="22" name="Ti500x18ea7f0">
+      <atom unit="g/mole" value="49.9448"/>
+    </isotope>
+    <element name="Ti0x18ea450">
+      <fraction n="0.0825" ref="Ti460x181f2f0"/>
+      <fraction n="0.0744" ref="Ti470x181f250"/>
+      <fraction n="0.7372" ref="Ti480x18ea200"/>
+      <fraction n="0.0541" ref="Ti490x18ea780"/>
+      <fraction n="0.0518" ref="Ti500x18ea7f0"/>
+    </element>
+    <material name="G4_Ti0x18ea320" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="233"/>
+      <D unit="g/cm3" value="4.54"/>
+      <fraction n="1" ref="Ti0x18ea450"/>
+    </material>
+    <isotope N="54" Z="26" name="Fe540x192aaf0">
+      <atom unit="g/mole" value="53.9396"/>
+    </isotope>
+    <isotope N="56" Z="26" name="Fe560x192b100">
+      <atom unit="g/mole" value="55.9349"/>
+    </isotope>
+    <isotope N="57" Z="26" name="Fe570x192b190">
+      <atom unit="g/mole" value="56.9354"/>
+    </isotope>
+    <isotope N="58" Z="26" name="Fe580x192b230">
+      <atom unit="g/mole" value="57.9333"/>
+    </isotope>
+    <element name="Fe0x192ae10">
+      <fraction n="0.05845" ref="Fe540x192aaf0"/>
+      <fraction n="0.91754" ref="Fe560x192b100"/>
+      <fraction n="0.02119" ref="Fe570x192b190"/>
+      <fraction n="0.00282" ref="Fe580x192b230"/>
+    </element>
+    <isotope N="50" Z="24" name="Cr500x192b4a0">
+      <atom unit="g/mole" value="49.946"/>
+    </isotope>
+    <isotope N="52" Z="24" name="Cr520x192afb0">
+      <atom unit="g/mole" value="51.9405"/>
+    </isotope>
+    <isotope N="53" Z="24" name="Cr530x192b500">
+      <atom unit="g/mole" value="52.9407"/>
+    </isotope>
+    <isotope N="54" Z="24" name="Cr540x192b5a0">
+      <atom unit="g/mole" value="53.9389"/>
+    </isotope>
+    <element name="Cr0x192b270">
+      <fraction n="0.04345" ref="Cr500x192b4a0"/>
+      <fraction n="0.83789" ref="Cr520x192afb0"/>
+      <fraction n="0.09501" ref="Cr530x192b500"/>
+      <fraction n="0.02365" ref="Cr540x192b5a0"/>
+    </element>
+    <isotope N="58" Z="28" name="Ni580x192b810">
+      <atom unit="g/mole" value="57.9353"/>
+    </isotope>
+    <isotope N="60" Z="28" name="Ni600x192b0c0">
+      <atom unit="g/mole" value="59.9308"/>
+    </isotope>
+    <isotope N="61" Z="28" name="Ni610x192b8a0">
+      <atom unit="g/mole" value="60.9311"/>
+    </isotope>
+    <isotope N="62" Z="28" name="Ni620x192b940">
+      <atom unit="g/mole" value="61.9283"/>
+    </isotope>
+    <isotope N="64" Z="28" name="Ni640x192b9b0">
+      <atom unit="g/mole" value="63.928"/>
+    </isotope>
+    <element name="Ni0x192b5e0">
+      <fraction n="0.680769" ref="Ni580x192b810"/>
+      <fraction n="0.262231" ref="Ni600x192b0c0"/>
+      <fraction n="0.011399" ref="Ni610x192b8a0"/>
+      <fraction n="0.036345" ref="Ni620x192b940"/>
+      <fraction n="0.009256" ref="Ni640x192b9b0"/>
+    </element>
+    <material name="G4_STAINLESS-STEEL0x192acb0" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="282.97693634122"/>
+      <D unit="g/cm3" value="8"/>
+      <fraction n="0.746212874621521" ref="Fe0x192ae10"/>
+      <fraction n="0.169001044311525" ref="Cr0x192b270"/>
+      <fraction n="0.0847860810669534" ref="Ni0x192b5e0"/>
+    </material>
+    <isotope N="12" Z="6" name="C120x195d6f0">
+      <atom unit="g/mole" value="12"/>
+    </isotope>
+    <isotope N="13" Z="6" name="C130x195d730">
+      <atom unit="g/mole" value="13.0034"/>
+    </isotope>
+    <element name="C0x195d9f0">
+      <fraction n="0.9893" ref="C120x195d6f0"/>
+      <fraction n="0.0107" ref="C130x195d730"/>
+    </element>
+    <isotope N="14" Z="7" name="N140x195df00">
+      <atom unit="g/mole" value="14.0031"/>
+    </isotope>
+    <isotope N="15" Z="7" name="N150x195db80">
+      <atom unit="g/mole" value="15.0001"/>
+    </isotope>
+    <element name="N0x195dca0">
+      <fraction n="0.99632" ref="N140x195df00"/>
+      <fraction n="0.00368" ref="N150x195db80"/>
+    </element>
+    <isotope N="16" Z="8" name="O160x195dbe0">
+      <atom unit="g/mole" value="15.9949"/>
+    </isotope>
+    <isotope N="17" Z="8" name="O170x195de10">
+      <atom unit="g/mole" value="16.9991"/>
+    </isotope>
+    <isotope N="18" Z="8" name="O180x195e1c0">
+      <atom unit="g/mole" value="17.9992"/>
+    </isotope>
+    <element name="O0x195df60">
+      <fraction n="0.99757" ref="O160x195dbe0"/>
+      <fraction n="0.00038" ref="O170x195de10"/>
+      <fraction n="0.00205" ref="O180x195e1c0"/>
+    </element>
+    <material name="G4_AIR0x195d900" state="gas">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="85.7"/>
+      <D unit="g/cm3" value="0.00120479"/>
+      <fraction n="0.000124000124000124" ref="C0x195d9f0"/>
+      <fraction n="0.755267755267755" ref="N0x195dca0"/>
+      <fraction n="0.231781231781232" ref="O0x195df60"/>
+      <fraction n="0.0128270128270128" ref="Ar0x18df540"/>
+    </material>
+  </materials>
+
+  <solids>
+    <box lunit="mm" name="TPCActive0x18c5060" x="500" y="500.2" z="1800.2"/>
+    <tube aunit="deg" deltaphi="360" lunit="mm" name="TPCWireperp0x181f480" rmax="0.075" rmin="0" startphi="0" z="618"/>
+    <box lunit="mm" name="TPCPlane0x181f0a0" x="1.5" y="500.2" z="1800.2"/>
+    <tube aunit="deg" deltaphi="360" lunit="mm" name="TPCWirepar0x181f3a0" rmax="0.075" rmin="0" startphi="0" z="618"/>
+    <box lunit="mm" name="TPC0x18c51b0" x="690" y="690" z="1990"/>
+    <box lunit="mm" name="Cryostat0x18c5120" x="700" y="700" z="2000"/>
+    <box lunit="mm" name="DetEnclosure0x18c5240" x="1500" y="1500" z="3000"/>
+    <box lunit="mm" name="World0x18c52d0" x="1000000" y="1060000" z="2073000"/>
+  </solids>
+
+  <structure>
+    <volume name="volTPCActive0x18f4db0">
+      <materialref ref="G4_lAr0x18df450"/>
+      <solidref ref="TPCActive0x18c5060"/>
+    </volume>
+    <volume name="volTPCWireperp0x18dea60">
+      <materialref ref="G4_Ti0x18ea320"/>
+      <solidref ref="TPCWireperp0x181f480"/>
+    </volume>
+    <volume name="volTPCPlaneVert0x18ebbb0">
+      <materialref ref="G4_lAr0x18df450"/>
+      <solidref ref="TPCPlane0x181f0a0"/>
+      <physvol name="volTPCWireVolumeperp0x18ec520">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ec520_pos" unit="mm" x="0" y="0" z="-697.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ec520_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="1" name="volTPCWireVolumeperp0x18ec650">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ec650_pos" unit="mm" x="0" y="0" z="-692.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ec650_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="2" name="volTPCWireVolumeperp0x18eca60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18eca60_pos" unit="mm" x="0" y="0" z="-687.5"/>
+        <rotation name="volTPCWireVolumeperp0x18eca60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="3" name="volTPCWireVolumeperp0x18ecdc0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ecdc0_pos" unit="mm" x="0" y="0" z="-682.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ecdc0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="4" name="volTPCWireVolumeperp0x18ed260">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ed260_pos" unit="mm" x="0" y="0" z="-677.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ed260_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="5" name="volTPCWireVolumeperp0x18ed670">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ed670_pos" unit="mm" x="0" y="0" z="-672.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ed670_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="6" name="volTPCWireVolumeperp0x18eda90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18eda90_pos" unit="mm" x="0" y="0" z="-667.5"/>
+        <rotation name="volTPCWireVolumeperp0x18eda90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="7" name="volTPCWireVolumeperp0x18ede90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ede90_pos" unit="mm" x="0" y="0" z="-662.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ede90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="8" name="volTPCWireVolumeperp0x18ee280">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ee280_pos" unit="mm" x="0" y="0" z="-657.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ee280_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="9" name="volTPCWireVolumeperp0x18ee6d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ee6d0_pos" unit="mm" x="0" y="0" z="-652.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ee6d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="10" name="volTPCWireVolumeperp0x18eeaf0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18eeaf0_pos" unit="mm" x="0" y="0" z="-647.5"/>
+        <rotation name="volTPCWireVolumeperp0x18eeaf0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="11" name="volTPCWireVolumeperp0x18eeef0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18eeef0_pos" unit="mm" x="0" y="0" z="-642.5"/>
+        <rotation name="volTPCWireVolumeperp0x18eeef0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="12" name="volTPCWireVolumeperp0x18ef2e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ef2e0_pos" unit="mm" x="0" y="0" z="-637.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ef2e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="13" name="volTPCWireVolumeperp0x18ef6d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ef6d0_pos" unit="mm" x="0" y="0" z="-632.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ef6d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="14" name="volTPCWireVolumeperp0x18efac0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18efac0_pos" unit="mm" x="0" y="0" z="-627.5"/>
+        <rotation name="volTPCWireVolumeperp0x18efac0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="15" name="volTPCWireVolumeperp0x18efeb0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18efeb0_pos" unit="mm" x="0" y="0" z="-622.5"/>
+        <rotation name="volTPCWireVolumeperp0x18efeb0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="16" name="volTPCWireVolumeperp0x18f02a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f02a0_pos" unit="mm" x="0" y="0" z="-617.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f02a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="17" name="volTPCWireVolumeperp0x18ee670">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ee670_pos" unit="mm" x="0" y="0" z="-612.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ee670_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="18" name="volTPCWireVolumeperp0x18f0a60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f0a60_pos" unit="mm" x="0" y="0" z="-607.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f0a60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="19" name="volTPCWireVolumeperp0x18f0ee0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f0ee0_pos" unit="mm" x="0" y="0" z="-602.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f0ee0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="20" name="volTPCWireVolumeperp0x18f1330">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f1330_pos" unit="mm" x="0" y="0" z="-597.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f1330_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="21" name="volTPCWireVolumeperp0x18f1730">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f1730_pos" unit="mm" x="0" y="0" z="-592.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f1730_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="22" name="volTPCWireVolumeperp0x18f1b20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f1b20_pos" unit="mm" x="0" y="0" z="-587.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f1b20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="23" name="volTPCWireVolumeperp0x18f1f10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f1f10_pos" unit="mm" x="0" y="0" z="-582.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f1f10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="24" name="volTPCWireVolumeperp0x18f2300">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f2300_pos" unit="mm" x="0" y="0" z="-577.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f2300_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="25" name="volTPCWireVolumeperp0x18f26f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f26f0_pos" unit="mm" x="0" y="0" z="-572.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f26f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="26" name="volTPCWireVolumeperp0x18f2ae0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f2ae0_pos" unit="mm" x="0" y="0" z="-567.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f2ae0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="27" name="volTPCWireVolumeperp0x18f2ed0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f2ed0_pos" unit="mm" x="0" y="0" z="-562.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f2ed0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="28" name="volTPCWireVolumeperp0x18f32c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18f32c0_pos" unit="mm" x="0" y="0" z="-557.5"/>
+        <rotation name="volTPCWireVolumeperp0x18f32c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="29" name="volTPCWireVolumeperp0x18b42c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b42c0_pos" unit="mm" x="0" y="0" z="-552.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b42c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="30" name="volTPCWireVolumeperp0x18b46b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b46b0_pos" unit="mm" x="0" y="0" z="-547.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b46b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="31" name="volTPCWireVolumeperp0x18b4ad0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b4ad0_pos" unit="mm" x="0" y="0" z="-542.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b4ad0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="32" name="volTPCWireVolumeperp0x18b4ec0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b4ec0_pos" unit="mm" x="0" y="0" z="-537.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b4ec0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="33" name="volTPCWireVolumeperp0x18b55e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b55e0_pos" unit="mm" x="0" y="0" z="-532.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b55e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="34" name="volTPCWireVolumeperp0x18b57b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b57b0_pos" unit="mm" x="0" y="0" z="-527.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b57b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="35" name="volTPCWireVolumeperp0x18b5b60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b5b60_pos" unit="mm" x="0" y="0" z="-522.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b5b60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="36" name="volTPCWireVolumeperp0x18b5f50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b5f50_pos" unit="mm" x="0" y="0" z="-517.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b5f50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="37" name="volTPCWireVolumeperp0x18b6340">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b6340_pos" unit="mm" x="0" y="0" z="-512.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b6340_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="38" name="volTPCWireVolumeperp0x18b6730">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b6730_pos" unit="mm" x="0" y="0" z="-507.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b6730_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="39" name="volTPCWireVolumeperp0x18b6b20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b6b20_pos" unit="mm" x="0" y="0" z="-502.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b6b20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="40" name="volTPCWireVolumeperp0x18b6f10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b6f10_pos" unit="mm" x="0" y="0" z="-497.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b6f10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="41" name="volTPCWireVolumeperp0x18b7300">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b7300_pos" unit="mm" x="0" y="0" z="-492.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b7300_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="42" name="volTPCWireVolumeperp0x18b76f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b76f0_pos" unit="mm" x="0" y="0" z="-487.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b76f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="43" name="volTPCWireVolumeperp0x18b7ae0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b7ae0_pos" unit="mm" x="0" y="0" z="-482.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b7ae0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="44" name="volTPCWireVolumeperp0x18b7ed0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b7ed0_pos" unit="mm" x="0" y="0" z="-477.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b7ed0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="45" name="volTPCWireVolumeperp0x18b82c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b82c0_pos" unit="mm" x="0" y="0" z="-472.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b82c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="46" name="volTPCWireVolumeperp0x18b86b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b86b0_pos" unit="mm" x="0" y="0" z="-467.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b86b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="47" name="volTPCWireVolumeperp0x18b8aa0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b8aa0_pos" unit="mm" x="0" y="0" z="-462.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b8aa0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="48" name="volTPCWireVolumeperp0x18b8e90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b8e90_pos" unit="mm" x="0" y="0" z="-457.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b8e90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="49" name="volTPCWireVolumeperp0x18b9280">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b9280_pos" unit="mm" x="0" y="0" z="-452.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b9280_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="50" name="volTPCWireVolumeperp0x18b9670">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b9670_pos" unit="mm" x="0" y="0" z="-447.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b9670_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="51" name="volTPCWireVolumeperp0x18b9a60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b9a60_pos" unit="mm" x="0" y="0" z="-442.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b9a60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="52" name="volTPCWireVolumeperp0x18b9e50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18b9e50_pos" unit="mm" x="0" y="0" z="-437.5"/>
+        <rotation name="volTPCWireVolumeperp0x18b9e50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="53" name="volTPCWireVolumeperp0x18ba240">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ba240_pos" unit="mm" x="0" y="0" z="-432.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ba240_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="54" name="volTPCWireVolumeperp0x18ba630">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ba630_pos" unit="mm" x="0" y="0" z="-427.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ba630_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="55" name="volTPCWireVolumeperp0x18baa20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18baa20_pos" unit="mm" x="0" y="0" z="-422.5"/>
+        <rotation name="volTPCWireVolumeperp0x18baa20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="56" name="volTPCWireVolumeperp0x18bae10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bae10_pos" unit="mm" x="0" y="0" z="-417.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bae10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="57" name="volTPCWireVolumeperp0x18bb200">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bb200_pos" unit="mm" x="0" y="0" z="-412.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bb200_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="58" name="volTPCWireVolumeperp0x18bb5f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bb5f0_pos" unit="mm" x="0" y="0" z="-407.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bb5f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="59" name="volTPCWireVolumeperp0x18bb9e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bb9e0_pos" unit="mm" x="0" y="0" z="-402.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bb9e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="60" name="volTPCWireVolumeperp0x18bbdd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bbdd0_pos" unit="mm" x="0" y="0" z="-397.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bbdd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="61" name="volTPCWireVolumeperp0x18bc350">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18bc350_pos" unit="mm" x="0" y="0" z="-392.5"/>
+        <rotation name="volTPCWireVolumeperp0x18bc350_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="62" name="volTPCWireVolumeperp0x15cea10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cea10_pos" unit="mm" x="0" y="0" z="-387.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cea10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="63" name="volTPCWireVolumeperp0x15cee30">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cee30_pos" unit="mm" x="0" y="0" z="-382.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cee30_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="64" name="volTPCWireVolumeperp0x15cf220">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cf220_pos" unit="mm" x="0" y="0" z="-377.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cf220_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="65" name="volTPCWireVolumeperp0x18ee710">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ee710_pos" unit="mm" x="0" y="0" z="-372.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ee710_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="66" name="volTPCWireVolumeperp0x15cf910">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cf910_pos" unit="mm" x="0" y="0" z="-367.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cf910_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="67" name="volTPCWireVolumeperp0x15cfef0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cfef0_pos" unit="mm" x="0" y="0" z="-362.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cfef0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="68" name="volTPCWireVolumeperp0x15d02e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d02e0_pos" unit="mm" x="0" y="0" z="-357.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d02e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="69" name="volTPCWireVolumeperp0x15d06d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d06d0_pos" unit="mm" x="0" y="0" z="-352.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d06d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="70" name="volTPCWireVolumeperp0x15d0ac0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d0ac0_pos" unit="mm" x="0" y="0" z="-347.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d0ac0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="71" name="volTPCWireVolumeperp0x15d0eb0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d0eb0_pos" unit="mm" x="0" y="0" z="-342.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d0eb0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="72" name="volTPCWireVolumeperp0x15d12a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d12a0_pos" unit="mm" x="0" y="0" z="-337.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d12a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="73" name="volTPCWireVolumeperp0x15d1690">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d1690_pos" unit="mm" x="0" y="0" z="-332.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d1690_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="74" name="volTPCWireVolumeperp0x15d1a80">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d1a80_pos" unit="mm" x="0" y="0" z="-327.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d1a80_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="75" name="volTPCWireVolumeperp0x15d1e70">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d1e70_pos" unit="mm" x="0" y="0" z="-322.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d1e70_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="76" name="volTPCWireVolumeperp0x15d2260">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d2260_pos" unit="mm" x="0" y="0" z="-317.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d2260_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="77" name="volTPCWireVolumeperp0x15d2650">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d2650_pos" unit="mm" x="0" y="0" z="-312.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d2650_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="78" name="volTPCWireVolumeperp0x15d2a40">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d2a40_pos" unit="mm" x="0" y="0" z="-307.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d2a40_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="79" name="volTPCWireVolumeperp0x15d2e30">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d2e30_pos" unit="mm" x="0" y="0" z="-302.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d2e30_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="80" name="volTPCWireVolumeperp0x15d3220">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d3220_pos" unit="mm" x="0" y="0" z="-297.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d3220_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="81" name="volTPCWireVolumeperp0x15d3610">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d3610_pos" unit="mm" x="0" y="0" z="-292.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d3610_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="82" name="volTPCWireVolumeperp0x15d3a00">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d3a00_pos" unit="mm" x="0" y="0" z="-287.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d3a00_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="83" name="volTPCWireVolumeperp0x15d3df0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d3df0_pos" unit="mm" x="0" y="0" z="-282.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d3df0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="84" name="volTPCWireVolumeperp0x15d41e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d41e0_pos" unit="mm" x="0" y="0" z="-277.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d41e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="85" name="volTPCWireVolumeperp0x15d45d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d45d0_pos" unit="mm" x="0" y="0" z="-272.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d45d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="86" name="volTPCWireVolumeperp0x15d49c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d49c0_pos" unit="mm" x="0" y="0" z="-267.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d49c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="87" name="volTPCWireVolumeperp0x15d4db0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d4db0_pos" unit="mm" x="0" y="0" z="-262.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d4db0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="88" name="volTPCWireVolumeperp0x15d51a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d51a0_pos" unit="mm" x="0" y="0" z="-257.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d51a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="89" name="volTPCWireVolumeperp0x15d5590">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d5590_pos" unit="mm" x="0" y="0" z="-252.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d5590_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="90" name="volTPCWireVolumeperp0x15d5980">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d5980_pos" unit="mm" x="0" y="0" z="-247.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d5980_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="91" name="volTPCWireVolumeperp0x15d5d70">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d5d70_pos" unit="mm" x="0" y="0" z="-242.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d5d70_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="92" name="volTPCWireVolumeperp0x15d6160">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d6160_pos" unit="mm" x="0" y="0" z="-237.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d6160_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="93" name="volTPCWireVolumeperp0x15d6550">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d6550_pos" unit="mm" x="0" y="0" z="-232.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d6550_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="94" name="volTPCWireVolumeperp0x15d6940">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d6940_pos" unit="mm" x="0" y="0" z="-227.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d6940_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="95" name="volTPCWireVolumeperp0x15d6d30">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d6d30_pos" unit="mm" x="0" y="0" z="-222.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d6d30_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="96" name="volTPCWireVolumeperp0x15d7120">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d7120_pos" unit="mm" x="0" y="0" z="-217.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d7120_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="97" name="volTPCWireVolumeperp0x15d7510">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d7510_pos" unit="mm" x="0" y="0" z="-212.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d7510_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="98" name="volTPCWireVolumeperp0x15d7900">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d7900_pos" unit="mm" x="0" y="0" z="-207.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d7900_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="99" name="volTPCWireVolumeperp0x15d7cf0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d7cf0_pos" unit="mm" x="0" y="0" z="-202.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d7cf0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="100" name="volTPCWireVolumeperp0x15d7ed0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15d7ed0_pos" unit="mm" x="0" y="0" z="-197.5"/>
+        <rotation name="volTPCWireVolumeperp0x15d7ed0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="101" name="volTPCWireVolumeperp0x19131f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19131f0_pos" unit="mm" x="0" y="0" z="-192.5"/>
+        <rotation name="volTPCWireVolumeperp0x19131f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="102" name="volTPCWireVolumeperp0x1913610">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1913610_pos" unit="mm" x="0" y="0" z="-187.5"/>
+        <rotation name="volTPCWireVolumeperp0x1913610_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="103" name="volTPCWireVolumeperp0x1913a00">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1913a00_pos" unit="mm" x="0" y="0" z="-182.5"/>
+        <rotation name="volTPCWireVolumeperp0x1913a00_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="104" name="volTPCWireVolumeperp0x1913df0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1913df0_pos" unit="mm" x="0" y="0" z="-177.5"/>
+        <rotation name="volTPCWireVolumeperp0x1913df0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="105" name="volTPCWireVolumeperp0x19141e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19141e0_pos" unit="mm" x="0" y="0" z="-172.5"/>
+        <rotation name="volTPCWireVolumeperp0x19141e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="106" name="volTPCWireVolumeperp0x19145d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19145d0_pos" unit="mm" x="0" y="0" z="-167.5"/>
+        <rotation name="volTPCWireVolumeperp0x19145d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="107" name="volTPCWireVolumeperp0x19149c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19149c0_pos" unit="mm" x="0" y="0" z="-162.5"/>
+        <rotation name="volTPCWireVolumeperp0x19149c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="108" name="volTPCWireVolumeperp0x1914db0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1914db0_pos" unit="mm" x="0" y="0" z="-157.5"/>
+        <rotation name="volTPCWireVolumeperp0x1914db0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="109" name="volTPCWireVolumeperp0x19151a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19151a0_pos" unit="mm" x="0" y="0" z="-152.5"/>
+        <rotation name="volTPCWireVolumeperp0x19151a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="110" name="volTPCWireVolumeperp0x1915590">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1915590_pos" unit="mm" x="0" y="0" z="-147.5"/>
+        <rotation name="volTPCWireVolumeperp0x1915590_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="111" name="volTPCWireVolumeperp0x1915980">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1915980_pos" unit="mm" x="0" y="0" z="-142.5"/>
+        <rotation name="volTPCWireVolumeperp0x1915980_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="112" name="volTPCWireVolumeperp0x1915d70">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1915d70_pos" unit="mm" x="0" y="0" z="-137.5"/>
+        <rotation name="volTPCWireVolumeperp0x1915d70_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="113" name="volTPCWireVolumeperp0x1916160">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1916160_pos" unit="mm" x="0" y="0" z="-132.5"/>
+        <rotation name="volTPCWireVolumeperp0x1916160_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="114" name="volTPCWireVolumeperp0x1916550">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1916550_pos" unit="mm" x="0" y="0" z="-127.5"/>
+        <rotation name="volTPCWireVolumeperp0x1916550_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="115" name="volTPCWireVolumeperp0x1916940">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1916940_pos" unit="mm" x="0" y="0" z="-122.5"/>
+        <rotation name="volTPCWireVolumeperp0x1916940_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="116" name="volTPCWireVolumeperp0x1916d30">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1916d30_pos" unit="mm" x="0" y="0" z="-117.5"/>
+        <rotation name="volTPCWireVolumeperp0x1916d30_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="117" name="volTPCWireVolumeperp0x1917120">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1917120_pos" unit="mm" x="0" y="0" z="-112.5"/>
+        <rotation name="volTPCWireVolumeperp0x1917120_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="118" name="volTPCWireVolumeperp0x1917510">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1917510_pos" unit="mm" x="0" y="0" z="-107.5"/>
+        <rotation name="volTPCWireVolumeperp0x1917510_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="119" name="volTPCWireVolumeperp0x1917900">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1917900_pos" unit="mm" x="0" y="0" z="-102.5"/>
+        <rotation name="volTPCWireVolumeperp0x1917900_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="120" name="volTPCWireVolumeperp0x1917cf0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1917cf0_pos" unit="mm" x="0" y="0" z="-97.5"/>
+        <rotation name="volTPCWireVolumeperp0x1917cf0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="121" name="volTPCWireVolumeperp0x18ecaa0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x18ecaa0_pos" unit="mm" x="0" y="0" z="-92.5"/>
+        <rotation name="volTPCWireVolumeperp0x18ecaa0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="122" name="volTPCWireVolumeperp0x1955010">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1955010_pos" unit="mm" x="0" y="0" z="-87.5"/>
+        <rotation name="volTPCWireVolumeperp0x1955010_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="123" name="volTPCWireVolumeperp0x19559d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19559d0_pos" unit="mm" x="0" y="0" z="-82.5"/>
+        <rotation name="volTPCWireVolumeperp0x19559d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="124" name="volTPCWireVolumeperp0x19558a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19558a0_pos" unit="mm" x="0" y="0" z="-77.5"/>
+        <rotation name="volTPCWireVolumeperp0x19558a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="125" name="volTPCWireVolumeperp0x1919c90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1919c90_pos" unit="mm" x="0" y="0" z="-72.5"/>
+        <rotation name="volTPCWireVolumeperp0x1919c90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="126" name="volTPCWireVolumeperp0x191a0e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191a0e0_pos" unit="mm" x="0" y="0" z="-67.5"/>
+        <rotation name="volTPCWireVolumeperp0x191a0e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="127" name="volTPCWireVolumeperp0x191a4e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191a4e0_pos" unit="mm" x="0" y="0" z="-62.5"/>
+        <rotation name="volTPCWireVolumeperp0x191a4e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="128" name="volTPCWireVolumeperp0x191a8d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191a8d0_pos" unit="mm" x="0" y="0" z="-57.5"/>
+        <rotation name="volTPCWireVolumeperp0x191a8d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="129" name="volTPCWireVolumeperp0x15cf500">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cf500_pos" unit="mm" x="0" y="0" z="-52.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cf500_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="130" name="volTPCWireVolumeperp0x191b410">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191b410_pos" unit="mm" x="0" y="0" z="-47.5"/>
+        <rotation name="volTPCWireVolumeperp0x191b410_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="131" name="volTPCWireVolumeperp0x191b860">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191b860_pos" unit="mm" x="0" y="0" z="-42.5"/>
+        <rotation name="volTPCWireVolumeperp0x191b860_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="132" name="volTPCWireVolumeperp0x191bca0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191bca0_pos" unit="mm" x="0" y="0" z="-37.5"/>
+        <rotation name="volTPCWireVolumeperp0x191bca0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="133" name="volTPCWireVolumeperp0x191c090">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191c090_pos" unit="mm" x="0" y="0" z="-32.5"/>
+        <rotation name="volTPCWireVolumeperp0x191c090_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="134" name="volTPCWireVolumeperp0x191c480">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191c480_pos" unit="mm" x="0" y="0" z="-27.5"/>
+        <rotation name="volTPCWireVolumeperp0x191c480_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="135" name="volTPCWireVolumeperp0x191c870">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191c870_pos" unit="mm" x="0" y="0" z="-22.5"/>
+        <rotation name="volTPCWireVolumeperp0x191c870_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="136" name="volTPCWireVolumeperp0x19a3a40">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a3a40_pos" unit="mm" x="0" y="0" z="-17.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a3a40_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="137" name="volTPCWireVolumeperp0x19a3e20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a3e20_pos" unit="mm" x="0" y="0" z="-12.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a3e20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="138" name="volTPCWireVolumeperp0x19a4260">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a4260_pos" unit="mm" x="0" y="0" z="-7.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a4260_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="139" name="volTPCWireVolumeperp0x1919cd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1919cd0_pos" unit="mm" x="0" y="0" z="-2.5"/>
+        <rotation name="volTPCWireVolumeperp0x1919cd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="140" name="volTPCWireVolumeperp0x19a4950">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a4950_pos" unit="mm" x="0" y="0" z="2.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a4950_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="141" name="volTPCWireVolumeperp0x19a4dd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a4dd0_pos" unit="mm" x="0" y="0" z="7.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a4dd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="142" name="volTPCWireVolumeperp0x19a51b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a51b0_pos" unit="mm" x="0" y="0" z="12.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a51b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="143" name="volTPCWireVolumeperp0x19a55b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a55b0_pos" unit="mm" x="0" y="0" z="17.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a55b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="144" name="volTPCWireVolumeperp0x19a59a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a59a0_pos" unit="mm" x="0" y="0" z="22.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a59a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="145" name="volTPCWireVolumeperp0x19a5d90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a5d90_pos" unit="mm" x="0" y="0" z="27.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a5d90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="146" name="volTPCWireVolumeperp0x19a6180">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a6180_pos" unit="mm" x="0" y="0" z="32.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a6180_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="147" name="volTPCWireVolumeperp0x19a6570">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a6570_pos" unit="mm" x="0" y="0" z="37.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a6570_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="148" name="volTPCWireVolumeperp0x19a6b90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a6b90_pos" unit="mm" x="0" y="0" z="42.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a6b90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="149" name="volTPCWireVolumeperp0x19a6ca0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a6ca0_pos" unit="mm" x="0" y="0" z="47.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a6ca0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="150" name="volTPCWireVolumeperp0x19a7120">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a7120_pos" unit="mm" x="0" y="0" z="52.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a7120_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="151" name="volTPCWireVolumeperp0x19a74d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a74d0_pos" unit="mm" x="0" y="0" z="57.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a74d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="152" name="volTPCWireVolumeperp0x19a78f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a78f0_pos" unit="mm" x="0" y="0" z="62.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a78f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="153" name="volTPCWireVolumeperp0x19a7ce0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a7ce0_pos" unit="mm" x="0" y="0" z="67.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a7ce0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="154" name="volTPCWireVolumeperp0x19a80d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a80d0_pos" unit="mm" x="0" y="0" z="72.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a80d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="155" name="volTPCWireVolumeperp0x19a84c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a84c0_pos" unit="mm" x="0" y="0" z="77.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a84c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="156" name="volTPCWireVolumeperp0x19a88b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a88b0_pos" unit="mm" x="0" y="0" z="82.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a88b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="157" name="volTPCWireVolumeperp0x19a8ca0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a8ca0_pos" unit="mm" x="0" y="0" z="87.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a8ca0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="158" name="volTPCWireVolumeperp0x19a9090">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a9090_pos" unit="mm" x="0" y="0" z="92.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a9090_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="159" name="volTPCWireVolumeperp0x19a9480">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a9480_pos" unit="mm" x="0" y="0" z="97.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a9480_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="160" name="volTPCWireVolumeperp0x19a9870">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a9870_pos" unit="mm" x="0" y="0" z="102.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a9870_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="161" name="volTPCWireVolumeperp0x19a9c60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19a9c60_pos" unit="mm" x="0" y="0" z="107.5"/>
+        <rotation name="volTPCWireVolumeperp0x19a9c60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="162" name="volTPCWireVolumeperp0x19aa050">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aa050_pos" unit="mm" x="0" y="0" z="112.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aa050_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="163" name="volTPCWireVolumeperp0x19aa440">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aa440_pos" unit="mm" x="0" y="0" z="117.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aa440_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="164" name="volTPCWireVolumeperp0x19aa830">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aa830_pos" unit="mm" x="0" y="0" z="122.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aa830_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="165" name="volTPCWireVolumeperp0x19aac20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aac20_pos" unit="mm" x="0" y="0" z="127.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aac20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="166" name="volTPCWireVolumeperp0x19ab010">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ab010_pos" unit="mm" x="0" y="0" z="132.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ab010_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="167" name="volTPCWireVolumeperp0x19ab400">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ab400_pos" unit="mm" x="0" y="0" z="137.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ab400_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="168" name="volTPCWireVolumeperp0x19ab7f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ab7f0_pos" unit="mm" x="0" y="0" z="142.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ab7f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="169" name="volTPCWireVolumeperp0x19abbe0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19abbe0_pos" unit="mm" x="0" y="0" z="147.5"/>
+        <rotation name="volTPCWireVolumeperp0x19abbe0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="170" name="volTPCWireVolumeperp0x19abfd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19abfd0_pos" unit="mm" x="0" y="0" z="152.5"/>
+        <rotation name="volTPCWireVolumeperp0x19abfd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="171" name="volTPCWireVolumeperp0x19ac3c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ac3c0_pos" unit="mm" x="0" y="0" z="157.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ac3c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="172" name="volTPCWireVolumeperp0x19ac7b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ac7b0_pos" unit="mm" x="0" y="0" z="162.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ac7b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="173" name="volTPCWireVolumeperp0x19acba0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19acba0_pos" unit="mm" x="0" y="0" z="167.5"/>
+        <rotation name="volTPCWireVolumeperp0x19acba0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="174" name="volTPCWireVolumeperp0x19acf90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19acf90_pos" unit="mm" x="0" y="0" z="172.5"/>
+        <rotation name="volTPCWireVolumeperp0x19acf90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="175" name="volTPCWireVolumeperp0x19ad380">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ad380_pos" unit="mm" x="0" y="0" z="177.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ad380_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="176" name="volTPCWireVolumeperp0x19ad770">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ad770_pos" unit="mm" x="0" y="0" z="182.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ad770_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="177" name="volTPCWireVolumeperp0x19adb60">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19adb60_pos" unit="mm" x="0" y="0" z="187.5"/>
+        <rotation name="volTPCWireVolumeperp0x19adb60_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="178" name="volTPCWireVolumeperp0x19adf50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19adf50_pos" unit="mm" x="0" y="0" z="192.5"/>
+        <rotation name="volTPCWireVolumeperp0x19adf50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="179" name="volTPCWireVolumeperp0x19ae340">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ae340_pos" unit="mm" x="0" y="0" z="197.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ae340_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="180" name="volTPCWireVolumeperp0x19ae730">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ae730_pos" unit="mm" x="0" y="0" z="202.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ae730_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="181" name="volTPCWireVolumeperp0x19aeb20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aeb20_pos" unit="mm" x="0" y="0" z="207.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aeb20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="182" name="volTPCWireVolumeperp0x19aef10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19aef10_pos" unit="mm" x="0" y="0" z="212.5"/>
+        <rotation name="volTPCWireVolumeperp0x19aef10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="183" name="volTPCWireVolumeperp0x19af300">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19af300_pos" unit="mm" x="0" y="0" z="217.5"/>
+        <rotation name="volTPCWireVolumeperp0x19af300_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="184" name="volTPCWireVolumeperp0x19af6f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19af6f0_pos" unit="mm" x="0" y="0" z="222.5"/>
+        <rotation name="volTPCWireVolumeperp0x19af6f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="185" name="volTPCWireVolumeperp0x19afae0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19afae0_pos" unit="mm" x="0" y="0" z="227.5"/>
+        <rotation name="volTPCWireVolumeperp0x19afae0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="186" name="volTPCWireVolumeperp0x19afed0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19afed0_pos" unit="mm" x="0" y="0" z="232.5"/>
+        <rotation name="volTPCWireVolumeperp0x19afed0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="187" name="volTPCWireVolumeperp0x19b02c0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b02c0_pos" unit="mm" x="0" y="0" z="237.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b02c0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="188" name="volTPCWireVolumeperp0x19b0570">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b0570_pos" unit="mm" x="0" y="0" z="242.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b0570_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="189" name="volTPCWireVolumeperp0x19b2480">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b2480_pos" unit="mm" x="0" y="0" z="247.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b2480_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="190" name="volTPCWireVolumeperp0x19b2860">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b2860_pos" unit="mm" x="0" y="0" z="252.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b2860_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="191" name="volTPCWireVolumeperp0x19b2c50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b2c50_pos" unit="mm" x="0" y="0" z="257.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b2c50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="192" name="volTPCWireVolumeperp0x19b3040">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b3040_pos" unit="mm" x="0" y="0" z="262.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b3040_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="193" name="volTPCWireVolumeperp0x19b3430">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b3430_pos" unit="mm" x="0" y="0" z="267.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b3430_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="194" name="volTPCWireVolumeperp0x19b3820">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b3820_pos" unit="mm" x="0" y="0" z="272.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b3820_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="195" name="volTPCWireVolumeperp0x19b3c10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b3c10_pos" unit="mm" x="0" y="0" z="277.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b3c10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="196" name="volTPCWireVolumeperp0x19b4000">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b4000_pos" unit="mm" x="0" y="0" z="282.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b4000_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="197" name="volTPCWireVolumeperp0x19b43f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b43f0_pos" unit="mm" x="0" y="0" z="287.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b43f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="198" name="volTPCWireVolumeperp0x19b47e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b47e0_pos" unit="mm" x="0" y="0" z="292.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b47e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="199" name="volTPCWireVolumeperp0x19b4bd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b4bd0_pos" unit="mm" x="0" y="0" z="297.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b4bd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="200" name="volTPCWireVolumeperp0x19b4fc0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b4fc0_pos" unit="mm" x="0" y="0" z="302.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b4fc0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="201" name="volTPCWireVolumeperp0x19b53b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b53b0_pos" unit="mm" x="0" y="0" z="307.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b53b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="202" name="volTPCWireVolumeperp0x19b57a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b57a0_pos" unit="mm" x="0" y="0" z="312.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b57a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="203" name="volTPCWireVolumeperp0x19b5b90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b5b90_pos" unit="mm" x="0" y="0" z="317.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b5b90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="204" name="volTPCWireVolumeperp0x19b5f80">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b5f80_pos" unit="mm" x="0" y="0" z="322.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b5f80_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="205" name="volTPCWireVolumeperp0x19b6370">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b6370_pos" unit="mm" x="0" y="0" z="327.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b6370_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="206" name="volTPCWireVolumeperp0x19b6760">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b6760_pos" unit="mm" x="0" y="0" z="332.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b6760_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="207" name="volTPCWireVolumeperp0x19b6b50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b6b50_pos" unit="mm" x="0" y="0" z="337.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b6b50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="208" name="volTPCWireVolumeperp0x19b6f40">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b6f40_pos" unit="mm" x="0" y="0" z="342.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b6f40_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="209" name="volTPCWireVolumeperp0x19b7330">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b7330_pos" unit="mm" x="0" y="0" z="347.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b7330_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="210" name="volTPCWireVolumeperp0x19b7720">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b7720_pos" unit="mm" x="0" y="0" z="352.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b7720_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="211" name="volTPCWireVolumeperp0x19b7b10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b7b10_pos" unit="mm" x="0" y="0" z="357.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b7b10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="212" name="volTPCWireVolumeperp0x19b7f00">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b7f00_pos" unit="mm" x="0" y="0" z="362.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b7f00_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="213" name="volTPCWireVolumeperp0x19b82f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b82f0_pos" unit="mm" x="0" y="0" z="367.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b82f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="214" name="volTPCWireVolumeperp0x19b86e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b86e0_pos" unit="mm" x="0" y="0" z="372.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b86e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="215" name="volTPCWireVolumeperp0x19b8ad0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b8ad0_pos" unit="mm" x="0" y="0" z="377.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b8ad0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="216" name="volTPCWireVolumeperp0x19b8ec0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b8ec0_pos" unit="mm" x="0" y="0" z="382.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b8ec0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="217" name="volTPCWireVolumeperp0x19b92b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b92b0_pos" unit="mm" x="0" y="0" z="387.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b92b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="218" name="volTPCWireVolumeperp0x19b96a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b96a0_pos" unit="mm" x="0" y="0" z="392.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b96a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="219" name="volTPCWireVolumeperp0x19b9a90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b9a90_pos" unit="mm" x="0" y="0" z="397.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b9a90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="220" name="volTPCWireVolumeperp0x19b9e80">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19b9e80_pos" unit="mm" x="0" y="0" z="402.5"/>
+        <rotation name="volTPCWireVolumeperp0x19b9e80_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="221" name="volTPCWireVolumeperp0x19ba270">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ba270_pos" unit="mm" x="0" y="0" z="407.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ba270_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="222" name="volTPCWireVolumeperp0x19ba660">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19ba660_pos" unit="mm" x="0" y="0" z="412.5"/>
+        <rotation name="volTPCWireVolumeperp0x19ba660_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="223" name="volTPCWireVolumeperp0x19baa50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19baa50_pos" unit="mm" x="0" y="0" z="417.5"/>
+        <rotation name="volTPCWireVolumeperp0x19baa50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="224" name="volTPCWireVolumeperp0x19bae40">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bae40_pos" unit="mm" x="0" y="0" z="422.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bae40_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="225" name="volTPCWireVolumeperp0x19bb230">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bb230_pos" unit="mm" x="0" y="0" z="427.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bb230_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="226" name="volTPCWireVolumeperp0x19bb620">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bb620_pos" unit="mm" x="0" y="0" z="432.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bb620_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="227" name="volTPCWireVolumeperp0x19bba10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bba10_pos" unit="mm" x="0" y="0" z="437.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bba10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="228" name="volTPCWireVolumeperp0x19bbe00">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bbe00_pos" unit="mm" x="0" y="0" z="442.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bbe00_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="229" name="volTPCWireVolumeperp0x19bc1f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bc1f0_pos" unit="mm" x="0" y="0" z="447.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bc1f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="230" name="volTPCWireVolumeperp0x19bc5e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bc5e0_pos" unit="mm" x="0" y="0" z="452.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bc5e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="231" name="volTPCWireVolumeperp0x19bc9d0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bc9d0_pos" unit="mm" x="0" y="0" z="457.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bc9d0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="232" name="volTPCWireVolumeperp0x19bcdc0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bcdc0_pos" unit="mm" x="0" y="0" z="462.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bcdc0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="233" name="volTPCWireVolumeperp0x19bd0a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bd0a0_pos" unit="mm" x="0" y="0" z="467.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bd0a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="234" name="volTPCWireVolumeperp0x19bd550">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bd550_pos" unit="mm" x="0" y="0" z="472.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bd550_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="235" name="volTPCWireVolumeperp0x19bd930">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bd930_pos" unit="mm" x="0" y="0" z="477.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bd930_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="236" name="volTPCWireVolumeperp0x19bdd90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bdd90_pos" unit="mm" x="0" y="0" z="482.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bdd90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="237" name="volTPCWireVolumeperp0x19be180">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19be180_pos" unit="mm" x="0" y="0" z="487.5"/>
+        <rotation name="volTPCWireVolumeperp0x19be180_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="238" name="volTPCWireVolumeperp0x19be5a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19be5a0_pos" unit="mm" x="0" y="0" z="492.5"/>
+        <rotation name="volTPCWireVolumeperp0x19be5a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="239" name="volTPCWireVolumeperp0x19be990">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19be990_pos" unit="mm" x="0" y="0" z="497.5"/>
+        <rotation name="volTPCWireVolumeperp0x19be990_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="240" name="volTPCWireVolumeperp0x19bed80">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bed80_pos" unit="mm" x="0" y="0" z="502.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bed80_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="241" name="volTPCWireVolumeperp0x19bf170">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bf170_pos" unit="mm" x="0" y="0" z="507.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bf170_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="242" name="volTPCWireVolumeperp0x19bf560">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bf560_pos" unit="mm" x="0" y="0" z="512.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bf560_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="243" name="volTPCWireVolumeperp0x19bf950">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bf950_pos" unit="mm" x="0" y="0" z="517.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bf950_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="244" name="volTPCWireVolumeperp0x19bfd40">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19bfd40_pos" unit="mm" x="0" y="0" z="522.5"/>
+        <rotation name="volTPCWireVolumeperp0x19bfd40_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="245" name="volTPCWireVolumeperp0x19c0130">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19c0130_pos" unit="mm" x="0" y="0" z="527.5"/>
+        <rotation name="volTPCWireVolumeperp0x19c0130_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="246" name="volTPCWireVolumeperp0x19c0520">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19c0520_pos" unit="mm" x="0" y="0" z="532.5"/>
+        <rotation name="volTPCWireVolumeperp0x19c0520_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="247" name="volTPCWireVolumeperp0x19c0910">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19c0910_pos" unit="mm" x="0" y="0" z="537.5"/>
+        <rotation name="volTPCWireVolumeperp0x19c0910_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="248" name="volTPCWireVolumeperp0x19c0ec0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19c0ec0_pos" unit="mm" x="0" y="0" z="542.5"/>
+        <rotation name="volTPCWireVolumeperp0x19c0ec0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="249" name="volTPCWireVolumeperp0x15ca410">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15ca410_pos" unit="mm" x="0" y="0" z="547.5"/>
+        <rotation name="volTPCWireVolumeperp0x15ca410_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="250" name="volTPCWireVolumeperp0x15ca830">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15ca830_pos" unit="mm" x="0" y="0" z="552.5"/>
+        <rotation name="volTPCWireVolumeperp0x15ca830_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="251" name="volTPCWireVolumeperp0x15cac20">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cac20_pos" unit="mm" x="0" y="0" z="557.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cac20_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="252" name="volTPCWireVolumeperp0x15cb010">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cb010_pos" unit="mm" x="0" y="0" z="562.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cb010_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="253" name="volTPCWireVolumeperp0x15cb400">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cb400_pos" unit="mm" x="0" y="0" z="567.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cb400_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="254" name="volTPCWireVolumeperp0x15cb7f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cb7f0_pos" unit="mm" x="0" y="0" z="572.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cb7f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="255" name="volTPCWireVolumeperp0x15cbbe0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cbbe0_pos" unit="mm" x="0" y="0" z="577.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cbbe0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="256" name="volTPCWireVolumeperp0x15cbfd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cbfd0_pos" unit="mm" x="0" y="0" z="582.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cbfd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="257" name="volTPCWireVolumeperp0x191abb0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191abb0_pos" unit="mm" x="0" y="0" z="587.5"/>
+        <rotation name="volTPCWireVolumeperp0x191abb0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="258" name="volTPCWireVolumeperp0x191b1e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x191b1e0_pos" unit="mm" x="0" y="0" z="592.5"/>
+        <rotation name="volTPCWireVolumeperp0x191b1e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="259" name="volTPCWireVolumeperp0x15cd310">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cd310_pos" unit="mm" x="0" y="0" z="597.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cd310_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="260" name="volTPCWireVolumeperp0x15cd730">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cd730_pos" unit="mm" x="0" y="0" z="602.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cd730_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="261" name="volTPCWireVolumeperp0x15cdb90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cdb90_pos" unit="mm" x="0" y="0" z="607.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cdb90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="262" name="volTPCWireVolumeperp0x15cdf80">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15cdf80_pos" unit="mm" x="0" y="0" z="612.5"/>
+        <rotation name="volTPCWireVolumeperp0x15cdf80_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="263" name="volTPCWireVolumeperp0x15ce230">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x15ce230_pos" unit="mm" x="0" y="0" z="617.5"/>
+        <rotation name="volTPCWireVolumeperp0x15ce230_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="264" name="volTPCWireVolumeperp0x1925000">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1925000_pos" unit="mm" x="0" y="0" z="622.5"/>
+        <rotation name="volTPCWireVolumeperp0x1925000_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="265" name="volTPCWireVolumeperp0x1925470">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1925470_pos" unit="mm" x="0" y="0" z="627.5"/>
+        <rotation name="volTPCWireVolumeperp0x1925470_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="266" name="volTPCWireVolumeperp0x1925860">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1925860_pos" unit="mm" x="0" y="0" z="632.5"/>
+        <rotation name="volTPCWireVolumeperp0x1925860_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="267" name="volTPCWireVolumeperp0x1925c50">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1925c50_pos" unit="mm" x="0" y="0" z="637.5"/>
+        <rotation name="volTPCWireVolumeperp0x1925c50_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="268" name="volTPCWireVolumeperp0x1926040">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1926040_pos" unit="mm" x="0" y="0" z="642.5"/>
+        <rotation name="volTPCWireVolumeperp0x1926040_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="269" name="volTPCWireVolumeperp0x1926430">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1926430_pos" unit="mm" x="0" y="0" z="647.5"/>
+        <rotation name="volTPCWireVolumeperp0x1926430_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="270" name="volTPCWireVolumeperp0x1926820">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1926820_pos" unit="mm" x="0" y="0" z="652.5"/>
+        <rotation name="volTPCWireVolumeperp0x1926820_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="271" name="volTPCWireVolumeperp0x1926c10">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1926c10_pos" unit="mm" x="0" y="0" z="657.5"/>
+        <rotation name="volTPCWireVolumeperp0x1926c10_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="272" name="volTPCWireVolumeperp0x1927000">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1927000_pos" unit="mm" x="0" y="0" z="662.5"/>
+        <rotation name="volTPCWireVolumeperp0x1927000_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="273" name="volTPCWireVolumeperp0x19273f0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19273f0_pos" unit="mm" x="0" y="0" z="667.5"/>
+        <rotation name="volTPCWireVolumeperp0x19273f0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="274" name="volTPCWireVolumeperp0x19277e0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19277e0_pos" unit="mm" x="0" y="0" z="672.5"/>
+        <rotation name="volTPCWireVolumeperp0x19277e0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="275" name="volTPCWireVolumeperp0x1927bd0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1927bd0_pos" unit="mm" x="0" y="0" z="677.5"/>
+        <rotation name="volTPCWireVolumeperp0x1927bd0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="276" name="volTPCWireVolumeperp0x1927fc0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1927fc0_pos" unit="mm" x="0" y="0" z="682.5"/>
+        <rotation name="volTPCWireVolumeperp0x1927fc0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="277" name="volTPCWireVolumeperp0x19283b0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19283b0_pos" unit="mm" x="0" y="0" z="687.5"/>
+        <rotation name="volTPCWireVolumeperp0x19283b0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="278" name="volTPCWireVolumeperp0x19287a0">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x19287a0_pos" unit="mm" x="0" y="0" z="692.5"/>
+        <rotation name="volTPCWireVolumeperp0x19287a0_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="279" name="volTPCWireVolumeperp0x1928b90">
+        <volumeref ref="volTPCWireperp0x18dea60"/>
+        <position name="volTPCWireVolumeperp0x1928b90_pos" unit="mm" x="0" y="0" z="697.5"/>
+        <rotation name="volTPCWireVolumeperp0x1928b90_rot" unit="deg" x="54" y="0" z="0"/>
+      </physvol>
+    </volume>
+    <volume name="volTPCWirepar0x19011f0">
+      <materialref ref="G4_Ti0x18ea320"/>
+      <solidref ref="TPCWirepar0x181f3a0"/>
+    </volume>
+    <volume name="volTPCPlane0x18f5c20">
+      <materialref ref="G4_lAr0x18df450"/>
+      <solidref ref="TPCPlane0x181f0a0"/>
+      <physvol name="volTPCWireVolumepar0x18f6060">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f6060_pos" unit="mm" x="0" y="0" z="-697.5"/>
+        <rotation name="volTPCWireVolumepar0x18f6060_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="1" name="volTPCWireVolumepar0x18ddbf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18ddbf0_pos" unit="mm" x="0" y="0" z="-692.5"/>
+        <rotation name="volTPCWireVolumepar0x18ddbf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="2" name="volTPCWireVolumepar0x18f6900">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f6900_pos" unit="mm" x="0" y="0" z="-687.5"/>
+        <rotation name="volTPCWireVolumepar0x18f6900_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="3" name="volTPCWireVolumepar0x18f6d00">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f6d00_pos" unit="mm" x="0" y="0" z="-682.5"/>
+        <rotation name="volTPCWireVolumepar0x18f6d00_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="4" name="volTPCWireVolumepar0x18f7090">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f7090_pos" unit="mm" x="0" y="0" z="-677.5"/>
+        <rotation name="volTPCWireVolumepar0x18f7090_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="5" name="volTPCWireVolumepar0x18f7500">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f7500_pos" unit="mm" x="0" y="0" z="-672.5"/>
+        <rotation name="volTPCWireVolumepar0x18f7500_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="6" name="volTPCWireVolumepar0x18f77f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f77f0_pos" unit="mm" x="0" y="0" z="-667.5"/>
+        <rotation name="volTPCWireVolumepar0x18f77f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="7" name="volTPCWireVolumepar0x18f3640">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f3640_pos" unit="mm" x="0" y="0" z="-662.5"/>
+        <rotation name="volTPCWireVolumepar0x18f3640_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="8" name="volTPCWireVolumepar0x18f3810">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f3810_pos" unit="mm" x="0" y="0" z="-657.5"/>
+        <rotation name="volTPCWireVolumepar0x18f3810_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="9" name="volTPCWireVolumepar0x18f3cc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f3cc0_pos" unit="mm" x="0" y="0" z="-652.5"/>
+        <rotation name="volTPCWireVolumepar0x18f3cc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="10" name="volTPCWireVolumepar0x18f4040">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f4040_pos" unit="mm" x="0" y="0" z="-647.5"/>
+        <rotation name="volTPCWireVolumepar0x18f4040_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="11" name="volTPCWireVolumepar0x199e260">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199e260_pos" unit="mm" x="0" y="0" z="-642.5"/>
+        <rotation name="volTPCWireVolumepar0x199e260_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="12" name="volTPCWireVolumepar0x199e450">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199e450_pos" unit="mm" x="0" y="0" z="-637.5"/>
+        <rotation name="volTPCWireVolumepar0x199e450_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="13" name="volTPCWireVolumepar0x199e800">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199e800_pos" unit="mm" x="0" y="0" z="-632.5"/>
+        <rotation name="volTPCWireVolumepar0x199e800_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="14" name="volTPCWireVolumepar0x199ebf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199ebf0_pos" unit="mm" x="0" y="0" z="-627.5"/>
+        <rotation name="volTPCWireVolumepar0x199ebf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="15" name="volTPCWireVolumepar0x199efe0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199efe0_pos" unit="mm" x="0" y="0" z="-622.5"/>
+        <rotation name="volTPCWireVolumepar0x199efe0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="16" name="volTPCWireVolumepar0x199f3d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199f3d0_pos" unit="mm" x="0" y="0" z="-617.5"/>
+        <rotation name="volTPCWireVolumepar0x199f3d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="17" name="volTPCWireVolumepar0x18f3c30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f3c30_pos" unit="mm" x="0" y="0" z="-612.5"/>
+        <rotation name="volTPCWireVolumepar0x18f3c30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="18" name="volTPCWireVolumepar0x199fb90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199fb90_pos" unit="mm" x="0" y="0" z="-607.5"/>
+        <rotation name="volTPCWireVolumepar0x199fb90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="19" name="volTPCWireVolumepar0x19a0010">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a0010_pos" unit="mm" x="0" y="0" z="-602.5"/>
+        <rotation name="volTPCWireVolumepar0x19a0010_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="20" name="volTPCWireVolumepar0x19a0460">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a0460_pos" unit="mm" x="0" y="0" z="-597.5"/>
+        <rotation name="volTPCWireVolumepar0x19a0460_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="21" name="volTPCWireVolumepar0x19a0860">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a0860_pos" unit="mm" x="0" y="0" z="-592.5"/>
+        <rotation name="volTPCWireVolumepar0x19a0860_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="22" name="volTPCWireVolumepar0x19a0c50">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a0c50_pos" unit="mm" x="0" y="0" z="-587.5"/>
+        <rotation name="volTPCWireVolumepar0x19a0c50_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="23" name="volTPCWireVolumepar0x19a1040">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a1040_pos" unit="mm" x="0" y="0" z="-582.5"/>
+        <rotation name="volTPCWireVolumepar0x19a1040_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="24" name="volTPCWireVolumepar0x19a1430">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a1430_pos" unit="mm" x="0" y="0" z="-577.5"/>
+        <rotation name="volTPCWireVolumepar0x19a1430_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="25" name="volTPCWireVolumepar0x19a1820">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a1820_pos" unit="mm" x="0" y="0" z="-572.5"/>
+        <rotation name="volTPCWireVolumepar0x19a1820_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="26" name="volTPCWireVolumepar0x19a1da0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a1da0_pos" unit="mm" x="0" y="0" z="-567.5"/>
+        <rotation name="volTPCWireVolumepar0x19a1da0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="27" name="volTPCWireVolumepar0x18c5f90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c5f90_pos" unit="mm" x="0" y="0" z="-562.5"/>
+        <rotation name="volTPCWireVolumepar0x18c5f90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="28" name="volTPCWireVolumepar0x18c63b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c63b0_pos" unit="mm" x="0" y="0" z="-557.5"/>
+        <rotation name="volTPCWireVolumepar0x18c63b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="29" name="volTPCWireVolumepar0x18c67a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c67a0_pos" unit="mm" x="0" y="0" z="-552.5"/>
+        <rotation name="volTPCWireVolumepar0x18c67a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="30" name="volTPCWireVolumepar0x18c6b90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c6b90_pos" unit="mm" x="0" y="0" z="-547.5"/>
+        <rotation name="volTPCWireVolumepar0x18c6b90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="31" name="volTPCWireVolumepar0x18c6f80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c6f80_pos" unit="mm" x="0" y="0" z="-542.5"/>
+        <rotation name="volTPCWireVolumepar0x18c6f80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="32" name="volTPCWireVolumepar0x18c7370">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c7370_pos" unit="mm" x="0" y="0" z="-537.5"/>
+        <rotation name="volTPCWireVolumepar0x18c7370_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="33" name="volTPCWireVolumepar0x18c7a90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c7a90_pos" unit="mm" x="0" y="0" z="-532.5"/>
+        <rotation name="volTPCWireVolumepar0x18c7a90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="34" name="volTPCWireVolumepar0x18c7c80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c7c80_pos" unit="mm" x="0" y="0" z="-527.5"/>
+        <rotation name="volTPCWireVolumepar0x18c7c80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="35" name="volTPCWireVolumepar0x18c8080">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c8080_pos" unit="mm" x="0" y="0" z="-522.5"/>
+        <rotation name="volTPCWireVolumepar0x18c8080_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="36" name="volTPCWireVolumepar0x18c8470">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c8470_pos" unit="mm" x="0" y="0" z="-517.5"/>
+        <rotation name="volTPCWireVolumepar0x18c8470_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="37" name="volTPCWireVolumepar0x18c8860">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c8860_pos" unit="mm" x="0" y="0" z="-512.5"/>
+        <rotation name="volTPCWireVolumepar0x18c8860_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="38" name="volTPCWireVolumepar0x18c8c50">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c8c50_pos" unit="mm" x="0" y="0" z="-507.5"/>
+        <rotation name="volTPCWireVolumepar0x18c8c50_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="39" name="volTPCWireVolumepar0x18c9040">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c9040_pos" unit="mm" x="0" y="0" z="-502.5"/>
+        <rotation name="volTPCWireVolumepar0x18c9040_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="40" name="volTPCWireVolumepar0x18c9430">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c9430_pos" unit="mm" x="0" y="0" z="-497.5"/>
+        <rotation name="volTPCWireVolumepar0x18c9430_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="41" name="volTPCWireVolumepar0x18c9820">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c9820_pos" unit="mm" x="0" y="0" z="-492.5"/>
+        <rotation name="volTPCWireVolumepar0x18c9820_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="42" name="volTPCWireVolumepar0x18c9c10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c9c10_pos" unit="mm" x="0" y="0" z="-487.5"/>
+        <rotation name="volTPCWireVolumepar0x18c9c10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="43" name="volTPCWireVolumepar0x18ca000">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18ca000_pos" unit="mm" x="0" y="0" z="-482.5"/>
+        <rotation name="volTPCWireVolumepar0x18ca000_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="44" name="volTPCWireVolumepar0x18ca1e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18ca1e0_pos" unit="mm" x="0" y="0" z="-477.5"/>
+        <rotation name="volTPCWireVolumepar0x18ca1e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="45" name="volTPCWireVolumepar0x19472e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19472e0_pos" unit="mm" x="0" y="0" z="-472.5"/>
+        <rotation name="volTPCWireVolumepar0x19472e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="46" name="volTPCWireVolumepar0x1947700">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1947700_pos" unit="mm" x="0" y="0" z="-467.5"/>
+        <rotation name="volTPCWireVolumepar0x1947700_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="47" name="volTPCWireVolumepar0x1947af0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1947af0_pos" unit="mm" x="0" y="0" z="-462.5"/>
+        <rotation name="volTPCWireVolumepar0x1947af0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="48" name="volTPCWireVolumepar0x1947ee0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1947ee0_pos" unit="mm" x="0" y="0" z="-457.5"/>
+        <rotation name="volTPCWireVolumepar0x1947ee0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="49" name="volTPCWireVolumepar0x19482d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19482d0_pos" unit="mm" x="0" y="0" z="-452.5"/>
+        <rotation name="volTPCWireVolumepar0x19482d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="50" name="volTPCWireVolumepar0x19486c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19486c0_pos" unit="mm" x="0" y="0" z="-447.5"/>
+        <rotation name="volTPCWireVolumepar0x19486c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="51" name="volTPCWireVolumepar0x1948ab0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1948ab0_pos" unit="mm" x="0" y="0" z="-442.5"/>
+        <rotation name="volTPCWireVolumepar0x1948ab0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="52" name="volTPCWireVolumepar0x1948ea0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1948ea0_pos" unit="mm" x="0" y="0" z="-437.5"/>
+        <rotation name="volTPCWireVolumepar0x1948ea0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="53" name="volTPCWireVolumepar0x1949290">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1949290_pos" unit="mm" x="0" y="0" z="-432.5"/>
+        <rotation name="volTPCWireVolumepar0x1949290_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="54" name="volTPCWireVolumepar0x1949680">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1949680_pos" unit="mm" x="0" y="0" z="-427.5"/>
+        <rotation name="volTPCWireVolumepar0x1949680_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="55" name="volTPCWireVolumepar0x1949a70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1949a70_pos" unit="mm" x="0" y="0" z="-422.5"/>
+        <rotation name="volTPCWireVolumepar0x1949a70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="56" name="volTPCWireVolumepar0x1949e60">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1949e60_pos" unit="mm" x="0" y="0" z="-417.5"/>
+        <rotation name="volTPCWireVolumepar0x1949e60_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="57" name="volTPCWireVolumepar0x194a250">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194a250_pos" unit="mm" x="0" y="0" z="-412.5"/>
+        <rotation name="volTPCWireVolumepar0x194a250_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="58" name="volTPCWireVolumepar0x194a640">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194a640_pos" unit="mm" x="0" y="0" z="-407.5"/>
+        <rotation name="volTPCWireVolumepar0x194a640_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="59" name="volTPCWireVolumepar0x194aa30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194aa30_pos" unit="mm" x="0" y="0" z="-402.5"/>
+        <rotation name="volTPCWireVolumepar0x194aa30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="60" name="volTPCWireVolumepar0x194ae20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194ae20_pos" unit="mm" x="0" y="0" z="-397.5"/>
+        <rotation name="volTPCWireVolumepar0x194ae20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="61" name="volTPCWireVolumepar0x194b210">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194b210_pos" unit="mm" x="0" y="0" z="-392.5"/>
+        <rotation name="volTPCWireVolumepar0x194b210_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="62" name="volTPCWireVolumepar0x194b600">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194b600_pos" unit="mm" x="0" y="0" z="-387.5"/>
+        <rotation name="volTPCWireVolumepar0x194b600_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="63" name="volTPCWireVolumepar0x194b640">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x194b640_pos" unit="mm" x="0" y="0" z="-382.5"/>
+        <rotation name="volTPCWireVolumepar0x194b640_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="64" name="volTPCWireVolumepar0x192fc20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192fc20_pos" unit="mm" x="0" y="0" z="-377.5"/>
+        <rotation name="volTPCWireVolumepar0x192fc20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="65" name="volTPCWireVolumepar0x18c78e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18c78e0_pos" unit="mm" x="0" y="0" z="-372.5"/>
+        <rotation name="volTPCWireVolumepar0x18c78e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="66" name="volTPCWireVolumepar0x1930420">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1930420_pos" unit="mm" x="0" y="0" z="-367.5"/>
+        <rotation name="volTPCWireVolumepar0x1930420_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="67" name="volTPCWireVolumepar0x1930be0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1930be0_pos" unit="mm" x="0" y="0" z="-362.5"/>
+        <rotation name="volTPCWireVolumepar0x1930be0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="68" name="volTPCWireVolumepar0x1930df0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1930df0_pos" unit="mm" x="0" y="0" z="-357.5"/>
+        <rotation name="volTPCWireVolumepar0x1930df0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="69" name="volTPCWireVolumepar0x19311d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19311d0_pos" unit="mm" x="0" y="0" z="-352.5"/>
+        <rotation name="volTPCWireVolumepar0x19311d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="70" name="volTPCWireVolumepar0x19315c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19315c0_pos" unit="mm" x="0" y="0" z="-347.5"/>
+        <rotation name="volTPCWireVolumepar0x19315c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="71" name="volTPCWireVolumepar0x19319b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19319b0_pos" unit="mm" x="0" y="0" z="-342.5"/>
+        <rotation name="volTPCWireVolumepar0x19319b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="72" name="volTPCWireVolumepar0x1931da0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1931da0_pos" unit="mm" x="0" y="0" z="-337.5"/>
+        <rotation name="volTPCWireVolumepar0x1931da0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="73" name="volTPCWireVolumepar0x1932190">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1932190_pos" unit="mm" x="0" y="0" z="-332.5"/>
+        <rotation name="volTPCWireVolumepar0x1932190_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="74" name="volTPCWireVolumepar0x1932580">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1932580_pos" unit="mm" x="0" y="0" z="-327.5"/>
+        <rotation name="volTPCWireVolumepar0x1932580_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="75" name="volTPCWireVolumepar0x1932970">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1932970_pos" unit="mm" x="0" y="0" z="-322.5"/>
+        <rotation name="volTPCWireVolumepar0x1932970_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="76" name="volTPCWireVolumepar0x1932d60">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1932d60_pos" unit="mm" x="0" y="0" z="-317.5"/>
+        <rotation name="volTPCWireVolumepar0x1932d60_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="77" name="volTPCWireVolumepar0x1933150">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1933150_pos" unit="mm" x="0" y="0" z="-312.5"/>
+        <rotation name="volTPCWireVolumepar0x1933150_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="78" name="volTPCWireVolumepar0x1933540">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1933540_pos" unit="mm" x="0" y="0" z="-307.5"/>
+        <rotation name="volTPCWireVolumepar0x1933540_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="79" name="volTPCWireVolumepar0x1933930">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1933930_pos" unit="mm" x="0" y="0" z="-302.5"/>
+        <rotation name="volTPCWireVolumepar0x1933930_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="80" name="volTPCWireVolumepar0x1933d20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1933d20_pos" unit="mm" x="0" y="0" z="-297.5"/>
+        <rotation name="volTPCWireVolumepar0x1933d20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="81" name="volTPCWireVolumepar0x1934110">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1934110_pos" unit="mm" x="0" y="0" z="-292.5"/>
+        <rotation name="volTPCWireVolumepar0x1934110_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="82" name="volTPCWireVolumepar0x190e420">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190e420_pos" unit="mm" x="0" y="0" z="-287.5"/>
+        <rotation name="volTPCWireVolumepar0x190e420_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="83" name="volTPCWireVolumepar0x190e7d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190e7d0_pos" unit="mm" x="0" y="0" z="-282.5"/>
+        <rotation name="volTPCWireVolumepar0x190e7d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="84" name="volTPCWireVolumepar0x190ebf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190ebf0_pos" unit="mm" x="0" y="0" z="-277.5"/>
+        <rotation name="volTPCWireVolumepar0x190ebf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="85" name="volTPCWireVolumepar0x190efe0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190efe0_pos" unit="mm" x="0" y="0" z="-272.5"/>
+        <rotation name="volTPCWireVolumepar0x190efe0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="86" name="volTPCWireVolumepar0x190f3d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190f3d0_pos" unit="mm" x="0" y="0" z="-267.5"/>
+        <rotation name="volTPCWireVolumepar0x190f3d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="87" name="volTPCWireVolumepar0x190f7c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190f7c0_pos" unit="mm" x="0" y="0" z="-262.5"/>
+        <rotation name="volTPCWireVolumepar0x190f7c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="88" name="volTPCWireVolumepar0x190fbb0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190fbb0_pos" unit="mm" x="0" y="0" z="-257.5"/>
+        <rotation name="volTPCWireVolumepar0x190fbb0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="89" name="volTPCWireVolumepar0x190ffa0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190ffa0_pos" unit="mm" x="0" y="0" z="-252.5"/>
+        <rotation name="volTPCWireVolumepar0x190ffa0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="90" name="volTPCWireVolumepar0x1910390">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1910390_pos" unit="mm" x="0" y="0" z="-247.5"/>
+        <rotation name="volTPCWireVolumepar0x1910390_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="91" name="volTPCWireVolumepar0x1910780">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1910780_pos" unit="mm" x="0" y="0" z="-242.5"/>
+        <rotation name="volTPCWireVolumepar0x1910780_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="92" name="volTPCWireVolumepar0x19a0050">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19a0050_pos" unit="mm" x="0" y="0" z="-237.5"/>
+        <rotation name="volTPCWireVolumepar0x19a0050_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="93" name="volTPCWireVolumepar0x192ccc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192ccc0_pos" unit="mm" x="0" y="0" z="-232.5"/>
+        <rotation name="volTPCWireVolumepar0x192ccc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="94" name="volTPCWireVolumepar0x192d170">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192d170_pos" unit="mm" x="0" y="0" z="-227.5"/>
+        <rotation name="volTPCWireVolumepar0x192d170_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="95" name="volTPCWireVolumepar0x192d550">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192d550_pos" unit="mm" x="0" y="0" z="-222.5"/>
+        <rotation name="volTPCWireVolumepar0x192d550_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="96" name="volTPCWireVolumepar0x192d990">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192d990_pos" unit="mm" x="0" y="0" z="-217.5"/>
+        <rotation name="volTPCWireVolumepar0x192d990_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="97" name="volTPCWireVolumepar0x1910dc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1910dc0_pos" unit="mm" x="0" y="0" z="-212.5"/>
+        <rotation name="volTPCWireVolumepar0x1910dc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="98" name="volTPCWireVolumepar0x1910e30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1910e30_pos" unit="mm" x="0" y="0" z="-207.5"/>
+        <rotation name="volTPCWireVolumepar0x1910e30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="99" name="volTPCWireVolumepar0x19112d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19112d0_pos" unit="mm" x="0" y="0" z="-202.5"/>
+        <rotation name="volTPCWireVolumepar0x19112d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="100" name="volTPCWireVolumepar0x19116b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19116b0_pos" unit="mm" x="0" y="0" z="-197.5"/>
+        <rotation name="volTPCWireVolumepar0x19116b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="101" name="volTPCWireVolumepar0x18f60b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18f60b0_pos" unit="mm" x="0" y="0" z="-192.5"/>
+        <rotation name="volTPCWireVolumepar0x18f60b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="102" name="volTPCWireVolumepar0x1912130">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1912130_pos" unit="mm" x="0" y="0" z="-187.5"/>
+        <rotation name="volTPCWireVolumepar0x1912130_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="103" name="volTPCWireVolumepar0x1912580">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1912580_pos" unit="mm" x="0" y="0" z="-182.5"/>
+        <rotation name="volTPCWireVolumepar0x1912580_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="104" name="volTPCWireVolumepar0x19129a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19129a0_pos" unit="mm" x="0" y="0" z="-177.5"/>
+        <rotation name="volTPCWireVolumepar0x19129a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="105" name="volTPCWireVolumepar0x1912b90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1912b90_pos" unit="mm" x="0" y="0" z="-172.5"/>
+        <rotation name="volTPCWireVolumepar0x1912b90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="106" name="volTPCWireVolumepar0x1997c80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1997c80_pos" unit="mm" x="0" y="0" z="-167.5"/>
+        <rotation name="volTPCWireVolumepar0x1997c80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="107" name="volTPCWireVolumepar0x1998070">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1998070_pos" unit="mm" x="0" y="0" z="-162.5"/>
+        <rotation name="volTPCWireVolumepar0x1998070_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="108" name="volTPCWireVolumepar0x1998490">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1998490_pos" unit="mm" x="0" y="0" z="-157.5"/>
+        <rotation name="volTPCWireVolumepar0x1998490_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="109" name="volTPCWireVolumepar0x1998880">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1998880_pos" unit="mm" x="0" y="0" z="-152.5"/>
+        <rotation name="volTPCWireVolumepar0x1998880_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="110" name="volTPCWireVolumepar0x1998c70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1998c70_pos" unit="mm" x="0" y="0" z="-147.5"/>
+        <rotation name="volTPCWireVolumepar0x1998c70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="111" name="volTPCWireVolumepar0x1999060">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1999060_pos" unit="mm" x="0" y="0" z="-142.5"/>
+        <rotation name="volTPCWireVolumepar0x1999060_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="112" name="volTPCWireVolumepar0x1999450">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1999450_pos" unit="mm" x="0" y="0" z="-137.5"/>
+        <rotation name="volTPCWireVolumepar0x1999450_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="113" name="volTPCWireVolumepar0x1999840">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1999840_pos" unit="mm" x="0" y="0" z="-132.5"/>
+        <rotation name="volTPCWireVolumepar0x1999840_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="114" name="volTPCWireVolumepar0x1999c30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1999c30_pos" unit="mm" x="0" y="0" z="-127.5"/>
+        <rotation name="volTPCWireVolumepar0x1999c30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="115" name="volTPCWireVolumepar0x199a020">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199a020_pos" unit="mm" x="0" y="0" z="-122.5"/>
+        <rotation name="volTPCWireVolumepar0x199a020_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="116" name="volTPCWireVolumepar0x199a410">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199a410_pos" unit="mm" x="0" y="0" z="-117.5"/>
+        <rotation name="volTPCWireVolumepar0x199a410_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="117" name="volTPCWireVolumepar0x199a800">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199a800_pos" unit="mm" x="0" y="0" z="-112.5"/>
+        <rotation name="volTPCWireVolumepar0x199a800_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="118" name="volTPCWireVolumepar0x199abf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199abf0_pos" unit="mm" x="0" y="0" z="-107.5"/>
+        <rotation name="volTPCWireVolumepar0x199abf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="119" name="volTPCWireVolumepar0x199afe0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199afe0_pos" unit="mm" x="0" y="0" z="-102.5"/>
+        <rotation name="volTPCWireVolumepar0x199afe0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="120" name="volTPCWireVolumepar0x199b3d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199b3d0_pos" unit="mm" x="0" y="0" z="-97.5"/>
+        <rotation name="volTPCWireVolumepar0x199b3d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="121" name="volTPCWireVolumepar0x199b7c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199b7c0_pos" unit="mm" x="0" y="0" z="-92.5"/>
+        <rotation name="volTPCWireVolumepar0x199b7c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="122" name="volTPCWireVolumepar0x192d1b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x192d1b0_pos" unit="mm" x="0" y="0" z="-87.5"/>
+        <rotation name="volTPCWireVolumepar0x192d1b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="123" name="volTPCWireVolumepar0x199be90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199be90_pos" unit="mm" x="0" y="0" z="-82.5"/>
+        <rotation name="volTPCWireVolumepar0x199be90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="124" name="volTPCWireVolumepar0x199c310">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199c310_pos" unit="mm" x="0" y="0" z="-77.5"/>
+        <rotation name="volTPCWireVolumepar0x199c310_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="125" name="volTPCWireVolumepar0x199c6f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199c6f0_pos" unit="mm" x="0" y="0" z="-72.5"/>
+        <rotation name="volTPCWireVolumepar0x199c6f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="126" name="volTPCWireVolumepar0x199caf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199caf0_pos" unit="mm" x="0" y="0" z="-67.5"/>
+        <rotation name="volTPCWireVolumepar0x199caf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="127" name="volTPCWireVolumepar0x199cee0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199cee0_pos" unit="mm" x="0" y="0" z="-62.5"/>
+        <rotation name="volTPCWireVolumepar0x199cee0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="128" name="volTPCWireVolumepar0x199d2d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199d2d0_pos" unit="mm" x="0" y="0" z="-57.5"/>
+        <rotation name="volTPCWireVolumepar0x199d2d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="129" name="volTPCWireVolumepar0x19129e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19129e0_pos" unit="mm" x="0" y="0" z="-52.5"/>
+        <rotation name="volTPCWireVolumepar0x19129e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="130" name="volTPCWireVolumepar0x1930260">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1930260_pos" unit="mm" x="0" y="0" z="-47.5"/>
+        <rotation name="volTPCWireVolumepar0x1930260_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="131" name="volTPCWireVolumepar0x18e21e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e21e0_pos" unit="mm" x="0" y="0" z="-42.5"/>
+        <rotation name="volTPCWireVolumepar0x18e21e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="132" name="volTPCWireVolumepar0x18e2600">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e2600_pos" unit="mm" x="0" y="0" z="-37.5"/>
+        <rotation name="volTPCWireVolumepar0x18e2600_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="133" name="volTPCWireVolumepar0x18e29f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e29f0_pos" unit="mm" x="0" y="0" z="-32.5"/>
+        <rotation name="volTPCWireVolumepar0x18e29f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="134" name="volTPCWireVolumepar0x18e2de0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e2de0_pos" unit="mm" x="0" y="0" z="-27.5"/>
+        <rotation name="volTPCWireVolumepar0x18e2de0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="135" name="volTPCWireVolumepar0x18e31d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e31d0_pos" unit="mm" x="0" y="0" z="-22.5"/>
+        <rotation name="volTPCWireVolumepar0x18e31d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="136" name="volTPCWireVolumepar0x18e35c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e35c0_pos" unit="mm" x="0" y="0" z="-17.5"/>
+        <rotation name="volTPCWireVolumepar0x18e35c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="137" name="volTPCWireVolumepar0x18e39b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e39b0_pos" unit="mm" x="0" y="0" z="-12.5"/>
+        <rotation name="volTPCWireVolumepar0x18e39b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="138" name="volTPCWireVolumepar0x18e3da0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e3da0_pos" unit="mm" x="0" y="0" z="-7.5"/>
+        <rotation name="volTPCWireVolumepar0x18e3da0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="139" name="volTPCWireVolumepar0x18e4190">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e4190_pos" unit="mm" x="0" y="0" z="-2.5"/>
+        <rotation name="volTPCWireVolumepar0x18e4190_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="140" name="volTPCWireVolumepar0x18e4580">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e4580_pos" unit="mm" x="0" y="0" z="2.5"/>
+        <rotation name="volTPCWireVolumepar0x18e4580_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="141" name="volTPCWireVolumepar0x18e4970">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e4970_pos" unit="mm" x="0" y="0" z="7.5"/>
+        <rotation name="volTPCWireVolumepar0x18e4970_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="142" name="volTPCWireVolumepar0x18e4d60">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e4d60_pos" unit="mm" x="0" y="0" z="12.5"/>
+        <rotation name="volTPCWireVolumepar0x18e4d60_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="143" name="volTPCWireVolumepar0x18e5150">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e5150_pos" unit="mm" x="0" y="0" z="17.5"/>
+        <rotation name="volTPCWireVolumepar0x18e5150_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="144" name="volTPCWireVolumepar0x18e5540">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e5540_pos" unit="mm" x="0" y="0" z="22.5"/>
+        <rotation name="volTPCWireVolumepar0x18e5540_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="145" name="volTPCWireVolumepar0x18e5930">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e5930_pos" unit="mm" x="0" y="0" z="27.5"/>
+        <rotation name="volTPCWireVolumepar0x18e5930_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="146" name="volTPCWireVolumepar0x18e5d20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e5d20_pos" unit="mm" x="0" y="0" z="32.5"/>
+        <rotation name="volTPCWireVolumepar0x18e5d20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="147" name="volTPCWireVolumepar0x18e6110">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e6110_pos" unit="mm" x="0" y="0" z="37.5"/>
+        <rotation name="volTPCWireVolumepar0x18e6110_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="148" name="volTPCWireVolumepar0x18e6500">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e6500_pos" unit="mm" x="0" y="0" z="42.5"/>
+        <rotation name="volTPCWireVolumepar0x18e6500_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="149" name="volTPCWireVolumepar0x18e68f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e68f0_pos" unit="mm" x="0" y="0" z="47.5"/>
+        <rotation name="volTPCWireVolumepar0x18e68f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="150" name="volTPCWireVolumepar0x18e6ce0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e6ce0_pos" unit="mm" x="0" y="0" z="52.5"/>
+        <rotation name="volTPCWireVolumepar0x18e6ce0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="151" name="volTPCWireVolumepar0x18e70d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e70d0_pos" unit="mm" x="0" y="0" z="57.5"/>
+        <rotation name="volTPCWireVolumepar0x18e70d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="152" name="volTPCWireVolumepar0x18e74c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e74c0_pos" unit="mm" x="0" y="0" z="62.5"/>
+        <rotation name="volTPCWireVolumepar0x18e74c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="153" name="volTPCWireVolumepar0x18e78b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e78b0_pos" unit="mm" x="0" y="0" z="67.5"/>
+        <rotation name="volTPCWireVolumepar0x18e78b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="154" name="volTPCWireVolumepar0x18e7ca0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e7ca0_pos" unit="mm" x="0" y="0" z="72.5"/>
+        <rotation name="volTPCWireVolumepar0x18e7ca0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="155" name="volTPCWireVolumepar0x18e8090">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e8090_pos" unit="mm" x="0" y="0" z="77.5"/>
+        <rotation name="volTPCWireVolumepar0x18e8090_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="156" name="volTPCWireVolumepar0x18e8480">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e8480_pos" unit="mm" x="0" y="0" z="82.5"/>
+        <rotation name="volTPCWireVolumepar0x18e8480_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="157" name="volTPCWireVolumepar0x18e8870">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e8870_pos" unit="mm" x="0" y="0" z="87.5"/>
+        <rotation name="volTPCWireVolumepar0x18e8870_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="158" name="volTPCWireVolumepar0x18e8c60">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e8c60_pos" unit="mm" x="0" y="0" z="92.5"/>
+        <rotation name="volTPCWireVolumepar0x18e8c60_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="159" name="volTPCWireVolumepar0x18e9050">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e9050_pos" unit="mm" x="0" y="0" z="97.5"/>
+        <rotation name="volTPCWireVolumepar0x18e9050_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="160" name="volTPCWireVolumepar0x18e9440">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e9440_pos" unit="mm" x="0" y="0" z="102.5"/>
+        <rotation name="volTPCWireVolumepar0x18e9440_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="161" name="volTPCWireVolumepar0x18e9830">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18e9830_pos" unit="mm" x="0" y="0" z="107.5"/>
+        <rotation name="volTPCWireVolumepar0x18e9830_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="162" name="volTPCWireVolumepar0x180c120">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180c120_pos" unit="mm" x="0" y="0" z="112.5"/>
+        <rotation name="volTPCWireVolumepar0x180c120_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="163" name="volTPCWireVolumepar0x180c330">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180c330_pos" unit="mm" x="0" y="0" z="117.5"/>
+        <rotation name="volTPCWireVolumepar0x180c330_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="164" name="volTPCWireVolumepar0x180c750">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180c750_pos" unit="mm" x="0" y="0" z="122.5"/>
+        <rotation name="volTPCWireVolumepar0x180c750_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="165" name="volTPCWireVolumepar0x180cb40">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180cb40_pos" unit="mm" x="0" y="0" z="127.5"/>
+        <rotation name="volTPCWireVolumepar0x180cb40_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="166" name="volTPCWireVolumepar0x180cf30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180cf30_pos" unit="mm" x="0" y="0" z="132.5"/>
+        <rotation name="volTPCWireVolumepar0x180cf30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="167" name="volTPCWireVolumepar0x180d320">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180d320_pos" unit="mm" x="0" y="0" z="137.5"/>
+        <rotation name="volTPCWireVolumepar0x180d320_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="168" name="volTPCWireVolumepar0x180d710">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180d710_pos" unit="mm" x="0" y="0" z="142.5"/>
+        <rotation name="volTPCWireVolumepar0x180d710_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="169" name="volTPCWireVolumepar0x180db00">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180db00_pos" unit="mm" x="0" y="0" z="147.5"/>
+        <rotation name="volTPCWireVolumepar0x180db00_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="170" name="volTPCWireVolumepar0x180def0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180def0_pos" unit="mm" x="0" y="0" z="152.5"/>
+        <rotation name="volTPCWireVolumepar0x180def0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="171" name="volTPCWireVolumepar0x180e2e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180e2e0_pos" unit="mm" x="0" y="0" z="157.5"/>
+        <rotation name="volTPCWireVolumepar0x180e2e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="172" name="volTPCWireVolumepar0x180e6d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180e6d0_pos" unit="mm" x="0" y="0" z="162.5"/>
+        <rotation name="volTPCWireVolumepar0x180e6d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="173" name="volTPCWireVolumepar0x180eac0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180eac0_pos" unit="mm" x="0" y="0" z="167.5"/>
+        <rotation name="volTPCWireVolumepar0x180eac0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="174" name="volTPCWireVolumepar0x180eeb0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180eeb0_pos" unit="mm" x="0" y="0" z="172.5"/>
+        <rotation name="volTPCWireVolumepar0x180eeb0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="175" name="volTPCWireVolumepar0x180f2a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180f2a0_pos" unit="mm" x="0" y="0" z="177.5"/>
+        <rotation name="volTPCWireVolumepar0x180f2a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="176" name="volTPCWireVolumepar0x180f690">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180f690_pos" unit="mm" x="0" y="0" z="182.5"/>
+        <rotation name="volTPCWireVolumepar0x180f690_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="177" name="volTPCWireVolumepar0x180fa80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180fa80_pos" unit="mm" x="0" y="0" z="187.5"/>
+        <rotation name="volTPCWireVolumepar0x180fa80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="178" name="volTPCWireVolumepar0x180fe70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x180fe70_pos" unit="mm" x="0" y="0" z="192.5"/>
+        <rotation name="volTPCWireVolumepar0x180fe70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="179" name="volTPCWireVolumepar0x1810260">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1810260_pos" unit="mm" x="0" y="0" z="197.5"/>
+        <rotation name="volTPCWireVolumepar0x1810260_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="180" name="volTPCWireVolumepar0x1810650">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1810650_pos" unit="mm" x="0" y="0" z="202.5"/>
+        <rotation name="volTPCWireVolumepar0x1810650_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="181" name="volTPCWireVolumepar0x1810a40">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1810a40_pos" unit="mm" x="0" y="0" z="207.5"/>
+        <rotation name="volTPCWireVolumepar0x1810a40_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="182" name="volTPCWireVolumepar0x1810e30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1810e30_pos" unit="mm" x="0" y="0" z="212.5"/>
+        <rotation name="volTPCWireVolumepar0x1810e30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="183" name="volTPCWireVolumepar0x1811220">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1811220_pos" unit="mm" x="0" y="0" z="217.5"/>
+        <rotation name="volTPCWireVolumepar0x1811220_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="184" name="volTPCWireVolumepar0x1811610">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1811610_pos" unit="mm" x="0" y="0" z="222.5"/>
+        <rotation name="volTPCWireVolumepar0x1811610_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="185" name="volTPCWireVolumepar0x1811a00">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1811a00_pos" unit="mm" x="0" y="0" z="227.5"/>
+        <rotation name="volTPCWireVolumepar0x1811a00_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="186" name="volTPCWireVolumepar0x1811df0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1811df0_pos" unit="mm" x="0" y="0" z="232.5"/>
+        <rotation name="volTPCWireVolumepar0x1811df0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="187" name="volTPCWireVolumepar0x18121e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18121e0_pos" unit="mm" x="0" y="0" z="237.5"/>
+        <rotation name="volTPCWireVolumepar0x18121e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="188" name="volTPCWireVolumepar0x18125d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18125d0_pos" unit="mm" x="0" y="0" z="242.5"/>
+        <rotation name="volTPCWireVolumepar0x18125d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="189" name="volTPCWireVolumepar0x18129c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18129c0_pos" unit="mm" x="0" y="0" z="247.5"/>
+        <rotation name="volTPCWireVolumepar0x18129c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="190" name="volTPCWireVolumepar0x1812db0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1812db0_pos" unit="mm" x="0" y="0" z="252.5"/>
+        <rotation name="volTPCWireVolumepar0x1812db0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="191" name="volTPCWireVolumepar0x18131a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18131a0_pos" unit="mm" x="0" y="0" z="257.5"/>
+        <rotation name="volTPCWireVolumepar0x18131a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="192" name="volTPCWireVolumepar0x1813590">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1813590_pos" unit="mm" x="0" y="0" z="262.5"/>
+        <rotation name="volTPCWireVolumepar0x1813590_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="193" name="volTPCWireVolumepar0x1813980">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1813980_pos" unit="mm" x="0" y="0" z="267.5"/>
+        <rotation name="volTPCWireVolumepar0x1813980_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="194" name="volTPCWireVolumepar0x1813d70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1813d70_pos" unit="mm" x="0" y="0" z="272.5"/>
+        <rotation name="volTPCWireVolumepar0x1813d70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="195" name="volTPCWireVolumepar0x1953680">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1953680_pos" unit="mm" x="0" y="0" z="277.5"/>
+        <rotation name="volTPCWireVolumepar0x1953680_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="196" name="volTPCWireVolumepar0x1953b10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1953b10_pos" unit="mm" x="0" y="0" z="282.5"/>
+        <rotation name="volTPCWireVolumepar0x1953b10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="197" name="volTPCWireVolumepar0x1953ef0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1953ef0_pos" unit="mm" x="0" y="0" z="287.5"/>
+        <rotation name="volTPCWireVolumepar0x1953ef0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="198" name="volTPCWireVolumepar0x19542e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19542e0_pos" unit="mm" x="0" y="0" z="292.5"/>
+        <rotation name="volTPCWireVolumepar0x19542e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="199" name="volTPCWireVolumepar0x19546d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19546d0_pos" unit="mm" x="0" y="0" z="297.5"/>
+        <rotation name="volTPCWireVolumepar0x19546d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="200" name="volTPCWireVolumepar0x1954ac0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1954ac0_pos" unit="mm" x="0" y="0" z="302.5"/>
+        <rotation name="volTPCWireVolumepar0x1954ac0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="201" name="volTPCWireVolumepar0x199c350">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199c350_pos" unit="mm" x="0" y="0" z="307.5"/>
+        <rotation name="volTPCWireVolumepar0x199c350_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="202" name="volTPCWireVolumepar0x1911df0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1911df0_pos" unit="mm" x="0" y="0" z="312.5"/>
+        <rotation name="volTPCWireVolumepar0x1911df0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="203" name="volTPCWireVolumepar0x1955bf0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1955bf0_pos" unit="mm" x="0" y="0" z="317.5"/>
+        <rotation name="volTPCWireVolumepar0x1955bf0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="204" name="volTPCWireVolumepar0x19536c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19536c0_pos" unit="mm" x="0" y="0" z="322.5"/>
+        <rotation name="volTPCWireVolumepar0x19536c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="205" name="volTPCWireVolumepar0x19563a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19563a0_pos" unit="mm" x="0" y="0" z="327.5"/>
+        <rotation name="volTPCWireVolumepar0x19563a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="206" name="volTPCWireVolumepar0x1956820">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1956820_pos" unit="mm" x="0" y="0" z="332.5"/>
+        <rotation name="volTPCWireVolumepar0x1956820_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="207" name="volTPCWireVolumepar0x1956bd0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1956bd0_pos" unit="mm" x="0" y="0" z="337.5"/>
+        <rotation name="volTPCWireVolumepar0x1956bd0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="208" name="volTPCWireVolumepar0x1956ff0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1956ff0_pos" unit="mm" x="0" y="0" z="342.5"/>
+        <rotation name="volTPCWireVolumepar0x1956ff0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="209" name="volTPCWireVolumepar0x19573e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19573e0_pos" unit="mm" x="0" y="0" z="347.5"/>
+        <rotation name="volTPCWireVolumepar0x19573e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="210" name="volTPCWireVolumepar0x19577d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19577d0_pos" unit="mm" x="0" y="0" z="352.5"/>
+        <rotation name="volTPCWireVolumepar0x19577d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="211" name="volTPCWireVolumepar0x1957bc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1957bc0_pos" unit="mm" x="0" y="0" z="357.5"/>
+        <rotation name="volTPCWireVolumepar0x1957bc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="212" name="volTPCWireVolumepar0x1957fb0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1957fb0_pos" unit="mm" x="0" y="0" z="362.5"/>
+        <rotation name="volTPCWireVolumepar0x1957fb0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="213" name="volTPCWireVolumepar0x19583a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19583a0_pos" unit="mm" x="0" y="0" z="367.5"/>
+        <rotation name="volTPCWireVolumepar0x19583a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="214" name="volTPCWireVolumepar0x1958790">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1958790_pos" unit="mm" x="0" y="0" z="372.5"/>
+        <rotation name="volTPCWireVolumepar0x1958790_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="215" name="volTPCWireVolumepar0x1958b80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1958b80_pos" unit="mm" x="0" y="0" z="377.5"/>
+        <rotation name="volTPCWireVolumepar0x1958b80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="216" name="volTPCWireVolumepar0x1958f70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1958f70_pos" unit="mm" x="0" y="0" z="382.5"/>
+        <rotation name="volTPCWireVolumepar0x1958f70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="217" name="volTPCWireVolumepar0x1959360">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1959360_pos" unit="mm" x="0" y="0" z="387.5"/>
+        <rotation name="volTPCWireVolumepar0x1959360_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="218" name="volTPCWireVolumepar0x1959750">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1959750_pos" unit="mm" x="0" y="0" z="392.5"/>
+        <rotation name="volTPCWireVolumepar0x1959750_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="219" name="volTPCWireVolumepar0x1959b40">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1959b40_pos" unit="mm" x="0" y="0" z="397.5"/>
+        <rotation name="volTPCWireVolumepar0x1959b40_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="220" name="volTPCWireVolumepar0x1959f30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1959f30_pos" unit="mm" x="0" y="0" z="402.5"/>
+        <rotation name="volTPCWireVolumepar0x1959f30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="221" name="volTPCWireVolumepar0x195a320">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x195a320_pos" unit="mm" x="0" y="0" z="407.5"/>
+        <rotation name="volTPCWireVolumepar0x195a320_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="222" name="volTPCWireVolumepar0x195a710">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x195a710_pos" unit="mm" x="0" y="0" z="412.5"/>
+        <rotation name="volTPCWireVolumepar0x195a710_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="223" name="volTPCWireVolumepar0x195ab00">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x195ab00_pos" unit="mm" x="0" y="0" z="417.5"/>
+        <rotation name="volTPCWireVolumepar0x195ab00_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="224" name="volTPCWireVolumepar0x195aef0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x195aef0_pos" unit="mm" x="0" y="0" z="422.5"/>
+        <rotation name="volTPCWireVolumepar0x195aef0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="225" name="volTPCWireVolumepar0x195b2e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x195b2e0_pos" unit="mm" x="0" y="0" z="427.5"/>
+        <rotation name="volTPCWireVolumepar0x195b2e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="226" name="volTPCWireVolumepar0x1904a10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1904a10_pos" unit="mm" x="0" y="0" z="432.5"/>
+        <rotation name="volTPCWireVolumepar0x1904a10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="227" name="volTPCWireVolumepar0x1904c20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1904c20_pos" unit="mm" x="0" y="0" z="437.5"/>
+        <rotation name="volTPCWireVolumepar0x1904c20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="228" name="volTPCWireVolumepar0x1905040">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1905040_pos" unit="mm" x="0" y="0" z="442.5"/>
+        <rotation name="volTPCWireVolumepar0x1905040_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="229" name="volTPCWireVolumepar0x1905430">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1905430_pos" unit="mm" x="0" y="0" z="447.5"/>
+        <rotation name="volTPCWireVolumepar0x1905430_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="230" name="volTPCWireVolumepar0x1905820">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1905820_pos" unit="mm" x="0" y="0" z="452.5"/>
+        <rotation name="volTPCWireVolumepar0x1905820_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="231" name="volTPCWireVolumepar0x1905c10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1905c10_pos" unit="mm" x="0" y="0" z="457.5"/>
+        <rotation name="volTPCWireVolumepar0x1905c10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="232" name="volTPCWireVolumepar0x1906000">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1906000_pos" unit="mm" x="0" y="0" z="462.5"/>
+        <rotation name="volTPCWireVolumepar0x1906000_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="233" name="volTPCWireVolumepar0x19063f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19063f0_pos" unit="mm" x="0" y="0" z="467.5"/>
+        <rotation name="volTPCWireVolumepar0x19063f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="234" name="volTPCWireVolumepar0x19067e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19067e0_pos" unit="mm" x="0" y="0" z="472.5"/>
+        <rotation name="volTPCWireVolumepar0x19067e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="235" name="volTPCWireVolumepar0x1906bd0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1906bd0_pos" unit="mm" x="0" y="0" z="477.5"/>
+        <rotation name="volTPCWireVolumepar0x1906bd0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="236" name="volTPCWireVolumepar0x1906fc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1906fc0_pos" unit="mm" x="0" y="0" z="482.5"/>
+        <rotation name="volTPCWireVolumepar0x1906fc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="237" name="volTPCWireVolumepar0x19073b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19073b0_pos" unit="mm" x="0" y="0" z="487.5"/>
+        <rotation name="volTPCWireVolumepar0x19073b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="238" name="volTPCWireVolumepar0x19077a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19077a0_pos" unit="mm" x="0" y="0" z="492.5"/>
+        <rotation name="volTPCWireVolumepar0x19077a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="239" name="volTPCWireVolumepar0x1907b90">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1907b90_pos" unit="mm" x="0" y="0" z="497.5"/>
+        <rotation name="volTPCWireVolumepar0x1907b90_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="240" name="volTPCWireVolumepar0x1907f80">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1907f80_pos" unit="mm" x="0" y="0" z="502.5"/>
+        <rotation name="volTPCWireVolumepar0x1907f80_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="241" name="volTPCWireVolumepar0x1908370">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1908370_pos" unit="mm" x="0" y="0" z="507.5"/>
+        <rotation name="volTPCWireVolumepar0x1908370_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="242" name="volTPCWireVolumepar0x1908760">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1908760_pos" unit="mm" x="0" y="0" z="512.5"/>
+        <rotation name="volTPCWireVolumepar0x1908760_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="243" name="volTPCWireVolumepar0x1908b50">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1908b50_pos" unit="mm" x="0" y="0" z="517.5"/>
+        <rotation name="volTPCWireVolumepar0x1908b50_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="244" name="volTPCWireVolumepar0x1908f40">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1908f40_pos" unit="mm" x="0" y="0" z="522.5"/>
+        <rotation name="volTPCWireVolumepar0x1908f40_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="245" name="volTPCWireVolumepar0x1909330">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1909330_pos" unit="mm" x="0" y="0" z="527.5"/>
+        <rotation name="volTPCWireVolumepar0x1909330_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="246" name="volTPCWireVolumepar0x1909720">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1909720_pos" unit="mm" x="0" y="0" z="532.5"/>
+        <rotation name="volTPCWireVolumepar0x1909720_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="247" name="volTPCWireVolumepar0x1909b10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1909b10_pos" unit="mm" x="0" y="0" z="537.5"/>
+        <rotation name="volTPCWireVolumepar0x1909b10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="248" name="volTPCWireVolumepar0x1909f00">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1909f00_pos" unit="mm" x="0" y="0" z="542.5"/>
+        <rotation name="volTPCWireVolumepar0x1909f00_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="249" name="volTPCWireVolumepar0x190a2f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190a2f0_pos" unit="mm" x="0" y="0" z="547.5"/>
+        <rotation name="volTPCWireVolumepar0x190a2f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="250" name="volTPCWireVolumepar0x190a6e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190a6e0_pos" unit="mm" x="0" y="0" z="552.5"/>
+        <rotation name="volTPCWireVolumepar0x190a6e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="251" name="volTPCWireVolumepar0x190aad0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190aad0_pos" unit="mm" x="0" y="0" z="557.5"/>
+        <rotation name="volTPCWireVolumepar0x190aad0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="252" name="volTPCWireVolumepar0x190aec0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190aec0_pos" unit="mm" x="0" y="0" z="562.5"/>
+        <rotation name="volTPCWireVolumepar0x190aec0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="253" name="volTPCWireVolumepar0x190b2b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190b2b0_pos" unit="mm" x="0" y="0" z="567.5"/>
+        <rotation name="volTPCWireVolumepar0x190b2b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="254" name="volTPCWireVolumepar0x190b6a0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190b6a0_pos" unit="mm" x="0" y="0" z="572.5"/>
+        <rotation name="volTPCWireVolumepar0x190b6a0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="255" name="volTPCWireVolumepar0x190bba0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190bba0_pos" unit="mm" x="0" y="0" z="577.5"/>
+        <rotation name="volTPCWireVolumepar0x190bba0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="256" name="volTPCWireVolumepar0x190be20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190be20_pos" unit="mm" x="0" y="0" z="582.5"/>
+        <rotation name="volTPCWireVolumepar0x190be20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="257" name="volTPCWireVolumepar0x190c360">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x190c360_pos" unit="mm" x="0" y="0" z="587.5"/>
+        <rotation name="volTPCWireVolumepar0x190c360_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="258" name="volTPCWireVolumepar0x199d700">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199d700_pos" unit="mm" x="0" y="0" z="592.5"/>
+        <rotation name="volTPCWireVolumepar0x199d700_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="259" name="volTPCWireVolumepar0x199d8f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x199d8f0_pos" unit="mm" x="0" y="0" z="597.5"/>
+        <rotation name="volTPCWireVolumepar0x199d8f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="260" name="volTPCWireVolumepar0x18dbb10">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dbb10_pos" unit="mm" x="0" y="0" z="602.5"/>
+        <rotation name="volTPCWireVolumepar0x18dbb10_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="261" name="volTPCWireVolumepar0x18dbf40">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dbf40_pos" unit="mm" x="0" y="0" z="607.5"/>
+        <rotation name="volTPCWireVolumepar0x18dbf40_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="262" name="volTPCWireVolumepar0x18dc020">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dc020_pos" unit="mm" x="0" y="0" z="612.5"/>
+        <rotation name="volTPCWireVolumepar0x18dc020_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="263" name="volTPCWireVolumepar0x18dc4b0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dc4b0_pos" unit="mm" x="0" y="0" z="617.5"/>
+        <rotation name="volTPCWireVolumepar0x18dc4b0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="264" name="volTPCWireVolumepar0x18dc8d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dc8d0_pos" unit="mm" x="0" y="0" z="622.5"/>
+        <rotation name="volTPCWireVolumepar0x18dc8d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="265" name="volTPCWireVolumepar0x18dccc0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dccc0_pos" unit="mm" x="0" y="0" z="627.5"/>
+        <rotation name="volTPCWireVolumepar0x18dccc0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="266" name="volTPCWireVolumepar0x18dd0e0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dd0e0_pos" unit="mm" x="0" y="0" z="632.5"/>
+        <rotation name="volTPCWireVolumepar0x18dd0e0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="267" name="volTPCWireVolumepar0x18dd4d0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x18dd4d0_pos" unit="mm" x="0" y="0" z="637.5"/>
+        <rotation name="volTPCWireVolumepar0x18dd4d0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="268" name="volTPCWireVolumepar0x19730c0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19730c0_pos" unit="mm" x="0" y="0" z="642.5"/>
+        <rotation name="volTPCWireVolumepar0x19730c0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="269" name="volTPCWireVolumepar0x1973260">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1973260_pos" unit="mm" x="0" y="0" z="647.5"/>
+        <rotation name="volTPCWireVolumepar0x1973260_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="270" name="volTPCWireVolumepar0x1973650">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1973650_pos" unit="mm" x="0" y="0" z="652.5"/>
+        <rotation name="volTPCWireVolumepar0x1973650_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="271" name="volTPCWireVolumepar0x1973a70">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1973a70_pos" unit="mm" x="0" y="0" z="657.5"/>
+        <rotation name="volTPCWireVolumepar0x1973a70_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="272" name="volTPCWireVolumepar0x1973e60">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1973e60_pos" unit="mm" x="0" y="0" z="662.5"/>
+        <rotation name="volTPCWireVolumepar0x1973e60_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="273" name="volTPCWireVolumepar0x1974250">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1974250_pos" unit="mm" x="0" y="0" z="667.5"/>
+        <rotation name="volTPCWireVolumepar0x1974250_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="274" name="volTPCWireVolumepar0x1974640">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1974640_pos" unit="mm" x="0" y="0" z="672.5"/>
+        <rotation name="volTPCWireVolumepar0x1974640_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="275" name="volTPCWireVolumepar0x1974a30">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1974a30_pos" unit="mm" x="0" y="0" z="677.5"/>
+        <rotation name="volTPCWireVolumepar0x1974a30_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="276" name="volTPCWireVolumepar0x1974e20">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1974e20_pos" unit="mm" x="0" y="0" z="682.5"/>
+        <rotation name="volTPCWireVolumepar0x1974e20_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="277" name="volTPCWireVolumepar0x1975210">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1975210_pos" unit="mm" x="0" y="0" z="687.5"/>
+        <rotation name="volTPCWireVolumepar0x1975210_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="278" name="volTPCWireVolumepar0x1975600">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x1975600_pos" unit="mm" x="0" y="0" z="692.5"/>
+        <rotation name="volTPCWireVolumepar0x1975600_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+      <physvol copynumber="279" name="volTPCWireVolumepar0x19759f0">
+        <volumeref ref="volTPCWirepar0x19011f0"/>
+        <position name="volTPCWireVolumepar0x19759f0_pos" unit="mm" x="0" y="0" z="697.5"/>
+        <rotation name="volTPCWireVolumepar0x19759f0_rot" unit="deg" x="-54" y="0" z="0"/>
+      </physvol>
+    </volume>
+    <volume name="volTPC0x1929800">
+      <materialref ref="G4_lAr0x18df450"/>
+      <solidref ref="TPC0x18c51b0"/>
+      <physvol name="volTPCActive_PV0x1929b60">
+        <volumeref ref="volTPCActive0x18f4db0"/>
+      </physvol>
+      <physvol name="volTPCPlaneVert_PV0x1929fd0">
+        <volumeref ref="volTPCPlaneVert0x18ebbb0"/>
+        <position name="volTPCPlaneVert_PV0x1929fd0_pos" unit="mm" x="-250.75" y="0" z="0"/>
+      </physvol>
+      <physvol name="volTPCPlane_PV0x1929f50">
+        <volumeref ref="volTPCPlane0x18f5c20"/>
+        <position name="volTPCPlane_PV0x1929f50_pos" unit="mm" x="-252.25" y="0" z="0"/>
+      </physvol>
+    </volume>
+    <volume name="volCryostat0x192c820">
+      <materialref ref="G4_STAINLESS-STEEL0x192acb0"/>
+      <solidref ref="Cryostat0x18c5120"/>
+      <physvol name="volTPC_PV0x192c930">
+        <volumeref ref="volTPC0x1929800"/>
+      </physvol>
+    </volume>
+    <volume name="volDetEnclosure0x195e390">
+      <materialref ref="G4_AIR0x195d900"/>
+      <solidref ref="DetEnclosure0x18c5240"/>
+      <physvol name="volCryostat_PV0x195eeb0">
+        <volumeref ref="volCryostat0x192c820"/>
+      </physvol>
+    </volume>
+    <volume name="volWorld0x195f700">
+      <materialref ref="G4_AIR0x195d900"/>
+      <solidref ref="World0x18c52d0"/>
+      <physvol name="volDetEnclosure_PV0x195f830">
+        <volumeref ref="volDetEnclosure0x195e390"/>
+        <position name="volDetEnclosure_PV0x195f830_pos" unit="mm" x="251.5" y="0" z="900.1"/>
+      </physvol>
+    </volume>
+  </structure>
+
+  <setup name="Default" version="1.0">
+    <world ref="volWorld0x195f700"/>
+  </setup>
+
+</gdml>
