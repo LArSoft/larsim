@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+  <define/>
+
+  <materials>
+    <isotope N="36" Z="18" name="Ar360x22cfcf0">
+      <atom unit="g/mole" value="35.9675"/>
+    </isotope>
+    <isotope N="38" Z="18" name="Ar380x22cfc60">
+      <atom unit="g/mole" value="37.9627"/>
+    </isotope>
+    <isotope N="40" Z="18" name="Ar400x2346f10">
+      <atom unit="g/mole" value="39.9624"/>
+    </isotope>
+    <element name="Ar0x2347140">
+      <fraction n="0.003365" ref="Ar360x22cfcf0"/>
+      <fraction n="0.000632" ref="Ar380x22cfc60"/>
+      <fraction n="0.996003" ref="Ar400x2346f10"/>
+    </element>
+    <material name="G4_lAr0x2347030" state="liquid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="188"/>
+      <D unit="g/cm3" value="1.396"/>
+      <fraction n="1" ref="Ar0x2347140"/>
+    </material>
+    <isotope N="54" Z="26" name="Fe540x22dfa50">
+      <atom unit="g/mole" value="53.9396"/>
+    </isotope>
+    <isotope N="56" Z="26" name="Fe560x22dffc0">
+      <atom unit="g/mole" value="55.9349"/>
+    </isotope>
+    <isotope N="57" Z="26" name="Fe570x22e0020">
+      <atom unit="g/mole" value="56.9354"/>
+    </isotope>
+    <isotope N="58" Z="26" name="Fe580x22e00c0">
+      <atom unit="g/mole" value="57.9333"/>
+    </isotope>
+    <element name="Fe0x22dfd70">
+      <fraction n="0.05845" ref="Fe540x22dfa50"/>
+      <fraction n="0.91754" ref="Fe560x22dffc0"/>
+      <fraction n="0.02119" ref="Fe570x22e0020"/>
+      <fraction n="0.00282" ref="Fe580x22e00c0"/>
+    </element>
+    <isotope N="50" Z="24" name="Cr500x22e0330">
+      <atom unit="g/mole" value="49.946"/>
+    </isotope>
+    <isotope N="52" Z="24" name="Cr520x22dff50">
+      <atom unit="g/mole" value="51.9405"/>
+    </isotope>
+    <isotope N="53" Z="24" name="Cr530x22e0470">
+      <atom unit="g/mole" value="52.9407"/>
+    </isotope>
+    <isotope N="54" Z="24" name="Cr540x22e0510">
+      <atom unit="g/mole" value="53.9389"/>
+    </isotope>
+    <element name="Cr0x22e0100">
+      <fraction n="0.04345" ref="Cr500x22e0330"/>
+      <fraction n="0.83789" ref="Cr520x22dff50"/>
+      <fraction n="0.09501" ref="Cr530x22e0470"/>
+      <fraction n="0.02365" ref="Cr540x22e0510"/>
+    </element>
+    <isotope N="58" Z="28" name="Ni580x22e0780">
+      <atom unit="g/mole" value="57.9353"/>
+    </isotope>
+    <isotope N="60" Z="28" name="Ni600x22e0280">
+      <atom unit="g/mole" value="59.9308"/>
+    </isotope>
+    <isotope N="61" Z="28" name="Ni610x22e07c0">
+      <atom unit="g/mole" value="60.9311"/>
+    </isotope>
+    <isotope N="62" Z="28" name="Ni620x22e0860">
+      <atom unit="g/mole" value="61.9283"/>
+    </isotope>
+    <isotope N="64" Z="28" name="Ni640x22e08d0">
+      <atom unit="g/mole" value="63.928"/>
+    </isotope>
+    <element name="Ni0x22e0550">
+      <fraction n="0.680769" ref="Ni580x22e0780"/>
+      <fraction n="0.262231" ref="Ni600x22e0280"/>
+      <fraction n="0.011399" ref="Ni610x22e07c0"/>
+      <fraction n="0.036345" ref="Ni620x22e0860"/>
+      <fraction n="0.009256" ref="Ni640x22e08d0"/>
+    </element>
+    <material name="G4_STAINLESS-STEEL0x22dfc10" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="282.97693634122"/>
+      <D unit="g/cm3" value="8"/>
+      <fraction n="0.746212874621521" ref="Fe0x22dfd70"/>
+      <fraction n="0.169001044311525" ref="Cr0x22e0100"/>
+      <fraction n="0.0847860810669534" ref="Ni0x22e0550"/>
+    </material>
+    <isotope N="12" Z="6" name="C120x22f6730">
+      <atom unit="g/mole" value="12"/>
+    </isotope>
+    <isotope N="13" Z="6" name="C130x22f6800">
+      <atom unit="g/mole" value="13.0034"/>
+    </isotope>
+    <element name="C0x22f6a60">
+      <fraction n="0.9893" ref="C120x22f6730"/>
+      <fraction n="0.0107" ref="C130x22f6800"/>
+    </element>
+    <isotope N="14" Z="7" name="N140x22f7030">
+      <atom unit="g/mole" value="14.0031"/>
+    </isotope>
+    <isotope N="15" Z="7" name="N150x22f6b90">
+      <atom unit="g/mole" value="15.0001"/>
+    </isotope>
+    <element name="N0x22f6bf0">
+      <fraction n="0.99632" ref="N140x22f7030"/>
+      <fraction n="0.00368" ref="N150x22f6b90"/>
+    </element>
+    <isotope N="16" Z="8" name="O160x22f72f0">
+      <atom unit="g/mole" value="15.9949"/>
+    </isotope>
+    <isotope N="17" Z="8" name="O170x22f6e90">
+      <atom unit="g/mole" value="16.9991"/>
+    </isotope>
+    <isotope N="18" Z="8" name="O180x22f6f20">
+      <atom unit="g/mole" value="17.9992"/>
+    </isotope>
+    <element name="O0x22f7090">
+      <fraction n="0.99757" ref="O160x22f72f0"/>
+      <fraction n="0.00038" ref="O170x22f6e90"/>
+      <fraction n="0.00205" ref="O180x22f6f20"/>
+    </element>
+    <material name="G4_AIR0x22f6940" state="gas">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="85.7"/>
+      <D unit="g/cm3" value="0.00120479"/>
+      <fraction n="0.000124000124000124" ref="C0x22f6a60"/>
+      <fraction n="0.755267755267755" ref="N0x22f6bf0"/>
+      <fraction n="0.231781231781232" ref="O0x22f7090"/>
+      <fraction n="0.0128270128270128" ref="Ar0x2347140"/>
+    </material>
+  </materials>
+
+  <solids>
+    <box lunit="mm" name="TPCActive0x24fb240" x="500" y="500.2" z="1800.2"/>
+    <box lunit="mm" name="TPCPlane0x22c6d60" x="1.5" y="500.2" z="1800.2"/>
+    <box lunit="mm" name="TPC0x22cedc0" x="690" y="690" z="1990"/>
+    <box lunit="mm" name="Cryostat0x2293620" x="700" y="700" z="2000"/>
+    <box lunit="mm" name="DetEnclosure0x22ceb50" x="1500" y="1500" z="3000"/>
+    <box lunit="mm" name="World0x22cf1f0" x="1000000" y="1060000" z="2073000"/>
+  </solids>
+
+  <structure>
+    <volume name="volTPCActive0x22f4da0">
+      <materialref ref="G4_lAr0x2347030"/>
+      <solidref ref="TPCActive0x24fb240"/>
+    </volume>
+    <volume name="volTPCPlaneVert0x2301ef0">
+      <materialref ref="G4_lAr0x2347030"/>
+      <solidref ref="TPCPlane0x22c6d60"/>
+    </volume>
+    <volume name="volTPCPlane0x230db00">
+      <materialref ref="G4_lAr0x2347030"/>
+      <solidref ref="TPCPlane0x22c6d60"/>
+    </volume>
+    <volume name="volTPC0x235cc30">
+      <materialref ref="G4_lAr0x2347030"/>
+      <solidref ref="TPC0x22cedc0"/>
+      <physvol name="volTPCActive_PV0x235cdf0">
+        <volumeref ref="volTPCActive0x22f4da0"/>
+      </physvol>
+      <physvol name="volTPCPlaneVert_PV0x235d860">
+        <volumeref ref="volTPCPlaneVert0x2301ef0"/>
+        <position name="volTPCPlaneVert_PV0x235d860_pos" unit="mm" x="-250.75" y="0" z="0"/>
+      </physvol>
+      <physvol name="volTPCPlane_PV0x22df680">
+        <volumeref ref="volTPCPlane0x230db00"/>
+        <position name="volTPCPlane_PV0x22df680_pos" unit="mm" x="-252.25" y="0" z="0"/>
+      </physvol>
+    </volume>
+    <volume name="volCryostat0x22f6170">
+      <materialref ref="G4_STAINLESS-STEEL0x22dfc10"/>
+      <solidref ref="Cryostat0x2293620"/>
+      <physvol name="volTPC_PV0x235cd30">
+        <volumeref ref="volTPC0x235cc30"/>
+      </physvol>
+    </volume>
+    <volume name="volDetEnclosure0x22f74c0">
+      <materialref ref="G4_AIR0x22f6940"/>
+      <solidref ref="DetEnclosure0x22ceb50"/>
+      <physvol name="volCryostat_PV0x22f7fd0">
+        <volumeref ref="volCryostat0x22f6170"/>
+      </physvol>
+    </volume>
+    <volume name="volWorld0x22f85e0">
+      <materialref ref="G4_AIR0x22f6940"/>
+      <solidref ref="World0x22cf1f0"/>
+      <physvol name="volDetEnclosure_PV0x22f88a0">
+        <volumeref ref="volDetEnclosure0x22f74c0"/>
+        <position name="volDetEnclosure_PV0x22f88a0_pos" unit="mm" x="251.5" y="0" z="900.1"/>
+      </physvol>
+    </volume>
+  </structure>
+
+  <setup name="Default" version="1.0">
+    <world ref="volWorld0x22f85e0"/>
+  </setup>
+
+</gdml>

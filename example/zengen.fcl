@@ -1,0 +1,226 @@
+#no experiment specific configurations because SingleGen is detector agnostic
+
+#include "simulationservices.fcl"
+#include "spacecharge.fcl"
+#include "larproperties.fcl"
+#include "detectorproperties.fcl"
+#include "detectorclocks.fcl"
+#include "larfft.fcl"
+
+standard_singlep:
+{
+ module_type:           "SingleGen" 
+ ParticleSelectionMode: "all"       # 0 = use full list, 1 =  randomly select a single listed particle
+ PadOutVectors:        false        # false: require all vectors to be same length
+                                    # true:  pad out if a vector is size one    
+ PDG:                   [ -13]      # list of pdg codes for particles to make
+ P0:                    [ 4. ]      # central value of momentum for each particle
+ SigmaP:                [ .9 ]      # variation about the central value 
+ PDist:                 "Gaussian"  # 0 - uniform, 1 - gaussian distribution                               
+ X0:                    [ 25.]      # in cm in world coordinates, ie x = 0 is at the wire plane          
+                                    # and increases away from the wire plane                             
+ Y0:                    [ 0. ]      # in cm in world coordinates, ie y = 0 is at the center of the TPC   
+ Z0:                    [ 90. ]     # in cm in world coordinates, ie z = 0 is at the upstream edge of    
+                                    # the TPC and increases with the beam direction                      
+ T0:                    [ 0. ]      # starting time
+ SigmaX:                [ 0. ]      # variation in the starting x position
+ SigmaY:                [ 0. ]      # variation in the starting y position                            
+ SigmaZ:                [ 30.]      # variation in the starting z position                            
+ SigmaT:                [ 0.0 ]     # variation in the starting time
+ PosDist:               "uniform"   # 0 - uniform, 1 - gaussian
+ TDist:                 "uniform"   # 0 - uniform, 1 - gaussian         
+ Theta0XZ:              [ 0. ]      #angle in XZ plane (degrees)                                         
+ Theta0YZ:              [ 0. ]      #angle in YZ plane (degrees)                                         
+ SigmaThetaXZ:          [ 180.]     #in degrees                                                          
+ SigmaThetaYZ:          [ 90. ]     #in degrees                                                          
+ AngleDist:             0           # 0 - uniform, 1 - gaussian
+}
+
+process_name:processA
+
+services:
+{
+  message : {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : {
+       LogToConsole : {
+         type : "cout" 
+         threshold : "DEBUG" 
+         categories : {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService : { fileName: "testlarg4.root" }
+  RandomNumberGenerator: {}
+  NuRandomService:{
+    service_type: "NuRandomService" 
+    endOfJobSummary: true
+    policy: "random" 
+  }
+
+  DetectorHolder: {}
+  ActionHolder: {}
+  PhysicsListHolder: {} 
+  PhysicsList: { 
+    PhysicsListName: "FTFP_BERT" 
+    DumpList: false    
+    enableCerenkov: false
+    enableScintillation: false
+    ScintillationByParticleType: false
+    enableAbsorption: false   
+    enableRayleigh: false     
+    enableMieHG: false       
+    enableBoundary: false    
+    enableWLS: false
+  }
+  LArG4Detector : 
+  {
+    category: "world" 
+    gdmlFileName_ : "zen_nowires.gdml" 
+  }   
+
+  MCTruthEventAction: {service_type: "MCTruthEventActionService"}
+  ParticleListAction: {
+    SparsifyMargin: 0.1
+    service_type: "ParticleListActionService"
+  }
+
+  Geometry: {
+     Name: "zeng4"
+     GDML: "zeng4.gdml" 
+     ROOT: "zeng4.gdml"
+     SurfaceY: 0
+     DisableWiresInG4: true
+     SortingParameters: {}
+     service_type: "Geometry"
+  }
+
+  ExptGeoHelperInterface: {
+     service_provider : StandardGeometryHelper
+     service_type: "ExptGeoHelperInterface"
+  }
+  
+  GeometryConfigurationWriter: {}
+
+  # -- in larsim
+  LArG4Parameters:              @local::standard_largeantparameters
+  # -- in larevt
+  SpaceCharge:                  @local::standard_spacecharge
+  # -- following 3 are in lardataalg
+  LArPropertiesService:		@local::standard_properties
+  DetectorPropertiesService:	@local::standard_detproperties
+  DetectorClocksService:        @local::standard_detectorclocks
+
+  LArFFT:			@local::standard_larfft
+}
+
+source: {
+  module_type: EmptyEvent
+  maxEvents:  10
+}
+
+physics:
+{
+
+  producers:
+  {
+    generator: @local::standard_singlep
+    larg4Main: {
+      module_type: larg4Main
+      enableVisualization: false
+      macroPath: ".:./macros" 
+      visMacro: "vis.mac" 
+    }
+    elecDrift: {
+      module_type:     "SimDriftElectrons"
+      SimulationLabel: "larg4Main:LArG4DetectorServicevolTPCActive"
+      StoreDriftedElectronClusters: true
+    }
+    simWire: {
+       ADCPerPCAtLowestASICGain: 5211
+       ASICGainInMVPerFC: 14
+       Col3DCorrection: 2.5
+       ColFieldParams: [
+    	  32,
+    	  1.
+       ]
+       CompressionType: "none"
+       DriftEModuleLabel: "elecDrift"
+       FieldRespTOffset: [
+    	  32,
+    	  28
+       ]
+    	#  32,
+    	#  28
+       CalibRespTOffset: [
+    	  0,
+    	  0
+       ]
+       Ind3DCorrection: 1.5
+       IndFieldParams: [
+    	  28,
+    	  0.5,
+    	  1.1
+       ]
+       InputFieldRespSamplingPeriod: 198
+       NoiseFluctPar:[ 0.28, 0, 0 ]
+       #NoiseFluctPar:[ 0.7025,0.9914,0.2865]
+       NoiseFluctChoice: "SimplePoisson"
+       NoiseModelChoice: "ModUBooNE"
+       #NoiseModelPar:[1.32e-1,120,7.5,0,0,0,0,0]
+       NoiseModelPar:[
+    	  4450.,
+    	  -530.,
+    	  280.,
+    	  110.,
+    	  -0.85,
+    	  18.,
+    	  0.064,
+    	  74.
+       ]
+       #NoiseModelPar: [
+       #   5000,
+       #   -5.52058e2,
+       #   2.81587e2,
+       #   -5.66561e1,
+       #   4.10817e1,
+       #   1.76284e1,
+       #   1e-1,
+       #   5.97838e1
+       #]
+       NoiseNchToSim: 100
+       ShapeTimeConst: 2.
+       module_label: "simWire"
+       module_type: "SimWire"
+    }
+  }
+  analyzers:
+  {
+    CheckSimEnergyDeposit: {
+      module_type: CheckSimEnergyDeposit
+      hist_dir: "HistoDir" 
+    }
+    SimDriftedElectronClusterAna: {
+      module_type: SimDriftedElectronClusterAna
+      EDepModuleLabel: "elecDrift"
+    }		 
+  }
+
+  path1: [ generator,larg4Main,elecDrift,simWire ]
+  stream1:  [ out1,CheckSimEnergyDeposit,SimDriftedElectronClusterAna ]
+  trigger_paths: [ path1 ]
+  end_paths: [ stream1 ]
+}
+
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput   
+    fileName: "Testingout.root" 
+  }
+}
