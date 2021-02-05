@@ -1,0 +1,78 @@
+#include "geometry.fcl"
+#include "detectorproperties.fcl"
+#include "larproperties.fcl"
+#include "channelstatus.fcl"
+#include "detectorclocks.fcl"
+#include "databaseutil.fcl"
+#include "simulationservices.fcl"
+
+#include "calorimetry.fcl"
+#include "evdservices_base.fcl"
+// #include "trackfinderalgorithms.fcl"
+
+
+BEGIN_PROLOG
+
+custom_colordrawingopt:  @local::standard_colordrawingopt
+
+custom_rawdrawingopt:    @local::standard_rawdrawingopt
+custom_rawdrawingopt.DrawRawDataOrCalibWires: 1
+
+custom_recodrawingopt:   @local::standard_recodrawingopt
+custom_recodrawingopt.CalorimetryAlgorithm: @local::standard_calodata
+#custom_recodrawingopt.CalorimetryAlgorithm: @local::standard_calomc
+custom_analysisdrawingopt: @local::standard_analysisdrawingopt
+
+custom_simdrawingopt:    @local::standard_simdrawingopt
+
+custom_evdlayoutopt:     @local::standard_evdlayoutopt
+custom_evdlayoutopt.ShowSideBar:         1
+custom_evdlayoutopt.AutoZoomInterest:    0
+custom_evdlayoutopt.PrintTotalCharge:    0
+custom_evdlayoutopt.ShowEndPointSection: 1
+custom_evdlayoutopt.ShowEndPointMarkers: 1
+custom_evdlayoutopt.MakeSeeds:           0
+custom_evdlayoutopt.ChangeWire:          0
+custom_evdlayoutopt.MakeSeeds:           0
+custom_evdlayoutopt.ChangeWire:          1
+
+custom_scanopt:          @local::standard_scanopt
+
+custom_evd:              @local::standard_evd
+
+custom_infotransfer:     @local::standard_infotransfer
+
+custom_disp:
+{
+  Geometry:               @local::standard_geo # from geometry.fcl
+  ExptGeoHelperInterface: @local::standard_geometry_helper # from geometry.fcl
+  GeometryConfigurationWriter: {}
+  DetectorPropertiesService:     @local::standard_detproperties # from detectorproperties.fcl
+  LArPropertiesService:          @local::standard_properties # from larproperties.fcl
+  DetectorClocksService:            @local::standard_detectorclocks # from detectorclocks.fcl
+  DatabaseUtil:           @local::standard_database # from databaseutil.fcl
+//  LArFFT:                 @local::standard_larfft # from larfft.fcl
+ 
+  ColorDrawingOptions:      @local::custom_colordrawingopt
+  SimulationDrawingOptions: @local::custom_simdrawingopt
+  RawDrawingOptions:        @local::custom_rawdrawingopt
+  RecoDrawingOptions:       @local::custom_recodrawingopt
+  AnalysisDrawingOptions:   @local::custom_analysisdrawingopt
+  EvdLayoutOptions:         @local::custom_evdlayoutopt
+  EventDisplay:             @local::custom_evd
+  ScanOptions:              @local::custom_scanopt
+  InfoTransfer:             @local::custom_infotransfer
+  LArG4Parameters:          @local::standard_largeantparameters
+  LArVoxelCalculator:       @local::standard_larvoxelcalculator
+  ChannelStatusService:     @local::standard_channelstatus
+  DetectorPedestalService:  @local::standard_siov_detpedestal_service
+}
+custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultCollMean:  0
+custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultIndMean:  0
+
+
+#######################################
+
+custom_graphcluster:     @local::standard_graphcluster
+
+END_PROLOG
