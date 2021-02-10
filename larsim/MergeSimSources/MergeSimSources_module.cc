@@ -253,7 +253,7 @@ void sim::MergeSimSources::produce(art::Event & e)
 
     if (fStoreReflected) {
       art::InputTag const input_reflected_label
-        { input_reflected_label.label(), ReflectedLabel };
+        { input_label.label(), ReflectedLabel };
       if(!fUseLitePhotons){
         auto const& input_PhotonCol
           = e.getByLabel<std::vector<sim::SimPhotons>>(input_reflected_label);
