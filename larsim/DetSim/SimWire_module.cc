@@ -410,7 +410,6 @@ namespace detsim {
     std::vector<TComplex> noiseFrequency(fNTicks/2+1, 0.); // noise in frequency space
 
     double pval = 0.;
-    double lofilter = 0.;
     double phase = 0.;
     double rnd[2] = {0.};
 
