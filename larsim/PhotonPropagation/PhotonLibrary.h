@@ -264,7 +264,8 @@ namespace phot {
     static int
     size_t2int(size_t val)
     {
-      return val <= std::numeric_limits<int>::max() ? (int)((ssize_t)val) : -1;
+      constexpr size_t int_max_as_size_t{std::numeric_limits<int>::max()};
+      return val <= int_max_as_size_t ? static_cast<int>(val) : -1;
     }
   };
 
