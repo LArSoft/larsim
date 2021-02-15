@@ -1,0 +1,61 @@
+#include "evdservices_zen.fcl"
+
+process_name: EVD
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  message:      @local::evd_message
+  @table::custom_disp
+  SpaceChargeService:       @local::standard_spacecharge
+  Geometry: {
+     Name: "zeng4"
+     GDML: "zeng4.gdml" 
+     ROOT: "zeng4.gdml"
+     SurfaceY: 0
+     DisableWiresInG4: true
+     SortingParameters: {}
+     service_type: "Geometry"
+  }
+}
+
+# Define the services
+
+#Look at the input files
+source:
+{
+  module_type: RootInput
+  fileNames:  [ "data.root" ]
+  maxEvents:   -1       # Number of events to create
+}
+
+outputs:{}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers: {}
+
+ filters:{}
+
+ analyzers:
+ {
+  evdisp:{module_type: EVD}
+ }
+ 
+ #list the modules for this path, order matters, filters reject all following items
+ evd: [ evdisp ] 
+
+ #end_path are things that do not modify art::Event, includes analyzers 
+ #and output modules. all items here can be run simultaneously
+ end_paths: [evd]  
+}
+
+services.SimulationDrawingOptions.SimChannelLabel:   "elecDrift"
+services.RawDrawingOptions.RawDataLabels:           ["simWire"]
+services.RawDrawingOptions.DrawRawDataOrCalibWires: 0
+services.DetectorPedestalService.DetPedestalRetrievalAlg.DefaultCollMean: 0
+services.DetectorPedestalService.DetPedestalRetrievalAlg.DefaultIndMean: 0
