@@ -7,6 +7,7 @@ standard_pdfastsim_par_ar:
 {
   module_type:           "PDFastSimPAR"
   SimulationLabel:       "IonAndScint"
+  DoFastComponent:       true
   DoSlowComponent:       true
   DoReflectedLight:      false
   IncludePropTime:       true

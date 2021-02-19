@@ -263,6 +263,7 @@ namespace phot {
       using ODP = fhicl::OptionalDelegatedParameter;
 
       fhicl::Atom<art::InputTag> SimulationLabel  { Name("SimulationLabel"),  Comment("SimEnergyDeposit label.") };
+      fhicl::Atom<bool>          DoFastComponent  { Name("DoFastComponent"),  Comment("Simulate slow scintillation light, default true"), true };
       fhicl::Atom<bool>          DoSlowComponent  { Name("DoSlowComponent"),  Comment("Simulate slow scintillation light") };
       fhicl::Atom<bool>          DoReflectedLight { Name("DoReflectedLight"), Comment("Simulate reflected visible light") };
       fhicl::Atom<bool>          IncludePropTime  { Name("IncludePropTime"),  Comment("Simulate light propagation time") };
@@ -392,6 +393,7 @@ namespace phot {
 
     // Module behavior
     art::InputTag simTag;
+    bool fDoFastComponent;
     bool fDoSlowComponent;
     bool fDoReflectedLight;
     bool fIncludePropTime;
@@ -466,6 +468,7 @@ namespace phot {
                                                                                  config.get_PSet(),
                                                                                  "SeedScintTime"))
     , simTag(config().SimulationLabel())
+    , fDoFastComponent(config().DoFastComponent())
     , fDoSlowComponent(config().DoSlowComponent())
     , fDoReflectedLight(config().DoReflectedLight())
     , fIncludePropTime(config().IncludePropTime())
@@ -585,13 +588,15 @@ namespace phot {
       // direct light
       std::map<size_t, int> DetectedNumFast;
       std::map<size_t, int> DetectedNumSlow;
-      if (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent))
+
+      bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
+      if ( needHits ) 
         detectedDirectHits(DetectedNumFast, DetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
 
       // reflected light, if enabled
       std::map<size_t, int> ReflDetectedNumFast;
       std::map<size_t, int> ReflDetectedNumSlow;
-      if (fDoReflectedLight && (nphot_fast > 0 || (nphot_slow > 0 && fDoSlowComponent)))
+      if (fDoReflectedLight && needHits)
         detectedReflecHits(ReflDetectedNumFast, ReflDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
 
       // propagation time
@@ -616,7 +621,7 @@ namespace phot {
 
           // calculate propagation time, does not matter whether fast or slow photon
           transport_time.resize(ndetected_fast + ndetected_slow);
-          if (fIncludePropTime && (ndetected_fast > 0 || (ndetected_slow > 0 && fDoSlowComponent)))
+          if (fIncludePropTime && needHits)
             propagationTime(transport_time, ScintPoint, channel, Reflected);
 
           // SimPhotonsLite case
@@ -624,7 +629,7 @@ namespace phot {
 
             sim::OpDetBacktrackerRecord tmpbtr(channel);
 
-            if (ndetected_fast > 0) {
+            if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
               for (long i = 0; i < n; ++i) {
@@ -661,7 +666,7 @@ namespace phot {
             if (Reflected) photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else photon.Energy = 9.7 * CLHEP::eV; // 128 nm
 
-            if (ndetected_fast > 0) {
+            if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
               for (long i = 0; i < n; ++i) {
