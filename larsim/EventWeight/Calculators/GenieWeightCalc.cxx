@@ -394,13 +394,16 @@ namespace evwgh {
           reweightingSigmas[k][u] = par_sigmas[k] * CLHEP::RandGaussQ::shoot(&engine, 0., 1.);
         }
         else if ( mode.find("pm1sigma") != std::string::npos ) {
-          reweightingSigmas[k][u] = ( u == 0 ? 1. : -1. ); // u == 0 => 1; u == 1 => -1 if pm1sigma is specified
+          // u == 0 => +1*sigma; u == 1 => -1*sigma if pm1sigma is specified
+          reweightingSigmas[k][u] = ( u == 0 ? 1. : -1. ) * par_sigmas.at(k);
         }
         else if ( mode.find("minmax") != std::string::npos ) {
-          reweightingSigmas[k][u] = ( u == 0 ? par_maxes.at(k) : par_mins.at(k) ); // u == 0 => max; u == 1 => min if minmax is specified
+          // u == 0 => max; u == 1 => min if minmax is specified
+          reweightingSigmas[k][u] = ( u == 0 ? par_maxes.at(k) : par_mins.at(k) );
         }
         else if ( mode.find("central_value") != std::string::npos ) {
-          reweightingSigmas[k][u] = 0.; // we'll correct for a modified CV below if needed
+          // We'll correct for a modified CV below if needed
+          reweightingSigmas[k][u] = 0.;
         }
 	else {
 	  reweightingSigmas[k][u] = par_sigmas[k];
@@ -570,8 +573,8 @@ namespace evwgh {
             if ( search != modes_to_use.end() ) {
               if ( search->second != mode ) {
                 auto knob_str = genie::rew::GSyst::AsString( knob );
-                throw cet::exception(__PRETTY_FUNCTION__) << GetName()
-                  << "The GENIE knob " << knob_str << " is incompatible"
+                throw cet::exception(__PRETTY_FUNCTION__) << this->GetName()
+                  << ": the GENIE knob " << knob_str << " is incompatible"
                   << " with others that are already configured";
               }
             }
