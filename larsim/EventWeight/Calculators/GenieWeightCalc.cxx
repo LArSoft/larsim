@@ -203,9 +203,8 @@ namespace {
       }
     }
     else {
-      // TODO: consider changing this to an exception
-      MF_LOG_WARNING("GENIEWeightCalc") << "Ignoring unrecognized GENIE"
-        << " knob " << knob_name;
+      throw cet::exception(__PRETTY_FUNCTION__) << "Encountered unrecognized"
+        "GENIE knob \"" << knob_name << '\"';
       return false;
     }
     return true;
@@ -526,7 +525,7 @@ namespace evwgh {
       // expect the variables to be set in this way (so that differential
       // cross sections can be recomputed). Failing to set them results
       // in inf and NaN weights.
-      // TODO: update evgb::RetrieveGHEP to do this instead.
+      // TODO: maybe update evgb::RetrieveGHEP to handle this instead.
       genie::Interaction* interaction = genie_event->Summary();
       genie::Kinematics* kine_ptr = interaction->KinePtr();
 
