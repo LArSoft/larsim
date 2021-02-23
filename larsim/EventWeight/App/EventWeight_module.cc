@@ -13,7 +13,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

@@ -2,6 +2,7 @@
 //
 // Handles event weights for GENIE systematics studies
 //
+// Updated for merge into larsim develop branch on Feb 22 2021 by Steven Gardiner
 // Heavily rewritten on Dec 9 2019
 //   by Steven Gardiner <gardiner@fnal.gov>
 // Updated by Marco Del Tutto on Feb 18 2017
@@ -23,7 +24,7 @@
 
 #include "CLHEP/Random/RandGaussQ.h"
 
-#include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
 
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
