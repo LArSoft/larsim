@@ -12,11 +12,4 @@ ScintTimeLAr:
     SlowDecayTime:    1600.0         // decay time of slow scintillation
 }
 
-ScintTimeXeDopedLAr:
-{
-    tool_type: ScintTimeXeDopedLAr
-    LogLevel:   1
-}
-
-
 END_PROLOG
