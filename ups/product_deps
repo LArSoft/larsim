@@ -9,7 +9,6 @@ gdmldir product_dir gdml
 #
 product         version
 larg4           v09_03_01
-nug4            v1_06_02
 nugen           v1_11_03
 nurandom        v1_05_02
 nutools         v3_09_02
@@ -18,13 +17,13 @@ larsoft_data    v1_02_01
 cetbuildtools   v7_17_01    -   only_for_build
 end_product_list
 
-qualifier  larg4      nutools    nug4       nugen      nurandom   marley     larsoft_data
-e20:debug  e20:debug  e20:debug  e20:debug  e20:debug  e20:debug  e20:debug  -nq-
-e20:prof   e20:prof   e20:prof   e20:prof   e20:prof   e20:prof   e20:prof   -nq-
-e19:debug  e19:debug  e19:debug  e19:debug  e19:debug  e19:debug  e19:debug  -nq-
-e19:prof   e19:prof   e19:prof   e19:prof   e19:prof   e19:prof   e19:prof   -nq-
-c7:debug   c7:debug   c7:debug   c7:debug   c7:debug   c7:debug   c7:debug   -nq-
-c7:prof	   c7:prof    c7:prof    c7:prof    c7:prof    c7:prof    c7:prof    -nq-
+qualifier  larg4      nutools    nugen      nurandom   marley     larsoft_data
+e20:debug  e20:debug  e20:debug  e20:debug  e20:debug  e20:debug  -nq-
+e20:prof   e20:prof   e20:prof   e20:prof   e20:prof   e20:prof   -nq-
+e19:debug  e19:debug  e19:debug  e19:debug  e19:debug  e19:debug  -nq-
+e19:prof   e19:prof   e19:prof   e19:prof   e19:prof   e19:prof   -nq-
+c7:debug   c7:debug   c7:debug   c7:debug   c7:debug   c7:debug   -nq-
+c7:prof	   c7:prof    c7:prof    c7:prof    c7:prof    c7:prof    -nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
