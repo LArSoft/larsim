@@ -310,26 +310,52 @@ namespace evwgh {
 
     // Calc Config
     const fhicl::ParameterSet& pset = p.get<fhicl::ParameterSet>( GetName() );
-    auto const pars = pset.get< std::vector<std::string> >( "parameter_list" );
-    auto const par_sigmas = pset.get< std::vector<double> >( "parameter_sigma" );
+    auto const pars = pset.get< std::vector<std::string> >( "parameter_list",
+      std::vector<std::string>() );
+    auto const par_sigmas = pset.get< std::vector<double> >( "parameter_sigma",
+      std::vector<double>() );
 
     // Parameter limits (currently only used in minmax mode)
     // TODO: Revisit this. Could be useful for other modes.
-    auto const par_mins = pset.get< std::vector<double> >( "parameter_min", std::vector<double>() );
-    auto const par_maxes = pset.get< std::vector<double> >( "parameter_max", std::vector<double>() );
+    auto const par_mins = pset.get< std::vector<double> >( "parameter_min",
+      std::vector<double>() );
+    auto const par_maxes = pset.get< std::vector<double> >( "parameter_max",
+      std::vector<double>() );
 
     auto const mode = pset.get<std::string>( "mode" );
 
-    if ( pars.size() != par_sigmas.size() ) {
+    bool sigmas_ok = true;
+    std::string array_name_for_exception;
+    if ( mode.find("central_value") == std::string::npos
+      && mode.find("minmax") == std::string::npos )
+    {
+      // For most reweighting modes, make sure that the number 1-sigma values
+      // and the number of reweighting knobs match
+      if ( pars.size() != par_sigmas.size() ) {
+        sigmas_ok = false;
+        array_name_for_exception = "parameter_sigma";
+      }
+    }
+    else if ( mode.find("minmax") != std::string::npos ) {
+      if ( pars.size() != par_mins.size()
+        || pars.size() != par_maxes.size() )
+      {
+        // For "minmax" mode, do the same for both the minimum and maximum
+        // sigma values
+        sigmas_ok = false;
+        array_name_for_exception = "parameter_min and parameter_max";
+      }
+    }
+
+    if ( !sigmas_ok ) {
       throw cet::exception(__PRETTY_FUNCTION__) << GetName()
-        << "::Bad fcl configuration. parameter_list and parameter_sigma"
+        << "::Bad fcl configuration. parameter_list and "
+        << array_name_for_exception
         << " need to have same number of parameters.";
     }
 
     if ( !pars.empty() && !fQuietMode ) MF_LOG_INFO("GENIEWeightCalc") << "Configuring"
       << " GENIE systematic knobs to be varied from the input FHiCL parameter set";
-
-    size_t num_universes = pset.get<size_t>( "number_of_multisims" );
 
     // Convert the list of GENIE knob names from the input FHiCL configuration
     // into a vector of genie::rew::GSyst_t labels
@@ -361,14 +387,24 @@ namespace evwgh {
 
     // If we're working in "pm1sigma" or "minmax" mode, there should only be two
     // universes regardless of user input.
+    size_t num_universes = 0u;
     if ( mode.find("pm1sigma") != std::string::npos
       || mode.find("minmax") != std::string::npos )
     {
       num_universes = 2u;
     }
-    // If we're working in "central_value" mode, only a single universe (with
-    // a tweaked central value) should be used
-    else if ( mode.find("central_value") != std::string::npos ) {
+    else if ( mode.find("multisim") != std::string::npos ) {
+      num_universes = pset.get<size_t>( "number_of_multisims" );
+
+      // Since we're in multisim mode, force retrieval of the random
+      // number seed. If it wasn't set, this will trigger an exception.
+      // We want this check because otherwise the multisim universes
+      // will not be easily reproducible.
+      int dummy_seed = pset.get<int>( "random_seed" );
+    }
+    // If we're working in "central_value" or "default" mode, only a single
+    // universe should be used
+    else {
       num_universes = 1u;
     }
 
@@ -406,6 +442,7 @@ namespace evwgh {
           reweightingSigmas[k][u] = 0.;
         }
 	else {
+          // By default, use the exact sigma value given for each knob
 	  reweightingSigmas[k][u] = par_sigmas[k];
         }
 
@@ -415,8 +452,9 @@ namespace evwgh {
           << reweightingSigmas[k][u];
 
         // Add an offset if the central value for the current knob has been
-        // configured (and is thus probably nonzero). Ignore this for minmax mode
-        // (the limits should be chosen to respect a modified central value)
+        // configured (and is thus probably nonzero). Ignore this for minmax
+        // mode (the limits should be chosen to respect a modified central
+        // value)
         if ( mode.find("minmax") == std::string::npos ) {
           auto iter = gsyst_to_cv_map.find( current_knob );
           if ( iter != gsyst_to_cv_map.end() ) {
@@ -430,7 +468,6 @@ namespace evwgh {
         }
       }
     }
-
 
     // Don't adjust knobs to reflect the tuned CV if this weight calculator
     // should ignore those (as determined by whether it has one of the special

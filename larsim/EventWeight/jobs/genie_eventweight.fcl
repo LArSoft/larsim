@@ -1,26 +1,61 @@
 BEGIN_PROLOG
 
-genie_eventweight:
-{
-  module_type:	"EventWeight"
+genie_eventweight: {
 
-  weight_functions: [ MaCCQE ]
+  module_type: "EventWeight"
 
-  # Throw exception if weight is outside these limits
-  min_weight: 0
-  max_weight: 100
+  genie_module_label: "generator"
 
-  genie_module_label:    generator	
+  genie_central_values: {
+    AhtBY: -1.5
+    BhtBY:  1.0
+  }
+
+  weight_functions: [ pm1sigma_CCQE_example, minmax_CCRES_example,
+    multisim_NCRES_example, default_MFP_example, cv_example
+  ]
 
   # CCQE axial mass for dipole form factor
-  MaCCQE: {
+  pm1sigma_CCQE_example: {
     type: Genie
-    random_seed: 1
     parameter_list: [ "MaCCQE" ] 
     parameter_sigma: [ 1 ] 
     mode: pm1sigma
-    number_of_multisims: 2
   }
-}	
+
+  # Vector and axial masses for CCRES form factors
+  minmax_CCRES_example: {
+    type: Genie
+    parameter_list: [ "MvCCRES", "MaCCRES" ]
+    parameter_min: [ -2, -1 ]
+    parameter_max: [  2,  1 ]
+    mode: minmax
+  }
+
+  # Vector and axial masses for NCRES form factors
+  multisim_NCRES_example: {
+    type: Genie
+    random_seed: 999
+    parameter_list: [ "MvNCRES", "MaNCRES" ]
+    parameter_sigma: [ 1, 1 ]
+    mode: multisim
+    number_of_multisims: 5
+  }
+
+  # Mean free path for nucleons and pions
+  default_MFP_example: {
+    type: Genie
+    parameter_list: [ "MFP_N", "MFP_pi" ]
+    parameter_sigma: [ -1, 1 ]
+    mode: default
+  }
+
+  # Tuned central value example (no extra parameters required)
+  cv_example: {
+    type: Genie
+    mode: central_value
+  }
+
+}
 
 END_PROLOG
