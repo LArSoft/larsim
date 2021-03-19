@@ -401,6 +401,9 @@ namespace evwgh {
       // We want this check because otherwise the multisim universes
       // will not be easily reproducible.
       int dummy_seed = pset.get<int>( "random_seed" );
+      MF_LOG_INFO("GENIEWeightCalc") << "GENIE weight calculator "
+        << this->GetName() << " will generate " << num_universes
+        << " multisim universes with random seed " << dummy_seed;
     }
     // If we're working in "central_value" or "default" mode, only a single
     // universe should be used
