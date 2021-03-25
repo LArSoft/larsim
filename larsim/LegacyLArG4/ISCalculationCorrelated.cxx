@@ -15,6 +15,8 @@
 //            of hard-coding it into this algorithm
 //
 // \author  W. Foreman, May 2020
+// Modified: Adding corrections for low electric field (LArQL model)                                                            
+// Mar 2021 by L. Paulucci and F. Marinho 
 ////////////////////////////////////////////////////////////////////////
 
 #include "Geant4/G4EmSaturation.hh"
@@ -58,7 +60,14 @@ namespace larg4 {
     fRecombk = lgpHandle->Recombk() / density;
     fModBoxA = lgpHandle->ModBoxA();
     fModBoxB = lgpHandle->ModBoxB() / density;
+    fLarqlChi0A = lgpHandle->LarqlChi0A();
+    fLarqlChi0B = lgpHandle->LarqlChi0B();
+    fLarqlChi0C = lgpHandle->LarqlChi0C();
+    fLarqlChi0D = lgpHandle->LarqlChi0D();
+    fLarqlAlpha = lgpHandle->LarqlAlpha();
+    fLarqlBeta  = lgpHandle->LarqlBeta();
     fUseModBoxRecomb = lgpHandle->UseModBoxRecomb();
+    fUseModLarqlRecomb = lgpHandle->UseModLarqlRecomb();
 
     // determine the step size using the voxel sizes
     art::ServiceHandle<sim::LArVoxelCalculator const> lvc;
@@ -124,6 +133,10 @@ namespace larg4 {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
+    if(fUseModLarqlRecomb){ //Use corrections from LArQL model                                                             
+      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF                                                  
+    }
+
     // using this recombination, calculate number of ionization electrons
     fNumIonElectrons = (fEnergyDeposit / fWion) * recomb;
 
@@ -140,6 +153,14 @@ namespace larg4 {
     MF_LOG_DEBUG("ISCalculationCorrelated") << "number photons: " << fNumScintPhotons;
 
     return;
+  }
+
+  double ISCalculationCorrelated::chi0(double dEdx){ //function for correction at low EF                                              
+    return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
+  }
+
+  double ISCalculationCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF                                  
+    return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 
 } // namespace

@@ -9,6 +9,8 @@
 // Input: 'sim::SimEnergyDeposit'
 // Output: num of Photons and Electrons
 // May 2020 by W Foreman
+// Modified: Adding corrections for low electric field (LArQL model)
+// Jun 2020 by L. Paulucci and F. Marinho
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef IS_ISCALCCORRELATED_H
@@ -48,7 +50,14 @@ namespace larg4 {
     double fRecombk;          ///< from LArG4Parameters service
     double fModBoxA;          ///< from LArG4Parameters service
     double fModBoxB;          ///< from LArG4Parameters service
+    double fLarqlChi0A;       ///< from LArG4Parameters service
+    double fLarqlChi0B;       ///< from LArG4Parameters service
+    double fLarqlChi0C;       ///< from LArG4Parameters service
+    double fLarqlChi0D;       ///< from LArG4Parameters service
+    double fLarqlAlpha;       ///< from LArG4Parameters service
+    double fLarqlBeta;        ///< from LArG4Parameters service
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
+    bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
 
     const spacecharge::SpaceCharge* fSCE;
     const detinfo::LArProperties* fLArProp;
@@ -56,6 +65,8 @@ namespace larg4 {
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
+    double chi0(double dEdx);
+    double fcorr(double EF, double dEdx);
   };
 }
 #endif

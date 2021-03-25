@@ -9,6 +9,8 @@
 // Input: 'sim::SimEnergyDeposit'
 // Output: num of Photons and Electrons
 // May 2020 by W Foreman
+// Modified: Adding corrections for low electric field (LArQL model)                                                            
+// Jun 2020 by L. Paulucci and F. Marinho 
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
@@ -32,6 +34,13 @@ namespace larg4 {
     fModBoxA = LArG4PropHandle->ModBoxA();
     fModBoxB = LArG4PropHandle->ModBoxB() / detProp.Density(detProp.Temperature());
     fUseModBoxRecomb = (bool)LArG4PropHandle->UseModBoxRecomb();
+    fUseModLarqlRecomb  = (bool)LArG4PropHandle->UseModLarqlRecomb();
+    fLarqlChi0A = LArG4PropHandle->LarqlChi0A();
+    fLarqlChi0B = LArG4PropHandle->LarqlChi0B();
+    fLarqlChi0C = LArG4PropHandle->LarqlChi0C();
+    fLarqlChi0D = LArG4PropHandle->LarqlChi0D();
+    fLarqlAlpha = LArG4PropHandle->LarqlAlpha();
+    fLarqlBeta  = LArG4PropHandle->LarqlBeta();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
     // ionization work function
@@ -71,6 +80,10 @@ namespace larg4 {
     }
     else {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
+    }
+
+    if(fUseModLarqlRecomb){ //Use corrections from LArQL model                                                             
+      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF                                                  
     }
 
     // using this recombination, calculate number of ionization electrons
@@ -123,6 +136,14 @@ namespace larg4 {
     if (!fSCE->EnableSimEfieldSCE()) return efield;
     auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+  }
+
+  double ISCalcCorrelated::chi0(double dEdx){ //function for correction at low EF                                              
+    return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
+  }
+
+  double ISCalcCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF                                  
+    return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 
 } // namespace

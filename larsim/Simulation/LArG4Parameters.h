@@ -43,7 +43,14 @@ namespace sim {
     double Recombk()                                          const { return fRecombk;                }
     double ModBoxA()                                          const { return fModBoxA;                }
     double ModBoxB()                                          const { return fModBoxB;                }
+    double LarqlChi0A()                                       const { return fLarqlChi0A;             }
+    double LarqlChi0B()                                       const { return fLarqlChi0B;             }
+    double LarqlChi0C()                                       const { return fLarqlChi0C;             }
+    double LarqlChi0D()                                       const { return fLarqlChi0D;             }
+    double LarqlAlpha()                                       const { return fLarqlAlpha;             }
+    double LarqlBeta()                                        const { return fLarqlBeta;              }
     bool   UseModBoxRecomb()                                  const { return fUseModBoxRecomb;        }
+    bool   UseModLarqlRecomb()                                const { return fUseModLarqlRecomb;      }
     double GeVToElectrons()                                   const { return util::kGeVToElectrons;   }
     double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
     double TransverseDiffusion()                              const { return fTransverseDiffusion;    }
@@ -98,7 +105,14 @@ namespace sim {
     double const             fRecombk;               ///< Possibly override the Recombk parameter
     double const             fModBoxA;               ///< Possibly override the ModBoxA parameter
     double const             fModBoxB;               ///< Possibly override the ModBoxB parameter
+    double const             fLarqlChi0A;            ///< Possibly override the LarqlChi0A parameter
+    double const             fLarqlChi0B;            ///< Possibly override the LarqlChi0B parameter
+    double const             fLarqlChi0C;            ///< Possibly override the LarqlChi0C parameter
+    double const             fLarqlChi0D;            ///< Possibly override the LarqlChi0D parameter
+    double const             fLarqlAlpha;            ///< Possibly override the LarqlAlpha parameter
+    double const             fLarqlBeta;             ///< Possibly override the LarqlBeta parameter
     bool const               fUseModBoxRecomb;       ///< Use Modified Box model recombination instead of Birks
+    bool const               fUseModLarqlRecomb;     ///< Use LArQL model recombination correction (dependence on EF)
     std::string const        fIonAndScintCalculator; ///< Name of algorithm to use to calculate the number of
                                                      ///< ionization electrons and scintillation photons
                                                      ///< for each G4 step, used by

@@ -47,7 +47,14 @@ namespace sim {
     , fRecombk                 {pset.get< double                   >("Recombk",util::kRecombk)}
     , fModBoxA                 {pset.get< double                   >("ModBoxA",util::kModBoxA)}
     , fModBoxB                 {pset.get< double                   >("ModBoxB",util::kModBoxB)}
+    , fLarqlChi0A              {pset.get< double                   >("LarqlChi0A"            )}
+    , fLarqlChi0B              {pset.get< double                   >("LarqlChi0B"            )}
+    , fLarqlChi0C              {pset.get< double                   >("LarqlChi0C"            )}
+    , fLarqlChi0D              {pset.get< double                   >("LarqlChi0D"            )}
+    , fLarqlAlpha              {pset.get< double                   >("LarqlAlpha"            )}
+    , fLarqlBeta               {pset.get< double                   >("LarqlBeta"             )}
     , fUseModBoxRecomb         {pset.get< bool                     >("UseModBoxRecomb"         )}
+    , fUseModLarqlRecomb       {pset.get< bool                     >("UseModLarqlRecomb"       )} 
     , fIonAndScintCalculator   {pset.get< std::string              >("IonAndScintCalculator", "Separate")}
     , fOpticalParamVolumes     {pset.get< std::vector<std::string> >("OpticalParamVolumes"     )}
     , fOpticalParamModels      {pset.get< std::vector<std::string> >("OpticalParamModels"      )}

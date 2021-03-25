@@ -11,6 +11,8 @@
 //        services.LArG4Parameters.IonAndScintCalculator: "Correlated"
 //
 // \author wforeman @ iit.edu
+// Modified: Adding corrections for low electric field (LArQL model)
+// Mar 2021 by L. Paulucci and F. Marinho
 ////////////////////////////////////////////////////////////////////////
 #ifndef LARG4_ISCALCULATIONCORRELATED_H
 #define LARG4_ISCALCULATIONCORRELATED_H
@@ -47,7 +49,17 @@ namespace larg4 {
     double fRecombk;       ///< from LArG4Parameters service
     double fModBoxA;       ///< from LArG4Parameters service
     double fModBoxB;       ///< from LArG4Parameters service
-    bool fUseModBoxRecomb; ///< from LArG4Parameters service
+    double fLarqlChi0A;       ///< from LArG4Parameters service
+    double fLarqlChi0B;       ///< from LArG4Parameters service
+    double fLarqlChi0C;       ///< from LArG4Parameters service
+    double fLarqlChi0D;       ///< from LArG4Parameters service
+    double fLarqlAlpha;       ///< from LArG4Parameters service
+    double fLarqlBeta;        ///< from LArG4Parameters service
+    bool fUseModBoxRecomb;    ///< from LArG4Parameters service
+    bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
+
+    double chi0(double dEdx);
+    double fcorr(double EF, double dEdx);
   };
 }
 #endif // LARG4_ISCALCULATIONCORRELATED_H
