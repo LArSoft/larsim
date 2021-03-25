@@ -15,8 +15,8 @@
 //            of hard-coding it into this algorithm
 //
 // \author  W. Foreman, May 2020
-// Modified: Adding corrections for low electric field (LArQL model)                                                            
-// Mar 2021 by L. Paulucci and F. Marinho 
+// Modified: Adding corrections for low electric field (LArQL model)
+// Mar 2021 by L. Paulucci and F. Marinho
 ////////////////////////////////////////////////////////////////////////
 
 #include "Geant4/G4EmSaturation.hh"
@@ -133,8 +133,8 @@ namespace larg4 {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
-    if(fUseModLarqlRecomb){ //Use corrections from LArQL model                                                             
-      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF                                                  
+    if(fUseModLarqlRecomb){ //Use corrections from LArQL model
+      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF
     }
 
     // using this recombination, calculate number of ionization electrons
@@ -155,11 +155,11 @@ namespace larg4 {
     return;
   }
 
-  double ISCalculationCorrelated::chi0(double dEdx){ //function for correction at low EF                                              
+  double ISCalculationCorrelated::chi0(double dEdx){ //function for correction at low EF
     return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
   }
 
-  double ISCalculationCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF                                  
+  double ISCalculationCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF
     return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 

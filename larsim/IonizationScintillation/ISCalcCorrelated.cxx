@@ -9,8 +9,8 @@
 // Input: 'sim::SimEnergyDeposit'
 // Output: num of Photons and Electrons
 // May 2020 by W Foreman
-// Modified: Adding corrections for low electric field (LArQL model)                                                            
-// Jun 2020 by L. Paulucci and F. Marinho 
+// Modified: Adding corrections for low electric field (LArQL model)
+// Jun 2020 by L. Paulucci and F. Marinho
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
@@ -82,8 +82,8 @@ namespace larg4 {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
-    if(fUseModLarqlRecomb){ //Use corrections from LArQL model                                                             
-      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF                                                  
+    if(fUseModLarqlRecomb){ //Use corrections from LArQL model
+      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF
     }
 
     // using this recombination, calculate number of ionization electrons
@@ -138,11 +138,11 @@ namespace larg4 {
     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
   }
 
-  double ISCalcCorrelated::chi0(double dEdx){ //function for correction at low EF                                              
+  double ISCalcCorrelated::chi0(double dEdx){ //function for correction at low EF
     return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
   }
 
-  double ISCalcCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF                                  
+  double ISCalcCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF
     return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 
