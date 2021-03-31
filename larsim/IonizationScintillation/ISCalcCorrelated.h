@@ -65,8 +65,8 @@ namespace larg4 {
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
-    double chi0(double dEdx);
-    double fcorr(double EF, double dEdx);
+    double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
+    double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
   };
 }
 #endif

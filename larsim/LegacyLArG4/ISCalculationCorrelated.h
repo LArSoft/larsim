@@ -58,8 +58,8 @@ namespace larg4 {
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
 
-    double chi0(double dEdx);
-    double fcorr(double EF, double dEdx);
+    double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
+    double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
   };
 }
 #endif // LARG4_ISCALCULATIONCORRELATED_H

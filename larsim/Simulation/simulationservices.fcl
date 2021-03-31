@@ -43,7 +43,7 @@ standard_largeantparameters:
  ModBoxA: 0.930
  ModBoxB: 0.212
 
- #* Recombination factor coefficients for LArQL can be found in https://drive.google.com/file/d/1zG5lLqMxACcvuJqQXhLnQ8Cnmz2YEZPU/view?usp=sharing
+ #* Recombination factor coefficients for LArQL can be found in https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/LArQL_algorithm
  #* * @f$ dE/dx @f$ is given by the energy deposition in MeV/cm
  #* * electric field: @f$ E @f$ in kV/cm
  LarqlChi0A: 0.00338427

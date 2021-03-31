@@ -134,7 +134,7 @@ namespace larg4 {
     }
 
     if(fUseModLarqlRecomb){ //Use corrections from LArQL model
-      recomb += chi0(dEdx)*fcorr(EFieldStep, dEdx); //Correction for low EF
+      recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
     // using this recombination, calculate number of ionization electrons
@@ -155,11 +155,11 @@ namespace larg4 {
     return;
   }
 
-  double ISCalculationCorrelated::chi0(double dEdx){ //function for correction at low EF
+  double ISCalculationCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
     return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
   }
 
-  double ISCalculationCorrelated::fcorr(double EF, double dEdx){ //function for correction at low EF
+  double ISCalculationCorrelated::FieldCorrection(double const EF, double const dEdx){ //LArQL f_corr function = correction factor for electric field dependence
     return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 
