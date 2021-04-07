@@ -109,7 +109,7 @@ namespace evwgh {
       Weight_t* winfo=new Weight_t();
       winfo->fWeightCalcType=func_type;
       winfo->fWeightCalc=wcalc;
-      winfo->fNmultisims=ps_func.get<int>("number_of_multisims");
+      winfo->fNmultisims=ps_func.get<int>("number_of_multisims", 0);
 
       fWeightCalcMap.emplace(func, winfo);
 }
