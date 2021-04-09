@@ -115,18 +115,21 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
+    /// Ignore the marley_parameters FHiCL table during the validation
+    /// step (MARLEY will take care of that by itself)
+    struct KeysToIgnore {
+      std::set< std::string > operator()()
+      {
+        return { "marley_parameters" };
+      }
+    };
+
     /// Collection of configuration parameters for the module
     struct Config {
 
       fhicl::Table<evgen::ActiveVolumeVertexSampler::Config> vertex_ {
         Name("vertex"),
         Comment("Configuration for selecting the vertex location(s)")
-      };
-
-      fhicl::Table<evgen::MARLEYHelper::Config> marley_parameters_ {
-        Name("marley_parameters"),
-        Comment("Configuration for the MARLEY generator. Note that for"
-          " MARLEYTimeGen, the source configuration given here is ignored.")
       };
 
       fhicl::Atom<std::string> module_type_ {
@@ -220,7 +223,7 @@ class evgen::MarleyTimeGen : public art::EDProducer {
     }; // struct Config
 
     // Type to enable FHiCL parameter validation by art
-    using Parameters = art::EDProducer::Table<Config>;
+    using Parameters = art::EDProducer::Table<Config, KeysToIgnore>;
 
     // @brief Configuration-checking constructor
     explicit MarleyTimeGen(const Parameters& p);
@@ -260,11 +263,11 @@ class evgen::MarleyTimeGen : public art::EDProducer {
         /// @details This function helps us to be able to sample time bins
         /// with a std::discrete_distribution using the bin luminosities
         /// without redundnant storage.
-        template<typename It> static marley::IteratorToMember<It,
-          FitParameters, double> make_luminosity_iterator(It it)
+        template<typename It> static marley::IteratorToMember<It, double>
+          make_luminosity_iterator(It it)
         {
-          return marley::IteratorToMember<It, FitParameters,
-            double>(it, &FitParameters::fLuminosity);
+          return marley::IteratorToMember<It, double>(
+            it, &FitParameters::fLuminosity );
         }
 
       protected:
@@ -335,10 +338,10 @@ class evgen::MarleyTimeGen : public art::EDProducer {
         /// @param iterator An iterator to a TimeFit object that will be
         /// converted
         template<typename It> static marley::IteratorToMember<It,
-          TimeFit, FitParameters> make_FitParameters_iterator(int pdg_code,
+          FitParameters> make_FitParameters_iterator(int pdg_code,
           It iterator)
         {
-          return marley::IteratorToMember<It, TimeFit, FitParameters>(
+          return marley::IteratorToMember<It, FitParameters>(
             iterator, GetFitParametersMemberPointer(pdg_code) );
         }
 
@@ -523,8 +526,8 @@ class evgen::MarleyTimeGen : public art::EDProducer {
 
 //------------------------------------------------------------------------------
 evgen::MarleyTimeGen::MarleyTimeGen(const Parameters& p)
-  : EDProducer{p}, fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0),
-  fEventNumber(0), fTNu(0.), fFluxAveragedCrossSection(0.)
+  : EDProducer{ p.get_PSet() }, fEvent(new marley::Event), fRunNumber(0),
+  fSubRunNumber(0), fEventNumber(0), fTNu(0.), fFluxAveragedCrossSection(0.)
 {
   // Configure the module (including MARLEY itself) using the FHiCL parameters
   this->reconfigure(p);
@@ -777,8 +780,10 @@ void evgen::MarleyTimeGen::reconfigure(const Parameters& p)
     p().vertex_, *seed_service, *geom_service, "MARLEY_Vertex_Sampler");
 
   // Create a new marley::Generator object based on the current configuration
-  fMarleyHelper = std::make_unique<MARLEYHelper>(p().marley_parameters_,
-    *seed_service, "MARLEY");
+  const fhicl::ParameterSet marley_pset = p.get_PSet()
+    .get< fhicl::ParameterSet >( "marley_parameters" );
+  fMarleyHelper = std::make_unique<MARLEYHelper>( marley_pset,
+    *seed_service, "MARLEY" );
 
   // Get the number of neutrino vertices per event from the FHiCL parameters
   fNeutrinosPerEvent = p().nu_per_event_();

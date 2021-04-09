@@ -43,17 +43,21 @@ class evgen::MarleyGen : public art::EDProducer {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
+    /// Ignore the marley_parameters FHiCL table during the validation
+    /// step (MARLEY will take care of that by itself)
+    struct KeysToIgnore {
+      std::set< std::string > operator()()
+      {
+        return { "marley_parameters" };
+      }
+    };
+
     /// Collection of configuration parameters for the module
     struct Config {
 
       fhicl::Table<evgen::ActiveVolumeVertexSampler::Config> vertex_ {
         Name("vertex"),
         Comment("Configuration for selecting the vertex location(s)")
-      };
-
-      fhicl::Table<evgen::MARLEYHelper::Config> marley_parameters_ {
-        Name("marley_parameters"),
-        Comment("Configuration for the MARLEY generator")
       };
 
       fhicl::Atom<std::string> module_type_ {
@@ -65,7 +69,7 @@ class evgen::MarleyGen : public art::EDProducer {
     }; // struct Config
 
     // Type to enable FHiCL parameter validation by art
-    using Parameters = art::EDProducer::Table<Config>;
+    using Parameters = art::EDProducer::Table<Config, KeysToIgnore>;
 
     // Configuration-checking constructors
     explicit MarleyGen(const Parameters& p);
@@ -98,11 +102,11 @@ class evgen::MarleyGen : public art::EDProducer {
 
 //------------------------------------------------------------------------------
 evgen::MarleyGen::MarleyGen(const Parameters& p)
-  : EDProducer{p},
+  : EDProducer{ p.get_PSet() },
     fEvent(new marley::Event), fRunNumber(0), fSubRunNumber(0), fEventNumber(0)
 {
   // Configure the module (including MARLEY itself) using the FHiCL parameters
-  this->reconfigure(p);
+  this->reconfigure( p );
 
   // Create a ROOT TTree using the TFileService that will store the MARLEY
   // event objects (useful for debugging purposes)
@@ -169,8 +173,10 @@ void evgen::MarleyGen::reconfigure(const Parameters& p)
     p().vertex_, *seed_service, *geom_service, "MARLEY_Vertex_Sampler");
 
   // Create a new marley::Generator object based on the current configuration
-  fMarleyHelper = std::make_unique<MARLEYHelper>(p().marley_parameters_,
-    *seed_service, "MARLEY");
+  fhicl::ParameterSet marley_pset = p.get_PSet().get< fhicl::ParameterSet >(
+    "marley_parameters" );
+  fMarleyHelper = std::make_unique<MARLEYHelper>( marley_pset,
+    *seed_service, "MARLEY" );
 }
 
 DEFINE_ART_MODULE(evgen::MarleyGen)

@@ -52,26 +52,19 @@ standard_marley:
     #seed: 12345
 
     # Incident neutrino direction 3-vector [ x, y, z ]
-    direction: [ 0., 0., 1. ]
+    direction: {
+      x: 0.0
+      y: 0.0
+      z: 1.0
+    }
 
     # The user must define at least one reaction
     # by passing MARLEY the name of a matrix element
-    # data file. Two are currently available, both
+    # data file. Three are currently available
     # for the reaction ve + 40Ar --> e- + 40K*.
-    # The 2009 version uses an (p,n) scattering
-    # measurement for the experimental matrix elements,
-    # while the 1998 version uses a 40Ti beta decay
-    # measurement.
     reactions: [ "ve40ArCC_Bhattacharya2009.react" ]
     #reactions: [ "ve40ArCC_Bhattacharya1998.react" ]
     #reactions: [ "ve40ArCC_Liu1998.react" ]
-
-    # Nuclear structure (discrete levels and gamma-ray
-    # branching ratios) data files in the TALYS format
-    # may be specified here. The recommended data
-    # files are z019, z018, and z017 from TALYS-1.6,
-    # which are included with MARLEY v0.9.5.
-    structure: [ "z019", "z018", "z017" ]
 
     # Examples of all currently-allowed MARLEY neutrino
     # sources are given below. Only one of these FHiCL tables

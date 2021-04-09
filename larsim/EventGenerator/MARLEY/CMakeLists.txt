@@ -14,6 +14,7 @@ art_make(LIB_LIBRARIES
            ROOT::Geom
            ROOT::Physics
            ${ART_UTILITIES}
+           ${FHICLCPP}
          MODULE_LIBRARIES
            larsim_EventGenerator_MARLEY
            larcoreobj_SummaryData
