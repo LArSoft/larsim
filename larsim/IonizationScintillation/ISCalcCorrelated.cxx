@@ -92,8 +92,7 @@ namespace larg4 {
     }
 
 
-    std::cout<<"Efield= "<<EFieldStep<<std::endl;
-    std::cout<<"recomb= "<<recomb<<std::endl;
+   
 
     // using this recombination, calculate number of ionization electrons
     double const num_electrons = (energy_deposit / fWion) * recomb;
