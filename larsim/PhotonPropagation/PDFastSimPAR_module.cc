@@ -58,6 +58,8 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 
+#include "larsim/IonizationScintillation/ISTPC.h"
+
 // Random numbers
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -252,7 +254,7 @@ namespace {
 } // namespace
 
 namespace phot {
-  class PDFastSimPAR : public art::EDProducer {
+  class PDFastSimPAR : public larg4::ISTPC, public art::EDProducer {
   public:
 
   // Define the fhicl configuration 
@@ -370,7 +372,7 @@ namespace phot {
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
-    std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+    //std::vector<geo::BoxBoundedGeo> fActiveVolumes;
 
     // Optical detector properties for semi-analytic hits
     double fradius;
@@ -383,9 +385,10 @@ namespace phot {
 
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
-    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
+    
+    //bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
 
-    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
+    //static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
 
     //////////////////////
     // Input Parameters //
@@ -763,7 +766,7 @@ namespace phot {
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
-    fActiveVolumes = extractActiveVolumes(geom);
+    //fActiveVolumes = extractActiveVolumes(geom);
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
@@ -1252,13 +1255,6 @@ namespace phot {
       return false;
     }
     return true;
-  }
-
-  bool
-  PDFastSimPAR::isScintInActiveVolume(geo::Point_t const& ScintPoint)
-  {
-    //semi-analytic approach only works in the active volume
-    return fActiveVolumes[0].ContainsPosition(ScintPoint);
   }
 
   //......................................................................
@@ -1778,27 +1774,6 @@ namespace phot {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  std::vector<geo::BoxBoundedGeo>
-  PDFastSimPAR::extractActiveVolumes(geo::GeometryCore const& geom)
-  {
-    std::vector<geo::BoxBoundedGeo> activeVolumes;
-    activeVolumes.reserve(geom.Ncryostats());
-
-    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
-
-      // can't use it default-constructed since it would always include origin
-      geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
-
-      for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
-        box.ExtendToInclude(TPC.ActiveBoundingBox());
-
-      activeVolumes.push_back(std::move(box));
-
-    } // for cryostats
-
-    return activeVolumes;
-  } // PDFastSimPAR::extractActiveVolumes()
 
   // ---------------------------------------------------------------------------
 
