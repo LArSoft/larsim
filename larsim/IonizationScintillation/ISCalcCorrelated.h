@@ -17,6 +17,7 @@
 #define IS_ISCALCCORRELATED_H
 
 #include "larsim/IonizationScintillation/ISCalc.h"
+#include "larsim/IonizationScintillation/ISTPC.h"
 
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -31,7 +32,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace larg4 {
-  class ISCalcCorrelated : public ISCalc {
+  class ISCalcCorrelated : public ISTPC, public ISCalc {
   public:
     ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
 

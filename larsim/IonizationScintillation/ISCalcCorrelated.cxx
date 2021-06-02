@@ -65,6 +65,9 @@ namespace larg4 {
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0.;
 
+    //calculate recombination survival fraction value inside, otherwise zero
+
+    if(EFieldStep > 0) {
     // Guard against spurious values of dE/dx. Note: assumes density of LAr
     if (dEdx < 1.) dEdx = 1.;
 
@@ -82,9 +85,15 @@ namespace larg4 {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
+    }//Efield
+
     if(fUseModLarqlRecomb){ //Use corrections from LArQL model
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
+
+
+    std::cout<<"Efield= "<<EFieldStep<<std::endl;
+    std::cout<<"recomb= "<<recomb<<std::endl;
 
     // using this recombination, calculate number of ionization electrons
     double const num_electrons = (energy_deposit / fWion) * recomb;
@@ -130,13 +139,22 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
-  {
-    if (!fSCE->EnableSimEfieldSCE()) return efield;
-    auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-    return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
-  }
+   double
+   ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+   {
+     //electric field outside active volume set to zero                                                                                                                                                      
+     if(isScintInActiveVolume(edep.MidPoint())==false) {
+       efield = 0.0;
+       return efield;
+     }
+     else{ //electric field in active volume                                                                                                                                                                 
+       if (!fSCE->EnableSimEfieldSCE()) return efield;
+       auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+       return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+     }
+   }
+
+
 
   double ISCalcCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
     return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
