@@ -44,9 +44,6 @@
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 // LArSoft libraries
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
@@ -372,7 +369,6 @@ namespace phot {
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
-    //std::vector<geo::BoxBoundedGeo> fActiveVolumes;
 
     // Optical detector properties for semi-analytic hits
     double fradius;
@@ -386,9 +382,6 @@ namespace phot {
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     
-    //bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
-
-    //static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
 
     //////////////////////
     // Input Parameters //
@@ -766,7 +759,6 @@ namespace phot {
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
-    //fActiveVolumes = extractActiveVolumes(geom);
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
