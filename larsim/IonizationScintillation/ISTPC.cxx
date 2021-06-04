@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////////////////////                                                           
+//Class: ISTPC                                                                                                                     
+//File: ISTPC.h and ISTPC.cxx                                                                                                      
+//Description: Class including common functions needed for using the                                                               
+//Hybrid Model for Photon Propagation                                                                                              
+//UGR, 2021                                                                                                                        
+//////////////////////////////////////////////////////////////////////// 
+
+
+
 #include "larsim/IonizationScintillation/ISTPC.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 
@@ -20,16 +30,15 @@ namespace larg4 {
   }
 
 
-  //---------------------------------------
+  //---------------------------------------------------------------------------- 
 
 
  bool
  ISTPC::isScintInActiveVolume(geo::Point_t const& ScintPoint)
- {
-   //semi-analytic approach only works in the active volume                             
+ {       
    return fActiveVolumes[0].ContainsPosition(ScintPoint);
  }
-//----------------------------------------------------------------------------                                   
+  //----------------------------------------------------------------------------                                 
 
 
                                                                                                                  
