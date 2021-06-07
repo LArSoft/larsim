@@ -1,4 +1,4 @@
-include_directories ( $ENV{GENIE_INC}/GENIE )
+include_directories ( ${GENIE_INC}/GENIE )
 
 art_make(MODULE_LIBRARIES
          lardataalg_MCDumpers
@@ -14,7 +14,7 @@ art_make(MODULE_LIBRARIES
          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
          art_Persistency_Provenance
          ${MF_MESSAGELOGGER}
-         ${CLHEP}
+         ${CLHEP_LIBRARIES}
          ${GENIE_LIB_LIST}
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
          ROOT::EG

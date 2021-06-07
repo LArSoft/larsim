@@ -6,7 +6,7 @@ art_make(
            cetlib
            cetlib_except
            ${FHICLCPP}
-           ${CLHEP}
+           ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::Hist
            ROOT::Physics
@@ -21,7 +21,7 @@ art_make(
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${CLHEP}
+           ${CLHEP_LIBRARIES}
            ${MF_MESSAGELOGGER}
            ROOT::Core
            ROOT::EG

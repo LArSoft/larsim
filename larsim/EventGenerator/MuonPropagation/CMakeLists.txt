@@ -9,7 +9,7 @@ art_make(MODULE_LIBRARIES
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${MF_MESSAGELOGGER}
-           ${CLHEP}
+           ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::EG
            ROOT::Hist

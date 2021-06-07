@@ -15,7 +15,7 @@ art_make(LIB_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${CLHEP}
+           ${CLHEP_LIBRARIES}
            ${MF_MESSAGELOGGER}
            ROOT::Core
            ROOT::Tree

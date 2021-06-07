@@ -1,5 +1,8 @@
+
 # for c2: the problem is in fhiclcpp/types/detail/Sequence.icc
-cet_add_compiler_flags( CXX -Wno-missing-braces )
+#cet_add_compiler_flags( CXX -Wno-missing-braces )
+
+include_directories ( ${MARLEY_INC} )
 
 art_make(LIB_LIBRARIES
            larcorealg_Geometry

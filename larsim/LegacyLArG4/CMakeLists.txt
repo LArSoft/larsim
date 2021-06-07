@@ -23,19 +23,20 @@ art_make(LIB_LIBRARIES
            ROOT::Physics
            ROOT::Geom
            ROOT::MathCore
-           ${CLHEP}
-           ${G4DIGITS_HITS}
-           ${G4EVENT}
-           ${G4GEOMETRY}
-           ${G4GLOBAL}
-           ${G4GRAPHICS_REPS}
-           ${G4MATERIALS}
-           ${G4INTERCOMS}
-           ${G4PARTICLES}
-           ${G4PHYSICSLISTS}
-           ${G4PROCESSES}
-           ${G4TRACK}
-           ${G4RUN}
+           ${CLHEP_LIBRARIES}
+           G4digits_hits
+           G4event
+           G4geometry
+           G4global
+           G4graphics_reps
+           G4materials
+           G4intercoms
+           G4particles
+           G4physicslists
+           G4processes
+           G4track
+           G4run
+
          MODULE_LIBRARIES
            larsim_LegacyLArG4
            larsim_MCCheater_ParticleInventoryService_service

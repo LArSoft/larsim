@@ -9,7 +9,7 @@ art_make(NO_PLUGINS
     cetlib
     cetlib_except
     fhiclcpp
-    ${CLHEP}
+    ${CLHEP_LIBRARIES}
     ${ART_UTILITIES}
   )
 
