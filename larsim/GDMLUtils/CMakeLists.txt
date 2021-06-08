@@ -3,7 +3,7 @@ include_directories($ENV{XERCES_C_INC})
 
 art_make_exec(NAME simplifyGDML
               LIBRARIES
-              ${G4GLOBAL}
-              ${G4PERSISTENCY}
-              ${G4GEOMETRY}
+              Geant4::G4global
+              Geant4::G4persistency
+              Geant4::G4geometry
               ${XERCESC})
