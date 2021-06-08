@@ -8,8 +8,8 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                        canvas
-                       ${MF_MESSAGELOGGER}
-                       ${FHICLCPP}
+                       messagefacility::MFMessageLogger
+                       fhiclcpp::fhiclcpp fhiclcpp::types
                        ${CLHEP_LIBRARIES}
                        cetlib_except
                        ROOT::EG
@@ -29,7 +29,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        larcore_Geometry_Geometry_service
                        ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                       ${MF_MESSAGELOGGER}
+                       messagefacility::MFMessageLogger
                        ROOT::GenVector
           MODULE_LIBRARIES larsim_PhotonPropagation
                         larsim_LegacyLArG4
@@ -45,7 +45,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
                         ${ART_ROOT_IO_TFILE_SUPPORT}
                         ROOT::Core
-                        ${MF_MESSAGELOGGER}
+                        messagefacility::MFMessageLogger
                         nurandom_RandomUtils_NuRandomService_service
                         art_Persistency_Provenance
                         ${CLHEP_LIBRARIES}

@@ -7,14 +7,14 @@ art_make(LIB_LIBRARIES
            lardataobj_MCBase
            canvas
            cetlib_except
-           ${MF_MESSAGELOGGER}
-           ${FHICLCPP}
+           messagefacility::MFMessageLogger
+           fhiclcpp::fhiclcpp fhiclcpp::types
            ROOT::Core
            ROOT::Physics
            ${ART_UTILITIES}
          MODULE_LIBRARIES
            larsim_MCSTReco
-           ${MF_MESSAGELOGGER}
+           messagefacility::MFMessageLogger
            ROOT::Core
            ROOT::Physics
          )

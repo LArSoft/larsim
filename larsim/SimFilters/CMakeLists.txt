@@ -3,7 +3,7 @@ art_make(MODULE_LIBRARIES
          larsim_MCCheater_ParticleInventoryService_service
          nusimdata_SimulationBase
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${MF_MESSAGELOGGER}
+         messagefacility::MFMessageLogger
          ROOT::Core
          ROOT::Physics)
 

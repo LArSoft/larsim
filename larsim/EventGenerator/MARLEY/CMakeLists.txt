@@ -10,14 +10,14 @@ art_make(LIB_LIBRARIES
            nusimdata_SimulationBase
            ${MARLEY}
            ${MARLEY_ROOT}
-           ${MF_MESSAGELOGGER}
+           messagefacility::MFMessageLogger
            cetlib
            cetlib_except
            ROOT::Core
            ROOT::Geom
            ROOT::Physics
            ${ART_UTILITIES}
-           ${FHICLCPP}
+           fhiclcpp::fhiclcpp fhiclcpp::types
          MODULE_LIBRARIES
            larsim_EventGenerator_MARLEY
            larcoreobj_SummaryData

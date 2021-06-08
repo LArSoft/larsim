@@ -13,7 +13,7 @@ art_make(MODULE_LIBRARIES
          ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
          art_Persistency_Provenance
-         ${MF_MESSAGELOGGER}
+         messagefacility::MFMessageLogger
          ${CLHEP_LIBRARIES}
          ${GENIE_LIB_LIST}
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference

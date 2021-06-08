@@ -8,7 +8,7 @@ art_make(MODULE_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${MF_MESSAGELOGGER}
+           messagefacility::MFMessageLogger
            ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::EG

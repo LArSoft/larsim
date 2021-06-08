@@ -7,8 +7,8 @@ art_make(LIB_LIBRARIES  lardataobj_Simulation
                         lardataobj_Simulation
                         nusimdata_SimulationBase
                         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${MF_MESSAGELOGGER}
-                        ${FHICLCPP}
+                        messagefacility::MFMessageLogger
+                        fhiclcpp::fhiclcpp fhiclcpp::types
                 )
 
 install_headers()

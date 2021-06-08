@@ -3,7 +3,7 @@ art_make(
                            larsim_MCCheater_BackTrackerService_service
                            lardataobj_RecoBase
                            art_Persistency_Common canvas
-                           ${MF_MESSAGELOGGER}
+                           messagefacility::MFMessageLogger
         )
 
 install_headers()

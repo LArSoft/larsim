@@ -5,7 +5,7 @@ art_make(
            nusimdata_SimulationBase
            cetlib
            cetlib_except
-           ${FHICLCPP}
+           fhiclcpp::fhiclcpp fhiclcpp::types
            ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::Hist
@@ -22,7 +22,7 @@ art_make(
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${CLHEP_LIBRARIES}
-           ${MF_MESSAGELOGGER}
+           messagefacility::MFMessageLogger
            ROOT::Core
            ROOT::EG
            ROOT::Geom
@@ -33,7 +33,7 @@ art_make(
 
 simple_plugin(POTaccumulator "module"
   larcoreobj_SummaryData
-  ${MF_MESSAGELOGGER}
+  messagefacility::MFMessageLogger
   )
 
 install_headers()

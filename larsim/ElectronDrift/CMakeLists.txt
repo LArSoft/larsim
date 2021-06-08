@@ -3,8 +3,8 @@ art_make(LIB_LIBRARIES
            larsim_IonizationScintillation
            canvas
            cetlib_except
-	   ${MF_MESSAGELOGGER}
-           ${FHICLCPP}
+	   messagefacility::MFMessageLogger
+           fhiclcpp::fhiclcpp fhiclcpp::types
          MODULE_LIBRARIES
            larsim_ElectronDrift
            larsim_Simulation
@@ -16,7 +16,7 @@ art_make(LIB_LIBRARIES
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${CLHEP_LIBRARIES}
-           ${MF_MESSAGELOGGER}
+           messagefacility::MFMessageLogger
            ROOT::Core
            ROOT::Tree
          )

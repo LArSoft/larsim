@@ -22,10 +22,10 @@ art_make(LIB_LIBRARIES
          ${ART_FRAMEWORK_PRINCIPAL}
          ${ART_PERSISTENCY_PROVENANCE}
          ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${FHICLCPP}
+         fhiclcpp::fhiclcpp fhiclcpp::types
          ${GENIE_LIB_LIST}
          ${LOG4CPP}
-         ${MF_MESSAGELOGGER}
+         messagefacility::MFMessageLogger
          cetlib_except)
 
 install_headers()
