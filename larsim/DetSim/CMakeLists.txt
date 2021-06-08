@@ -3,7 +3,7 @@ simple_plugin(SimWireAna "module"
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-              messagefacility::MFMessageLogger
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist)
 
@@ -18,7 +18,7 @@ simple_plugin(SimWire "module"
               ${ART_ROOT_IO_TFILESERVICE_SERVICE}
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${CLHEP_LIBRARIES}
-              messagefacility::MFMessageLogger
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist
               ROOT::MathCore)
@@ -28,7 +28,7 @@ simple_plugin(WienerFilterAna "module"
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
               ${ART_ROOT_IO_TFILE_SUPPORT}
               ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-              messagefacility::MFMessageLogger
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist)
 

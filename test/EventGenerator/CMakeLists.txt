@@ -10,7 +10,7 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
   art_Persistency_Provenance
   canvas
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   
   fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib cetlib_except

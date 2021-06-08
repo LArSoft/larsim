@@ -16,7 +16,7 @@ art_make(LIB_LIBRARIES
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
            canvas
-           messagefacility::MFMessageLogger
+           messagefacility::MF_MessageLogger
            cetlib_except
            ROOT::Core
            ROOT::Hist

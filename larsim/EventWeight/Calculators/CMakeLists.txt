@@ -25,7 +25,7 @@ art_make(LIB_LIBRARIES
          fhiclcpp::fhiclcpp fhiclcpp::types
          ${GENIE_LIB_LIST}
          ${LOG4CPP}
-         messagefacility::MFMessageLogger
+         messagefacility::MF_MessageLogger
          cetlib_except)
 
 install_headers()

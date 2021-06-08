@@ -6,7 +6,7 @@ art_make(LIB_LIBRARIES
            nusimdata_SimulationBase
            ${CLHEP_LIBRARIES}
            fhiclcpp::fhiclcpp fhiclcpp::types
-           messagefacility::MFMessageLogger
+           messagefacility::MF_MessageLogger
          MODULE_LIBRARIES
            larsim_IonizationScintillation
            larsim_Simulation
@@ -18,7 +18,7 @@ art_make(LIB_LIBRARIES
            ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::Tree
-           messagefacility::MFMessageLogger)
+           messagefacility::MF_MessageLogger)
 
 install_headers()
 install_fhicl()

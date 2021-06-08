@@ -8,7 +8,7 @@ art_make(MODULE_LIBRARIES
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${CLHEP_LIBRARIES}
            ${IFDH}
-           messagefacility::MFMessageLogger
+           messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::EG
            ROOT::Physics

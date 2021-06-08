@@ -4,7 +4,7 @@ cet_make_library(
   LIBRARIES
     canvas
     nug4_ParticleNavigation
-    messagefacility::MFMessageLogger
+    messagefacility::MF_MessageLogger
     fhiclcpp::fhiclcpp fhiclcpp::types
     cetlib_except
     ROOT::Core
@@ -16,7 +16,7 @@ cet_make_library(
   LIBRARIES
     cetlib_except
     fhiclcpp::fhiclcpp fhiclcpp::types
-    messagefacility::MFMessageLogger
+    messagefacility::MF_MessageLogger
     ROOT::Core
     canvas
     larsim_MCCheater_ParticleInventory
@@ -31,7 +31,7 @@ cet_make_library(
     canvas
     cetlib_except
     fhiclcpp::fhiclcpp fhiclcpp::types
-    messagefacility::MFMessageLogger
+    messagefacility::MF_MessageLogger
     ROOT::Core
     larcorealg_Geometry
     lardataobj_Simulation
@@ -45,19 +45,19 @@ simple_plugin(ParticleInventoryService "service"
   nug4_ParticleNavigation
   ROOT::Core
   ROOT::Physics
-  messagefacility::MFMessageLogger)
+  messagefacility::MF_MessageLogger)
 
 simple_plugin(PhotonBackTrackerService "service"
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_PERSISTENCY_PROVENANCE}
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   larsim_MCCheater_PhotonBackTracker)
 
 simple_plugin(BackTrackerService "service"
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_PERSISTENCY_PROVENANCE}
   ROOT::Core
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   larsim_MCCheater_BackTracker
   larsim_MCCheater_ParticleInventory)
 
@@ -65,7 +65,7 @@ simple_plugin(CheckBackTracking "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   lardataobj_RecoBase
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
   ROOT::Core)
 
@@ -76,7 +76,7 @@ simple_plugin(RecoCheckAna "module"
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
   ${ART_ROOT_IO_TFILESERVICE_SERVICE}
   ${ART_ROOT_IO_TFILE_SUPPORT}
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   ROOT::Core
   ROOT::Hist
   ROOT::Tree)

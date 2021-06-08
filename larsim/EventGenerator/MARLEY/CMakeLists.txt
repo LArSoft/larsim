@@ -10,7 +10,7 @@ art_make(LIB_LIBRARIES
            nusimdata_SimulationBase
            ${MARLEY}
            ${MARLEY_ROOT}
-           messagefacility::MFMessageLogger
+           messagefacility::MF_MessageLogger
            cetlib
            cetlib_except
            ROOT::Core
