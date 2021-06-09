@@ -5,7 +5,7 @@ art_make(MODULE_LIBRARIES
            larcoreobj_SummaryData
            nurandom_RandomUtils_NuRandomService_service
            nusimdata_SimulationBase
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
+           art::Framework_Services_Registry
            ${CLHEP_LIBRARIES}
            ${IFDH}
            messagefacility::MF_MessageLogger

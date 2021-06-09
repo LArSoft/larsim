@@ -4,10 +4,10 @@
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
   nurandom_RandomUtils_NuRandomService_service
-  ${ART_FRAMEWORK_CORE}
-  ${ART_FRAMEWORK_PRINCIPAL}
-  ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+  art::Framwork_Core
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art::Framework_Services_System_FloatingPointControl_service
   art_Persistency_Provenance
   canvas
   messagefacility::MF_MessageLogger

@@ -12,9 +12,9 @@ art_make(LIB_LIBRARIES
            larsim_Simulation
            lardataobj_Simulation
            nurandom_RandomUtils_NuRandomService_service
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+           art::Framework_Services_Registry
+           art_root_io::tfile_support
+           art_root_io::TFileService_service
            ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::Tree

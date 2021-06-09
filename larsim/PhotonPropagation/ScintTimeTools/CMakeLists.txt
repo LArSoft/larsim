@@ -4,13 +4,13 @@ art_make(NO_PLUGINS
   LIB_LIBRARIES
     ROOT::Core
     larcorealg_Geometry
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    art::Framework_Services_Registry
     ${CANVAS}
     cetlib
     cetlib_except
     fhiclcpp
     ${CLHEP_LIBRARIES}
-    ${ART_UTILITIES}
+    art::Utilities
   )
 
 

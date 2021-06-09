@@ -5,9 +5,9 @@ art_make(NO_PLUGINS
            lardataobj_Simulation
            lardata_Utilities
            nusimdata_SimulationBase
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_FRAMEWORK_PRINCIPAL}
-           ${ART_PERSISTENCY_PROVENANCE}
+           art::Framework_Services_Registry
+           art::Framework_Principal
+           art::Persistency_Provenence
            ROOT::Core
            ROOT::Physics
            ROOT::GenVector

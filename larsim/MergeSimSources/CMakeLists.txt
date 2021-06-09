@@ -6,7 +6,7 @@ art_make(LIB_LIBRARIES  lardataobj_Simulation
                         larsim_Simulation
                         lardataobj_Simulation
                         nusimdata_SimulationBase
-                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
+                        art::Framework_Services_Registry
                         messagefacility::MF_MessageLogger
                         fhiclcpp::fhiclcpp fhiclcpp::types
                 )
