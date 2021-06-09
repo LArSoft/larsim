@@ -4,7 +4,7 @@
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
   nurandom_RandomUtils_NuRandomService_service
-  art::Framwork_Core
+  art::Framework_Core
   art::Framework_Principal
   art::Framework_Services_Registry
   art::Framework_Services_System_FloatingPointControl_service
