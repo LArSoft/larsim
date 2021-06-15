@@ -7,7 +7,7 @@ art_make(NO_PLUGINS
            nusimdata_SimulationBase
            art::Framework_Services_Registry
            art::Framework_Principal
-           art::Persistency_Provenence
+           art::Persistency_Provenance
            ROOT::Core
            ROOT::Physics
            ROOT::GenVector

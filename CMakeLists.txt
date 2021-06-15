@@ -8,7 +8,9 @@
 
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-project(larsim 9.13.12 LANGUAGES CXX)
+project(larsim VERSION 9.13.12 LANGUAGES CXX)
+
+set(larsim_FW_DIR fw)
 
 find_package(cetmodules REQUIRED)
 find_package(canvas_root_io)
@@ -40,9 +42,8 @@ find_ups_product(nug4)
 find_ups_product( nugen )
 find_ups_product( nurandom )
 find_ups_product( nusimdata )
-find_ups_product( art )
+find_ups_geant4()
 find_ups_product(art_root_io)
-find_ups_geant4( geant4 )
 find_ups_product( ifdhc )
 find_ups_product( genie )
 find_ups_product( log4cpp )

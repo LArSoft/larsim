@@ -20,7 +20,7 @@ art_make(LIB_LIBRARIES
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
          art::Framework_Principal
-         art::Persistency_Provenence
+         art::Persistency_Provenance
          art::Framework_Services_Registry
          fhiclcpp::fhiclcpp fhiclcpp::types
          ${GENIE_LIB_LIST}

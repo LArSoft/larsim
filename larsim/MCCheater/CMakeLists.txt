@@ -40,7 +40,7 @@ cet_make_library(
 
 simple_plugin(ParticleInventoryService "service"
   art::Framework_Principal
-  art::Persistency_Provenence
+  art::Persistency_Provenance
   larsim_MCCheater_ParticleInventory
   nug4_ParticleNavigation
   ROOT::Core
@@ -49,13 +49,13 @@ simple_plugin(ParticleInventoryService "service"
 
 simple_plugin(PhotonBackTrackerService "service"
   art::Framework_Principal
-  art::Persistency_Provenence
+  art::Persistency_Provenance
   messagefacility::MF_MessageLogger
   larsim_MCCheater_PhotonBackTracker)
 
 simple_plugin(BackTrackerService "service"
   art::Framework_Principal
-  art::Persistency_Provenence
+  art::Persistency_Provenance
   ROOT::Core
   messagefacility::MF_MessageLogger
   larsim_MCCheater_BackTracker
