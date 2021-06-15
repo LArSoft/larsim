@@ -11,6 +11,7 @@
 
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h"
+#include <numeric>
 
 
 //------------------------------------------------------------------------------
