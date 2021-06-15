@@ -185,7 +185,10 @@ add_subdirectory(test)
 add_subdirectory(example)
 
 # ups - table and config files
+if(WANT_UPS)
 add_subdirectory(ups)
+endif()
 
+add_subdirectory(cmakeConfig)
 # packaging utility
 include(UseCPack)
