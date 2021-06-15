@@ -43,11 +43,11 @@ find_ups_product( nusimdata )
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_geant4( geant4 )
-find_package( postgresql )
 find_ups_product( ifdhc )
 find_ups_product( genie )
 find_ups_product( log4cpp )
-find_ups_product( range )
+find_package( postgresql )
+find_package( range3 )
 
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
