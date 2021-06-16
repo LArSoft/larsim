@@ -168,8 +168,13 @@ find_library( CRY NAMES CRY PATHS $ENV{CRYHOME}/lib  )
 cet_find_library( MARLEY NAMES MARLEY PATHS ENV MARLEY_LIB  )
 cet_find_library( MARLEY_ROOT NAMES MARLEY_ROOT PATHS ENV MARLEY_LIB  )
 
+find_library(SQLITE NAMES sqlite3 PATHS ENV SQLITE_LIB)
+
+
 # temporarily needed since this is an unexpected header path
-include_directories( $ENV{IFDHC_FQ_DIR}/inc )
+find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB )
+get_filename_component(IFDH_LIB    ${IFDH}    DIRECTORY)
+include_directories("${IFDH_LIB}/../inc")
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)

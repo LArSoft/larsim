@@ -29,6 +29,7 @@ art_make(
            ROOT::Hist
            ROOT::Physics
            ROOT::RIO
+           ${SQLITE}
         )
 
 simple_plugin(POTaccumulator "module"
