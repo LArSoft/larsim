@@ -1,5 +1,8 @@
-cet_find_simple_package( ifdh INCPATH_SUFFIXES inc INCPATH_VAR IFDHC_INC )
-include_directories(${IFDHC_INC})
+find_library(SQLITE NAMES sqlite3 PATHS ENV SQLITE_LIB)
+find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB)
+get_filename_component(IFDH_LIB    ${IFDH}    DIRECTORY)
+include_directories("${IFDH_LIB}/../inc")
+
 art_make(MODULE_LIBRARIES
            larcorealg_Geometry
            larcoreobj_SummaryData
@@ -12,7 +15,7 @@ art_make(MODULE_LIBRARIES
            ROOT::Core
            ROOT::EG
            ROOT::Physics
-           ${SQLITE3}
+           ${SQLITE}
          )
 
 install_headers()
