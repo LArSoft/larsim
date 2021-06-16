@@ -26,6 +26,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include <numeric>
 
 namespace sim {
   class DumpMCTruth;
