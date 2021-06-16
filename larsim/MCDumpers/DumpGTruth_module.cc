@@ -27,8 +27,9 @@
 
 // C/C++ standard libraries
 #include <string>
-#include <iterator> // std::back_inserter()
+#include <iterator>  // std::back_inserter()
 #include <algorithm> // std::copy()
+#include <numeric>    // std::accumulate()
 
 namespace sim {
   class DumpGTruth;
