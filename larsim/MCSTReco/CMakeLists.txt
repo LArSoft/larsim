@@ -14,6 +14,7 @@ art_make(LIB_LIBRARIES
            art::Utilities
          MODULE_LIBRARIES
            larsim_MCSTReco
+           messagefacility::headers
            messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::Physics

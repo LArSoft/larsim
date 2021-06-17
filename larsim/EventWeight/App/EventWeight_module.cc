@@ -20,6 +20,7 @@
 #include <memory>
 #include <iostream>
 #include <iomanip>
+#include <numeric>
 
 #include "larsim/EventWeight/Base/Weight_t.h"
 #include "larsim/EventWeight/Base/MCEventWeight.h"

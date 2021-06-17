@@ -22,6 +22,7 @@ cet_make_library(
     larsim_MCCheater_ParticleInventory
     larcorealg_Geometry
     lardataobj_Simulation
+    nug4_ParticleNavigation
   )
 
 cet_make_library(
@@ -59,6 +60,7 @@ simple_plugin(BackTrackerService "service"
   ROOT::Core
   messagefacility::MF_MessageLogger
   larsim_MCCheater_BackTracker
+  nug4_ParticleNavigation
   larsim_MCCheater_ParticleInventory)
 
 simple_plugin(CheckBackTracking "module"
@@ -67,12 +69,14 @@ simple_plugin(CheckBackTracking "module"
   lardataobj_RecoBase
   messagefacility::MF_MessageLogger
   art::Framework_Services_Registry
+  nug4_ParticleNavigation
   ROOT::Core)
 
 simple_plugin(RecoCheckAna "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   nusimdata_SimulationBase
+  nug4_ParticleNavigation
   art::Framework_Services_Registry
   art_root_io::TFileService_service
   art_root_io::tfile_support
@@ -84,11 +88,15 @@ simple_plugin(RecoCheckAna "module"
 simple_plugin(BackTrackerLoader "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  art::Framework_Services_Registry)
+  art::Framework_Services_Registry
+  nug4_ParticleNavigation
+  ROOT::Core)
 
 simple_plugin(PhotonBackTrackerLoader "module"
   larsim_MCCheater_ParticleInventoryService_service
   larsim_MCCheater_PhotonBackTrackerService_service
+  nug4_ParticleNavigation
+  ROOT::Core
   art::Framework_Services_Registry)
 
 install_headers()
