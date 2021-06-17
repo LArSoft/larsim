@@ -32,7 +32,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace larg4 {
-  class ISCalcCorrelated : public ISTPC, public ISCalc {
+  class ISCalcCorrelated : public ISCalc {
   public:
     ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
 
@@ -68,6 +68,7 @@ namespace larg4 {
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
+    ISTPC fISTPC;
   };
 }
 #endif

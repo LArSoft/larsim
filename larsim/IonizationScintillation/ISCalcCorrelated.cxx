@@ -19,6 +19,7 @@
 namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp)
+    : fISTPC{*(lar::providerFrom<geo::Geometry>())}
   {
     std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
@@ -142,15 +143,13 @@ namespace larg4 {
    ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
    {
      //electric field outside active volume set to zero                                                                                                                                                      
-     if(isScintInActiveVolume(edep.MidPoint())==false) {
-       efield = 0.0;
-       return efield;
-     }
-     else{ //electric field in active volume                                                                                                                                                                 
-       if (!fSCE->EnableSimEfieldSCE()) return efield;
-       auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-       return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
-     }
+     if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0;
+
+     //electric field inside active volume                                                                                                                                                                   
+     if (!fSCE->EnableSimEfieldSCE()) return efield;
+
+     auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
    }
 
 

@@ -10,16 +10,20 @@
 
 #include "larsim/IonizationScintillation/ISTPC.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcorealg/CoreUtils/enumerate.h"
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 
 namespace larg4 {
   //----------------------------------------------------------------------------                 
-  ISTPC::ISTPC()
+  ISTPC::ISTPC(geo::GeometryCore const& geom)
+    : fActiveVolumes{extractActiveLArVolume(geom)}
   {
-    std::cout << "IonizationAndScintillation/ISTPC Initialize." << std::endl;
-    std::cout << "Initializing the geometry of the detector." << std::endl;
-    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
-
-    fActiveVolumes = extractActiveVolumes(geom);
+    mf::LogTrace("IonAndScint") << "IonizationAndScintillation/ISTPC Initialize.\n"
+                                << "Initializing the geometry of the detector.";
+    
     {
       auto log = mf::LogTrace("IonAndScint") << "IonAndScint: active volume boundaries from "
                                              << fActiveVolumes.size() << " volumes:";
@@ -40,10 +44,9 @@ namespace larg4 {
  }
   //----------------------------------------------------------------------------                                 
 
-
-                                                                                                                 
+         
 std::vector<geo::BoxBoundedGeo>
-ISTPC::extractActiveVolumes(geo::GeometryCore const& geom)
+ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
 {
   std::vector<geo::BoxBoundedGeo> activeVolumes;
   activeVolumes.reserve(geom.Ncryostats());

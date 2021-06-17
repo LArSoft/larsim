@@ -44,6 +44,8 @@
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 // LArSoft libraries
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
@@ -251,7 +253,7 @@ namespace {
 } // namespace
 
 namespace phot {
-  class PDFastSimPAR : public larg4::ISTPC, public art::EDProducer {
+  class PDFastSimPAR : public art::EDProducer {
   public:
 
   // Define the fhicl configuration 
@@ -282,6 +284,7 @@ namespace phot {
     void produce(art::Event&) override;
 
   private:
+    larg4::ISTPC fISTPC;
     // structure definition for solid angle of rectangle function
     struct Dims {
       double h, w; // height, width
@@ -369,7 +372,7 @@ namespace phot {
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
-
+    std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
@@ -453,6 +456,7 @@ namespace phot {
   //......................................................................
   PDFastSimPAR::PDFastSimPAR(Parameters const & config)
     : art::EDProducer{config}
+    , fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fPhotonEngine(   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, 
                                                                                  "HepJamesRandom",
                                                                                  "photon", 
@@ -573,7 +577,7 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
-      if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
+      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
 
       double nphot_fast = edepi.NumFPhotons();
       double nphot_slow = edepi.NumSPhotons();
@@ -759,6 +763,7 @@ namespace phot {
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
+    fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "

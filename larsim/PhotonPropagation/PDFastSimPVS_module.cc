@@ -187,12 +187,8 @@ namespace phot
 	  }
 	int trackID       = edepi.TrackID();
 	int nphot         = edepi.NumPhotons();
-	int nion          = edepi.NumElectrons();
 	double edeposit   = edepi.Energy()/nphot;
 	double pos[3]     = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
-            
-	//std::cout<<"x= "<<edepi.MidPointX()<<" y= "<<edepi.MidPointY()<<" z= "<<edepi.MidPointZ()<<std::endl;       
-
 	int nphot_fast    = edepi.NumFPhotons();
 	int nphot_slow    = edepi.NumSPhotons();
                         
