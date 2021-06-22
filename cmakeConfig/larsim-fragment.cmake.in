@@ -1,0 +1,7 @@
+find_package( nurandom REQUIRED )
+find_package( larevt REQUIRED )
+find_package( Geant4 REQUIRED )
+find_package( ROOT REQUIRED )
+find_package( marley )
+find_package( larsoft-data )
+

@@ -4,7 +4,7 @@ art_make(LIBRARY_NAME     larsim_EventWeight
          MODULE_LIBRARIES larsim_EventWeight_Base
                           larsim_EventWeight_Calculators
                           nugen_EventGeneratorBase_GENIE
-                          ${MF_MESSAGELOGGER})
+                          messagefacility::MF_MessageLogger)
 
 install_headers()
 install_fhicl()

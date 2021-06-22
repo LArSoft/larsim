@@ -4,21 +4,21 @@ art_make(LIB_LIBRARIES
            lardataalg_DetectorInfo
            larevt_SpaceCharge
            nusimdata_SimulationBase
-           ${CLHEP}
-           ${FHICLCPP}
-           ${MF_MESSAGELOGGER}
+           ${CLHEP_LIBRARIES}
+           fhiclcpp::fhiclcpp fhiclcpp::types
+           messagefacility::MF_MessageLogger
          MODULE_LIBRARIES
            larsim_IonizationScintillation
            larsim_Simulation
            lardataobj_Simulation
            nurandom_RandomUtils_NuRandomService_service
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${CLHEP}
+           art::Framework_Services_Registry
+           art_root_io::tfile_support
+           art_root_io::TFileService_service
+           ${CLHEP_LIBRARIES}
            ROOT::Core
            ROOT::Tree
-           ${MF_MESSAGELOGGER})
+           messagefacility::MF_MessageLogger)
 
 install_headers()
 install_fhicl()

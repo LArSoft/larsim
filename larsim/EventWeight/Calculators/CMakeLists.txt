@@ -1,7 +1,9 @@
 # Headers needed for the GenieWeightCalc class
-include_directories ( $ENV{GENIE_INC} )
-include_directories ( $ENV{GENIE_INC}/GENIE )
-include_directories ( $ENV{LOG4CPP_INC} )
+get_filename_component(LOG4CPP_LIB    ${LOG4CPP}    DIRECTORY)
+include_directories("${LOG4CPP_LIB}/../include")
+get_filename_component(GFWMSG_LIB    ${GFWMSG}    DIRECTORY)
+include_directories("${GFWMSG_LIB}/../include")
+include_directories("${GFWMSG_LIB}/../include/GENIE")
 
 # Define a macro that indicates whether a GENIE version before 3.0.0 is in use
 parse_ups_version( ${GENIE_VERSION} )
@@ -19,13 +21,13 @@ art_make(LIB_LIBRARIES
          larsim_EventWeight_Base
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
-         ${ART_FRAMEWORK_PRINCIPAL}
-         ${ART_PERSISTENCY_PROVENANCE}
-         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${FHICLCPP}
+         art::Framework_Principal
+         art::Persistency_Provenance
+         art::Framework_Services_Registry
+         fhiclcpp::fhiclcpp fhiclcpp::types
          ${GENIE_LIB_LIST}
          ${LOG4CPP}
-         ${MF_MESSAGELOGGER}
+         messagefacility::MF_MessageLogger
          cetlib_except)
 
 install_headers()

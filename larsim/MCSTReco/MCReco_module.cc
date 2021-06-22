@@ -20,6 +20,7 @@
 #include "MCShowerRecoAlg.h"
 #include "MCTrackRecoAlg.h"
 #include "lardataobj/MCBase/MCTrack.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <memory>
 

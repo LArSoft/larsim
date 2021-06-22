@@ -1,4 +1,4 @@
-include_directories ( $ENV{GENIE_INC}/GENIE )
+include_directories ( ${GENIE_INC}/GENIE )
 
 art_make(MODULE_LIBRARIES
          lardataalg_MCDumpers
@@ -9,12 +9,12 @@ art_make(MODULE_LIBRARIES
          larcore_Geometry_Geometry_service
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
-         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-         ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+         art::Framework_Services_Registry
+         art_root_io::tfile_support ROOT::Core
+         art_root_io::TFileService_service
          art_Persistency_Provenance
-         ${MF_MESSAGELOGGER}
-         ${CLHEP}
+         messagefacility::MF_MessageLogger
+         ${CLHEP_LIBRARIES}
          ${GENIE_LIB_LIST}
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
          ROOT::EG

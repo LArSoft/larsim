@@ -1,10 +1,10 @@
 art_make(LIB_LIBRARIES
          canvas
          cetlib_except
-         ${CLHEP}
+         ${CLHEP_LIBRARIES}
          ROOT::Core
          ROOT::Matrix
-         ${ART_UTILITIES})
+         art::Utilities)
 
 install_headers()
 install_fhicl()
