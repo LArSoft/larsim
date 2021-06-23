@@ -4,6 +4,8 @@ art_make(LIB_LIBRARIES
            lardataalg_DetectorInfo
            larevt_SpaceCharge
            nusimdata_SimulationBase
+           larcorealg_Geometry
+           larcore_Geometry_Geometry_service
            ${CLHEP}
            ${FHICLCPP}
            ${MF_MESSAGELOGGER}
@@ -12,6 +14,8 @@ art_make(LIB_LIBRARIES
            larsim_Simulation
            lardataobj_Simulation
            nurandom_RandomUtils_NuRandomService_service
+           larcorealg_Geometry
+           larcore_Geometry_Geometry_service
            ${ART_FRAMEWORK_SERVICES_REGISTRY}
            ${ART_ROOT_IO_TFILE_SUPPORT}
            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
