@@ -69,22 +69,22 @@ namespace larg4 {
     //calculate recombination survival fraction value inside, otherwise zero
 
     if(EFieldStep > 0) {
-    // Guard against spurious values of dE/dx. Note: assumes density of LAr
-    if (dEdx < 1.) dEdx = 1.;
+      // Guard against spurious values of dE/dx. Note: assumes density of LAr
+      if (dEdx < 1.) dEdx = 1.;
 
-    // calculate recombination survival fraction
-    if (fUseModBoxRecomb) {
-      if (ds > 0) {
-        double Xi = fModBoxB * dEdx / EFieldStep;
-        recomb = log(fModBoxA + Xi) / Xi;
+      // calculate recombination survival fraction
+      if (fUseModBoxRecomb) {
+	if (ds > 0) {
+	  double Xi = fModBoxB * dEdx / EFieldStep;
+	  recomb = log(fModBoxA + Xi) / Xi;
+	}
+	else {
+	  recomb = 0;
+	}
       }
       else {
-        recomb = 0;
+	recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
       }
-    }
-    else {
-      recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
-    }
 
     }//Efield
 
