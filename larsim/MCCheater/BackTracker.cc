@@ -105,21 +105,25 @@ namespace cheat {
 
   //-----------------------------------------------------------------------
   art::Ptr<sim::SimChannel>
-  BackTracker::FindSimChannel(raw::ChannelID_t channel) const
+  BackTracker::FindSimChannelPtr(raw::ChannelID_t channel) const
   {
-    art::Ptr<sim::SimChannel> chan;
     auto ilb = std::lower_bound(fSimChannels.begin(),
                                 fSimChannels.end(),
                                 channel,
-                                [](art::Ptr<sim::SimChannel> a, raw::ChannelID_t channel) {
+                                [](art::Ptr<sim::SimChannel> const& a, raw::ChannelID_t channel) {
                                   return (a->Channel() < channel);
                                 });
-    if (ilb != fSimChannels.end())
-      if ((*ilb)->Channel() == channel) { chan = *ilb; }
-    if (!chan)
-      throw cet::exception("BackTracker") << "No sim::SimChannel corresponding "
-                                          << "to channel: " << channel << "\n";
-    return chan;
+    return ((ilb != fSimChannels.end()) && ((*ilb)->Channel() == channel))
+      ? *ilb: art::Ptr<sim::SimChannel>{};
+  }
+
+  //-----------------------------------------------------------------------
+  art::Ptr<sim::SimChannel>
+  BackTracker::FindSimChannel(raw::ChannelID_t channel) const
+  {
+    if (auto const chan = FindSimChannelPtr(channel)) return chan;
+    throw cet::exception("BackTracker") << "No sim::SimChannel corresponding "
+                                        << "to channel: " << channel << "\n";
   }
 
   //-----------------------------------------------------------------------
@@ -129,44 +133,41 @@ namespace cheat {
                                   const double hit_start_time,
                                   const double hit_end_time) const
   {
+    art::Ptr<sim::SimChannel> schannel = this->FindSimChannelPtr(channel);
+    if (!schannel) return {};
+
     std::vector<sim::TrackIDE> trackIDEs;
     double totalE = 0.;
-    try {
-      art::Ptr<sim::SimChannel> schannel = this->FindSimChannel(channel);
+    
+    // loop over the electrons in the channel and grab those that are in time
+    // with the identified hit start and stop times
+    int start_tdc = clockData.TPCTick2TDC(hit_start_time);
+    int end_tdc = clockData.TPCTick2TDC(hit_end_time);
+    if (start_tdc < 0) start_tdc = 0;
+    if (end_tdc < 0) end_tdc = 0;
+    std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
 
-      // loop over the electrons in the channel and grab those that are in time
-      // with the identified hit start and stop times
-      int start_tdc = clockData.TPCTick2TDC(hit_start_time);
-      int end_tdc = clockData.TPCTick2TDC(hit_end_time);
-      if (start_tdc < 0) start_tdc = 0;
-      if (end_tdc < 0) end_tdc = 0;
-      std::vector<sim::IDE> simides = schannel->TrackIDsAndEnergies(start_tdc, end_tdc);
+    // first get the total energy represented by all track ids for
+    // this channel and range of tdc values
+    for (size_t e = 0; e < simides.size(); ++e)
+      totalE += simides[e].energy;
 
-      // first get the total energy represented by all track ids for
-      // this channel and range of tdc values
-      for (size_t e = 0; e < simides.size(); ++e)
-        totalE += simides[e].energy;
+    // protect against a divide by zero below
+    if (totalE < 1.e-5) totalE = 1.;
 
-      // protect against a divide by zero below
-      if (totalE < 1.e-5) totalE = 1.;
+    // loop over the entries in the map and fill the input vectors
 
-      // loop over the entries in the map and fill the input vectors
+    for (size_t e = 0; e < simides.size(); ++e) {
 
-      for (size_t e = 0; e < simides.size(); ++e) {
+      if (simides[e].trackID == sim::NoParticleId) continue;
 
-        if (simides[e].trackID == sim::NoParticleId) continue;
+      sim::TrackIDE info;
+      info.trackID = simides[e].trackID;
+      info.energyFrac = simides[e].energy / totalE;
+      info.energy = simides[e].energy;
+      info.numElectrons = simides[e].numElectrons;
 
-        sim::TrackIDE info;
-        info.trackID = simides[e].trackID;
-        info.energyFrac = simides[e].energy / totalE;
-        info.energy = simides[e].energy;
-        info.numElectrons = simides[e].numElectrons;
-
-        trackIDEs.push_back(info);
-      }
-    } // end try
-    catch (cet::exception const& e) {
-      mf::LogWarning("BackTracker") << "caught exception \n" << e;
+      trackIDEs.push_back(info);
     }
 
     return trackIDEs;
@@ -329,7 +330,7 @@ namespace cheat {
 
     const std::vector<std::pair<unsigned short, std::vector<sim::IDE>>>& tdcIDEMap =
       (this->FindSimChannel(hit.Channel()))
-        ->TDCIDEMap(); // This in fact does not return a map. It returns a
+        ->TDCIDEMap(); // This in fact does not return a std::map. It returns a
                        // vector... with no guarantee that it is sorted...
     std::vector<const std::pair<unsigned short, std::vector<sim::IDE>>*> tdcIDEMap_SortedPointers;
     for (auto& pair : tdcIDEMap) {
