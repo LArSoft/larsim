@@ -130,6 +130,22 @@ namespace cheat {
     std::vector<const sim::IDE*> TrackIdToSimIDEs_Ps(int const& id) const;
     std::vector<const sim::IDE*> TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const;
 
+    /**
+     * @brief Returns the cached `sim::SimChannel` on the specified `channel`.
+     * @param channel ID of the TPC channel to find
+     * @return _art_ pointer to `sim::SimChannel`, or an null pointer if none
+     * @see FindSimChannel()
+     */
+    art::Ptr<sim::SimChannel> FindSimChannelPtr(raw::ChannelID_t channel) const;
+    
+    /**
+     * @brief Returns the cached `sim::SimChannel` on the specified `channel`.
+     * @param channel ID of the TPC channel to find
+     * @return _art_ pointer to `sim::SimChannel`
+     * @throw cet::exception (category: `"BackTracker"`) if no `sim::SimChannel`
+     *                       for the requested  `channel` found
+     * @see FindSimChannelPtr()
+     */
     art::Ptr<sim::SimChannel> FindSimChannel(raw::ChannelID_t channel) const;
 
     std::vector<sim::TrackIDE> ChannelToTrackIDEs(detinfo::DetectorClocksData const& clockData,
