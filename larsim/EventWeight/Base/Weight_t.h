@@ -3,6 +3,8 @@
 
 #include "WeightCalc.h"
 
+#include <numeric> // std::accumulate()
+
 namespace evwgh {
   struct Weight_t {
 
