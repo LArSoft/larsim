@@ -9,12 +9,12 @@ gdmldir product_dir gdml
 #
 product         version
 larg4           v09_03_07
-nugen           v1_12_02
-nurandom        v1_05_02
-nutools         v3_09_03
-marley          v1_2_0
+nugen           v1_14_03
+nurandom        v1_07_03
+nutools         v3_11_03
+marley          v1_2_0d
 larsoft_data    v1_02_01
-cetbuildtools   v7_17_01    -   only_for_build
+cetbuildtools   v8_11_00    -   only_for_build
 end_product_list
 
 qualifier  larg4      nutools    nugen      nurandom   marley     larsoft_data
