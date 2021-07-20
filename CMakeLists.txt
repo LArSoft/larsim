@@ -28,6 +28,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
+find_ups_product(libxml2)
 find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
@@ -44,12 +45,15 @@ find_ups_product( nusimdata )
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product(messagefacility)
-find_ups_geant4( geant4 )
+find_ups_geant4( )
+find_ups_root( )
 find_ups_product( postgresql )
 find_ups_product( ifdhc )
 find_ups_product( genie )
 find_ups_product( log4cpp )
 find_ups_product( range )
+find_ups_product(cetlib)
+find_ups_product(clhep)
 
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
@@ -168,6 +172,9 @@ find_library( CRY NAMES CRY PATHS $ENV{CRYHOME}/lib NO_DEFAULT_PATH )
 # marley libraries
 cet_find_library( MARLEY NAMES MARLEY PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
 cet_find_library( MARLEY_ROOT NAMES MARLEY_ROOT PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
+
+# trying to deal with a problem finding XML2
+cet_find_library(XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH)
 
 # temporarily needed since this is an unexpected header path
 include_directories( $ENV{IFDHC_FQ_DIR}/inc )
