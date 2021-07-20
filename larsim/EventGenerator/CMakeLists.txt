@@ -3,10 +3,7 @@ art_make(
            "POTaccumulator_module.cc"
          LIB_LIBRARIES
            nusimdata_SimulationBase
-           cetlib
-           cetlib_except
-           ${FHICLCPP}
-           ${CLHEP}
+           CLHEP::CLHEP
            ROOT::Core
            ROOT::Hist
            ROOT::Physics

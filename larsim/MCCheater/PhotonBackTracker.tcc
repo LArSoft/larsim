@@ -67,7 +67,7 @@ namespace cheat{
         if(this->OpFlashToOpHitsReady()){ return;}
         //std::vector< art::Handle< std::vector < recob::OpFlash >>> flashHandles;
         //evt.getManyByType(flashHandles);
-        auto flashHandles = evt.getMany<std::vector<recob::OpFlash>>();
+        auto flashHandles = evt.template getMany<std::vector<recob::OpFlash>>();
         for( const auto& handle : flashHandles)
         {
           std::vector< art::Ptr < recob::OpFlash > > flash_vec;

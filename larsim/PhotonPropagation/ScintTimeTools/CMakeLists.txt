@@ -16,6 +16,7 @@ art_make(NO_PLUGINS
 
 simple_plugin(ScintTimeLAr "tool"
               larsim_PhotonPropagation_ScintTimeTools
+              LIBRARIES PRIVATE CLHEP::CLHEP
               )
 
 
