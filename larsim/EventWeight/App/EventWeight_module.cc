@@ -26,6 +26,7 @@
 #include "larsim/EventWeight/Base/WeightManager.h"
 
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
 
 namespace evwgh {
 
@@ -60,15 +61,17 @@ namespace evwgh {
     , fGenieModuleLabel{p.get<std::string>("genie_module_label", "generator")}
   {
     // Configure the appropriate GENIE tune if needed (important for v3+ only)
-    // NOTE: In all normal use cases, relying on the ${GENIE_XSEC_TUNE} environment
-    // variable set by the genie_xsec package should be sufficient. Only include
-    // the "TuneName" FHiCL parameter for EventWeight if you really know what you're
-    // doing! The same goes for the "EventGeneratorList" parameter.
-    std::string genie_tune_name = p.get<std::string>("TuneName", "${GENIE_XSEC_TUNE}");
+    // NOTE: In all normal use cases, relying on the ${GENIE_XSEC_TUNE}
+    // environment variable set by the genie_xsec package should be sufficient.
+    // Only include the "TuneName" FHiCL parameter for EventWeight if you
+    // really know what you're doing! The same goes for the
+    // "EventGeneratorList" parameter.
+    std::string genie_tune_name = p.get<std::string>("TuneName",
+                                                     "${GENIE_XSEC_TUNE}");
 
     // The default empty string used here will cause the subsequent call to
-    // evgb::SetEventGeneratorListAndTune() to leave GENIE's current event generator
-    // list name (probably "Default") alone
+    // evgb::SetEventGeneratorListAndTune() to leave GENIE's current event
+    // generator list name (probably "Default") alone
     std::string evgen_list_name = p.get<std::string>("EventGeneratorList", "");
 
     // Tell GENIE about the event generator list and tune
