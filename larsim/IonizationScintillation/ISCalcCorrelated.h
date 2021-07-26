@@ -17,6 +17,7 @@
 #define IS_ISCALCCORRELATED_H
 
 #include "larsim/IonizationScintillation/ISCalc.h"
+#include "larsim/IonizationScintillation/ISTPC.h"
 
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
@@ -67,6 +68,7 @@ namespace larg4 {
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
+    ISTPC fISTPC;
   };
 }
 #endif

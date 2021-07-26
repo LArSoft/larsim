@@ -1,14 +1,14 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	larsim	v09_13_03
-defaultqual	e19
+parent	larsim	v09_14_02
+defaultqual	e20
 #
 fcldir  product_dir job
 fwdir   product_dir G4
 gdmldir product_dir gdml
 #
 product         version
-larg4           v09_03_07
+larg4           v09_03_09
 nugen           v1_14_03
 nurandom        v1_07_03
 nutools         v3_11_03

@@ -19,6 +19,7 @@
 namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp)
+    : fISTPC{*(lar::providerFrom<geo::Geometry>())}
   {
     std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
@@ -65,26 +66,34 @@ namespace larg4 {
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0.;
 
-    // Guard against spurious values of dE/dx. Note: assumes density of LAr
-    if (dEdx < 1.) dEdx = 1.;
+    //calculate recombination survival fraction value inside, otherwise zero
 
-    // calculate recombination survival fraction
-    if (fUseModBoxRecomb) {
-      if (ds > 0) {
-        double Xi = fModBoxB * dEdx / EFieldStep;
-        recomb = log(fModBoxA + Xi) / Xi;
+    if(EFieldStep > 0) {
+      // Guard against spurious values of dE/dx. Note: assumes density of LAr
+      if (dEdx < 1.) dEdx = 1.;
+
+      // calculate recombination survival fraction
+      if (fUseModBoxRecomb) {
+	if (ds > 0) {
+	  double Xi = fModBoxB * dEdx / EFieldStep;
+	  recomb = log(fModBoxA + Xi) / Xi;
+	}
+	else {
+	  recomb = 0;
+	}
       }
       else {
-        recomb = 0;
+	recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
       }
-    }
-    else {
-      recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
-    }
+
+    }//Efield
 
     if(fUseModLarqlRecomb){ //Use corrections from LArQL model
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
+
+
+   
 
     // using this recombination, calculate number of ionization electrons
     double const num_electrons = (energy_deposit / fWion) * recomb;
@@ -130,13 +139,20 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
-  {
-    if (!fSCE->EnableSimEfieldSCE()) return efield;
-    auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-    return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
-  }
+   double
+   ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+   {
+     //electric field outside active volume set to zero                                                                                                                                                      
+     if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0;
+
+     //electric field inside active volume                                                                                                                                                                   
+     if (!fSCE->EnableSimEfieldSCE()) return efield;
+
+     auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+   }
+
+
 
   double ISCalcCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
     return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));

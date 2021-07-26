@@ -44,7 +44,6 @@
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 // LArSoft libraries
-#include "larcore/Geometry/Geometry.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
@@ -57,6 +56,8 @@
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
+
+#include "larsim/IonizationScintillation/ISTPC.h"
 
 // Random numbers
 #include "CLHEP/Random/RandFlat.h"
@@ -283,6 +284,7 @@ namespace phot {
     void produce(art::Event&) override;
 
   private:
+    larg4::ISTPC fISTPC;
     // structure definition for solid angle of rectangle function
     struct Dims {
       double h, w; // height, width
@@ -371,7 +373,6 @@ namespace phot {
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;
-
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
@@ -383,9 +384,7 @@ namespace phot {
 
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
-    bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
-
-    static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);
+    
 
     //////////////////////
     // Input Parameters //
@@ -457,6 +456,7 @@ namespace phot {
   //......................................................................
   PDFastSimPAR::PDFastSimPAR(Parameters const & config)
     : art::EDProducer{config}
+    , fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fPhotonEngine(   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, 
                                                                                  "HepJamesRandom",
                                                                                  "photon", 
@@ -577,7 +577,7 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
-      if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) continue;
+      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
 
       double nphot_fast = edepi.NumFPhotons();
       double nphot_slow = edepi.NumSPhotons();
@@ -763,7 +763,7 @@ namespace phot {
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
-    fActiveVolumes = extractActiveVolumes(geom);
+    fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
@@ -1252,13 +1252,6 @@ namespace phot {
       return false;
     }
     return true;
-  }
-
-  bool
-  PDFastSimPAR::isScintInActiveVolume(geo::Point_t const& ScintPoint)
-  {
-    //semi-analytic approach only works in the active volume
-    return fActiveVolumes[0].ContainsPosition(ScintPoint);
   }
 
   //......................................................................
@@ -1778,27 +1771,6 @@ namespace phot {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  std::vector<geo::BoxBoundedGeo>
-  PDFastSimPAR::extractActiveVolumes(geo::GeometryCore const& geom)
-  {
-    std::vector<geo::BoxBoundedGeo> activeVolumes;
-    activeVolumes.reserve(geom.Ncryostats());
-
-    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
-
-      // can't use it default-constructed since it would always include origin
-      geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
-
-      for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
-        box.ExtendToInclude(TPC.ActiveBoundingBox());
-
-      activeVolumes.push_back(std::move(box));
-
-    } // for cryostats
-
-    return activeVolumes;
-  } // PDFastSimPAR::extractActiveVolumes()
 
   // ---------------------------------------------------------------------------
 
