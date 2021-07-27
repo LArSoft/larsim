@@ -32,6 +32,7 @@
 #include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
 
 // framework libraries
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 #include "art_root_io/TFileService.h"

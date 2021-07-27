@@ -15,6 +15,7 @@
 /// divisions in time as well.
 
 // Framework includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
