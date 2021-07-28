@@ -2,19 +2,19 @@ add_subdirectory(job)
 
 art_make(LIB_LIBRARIES
            larcorealg_Geometry
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
+           art::Framework_Services_Registry
            nusimdata_SimulationBase
            lardataobj_MCBase
-           canvas
-           cetlib_except
-           ${MF_MESSAGELOGGER}
-           ${FHICLCPP}
+           canvas::canvas
+           cetlib_except::cetlib_except
+           messagefacility::MF_MessageLogger
+           fhiclcpp::fhiclcpp
            ROOT::Core
            ROOT::Physics
            ${ART_UTILITIES}
          MODULE_LIBRARIES
            larsim_MCSTReco
-           ${MF_MESSAGELOGGER}
+           messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::Physics
          )

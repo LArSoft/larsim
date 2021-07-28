@@ -4,16 +4,16 @@
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
   nurandom_RandomUtils_NuRandomService_service
-  ${ART_FRAMEWORK_CORE}
-  ${ART_FRAMEWORK_PRINCIPAL}
-  ${ART_FRAMEWORK_SERVICES_REGISTRY}
+  art::Framework_Core
+  art::Framework_Principal
+  art::Framework_Services_Registry
   ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-  art_Persistency_Provenance
-  canvas
-  ${MF_MESSAGELOGGER}
+  art::Persistency_Provenance
+  canvas::canvas
+  messagefacility::MF_MessageLogger
   
-  ${FHICLCPP}
-  cetlib cetlib_except
+  fhiclcpp::fhiclcpp
+  cetlib::cetlib cetlib_except
   ${CLHEP}
   NO_INSTALL
 )

@@ -1,6 +1,6 @@
 art_make(LIB_LIBRARIES
-         canvas
-         cetlib_except
+         canvas::canvas
+         cetlib_except::cetlib_except
          ${CLHEP}
          ROOT::Core
          ROOT::Matrix

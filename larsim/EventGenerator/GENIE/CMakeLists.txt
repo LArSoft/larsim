@@ -9,11 +9,11 @@ art_make(MODULE_LIBRARIES
          larcore_Geometry_Geometry_service
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
-         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-         ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-         art_Persistency_Provenance
-         ${MF_MESSAGELOGGER}
+         art::Framework_Services_Registry
+         art_root_io::tfile_support ROOT::Core
+         art_root_io::TFileService_service
+         art::Persistency_Provenance
+         messagefacility::MF_MessageLogger
          ${CLHEP}
          ${GENIE_LIB_LIST}
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference

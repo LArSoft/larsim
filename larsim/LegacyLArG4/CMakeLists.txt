@@ -12,12 +12,12 @@ art_make(LIB_LIBRARIES
            nug4_ParticleNavigation
            nurandom_RandomUtils_NuRandomService_service
            ${ART_UTILITIES}
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           canvas
-           ${MF_MESSAGELOGGER}
-           cetlib_except
+           art::Framework_Services_Registry
+           art_root_io::tfile_support
+           art_root_io::TFileService_service
+           canvas::canvas
+           messagefacility::MF_MessageLogger
+           cetlib_except::cetlib_except
            ROOT::Core
            ROOT::Hist
            ROOT::Physics
@@ -42,9 +42,9 @@ art_make(LIB_LIBRARIES
            lardataalg_MCDumpers
            larcorealg_Geometry
            nusimdata_SimulationBase
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
+           art::Framework_Services_Registry
+           art_root_io::TFileService_service
+           art_root_io::tfile_support
            ROOT::Hist
            ROOT::Core
            ROOT::Tree

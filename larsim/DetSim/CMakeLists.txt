@@ -1,9 +1,9 @@
 simple_plugin(SimWireAna "module"
               lardataobj_RawData
-              ${ART_FRAMEWORK_SERVICES_REGISTRY}
-              ${ART_ROOT_IO_TFILE_SUPPORT}
-              ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-              ${MF_MESSAGELOGGER}
+              art::Framework_Services_Registry
+              art_root_io::tfile_support
+              art_root_io::TFileService_service
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist)
 
@@ -14,21 +14,21 @@ simple_plugin(SimWire "module"
               larcorealg_Geometry
               lardata_Utilities_LArFFT_service
               nurandom_RandomUtils_NuRandomService_service
-              ${ART_FRAMEWORK_SERVICES_REGISTRY}
-              ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-              ${ART_ROOT_IO_TFILE_SUPPORT}
+              art::Framework_Services_Registry
+              art_root_io::TFileService_service
+              art_root_io::tfile_support
               ${CLHEP}
-              ${MF_MESSAGELOGGER}
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist
               ROOT::MathCore)
 
 simple_plugin(WienerFilterAna "module"
               larcorealg_Geometry
-              ${ART_FRAMEWORK_SERVICES_REGISTRY}
-              ${ART_ROOT_IO_TFILE_SUPPORT}
-              ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-              ${MF_MESSAGELOGGER}
+              art::Framework_Services_Registry
+              art_root_io::tfile_support
+              art_root_io::TFileService_service
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist)
 
