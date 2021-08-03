@@ -14,7 +14,7 @@ nurandom        v1_07_04
 nutools         v3_11_04
 marley          v1_2_0e
 larsoft_data    v1_02_01
-cetbuildtools   v8_12_00    -   only_for_build
+cetbuildtools   v8_13_01    -   only_for_build
 end_product_list
 
 qualifier  larg4      nutools    nugen      nurandom   marley     larsoft_data
