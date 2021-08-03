@@ -10,7 +10,6 @@ art_make(LIB_LIBRARIES larevt_Filters
                        canvas::canvas
                        messagefacility::MF_MessageLogger
                        fhiclcpp::fhiclcpp
-                       ${CLHEP}
                        cetlib_except::cetlib_except
                        ROOT::EG
                        ROOT::RIO
@@ -48,7 +47,6 @@ art_make(LIB_LIBRARIES larevt_Filters
                         messagefacility::MF_MessageLogger
                         nurandom_RandomUtils_NuRandomService_service
                         art::Persistency_Provenance
-                        ${CLHEP}
                         ROOT::GenVector
                         ROOT::Gpad
          )

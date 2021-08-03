@@ -23,7 +23,6 @@ art_make(LIB_LIBRARIES
            ROOT::Physics
            ROOT::Geom
            ROOT::MathCore
-           ${CLHEP}
            ${G4DIGITS_HITS}
            ${G4EVENT}
            ${G4GEOMETRY}

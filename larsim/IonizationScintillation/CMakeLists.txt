@@ -6,7 +6,6 @@ art_make(LIB_LIBRARIES
            nusimdata_SimulationBase
            larcorealg_Geometry
            larcore_Geometry_Geometry_service
-           ${CLHEP}
            fhiclcpp::fhiclcpp
            messagefacility::MF_MessageLogger
          MODULE_LIBRARIES
@@ -19,7 +18,6 @@ art_make(LIB_LIBRARIES
            art::Framework_Services_Registry
            art_root_io::tfile_support
            art_root_io::TFileService_service
-           ${CLHEP}
            ROOT::Core
            ROOT::Tree
            messagefacility::MF_MessageLogger)

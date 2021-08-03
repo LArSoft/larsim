@@ -14,7 +14,6 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   
   fhiclcpp::fhiclcpp
   cetlib::cetlib cetlib_except
-  ${CLHEP}
   NO_INSTALL
 )
 

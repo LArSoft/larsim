@@ -4,13 +4,13 @@ art_make(MODULE_LIBRARIES
            nurandom_RandomUtils_NuRandomService_service
            nusimdata_SimulationBase
            art::Framework_Services_Registry
-           ${CLHEP}
-           ${IFDH}
+           CLHEP::CLHEP
+           IFDH
            messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::EG
            ROOT::Physics
-           ${SQLITE3}
+           SQLITE
          )
 
 install_headers()

@@ -14,7 +14,6 @@ art_make(MODULE_LIBRARIES
          art_root_io::TFileService_service
          art::Persistency_Provenance
          messagefacility::MF_MessageLogger
-         ${CLHEP}
          ${GENIE_LIB_LIST}
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
          ROOT::EG

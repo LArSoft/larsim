@@ -15,7 +15,6 @@ art_make(LIB_LIBRARIES
            art::Framework_Services_Registry
            art_root_io::TFileService_service
            art_root_io::tfile_support
-           ${CLHEP}
            messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::Tree

@@ -9,7 +9,6 @@ art_make(MODULE_LIBRARIES
            art_root_io::TFileService_service
            art_root_io::tfile_support
            messagefacility::MF_MessageLogger
-           ${CLHEP}
            ROOT::Core
            ROOT::EG
            ROOT::Hist
