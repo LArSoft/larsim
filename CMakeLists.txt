@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(larsim VERSION 09.14.02.01 LANGUAGES CXX)
+project(larsim VERSION 09.14.02.02 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
