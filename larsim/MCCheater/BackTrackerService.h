@@ -14,6 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Persistency/Provenance/ScheduleContext.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "larsim/MCCheater/BackTracker.h"
