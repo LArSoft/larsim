@@ -10,6 +10,7 @@ standard_pdfastsim_par_ar:
   DoFastComponent:       true
   DoSlowComponent:       true
   DoReflectedLight:      false
+  IncludeAnodeReflections: false
   IncludePropTime:       true
   UseLitePhotons:        true
   OpaqueCathode:         true
