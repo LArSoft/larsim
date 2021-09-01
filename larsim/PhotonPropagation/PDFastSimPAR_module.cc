@@ -269,6 +269,7 @@ namespace phot {
       fhicl::Atom<bool>          DoReflectedLight { Name("DoReflectedLight"), Comment("Simulate reflected visible light") };
       fhicl::Atom<bool>          IncludeAnodeReflections { Name("IncludeAnodeReflections"), Comment("Simulate anode reflections, default false"), false };
       fhicl::Atom<bool>          IncludePropTime  { Name("IncludePropTime"),  Comment("Simulate light propagation time") };
+      fhicl::Atom<bool>          GeoPropTimeOnly  { Name("GeoPropTimeOnly"),  Comment("Simulate light propagation time geometric approximation, default false"), false };
       fhicl::Atom<bool>          UseLitePhotons   { Name("UseLitePhotons"),   Comment("Store SimPhotonsLite/OpDetBTRs instead of SimPhotons") };
       fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
       fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
@@ -304,6 +305,7 @@ namespace phot {
     void Initialization();
 
     void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void getVUVTimesGeo(std::vector<double>& arrivalTimes, const double distance_in_cm);
     void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
 
     void generateParam(const size_t index, const size_t angle_bin);
@@ -407,6 +409,7 @@ namespace phot {
     bool fDoReflectedLight;
     bool fIncludeAnodeReflections;
     bool fIncludePropTime;
+    bool fGeoPropTimeOnly;
     bool fUseLitePhotons;
     bool fOpaqueCathode;
     bool fOnlyOneCryostat;
@@ -495,6 +498,7 @@ namespace phot {
     , fDoReflectedLight(config().DoReflectedLight())
     , fIncludeAnodeReflections(config().IncludeAnodeReflections())
     , fIncludePropTime(config().IncludePropTime())
+    , fGeoPropTimeOnly(config().GeoPropTimeOnly())
     , fUseLitePhotons(config().UseLitePhotons())
     , fOpaqueCathode(config().OpaqueCathode())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
@@ -503,7 +507,7 @@ namespace phot {
   {
 
     // Validate configuration options
-    if(fIncludePropTime && !config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams)) {
+    if(fIncludePropTime && (!config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams) || !fGeoPropTimeOnly)) {
       throw art::Exception(art::errors::Configuration)
           << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
     }
@@ -870,7 +874,7 @@ namespace phot {
 
     }
 
-    if (fIncludePropTime) {
+    if (fIncludePropTime && !fGeoPropTimeOnly) {
       mf::LogInfo("PDFastSimPAR") << "Using VUV timing parameterization";
 
       fparameters[0] = std::vector(1, fVUVTimingParams.get<std::vector<double>>("Distances_landau"));
@@ -915,6 +919,10 @@ namespace phot {
         fvis_vmean             = fVISTimingParams.get<double>("vis_vmean");
         fangle_bin_timing_vis  = fVISTimingParams.get<double>("angle_bin_timing_vis");
       }
+    }
+    if (fIncludePropTime && fGeoPropTimeOnly) {
+      mf::LogInfo("PDFastSimPAR") << "Using geometric VUV time propagation";
+      fvuv_vgroup_mean          = fVUVTimingParams.get<double>("vuv_vgroup_mean");
     }
 
     // LAr absorption length in cm
@@ -1415,7 +1423,7 @@ namespace phot {
                                 const size_t OpChannel,
                                 bool Reflected)
   {
-    if (fIncludePropTime) {
+    if (fIncludePropTime && !fGeoPropTimeOnly) {
       // Get VUV photons arrival time distribution from the parametrization
       geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
       if (!Reflected) {
@@ -1429,6 +1437,12 @@ namespace phot {
         getVISTimes(arrival_time_dist, geo::vect::toTVector3(x0),
                     geo::vect::toTVector3(opDetCenter)); // in ns
       }
+    }
+    else if (fIncludePropTime && fGeoPropTimeOnly && !Reflected) {
+      // Get VUV photons arrival time geometrically
+      geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
+      double distance = std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
+      getVUVTimesGeo(arrival_time_dist, distance); // in ns
     }
     else {
       throw cet::exception("PDFastSimPAR")
@@ -1457,6 +1471,18 @@ namespace phot {
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = VUV_timing[angle_bin][index].GetRandom(VUV_min[angle_bin][index], VUV_max[angle_bin][index]);
       }
+    }
+  }
+
+  //......................................................................
+  // VUV arrival times calculation function - pure geometric approximation for use in Xenon doped scenarios
+  void 
+  PDFastSimPAR::getVUVTimesGeo(std::vector<double>& arrivalTimes, const double distance) 
+  {
+    // times are fixed shift i.e. direct path only
+    double t_prop_correction = distance / fvuv_vgroup_mean;
+    for (size_t i = 0; i < arrivalTimes.size(); ++i) {
+        arrivalTimes[i] = t_prop_correction;
     }
   }
 
