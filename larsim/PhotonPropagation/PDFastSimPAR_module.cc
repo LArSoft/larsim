@@ -272,6 +272,7 @@ namespace phot {
       fhicl::Atom<bool>          GeoPropTimeOnly  { Name("GeoPropTimeOnly"),  Comment("Simulate light propagation time geometric approximation, default false"), false };
       fhicl::Atom<bool>          UseLitePhotons   { Name("UseLitePhotons"),   Comment("Store SimPhotonsLite/OpDetBTRs instead of SimPhotons") };
       fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
+      fhicl::Atom<bool>          OnlyActiveVolume { Name("OnlyActiveVolume"), Comment("PAR fast sim usually only for active volume, default true"), true };
       fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
       DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")}; 
       ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
@@ -412,11 +413,9 @@ namespace phot {
     bool fGeoPropTimeOnly;
     bool fUseLitePhotons;
     bool fOpaqueCathode;
+    bool fOnlyActiveVolume;
     bool fOnlyOneCryostat;
     std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
-
-    /// Whether photon propagation is performed only from active volumes (maybe a parameter in the future)
-    bool const fOnlyActiveVolume = true; // PAR fast sim currently only for active volume    
 
     // Parameterized Simulation
     fhicl::ParameterSet fVUVTimingParams;
@@ -449,7 +448,6 @@ namespace phot {
     std::vector<std::vector<double>> fborder_corr_flat;
     // lateral PDs
     bool fIsFlatPDCorrLat;
-    double fFieldCageTransparency;
     std::vector<double> fGH_distances_anode;
     std::vector<std::vector<std::vector<double>>> fGHvuvpars_flat_lateral;    
     // dome PDs
@@ -457,6 +455,10 @@ namespace phot {
     std::vector<std::vector<double>> fGHvuvpars_dome;
     std::vector<double> fborder_corr_angulo_dome;
     std::vector<std::vector<double>> fborder_corr_dome;
+    // Field cage scaling
+    bool fApplyFieldCageTransparency;
+    double fFieldCageTransparencyLateral;
+    double fFieldCageTransparencyCathode;
 
     // For VIS semi-analytic hits
     // correction parameters for VIS Nhits estimation
@@ -501,13 +503,14 @@ namespace phot {
     , fGeoPropTimeOnly(config().GeoPropTimeOnly())
     , fUseLitePhotons(config().UseLitePhotons())
     , fOpaqueCathode(config().OpaqueCathode())
+    , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
     , fScintTime{art::make_tool<ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
     , fVUVHitsParams(config().VUVHits.get<fhicl::ParameterSet>())
   {
 
     // Validate configuration options
-    if(fIncludePropTime && (!config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams) || !fGeoPropTimeOnly)) {
+    if(fIncludePropTime && !config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams)) {
       throw art::Exception(art::errors::Configuration)
           << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
     }
@@ -561,6 +564,8 @@ namespace phot {
     mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
                                  << "EventID: " << event.event();
 
+    std::cout << "\n\n\n\n\n Entered event \n\n\n\n\n\n";
+
     auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
     auto phlit = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
@@ -591,6 +596,7 @@ namespace phot {
       return;
     }
 
+
     auto const& edeps = edepHandle;
 
     int num_points = 0;
@@ -608,7 +614,12 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
-      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
+      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) {
+        std::cout << "OUTSIDE ACTIVE VOLUME" << std::endl;
+        continue;
+      }
+
+      //std::cout << "ScintPoint: " << pos[0] << ", " << pos[1] << ", " << pos[2] << " --- nphotons: " << nphot << std::endl;
 
       double nphot_fast = edepi.NumFPhotons();
       double nphot_slow = edepi.NumSPhotons();
@@ -942,7 +953,10 @@ namespace phot {
     fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
     fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv", 10);
     fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
-    fFieldCageTransparency = fVUVHitsParams.get<double>("FieldCageTransparency", 1.0);
+    fApplyFieldCageTransparency = fVUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
+    fFieldCageTransparencyLateral = fVUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
+    fFieldCageTransparencyCathode = fVUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);
+
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("PDFastSimPAR")
@@ -1040,6 +1054,8 @@ namespace phot {
 
       DetectedNumFast[OpDet] = DetThis[0];
       DetectedNumSlow[OpDet] = DetThis[1];
+
+      std::cout << ScintPoint.X() << ", " << ScintPoint.Y() << ", " << ScintPoint.Z() << std::endl;
 
       //   mf::LogInfo("PDFastSimPAR") << "FastScint: " <<
       //   //   it->second<<" " << Num << " " << DetThisPMT;
@@ -1156,8 +1172,11 @@ namespace phot {
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
 
-    // apply field cage transparency factor to laterals
-    if (opDet.orientation == 1) GH_correction = GH_correction * fFieldCageTransparency;
+    // apply field cage transparency factor 
+    if (fApplyFieldCageTransparency) {
+      if (opDet.orientation == 1) GH_correction = GH_correction * fFieldCageTransparencyLateral;
+      else if (opDet.orientation == 0) GH_correction = GH_correction * fFieldCageTransparencyCathode;
+    }
 
     // calculate number photons for fast and slow componenets
     DetThis[0] = fRandPoissPhot->fire(GH_correction * hits_geo_fast / cosine);
@@ -1389,12 +1408,18 @@ namespace phot {
       }
       // interpolate in r
       border_correction = interpolate(fvis_distances_r_dome, interp_vals, r, false);
-
-      // apply anode reflectivity factor
-      if (AnodeMode) border_correction = border_correction * fAnodeReflectivity;
     }
     else {
      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
+    }
+
+    // apply anode reflectivity factor
+    if (AnodeMode) border_correction = border_correction * fAnodeReflectivity;
+
+    // apply field cage transparency factor 
+    if (fApplyFieldCageTransparency) {
+      if (opDet.orientation == 1) border_correction = border_correction * fFieldCageTransparencyLateral;
+      else if (opDet.orientation == 0) border_correction = border_correction * fFieldCageTransparencyCathode;
     }
 
     ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_fast / cosine_vis);

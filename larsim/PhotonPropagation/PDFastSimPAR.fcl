@@ -15,6 +15,7 @@ standard_pdfastsim_par_ar:
   GeoPropTimeOnly:       false
   UseLitePhotons:        true
   OpaqueCathode:         true
+  OnlyActiveVolume:     true
   OnlyOneCryostat:       false
   ScintTimeTool:         @local::ScintTimeLAr
 
