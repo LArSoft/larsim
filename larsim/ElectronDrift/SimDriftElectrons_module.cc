@@ -558,7 +558,7 @@ namespace detsim {
                 energyDeposit.TrackID());
           }
           catch (cet::exception& e) {
-            mf::LogWarning("SimDriftElectrons")
+            mf::LogDebug("SimDriftElectrons")
               << "unable to drift electrons from point (" << xyz[0] << "," << xyz[1] << ","
               << xyz[2] << ") with exception " << e;
           } // end try to determine channel
