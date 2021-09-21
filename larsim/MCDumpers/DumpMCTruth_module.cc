@@ -27,6 +27,8 @@
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include <numeric> // std::accumulate()
+
 namespace sim {
   class DumpMCTruth;
 }
@@ -129,8 +131,9 @@ void sim::DumpMCTruth::analyze(art::Event const& event) {
 
   std::vector<ProductInfo_t> AllTruths;
   if (bAllTruth) {
-    std::vector<art::Handle<std::vector<simb::MCTruth>>> handles;
-    event.getManyByType(handles);
+    //std::vector<art::Handle<std::vector<simb::MCTruth>>> handles;
+    //event.getManyByType(handles);
+    auto handles = event.getMany<std::vector<simb::MCTruth>>();
     std::copy(handles.begin(), handles.end(), std::back_inserter(AllTruths));
   }
   else {

@@ -19,14 +19,14 @@ art_make(LIB_LIBRARIES
          larsim_EventWeight_Base
          nurandom_RandomUtils_NuRandomService_service
          nugen_EventGeneratorBase_GENIE
-         ${ART_FRAMEWORK_PRINCIPAL}
-         ${ART_PERSISTENCY_PROVENANCE}
-         ${ART_FRAMEWORK_SERVICES_REGISTRY}
-         ${FHICLCPP}
+         art::Framework_Principal
+         ART_PERSISTENCY_PROVENANCE
+         art::Framework_Services_Registry
+         fhiclcpp::fhiclcpp
          ${GENIE_LIB_LIST}
-         ${LOG4CPP}
-         ${MF_MESSAGELOGGER}
-         cetlib_except)
+         LOG4CPP
+         messagefacility::MF_MessageLogger
+         cetlib_except::cetlib_except)
 
 install_headers()
 install_fhicl()

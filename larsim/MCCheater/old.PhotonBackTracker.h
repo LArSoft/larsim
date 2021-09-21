@@ -21,7 +21,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // int
 #include "nusimdata/SimulationBase/MCParticle.h"

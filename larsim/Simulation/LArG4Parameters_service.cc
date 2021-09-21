@@ -12,6 +12,7 @@
 
 
 // Framework includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "larsim/Simulation/LArG4Parameters.h"
 

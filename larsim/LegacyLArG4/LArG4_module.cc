@@ -677,7 +677,8 @@ namespace larg4 {
     //event
     std::vector<art::Handle<std::vector<simb::MCTruth>>> mclists;
     if (empty(fInputLabels))
-      evt.getManyByType(mclists);
+      //evt.getManyByType(mclists);
+      mclists = evt.getMany<std::vector<simb::MCTruth>>();
     else {
       mclists.resize(fInputLabels.size());
       for (size_t i = 0; i < fInputLabels.size(); i++)

@@ -4,14 +4,13 @@ art_make(LIB_LIBRARIES larevt_Filters
                        larcore_Geometry_Geometry_service
                        larsim_Simulation
                        larsim_IonizationScintillation
-                       ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                       ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-                       ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                       canvas
-                       ${MF_MESSAGELOGGER}
-                       ${FHICLCPP}
-                       ${CLHEP}
-                       cetlib_except
+                       art::Framework_Services_Registry
+                       art_root_io::tfile_support ROOT::Core
+                       art_root_io::TFileService_service
+                       canvas::canvas
+                       messagefacility::MF_MessageLogger
+                       fhiclcpp::fhiclcpp
+                       cetlib_except::cetlib_except
                        ROOT::EG
                        ROOT::RIO
                        ROOT::Hist
@@ -27,9 +26,9 @@ art_make(LIB_LIBRARIES larevt_Filters
                        lardataobj_RawData
                        larcorealg_Geometry
                        larcore_Geometry_Geometry_service
-                       ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-                       ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                       ${MF_MESSAGELOGGER}
+                       art_root_io::tfile_support ROOT::Core
+                       art_root_io::TFileService_service
+                       messagefacility::MF_MessageLogger
                        ROOT::GenVector
           MODULE_LIBRARIES larsim_PhotonPropagation
                         larsim_LegacyLArG4
@@ -41,14 +40,13 @@ art_make(LIB_LIBRARIES larevt_Filters
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
                         nug4_ParticleNavigation
-                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_ROOT_IO_TFILE_SUPPORT}
+                        art_root_io::TFileService_service
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support
                         ROOT::Core
-                        ${MF_MESSAGELOGGER}
+                        messagefacility::MF_MessageLogger
                         nurandom_RandomUtils_NuRandomService_service
-                        art_Persistency_Provenance
-                        ${CLHEP}
+                        art::Persistency_Provenance
                         ROOT::GenVector
                         ROOT::Gpad
          )

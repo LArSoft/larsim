@@ -21,9 +21,6 @@
 // STL
 #include <set>
 
-// ROOT
-#include <TString.h>
-
 namespace trigger
 {
   /**

@@ -3,10 +3,7 @@ art_make(
            "POTaccumulator_module.cc"
          LIB_LIBRARIES
            nusimdata_SimulationBase
-           cetlib
-           cetlib_except
-           ${FHICLCPP}
-           ${CLHEP}
+           CLHEP::CLHEP
            ROOT::Core
            ROOT::Hist
            ROOT::Physics
@@ -18,11 +15,10 @@ art_make(
            larsim_PhotonPropagation_PhotonVisibilityService_service
            nurandom_RandomUtils_NuRandomService_service
            nusimdata_SimulationBase
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${CLHEP}
-           ${MF_MESSAGELOGGER}
+           art::Framework_Services_Registry
+           art_root_io::TFileService_service
+           art_root_io::tfile_support
+           messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::EG
            ROOT::Geom
@@ -33,7 +29,7 @@ art_make(
 
 simple_plugin(POTaccumulator "module"
   larcoreobj_SummaryData
-  ${MF_MESSAGELOGGER}
+  messagefacility::MF_MessageLogger
   )
 
 install_headers()

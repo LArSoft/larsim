@@ -231,9 +231,9 @@ namespace simfilter {
     //get the list of particles from this event
     art::ServiceHandle<geo::Geometry const> geom;
 
-    std::vector< art::Handle< std::vector<simb::MCTruth> > > allmclists;
-    evt.getManyByType(allmclists);
-
+    //std::vector< art::Handle< std::vector<simb::MCTruth> > > allmclists;
+    //evt.getManyByType(allmclists);
+    auto allmclists = evt.getMany< std::vector<simb::MCTruth> >();
     bool keepEvent=false;
     for(size_t mcl = 0; mcl < allmclists.size(); ++mcl){
       art::Handle< std::vector<simb::MCTruth> > mclistHandle = allmclists[mcl];

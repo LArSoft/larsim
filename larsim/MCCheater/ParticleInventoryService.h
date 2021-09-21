@@ -15,9 +15,10 @@
 
 #include "larsim/MCCheater/ParticleInventory.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Table.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h" //Needed for Legacy support
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Persistency/Provenance/ScheduleContext.h"
 
 

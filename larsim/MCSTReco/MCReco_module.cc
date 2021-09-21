@@ -12,6 +12,7 @@
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"

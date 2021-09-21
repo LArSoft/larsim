@@ -12,6 +12,8 @@
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h"
 
+#include <numeric> // std::iota()
+
 
 //------------------------------------------------------------------------------
 phot::IPhotonMappingTransformations::LibraryIndexToOpDetMap

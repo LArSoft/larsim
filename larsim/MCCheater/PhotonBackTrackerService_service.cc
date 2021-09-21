@@ -10,6 +10,7 @@
 #include "larsim/MCCheater/PhotonBackTrackerService.h"
 
 // Framework includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes

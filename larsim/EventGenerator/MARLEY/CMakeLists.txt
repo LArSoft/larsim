@@ -5,23 +5,23 @@ art_make(LIB_LIBRARIES
            larcorealg_Geometry
            nurandom_RandomUtils_NuRandomService_service
            nusimdata_SimulationBase
-           ${MARLEY}
-           ${MARLEY_ROOT}
-           ${MF_MESSAGELOGGER}
-           cetlib
-           cetlib_except
+           MARLEY
+           MARLEY_ROOT
+           messagefacility::MF_MessageLogger
+           cetlib::cetlib
+           cetlib_except::cetlib_except
            ROOT::Core
            ROOT::Geom
            ROOT::Physics
-           ${ART_UTILITIES}
-           ${FHICLCPP}
+           art::Utilities
+           fhiclcpp::fhiclcpp
          MODULE_LIBRARIES
            larsim_EventGenerator_MARLEY
            larcoreobj_SummaryData
            lardataobj_Simulation
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
+           art::Framework_Services_Registry
+           art_root_io::TFileService_service
+           art_root_io::tfile_support
            ROOT::Hist
            ROOT::Tree
            ROOT::RIO
