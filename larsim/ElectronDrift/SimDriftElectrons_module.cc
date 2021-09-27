@@ -471,10 +471,9 @@ namespace detsim {
           // Also take into account special case for ArgoNeuT (Nplanes = 2 and
           // drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
-            TDiff +=
-              (tpcGeo.PlaneLocation(ip + 1)[driftcoordinate] -
-               tpcGeo.PlaneLocation(ip)[driftcoordinate]) *
-              fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
+            TDiff +=  
+				tpcGeo.PlanePitch(ip+1, ip) *
+              	fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 
           fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
