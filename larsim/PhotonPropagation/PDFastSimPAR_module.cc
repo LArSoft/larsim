@@ -564,8 +564,6 @@ namespace phot {
     mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
                                  << "EventID: " << event.event();
 
-    std::cout << "\n\n\n\n\n Entered event \n\n\n\n\n\n";
-
     auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
     auto phlit = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
@@ -614,12 +612,7 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
-      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) {
-        std::cout << "OUTSIDE ACTIVE VOLUME" << std::endl;
-        continue;
-      }
-
-      //std::cout << "ScintPoint: " << pos[0] << ", " << pos[1] << ", " << pos[2] << " --- nphotons: " << nphot << std::endl;
+      if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
 
       double nphot_fast = edepi.NumFPhotons();
       double nphot_slow = edepi.NumSPhotons();
@@ -1055,8 +1048,6 @@ namespace phot {
       DetectedNumFast[OpDet] = DetThis[0];
       DetectedNumSlow[OpDet] = DetThis[1];
 
-      std::cout << ScintPoint.X() << ", " << ScintPoint.Y() << ", " << ScintPoint.Z() << std::endl;
-
       //   mf::LogInfo("PDFastSimPAR") << "FastScint: " <<
       //   //   it->second<<" " << Num << " " << DetThisPMT;
       //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
@@ -1073,7 +1064,9 @@ namespace phot {
     // distance and angle between ScintPoint and OpDetPoint
     geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
     const double distance = relative.R();
-    const double cosine = std::abs(relative.X()) / distance;
+    double cosine;
+    if (opDet.orientation == 1) cosine = std::abs(relative.Y()) / distance;
+    else cosine = std::abs(relative.X()) / distance;
     // const double theta = std::acos(cosine) * 180. / CLHEP::pi;
     const double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
@@ -1453,7 +1446,10 @@ namespace phot {
       geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
       if (!Reflected) {
         double distance = std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
-        double cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
+        double cosine; 
+        if (fOpDetOrientation[OpChannel] == 1) cosine = std::abs(x0.Y() - opDetCenter.Y()) / distance;
+        else cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
+      
         double theta = fast_acos(cosine)*180./CLHEP::pi;
         int angle_bin = theta/fangle_bin_timing_vuv;
         getVUVTimes(arrival_time_dist, distance, angle_bin); // in ns
@@ -1899,21 +1895,21 @@ namespace phot {
     double d2; 
     if (OpDetOrientation == 1) {
       // lateral PD, arapuca plane fixed in y direction
-      d1 = v.X();
-      d2 = v.Y(); 
+      d1 = std::abs(v.X());
+      d2 = std::abs(v.Y()); 
     }
     else {
       // anode/cathode PD, arapuca plane fixed in x direction [default]
-      d1 = v.Y();
-      d2 = v.X();
+      d1 = std::abs(v.Y());
+      d2 = std::abs(v.X());
     }
     // arapuca plane fixed in x direction
     if (isApproximatelyZero(d1) && isApproximatelyZero(v.Z())) {
       return Rectangle_SolidAngle(o.h, o.w, d2);
     }
-    if (isDefinitelyGreaterThan(d1, o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
       double A = d1 - o.h * .5;
-      double B = v.Z() - o.w * .5;
+      double B = std::abs(v.Z()) - o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) +
@@ -1921,9 +1917,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if ((d1 <= o.h * .5) && (v.Z() <= o.w * .5)) {
+    if ((d1 <= o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
       double A = -d1 + o.h * .5;
-      double B = -v.Z() + o.w * .5;
+      double B = -std::abs(v.Z()) + o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
@@ -1931,9 +1927,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if (isDefinitelyGreaterThan(d1, o.h * .5) && (v.Z() <= o.w * .5)) {
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
       double A = d1 - o.h * .5;
-      double B = -v.Z() + o.w * .5;
+      double B = -std::abs(v.Z()) + o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), d2) -
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) -
@@ -1941,9 +1937,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
+    if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
       double A = -d1 + o.h * .5;
-      double B = v.Z() - o.w * .5;
+      double B = std::abs(v.Z()) - o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
