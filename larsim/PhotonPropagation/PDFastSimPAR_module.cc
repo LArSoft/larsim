@@ -384,6 +384,7 @@ namespace phot {
     TVector3 fcathode_centre;
     TVector3 fanode_centre;
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+    int fNTPC;
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
@@ -810,6 +811,7 @@ namespace phot {
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
     fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
+    fNTPC = geom.NTPC();
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
@@ -1428,7 +1430,7 @@ namespace phot {
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is close to zero, otherwise return 0 hits
     if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10. && fActiveVolumes.size() > 1) { // TODO: unhardcode
+        std::abs(OpDetPoint.X()) > 10. && fNTPC == 2) { // TODO: unhardcode
       return false;
     }
     return true;
