@@ -6,9 +6,8 @@ art_make(LIB_LIBRARIES
            nusimdata_SimulationBase
            larcorealg_Geometry
            larcore_Geometry_Geometry_service
-           ${CLHEP}
-           ${FHICLCPP}
-           ${MF_MESSAGELOGGER}
+           fhiclcpp::fhiclcpp
+           messagefacility::MF_MessageLogger
          MODULE_LIBRARIES
            larsim_IonizationScintillation
            larsim_Simulation
@@ -16,13 +15,12 @@ art_make(LIB_LIBRARIES
            nurandom_RandomUtils_NuRandomService_service
            larcorealg_Geometry
            larcore_Geometry_Geometry_service
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${CLHEP}
+           art::Framework_Services_Registry
+           art_root_io::tfile_support
+           art_root_io::TFileService_service
            ROOT::Core
            ROOT::Tree
-           ${MF_MESSAGELOGGER})
+           messagefacility::MF_MessageLogger)
 
 install_headers()
 install_fhicl()

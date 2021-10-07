@@ -4,18 +4,18 @@ art_make(NO_PLUGINS
   LIB_LIBRARIES
     ROOT::Core
     larcorealg_Geometry
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    art::Framework_Services_Registry
     ${CANVAS}
-    cetlib
-    cetlib_except
+    cetlib::cetlib
+    cetlib_except::cetlib_except
     fhiclcpp
-    ${CLHEP}
     ${ART_UTILITIES}
   )
 
 
 simple_plugin(ScintTimeLAr "tool"
               larsim_PhotonPropagation_ScintTimeTools
+              LIBRARIES PRIVATE CLHEP::CLHEP
               )
 
 

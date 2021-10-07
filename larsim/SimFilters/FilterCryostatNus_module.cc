@@ -50,8 +50,9 @@ namespace simfilter {
     // get the list of particles from this event
     auto const& geom = *(lar::providerFrom<geo::Geometry>());
 
-    std::vector<art::Handle<std::vector<simb::MCTruth>>> allmclists;
-    evt.getManyByType(allmclists);
+    //std::vector<art::Handle<std::vector<simb::MCTruth>>> allmclists;
+    //evt.getManyByType(allmclists);
+    auto allmclists = evt.getMany<std::vector<simb::MCTruth>>();
 
     bool inCryostatNu = false;
     for (auto const& mclistHandle : allmclists) {

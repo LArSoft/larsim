@@ -10,9 +10,12 @@ standard_pdfastsim_par_ar:
   DoFastComponent:       true
   DoSlowComponent:       true
   DoReflectedLight:      false
+  IncludeAnodeReflections: false
   IncludePropTime:       true
+  GeoPropTimeOnly:       false
   UseLitePhotons:        true
   OpaqueCathode:         true
+  OnlyActiveVolume:     true
   OnlyOneCryostat:       false
   ScintTimeTool:         @local::ScintTimeLAr
 

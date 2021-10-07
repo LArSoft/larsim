@@ -1,10 +1,10 @@
 art_make(LIB_LIBRARIES
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
+           art::Framework_Services_Registry
            larsim_IonizationScintillation
-           canvas
-           cetlib_except
-	   ${MF_MESSAGELOGGER}
-           ${FHICLCPP}
+           canvas::canvas
+           cetlib_except::cetlib_except
+	   messagefacility::MF_MessageLogger
+           fhiclcpp::fhiclcpp
          MODULE_LIBRARIES
            larsim_ElectronDrift
            larsim_Simulation
@@ -12,11 +12,10 @@ art_make(LIB_LIBRARIES
            larsim_IonizationScintillation
            larcorealg_Geometry
            nurandom_RandomUtils_NuRandomService_service
-           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-           ${ART_ROOT_IO_TFILE_SUPPORT}
-           ${CLHEP}
-           ${MF_MESSAGELOGGER}
+           art::Framework_Services_Registry
+           art_root_io::TFileService_service
+           art_root_io::tfile_support
+           messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::Tree
          )

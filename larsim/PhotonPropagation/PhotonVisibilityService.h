@@ -11,8 +11,8 @@
 #define PHOTONVISIBILITYSERVICE_H
 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"          // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"

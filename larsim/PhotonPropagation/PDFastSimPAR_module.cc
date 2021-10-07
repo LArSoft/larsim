@@ -267,15 +267,20 @@ namespace phot {
       fhicl::Atom<bool>          DoFastComponent  { Name("DoFastComponent"),  Comment("Simulate slow scintillation light, default true"), true };
       fhicl::Atom<bool>          DoSlowComponent  { Name("DoSlowComponent"),  Comment("Simulate slow scintillation light") };
       fhicl::Atom<bool>          DoReflectedLight { Name("DoReflectedLight"), Comment("Simulate reflected visible light") };
+      fhicl::Atom<bool>          IncludeAnodeReflections { Name("IncludeAnodeReflections"), Comment("Simulate anode reflections, default false"), false };
       fhicl::Atom<bool>          IncludePropTime  { Name("IncludePropTime"),  Comment("Simulate light propagation time") };
+      fhicl::Atom<bool>          GeoPropTimeOnly  { Name("GeoPropTimeOnly"),  Comment("Simulate light propagation time geometric approximation, default false"), false };
       fhicl::Atom<bool>          UseLitePhotons   { Name("UseLitePhotons"),   Comment("Store SimPhotonsLite/OpDetBTRs instead of SimPhotons") };
       fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
+      fhicl::Atom<bool>          OnlyActiveVolume { Name("OnlyActiveVolume"), Comment("PAR fast sim usually only for active volume, default true"), true };
       fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
       DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")}; 
       ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
       ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")}; 
       DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")}; 
       ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")}; 
+
+      
 
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -295,11 +300,13 @@ namespace phot {
       double w; // width
       geo::Point_t OpDetPoint;
       int type;
+      int orientation;
     };
 
     void Initialization();
 
     void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void getVUVTimesGeo(std::vector<double>& arrivalTimes, const double distance_in_cm);
     void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
 
     void generateParam(const size_t index, const size_t angle_bin);
@@ -317,8 +324,9 @@ namespace phot {
                             std::map<size_t, int>& ReflDetectedNumSlow,
                             const double NumFast,
                             const double NumSlow,
-                            geo::Point_t const& ScintPoint);
-
+                            geo::Point_t const& ScintPoint,
+                            bool AnodeMode = false);
+    
     void VUVHits(const double NumFast,
                 const double NumSlow,
                 geo::Point_t const& ScintPoint,
@@ -330,7 +338,8 @@ namespace phot {
                 const double cathode_hits_rec_fast,
                 const double cathode_hits_rec_slow,
                 geo::Point_t const& hotspot,
-                std::vector<int> &ReflDetThis);
+                std::vector<int> &ReflDetThis,
+                bool AnodeMode = false);
 
     void propagationTime(std::vector<double>& arrival_time_dist,
                          geo::Point_t const& x0,
@@ -352,7 +361,7 @@ namespace phot {
 
     // solid angle of rectangular aperture calculation functions
     double Rectangle_SolidAngle(const double a, const double b, const double d);
-    double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v);
+    double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v, double OpDetOrientation);
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b);
      // solid angle of a dome aperture calculation functions
@@ -371,14 +380,19 @@ namespace phot {
 
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
+    double fanode_plane_depth, fanode_ydimension, fanode_zdimension;
     TVector3 fcathode_centre;
+    TVector3 fanode_centre;
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+    int fNTPC;
     // Optical detector properties for semi-analytic hits
     double fradius;
     Dims fcathode_plane;
+    Dims fanode_plane;
     int fL_abs_vuv;
     std::vector<geo::Point_t> fOpDetCenter;
     std::vector<int> fOpDetType;
+    std::vector<int> fOpDetOrientation;
     std::vector<double> fOpDetLength;
     std::vector<double> fOpDetHeight;
 
@@ -395,14 +409,14 @@ namespace phot {
     bool fDoFastComponent;
     bool fDoSlowComponent;
     bool fDoReflectedLight;
+    bool fIncludeAnodeReflections;
     bool fIncludePropTime;
+    bool fGeoPropTimeOnly;
     bool fUseLitePhotons;
     bool fOpaqueCathode;
+    bool fOnlyActiveVolume;
     bool fOnlyOneCryostat;
     std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
-
-    /// Whether photon propagation is performed only from active volumes (maybe a parameter in the future)
-    bool const fOnlyActiveVolume = true; // PAR fast sim currently only for active volume    
 
     // Parameterized Simulation
     fhicl::ParameterSet fVUVTimingParams;
@@ -433,23 +447,37 @@ namespace phot {
     std::vector<std::vector<double>> fGHvuvpars_flat;
     std::vector<double> fborder_corr_angulo_flat;
     std::vector<std::vector<double>> fborder_corr_flat;
+    // lateral PDs
+    bool fIsFlatPDCorrLat;
+    std::vector<double> fGH_distances_anode;
+    std::vector<std::vector<std::vector<double>>> fGHvuvpars_flat_lateral;    
     // dome PDs
     bool fIsDomePDCorr;
     std::vector<std::vector<double>> fGHvuvpars_dome;
     std::vector<double> fborder_corr_angulo_dome;
     std::vector<std::vector<double>> fborder_corr_dome;
+    // Field cage scaling
+    bool fApplyFieldCageTransparency;
+    double fFieldCageTransparencyLateral;
+    double fFieldCageTransparencyCathode;
 
     // For VIS semi-analytic hits
     // correction parameters for VIS Nhits estimation
     double fdelta_angulo_vis;
+    double fAnodeReflectivity;
     // flat PDs
     std::vector<double> fvis_distances_x_flat;
     std::vector<double> fvis_distances_r_flat;
     std::vector<std::vector<std::vector<double>>> fvispars_flat;
+    // lateral PDs
+    std::vector<double> fvis_distances_x_flat_lateral;
+    std::vector<double> fvis_distances_r_flat_lateral;
+    std::vector<std::vector<std::vector<double>>> fvispars_flat_lateral;
     // dome PDs
     std::vector<double> fvis_distances_x_dome;
     std::vector<double> fvis_distances_r_dome;
     std::vector<std::vector<std::vector<double>>> fvispars_dome;
+    
 
   };
 
@@ -471,9 +499,12 @@ namespace phot {
     , fDoFastComponent(config().DoFastComponent())
     , fDoSlowComponent(config().DoSlowComponent())
     , fDoReflectedLight(config().DoReflectedLight())
+    , fIncludeAnodeReflections(config().IncludeAnodeReflections())
     , fIncludePropTime(config().IncludePropTime())
+    , fGeoPropTimeOnly(config().GeoPropTimeOnly())
     , fUseLitePhotons(config().UseLitePhotons())
     , fOpaqueCathode(config().OpaqueCathode())
+    , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
     , fScintTime{art::make_tool<ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
     , fVUVHitsParams(config().VUVHits.get<fhicl::ParameterSet>())
@@ -494,7 +525,11 @@ namespace phot {
       throw art::Exception(art::errors::Configuration)
           << "Reflected light propagation time simulation requested, but VISTiming not specified." << "\n";
     }
-    
+
+    if(fIncludeAnodeReflections && !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
+      throw art::Exception(art::errors::Configuration)
+          << "Anode reflections light simulation requested, but VisHits not specified." << "\n";
+    }   
 
 
     Initialization();
@@ -560,6 +595,7 @@ namespace phot {
       return;
     }
 
+
     auto const& edeps = edepHandle;
 
     int num_points = 0;
@@ -590,8 +626,19 @@ namespace phot {
       std::map<size_t, int> DetectedNumSlow;
 
       bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
-      if ( needHits ) 
+      if ( needHits ) {
         detectedDirectHits(DetectedNumFast, DetectedNumSlow, nphot_fast, nphot_slow, ScintPoint);
+        if ( fIncludeAnodeReflections ) {
+          std::map<size_t, int> AnodeDetectedNumFast;
+          std::map<size_t, int> AnodeDetectedNumSlow;
+          detectedReflecHits(AnodeDetectedNumFast, AnodeDetectedNumSlow, nphot_fast, nphot_slow, ScintPoint, true);
+          // add to exiting count
+          for (size_t const OpDet : util::counter(nOpDets)){
+            DetectedNumFast[OpDet] += AnodeDetectedNumFast[OpDet];
+            DetectedNumSlow[OpDet] += AnodeDetectedNumSlow[OpDet];
+          }
+        }
+      }
 
       // reflected light, if enabled
       std::map<size_t, int> ReflDetectedNumFast;
@@ -764,6 +811,7 @@ namespace phot {
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
     fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
+    fNTPC = geom.NTPC();
 
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
@@ -796,28 +844,43 @@ namespace phot {
                        fActiveVolumes[0].CenterY(),
                        fActiveVolumes[0].CenterZ()};
 
+    fanode_centre = {geom.TPC(0, 0).FirstPlane().GetCenter().X(),
+                      fActiveVolumes[0].CenterY(),
+                      fActiveVolumes[0].CenterZ() };
+
     for (size_t const i : util::counter(nOpDets)) {
       geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
       fOpDetCenter.push_back(opDet.GetCenter());
 
       if (opDet.isSphere()) {  // dome PMTs
         fOpDetType.push_back(1); // dome
+        fOpDetOrientation.push_back(0); // anode/cathode (default)
         fOpDetLength.push_back(-1);
         fOpDetHeight.push_back(-1);
       }
       else if (opDet.isBar()) {
         fOpDetType.push_back(0); // (X)Arapucas/Bars
+        // determine orientation to get correction OpDet dimensions
         fOpDetLength.push_back(opDet.Length());
-        fOpDetHeight.push_back(opDet.Height());
+        if (opDet.Width() > opDet.Height()) { // laterals, Y dimension smallest
+          fOpDetOrientation.push_back(1);          
+          fOpDetHeight.push_back(opDet.Width());  
+        }
+        else {  // anode/cathode (default), X dimension smallest
+          fOpDetOrientation.push_back(0);
+          fOpDetHeight.push_back(opDet.Height());
+        }        
       }
       else {
         fOpDetType.push_back(2); // disk PMTs
+        fOpDetOrientation.push_back(0); // anode/cathode (default)
         fOpDetLength.push_back(-1);
         fOpDetHeight.push_back(-1);
       }
+
     }
 
-    if (fIncludePropTime) {
+    if (fIncludePropTime && !fGeoPropTimeOnly) {
       mf::LogInfo("PDFastSimPAR") << "Using VUV timing parameterization";
 
       fparameters[0] = std::vector(1, fVUVTimingParams.get<std::vector<double>>("Distances_landau"));
@@ -863,6 +926,10 @@ namespace phot {
         fangle_bin_timing_vis  = fVISTimingParams.get<double>("angle_bin_timing_vis");
       }
     }
+    if (fIncludePropTime && fGeoPropTimeOnly) {
+      mf::LogInfo("PDFastSimPAR") << "Using geometric VUV time propagation";
+      fvuv_vgroup_mean          = fVUVTimingParams.get<double>("vuv_vgroup_mean");
+    }
 
     // LAr absorption length in cm
     std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
@@ -877,18 +944,27 @@ namespace phot {
     mf::LogInfo("PDFastSimPAR") << "Using VUV visibility parameterization";
     
     fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
+    fIsFlatPDCorrLat  = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
     fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
-    fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv");
+    fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv", 10);
     fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
+    fApplyFieldCageTransparency = fVUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
+    fFieldCageTransparencyLateral = fVUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
+    fFieldCageTransparencyCathode = fVUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);
 
-    if (!fIsFlatPDCorr && !fIsDomePDCorr) {
+
+    if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("PDFastSimPAR")
-          << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+          << "Both isFlatPDCorr/isFlatPDCorrLat and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
     }
     if (fIsFlatPDCorr) {
         fGHvuvpars_flat          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
         fborder_corr_angulo_flat = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat");
         fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
+    }
+    if (fIsFlatPDCorrLat) {
+        fGHvuvpars_flat_lateral  = fVUVHitsParams.get<std::vector<std::vector<std::vector<double>>>>("GH_PARS_flat_lateral");
+        fGH_distances_anode      = fVUVHitsParams.get<std::vector<double>>("GH_distances_anode");
     }
     if (fIsDomePDCorr) {
         fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
@@ -921,6 +997,34 @@ namespace phot {
       fcathode_plane.w = fcathode_zdimension;
       fplane_depth = std::abs(fcathode_centre[0]);
     }
+
+    // Load corrections for Anode reflections configuration
+    if (fIncludeAnodeReflections) {
+      mf::LogInfo("PDFastSimPAR") << "Using anode reflections parameterization";
+      fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
+      fAnodeReflectivity = fVISHitsParams.get<double>("AnodeReflectivity");
+
+      if (fIsFlatPDCorr) {
+        fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
+        fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
+        fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+      }
+
+      if (fIsFlatPDCorrLat) {
+        fvis_distances_x_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat_lateral");
+        fvis_distances_r_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat_lateral");
+        fvispars_flat_lateral         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat_lateral");
+      }
+
+      // anode dimensions
+      fanode_ydimension = fActiveVolumes[0].SizeY();
+      fanode_zdimension = fActiveVolumes[0].SizeZ();
+
+      // set anode plane struct for solid angle function
+      fanode_plane.h = fanode_ydimension;
+      fanode_plane.w = fanode_zdimension;
+      fanode_plane_depth = fanode_centre[0];
+    }
   }
 
   //......................................................................
@@ -938,7 +1042,7 @@ namespace phot {
       // set detector struct for solid angle function
       const PDFastSimPAR::OpticalDetector op{
         fOpDetHeight[OpDet], fOpDetLength[OpDet],
-        fOpDetCenter[OpDet], fOpDetType[OpDet]};
+        fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
 
       std::vector<int> DetThis(2, 0);
       VUVHits(NumFast, NumSlow, ScintPoint, op, DetThis);
@@ -962,7 +1066,9 @@ namespace phot {
     // distance and angle between ScintPoint and OpDetPoint
     geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
     const double distance = relative.R();
-    const double cosine = std::abs(relative.X()) / distance;
+    double cosine;
+    if (opDet.orientation == 1) cosine = std::abs(relative.Y()) / distance;
+    else cosine = std::abs(relative.X()) / distance;
     // const double theta = std::acos(cosine) * 180. / CLHEP::pi;
     const double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
@@ -972,7 +1078,7 @@ namespace phot {
       // get scintillation point coordinates relative to arapuca window centre
       geo::Vector_t const abs_relative{
         std::abs(relative.X()), std::abs(relative.Y()), std::abs(relative.Z())};
-      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative);
+      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative, opDet.orientation);
     }
     // PMTs (dome)
     else if (opDet.type == 1) {
@@ -1006,14 +1112,39 @@ namespace phot {
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0; double s2 = 0; double s3 = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
-      pars_ini[0] = fGHvuvpars_flat[0][j];
-      pars_ini[1] = fGHvuvpars_flat[1][j];
-      pars_ini[2] = fGHvuvpars_flat[2][j];
-      pars_ini[3] = fGHvuvpars_flat[3][j];
-      s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
-      s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
-      s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
+    if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)){
+      if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals, alternate parameterisation method
+        // distance to anode plane
+        double d_anode = std::abs(fanode_centre[0] - ScintPoint.X()); 
+        
+        // build arrays for interpolation
+        int n_distances = fGH_distances_anode.size();
+        std::vector<double> p1, p2, p3, p4;
+        p1.reserve(n_distances); p2.reserve(n_distances); p3.reserve(n_distances); p4.reserve(n_distances);
+        for (int i = 0; i < n_distances; i++) {
+          p1.push_back(fGHvuvpars_flat_lateral[0][i][j]);
+          p2.push_back(fGHvuvpars_flat_lateral[1][i][j]);
+          p3.push_back(fGHvuvpars_flat_lateral[2][i][j]);
+          p4.push_back(fGHvuvpars_flat_lateral[3][i][j]);
+        }
+
+        // interpolate in distance to anode
+        pars_ini[0] = interpolate(fGH_distances_anode, p1, d_anode, false);
+        pars_ini[1] = interpolate(fGH_distances_anode, p2, d_anode, false);
+        pars_ini[2] = interpolate(fGH_distances_anode, p3, d_anode, false);
+        pars_ini[3] = interpolate(fGH_distances_anode, p4, d_anode, false);
+      
+      }
+      else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode, default parameterisation method
+        pars_ini[0] = fGHvuvpars_flat[0][j];
+        pars_ini[1] = fGHvuvpars_flat[1][j];
+        pars_ini[2] = fGHvuvpars_flat[2][j];
+        pars_ini[3] = fGHvuvpars_flat[3][j];
+        s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
+        s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
+        s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
+      }
+      else std::cout << "Error: corrections for chosen optical detector type missing." << std::endl;
     }
     // dome PDs
     else if (opDet.type == 1 && fIsDomePDCorr) {
@@ -1036,6 +1167,12 @@ namespace phot {
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
 
+    // apply field cage transparency factor 
+    if (fApplyFieldCageTransparency) {
+      if (opDet.orientation == 1) GH_correction = GH_correction * fFieldCageTransparencyLateral;
+      else if (opDet.orientation == 0) GH_correction = GH_correction * fFieldCageTransparencyCathode;
+    }
+
     // calculate number photons for fast and slow componenets
     DetThis[0] = fRandPoissPhot->fire(GH_correction * hits_geo_fast / cosine);
     DetThis[1] = fRandPoissPhot->fire(GH_correction * hits_geo_slow / cosine);
@@ -1049,21 +1186,30 @@ namespace phot {
                                    std::map<size_t, int>& ReflDetectedNumSlow,
                                    const double NumFast,
                                    const double NumSlow,
-                                   geo::Point_t const& ScintPoint)
+                                   geo::Point_t const& ScintPoint,
+                                   bool AnodeMode)
   {
     // 1). calculate total number of hits of VUV photons on
     // reflective foils via solid angle + Gaisser-Hillas
-    // corrections:
+    // corrections:  
 
-    // set plane_depth for correct TPC:
-    double const plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
+    // get scintpoint coords relative to centre of cathode plane and set plane dimensions
+    geo::Vector_t ScintPoint_relative;
+    Dims plane_dimensions;
+    double plane_depth;
+    if (AnodeMode) {
+      plane_dimensions = fanode_plane;
+      plane_depth = fanode_plane_depth;
+      ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - fanode_plane_depth), std::abs(ScintPoint.Y() - fanode_centre[1]), std::abs(ScintPoint.Z() - fanode_centre[2]));
+    }
+    else {
+      plane_dimensions = fcathode_plane;
+      plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
+      ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - plane_depth), std::abs(ScintPoint.Y() - fcathode_centre[1]), std::abs(ScintPoint.Z() - fcathode_centre[2]));
+    }
 
-    // get scintpoint coords relative to centre of cathode plane
-    geo::Vector_t const ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
-                                                 std::abs(ScintPoint.Y() - fcathode_centre[1]),
-                                                 std::abs(ScintPoint.Z() - fcathode_centre[2])};
-    // calculate solid angle of cathode from the scintillation point
-    double solid_angle_cathode = Rectangle_SolidAngle(Dims{fcathode_plane.h, fcathode_plane.w}, ScintPoint_relative);
+    // calculate solid angle of cathode from the scintillation point, orientation always = 0 (cathode)
+    double solid_angle_cathode = Rectangle_SolidAngle(plane_dimensions, ScintPoint_relative, 0);
 
     // calculate distance and angle between ScintPoint and hotspot
     // vast majority of hits in hotspot region directly infront of scintpoint,
@@ -1111,10 +1257,10 @@ namespace phot {
       // set detector struct for solid angle function
       const  PDFastSimPAR::OpticalDetector op{
         fOpDetHeight[OpDet], fOpDetLength[OpDet],
-        fOpDetCenter[OpDet], fOpDetType[OpDet]};
+        fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
 
       std::vector<int> ReflDetThis(2, 0);
-      VISHits(ScintPoint, op, cathode_hits_rec_fast, cathode_hits_rec_slow, hotspot, ReflDetThis);
+      VISHits(ScintPoint, op, cathode_hits_rec_fast, cathode_hits_rec_slow, hotspot, ReflDetThis, AnodeMode);
 
       ReflDetectedNumFast[OpDet] = ReflDetThis[0];
       ReflDetectedNumSlow[OpDet] = ReflDetThis[1];
@@ -1127,11 +1273,14 @@ namespace phot {
                         const double cathode_hits_rec_fast,
                         const double cathode_hits_rec_slow,
                         geo::Point_t const& hotspot,
-                        std::vector<int> &ReflDetThis)
+                        std::vector<int> &ReflDetThis,
+                        bool AnodeMode)
   {
 
-    // set plane_depth for correct TPC:
-    double const plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
+    // set correct plane_depth
+    double plane_depth;
+    if (AnodeMode) plane_depth = fanode_plane_depth;
+    else plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
 
     // calculate number of these hits which reach the optical
     // detector from the hotspot using solid angle:
@@ -1142,7 +1291,13 @@ namespace phot {
     // distance from hotspot to optical detector
     const double distance_vis = emission_relative.R();
     //  angle between hotspot and optical detector
-    const double cosine_vis = std::abs(emission_relative.X()) / distance_vis;
+    double cosine_vis;
+    if (opDet.orientation == 1) { // lateral
+      cosine_vis = std::abs(emission_relative.Y()) / distance_vis;
+    }
+    else { // anode/cathode (default)
+      cosine_vis = std::abs(emission_relative.X()) / distance_vis;
+    }
     // const double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
     const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
 
@@ -1154,7 +1309,7 @@ namespace phot {
       geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
                                                 std::abs(emission_relative.Y()),
                                                 std::abs(emission_relative.Z())};
-      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative);
+      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative, opDet.orientation);
     }
     // PMTS (dome)
     else if (opDet.type == 1) {
@@ -1183,29 +1338,46 @@ namespace phot {
     double d_c = std::abs(ScintPoint.X() - plane_depth);       // distance to cathode
     double border_correction = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
+    if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)){
+
+      // select correct parameter set depending on PD orientation
+      std::vector<double> vis_distances_x;
+      std::vector<double> vis_distances_r;
+      std::vector<std::vector<std::vector<double>>> vispars;
+      if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals
+        vis_distances_x = fvis_distances_x_flat_lateral;
+        vis_distances_r = fvis_distances_r_flat_lateral;
+        vispars = fvispars_flat_lateral;
+      }
+      else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode
+        vis_distances_x = fvis_distances_x_flat;
+        vis_distances_r = fvis_distances_r_flat;
+        vispars = fvispars_flat;
+      }
+      else std::cout << "Error: corrections for chosen optical detector type missing." << std::endl;
+      
       // interpolate in d_c for each r bin
-      const size_t nbins_r = fvispars_flat[k].size();
+      const size_t nbins_r = vispars[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
       {
         size_t idx = 0;
-        size_t size = fvis_distances_x_flat.size();
-        if (d_c >= fvis_distances_x_flat[size - 2])
+        size_t size = vis_distances_x.size();
+        if (d_c >= vis_distances_x[size - 2])
           idx = size - 2;
         else {
-          while (d_c > fvis_distances_x_flat[idx + 1])
+          while (d_c > vis_distances_x[idx + 1])
             idx++;
         }
         for (size_t i = 0; i < nbins_r; ++i) {
-          interp_vals[i] = interpolate(fvis_distances_x_flat,
-                                       fvispars_flat[k][i],
+          interp_vals[i] = interpolate(vis_distances_x,
+                                       vispars[k][i],
                                        d_c,
                                        false,
                                        idx);
         }
       }
       // interpolate in r
-      border_correction = interpolate(fvis_distances_r_flat, interp_vals, r, false);
+      border_correction = interpolate(vis_distances_r, interp_vals, r, false); 
     }
     // dome PDs
     else if (opDet.type == 1 && fIsDomePDCorr) {
@@ -1236,9 +1408,19 @@ namespace phot {
      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
     }
 
+    // apply anode reflectivity factor
+    if (AnodeMode) border_correction = border_correction * fAnodeReflectivity;
+
+    // apply field cage transparency factor 
+    if (fApplyFieldCageTransparency) {
+      if (opDet.orientation == 1) border_correction = border_correction * fFieldCageTransparencyLateral;
+      else if (opDet.orientation == 0) border_correction = border_correction * fFieldCageTransparencyCathode;
+    }
+
     ReflDetThis[0] = fRandPoissPhot->fire(border_correction * hits_geo_fast / cosine_vis);
     ReflDetThis[1] = fRandPoissPhot->fire(border_correction * hits_geo_slow / cosine_vis);
   }
+
 
   bool
   PDFastSimPAR::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
@@ -1248,7 +1430,7 @@ namespace phot {
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
     // check x coordinate has same sign or is close to zero, otherwise return 0 hits
     if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10.) { // TODO: unhardcode
+        std::abs(OpDetPoint.X()) > 10. && fNTPC == 2) { // TODO: unhardcode
       return false;
     }
     return true;
@@ -1261,12 +1443,15 @@ namespace phot {
                                 const size_t OpChannel,
                                 bool Reflected)
   {
-    if (fIncludePropTime) {
+    if (fIncludePropTime && !fGeoPropTimeOnly) {
       // Get VUV photons arrival time distribution from the parametrization
       geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
       if (!Reflected) {
         double distance = std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
-        double cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
+        double cosine; 
+        if (fOpDetOrientation[OpChannel] == 1) cosine = std::abs(x0.Y() - opDetCenter.Y()) / distance;
+        else cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
+      
         double theta = fast_acos(cosine)*180./CLHEP::pi;
         int angle_bin = theta/fangle_bin_timing_vuv;
         getVUVTimes(arrival_time_dist, distance, angle_bin); // in ns
@@ -1275,6 +1460,12 @@ namespace phot {
         getVISTimes(arrival_time_dist, geo::vect::toTVector3(x0),
                     geo::vect::toTVector3(opDetCenter)); // in ns
       }
+    }
+    else if (fIncludePropTime && fGeoPropTimeOnly && !Reflected) {
+      // Get VUV photons arrival time geometrically
+      geo::Point_t const& opDetCenter = fOpDetCenter[OpChannel];
+      double distance = std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
+      getVUVTimesGeo(arrival_time_dist, distance); // in ns
     }
     else {
       throw cet::exception("PDFastSimPAR")
@@ -1303,6 +1494,18 @@ namespace phot {
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = VUV_timing[angle_bin][index].GetRandom(VUV_min[angle_bin][index], VUV_max[angle_bin][index]);
       }
+    }
+  }
+
+  //......................................................................
+  // VUV arrival times calculation function - pure geometric approximation for use in Xenon doped scenarios
+  void 
+  PDFastSimPAR::getVUVTimesGeo(std::vector<double>& arrivalTimes, const double distance) 
+  {
+    // times are fixed shift i.e. direct path only
+    double t_prop_correction = distance / fvuv_vgroup_mean;
+    for (size_t i = 0; i < arrivalTimes.size(); ++i) {
+        arrivalTimes[i] = t_prop_correction;
     }
   }
 
@@ -1684,52 +1887,65 @@ namespace phot {
   }
 
   double
-  PDFastSimPAR::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v)
+  PDFastSimPAR::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v, double OpDetOrientation)
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
 
+    // solid angle calculation depends on orientation of PD, set correct distances to use
+    double d1;
+    double d2; 
+    if (OpDetOrientation == 1) {
+      // lateral PD, arapuca plane fixed in y direction
+      d1 = std::abs(v.X());
+      d2 = std::abs(v.Y()); 
+    }
+    else {
+      // anode/cathode PD, arapuca plane fixed in x direction [default]
+      d1 = std::abs(v.Y());
+      d2 = std::abs(v.X());
+    }
     // arapuca plane fixed in x direction
-    if (isApproximatelyZero(v.Y()) && isApproximatelyZero(v.Z())) {
-      return Rectangle_SolidAngle(o.h, o.w, v.X());
+    if (isApproximatelyZero(d1) && isApproximatelyZero(v.Z())) {
+      return Rectangle_SolidAngle(o.h, o.w, d2);
     }
-    if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
-      double A = v.Y() - o.h * .5;
-      double B = v.Z() - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
+      double A = d1 - o.h * .5;
+      double B = std::abs(v.Z()) - o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), d2) -
+                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
+                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) +
+                          Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
                          .25;
       return to_return;
     }
-    if ((v.Y() <= o.h * .5) && (v.Z() <= o.w * .5)) {
-      double A = -v.Y() + o.h * .5;
-      double B = -v.Z() + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+    if ((d1 <= o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
+      double A = -d1 + o.h * .5;
+      double B = -std::abs(v.Z()) + o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), d2) +
+                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
+                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
+                          Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
                          .25;
       return to_return;
     }
-    if (isDefinitelyGreaterThan(v.Y(), o.h * .5) && (v.Z() <= o.w * .5)) {
-      double A = v.Y() - o.h * .5;
-      double B = -v.Z() + o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), v.X()) +
-                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
+      double A = d1 - o.h * .5;
+      double B = -std::abs(v.Z()) + o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), d2) -
+                          Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
+                          Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) -
+                          Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
                          .25;
       return to_return;
     }
-    if ((v.Y() <= o.h * .5) && isDefinitelyGreaterThan(v.Z(), o.w * .5)) {
-      double A = -v.Y() + o.h * .5;
-      double B = v.Z() - o.w * .5;
-      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, v.X()) +
-                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), v.X()) -
-                          Rectangle_SolidAngle(2. * A, 2. * B, v.X())) *
+    if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
+      double A = -d1 + o.h * .5;
+      double B = std::abs(v.Z()) - o.w * .5;
+      double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), d2) -
+                          Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
+                          Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
+                          Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
                          .25;
       return to_return;
     }

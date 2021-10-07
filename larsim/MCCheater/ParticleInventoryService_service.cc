@@ -29,6 +29,7 @@
 //Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 //LArSoft includes
 #include "larsim/MCCheater/ParticleInventoryService.h"

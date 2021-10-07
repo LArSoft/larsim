@@ -233,21 +233,21 @@ void sim::MergeSimSources::produce(art::Event & e)
 
 
     auto const& input_scCol
-       = e.getByLabel<std::vector<sim::SimChannel>>(input_label);
+       = e.getProduct<std::vector<sim::SimChannel>>(input_label);
     MergeUtility.MergeSimChannels(*scCol,input_scCol,i_source);
 
     auto const& input_adCol
-      = e.getByLabel<std::vector<sim::AuxDetSimChannel>>(input_label);
+      = e.getProduct<std::vector<sim::AuxDetSimChannel>>(input_label);
     MergeUtility.MergeAuxDetSimChannels(*adCol,input_adCol,i_source);
 
     if(!fUseLitePhotons){
       auto const& input_PhotonCol
-        = e.getByLabel<std::vector<sim::SimPhotons>>(input_label);
+        = e.getProduct<std::vector<sim::SimPhotons>>(input_label);
       MergeUtility.MergeSimPhotons(*PhotonCol,input_PhotonCol);
     }
     else{
       auto const& input_LitePhotonCol
-       = e.getByLabel<std::vector<sim::SimPhotonsLite>>(input_label);
+       = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_label);
       MergeUtility.MergeSimPhotonsLite(*LitePhotonCol,input_LitePhotonCol);
     }
 
@@ -256,12 +256,12 @@ void sim::MergeSimSources::produce(art::Event & e)
         { input_label.label(), ReflectedLabel };
       if(!fUseLitePhotons){
         auto const& input_PhotonCol
-          = e.getByLabel<std::vector<sim::SimPhotons>>(input_reflected_label);
+          = e.getProduct<std::vector<sim::SimPhotons>>(input_reflected_label);
         MergeUtility.MergeSimPhotons(*ReflPhotonCol,input_PhotonCol);
       }
       else{
         auto const& input_LitePhotonCol
-          = e.getByLabel<std::vector<sim::SimPhotonsLite>>(input_reflected_label);
+          = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_reflected_label);
         MergeUtility.MergeSimPhotonsLite(*ReflLitePhotonCol,input_LitePhotonCol);
       }
     }
@@ -272,7 +272,7 @@ void sim::MergeSimSources::produce(art::Event & e)
       {
         art::InputTag const edep_tag { input_label.label(), edep_inst };
         auto const& input_EDep
-          = e.getByLabel<std::vector<sim::SimEnergyDeposit>>(edep_tag);
+          = e.getProduct<std::vector<sim::SimEnergyDeposit>>(edep_tag);
         MergeUtility.MergeSimEnergyDeposits(*edepCol, input_EDep, i_source);
       } // for edep
     } // if fill energy depositions

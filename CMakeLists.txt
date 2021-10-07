@@ -6,9 +6,9 @@
 #  buildtool [-I /install/path] -bt[i] -jN
 # ======================================================================
 
-cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(larsim LANGUAGES CXX)
+project(larsim VERSION 09.16.01 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
@@ -28,6 +28,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
+find_ups_product(libxml2)
 find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
@@ -43,12 +44,16 @@ find_ups_product( nurandom )
 find_ups_product( nusimdata )
 find_ups_product( art )
 find_ups_product(art_root_io)
-find_ups_geant4( geant4 )
+find_ups_product(messagefacility)
+find_ups_geant4( )
+find_ups_root( )
 find_ups_product( postgresql )
 find_ups_product( ifdhc )
 find_ups_product( genie )
 find_ups_product( log4cpp )
 find_ups_product( range )
+find_ups_product(cetlib)
+find_ups_product(clhep)
 
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
@@ -57,7 +62,7 @@ find_ups_product( range )
 cet_find_library( BOOST_SERIALIZATION NAMES boost_serialization PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
 cet_find_library( BOOST_DATE_TIME     NAMES boost_date_time     PATHS ENV BOOST_LIB NO_DEFAULT_PATH )
 #
-find_library( CRY NAMES CRY PATHS $ENV{CRYHOME}/lib NO_DEFAULT_PATH )
+find_library( CRY NAMES CRY PATHS  ENV CRYHOME PATH_SUFFIXES lib NO_DEFAULT_PATH )
 
 # genie (copied from nugen)
   cet_find_library( LOG4CPP NAMES log4cpp PATHS ENV LOG4CPP_LIB NO_DEFAULT_PATH )
@@ -113,60 +118,63 @@ find_library( CRY NAMES CRY PATHS $ENV{CRYHOME}/lib NO_DEFAULT_PATH )
   # GENIE pre-R-3 used GSL via ROOT's Math libs, now makes direct call not available via that route
   cet_find_library( GSL NAMES gsl PATHS ENV GSL_LIB NO_DEFAULT_PATH )
 
-  set (GENIE_LIB_LIST ${GFWMSG}
-                      ${GFWREG}
-                      ${GFWALG}
-                      ${GFWINT}
-                      ${GFWGHEP}
-                      ${GFWNUM}
-                      ${GSL}  # FWNUM relies on GSL
-                      ${GFWUTL}
-                      ${GFWPARDAT}
-                      ${GFWEG}
-                      ${GFWNTP}
-                      ${GPHXSIG}
-                      ${GPHPDF}
-                      ${GPHNUCLST}
-                      ${GPHCMN}
-                      ${GPHDCY}
-                      ${GPHHADTRANSP}
-                      ${GPHHADNZ}
-                      ${GPHDEEX}
-                      ${GPHAMNGXS}
-                      ${GPHAMNGEG}
-                      ${GPHCHMXS}
-                      ${GPHCOHXS}
-                      ${GPHCOHEG}
-                      ${GPHDISXS}
-                      ${GPHDISEG}
-                      ${GPHDFRCXS}
-                      ${GPHDFRCEG}
-                      ${GPHGLWRESXS}
-                      ${GPHGLWRESEG}
-                      ${GPHIBDXS}
-                      ${GPHIBDEG}
-                      ${GPHMNUCXS}
-                      ${GPHMNUCEG}
-                      ${GPHMEL}
-                      ${GPHNUELXS}
-                      ${GPHNUELEG}
-                      ${GPHQELXS}
-                      ${GPHQELEG}
-                      ${GPHRESXS}
-                      ${GPHRESEG}
-                      ${GPHSTRXS}
-                      ${GPHSTREG}
-                      ${GPHNDCY}
-                      ${GTLGEO}
-                      ${GTLFLX}
-                      ${GRWFWK}
-                      ${GRWIO}
-                      ${GRWCLC}
-		      ${LOG4CPP}
+  set (GENIE_LIB_LIST GFWMSG
+                      GFWREG
+                      GFWALG
+                      GFWINT
+                      GFWGHEP
+                      GFWNUM
+                      GSL  # FWNUM relies on GSL
+                      GFWUTL
+                      GFWPARDAT
+                      GFWEG
+                      GFWNTP
+                      GPHXSIG
+                      GPHPDF
+                      GPHNUCLST
+                      GPHCMN
+                      GPHDCY
+                      GPHHADTRANSP
+                      GPHHADNZ
+                      GPHDEEX
+                      GPHAMNGXS
+                      GPHAMNGEG
+                      GPHCHMXS
+                      GPHCOHXS
+                      GPHCOHEG
+                      GPHDISXS
+                      GPHDISEG
+                      GPHDFRCXS
+                      GPHDFRCEG
+                      GPHGLWRESXS
+                      GPHGLWRESEG
+                      GPHIBDXS
+                      GPHIBDEG
+                      GPHMNUCXS
+                      GPHMNUCEG
+                      GPHMEL
+                      GPHNUELXS
+                      GPHNUELEG
+                      GPHQELXS
+                      GPHQELEG
+                      GPHRESXS
+                      GPHRESEG
+                      GPHSTRXS
+                      GPHSTREG
+                      GPHNDCY
+                      GTLGEO
+                      GTLFLX
+                      GRWFWK
+                      GRWIO
+                      GRWCLC
+		                  LOG4CPP
                       )
 # marley libraries
 cet_find_library( MARLEY NAMES MARLEY PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
 cet_find_library( MARLEY_ROOT NAMES MARLEY_ROOT PATHS ENV MARLEY_LIB NO_DEFAULT_PATH )
+
+# trying to deal with a problem finding XML2
+cet_find_library(XML2 NAMES xml2 PATHS ENV LIBXML2_FQ_DIR PATH_SUFFIXES lib NO_DEFAULT_PATH)
 
 # temporarily needed since this is an unexpected header path
 include_directories( $ENV{IFDHC_FQ_DIR}/inc )

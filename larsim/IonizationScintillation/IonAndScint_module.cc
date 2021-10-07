@@ -127,9 +127,10 @@ namespace larg4 {
   IonAndScint::produce(art::Event& event)
   {
     std::cout << "IonAndScint Module Producer" << std::endl;
-    std::vector<art::Handle<std::vector<sim::SimEnergyDeposit>>> edepHandle;
+    //std::vector<art::Handle<std::vector<sim::SimEnergyDeposit>>> edepHandle;
 
-    event.getManyByType(edepHandle);
+    //event.getManyByType(edepHandle);
+    auto edepHandle = event.getMany<std::vector<sim::SimEnergyDeposit>>();
 
     if (empty(edepHandle)) {
       std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;

@@ -22,8 +22,8 @@
 
 #include <vector>
 
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 namespace sim {
 
