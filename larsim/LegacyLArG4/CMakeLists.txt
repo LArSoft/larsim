@@ -10,6 +10,7 @@ art_make(LIB_LIBRARIES
            larcorealg_Geometry
            nug4_G4Base
            nug4_ParticleNavigation
+           nug4_AdditionalG4Physics
            nurandom_RandomUtils_NuRandomService_service
            ${ART_UTILITIES}
            art::Framework_Services_Registry
