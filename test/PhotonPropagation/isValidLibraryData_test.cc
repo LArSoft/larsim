@@ -8,8 +8,7 @@
 
 // Boost libraries
 #define BOOST_TEST_MODULE ( isValidLibraryData_test )
-#include <cetlib/quiet_unit_test.hpp> // BOOST_AUTO_TEST_CASE()
-#include <boost/test/test_tools.hpp> // BOOST_CHECK()
+#include "boost/test/unit_test.hpp"
 
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
@@ -91,33 +90,33 @@ void isValidLibraryData_test() {
   ContainerWith_isValid    valid_with_isValid { 4U };
   ContainerWith_isValid  invalid_with_isValid ;
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_vector));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_vector));
+  BOOST_TEST( phot::isValidLibraryData(  valid_vector));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_vector));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_STLarray));
+  BOOST_TEST( phot::isValidLibraryData(  valid_STLarray));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_array));
+  BOOST_TEST( phot::isValidLibraryData(  valid_array));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_cptr));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_cptr));
+  BOOST_TEST( phot::isValidLibraryData(  valid_cptr));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_cptr));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_cptrc));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_cptrc));
+  BOOST_TEST( phot::isValidLibraryData(  valid_cptrc));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_cptrc));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_uptr));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_uptr));
+  BOOST_TEST( phot::isValidLibraryData(  valid_uptr));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_uptr));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_with_size    ));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_with_size    ));
+  BOOST_TEST( phot::isValidLibraryData(  valid_with_size    ));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_with_size    ));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_with_empty   ));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_with_empty   ));
+  BOOST_TEST( phot::isValidLibraryData(  valid_with_empty   ));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_with_empty   ));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_with_is_valid));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_with_is_valid));
+  BOOST_TEST( phot::isValidLibraryData(  valid_with_is_valid));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_with_is_valid));
 
-  BOOST_CHECK( phot::isValidLibraryData(  valid_with_isValid ));
-  BOOST_CHECK(!phot::isValidLibraryData(invalid_with_isValid ));
+  BOOST_TEST( phot::isValidLibraryData(  valid_with_isValid ));
+  BOOST_TEST(!phot::isValidLibraryData(invalid_with_isValid ));
 
 } // isValidLibraryData_test()
 
