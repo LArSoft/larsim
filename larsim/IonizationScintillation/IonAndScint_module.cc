@@ -43,6 +43,7 @@
 #include <string>
 
 using std::string;
+using SimEnergyDepositCollection = std::vector<sim::SimEnergyDeposit>;
 
 namespace larg4 {
   class IonAndScint : public art::EDProducer {
@@ -53,7 +54,15 @@ namespace larg4 {
     void endJob() override;
 
   private:
-    art::InputTag calcTag; // name of calculator: Separate, Correlated, or NEST
+    std::vector<art::Handle<SimEnergyDepositCollection>> inputCollections(art::Event const& e) const;
+
+    // name of calculator: Separate, Correlated, or NEST
+    art::InputTag calcTag;
+
+    // Input tags used to specify which SimEnergyDeposit collections to use
+    // If empty, this module uses all the available collections in the event
+    std::vector<art::InputTag> inputCollectionTags;
+
     std::unique_ptr<ISCalc> fISAlg;
     CLHEP::HepRandomEngine& fEngine;
     string Instances;
@@ -65,6 +74,7 @@ namespace larg4 {
   IonAndScint::IonAndScint(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
+    , inputCollectionTags{pset.get<std::vector<art::InputTag>>("InputCollections", {})}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
                 ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
     , Instances{
@@ -123,14 +133,27 @@ namespace larg4 {
   }
 
   //......................................................................
+  std::vector<art::Handle<SimEnergyDepositCollection>>
+  IonAndScint::inputCollections(art::Event const& e) const
+  {
+    if (empty(inputCollectionTags)) {
+      return e.getMany<SimEnergyDepositCollection>();
+    }
+
+    std::vector<art::Handle<SimEnergyDepositCollection>> result;
+    for (auto const& tag : inputCollectionTags) {
+      result.push_back(e.getHandle<SimEnergyDepositCollection>(tag));
+    }
+    return result;
+  }
+
+  //......................................................................
   void
   IonAndScint::produce(art::Event& event)
   {
     std::cout << "IonAndScint Module Producer" << std::endl;
-    //std::vector<art::Handle<std::vector<sim::SimEnergyDeposit>>> edepHandle;
 
-    //event.getManyByType(edepHandle);
-    auto edepHandle = event.getMany<std::vector<sim::SimEnergyDeposit>>();
+    std::vector<art::Handle<SimEnergyDepositCollection>> edepHandle = inputCollections(event);
 
     if (empty(edepHandle)) {
       std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;
