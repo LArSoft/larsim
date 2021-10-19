@@ -100,8 +100,7 @@ namespace larg4 {
       fSelector = s;
     }
 
-    // mf::LogDebug("IonAndScint") << "Selecting input collections based on \n"
-    std::cout << "Selecting input collections based on \n"
+    mf::LogDebug("IonAndScint") << "Selecting input collections based on \n"
                                 << fSelector.print(" ") << std::endl;
 
 
