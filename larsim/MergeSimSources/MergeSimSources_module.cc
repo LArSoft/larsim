@@ -239,7 +239,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
       produces< std::vector<sim::SimEnergyDeposit> >(edep_inst);
   } // if
 
-  
+
   dumpConfiguration();
 
 }
@@ -364,7 +364,7 @@ void sim::MergeSimSources::produce(art::Event & e)
 
 
 void sim::MergeSimSources::dumpConfiguration() const {
-  
+
   mf::LogInfo log("MergeSimSources");
   log << "Configuration:"
     << "\n - " << fInputSourcesLabels.size() << " input sources:";
@@ -374,12 +374,12 @@ void sim::MergeSimSources::dumpConfiguration() const {
     log << "\n   [" << i_source << "] '" << tag.encode()
       << "' (ID offset: " << offset << ")";
   } // for
-  
+
   if (fUseLitePhotons) log << "\n - use photon summary (`SimPhotonsLite`)";
   else                 log << "\n - use detailed photons (`SimPhotons`)";
-  
+
   if (fStoreReflected) log << "\n - also merge reflected light";
-  
+
   if (fFillSimEnergyDeposits) {
     log << "\n - merge simulated energy deposits ("
       << fEnergyDepositionInstances.size() << " labels:";
@@ -388,7 +388,7 @@ void sim::MergeSimSources::dumpConfiguration() const {
     log << ")";
   }
   else log << "\n - do not merge simulated energy deposits";
-  
+
 } // sim::MergeSimSources::dumpConfiguration()
 
 
