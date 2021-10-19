@@ -374,20 +374,26 @@ void sim::MergeSimSources::dumpConfiguration() const {
     log << "\n   [" << i_source << "] '" << tag.encode()
       << "' (ID offset: " << offset << ")";
   } // for
+  if (fFillMCParticles) log << "\n - filling MCParticles";
 
-  if (fUseLitePhotons) log << "\n - use photon summary (`SimPhotonsLite`)";
-  else                 log << "\n - use detailed photons (`SimPhotons`)";
+  if (fFillSimChannels) log << "\n - filling SimChannels";
 
-  if (fStoreReflected) log << "\n - also merge reflected light";
+  if (fFillAuxDetSimChannels) log << "\n - filling AuxDetSimChannels";
+
+  if (fFillSimPhotons) {
+    log << "\n - filling Simulated Photons";
+    if (fUseLitePhotons) log << "\n   - using photon summary (`SimPhotonsLite`)";
+    else                 log << "\n   - using detailed photons (`SimPhotons`)";
+    if (fStoreReflected) log << "\n   - also merging reflected light";
+  }
 
   if (fFillSimEnergyDeposits) {
-    log << "\n - merge simulated energy deposits ("
+    log << "\n - filling simulated energy deposits ("
       << fEnergyDepositionInstances.size() << " labels:";
     for (std::string const& label: fEnergyDepositionInstances)
       log << " '" << label << "'";
     log << ")";
   }
-  else log << "\n - do not merge simulated energy deposits";
 
 } // sim::MergeSimSources::dumpConfiguration()
 
