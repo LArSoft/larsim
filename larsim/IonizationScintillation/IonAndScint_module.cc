@@ -37,6 +37,7 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "canvas/Utilities/Exception.h"
 
 #include <iostream>
 #include <sstream> // std::stringstream, std::stringbuf
@@ -56,6 +57,8 @@ namespace larg4 {
 
   private:
 
+    std::vector<art::Handle<SimEnergyDepositCollection>> inputCollections(art::Event const&) const;
+
     // name of calculator: Separate, Correlated, or NEST
     art::InputTag calcTag;
 
@@ -65,9 +68,6 @@ namespace larg4 {
     // passed via the Instances parameter.
     // If empty, this module uses all the available collections.
     std::vector<std::string> fInputModuleLabels;
-
-    // The art selector used to query products form the event.
-    art::Selector fSelector;
 
     std::unique_ptr<ISCalc> fISAlg;
     CLHEP::HepRandomEngine& fEngine;
@@ -81,7 +81,6 @@ namespace larg4 {
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
-    , fSelector{art::MatchAllSelector()}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
                 ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
     , Instances{
@@ -90,19 +89,6 @@ namespace larg4 {
     , fSavePriorSCE{pset.get<bool>("SavePriorSCE",  false)}
   {
     std::cout << "IonAndScint Module Construct" << std::endl;
-
-    if (!empty(fInputModuleLabels)) {
-      // If a list of input modules is given, construct the art selector
-      art::Selector s{art::ModuleLabelSelector(fInputModuleLabels[0])};
-      for (size_t i = 1; i < fInputModuleLabels.size(); i++) {
-        s = art::Selector{s || art::ModuleLabelSelector(fInputModuleLabels[i])};
-      }
-      fSelector = s;
-    }
-
-    mf::LogDebug("IonAndScint") << "Selecting input collections based on \n"
-                                << fSelector.print(" ") << std::endl;
-
 
     if (Instances.empty()) {
       std::cout << "Produce SimEnergyDeposit in default volume - LArG4DetectorServicevolTPCActive"
@@ -153,12 +139,42 @@ namespace larg4 {
   }
 
   //......................................................................
+  std::vector<art::Handle<SimEnergyDepositCollection>>
+  IonAndScint::inputCollections(art::Event const& e) const
+  {
+    if (empty(fInputModuleLabels)) {
+      mf::LogDebug("IonAndScint") << "Retrieving all products" << std::endl;
+      return e.getMany<SimEnergyDepositCollection>();
+    }
+
+    std::vector<art::Handle<SimEnergyDepositCollection>> result;
+
+    for (auto const & module : fInputModuleLabels) {
+
+      mf::LogDebug("IonAndScint") << "Retrieving products with module label "
+                                  << module << std::endl;
+
+      auto handels = e.getMany<SimEnergyDepositCollection>(art::ModuleLabelSelector(module));
+
+      if (empty(handels)) {
+        throw art::Exception(art::errors::ProductNotFound)
+          << "IonAndScint module cannot find any SimEnergyDeposits with module label "
+          << module << " as requested in InputModuleLabels. \n";
+      }
+
+      result.insert(result.end(), handels.begin(), handels.end());
+    }
+
+    return result;
+  }
+
+  //......................................................................
   void
   IonAndScint::produce(art::Event& event)
   {
     std::cout << "IonAndScint Module Producer" << std::endl;
 
-    std::vector<art::Handle<SimEnergyDepositCollection>> edepHandle = event.getMany<SimEnergyDepositCollection>(fSelector);
+    std::vector<art::Handle<SimEnergyDepositCollection>> edepHandle = inputCollections(event);
 
     if (empty(edepHandle)) {
       std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;
