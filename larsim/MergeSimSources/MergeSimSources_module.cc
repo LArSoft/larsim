@@ -54,30 +54,54 @@ public:
     fhicl::Sequence<art::InputTag> InputSourcesLabels {
       fhicl::Name{ "InputSourcesLabels" },
       fhicl::Comment{ "label of the LArG4 products to merge" }
-      };
+    };
 
     fhicl::Sequence<int> TrackIDOffsets {
       fhicl::Name{ "TrackIDOffsets" },
       fhicl::Comment{ "offset to add to the MC particles from each source" }
-      };
+    };
 
     fhicl::Atom<bool> StoreReflected {
       fhicl::Name{ "StoreReflected" },
       fhicl::Comment{ "whether to merge also photons from reflections" },
       false // default
-      };
+    };
+
+    fhicl::Atom<bool> FillMCParticles {
+      fhicl::Name{ "FillMCParticles" },
+      fhicl::Comment{ "whether to merge MCParticle" },
+      true // default
+    };
+
+    fhicl::Atom<bool> FillSimPhotons {
+      fhicl::Name{ "FillSimPhotons" },
+      fhicl::Comment{ "whether to merge SimPhotons" },
+      true // default
+    };
+
+    fhicl::Atom<bool> FillSimChannels {
+      fhicl::Name{ "FillSimChannels" },
+      fhicl::Comment{ "whether to merge SimChannels" },
+      true // default
+    };
+
+    fhicl::Atom<bool> FillAuxDetSimChannels {
+      fhicl::Name{ "FillAuxDetSimChannels" },
+      fhicl::Comment{ "whether to merge AuxDetSimChannels" },
+      true // default
+    };
 
     fhicl::OptionalAtom<bool> FillSimEnergyDeposits {
       fhicl::Name{ "FillSimEnergyDeposits" },
       fhicl::Comment
         { "merges energy deposit collection; if omitted, follows LArG4Parmeters" }
-      };
+    };
 
     fhicl::Sequence<std::string> EnergyDepositInstanceLabels {
       fhicl::Name{ "EnergyDepositInstanceLabels" },
       fhicl::Comment{ "labels of sim::SimEnergyDeposit collections to merge" },
       std::vector<std::string>{ "TPCActive", "Other" } // default
-      };
+    };
 
   }; // struct Config
 
@@ -94,11 +118,15 @@ private:
   std::vector<int>           const fTrackIDOffsets;
   bool                       const fUseLitePhotons;
   bool                       const fStoreReflected;
+  bool                       const fFillMCParticles;
+  bool                       const fFillSimPhotons;
+  bool                       const fFillSimChannels;
+  bool                       const fFillAuxDetSimChannels;
   bool                       const fFillSimEnergyDeposits;
   std::vector<std::string>   const fEnergyDepositionInstances;
 
   static std::string const ReflectedLabel;
-  
+
   void dumpConfiguration() const;
 
 };
@@ -132,6 +160,10 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
   , fTrackIDOffsets(params().TrackIDOffsets())
   , fUseLitePhotons(art::ServiceHandle<sim::LArG4Parameters const>()->UseLitePhotons())
   , fStoreReflected(params().StoreReflected())
+  , fFillMCParticles(params().FillMCParticles())
+  , fFillSimPhotons(params().FillSimPhotons())
+  , fFillSimChannels(params().FillSimChannels())
+  , fFillAuxDetSimChannels(params().FillAuxDetSimChannels())
   , fFillSimEnergyDeposits(
       getOptionalValue(params().FillSimEnergyDeposits).value_or
         (art::ServiceHandle<sim::LArG4Parameters const>()->FillSimEnergyDeposits())
@@ -146,24 +178,31 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
 
 
   for (art::InputTag const& tag: fInputSourcesLabels) {
-    consumes<std::vector<simb::MCParticle>>(tag);
-    consumes<art::Assns<simb::MCParticle, simb::MCTruth, sim::GeneratedParticleInfo>>(tag);
-    consumes<std::vector<sim::SimChannel>>(tag);
-    consumes<std::vector<sim::AuxDetSimChannel>>(tag);
 
-    if(!fUseLitePhotons)
-      consumes<std::vector<sim::SimPhotons>>(tag);
-    else
-      consumes<std::vector<sim::SimPhotonsLite>>(tag);
-
-    if (fStoreReflected) {
-      art::InputTag const reflected_tag { tag.label(), ReflectedLabel };
-      if(!fUseLitePhotons)
-        consumes<std::vector<sim::SimPhotons>>(reflected_tag);
-      else
-        consumes<std::vector<sim::SimPhotonsLite>>(reflected_tag);
+    if (fFillMCParticles) {
+      consumes<std::vector<simb::MCParticle>>(tag);
+      consumes<art::Assns<simb::MCParticle, simb::MCTruth, sim::GeneratedParticleInfo>>(tag);
     }
-    
+
+    if (fFillSimChannels) {
+      consumes<std::vector<sim::SimChannel>>(tag);
+    }
+
+    if (fFillAuxDetSimChannels) {
+      consumes<std::vector<sim::AuxDetSimChannel>>(tag);
+    }
+
+    if (fFillSimPhotons) {
+      if (!fUseLitePhotons) consumes<std::vector<sim::SimPhotons>>(tag);
+      else                  consumes<std::vector<sim::SimPhotonsLite>>(tag);
+
+      if (fStoreReflected) {
+        art::InputTag const reflected_tag { tag.label(), ReflectedLabel };
+        if (!fUseLitePhotons) consumes<std::vector<sim::SimPhotons>>(reflected_tag);
+        else                  consumes<std::vector<sim::SimPhotonsLite>>(reflected_tag);
+      }
+    }
+
     if (fFillSimEnergyDeposits) {
       for (std::string const& edep_inst: fEnergyDepositionInstances) {
         art::InputTag const edep_tag { tag.label(), edep_inst };
@@ -174,17 +213,25 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
   } // for input labels
 
 
-  produces< std::vector<simb::MCParticle> >();
-  produces< std::vector<sim::SimChannel>  >();
-  produces< std::vector<sim::AuxDetSimChannel> >();
-  produces< art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo> >();
-  
-  if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
-  else                 produces< std::vector<sim::SimPhotonsLite> >();
+  if (fFillMCParticles) {
+    produces< std::vector<simb::MCParticle> >();
+    produces< art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo> >();
+  }
+  if (fFillSimChannels) {
+    produces< std::vector<sim::SimChannel>  >();
+  }
+  if (fFillAuxDetSimChannels) {
+    produces< std::vector<sim::AuxDetSimChannel> >();
+  }
 
-  if (fStoreReflected) {
-    if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >(ReflectedLabel);
-    else                 produces< std::vector<sim::SimPhotonsLite> >(ReflectedLabel);
+  if (fFillSimPhotons) {
+    if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >();
+    else                 produces< std::vector<sim::SimPhotonsLite> >();
+
+    if (fStoreReflected) {
+      if(!fUseLitePhotons) produces< std::vector<sim::SimPhotons>     >(ReflectedLabel);
+      else                 produces< std::vector<sim::SimPhotonsLite> >(ReflectedLabel);
+    }
   }
 
   if (fFillSimEnergyDeposits) {
@@ -192,7 +239,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
       produces< std::vector<sim::SimEnergyDeposit> >(edep_inst);
   } // if
 
-  
+
   dumpConfiguration();
 
 }
@@ -216,55 +263,62 @@ void sim::MergeSimSources::produce(art::Event & e)
 
   MergeSimSourcesUtility MergeUtility { fTrackIDOffsets };
 
-  art::PtrMaker<simb::MCParticle> const makePartPtr { e };
-
   for(auto const& [ i_source, input_label ]: util::enumerate(fInputSourcesLabels)) {
 
-    auto const input_partCol
-      = e.getValidHandle<std::vector<simb::MCParticle>>(input_label);
-    MergeUtility.MergeMCParticles(*partCol,*input_partCol,i_source);
+    if (fFillMCParticles) {
+      art::PtrMaker<simb::MCParticle> const makePartPtr { e };
+      auto const input_partCol
+        = e.getValidHandle<std::vector<simb::MCParticle>>(input_label);
+      MergeUtility.MergeMCParticles(*partCol,*input_partCol,i_source);
 
-    //truth-->particle assoc stuff here
-    const std::vector<size_t>& assocVectorPrimitive
-      = MergeUtility.GetMCParticleListMap().at(i_source);
-    art::FindOneP<simb::MCTruth, sim::GeneratedParticleInfo> mctAssn(input_partCol,e,input_label);
-    for(auto const i_p: util::counter(mctAssn.size()))
-      tpassn->addSingle(mctAssn.at(i_p), makePartPtr(assocVectorPrimitive[i_p]), mctAssn.data(i_p).ref());
-
-
-    auto const& input_scCol
-       = e.getProduct<std::vector<sim::SimChannel>>(input_label);
-    MergeUtility.MergeSimChannels(*scCol,input_scCol,i_source);
-
-    auto const& input_adCol
-      = e.getProduct<std::vector<sim::AuxDetSimChannel>>(input_label);
-    MergeUtility.MergeAuxDetSimChannels(*adCol,input_adCol,i_source);
-
-    if(!fUseLitePhotons){
-      auto const& input_PhotonCol
-        = e.getProduct<std::vector<sim::SimPhotons>>(input_label);
-      MergeUtility.MergeSimPhotons(*PhotonCol,input_PhotonCol);
-    }
-    else{
-      auto const& input_LitePhotonCol
-       = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_label);
-      MergeUtility.MergeSimPhotonsLite(*LitePhotonCol,input_LitePhotonCol);
+      //truth-->particle assoc stuff here
+      const std::vector<size_t>& assocVectorPrimitive
+        = MergeUtility.GetMCParticleListMap().at(i_source);
+      art::FindOneP<simb::MCTruth, sim::GeneratedParticleInfo> mctAssn(input_partCol,e,input_label);
+      for(auto const i_p: util::counter(mctAssn.size()))
+        tpassn->addSingle(mctAssn.at(i_p), makePartPtr(assocVectorPrimitive[i_p]), mctAssn.data(i_p).ref());
     }
 
-    if (fStoreReflected) {
-      art::InputTag const input_reflected_label
-        { input_label.label(), ReflectedLabel };
+    if (fFillSimChannels) {
+      auto const& input_scCol
+         = e.getProduct<std::vector<sim::SimChannel>>(input_label);
+      MergeUtility.MergeSimChannels(*scCol,input_scCol,i_source);
+    }
+
+    if (fFillAuxDetSimChannels) {
+      auto const& input_adCol
+        = e.getProduct<std::vector<sim::AuxDetSimChannel>>(input_label);
+      MergeUtility.MergeAuxDetSimChannels(*adCol,input_adCol,i_source);
+    }
+
+    if (fFillSimPhotons) {
       if(!fUseLitePhotons){
         auto const& input_PhotonCol
-          = e.getProduct<std::vector<sim::SimPhotons>>(input_reflected_label);
-        MergeUtility.MergeSimPhotons(*ReflPhotonCol,input_PhotonCol);
+          = e.getProduct<std::vector<sim::SimPhotons>>(input_label);
+        MergeUtility.MergeSimPhotons(*PhotonCol,input_PhotonCol);
       }
       else{
         auto const& input_LitePhotonCol
-          = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_reflected_label);
-        MergeUtility.MergeSimPhotonsLite(*ReflLitePhotonCol,input_LitePhotonCol);
+         = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_label);
+        MergeUtility.MergeSimPhotonsLite(*LitePhotonCol,input_LitePhotonCol);
+      }
+
+      if (fStoreReflected) {
+        art::InputTag const input_reflected_label
+          { input_label.label(), ReflectedLabel };
+        if(!fUseLitePhotons){
+          auto const& input_PhotonCol
+            = e.getProduct<std::vector<sim::SimPhotons>>(input_reflected_label);
+          MergeUtility.MergeSimPhotons(*ReflPhotonCol,input_PhotonCol);
+        }
+        else{
+          auto const& input_LitePhotonCol
+            = e.getProduct<std::vector<sim::SimPhotonsLite>>(input_reflected_label);
+          MergeUtility.MergeSimPhotonsLite(*ReflLitePhotonCol,input_LitePhotonCol);
+        }
       }
     }
+
 
     if (fFillSimEnergyDeposits) {
       for (auto const& [ edep_inst, edepCol ]
@@ -279,16 +333,24 @@ void sim::MergeSimSources::produce(art::Event & e)
 
   }
 
-  e.put(std::move(partCol));
-  e.put(std::move(scCol));
-  e.put(std::move(adCol));
-  if(!fUseLitePhotons) e.put(std::move(PhotonCol));
-  else                 e.put(std::move(LitePhotonCol));
-  if(fStoreReflected) {
-    if(!fUseLitePhotons) e.put(std::move(ReflPhotonCol), ReflectedLabel);
-    else                 e.put(std::move(ReflLitePhotonCol), ReflectedLabel);
+  if (fFillMCParticles) {
+    e.put(std::move(partCol));
+    e.put(std::move(tpassn));
   }
-  e.put(std::move(tpassn));
+  if (fFillSimChannels) {
+    e.put(std::move(scCol));
+  }
+  if (fFillAuxDetSimChannels) {
+    e.put(std::move(adCol));
+  }
+  if (fFillSimPhotons) {
+    if(!fUseLitePhotons) e.put(std::move(PhotonCol));
+    else                 e.put(std::move(LitePhotonCol));
+    if(fStoreReflected) {
+      if(!fUseLitePhotons) e.put(std::move(ReflPhotonCol), ReflectedLabel);
+      else                 e.put(std::move(ReflLitePhotonCol), ReflectedLabel);
+    }
+  }
 
   if(fFillSimEnergyDeposits) {
     for (auto&& [ edep_inst, edepCol ]
@@ -302,7 +364,7 @@ void sim::MergeSimSources::produce(art::Event & e)
 
 
 void sim::MergeSimSources::dumpConfiguration() const {
-  
+
   mf::LogInfo log("MergeSimSources");
   log << "Configuration:"
     << "\n - " << fInputSourcesLabels.size() << " input sources:";
@@ -312,21 +374,27 @@ void sim::MergeSimSources::dumpConfiguration() const {
     log << "\n   [" << i_source << "] '" << tag.encode()
       << "' (ID offset: " << offset << ")";
   } // for
-  
-  if (fUseLitePhotons) log << "\n - use photon summary (`SimPhotonsLite`)";
-  else                 log << "\n - use detailed photons (`SimPhotons`)";
-  
-  if (fStoreReflected) log << "\n - also merge reflected light";
-  
+  if (fFillMCParticles) log << "\n - filling MCParticles";
+
+  if (fFillSimChannels) log << "\n - filling SimChannels";
+
+  if (fFillAuxDetSimChannels) log << "\n - filling AuxDetSimChannels";
+
+  if (fFillSimPhotons) {
+    log << "\n - filling Simulated Photons";
+    if (fUseLitePhotons) log << "\n   - using photon summary (`SimPhotonsLite`)";
+    else                 log << "\n   - using detailed photons (`SimPhotons`)";
+    if (fStoreReflected) log << "\n   - also merging reflected light";
+  }
+
   if (fFillSimEnergyDeposits) {
-    log << "\n - merge simulated energy deposits ("
+    log << "\n - filling simulated energy deposits ("
       << fEnergyDepositionInstances.size() << " labels:";
     for (std::string const& label: fEnergyDepositionInstances)
       log << " '" << label << "'";
     log << ")";
   }
-  else log << "\n - do not merge simulated energy deposits";
-  
+
 } // sim::MergeSimSources::dumpConfiguration()
 
 

@@ -34,8 +34,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "canvas/Utilities/Exception.h"
 
 #include <iostream>
 #include <sstream> // std::stringstream, std::stringbuf
@@ -43,6 +45,7 @@
 #include <string>
 
 using std::string;
+using SimEnergyDepositCollection = std::vector<sim::SimEnergyDeposit>;
 
 namespace larg4 {
   class IonAndScint : public art::EDProducer {
@@ -53,7 +56,19 @@ namespace larg4 {
     void endJob() override;
 
   private:
-    art::InputTag calcTag; // name of calculator: Separate, Correlated, or NEST
+
+    std::vector<art::Handle<SimEnergyDepositCollection>> inputCollections(art::Event const&) const;
+
+    // name of calculator: Separate, Correlated, or NEST
+    art::InputTag calcTag;
+
+    // The input module labels to specify which SimEnergyDeposit
+    // collections to use as input. Specify only the module label,
+    // not the instance name(s). Instances to be used have to be
+    // passed via the Instances parameter.
+    // If empty, this module uses all the available collections.
+    std::vector<std::string> fInputModuleLabels;
+
     std::unique_ptr<ISCalc> fISAlg;
     CLHEP::HepRandomEngine& fEngine;
     string Instances;
@@ -65,6 +80,7 @@ namespace larg4 {
   IonAndScint::IonAndScint(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
+    , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
                 ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
     , Instances{
@@ -123,14 +139,42 @@ namespace larg4 {
   }
 
   //......................................................................
+  std::vector<art::Handle<SimEnergyDepositCollection>>
+  IonAndScint::inputCollections(art::Event const& e) const
+  {
+    if (empty(fInputModuleLabels)) {
+      mf::LogDebug("IonAndScint") << "Retrieving all products" << std::endl;
+      return e.getMany<SimEnergyDepositCollection>();
+    }
+
+    std::vector<art::Handle<SimEnergyDepositCollection>> result;
+
+    for (auto const & module : fInputModuleLabels) {
+
+      mf::LogDebug("IonAndScint") << "Retrieving products with module label "
+                                  << module << std::endl;
+
+      auto handels = e.getMany<SimEnergyDepositCollection>(art::ModuleLabelSelector(module));
+
+      if (empty(handels)) {
+        throw art::Exception(art::errors::ProductNotFound)
+          << "IonAndScint module cannot find any SimEnergyDeposits with module label "
+          << module << " as requested in InputModuleLabels. \n";
+      }
+
+      result.insert(result.end(), handels.begin(), handels.end());
+    }
+
+    return result;
+  }
+
+  //......................................................................
   void
   IonAndScint::produce(art::Event& event)
   {
     std::cout << "IonAndScint Module Producer" << std::endl;
-    //std::vector<art::Handle<std::vector<sim::SimEnergyDeposit>>> edepHandle;
 
-    //event.getManyByType(edepHandle);
-    auto edepHandle = event.getMany<std::vector<sim::SimEnergyDeposit>>();
+    std::vector<art::Handle<SimEnergyDepositCollection>> edepHandle = inputCollections(event);
 
     if (empty(edepHandle)) {
       std::cout << "IonAndScint Module Cannot Retrive SimEnergyDeposit" << std::endl;
