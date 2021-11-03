@@ -51,9 +51,9 @@ void sim::MergeSimSourcesUtility::MergeMCParticles( std::vector<simb::MCParticle
 
     fMCParticleListMap[source_index][i_p] = merged_vector.size() - 1;
 
-    if(merged_vector.back().TrackId() < range_trackID.first)
+    if( std::abs(merged_vector.back().TrackId()) < range_trackID.first)
       range_trackID.first = merged_vector.back().TrackId();
-    if(merged_vector.back().TrackId() > range_trackID.second)
+    if( std::abs(merged_vector.back().TrackId()) > range_trackID.second)
       range_trackID.second = merged_vector.back().TrackId();
 
   }
@@ -82,8 +82,8 @@ void sim::MergeSimSourcesUtility::MergeSimChannels(std::vector<sim::SimChannel>&
     }
 
     std::pair<int,int> thisrange = it->MergeSimChannel(simchannel,fG4TrackIDOffsets[source_index]);
-    if(thisrange.first < range_trackID.first) range_trackID.first = thisrange.first;
-    if(thisrange.second > range_trackID.second) range_trackID.second = thisrange.second;
+    if( std::abs(thisrange.first) < std::abs(range_trackID.first)) range_trackID.first = thisrange.first;
+    if( std::abs(thisrange.second) > std::abs(range_trackID.second)) range_trackID.second = thisrange.second;
   }
 
   UpdateG4TrackIDRange(range_trackID,source_index);
@@ -115,9 +115,9 @@ void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(std::vector<sim::AuxDet
     for (const sim::AuxDetIDE &ide: simchannel.AuxDetIDEs()) {
       all_ides.emplace_back(ide, offset);
 
-      if( ide.trackID+offset < range_trackID.first  )
+      if( std::abs(ide.trackID+offset) < range_trackID.first  )
         range_trackID.first = ide.trackID+offset;
-      if( ide.trackID+offset > range_trackID.second )
+      if( std::abs(ide.trackID+offset) > range_trackID.second )
         range_trackID.second = ide.trackID+offset;
     }
     
@@ -216,6 +216,9 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
 sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetTrackID
   (sim::SimEnergyDeposit const& edep, int offset)
 {
+
+  int tid = (edep.TrackID()>=0) ? (edep.TrackID() + offset) : (edep.TrackID() - offset);
+
   return sim::SimEnergyDeposit{
     edep.NumPhotons(),       // np
     edep.NumElectrons(),     // ne
@@ -225,7 +228,7 @@ sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetTrackID
     edep.End(),              // end
     edep.T0(),               // t0
     edep.T1(),               // t1
-    edep.TrackID() + offset, // id
+    tid,                     // id
     edep.PdgCode()           // pdg
     };
 } // sim::MergeSimSourcesUtility::offsetTrackID()
