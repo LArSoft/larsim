@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+sbnd_genericCRT:
+{
+  module_type: "GenericCRT"
+  LArG4Label: "largeant"
+
+}
+
+END_PROLOG
