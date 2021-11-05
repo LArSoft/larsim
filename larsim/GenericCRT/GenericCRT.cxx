@@ -92,7 +92,6 @@ sim::AuxDetSimChannel const sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
             double zcoordinate = (AuxDetHitIter.GetEntryZ() + AuxDetHitIter.GetExitZ())/2.0;
             double worldPos[3] = {xcoordinate,ycoordinate,zcoordinate};
             fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
-            std::cout << "AD,ADS = " << ad_id_no << "," << ad_sen_id_no << std::endl;
             if(channel == inputchannel)   // this is the channel we want.
             {
                 sim::AuxDetIDE tempIDE;
