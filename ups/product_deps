@@ -8,10 +8,10 @@ fwdir   product_dir G4
 gdmldir product_dir gdml
 #
 product         version
-larg4           v09_06_00
-nugen           v1_14_05
+larg4           v09_06_01
+nugen           v1_14_06
 nurandom        v1_07_06
-nutools         v3_11_05
+nutools         v3_11_06
 marley          v1_2_0e
 larsoft_data    v1_02_01
 cetbuildtools   v8_18_05    -   only_for_build
