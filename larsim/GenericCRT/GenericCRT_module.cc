@@ -42,9 +42,6 @@ public:
   // Required functions.
   void produce(art::Event& e) override;
 
-  // Selected optional functions.
-  void beginJob() override;
-  void endJob() override;
 
 private:
 
@@ -62,8 +59,6 @@ sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
 {
 
   produces< std::vector<sim::AuxDetSimChannel> >();
-  // Call appropriate produces<>() functions here.
-  // Call appropriate consumes<>() for any products to be retrieved by this module.
 }
 
 void sim::GenericCRT::produce(art::Event& e)
@@ -75,21 +70,11 @@ void sim::GenericCRT::produce(art::Event& e)
   auto const &auxdethitcollection = e.getMany< std::vector<sim::AuxDetHit>> ();
 
   for (size_t ii = 0; ii < auxdethitcollection.size(); ii++) {
-    fCRTConvertUtil.FillAuxDetSimChannels(*(auxdethitcollection.at(ii)),adCol.get());
+    fCRTConvertUtil.GetAuxDetSimChannels(*(auxdethitcollection.at(ii)));
   }
 
   e.put(std::move(adCol));
 
-}
-
-void sim::GenericCRT::beginJob()
-{
-  // Implementation of optional member function here.
-}
-
-void sim::GenericCRT::endJob()
-{
-  // Implementation of optional member function here.
 }
 
 DEFINE_ART_MODULE(sim::GenericCRT)

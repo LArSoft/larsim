@@ -14,19 +14,9 @@
 #include <algorithm> // std::find()
 
 
-
-
-// sim::GenericCRTUtility::GenericCRTUtility()
-// {
-//
-//
-// }
-
-
-
-unsigned int sim::GenericCRTUtility::CopyAuxDetHittoAuxDetIDE(const sim::AuxDetHit &InputHit,sim::AuxDetIDE &outputIDE)
-{
-
+sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit &InputHit) const
+  {
+    sim::AuxDetIDE outputIDE;
 
    outputIDE.trackID		    = InputHit.GetTrackID();
    outputIDE.energyDeposited	= InputHit.GetEnergyDeposited();
@@ -43,59 +33,57 @@ unsigned int sim::GenericCRTUtility::CopyAuxDetHittoAuxDetIDE(const sim::AuxDetH
    outputIDE.exitMomentumZ	= InputHit.GetExitMomentumZ();
 
 
-   return  InputHit.GetID();
+   return outputIDE;
 }
 
 
 
-
-unsigned int sim::GenericCRTUtility::GetNumberofAuxDetChannels(const std::vector<sim::AuxDetHit> &InputHitVector,std::vector<unsigned int> &AuxDetChanNumbers )
+std::vector<unsigned int> sim::GenericCRTUtility::GetAuxDetChannels(const std::vector<sim::AuxDetHit>& InputHitVector) const
 {
 
-  AuxDetChanNumbers.reserve(InputHitVector.size());
+  std::vector<unsigned int> AuxDetChanNumber;
+  AuxDetChanNumber.reserve(size(InputHitVector));
 
 
-  for(auto HitIter : InputHitVector)
+  for(auto const& hit : InputHitVector)
   {
 
   std::vector<unsigned int>::iterator Chanitr
-      = std::find(AuxDetChanNumbers.begin(), AuxDetChanNumbers.end(), HitIter.GetID());
+      = std::find(AuxDetChanNumber.begin(), AuxDetChanNumber.end(), hit.GetID());
 
-   if(Chanitr == AuxDetChanNumbers.end()){ //If trackID is already in the map, update it
+   if(Chanitr == AuxDetChanNumber.end()){ //If trackID is already in the map, update it
          //if channel ID is not in the set yet, add it
-      AuxDetChanNumbers.push_back(HitIter.GetID());
+      AuxDetChanNumber.push_back(hit.GetID());
         }//
 
   }
 
-return AuxDetChanNumbers.size();
+return AuxDetChanNumber;
 
 }
 
 
 
-sim::AuxDetSimChannel const sim::GenericCRTUtility::GetAuxDetSimChannelByNumber( const std::vector<sim::AuxDetHit> &InputHitVector,unsigned int inputchannel)
+sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(const std::vector<sim::AuxDetHit>& InputHitVector, unsigned int inputchannel) const
 {
         std::vector<sim::AuxDetIDE> IDEvector;
-       IDEvector.resize(0);
         //loop over sim::AuxDetHits and assign them to AuxDetSimChannels.
 
         size_t ad_id_no = 9999;
         size_t ad_sen_id_no = 9999;
 
-        for(auto AuxDetHitIter : InputHitVector)
+        for (auto const& auxDetHit : InputHitVector)
         {
 
-            unsigned int channel = AuxDetHitIter.GetID();
-            double xcoordinate = (AuxDetHitIter.GetEntryX() + AuxDetHitIter.GetExitX())/2.0;
-            double ycoordinate = (AuxDetHitIter.GetEntryY() + AuxDetHitIter.GetExitY())/2.0;
-            double zcoordinate = (AuxDetHitIter.GetEntryZ() + AuxDetHitIter.GetExitZ())/2.0;
+            double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX())/2.0;
+            double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY())/2.0;
+            double zcoordinate = (auxDetHit.GetEntryZ() + auxDetHit.GetExitZ())/2.0;
             double worldPos[3] = {xcoordinate,ycoordinate,zcoordinate};
             fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
-            if(channel == inputchannel)   // this is the channel we want.
+            if(auxDetHit.GetID() == inputchannel)   // this is the channel we want.
             {
                 sim::AuxDetIDE tempIDE;
-                CopyAuxDetHittoAuxDetIDE(AuxDetHitIter,tempIDE);
+                toAuxDetIDE(auxDetHit);
 
                 std::vector<sim::AuxDetIDE>::iterator IDEitr
                 = std::find(IDEvector.begin(), IDEvector.end(), tempIDE);
@@ -115,36 +103,28 @@ sim::AuxDetSimChannel const sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
                         IDEvector.push_back(std::move(tempIDE));
                     }//else
 
-
+                    break;
             } // end if the AuxDetHit channel checks out.
 
         } // end main loop on AuxDetHit
 
         //push back the AuxDetSimChannel Vector.
         //TODO check the last parameter values.
-       const sim::AuxDetSimChannel adsc=sim::AuxDetSimChannel(ad_id_no, std::move(IDEvector), ad_sen_id_no);
-
-  return adsc;
+        return sim::AuxDetSimChannel(ad_id_no, std::move(IDEvector), ad_sen_id_no);
 }
 
 
 
 
-void sim::GenericCRTUtility::FillAuxDetSimChannels(const std::vector<sim::AuxDetHit> &InputHitVector, std::vector<sim::AuxDetSimChannel> *AuxDetVector)
+std::vector<sim::AuxDetSimChannel> sim::GenericCRTUtility::GetAuxDetSimChannels(const std::vector<sim::AuxDetHit>& InputHitVector) const
 {
+  auto const auxDetChannels = GetAuxDetChannels(InputHitVector);
+  std::vector<sim::AuxDetSimChannel> auxDetVector;
+  auxDetVector.reserve(size(auxDetChannels));
 
-    std::vector<unsigned int> AuxDetChanNumbers;   // vector of channels that have AuxDetHits.
+  for (auto const channelNum : auxDetChannels) {
+    auxDetVector.push_back(GetAuxDetSimChannelByNumber(InputHitVector, channelNum));
+  }
 
-    //get number of NauxDetChannels and fill a map with their IDs.
-    unsigned int NAuxDetChannels=GetNumberofAuxDetChannels(InputHitVector,AuxDetChanNumbers );
-    AuxDetVector->reserve(NAuxDetChannels);
-
-
-    //loop on AuxDetChannelNumbers
-    for(unsigned iAuxDet=0;iAuxDet < AuxDetChanNumbers.size();iAuxDet++ )
-    {
-     const sim::AuxDetSimChannel adsc=GetAuxDetSimChannelByNumber(InputHitVector,AuxDetChanNumbers[iAuxDet]);
-     AuxDetVector->push_back(std::move(adsc));
-
-    }//end loop on AuxDetChanNumbers
+  return auxDetVector;
 }

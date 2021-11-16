@@ -27,13 +27,13 @@ namespace sim{
 
     public:
 
-    unsigned int CopyAuxDetHittoAuxDetIDE(const sim::AuxDetHit &InputHit,sim::AuxDetIDE &outputIDE);
+    sim::AuxDetIDE toAuxDetIDE(sim::AuxDetHit const& InputHit) const;
 
-    unsigned int GetNumberofAuxDetChannels(const std::vector<sim::AuxDetHit> &InputHitVector,std::vector<unsigned int> &AuxDetChanNumbers );
+    std::vector<unsigned int> GetAuxDetChannels(const std::vector<sim::AuxDetHit>& InputHitVector) const;
 
-    sim::AuxDetSimChannel const  GetAuxDetSimChannelByNumber(const std::vector<sim::AuxDetHit> &InputHitVector,unsigned int channel);
+    std::vector<sim::AuxDetSimChannel> GetAuxDetSimChannels(const std::vector<sim::AuxDetHit>& InputHitVector) const;
 
-    void FillAuxDetSimChannels(const std::vector<sim::AuxDetHit> &InputHitVector, std::vector<sim::AuxDetSimChannel>  *AuxDetVector);
+    sim::AuxDetSimChannel GetAuxDetSimChannelByNumber(const std::vector<sim::AuxDetHit>& InputHitVector, unsigned int inputchannel) const;
 
     private:
 
