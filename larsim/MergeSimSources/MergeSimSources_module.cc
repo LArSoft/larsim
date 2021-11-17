@@ -34,6 +34,7 @@
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/AuxDetHit.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "larcorealg/CoreUtils/enumerate.h"
@@ -103,6 +104,19 @@ public:
       std::vector<std::string>{ "TPCActive", "Other" } // default
     };
 
+    fhicl::Atom<bool> FillAuxDetHits {
+      fhicl::Name{ "FillAuxDetHits" },
+      fhicl::Comment
+        { "whether to merge aux det hit collections" },
+      false // default
+    };
+
+    fhicl::Sequence<std::string> AuxDetHitsInstanceLabels {
+      fhicl::Name{ "AuxDetHitsInstanceLabels" },
+      fhicl::Comment{ "labels of AuxDetHits collections to merge" },
+      std::vector<std::string>{ "LArG4DetectorServicevolAuxDetSensitiveCRTStripY", "Other" } // default
+    };
+
   }; // struct Config
 
   using Parameters = art::EDProducer::Table<Config>;
@@ -124,6 +138,8 @@ private:
   bool                       const fFillAuxDetSimChannels;
   bool                       const fFillSimEnergyDeposits;
   std::vector<std::string>   const fEnergyDepositionInstances;
+  bool                       const fFillAuxDetHits;
+  std::vector<std::string>   const fAuxDetHitsInstanceLabels;
 
   static std::string const ReflectedLabel;
 
@@ -169,6 +185,8 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
         (art::ServiceHandle<sim::LArG4Parameters const>()->FillSimEnergyDeposits())
       )
   , fEnergyDepositionInstances(params().EnergyDepositInstanceLabels())
+  , fFillAuxDetHits(params().FillAuxDetHits())
+  , fAuxDetHitsInstanceLabels(params().AuxDetHitsInstanceLabels())
 {
 
   if(fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
@@ -210,6 +228,13 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
       }
     } // if fill energy deposits
 
+    if (fFillAuxDetHits) {
+      for (std::string const& auxdethit_inst: fAuxDetHitsInstanceLabels) {
+        art::InputTag const auxdethit_tag { tag.label(), auxdethit_inst };
+        consumes<std::vector<sim::SimEnergyDeposit>>(auxdethit_tag);
+      }
+    }
+
   } // for input labels
 
 
@@ -239,6 +264,11 @@ sim::MergeSimSources::MergeSimSources(Parameters const & params)
       produces< std::vector<sim::SimEnergyDeposit> >(edep_inst);
   } // if
 
+  if (fFillAuxDetHits) {
+    for (std::string const& auxdethit_inst: fAuxDetHitsInstanceLabels)
+      produces< std::vector<sim::AuxDetHit> >(auxdethit_inst);
+  }
+
 
   dumpConfiguration();
 
@@ -259,6 +289,11 @@ void sim::MergeSimSources::produce(art::Event & e)
   if (fFillSimEnergyDeposits) {
     for (auto const i [[maybe_unused]]: util::counter(fEnergyDepositionInstances.size()))
       edepCols.push_back(std::make_unique<std::vector<sim::SimEnergyDeposit>>());
+  } // if
+  std::vector<std::unique_ptr<std::vector<sim::AuxDetHit>>> auxdethitCols;
+  if (fFillAuxDetHits) {
+    for (auto const i [[maybe_unused]]: util::counter(fAuxDetHitsInstanceLabels.size()))
+      auxdethitCols.push_back(std::make_unique<std::vector<sim::AuxDetHit>>());
   } // if
 
   MergeSimSourcesUtility MergeUtility { fTrackIDOffsets };
@@ -331,6 +366,18 @@ void sim::MergeSimSources::produce(art::Event & e)
       } // for edep
     } // if fill energy depositions
 
+
+    if (fFillAuxDetHits) {
+      for (auto const& [ auxdethit_inst, auxdethitCol ]
+        : util::zip(fAuxDetHitsInstanceLabels, auxdethitCols))
+      {
+        art::InputTag const auxdethit_tag { input_label.label(), auxdethit_inst };
+        auto const& input_auxdethit
+          = e.getProduct<std::vector<sim::AuxDetHit>>(auxdethit_tag);
+        MergeUtility.MergeAuxDetHits(*auxdethitCol, input_auxdethit, i_source);
+      }
+    }
+
   }
 
   if (fFillMCParticles) {
@@ -359,6 +406,14 @@ void sim::MergeSimSources::produce(art::Event & e)
       e.put(std::move(edepCol), edep_inst);
     } // for
   } // if fill energy deposits
+
+  if(fFillAuxDetHits) {
+    for (auto&& [ auxdethit_inst, auxdethitCol ]
+      : util::zip(fAuxDetHitsInstanceLabels, auxdethitCols))
+    {
+      e.put(std::move(auxdethitCol), auxdethit_inst);
+    }
+  }
 
 }
 
@@ -391,6 +446,14 @@ void sim::MergeSimSources::dumpConfiguration() const {
     log << "\n - filling simulated energy deposits ("
       << fEnergyDepositionInstances.size() << " labels:";
     for (std::string const& label: fEnergyDepositionInstances)
+      log << " '" << label << "'";
+    log << ")";
+  }
+
+  if (fFillAuxDetHits) {
+    log << "\n - filling auxiliary detector hits ("
+      << fAuxDetHitsInstanceLabels.size() << " labels:";
+    for (std::string const& label: fAuxDetHitsInstanceLabels)
       log << " '" << label << "'";
     log << ")";
   }

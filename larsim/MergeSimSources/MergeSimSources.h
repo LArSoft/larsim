@@ -18,6 +18,7 @@
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/AuxDetHit.h"
 
 namespace sim{
 
@@ -50,6 +51,9 @@ namespace sim{
     void MergeSimEnergyDeposits( std::vector<sim::SimEnergyDeposit>&,
 			      const std::vector<sim::SimEnergyDeposit>&, size_t) const;
 
+    void MergeAuxDetHits( std::vector<sim::AuxDetHit>&,
+            const std::vector<sim::AuxDetHit>&, size_t) const;
+
     const std::vector< std::vector<size_t> >& GetMCParticleListMap() { return fMCParticleListMap; }
 
   private:
@@ -61,8 +65,11 @@ namespace sim{
 
     void UpdateG4TrackIDRange(std::pair<int,int>,size_t);
 
-    static sim::SimEnergyDeposit offsetTrackID
-      (sim::SimEnergyDeposit const& edep, int offset);
+    static sim::SimEnergyDeposit offsetSimEnergyDepositTrackID
+      (sim::SimEnergyDeposit const&, int);
+
+    static sim::AuxDetHit offsetAuxDetHitTrackID
+      (sim::AuxDetHit const&, int);
 
   }; //end MergeSimSourcesUtility class
 

@@ -177,10 +177,26 @@ void sim::MergeSimSourcesUtility::MergeSimEnergyDeposits(
 
   int const offset = fG4TrackIDOffsets.at(source_index);
   auto const offsetEDepID = [offset](sim::SimEnergyDeposit const& edep)
-    { return sim::MergeSimSourcesUtility::offsetTrackID(edep, offset); };
+    { return sim::MergeSimSourcesUtility::offsetSimEnergyDepositTrackID(edep, offset); };
   
   dest.reserve(dest.size() + src.size());
   std::transform(begin(src), end(src), back_inserter(dest), offsetEDepID);
+
+}
+
+
+void sim::MergeSimSourcesUtility::MergeAuxDetHits(
+  std::vector<sim::AuxDetHit>& dest,
+  const std::vector<sim::AuxDetHit>& src,
+  std::size_t source_index
+) const {
+
+  int const offset = fG4TrackIDOffsets.at(source_index);
+  auto const offsetAuxDetHitID = [offset](sim::AuxDetHit const& adh)
+    { return sim::MergeSimSourcesUtility::offsetAuxDetHitTrackID(adh, offset); };
+
+  dest.reserve(dest.size() + src.size());
+  std::transform(begin(src), end(src), back_inserter(dest), offsetAuxDetHitID);
 
 }
 
@@ -217,7 +233,7 @@ void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int,int> newran
 }
 
 
-sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetTrackID
+sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetSimEnergyDepositTrackID
   (sim::SimEnergyDeposit const& edep, int offset)
 {
 
@@ -236,5 +252,30 @@ sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetTrackID
     edep.PdgCode()           // pdg
     };
 } // sim::MergeSimSourcesUtility::offsetTrackID()
+
+
+sim::AuxDetHit sim::MergeSimSourcesUtility::offsetAuxDetHitTrackID
+  (sim::AuxDetHit const& adh, int offset)
+{
+
+  auto tid = (adh.GetTrackID()>=0) ? (adh.GetTrackID() + offset) : (adh.GetTrackID() - offset);
+
+  return sim::AuxDetHit{
+      adh.GetID(),              // copy number
+      tid,                      // g4 track id
+      adh.GetEnergyDeposited(),
+      adh.GetEntryX(),
+      adh.GetEntryY(),
+      adh.GetEntryZ(),
+      adh.GetEntryT(),
+      adh.GetExitX(),
+      adh.GetExitY(),
+      adh.GetExitZ(),
+      adh.GetExitT(),
+      adh.GetExitMomentumX(),
+      adh.GetExitMomentumY(),
+      adh.GetExitMomentumZ(),
+    };
+} // sim::MergeSimSourcesUtility::offsetAuxDetHitTrackID()
 
 
