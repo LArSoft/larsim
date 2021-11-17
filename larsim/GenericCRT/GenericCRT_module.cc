@@ -70,7 +70,8 @@ void sim::GenericCRT::produce(art::Event& e)
   auto const &auxdethitcollection = e.getMany< std::vector<sim::AuxDetHit>> ();
 
   for (size_t ii = 0; ii < auxdethitcollection.size(); ii++) {
-    fCRTConvertUtil.GetAuxDetSimChannels(*(auxdethitcollection.at(ii)));
+    for (auto ch : fCRTConvertUtil.GetAuxDetSimChannels(*(auxdethitcollection.at(ii))))
+      adCol->emplace_back(ch);
   }
 
   e.put(std::move(adCol));

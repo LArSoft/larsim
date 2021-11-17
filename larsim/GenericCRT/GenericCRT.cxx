@@ -82,8 +82,7 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(const 
             fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
             if(auxDetHit.GetID() == inputchannel)   // this is the channel we want.
             {
-                sim::AuxDetIDE tempIDE;
-                toAuxDetIDE(auxDetHit);
+                auto tempIDE = toAuxDetIDE(auxDetHit);
 
                 std::vector<sim::AuxDetIDE>::iterator IDEitr
                 = std::find(IDEvector.begin(), IDEvector.end(), tempIDE);
