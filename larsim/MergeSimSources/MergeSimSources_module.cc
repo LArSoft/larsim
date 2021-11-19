@@ -285,16 +285,17 @@ void sim::MergeSimSources::produce(art::Event & e)
   auto ReflLitePhotonCol = std::make_unique<std::vector<sim::SimPhotonsLite>>();
   auto tpassn = std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
-  std::vector<std::unique_ptr<std::vector<sim::SimEnergyDeposit>>> edepCols;
-  if (fFillSimEnergyDeposits) {
-    for (auto const i [[maybe_unused]]: util::counter(fEnergyDepositionInstances.size()))
-      edepCols.push_back(std::make_unique<std::vector<sim::SimEnergyDeposit>>());
-  } // if
-  std::vector<std::unique_ptr<std::vector<sim::AuxDetHit>>> auxdethitCols;
-  if (fFillAuxDetHits) {
-    for (auto const i [[maybe_unused]]: util::counter(fAuxDetHitsInstanceLabels.size()))
-      auxdethitCols.push_back(std::make_unique<std::vector<sim::AuxDetHit>>());
-  } // if
+
+  using edeps_t = std::vector<sim::AuxDetHit>;
+  std::vector<edeps_t> edepCols;
+  if (fFillSimEnergyDeposits)
+    edepCols.resize(fEnergyDepositionInstances.size());
+
+  using aux_det_hits_t = std::vector<sim::AuxDetHit>;
+  std::vector<aux_det_hits_t> auxdethitCols;
+  if (fFillAuxDetHits)
+    auxdethitCols.resize(fAuxDetHitsInstanceLabels.size());
+
 
   MergeSimSourcesUtility MergeUtility { fTrackIDOffsets };
 
@@ -360,9 +361,9 @@ void sim::MergeSimSources::produce(art::Event & e)
         : util::zip(fEnergyDepositionInstances, edepCols))
       {
         art::InputTag const edep_tag { input_label.label(), edep_inst };
-        auto const& input_EDep
-          = e.getProduct<std::vector<sim::SimEnergyDeposit>>(edep_tag);
-        MergeUtility.MergeSimEnergyDeposits(*edepCol, input_EDep, i_source);
+        MergeUtility.MergeAuxDetHits(edepCol,
+                                     e.getProduct<edeps_t>(edep_tag),
+                                     i_source);
       } // for edep
     } // if fill energy depositions
 
@@ -372,9 +373,9 @@ void sim::MergeSimSources::produce(art::Event & e)
         : util::zip(fAuxDetHitsInstanceLabels, auxdethitCols))
       {
         art::InputTag const auxdethit_tag { input_label.label(), auxdethit_inst };
-        auto const& input_auxdethit
-          = e.getProduct<std::vector<sim::AuxDetHit>>(auxdethit_tag);
-        MergeUtility.MergeAuxDetHits(*auxdethitCol, input_auxdethit, i_source);
+        MergeUtility.MergeAuxDetHits(auxdethitCol,
+                                     e.getProduct<aux_det_hits_t>(auxdethit_tag),
+                                     i_source);
       }
     }
 
@@ -403,7 +404,7 @@ void sim::MergeSimSources::produce(art::Event & e)
     for (auto&& [ edep_inst, edepCol ]
       : util::zip(fEnergyDepositionInstances, edepCols))
     {
-      e.put(std::move(edepCol), edep_inst);
+      e.put(std::make_unique<edeps_t>(move(edepCol)), edep_inst);
     } // for
   } // if fill energy deposits
 
@@ -411,7 +412,7 @@ void sim::MergeSimSources::produce(art::Event & e)
     for (auto&& [ auxdethit_inst, auxdethitCol ]
       : util::zip(fAuxDetHitsInstanceLabels, auxdethitCols))
     {
-      e.put(std::move(auxdethitCol), auxdethit_inst);
+      e.put(std::make_unique<aux_det_hits_t>(move(auxdethitCol)), auxdethit_inst);
     }
   }
 
