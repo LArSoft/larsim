@@ -88,22 +88,23 @@ private:
 
 
   void ReadNextHepEvt(std::vector<simb::MCParticle> & NextEvent);
-//  void ReadNextHepEvt(HepEvtStruct & NextEvent);
+  unsigned long int fOffset;
   std::ifstream* fInputFile;
   std::string    fInputFileName; ///< Name of text file containing events to simulate
   double fMoveY; ///< Project particles to a new y plane.
- // long int fOffset;
+  bool fOffsetApplied;
 //  int fRunNumber;
 };
 
 //------------------------------------------------------------------------------
 evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   : EDProducer{p}
+  , fOffset{p.get<unsigned long int>("Offset",0)}
   , fInputFile(0)
   , fInputFileName{p.get<std::string>("InputFileName")}
   , fMoveY{p.get<double>("MoveY", -1e9)}
 //  , fRunNumber(1)
-//  , fOffset(0)
+
 
 {
   if (fMoveY>-1e8){
@@ -113,7 +114,7 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
 
-// fOffset=50;
+  fOffsetApplied=false;
 
 }
 
@@ -128,8 +129,7 @@ void evgen::TextFileGen::beginJob()
 					<< fInputFileName
 					<< " cannot be read.\n";
                     
-  std::cout << "testing 1 2 3 " << std::endl;
-  printf("++++++++ testing 3 4 5 \n");
+
 }
 
 //------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ void evgen::TextFileGen::produce(art::Event & e)
 //  double 	 zPosition   	= 0.;
 //  double 	 time        	= 0.;
 
-//while(fInputFile->good() && (!fOffsetApplied
+
 
 
 //  // read in line to get event number and number of particles
@@ -223,6 +223,20 @@ void evgen::TextFileGen::produce(art::Event & e)
 //  }
 
 std::vector<simb::MCParticle> NextEvents;
+
+// if fOffset is non-zero means it is requested. But only apply the first time around, after that fOffsetApplied = true.
+if(!fOffsetApplied && fOffset>0)  
+{
+    for(unsigned long int ioff=0;ioff<fOffset;ioff++)
+    { ReadNextHepEvt(NextEvents);
+      NextEvents.clear();   
+    }
+    
+    fOffsetApplied=true;
+}
+
+
+
 
 ReadNextHepEvt(NextEvents);
 
@@ -274,6 +288,8 @@ void evgen::TextFileGen::ReadNextHepEvt(std::vector<simb::MCParticle> & NextEven
 
   inputLine >> event >> nParticles;
 
+  std::cout << "reading in event nr " << event << std::endl;
+  
   // now read in all the lines for the particles
   // in this interaction. only particles with
   // status = 1 get tracked in Geant4.
