@@ -11,28 +11,14 @@
 
 // fhicl
 #include "fhiclcpp/ParameterSet.h"
-#include "fhiclcpp/types/DelegatedParameter.h"
-#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 // LArSoft Libraries
-#include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/OpDetGeo.h"
-#include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
-#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
-// support libraries
-#include "cetlib_except/exception.h"
-
-#include "TMath.h"
 #include "TVector3.h"
 
 #include <vector>
 
-#include "boost/math/special_functions/ellint_1.hpp"
-#include "boost/math/special_functions/ellint_3.hpp"
 
 // Define a new policy *not* internally promoting RealType to double:
 typedef boost::math::policies::policy<boost::math::policies::promote_double<false>> noLDoublePromote;

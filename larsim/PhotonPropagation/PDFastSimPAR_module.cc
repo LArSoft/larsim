@@ -56,10 +56,9 @@
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h" // phot::MappedT0s_t
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
-
 #include "larsim/IonizationScintillation/ISTPC.h"
-
 #include "larsim/PhotonPropagation/SemiAnalyticalModel.h"
+#include "larsim/PhotonPropagation/PropagationTimeModel.h"
 
 // Random numbers
 #include "CLHEP/Random/RandFlat.h"
@@ -296,7 +295,10 @@ namespace phot {
     larg4::ISTPC fISTPC;
 
     // semi-analytical model
-    std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;  
+    std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
+
+    // propagation time model
+    std::unique_ptr<PropagationTimeModel> fPropTimeModel;  
 
     void Initialization();
 
@@ -649,7 +651,7 @@ namespace phot {
           // calculate propagation time, does not matter whether fast or slow photon
           transport_time.resize(ndetected_fast + ndetected_slow);
           if (fIncludePropTime && needHits)
-            propagationTime(transport_time, ScintPoint, channel, Reflected);
+             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
 
           // SimPhotonsLite case
           if (fUseLitePhotons) {
@@ -788,8 +790,11 @@ namespace phot {
     fRandPoissPhot = std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine);
     geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
-    // photo-detector visibility model -- semi-analytical model
-    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);   
+    // photo-detector visibility model (semi-analytical model)
+    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
+
+    // propagation time model
+    fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);   
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();

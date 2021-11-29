@@ -1,16 +1,36 @@
 #include "SemiAnalyticalModel.h"
 
+// LArSoft Libraries
+#include "larcorealg/CoreUtils/counter.h"
+#include "larcorealg/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/OpDetGeo.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+
+// support libraries
+#include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "TMath.h"
+
+#include <vector>
+#include <iostream>
+
+#include "boost/math/special_functions/ellint_1.hpp"
+#include "boost/math/special_functions/ellint_3.hpp"
+
 // constructor
 SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::ParameterSet VISHits, bool doReflectedLight, bool includeAnodeReflections)
 	: fISTPC{*(lar::providerFrom<geo::Geometry>())}
 {
+
+	// TO DO -- read fhicl parameters directly ?!
 
 	fVUVHitsParams = VUVHits;
 	fDoReflectedLight = doReflectedLight;
 	fIncludeAnodeReflections = includeAnodeReflections;
 	
 	if (fDoReflectedLight) fVISHitsParams = VISHits;
-	// TO DO -- fix the way fhicl parameters are read ?!
+	
 
 	// initialise parameters and geometry 
 	std::cout << "Semi-analytical model initalized." << std::endl;
@@ -38,7 +58,7 @@ void SemiAnalyticalModel::Initialization()
                       fActiveVolumes[0].CenterY(),
                       fActiveVolumes[0].CenterZ() };
 
-    // get PD information
+    // get PDS information
     fOpDetType.reserve(nOpDets); fOpDetOrientation.reserve(nOpDets);
     fOpDetCenter.reserve(nOpDets); fOpDetLength.reserve(nOpDets); fOpDetHeight.reserve(nOpDets);
 	
@@ -84,7 +104,7 @@ void SemiAnalyticalModel::Initialization()
     fL_abs_vuv = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum 	// TO DO UNHARDCODE FOR XENON 
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
-    //mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
+    mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
     
     fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
     fIsFlatPDCorrLat  = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
@@ -116,7 +136,7 @@ void SemiAnalyticalModel::Initialization()
 
     // Load corrections for VIS semi-analytic hits
     if (fDoReflectedLight) {
-      //mf::LogInfo("SemiAnalyticalModel") << "Using VIS (reflected) visibility parameterization";
+      mf::LogInfo("SemiAnalyticalModel") << "Using VIS (reflected) visibility parameterization";
       fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
 
       if (fIsFlatPDCorr) {
@@ -142,7 +162,7 @@ void SemiAnalyticalModel::Initialization()
 
     // Load corrections for Anode reflections configuration
     if (fIncludeAnodeReflections) {
-      //mf::LogInfo("SemiAnalyticalModel") << "Using anode reflections parameterization";
+      mf::LogInfo("SemiAnalyticalModel") << "Using anode reflections parameterization";
       fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
       fAnodeReflectivity = fVISHitsParams.get<double>("AnodeReflectivity");
 
@@ -576,18 +596,18 @@ SemiAnalyticalModel::Disk_SolidAngle(const double d, const double h, const doubl
 	  }
 	  catch (std::domain_error& e) {
 	    if (isApproximatelyEqual(d, b, 1e-9)) {
-	      //mf::LogWarning("SemiAnalyticalModel")
-	      //  << "Elliptic Integral in Disk_SolidAngle() given parameters "
-	      //     "outside domain."
-	      //  << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
-	      //  << "\nRelax condition and carry on.";
+	      mf::LogWarning("SemiAnalyticalModel")
+	        << "Elliptic Integral in Disk_SolidAngle() given parameters "
+	           "outside domain."
+	        << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
+	        << "\nRelax condition and carry on.";
 	      return CLHEP::pi - 2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
 	    }
 	    else {
-	      //mf::LogError("SemiAnalyticalModel")
-	      //  << "Elliptic Integral inside Disk_SolidAngle() given parameters "
-	      //     "outside domain.\n"
-	      //  << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
+	      mf::LogError("SemiAnalyticalModel")
+	        << "Elliptic Integral inside Disk_SolidAngle() given parameters "
+	           "outside domain.\n"
+	        << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
 	      return 0.;
 	    }
 	  }
@@ -601,18 +621,18 @@ SemiAnalyticalModel::Disk_SolidAngle(const double d, const double h, const doubl
 	  }
 	  catch (std::domain_error& e) {
 	    if (isApproximatelyEqual(d, b, 1e-9)) {
-	      //mf::LogWarning("SemiAnalyticalModel")
-	      //  << "Elliptic Integral in Disk_SolidAngle() given parameters "
-	      //     "outside domain."
-	      //  << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
-	      //  << "\nRelax condition and carry on.";
+	      mf::LogWarning("SemiAnalyticalModel")
+	        << "Elliptic Integral in Disk_SolidAngle() given parameters "
+	           "outside domain."
+	        << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
+	        << "\nRelax condition and carry on.";
 	      return CLHEP::pi - 2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
 	    }
 	    else {
-	      //mf::LogError("SemiAnalyticalModel")
-	      //  << "Elliptic Integral inside Disk_SolidAngle() given parameters "
-	      //     "outside domain.\n"
-	      //  << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
+	      mf::LogError("SemiAnalyticalModel")
+	        << "Elliptic Integral inside Disk_SolidAngle() given parameters "
+	           "outside domain.\n"
+	        << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
 	      return 0.;
 	    }
 	  }
