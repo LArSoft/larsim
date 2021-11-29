@@ -381,10 +381,11 @@ namespace phot {
             ndetected_slow = ReflDetectedNumSlow[channel];
           }
 
-          // calculate propagation time, does not matter whether fast or slow photon
-          transport_time.resize(ndetected_fast + ndetected_slow);
-          if (fIncludePropTime && needHits)
-             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
+          // calculate propagation time, does not matter whether fast or slow photon          
+          if (fIncludePropTime && needHits) {
+            transport_time.resize(ndetected_fast + ndetected_slow);
+            fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
+          }
 
           // SimPhotonsLite case
           if (fUseLitePhotons) {
@@ -397,7 +398,9 @@ namespace phot {
               for (long i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
+                int time;
+                if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
+                else time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                 if (Reflected) ++ref_phlitcol[channel].DetectedPhotons[time];
                 else ++dir_phlitcol[channel].DetectedPhotons[time];
                 tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
@@ -409,7 +412,9 @@ namespace phot {
               num_slowdp += n;
               for (long i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                int time;
+                if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                else time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                 if (Reflected) ++ref_phlitcol[channel].DetectedPhotons[time];
                 else ++dir_phlitcol[channel].DetectedPhotons[time];
                 tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
@@ -434,7 +439,9 @@ namespace phot {
               for (long i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
+                int time;
+                if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[i]);
+                else time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                 photon.Time = time;
                 if(Reflected) ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
                 else dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
@@ -446,7 +453,9 @@ namespace phot {
               num_slowdp += n;
               for (long i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
-                auto time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                int time;
+                if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
+                else time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
                 photon.Time = time;
                 if(Reflected) ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
                 else dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
@@ -527,7 +536,7 @@ namespace phot {
     fVisibilityModel = std::make_unique<SemiAnalyticalModel>(fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
 
     // propagation time model
-    fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);   
+    if (fIncludePropTime) fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);   
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
