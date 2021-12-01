@@ -19,9 +19,7 @@ PropagationTimeModel::PropagationTimeModel(fhicl::ParameterSet VUVTimingParams, 
 	: fISTPC{*(lar::providerFrom<geo::Geometry>())}
 	, fScintTimeEngine(ScintTimeEngine)
 {
-	// TO DO -- read fhicl parameters directly ?!
-	// TO DO -- locally create ScintTimeEngine ?!		-- art dependency?
-
+	
 	fVUVTimingParams = VUVTimingParams;    
 	fdoReflectedLight = doReflectedLight;
 	fGeoPropTimeOnly = GeoPropTimeOnly;
@@ -210,7 +208,7 @@ PropagationTimeModel::generateParam(const size_t index, const size_t angle_bin)
 	double distance_in_cm = (index * fstep_size) + fmin_d;
 
 	// time range
-	const double signal_t_range = 5000.; // TODO: unhardcode
+	const double signal_t_range = 5000.;
 
 	// parameterisation TF1
 	TF1 fVUVTiming;
@@ -272,7 +270,7 @@ PropagationTimeModel::generateParam(const size_t index, const size_t angle_bin)
 
 	// set the number of points used to sample parameterisation
 	// for shorter distances, peak is sharper so more sensitive sampling required
-	int fsampling; // TODO: unhardcode
+	int fsampling;
 	if (distance_in_cm < 50) fsampling = 10000;
 	else if (distance_in_cm < 100) fsampling = 5000;
 	else fsampling = 1000;
@@ -397,13 +395,13 @@ PropagationTimeModel::getVISTimes(std::vector<double>& arrivalTimes,
         // most are within single attempt, very few take more than two
         do {
           // don't attempt smearings too many times
-          if (counter >= 10) {                      // TODO: unhardcode
+          if (counter >= 10) {                      
             arrival_time_smeared = arrivalTimes[i]; // don't smear
             break;
           }
           else {
             // generate random number in appropriate range
-            double x = CLHEP::RandFlat::shoot(&fScintTimeEngine, 0.5, 1.0);		// TO DO how to use this properly here?
+            double x = CLHEP::RandFlat::shoot(&fScintTimeEngine, 0.5, 1.0);
             // apply the exponential smearing
             arrival_time_smeared =
               arrivalTimes[i] + (arrivalTimes[i] - fastest_time) * (std::pow(x, -tau) - 1);

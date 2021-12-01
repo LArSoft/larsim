@@ -23,44 +23,42 @@ SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::Par
 	: fISTPC{*(lar::providerFrom<geo::Geometry>())}
 {
 
-	// TO DO -- read fhicl parameters directly ?!
-
+	// set input parameters
 	fVUVHitsParams = VUVHits;
 	fDoReflectedLight = doReflectedLight;
 	fIncludeAnodeReflections = includeAnodeReflections;
 	
-	if (fDoReflectedLight) fVISHitsParams = VISHits;
-	
+	if (fDoReflectedLight || includeAnodeReflections) fVISHitsParams = VISHits;	
 
 	// initialise parameters and geometry 
-	std::cout << "Semi-analytical model initalized." << std::endl;
+	std::cout << "Semi-analytical model initialized." << std::endl;
 	Initialization();
 }
 
 // initialization
 void SemiAnalyticalModel::Initialization()
 {
-    // access geometry
-    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+  // access geometry
+  geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
-    // store information from geometry service
-    nOpDets = geom.NOpDets();
-    fNTPC = geom.NTPC();
-    
-    // get TPC information
-    fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
+  // store information from geometry service
+  nOpDets = geom.NOpDets();
+  fNTPC = geom.NTPC();
+  
+  // get TPC information
+  fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
 
-    fcathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
-                       fActiveVolumes[0].CenterY(),
-                       fActiveVolumes[0].CenterZ()};
+  fcathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
+                     fActiveVolumes[0].CenterY(),
+                     fActiveVolumes[0].CenterZ()};
 
-    fanode_centre = {geom.TPC(0, 0).FirstPlane().GetCenter().X(),
-                      fActiveVolumes[0].CenterY(),
-                      fActiveVolumes[0].CenterZ() };
+  fanode_centre = {geom.TPC(0, 0).FirstPlane().GetCenter().X(),
+                    fActiveVolumes[0].CenterY(),
+                    fActiveVolumes[0].CenterZ() };
 
-    // get PDS information
-    fOpDetType.reserve(nOpDets); fOpDetOrientation.reserve(nOpDets);
-    fOpDetCenter.reserve(nOpDets); fOpDetLength.reserve(nOpDets); fOpDetHeight.reserve(nOpDets);
+  // get PDS information
+  fOpDetType.reserve(nOpDets); fOpDetOrientation.reserve(nOpDets);
+  fOpDetCenter.reserve(nOpDets); fOpDetLength.reserve(nOpDets); fOpDetHeight.reserve(nOpDets);
 	
 	for (size_t const i : util::counter(nOpDets)) {
 		
@@ -92,101 +90,101 @@ void SemiAnalyticalModel::Initialization()
 			fOpDetLength.push_back(-1);
 			fOpDetHeight.push_back(-1);
 		}
-    }
+	}
 
-    // determine LAr absorption length in cm
-    std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
-    std::vector<double> x_v, y_v;
-    for (auto elem : abs_length_spectrum) {
-      x_v.push_back(elem.first);
-      y_v.push_back(elem.second);
-    }
-    fL_abs_vuv = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum 	// TO DO UNHARDCODE FOR XENON 
+  // determine LAr absorption length in cm
+  std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+  std::vector<double> x_v, y_v;
+  for (auto elem : abs_length_spectrum) {
+    x_v.push_back(elem.first);
+    y_v.push_back(elem.second);
+  }
+  fL_abs_vuv = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum 	// TO DO UNHARDCODE FOR XENON 
 
 	// Load Gaisser-Hillas corrections for VUV semi-analytic hits
-    mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
-    
-    fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
-    fIsFlatPDCorrLat  = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
-    fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
-    fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv", 10);
-    fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
-    fApplyFieldCageTransparency = fVUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
-    fFieldCageTransparencyLateral = fVUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
-    fFieldCageTransparencyCathode = fVUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);    
-    
-    if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
-      throw cet::exception("SemiAnalyticalModel")
-          << "Both isFlatPDCorr/isFlatPDCorrLat and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
-    }
+  mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
+  
+  fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
+  fIsFlatPDCorrLat  = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
+  fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
+  fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv", 10);
+  fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
+  fApplyFieldCageTransparency = fVUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
+  fFieldCageTransparencyLateral = fVUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
+  fFieldCageTransparencyCathode = fVUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);    
+  
+  if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
+    throw cet::exception("SemiAnalyticalModel")
+        << "Both isFlatPDCorr/isFlatPDCorrLat and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+  }
+  if (fIsFlatPDCorr) {
+      fGHvuvpars_flat          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+      fborder_corr_angulo_flat = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat");
+      fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
+  }
+  if (fIsFlatPDCorrLat) {
+      fGHvuvpars_flat_lateral  = fVUVHitsParams.get<std::vector<std::vector<std::vector<double>>>>("GH_PARS_flat_lateral");
+      fGH_distances_anode      = fVUVHitsParams.get<std::vector<double>>("GH_distances_anode");
+  }
+  if (fIsDomePDCorr) {
+      fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
+      fborder_corr_angulo_dome = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_dome");
+      fborder_corr_dome        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_dome");
+  }
+
+  // Load corrections for VIS semi-analytic hits
+  if (fDoReflectedLight) {
+    mf::LogInfo("SemiAnalyticalModel") << "Using VIS (reflected) visibility parameterization";
+    fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
+
     if (fIsFlatPDCorr) {
-        fGHvuvpars_flat          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
-        fborder_corr_angulo_flat = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat");
-        fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
-    }
-    if (fIsFlatPDCorrLat) {
-        fGHvuvpars_flat_lateral  = fVUVHitsParams.get<std::vector<std::vector<std::vector<double>>>>("GH_PARS_flat_lateral");
-        fGH_distances_anode      = fVUVHitsParams.get<std::vector<double>>("GH_distances_anode");
+      fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
+      fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
+      fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
     }
     if (fIsDomePDCorr) {
-        fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
-        fborder_corr_angulo_dome = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_dome");
-        fborder_corr_dome        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_dome");
+      fvis_distances_x_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_dome");
+      fvis_distances_r_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_dome");
+      fvispars_dome         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
     }
 
-    // Load corrections for VIS semi-analytic hits
-    if (fDoReflectedLight) {
-      mf::LogInfo("SemiAnalyticalModel") << "Using VIS (reflected) visibility parameterization";
-      fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
+    // cathode dimensions
+    fcathode_ydimension = fActiveVolumes[0].SizeY();
+    fcathode_zdimension = fActiveVolumes[0].SizeZ();
 
-      if (fIsFlatPDCorr) {
-        fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
-        fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
-        fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
-      }
-      if (fIsDomePDCorr) {
-        fvis_distances_x_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_dome");
-        fvis_distances_r_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_dome");
-        fvispars_dome         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
-      }
+    // set cathode plane struct for solid angle function
+    fcathode_plane.h = fcathode_ydimension;
+    fcathode_plane.w = fcathode_zdimension;
+    fplane_depth = std::abs(fcathode_centre[0]);
+  }
 
-      // cathode dimensions
-      fcathode_ydimension = fActiveVolumes[0].SizeY();
-      fcathode_zdimension = fActiveVolumes[0].SizeZ();
+  // Load corrections for Anode reflections configuration
+  if (fIncludeAnodeReflections) {
+    mf::LogInfo("SemiAnalyticalModel") << "Using anode reflections parameterization";
+    fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
+    fAnodeReflectivity = fVISHitsParams.get<double>("AnodeReflectivity");
 
-      // set cathode plane struct for solid angle function
-      fcathode_plane.h = fcathode_ydimension;
-      fcathode_plane.w = fcathode_zdimension;
-      fplane_depth = std::abs(fcathode_centre[0]);
+    if (fIsFlatPDCorr) {
+      fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
+      fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
+      fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
     }
 
-    // Load corrections for Anode reflections configuration
-    if (fIncludeAnodeReflections) {
-      mf::LogInfo("SemiAnalyticalModel") << "Using anode reflections parameterization";
-      fdelta_angulo_vis = fVISHitsParams.get<double>("delta_angulo_vis");
-      fAnodeReflectivity = fVISHitsParams.get<double>("AnodeReflectivity");
+    if (fIsFlatPDCorrLat) {
+      fvis_distances_x_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat_lateral");
+      fvis_distances_r_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat_lateral");
+      fvispars_flat_lateral         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat_lateral");
+    }
 
-      if (fIsFlatPDCorr) {
-        fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
-        fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
-        fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
-      }
+    // anode dimensions
+    fanode_ydimension = fActiveVolumes[0].SizeY();
+    fanode_zdimension = fActiveVolumes[0].SizeZ();
 
-      if (fIsFlatPDCorrLat) {
-        fvis_distances_x_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat_lateral");
-        fvis_distances_r_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat_lateral");
-        fvispars_flat_lateral         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat_lateral");
-      }
-
-      // anode dimensions
-      fanode_ydimension = fActiveVolumes[0].SizeY();
-      fanode_zdimension = fActiveVolumes[0].SizeZ();
-
-      // set anode plane struct for solid angle function
-      fanode_plane.h = fanode_ydimension;
-      fanode_plane.w = fanode_zdimension;
-      fanode_plane_depth = fanode_centre[0];
-    }  
+    // set anode plane struct for solid angle function
+    fanode_plane.h = fanode_ydimension;
+    fanode_plane.w = fanode_zdimension;
+    fanode_plane_depth = fanode_centre[0];
+  }  
 
 }
 
@@ -437,7 +435,6 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 	else { // anode/cathode (default)
 	  cosine_vis = std::abs(emission_relative.X()) / distance_vis;
 	}
-	// const double theta_vis = std::acos(cosine_vis) * 180. / CLHEP::pi;
 	const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
 
 	// calculate solid angle of optical channel
@@ -476,75 +473,18 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 	double d_c = std::abs(ScintPoint.X() - plane_depth);       // distance to cathode
 	double border_correction = 0;
 	// flat PDs
-	if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)){
-
-	  // select correct parameter set depending on PD orientation
-	  std::vector<double> vis_distances_x;
-	  std::vector<double> vis_distances_r;
-	  std::vector<std::vector<std::vector<double>>> vispars;
-	  if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals
-	    vis_distances_x = fvis_distances_x_flat_lateral;
-	    vis_distances_r = fvis_distances_r_flat_lateral;
-	    vispars = fvispars_flat_lateral;
-	  }
-	  else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode
-	    vis_distances_x = fvis_distances_x_flat;
-	    vis_distances_r = fvis_distances_r_flat;
-	    vispars = fvispars_flat;
-	  }
+	if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
+	  // cathode/anode case
+	  if (opDet.orientation == 0 && fIsFlatPDCorr) border_correction = interpolate2(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat, d_c, r, k);
+	  // laterals case
+	  else if (opDet.orientation == 1 && fIsFlatPDCorrLat) border_correction = interpolate2(fvis_distances_x_flat_lateral, fvis_distances_r_flat_lateral, fvispars_flat_lateral, d_c, r, k);
 	  else {
 	  	throw cet::exception("SemiAnalyticalModel")
 	      << "Error: Invalid optical detector shape requested or corrections are missing - configuration error in semi-analytical model." << "\n";
 	  }
-	  
-	  // interpolate in d_c for each r bin
-	  const size_t nbins_r = vispars[k].size();
-	  std::vector<double> interp_vals(nbins_r, 0.0);
-	  {
-	    size_t idx = 0;
-	    size_t size = vis_distances_x.size();
-	    if (d_c >= vis_distances_x[size - 2])
-	      idx = size - 2;
-	    else {
-	      while (d_c > vis_distances_x[idx + 1])
-	        idx++;
-	    }
-	    for (size_t i = 0; i < nbins_r; ++i) {
-	      interp_vals[i] = interpolate(vis_distances_x,
-	                                   vispars[k][i],
-	                                   d_c,
-	                                   false,
-	                                   idx);
-	    }
-	  }
-	  // interpolate in r
-	  border_correction = interpolate(vis_distances_r, interp_vals, r, false); 
 	}
 	// dome PDs
-	else if (opDet.type == 1 && fIsDomePDCorr) {
-	  // interpolate in d_c for each r bin
-	  const size_t nbins_r = fvispars_dome[k].size();
-	  std::vector<double> interp_vals(nbins_r, 0.0);
-	  {
-	    size_t idx = 0;
-	    size_t size = fvis_distances_x_dome.size();
-	    if (d_c >= fvis_distances_x_dome[size - 2])
-	      idx = size - 2;
-	    else {
-	      while (d_c > fvis_distances_x_dome[idx + 1])
-	        idx++;
-	    }
-	    for (size_t i = 0; i < nbins_r; ++i) {
-	      interp_vals[i] = interpolate(fvis_distances_x_dome,
-	                                   fvispars_dome[k][i],
-	                                   d_c,
-	                                   false,
-	                                   idx);
-	    }
-	  }
-	  // interpolate in r
-	  border_correction = interpolate(fvis_distances_r_dome, interp_vals, r, false);
-	}
+	else if (opDet.type == 1 && fIsDomePDCorr) border_correction = interpolate2(fvis_distances_x_dome, fvis_distances_r_dome, fvispars_dome, d_c, r, k);
 	else {
 	  	throw cet::exception("SemiAnalyticalModel")
 	      << "Error: Invalid optical detector shape requested or corrections are missing - configuration error in semi-analytical model." << "\n";
@@ -822,3 +762,36 @@ SemiAnalyticalModel::interpolate(const std::vector<double>& xData,
 	const double dydx = (yR - yL) / (xR - xL); // gradient
 	return yL + dydx * (x - xL);               // linear interpolation
 }
+
+double 
+SemiAnalyticalModel::interpolate2(const std::vector<double>& xDistances, 
+							                    const std::vector<double>& rDistances, 
+							                    const std::vector<std::vector<std::vector<double>>>& parameters, 
+							                    const double x, 
+							                    const double r,
+							                    const size_t k) const 
+{
+	// interpolate in x for each r bin, for angle bin k
+  const size_t nbins_r = parameters[k].size();
+  std::vector<double> interp_vals(nbins_r, 0.0);
+  {
+    size_t idx = 0;
+    size_t size = xDistances.size();
+    if (x >= xDistances[size - 2])
+      idx = size - 2;
+    else {
+      while (x > xDistances[idx + 1])
+        idx++;
+    }
+    for (size_t i = 0; i < nbins_r; ++i) {
+      interp_vals[i] = interpolate(xDistances,
+                                   parameters[k][i],
+                                   x,
+                                   false,
+                                   idx);
+    }
+  }
+  // interpolate in r
+  double border_correction = interpolate(rDistances, interp_vals, r, false);
+  return border_correction;
+}		

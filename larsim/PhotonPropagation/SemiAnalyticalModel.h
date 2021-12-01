@@ -88,6 +88,13 @@ private:
                        double x,
                        bool extrapolate,
                        size_t i = 0) const;
+    
+    double interpolate2(const std::vector<double>& xDistances, 
+                        const std::vector<double>& rDistances, 
+                        const std::vector<std::vector<std::vector<double>>>& parameters, 
+                        const double x, 
+                        const double r,
+                        const size_t k) const;
 
     // implements relative method - do not use for comparing with zero
     // use this most of the time, tolerance needs to be meaningful in your context
