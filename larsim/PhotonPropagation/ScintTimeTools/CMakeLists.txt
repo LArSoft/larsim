@@ -5,11 +5,11 @@ art_make(NO_PLUGINS
     ROOT::Core
     larcorealg_Geometry
     art::Framework_Services_Registry
-    ${CANVAS}
+    canvas::canvas
     cetlib::cetlib
     cetlib_except::cetlib_except
     fhiclcpp
-    ${ART_UTILITIES}
+    art::Utilities
   )
 
 

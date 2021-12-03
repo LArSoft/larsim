@@ -4,10 +4,10 @@ art_make(NO_PLUGINS
            larsim_Simulation_LArG4Parameters_service
            lardataobj_Simulation
            lardata_Utilities
-           nusimdata_SimulationBase
+           nusimdata::SimulationBase
            art::Framework_Services_Registry
            art::Framework_Principal
-           ${ART_PERSISTENCY_PROVENANCE}
+           art::Persistency_Provenance
            ROOT::Core
            ROOT::Physics
            ROOT::GenVector

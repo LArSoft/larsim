@@ -17,8 +17,8 @@ endif()
 
 art_make(LIB_LIBRARIES
          larsim_EventWeight_Base
-         nurandom_RandomUtils_NuRandomService_service
-         nugen_EventGeneratorBase_GENIE
+         nurandom::RandomUtils_NuRandomService_service
+         nugen::EventGeneratorBase_GENIE
          art::Framework_Principal
          ART_PERSISTENCY_PROVENANCE
          art::Framework_Services_Registry

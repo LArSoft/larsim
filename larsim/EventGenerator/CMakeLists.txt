@@ -2,7 +2,7 @@ art_make(
          EXCLUDE
            "POTaccumulator_module.cc"
          LIB_LIBRARIES
-           nusimdata_SimulationBase
+           nusimdata::SimulationBase
            CLHEP::CLHEP
            ROOT::Core
            ROOT::Hist
@@ -13,8 +13,8 @@ art_make(
            larcoreobj_SummaryData
            larsim_EventGenerator
            larsim_PhotonPropagation_PhotonVisibilityService_service
-           nurandom_RandomUtils_NuRandomService_service
-           nusimdata_SimulationBase
+           nurandom::RandomUtils_NuRandomService_service
+           nusimdata::SimulationBase
            art::Framework_Services_Registry
            art_root_io::TFileService_service
            art_root_io::tfile_support

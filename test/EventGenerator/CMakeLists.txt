@@ -3,7 +3,7 @@
 # or test SeedService's per-event policy with GenerateEventTimestamp plug-in.
 #
 simple_plugin( TestGeneratedEventTimestamp "module"
-  nurandom_RandomUtils_NuRandomService_service
+  nurandom::RandomUtils_NuRandomService_service
   art::Framework_Core
   art::Framework_Principal
   art::Framework_Services_Registry

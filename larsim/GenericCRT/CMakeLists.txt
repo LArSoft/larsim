@@ -9,25 +9,24 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         larsim_Simulation  lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nusimdata_SimulationBase
-                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                        canvas
-                        ${MF_MESSAGELOGGER}
-                        ${FHICLCPP}
-                        cetlib_except
-        ${ROOT_BASIC_LIB_LIST}
+                        nusimdata::SimulationBase
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support ROOT::Core
+                        art_root_io::TFileService_service
+                        canvas::canvas
+                        messagefacility::MF_MessageLogger
+                        fhiclcpp::fhiclcpp
+                        cetlib_except::cetlib_except
                         ROOT::GenVector
                         ROOT::EG
                   #      ROOT::TreePlayer
                   #      ROOT::FFTW
-                        ${ROOT_REFLEX}
+                        
                   #      ROOT::EGPythia6
                   #      ROOT::Gui
                         ROOT::Geom
                         ROOT::MathCore
-                        ${CLHEP}
+                        CLHEP::CLHEP
                         ${G4_LIB_LIST}
            MODULE_LIBRARIES larsim_GenericCRT 
                         larsim_MCCheater_ParticleInventoryService_service
@@ -35,15 +34,12 @@ art_make(LIB_LIBRARIES  larsim_PhotonPropagation
                         larsim_Simulation  lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nusimdata_SimulationBase
-                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                        ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-                        ${MF_MESSAGELOGGER}
+                        nusimdata::SimulationBase
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support ROOT::Core
+                        art_root_io::TFileService_service
+                        messagefacility::MF_MessageLogger
                         ROOT::GenVector
-      #  ${ROOT_BASIC_LIB_LIST}
-      #                  ${CLHEP}
-      #                  ${G4_LIB_LIST}
                 )
 
 install_headers()

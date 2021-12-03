@@ -11,7 +11,7 @@ art_make(LIB_LIBRARIES
 	   larsim_Utils
            larsim_IonizationScintillation
            larcorealg_Geometry
-           nurandom_RandomUtils_NuRandomService_service
+           nurandom::RandomUtils_NuRandomService_service
            art::Framework_Services_Registry
            art_root_io::TFileService_service
            art_root_io::tfile_support

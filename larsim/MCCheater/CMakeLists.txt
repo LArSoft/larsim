@@ -3,7 +3,7 @@ cet_make_library(
   SOURCE ParticleInventory.cc ParticleInventory.tcc
   LIBRARIES
     canvas::canvas
-    nug4_ParticleNavigation
+    nug4::ParticleNavigation
     messagefacility::MF_MessageLogger
     fhiclcpp::fhiclcpp
     cetlib_except::cetlib_except
@@ -35,27 +35,27 @@ cet_make_library(
     ROOT::Core
     larcorealg_Geometry
     lardataobj_Simulation
-    nug4_ParticleNavigation
+    nug4::ParticleNavigation
   )
 
 simple_plugin(ParticleInventoryService "service"
   art::Framework_Principal
-  ${ART_PERSISTENCY_PROVENANCE}
+  art::Persistency_Provenance
   larsim_MCCheater_ParticleInventory
-  nug4_ParticleNavigation
+  nug4::ParticleNavigation
   ROOT::Core
   ROOT::Physics
   messagefacility::MF_MessageLogger)
 
 simple_plugin(PhotonBackTrackerService "service"
   art::Framework_Principal
-  ${ART_PERSISTENCY_PROVENANCE}
+  art::Persistency_Provenance
   messagefacility::MF_MessageLogger
   larsim_MCCheater_PhotonBackTracker)
 
 simple_plugin(BackTrackerService "service"
   art::Framework_Principal
-  ${ART_PERSISTENCY_PROVENANCE}
+  art::Persistency_Provenance
   ROOT::Core
   messagefacility::MF_MessageLogger
   larsim_MCCheater_BackTracker
@@ -72,7 +72,7 @@ simple_plugin(CheckBackTracking "module"
 simple_plugin(RecoCheckAna "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  nusimdata_SimulationBase
+  nusimdata::SimulationBase
   art::Framework_Services_Registry
   art_root_io::TFileService_service
   art_root_io::tfile_support

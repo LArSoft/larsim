@@ -1,8 +1,8 @@
 art_make(MODULE_LIBRARIES
            larcorealg_Geometry
            larcoreobj_SummaryData
-           nurandom_RandomUtils_NuRandomService_service
-           nusimdata_SimulationBase
+           nurandom::RandomUtils_NuRandomService_service
+           nusimdata::SimulationBase
            art::Framework_Services_Registry
            CLHEP::CLHEP
            IFDH
