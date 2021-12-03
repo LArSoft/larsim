@@ -1,5 +1,3 @@
-include_directories($ENV{CRYHOME}/src)
-
 art_make(MODULE_LIBRARIES
            larcorealg_Geometry
            larcoreobj_SummaryData

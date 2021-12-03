@@ -4,6 +4,7 @@ art_make(NO_PLUGINS
   LIB_LIBRARIES
     ROOT::Core
     larcorealg_Geometry
+    nurandom::RandomUtils_NuRandomService_service
     art::Framework_Services_Registry
     canvas::canvas
     cetlib::cetlib

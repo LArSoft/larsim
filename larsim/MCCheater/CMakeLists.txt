@@ -3,6 +3,7 @@ cet_make_library(
   SOURCE ParticleInventory.cc ParticleInventory.tcc
   LIBRARIES
     canvas::canvas
+    nusimdata::SimulationBase
     nug4::ParticleNavigation
     messagefacility::MF_MessageLogger
     fhiclcpp::fhiclcpp
@@ -17,6 +18,7 @@ cet_make_library(
     cetlib_except::cetlib_except
     fhiclcpp::fhiclcpp
     messagefacility::MF_MessageLogger
+    art::Framework_Principal
     ROOT::Core
     canvas::canvas
     larsim_MCCheater_ParticleInventory

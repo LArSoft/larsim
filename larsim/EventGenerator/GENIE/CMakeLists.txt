@@ -1,4 +1,3 @@
-include_directories ( $ENV{GENIE_INC}/GENIE )
 
 art_make(MODULE_LIBRARIES
          lardataalg_MCDumpers
@@ -15,6 +14,7 @@ art_make(MODULE_LIBRARIES
          art::Persistency_Provenance
          messagefacility::MF_MessageLogger
          ${GENIE_LIB_LIST}
+         log4cpp::log4cpp
          ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
          ROOT::EG
          ROOT::Hist

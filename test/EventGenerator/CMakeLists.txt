@@ -7,7 +7,7 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   art::Framework_Core
   art::Framework_Principal
   art::Framework_Services_Registry
-  ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+  art::Framework_Services_Optional_RandomNumberGenerator_service
   art::Persistency_Provenance
   canvas::canvas
   messagefacility::MF_MessageLogger

@@ -5,12 +5,12 @@ art_make(MODULE_LIBRARIES
            nusimdata::SimulationBase
            art::Framework_Services_Registry
            CLHEP::CLHEP
-           IFDH
+           ifdh::ifdh
            messagefacility::MF_MessageLogger
            ROOT::Core
            ROOT::EG
            ROOT::Physics
-           SQLITE
+           SQLite::SQLite3
          )
 
 install_headers()
