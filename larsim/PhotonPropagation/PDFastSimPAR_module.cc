@@ -91,7 +91,7 @@ namespace phot {
   class PDFastSimPAR : public art::EDProducer {
   public:
 
-  // Define the fhicl configuration 
+    // Define the fhicl configuration 
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -113,8 +113,7 @@ namespace phot {
       ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
       ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")}; 
       DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")}; 
-      ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")};      
-
+      ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")};
     };
     using Parameters = art::EDProducer::Table<Config>;
 
@@ -125,13 +124,16 @@ namespace phot {
     
     void Initialization();
 
-    void detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, const std::map<size_t, double>& OpDetVisibilities, const double NumPhotons);
+    void detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, 
+                            const std::map<size_t, double>& OpDetVisibilities, 
+                            const double NumPhotons);
 
     void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
                      std::map<size_t, int>& ChannelMap,
                      sim::OpDetBacktrackerRecord btr);
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
+    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, 
+                          geo::Point_t const& OpDetPoint) const;
 
     // ISTPC
     larg4::ISTPC fISTPC;

@@ -2,10 +2,10 @@
 #define SEMIANALYTICALMODEL_H
 
 // SemiAnalyticalModel
-// 	- fast optical simulation using semi-analytical model
-// 	- contains functions to calculate the number of direct and reflected photons incident
-// 	each photo-detector, along with the necessary ultility functions (geometry calculations etc.)
-// 	- full description of model: Eur. Phys. J. C 81, 349 (2021)
+//  - fast optical simulation using semi-analytical model
+//  - contains functions to calculate the number of direct and reflected photons incident
+//    each photo-detector, along with the necessary ultility functions (geometry calculations etc.)
+//  - full description of model: Eur. Phys. J. C 81, 349 (2021)
 
 // Nov 2021 by P. Green
 
@@ -28,11 +28,11 @@ class SemiAnalyticalModel {
 
 public:
 
-	// constructor
-	SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::ParameterSet VISHits, bool doReflectedLight = false, bool includeAnodeReflections = false);
+    // constructor
+    SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::ParameterSet VISHits, bool doReflectedLight = false, bool includeAnodeReflections = false);
 
-	// direct / VUV light
-	void detectedDirectVisibilities(std::map<size_t, double>& DetectedVisibilities,
+    // direct / VUV light
+    void detectedDirectVisibilities(std::map<size_t, double>& DetectedVisibilities,
                                     geo::Point_t const& ScintPoint);   
     
     // reflected / visible light
@@ -69,7 +69,7 @@ private:
     // Gaisser-Hillas
     double Gaisser_Hillas(const double x, const double* par) const;
 
-	// solid angle calculations
+    // solid angle calculations
     // rectangular aperture
     double Rectangle_SolidAngle(const double a, const double b, const double d) const;
     double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v, const double OpDetOrientation) const;
@@ -102,10 +102,10 @@ private:
     inline constexpr static bool
     isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
     {
-    TReal diff = std::fabs(a - b);
-    if (diff <= tolerance) return true;
-    if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
-    return false;
+        TReal diff = std::fabs(a - b);
+        if (diff <= tolerance) return true;
+        if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
+        return false;
     }
 
     // supply tolerance that is meaningful in your context
@@ -145,7 +145,7 @@ private:
     fhicl::ParameterSet fVUVHitsParams;
     fhicl::ParameterSet fVISHitsParams;
 
-	// geometry properties
+    // geometry properties
     int fNTPC;
     larg4::ISTPC fISTPC;
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;

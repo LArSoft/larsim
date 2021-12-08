@@ -2,10 +2,10 @@
 #define PROPAGATIONTIMEMODEL_H
 
 // PropagationTimeModel
-// 	- parameterized fast optical simulation of photon propagation times
-// 	- contains functions to calculate the propagation times of direct and reflected photons incident
-// 	each photo-detector, along with the necessary ultility functions
-// 	- full description of model: Eur. Phys. J. C 81, 349 (2021)
+//  - parameterized fast optical simulation of photon propagation times
+//  - contains functions to calculate the propagation times of direct and reflected photons incident
+//  each photo-detector, along with the necessary ultility functions
+//  - full description of model: Eur. Phys. J. C 81, 349 (2021)
 
 // Nov 2021 by P. Green
 
@@ -29,41 +29,41 @@ class PropagationTimeModel {
 
 public:
 
-	// constructor
-	PropagationTimeModel(fhicl::ParameterSet VUVTimingParams, 
+  // constructor
+  PropagationTimeModel(fhicl::ParameterSet VUVTimingParams, 
                        fhicl::ParameterSet VISTimingParams,
                        CLHEP::HepRandomEngine& ScintTimeEngine, 
                        bool doReflectedLight = false, 
                        bool GeoPropTimeOnly = false);
 
-	// propagation time
-	void propagationTime(std::vector<double>& arrival_time_dist,
+  // propagation time
+  void propagationTime(std::vector<double>& arrival_time_dist,
                          geo::Point_t const& x0,
                          const size_t OpChannel,
                          bool Reflected = false);
 
 private:
 
-	// parameter and geometry initialization
+  // parameter and geometry initialization
   void Initialization();
 
-	// direct / VUV light
-	void getVUVTimes(std::vector<double>& arrivalTimes, 
-					         const double distance_in_cm, 
-					         const size_t angle_bin);
+  // direct / VUV light
+  void getVUVTimes(std::vector<double>& arrivalTimes, 
+                   const double distance_in_cm, 
+                   const size_t angle_bin);
 
   void getVUVTimesGeo(std::vector<double>& arrivalTimes, 
-  	                  const double distance_in_cm);
+                      const double distance_in_cm);
     
   void generateParam(const size_t index, 
-  	                 const size_t angle_bin);
+                     const size_t angle_bin);
 
-	// reflected / visible light
-	void getVISTimes(std::vector<double>& arrivalTimes, 
-		             const TVector3 &ScintPoint, 
-		             const TVector3 &OpDetPoint);
-	
-	// utility functions
+  // reflected / visible light
+  void getVISTimes(std::vector<double>& arrivalTimes, 
+                 const TVector3 &ScintPoint, 
+                 const TVector3 &OpDetPoint);
+  
+  // utility functions
   double fast_acos(double x) const;
     
   double interpolate(const std::vector<double>& xData,
@@ -86,7 +86,7 @@ private:
 
   static double model_far(const double* x, const double* par);
 
-	// fhicl parameter sets
+  // fhicl parameter sets
   fhicl::ParameterSet fVUVTimingParams;
   fhicl::ParameterSet fVISTimingParams;
 
