@@ -13,7 +13,7 @@ simple_plugin(SimWire "module"
               lardataobj_Simulation
               larcorealg_Geometry
               lardata_Utilities_LArFFT_service
-              nurandom_RandomUtils_NuRandomService_service
+              nurandom::RandomUtils_NuRandomService_service
               art::Framework_Services_Registry
               art_root_io::TFileService_service
               art_root_io::tfile_support

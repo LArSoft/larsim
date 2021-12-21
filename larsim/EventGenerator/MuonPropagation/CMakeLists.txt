@@ -3,8 +3,8 @@ include_directories($ENV{MuonPropagationHOME}/src)
 art_make(MODULE_LIBRARIES
            larcoreobj_SummaryData
            larcorealg_Geometry
-           nurandom_RandomUtils_NuRandomService_service
-           nusimdata_SimulationBase
+           nurandom::RandomUtils_NuRandomService_service
+           nusimdata::SimulationBase
            art::Framework_Services_Registry
            art_root_io::TFileService_service
            art_root_io::tfile_support

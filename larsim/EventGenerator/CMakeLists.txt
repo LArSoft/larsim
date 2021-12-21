@@ -1,8 +1,12 @@
+include_directories ( $ENV{NUGEN_INC} )
+
 art_make(
          EXCLUDE
            "POTaccumulator_module.cc"
          LIB_LIBRARIES
-           nusimdata_SimulationBase
+           nusimdata::SimulationBase
+           cetlib::cetlib
+           fhiclcpp::fhiclcpp
            CLHEP::CLHEP
            ROOT::Core
            ROOT::Hist
@@ -13,8 +17,8 @@ art_make(
            larcoreobj_SummaryData
            larsim_EventGenerator
            larsim_PhotonPropagation_PhotonVisibilityService_service
-           nurandom_RandomUtils_NuRandomService_service
-           nusimdata_SimulationBase
+           nurandom::RandomUtils_NuRandomService_service
+           nusimdata::SimulationBase
            art::Framework_Services_Registry
            art_root_io::TFileService_service
            art_root_io::tfile_support
@@ -28,8 +32,10 @@ art_make(
         )
 
 simple_plugin(POTaccumulator "module"
+  LIBRARIES
   larcoreobj_SummaryData
   messagefacility::MF_MessageLogger
+  range-v3::range-v3
   )
 
 install_headers()

@@ -1,6 +1,6 @@
 art_make(MODULE_LIBRARIES
          lardataalg_MCDumpers
-         nusimdata_SimulationBase
+         nusimdata::SimulationBase
          messagefacility::MF_MessageLogger
          ROOT::GenVector
          ROOT::Core

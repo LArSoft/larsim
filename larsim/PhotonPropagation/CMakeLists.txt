@@ -20,7 +20,7 @@ art_make(LIB_LIBRARIES larevt_Filters
                        ROOT::RooFit
           SERVICE_LIBRARIES larsim_PhotonPropagation
                        larsim_Simulation
-                       nug4_ParticleNavigation
+                       nug4::ParticleNavigation
                        lardataobj_Simulation
                        larevt_Filters
                        lardataobj_RawData
@@ -39,13 +39,13 @@ art_make(LIB_LIBRARIES larevt_Filters
                         lardataobj_Simulation
                         larcorealg_Geometry
                         larcore_Geometry_Geometry_service
-                        nug4_ParticleNavigation
+                        nug4::ParticleNavigation
                         art_root_io::TFileService_service
                         art::Framework_Services_Registry
                         art_root_io::tfile_support
                         ROOT::Core
                         messagefacility::MF_MessageLogger
-                        nurandom_RandomUtils_NuRandomService_service
+                        nurandom::RandomUtils_NuRandomService_service
                         art::Persistency_Provenance
                         ROOT::GenVector
                         ROOT::Gpad

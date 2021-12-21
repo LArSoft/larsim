@@ -3,7 +3,7 @@ art_make(LIB_LIBRARIES
            lardataobj_Simulation
            lardataalg_DetectorInfo
            larevt_SpaceCharge
-           nusimdata_SimulationBase
+           nusimdata::SimulationBase
            larcorealg_Geometry
            larcore_Geometry_Geometry_service
            fhiclcpp::fhiclcpp
@@ -12,7 +12,7 @@ art_make(LIB_LIBRARIES
            larsim_IonizationScintillation
            larsim_Simulation
            lardataobj_Simulation
-           nurandom_RandomUtils_NuRandomService_service
+           nurandom::RandomUtils_NuRandomService_service
            larcorealg_Geometry
            larcore_Geometry_Geometry_service
            art::Framework_Services_Registry

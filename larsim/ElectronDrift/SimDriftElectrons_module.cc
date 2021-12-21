@@ -134,7 +134,7 @@ namespace detsim {
     typedef std::map<raw::ChannelID_t, ChannelBookKeeping> ChannelMap_t;
 
     // Array of maps of channel data indexed by [cryostat,tpc]
-    std::vector<std::vector<ChannelMap_t>> fChannelMaps;
+    std::vector<ChannelMap_t> fChannelMaps;
     // The above ensemble may be thought of as a 3D array of
     // ChannelBookKeepings: e.g., SimChannel[cryostat,tpc,channel ID].
 
@@ -245,9 +245,7 @@ namespace detsim {
     size_t cryo = 0;
     fChannelMaps.resize(fNCryostats);
     for (auto& cryoData : fChannelMaps) { // each, a vector of maps
-      cryoData.resize(fNTPCs[cryo++]);
-      for (auto& channelsMap : cryoData)
-        channelsMap.clear(); // each, a map
+      cryoData.clear();
     }
 
     auto const clockData =
@@ -493,7 +491,7 @@ namespace detsim {
             unsigned int tdc = tpcClock.Ticks(clockData.G4ToElecTime(TDiff + simTime));
 
             // Find whether we already have this channel in our map.
-            ChannelMap_t& channelDataMap = fChannelMaps[cryostat][tpc];
+            ChannelMap_t& channelDataMap = fChannelMaps[cryostat];
             auto search = channelDataMap.find(channel);
 
             // We will find (or create) the pointer to a

@@ -4,12 +4,13 @@ art_make(NO_PLUGINS
   LIB_LIBRARIES
     ROOT::Core
     larcorealg_Geometry
+    nurandom::RandomUtils_NuRandomService_service
     art::Framework_Services_Registry
-    ${CANVAS}
+    canvas::canvas
     cetlib::cetlib
     cetlib_except::cetlib_except
     fhiclcpp
-    ${ART_UTILITIES}
+    art::Utilities
   )
 
 

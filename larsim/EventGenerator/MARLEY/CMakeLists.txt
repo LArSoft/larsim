@@ -1,10 +1,10 @@
 # for c2: the problem is in fhiclcpp/types/detail/Sequence.icc
-cet_add_compiler_flags( CXX -Wno-missing-braces )
+#cet_add_compiler_flags( CXX -Wno-missing-braces )
 
 art_make(LIB_LIBRARIES
            larcorealg_Geometry
-           nurandom_RandomUtils_NuRandomService_service
-           nusimdata_SimulationBase
+           nurandom::RandomUtils_NuRandomService_service
+           nusimdata::SimulationBase
            MARLEY
            MARLEY_ROOT
            messagefacility::MF_MessageLogger

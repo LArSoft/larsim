@@ -7,8 +7,8 @@ art_make(NO_PLUGINS
     ROOT::Core
     larcorealg_Geometry
     art::Framework_Services_Registry
-    ${CANVAS}
-    ${ART_UTILITIES}
+    canvas::canvas
+    art::Utilities
   )
 
 simple_plugin(PhotonMappingIdentityTransformations "tool"
