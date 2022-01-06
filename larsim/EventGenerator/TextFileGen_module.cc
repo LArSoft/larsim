@@ -92,8 +92,6 @@ private:
   std::ifstream* fInputFile;
   std::string    fInputFileName; ///< Name of text file containing events to simulate
   double fMoveY; ///< Project particles to a new y plane.
-  bool fOffsetApplied;
-//  int fRunNumber;
 };
 
 //------------------------------------------------------------------------------
@@ -103,9 +101,6 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   , fInputFile(0)
   , fInputFileName{p.get<std::string>("InputFileName")}
   , fMoveY{p.get<double>("MoveY", -1e9)}
-//  , fRunNumber(1)
-
-
 {
   if (fMoveY>-1e8){
     mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
@@ -114,7 +109,6 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
 
-  fOffsetApplied=false;
 
 }
 
@@ -158,41 +152,13 @@ void evgen::TextFileGen::produce(art::Event & e)
 					<< " cannot be read in produce().\n";
 
 
-//  std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
-//  simb::MCTruth truth;
-
- 
-
-//std::vector<simb::MCParticle> NextEvents;
-
-// if fOffset is non-zero means it is requested. But only apply the first time around, after that fOffsetApplied = true.
-
-
-// if(!fOffsetApplied && fOffset>0)  
-// {
-//     for(unsigned long int ioff=0;ioff<fOffset;ioff++)
-//     { 
-//       ReadNextHepEvt(NextEvents);
-//       NextEvents.clear();   
-//     }
-//     
-//     fOffsetApplied=true;
-// }
 
 
 //Now, read the Event to be used.
 
-//ReadNextHepEvt(NextEvents);
 
 
-
-//for(unsigned int ip=0;ip<NextEvents.size();ip++)
-//{   truth.Add(NextEvents[ip]);
-//}
-
-  //truthcol->push_back(truth);
-
- // check that the file is still good
+// check that the file is still good
   if( !fInputFile->good() )
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
@@ -211,8 +177,6 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt()
 {
 
   // declare the variables for reading in the event record
-//  int            event          = 0;
-//  unsigned short nParticles 	= 0;
   int            status         = 0;
   int 	 	 pdg            = 0;
   int 	 	 firstMother    = 0;
@@ -233,17 +197,11 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt()
 
   // read in line to get event number and number of particles
   std::string oneLine;
-  //std::getline(*fInputFile, oneLine);
   std::istringstream inputLine;
-  //inputLine.str(oneLine);
   simb::MCTruth nextEvent;
   auto const [eventNo, nParticles] = readEventInfo(*fInputFile);
   
   
-  
-  //inputLine >> event >> nParticles;
-
-  //std::cout << "reading in event nr " << event << std::endl;
  
   // now read in all the lines for the particles
   // in this interaction. only particles with
