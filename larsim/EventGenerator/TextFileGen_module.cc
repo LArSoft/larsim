@@ -122,7 +122,7 @@ void evgen::TextFileGen::beginJob()
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
 					<< " cannot be read.\n";
-        
+
 
   for (unsigned i = 0; i != fOffset; ++i) {
     auto const [eventNo, nparticles] = readEventInfo(*fInputFile);
@@ -130,8 +130,8 @@ void evgen::TextFileGen::beginJob()
        constexpr auto all_chars_until = std::numeric_limits<unsigned>::max();
        fInputFile->ignore(all_chars_until, '\n');
     }
-  }                    
-                    
+  }
+
 
 }
 
@@ -200,9 +200,9 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt()
   std::istringstream inputLine;
   simb::MCTruth nextEvent;
   auto const [eventNo, nParticles] = readEventInfo(*fInputFile);
-  
-  
- 
+
+
+
   // now read in all the lines for the particles
   // in this interaction. only particles with
   // status = 1 get tracked in Geant4.
