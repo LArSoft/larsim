@@ -5,7 +5,7 @@ standard_textfilegen:
  module_type:   "TextFileGen"
  InputFileName: "input.txt"   #name of file containing events in hepevt format to
                               #put into simb::MCTruth objects for use in LArSoft
-#Offset:        0             # allows starting from not the first event in a file.(default is zero)
+Offset:        0             # allows starting from not the first event in a file.(default is zero)
 
 }
 
