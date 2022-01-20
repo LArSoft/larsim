@@ -19,7 +19,7 @@ sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit &InputHi
     sim::AuxDetIDE outputIDE;
 
    outputIDE.trackID		    = InputHit.GetTrackID();
-   outputIDE.energyDeposited	= InputHit.GetEnergyDeposited();
+   outputIDE.energyDeposited	= InputHit.GetEnergyDeposited() / CLHEP::GeV;
    outputIDE.entryX		= InputHit.GetEntryX();
    outputIDE.entryY		= InputHit.GetEntryY();
    outputIDE.entryZ		= InputHit.GetEntryZ();
