@@ -45,6 +45,7 @@ public:
 
 private:
 
+  double fEnergyUnitsScale;
   sim::GenericCRTUtility fCRTConvertUtil;
 
   // Declare member data here.
@@ -54,7 +55,8 @@ private:
 
 sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
   : EDProducer{p}  //
-  ,fCRTConvertUtil()
+  ,fEnergyUnitsScale (p.get<double>("EnergyUnitsScale",1.))
+  ,fCRTConvertUtil(fEnergyUnitsScale)
   // More initializers here.
 {
 

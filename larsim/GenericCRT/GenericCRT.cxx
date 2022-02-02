@@ -13,13 +13,17 @@
 #include <utility> // std::move()
 #include <algorithm> // std::find()
 
+sim::GenericCRTUtility::GenericCRTUtility(const double energyUnitsScale)
+{
+  fEnergyUnitsScale = energyUnitsScale;
+}
 
 sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit &InputHit) const
   {
     sim::AuxDetIDE outputIDE;
 
    outputIDE.trackID		    = InputHit.GetTrackID();
-   outputIDE.energyDeposited	= InputHit.GetEnergyDeposited() / CLHEP::GeV;
+   outputIDE.energyDeposited	= InputHit.GetEnergyDeposited() * fEnergyUnitsScale;
    outputIDE.entryX		= InputHit.GetEntryX();
    outputIDE.entryY		= InputHit.GetEntryY();
    outputIDE.entryZ		= InputHit.GetEntryZ();

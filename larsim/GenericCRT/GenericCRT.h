@@ -27,6 +27,8 @@ namespace sim{
 
     public:
 
+    GenericCRTUtility(double energyUnitsScale);
+
     sim::AuxDetIDE toAuxDetIDE(sim::AuxDetHit const& InputHit) const;
 
     std::vector<unsigned int> GetAuxDetChannels(const std::vector<sim::AuxDetHit>& InputHitVector) const;
@@ -38,6 +40,8 @@ namespace sim{
     private:
 
       art::ServiceHandle<geo::Geometry const> fGeo;
+
+      double fEnergyUnitsScale;
 
     };
 
