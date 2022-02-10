@@ -58,10 +58,10 @@ sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
   ,fEnergyUnitsScale (p.get<std::string>("EnergyUnitsScale","MeV"))
   ,fCRTConvertUtil(fEnergyUnitsScale)
   // More initializers here.
-{
+  {
 
-  produces< std::vector<sim::AuxDetSimChannel> >();
-}
+    produces< std::vector<sim::AuxDetSimChannel> >();
+  }
 
 void sim::GenericCRT::produce(art::Event& e)
 {
