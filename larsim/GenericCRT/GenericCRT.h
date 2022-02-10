@@ -18,6 +18,7 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larcore/Geometry/Geometry.h"
+#include "CLHEP/Evaluator/Evaluator.h"
 
 #include <memory>
 
@@ -27,7 +28,7 @@ namespace sim{
 
     public:
 
-    GenericCRTUtility(double energyUnitsScale);
+    GenericCRTUtility(const std::string energyUnitsScale);
 
     sim::AuxDetIDE toAuxDetIDE(sim::AuxDetHit const& InputHit) const;
 
