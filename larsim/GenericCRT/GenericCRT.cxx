@@ -13,9 +13,16 @@
 #include <utility> // std::move()
 #include <algorithm> // std::find()
 
-sim::GenericCRTUtility::GenericCRTUtility(const double energyUnitsScale)
+sim::GenericCRTUtility::GenericCRTUtility(const std::string energyUnitsScale)
 {
-  fEnergyUnitsScale = energyUnitsScale;
+  HepTool::Evaluator eval;
+  eval.setStdMath();
+  eval.setSystemOfUnits();
+  
+  const std::string scaleExpression = "MeV / " + energyUnitsScale;
+  fEnergyUnitsScale = eval.evaluate(scaleExpression.c_str());
+  
+  if(eval.status() != 0) fEnergyUnitsScale = 1.;
 }
 
 sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit &InputHit) const
