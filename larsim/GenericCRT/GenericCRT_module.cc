@@ -45,6 +45,7 @@ public:
 
 private:
 
+  std::string fEnergyUnitsScale;
   sim::GenericCRTUtility fCRTConvertUtil;
 
   // Declare member data here.
@@ -54,12 +55,13 @@ private:
 
 sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
   : EDProducer{p}  //
-  ,fCRTConvertUtil()
+  ,fEnergyUnitsScale (p.get<std::string>("EnergyUnitsScale","MeV"))
+  ,fCRTConvertUtil(fEnergyUnitsScale)
   // More initializers here.
-{
+  {
 
-  produces< std::vector<sim::AuxDetSimChannel> >();
-}
+    produces< std::vector<sim::AuxDetSimChannel> >();
+  }
 
 void sim::GenericCRT::produce(art::Event& e)
 {
