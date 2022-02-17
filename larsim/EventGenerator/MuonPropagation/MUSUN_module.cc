@@ -252,6 +252,13 @@ namespace evgen {
     double fYmax; ///< Maximum Y position
     double fZmax; ///< Maximum Z position
 
+    /// Rotation of the detector w.r.t. DUNE HD FD nominal coordinate system - Z: beam direction; Y: vertical; X: drift; right-handed
+    /// Rotation performed in the order - first around X, then around new Y, and then around new Z
+    double fDetRotX; ///< How much the detector should be rotated around X axis (rotates the coordinate system clockwise))
+    double fDetRotY; ///< How much the detector should be rotated around Y axis (rotates the coordinate system clockwise))
+    double fDetRotZ; ///< How much the detector should be rotated around Z axis (rotates the coordinate system clockwise))
+
+
     double fT0;     ///< Central t position (ns) in world coordinates
     double fSigmaT; ///< Variation in t position (ns)
     int fTDist;     ///< How to distribute t  (gaus, or uniform)
@@ -348,6 +355,9 @@ namespace evgen {
     , fXmax{pset.get<double>("Xmax")}
     , fYmax{pset.get<double>("Ymax")}
     , fZmax{pset.get<double>("Zmax")}
+    , fDetRotX{pset.get<double>("DetRotX")}
+    , fDetRotY{pset.get<double>("DetRotY")}
+    , fDetRotZ{pset.get<double>("DetRotZ")}
     , fT0{pset.get<double>("T0")}
     , fSigmaT{pset.get<double>("SigmaT")}
     , fTDist{pset.get<int>("TDist")}
@@ -361,6 +371,17 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   void MUSUN::beginJob()
   {
+
+    fDetRotX = fDetRotX * M_PI/180.;
+    fDetRotY = fDetRotY * M_PI/180.;
+    fDetRotZ = fDetRotZ * M_PI/180.;
+
+    MF_LOG_WARNING("MUSUN")<<"Rotation: X = "<<fDetRotX
+			<<", Y = "<<fDetRotY
+			<<", Z = "<<fDetRotZ
+			<<std::endl;
+
+
     // Make the Histograms....
     art::ServiceHandle<art::TFileService const> tfs;
     /*
@@ -589,6 +610,12 @@ namespace evgen {
     pz0 = Momentum * cz;
     TLorentzVector pvec(px0, py0, pz0, Energy);
 
+    // transform into actual detector's coordinates
+    pvec.RotateX(-fDetRotX);
+    pvec.RotateY(-fDetRotY);
+    pvec.RotateZ(-fDetRotZ);
+
+
     //  Muon coordinates
     double sh1 = s_hor * cos(theta);
     double sv1 = s_ver1 * sin(theta) * fabs(cos(phi));
@@ -618,6 +645,12 @@ namespace evgen {
     }
     // Make Lorentz vector for x and t....
     TLorentzVector pos(x0, y0, z0, Time);
+
+    // transform into actual detector's coordinates
+    pos.RotateX(-fDetRotX);
+    pos.RotateY(-fDetRotY);
+    pos.RotateZ(-fDetRotZ);
+
 
     //  Parameters written to the file muons_surf_v2_test*.dat
     //      nmu - muon sequential number
