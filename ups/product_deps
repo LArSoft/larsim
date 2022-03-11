@@ -8,8 +8,8 @@ fwdir   product_dir G4
 gdmldir product_dir gdml
 #
 product         version
-larg4           v09_08_00
-nugen           v1_15_06
+larg4           v09_09_00
+nugen           v1_15_07
 nurandom        v1_08_01
 nutools         v3_12_03
 marley          v1_2_0f
