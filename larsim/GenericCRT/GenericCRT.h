@@ -9,7 +9,7 @@
  * Description:
  * Class with Algorithms to convert sim::AuxDetHits to sim::AuxDetSimChannels
  *
-*/
+ */
 
 
 #include "lardataobj/Simulation/SimChannel.h"
@@ -18,14 +18,17 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larcore/Geometry/Geometry.h"
+#include "CLHEP/Evaluator/Evaluator.h"
 
 #include <memory>
 
 namespace sim{
 
-    class GenericCRTUtility{
+  class GenericCRTUtility{
 
-    public:
+  public:
+
+    GenericCRTUtility(const std::string energyUnitsScale);
 
     sim::AuxDetIDE toAuxDetIDE(sim::AuxDetHit const& InputHit) const;
 
@@ -35,11 +38,13 @@ namespace sim{
 
     sim::AuxDetSimChannel GetAuxDetSimChannelByNumber(const std::vector<sim::AuxDetHit>& InputHitVector, unsigned int inputchannel) const;
 
-    private:
+  private:
 
-      art::ServiceHandle<geo::Geometry const> fGeo;
+    art::ServiceHandle<geo::Geometry const> fGeo;
 
-    };
+    double fEnergyUnitsScale;
+
+  };
 
 }
 
