@@ -90,9 +90,16 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(const 
     double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY())/2.0;
     double zcoordinate = (auxDetHit.GetEntryZ() + auxDetHit.GetExitZ())/2.0;
     double worldPos[3] = {xcoordinate,ycoordinate,zcoordinate};
-    fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
+
     if(auxDetHit.GetID() == inputchannel)   // this is the channel we want.
     {
+      // Find the IDs given the hit position
+      fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
+
+      mf::LogDebug("GenericCRTUtility") << "Found an AuxDetHit with ID " << auxDetHit.GetID()
+                                        << " for AuxDet ID " << ad_id_no
+                                        << " Sens ID " << ad_sen_id_no << std::endl;
+
       auto tempIDE = toAuxDetIDE(auxDetHit);
 
       std::vector<sim::AuxDetIDE>::iterator IDEitr
@@ -113,10 +120,15 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(const 
         IDEvector.push_back(std::move(tempIDE));
       }//else
 
-      break;
+      // break;
     } // end if the AuxDetHit channel checks out.
 
   } // end main loop on AuxDetHit
+
+
+  mf::LogDebug("GenericCRTUtility") << "Returning AuxDetSimChannel for ID "
+                                    << ad_id_no << " " << ad_sen_id_no
+                                    << ", with " << IDEvector.size() << " IDEs." << std::endl;
 
   //push back the AuxDetSimChannel Vector.
   //TODO check the last parameter values.
