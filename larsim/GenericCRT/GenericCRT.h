@@ -19,6 +19,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larcore/Geometry/Geometry.h"
 #include "CLHEP/Evaluator/Evaluator.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <memory>
 
