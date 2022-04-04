@@ -31,10 +31,13 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "CLHEP/Random/RandEngine.h"
+
+
 namespace larg4 {
   class ISCalcCorrelated : public ISCalc {
   public:
-    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
+    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine);
 
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)
@@ -68,7 +71,10 @@ namespace larg4 {
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
+    int BinomFluct(int N0, double prob);
+
     ISTPC fISTPC;
+    CLHEP::HepRandomEngine& fEngine; // random engine 
   };
 }
 #endif

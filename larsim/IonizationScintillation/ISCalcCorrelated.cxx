@@ -16,10 +16,14 @@
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 
+#include "CLHEP/Random/RandGauss.h" 
+#include "CLHEP/Random/RandFlat.h"
+
 namespace larg4 {
   //----------------------------------------------------------------------------
-  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp)
+  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine)
     : fISTPC{*(lar::providerFrom<geo::Geometry>())}
+    , fEngine(Engine)
   {
     std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
@@ -56,10 +60,17 @@ namespace larg4 {
   ISCalcCorrelated::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
                                     sim::SimEnergyDeposit const& edep)
   {
+
+    CLHEP::RandGauss GaussGen(fEngine); 
+    CLHEP::RandFlat UniformGen(fEngine);
+
     double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
     double Nq = energy_deposit / fWph;
+
+    double num_ions = energy_deposit / fWion;
+    double num_quanta = energy_deposit / fWph;
 
     float ds = edep.StepLength();
     double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
@@ -70,7 +81,7 @@ namespace larg4 {
 
     if(EFieldStep > 0) {
       // Guard against spurious values of dE/dx. Note: assumes density of LAr
-      if (dEdx < 1.) dEdx = 1.;
+      //if (dEdx < 1.) dEdx = 1.;
 
       // calculate recombination survival fraction
       if (fUseModBoxRecomb) {
@@ -92,21 +103,17 @@ namespace larg4 {
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
-
-   
-
     // using this recombination, calculate number of ionization electrons
-    double const num_electrons = (energy_deposit / fWion) * recomb;
-
+    int const num_electrons = BinomFluct(num_ions, recomb);
     // calculate scintillation photons
-    double const num_photons = (Nq - num_electrons) * fScintPreScale;
+    int const num_photons = floor(num_quanta - num_electrons);
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << " Electrons produced for " << energy_deposit << " MeV deposited with " << recomb
       << " recombination: " << num_electrons << std::endl;
     MF_LOG_DEBUG("ISCalcCorrelated") << "number photons: " << num_photons;
 
-    return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
+    return {energy_deposit, double(num_electrons), double(num_photons), GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------
@@ -162,4 +169,29 @@ namespace larg4 {
     return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
   }
 
+  int
+  ISCalcCorrelated::BinomFluct(int N0, double prob)
+  {
+    CLHEP::RandGauss GaussGen(fEngine);
+    CLHEP::RandFlat UniformGen(fEngine);
+
+    double mean = N0 * prob;
+    double sigma = sqrt(N0 * prob * (1 - prob));
+    int N1 = 0;
+    if (prob == 0.00) { return N1; }
+    if (prob == 1.00) { return N0; }
+
+    if (N0 < 10) {
+      for (int i = 0; i < N0; i++) {
+        if (UniformGen.fire() < prob) { N1++; }
+      }
+    }
+    else {
+      N1 = int(floor(GaussGen.fire(mean, sigma) + 0.5));
+    }
+    if (N1 > N0) { N1 = N0; }
+    if (N1 < 0) { N1 = 0; }
+    return N1;
+  }
+  
 } // namespace
