@@ -9,13 +9,13 @@ art_make(NO_PLUGINS
     art::Framework_Services_Registry
     canvas::canvas
     art::Utilities
-  )
+  ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(PhotonMappingIdentityTransformations "tool"
-              larsim_PhotonPropagation_LibraryMappingTools)
+              larsim_PhotonPropagation_LibraryMappingTools) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(PhotonMappingXMirrorTransformations "tool"
-              larsim_PhotonPropagation_LibraryMappingTools)
+              larsim_PhotonPropagation_LibraryMappingTools) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

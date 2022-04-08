@@ -47,13 +47,13 @@ simple_plugin(ParticleInventoryService "service"
   nug4::ParticleNavigation
   ROOT::Core
   ROOT::Physics
-  messagefacility::MF_MessageLogger)
+  messagefacility::MF_MessageLogger) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(PhotonBackTrackerService "service"
   art::Framework_Principal
   art::Persistency_Provenance
   messagefacility::MF_MessageLogger
-  larsim_MCCheater_PhotonBackTracker)
+  larsim_MCCheater_PhotonBackTracker) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(BackTrackerService "service"
   art::Framework_Principal
@@ -61,7 +61,7 @@ simple_plugin(BackTrackerService "service"
   ROOT::Core
   messagefacility::MF_MessageLogger
   larsim_MCCheater_BackTracker
-  larsim_MCCheater_ParticleInventory)
+  larsim_MCCheater_ParticleInventory) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(CheckBackTracking "module"
   larsim_MCCheater_BackTrackerService_service
@@ -69,7 +69,7 @@ simple_plugin(CheckBackTracking "module"
   lardataobj_RecoBase
   messagefacility::MF_MessageLogger
   art::Framework_Services_Registry
-  ROOT::Core)
+  ROOT::Core) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(RecoCheckAna "module"
   larsim_MCCheater_BackTrackerService_service
@@ -81,17 +81,17 @@ simple_plugin(RecoCheckAna "module"
   messagefacility::MF_MessageLogger
   ROOT::Core
   ROOT::Hist
-  ROOT::Tree)
+  ROOT::Tree) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(BackTrackerLoader "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  art::Framework_Services_Registry)
+  art::Framework_Services_Registry) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(PhotonBackTrackerLoader "module"
   larsim_MCCheater_ParticleInventoryService_service
   larsim_MCCheater_PhotonBackTrackerService_service
-  art::Framework_Services_Registry)
+  art::Framework_Services_Registry) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

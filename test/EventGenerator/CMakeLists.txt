@@ -15,7 +15,7 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   fhiclcpp::fhiclcpp
   cetlib::cetlib cetlib_except
   NO_INSTALL
-)
+) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 
 #

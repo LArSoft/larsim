@@ -5,7 +5,7 @@ simple_plugin(SimWireAna "module"
               art_root_io::TFileService_service
               messagefacility::MF_MessageLogger
               ROOT::Core
-              ROOT::Hist)
+              ROOT::Hist) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(SimWire "module"
               lardataalg_DetectorInfo
@@ -20,7 +20,7 @@ simple_plugin(SimWire "module"
               messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Hist
-              ROOT::MathCore)
+              ROOT::MathCore) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(WienerFilterAna "module"
               larcorealg_Geometry
@@ -29,7 +29,7 @@ simple_plugin(WienerFilterAna "module"
               art_root_io::TFileService_service
               messagefacility::MF_MessageLogger
               ROOT::Core
-              ROOT::Hist)
+              ROOT::Hist) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

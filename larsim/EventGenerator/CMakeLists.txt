@@ -1,4 +1,4 @@
-include_directories ( $ENV{NUGEN_INC} )
+include_directories ( $ENV{NUGEN_INC} ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - avoid directory-scope functions: use target_link_libraries() with target semantics or target_include_directories() whenever possible
 
 art_make(
          EXCLUDE
@@ -29,14 +29,14 @@ art_make(
            ROOT::Hist
            ROOT::Physics
            ROOT::RIO
-        )
+        ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(POTaccumulator "module"
   LIBRARIES
   larcoreobj_SummaryData
   messagefacility::MF_MessageLogger
   range-v3::range-v3
-  )
+  ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

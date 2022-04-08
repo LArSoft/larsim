@@ -17,7 +17,7 @@ art_make(LIB_LIBRARIES
          ${GENIE_LIB_LIST}
          log4cpp::log4cpp
          messagefacility::MF_MessageLogger
-         cetlib_except::cetlib_except)
+         cetlib_except::cetlib_except) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

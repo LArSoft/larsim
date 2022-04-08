@@ -1,5 +1,5 @@
 
-art_make_exec(NAME simplifyGDML
+cet_make_exec(NAME simplifyGDML
               LIBRARIES
               Geant4::G4global
               Geant4::G4persistency
