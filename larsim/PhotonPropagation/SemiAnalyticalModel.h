@@ -82,17 +82,17 @@ private:
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
 
     double fast_acos(double x) const;
-    
+
     double interpolate(const std::vector<double>& xData,
                        const std::vector<double>& yData,
                        double x,
                        bool extrapolate,
                        size_t i = 0) const;
-    
-    double interpolate2(const std::vector<double>& xDistances, 
-                        const std::vector<double>& rDistances, 
-                        const std::vector<std::vector<std::vector<double>>>& parameters, 
-                        const double x, 
+
+    double interpolate2(const std::vector<double>& xDistances,
+                        const std::vector<double>& rDistances,
+                        const std::vector<std::vector<std::vector<double>>>& parameters,
+                        const double x,
                         const double r,
                         const size_t k) const;
 
@@ -142,19 +142,20 @@ private:
     }
 
     // fhicl parameter sets
-    fhicl::ParameterSet fVUVHitsParams;
-    fhicl::ParameterSet fVISHitsParams;
+    const fhicl::ParameterSet fVUVHitsParams;
+    const fhicl::ParameterSet fVISHitsParams;
 
     // geometry properties
-    int fNTPC;
-    larg4::ISTPC fISTPC;
-    std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+    const larg4::ISTPC fISTPC;
+    geo::GeometryCore const& fGeom;
+    const int fNTPC;
+    const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     double fanode_plane_depth, fanode_ydimension, fanode_zdimension;
     TVector3 fcathode_centre, fanode_centre;
-    
+
     // photodetector geometry properties
-    size_t nOpDets;
+    const size_t nOpDets;
     double fradius;
     Dims fcathode_plane;
     Dims fanode_plane;
@@ -164,8 +165,7 @@ private:
     std::vector<double> fOpDetLength;
     std::vector<double> fOpDetHeight;
 
-    // absorption length
-    int fL_abs_vuv;
+    int fvuv_absorption_lenght;
 
     // For VUV semi-analytic hits
     double fdelta_angulo_vuv;
@@ -177,7 +177,7 @@ private:
     // lateral PDs
     bool fIsFlatPDCorrLat;
     std::vector<double> fGH_distances_anode;
-    std::vector<std::vector<std::vector<double>>> fGHvuvpars_flat_lateral;    
+    std::vector<std::vector<std::vector<double>>> fGHvuvpars_flat_lateral;
     // dome PDs
     bool fIsDomePDCorr;
     std::vector<std::vector<double>> fGHvuvpars_dome;
@@ -189,8 +189,8 @@ private:
     double fFieldCageTransparencyCathode;
 
     // For VIS semi-analytic hits
-    bool fDoReflectedLight;
-    bool fIncludeAnodeReflections;
+    const bool fDoReflectedLight;
+    const bool fIncludeAnodeReflections;
     // correction parameters for VIS Nhits estimation
     double fdelta_angulo_vis;
     double fAnodeReflectivity;
@@ -205,7 +205,7 @@ private:
     // dome PDs
     std::vector<double> fvis_distances_x_dome;
     std::vector<double> fvis_distances_r_dome;
-    std::vector<std::vector<std::vector<double>>> fvispars_dome;   
+    std::vector<std::vector<std::vector<double>>> fvispars_dome;
 
 };
 

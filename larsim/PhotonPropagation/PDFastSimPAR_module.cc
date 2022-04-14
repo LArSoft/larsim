@@ -91,7 +91,7 @@ namespace phot {
   class PDFastSimPAR : public art::EDProducer {
   public:
 
-    // Define the fhicl configuration 
+    // Define the fhicl configuration
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -109,10 +109,10 @@ namespace phot {
       fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
       fhicl::Atom<bool>          OnlyActiveVolume { Name("OnlyActiveVolume"), Comment("PAR fast sim usually only for active volume, default true"), true };
       fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
-      DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")}; 
-      ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
-      ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")}; 
-      DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")}; 
+      DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")};
+      ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")};
+      ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")};
+      DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")};
       ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")};
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -121,7 +121,7 @@ namespace phot {
     void produce(art::Event&) override;
 
   private:
-    
+
     void Initialization();
 
     void detectedNumPhotons(std::vector<int>& DetectedNumPhotons,
@@ -132,7 +132,7 @@ namespace phot {
                      std::map<size_t, int>& ChannelMap,
                      sim::OpDetBacktrackerRecord btr);
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, 
+    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint,
                           geo::Point_t const& OpDetPoint) const;
 
     // ISTPC
@@ -142,13 +142,13 @@ namespace phot {
     std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
 
     // propagation time model
-    std::unique_ptr<PropagationTimeModel> fPropTimeModel;  
+    std::unique_ptr<PropagationTimeModel> fPropTimeModel;
 
     // random numbers
     CLHEP::HepRandomEngine& fPhotonEngine;
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
-    
+
     size_t nOpDets; // Pulled from geom during Initialization()
 
     std::map<size_t, int> PDChannelToSOCMapDirect; // Where each OpChan is.
@@ -157,9 +157,9 @@ namespace phot {
     // geometry properties
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     int fNTPC;
-    
+
     // optical detector properties
-    std::vector<geo::Point_t> fOpDetCenter;    
+    std::vector<geo::Point_t> fOpDetCenter;
 
     //////////////////////
     // Input Parameters //
@@ -183,7 +183,7 @@ namespace phot {
     fhicl::ParameterSet fVUVTimingParams;
     fhicl::ParameterSet fVISTimingParams;
     fhicl::ParameterSet fVUVHitsParams;
-    fhicl::ParameterSet fVISHitsParams;  
+    fhicl::ParameterSet fVISHitsParams;
 
   };
 
@@ -191,11 +191,11 @@ namespace phot {
   PDFastSimPAR::PDFastSimPAR(Parameters const & config)
     : art::EDProducer{config}
     , fISTPC{*(lar::providerFrom<geo::Geometry>())}
-    , fPhotonEngine(   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, 
-                                                                                 "HepJamesRandom",
-                                                                                 "photon", 
-                                                                                 config.get_PSet(), 
-                                                                                 "SeedPhoton"))
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
+                                                                              "HepJamesRandom",
+                                                                              "photon",
+                                                                              config.get_PSet(),
+                                                                              "SeedPhoton"))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
                                                                                  "HepJamesRandom",
                                                                                  "scinttime",
@@ -221,7 +221,7 @@ namespace phot {
       throw art::Exception(art::errors::Configuration)
           << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
     }
-    
+
     if(fDoReflectedLight && !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
       throw art::Exception(art::errors::Configuration)
           << "Reflected light simulation requested, but VisHits not specified." << "\n";
@@ -237,7 +237,7 @@ namespace phot {
           << "Anode reflections light simulation requested, but VisHits not specified." << "\n";
     }
 
-    Initialization();    
+    Initialization();
 
     if (fUseLitePhotons)
     {
@@ -336,7 +336,7 @@ namespace phot {
         fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
         detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
         detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
-        
+
         if ( fIncludeAnodeReflections ) {
           std::vector<int> AnodeDetectedNumFast;
           std::vector<int> AnodeDetectedNumSlow;
@@ -383,7 +383,7 @@ namespace phot {
             ndetected_slow = ReflDetectedNumSlow[channel];
           }
 
-          // calculate propagation time, does not matter whether fast or slow photon          
+          // calculate propagation time, does not matter whether fast or slow photon
           if (fIncludePropTime && needHits) {
             transport_time.resize(ndetected_fast + ndetected_slow);
             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
@@ -538,7 +538,7 @@ namespace phot {
     fVisibilityModel = std::make_unique<SemiAnalyticalModel>(fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
 
     // propagation time model
-    if (fIncludePropTime) fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);   
+    if (fIncludePropTime) fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);
 
     // Store info from the Geometry service
     nOpDets = geom.NOpDets();
