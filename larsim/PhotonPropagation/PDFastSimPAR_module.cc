@@ -327,8 +327,8 @@ namespace phot {
       num_slowph += nphot_slow;
 
       // direct light
-      std::vector<int> DetectedNumFast;
-      std::vector<int> DetectedNumSlow;
+      std::vector<int> DetectedNumFast(nOpDets);
+      std::vector<int> DetectedNumSlow(nOpDets);
 
       bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
       if ( needHits ) {
@@ -338,8 +338,8 @@ namespace phot {
         detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
 
         if ( fIncludeAnodeReflections ) {
-          std::vector<int> AnodeDetectedNumFast;
-          std::vector<int> AnodeDetectedNumSlow;
+          std::vector<int> AnodeDetectedNumFast(nOpDets);
+          std::vector<int> AnodeDetectedNumSlow(nOpDets);
 
           std::vector<double> OpDetVisibilitiesAnode;
           fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
@@ -353,8 +353,8 @@ namespace phot {
       }
 
       // reflected light, if enabled
-      std::vector<int> ReflDetectedNumFast;
-      std::vector<int> ReflDetectedNumSlow;
+      std::vector<int> ReflDetectedNumFast(nOpDets);
+      std::vector<int> ReflDetectedNumSlow(nOpDets);
 
       if (fDoReflectedLight && needHits) {
         std::vector<double> OpDetVisibilitiesRefl;
@@ -583,7 +583,6 @@ namespace phot {
   void
   PDFastSimPAR::detectedNumPhotons(std::vector<int>& DetectedNumPhotons, const std::vector<double>& OpDetVisibilities, const double NumPhotons)
   {
-    DetectedNumPhotons.resize(nOpDets);
     for (size_t i=0; i<OpDetVisibilities.size(); ++i){
       DetectedNumPhotons[i] = fRandPoissPhot->fire(OpDetVisibilities[i] * NumPhotons);
     }
