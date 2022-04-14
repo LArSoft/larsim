@@ -677,7 +677,7 @@ SemiAnalyticalModel::Omega_Dome_Model(const double distance, const double theta)
 
   double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
   double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
-  const double delta_theta = 10.;
+  const double delta_theta = 10.; // TODO: should this be fdelta_angulo_vuv?
   int j = int(theta/delta_theta);
   // PMT radius
   const double b = fradius; // cm
@@ -686,11 +686,13 @@ SemiAnalyticalModel::Omega_Dome_Model(const double distance, const double theta)
 
   if(distance >= d_break) {
     double R_apparent_far = b - par1[j];
-    return  (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_far/distance,2))));
+    double ratio_square = (R_apparent_far*R_apparent_far)/(distance*distance);
+    return  (2*CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
   }
   else {
     double R_apparent_close = b - par0[j];
-    return (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_close/distance,2))));
+    double ratio_square = (R_apparent_close*R_apparent_close)/(distance*distance);
+    return (2*CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
   }
 }
 
