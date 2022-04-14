@@ -70,6 +70,12 @@ PropagationTimeModel::Initialization()
     VUV_max = std::vector(num_angles, std::vector(num_params, 0.0));
     VUV_min = std::vector(num_angles, std::vector(num_params, 0.0));
 
+    // generate VUV parameters
+    for (size_t angle_bin=0; angle_bin < num_angles; ++angle_bin) {
+      for (size_t index=0; index < num_params; ++index) {
+        generateParam(index, angle_bin);
+      }
+    }
 
     // Reflected / Visible
         if (fdoReflectedLight) {
@@ -179,8 +185,6 @@ PropagationTimeModel::getVUVTimes(std::vector<double>& arrivalTimes, const doubl
   else {
     // determine nearest parameterisation in discretisation
     int index = std::round((distance - fmin_d) / fstep_size);
-    // check whether required parameterisation has been generated, generating if not
-     if (VUV_timing[angle_bin][index].GetNdim() == 0) generateParam(index, angle_bin);
     // randomly sample parameterisation for each photon
     for (size_t i = 0; i < arrivalTimes.size(); ++i) {
       arrivalTimes[i] = VUV_timing[angle_bin][index].GetRandom(VUV_min[angle_bin][index], VUV_max[angle_bin][index]);
