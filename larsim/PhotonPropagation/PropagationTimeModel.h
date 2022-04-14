@@ -99,6 +99,7 @@ private:
 
   // random numbers
   CLHEP::HepRandomEngine& fScintTimeEngine;
+  CLHEP::RandFlat fUniformGen;
 
   // geometry properties
   double fplane_depth;

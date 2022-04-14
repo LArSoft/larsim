@@ -18,6 +18,7 @@
 PropagationTimeModel::PropagationTimeModel(fhicl::ParameterSet VUVTimingParams, fhicl::ParameterSet VISTimingParams, CLHEP::HepRandomEngine& ScintTimeEngine, bool doReflectedLight, bool GeoPropTimeOnly)
   : fISTPC{*(lar::providerFrom<geo::Geometry>())}
   , fScintTimeEngine(ScintTimeEngine)
+  , fUniformGen(fScintTimeEngine)
 {
   
   fVUVTimingParams = VUVTimingParams;    
@@ -399,7 +400,7 @@ PropagationTimeModel::getVISTimes(std::vector<double>& arrivalTimes,
         }
         else {
           // generate random number in appropriate range
-          double x = CLHEP::RandFlat::shoot(&fScintTimeEngine, 0.5, 1.0);
+          double x = fUniformGen.fire(0.5, 1.0);
           // apply the exponential smearing
           arrival_time_smeared =
             arrivalTimes[i] + (arrivalTimes[i] - fastest_time) * (std::pow(x, -tau) - 1);
