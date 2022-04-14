@@ -190,17 +190,18 @@ void SemiAnalyticalModel::Initialization()
 
 //......................................................................
 // VUV semi-analytical model visibility calculation
-void 
-SemiAnalyticalModel::detectedDirectVisibilities(std::map<size_t, double>& DetectedVisibilities,
-                                          geo::Point_t const& ScintPoint)  
+void
+SemiAnalyticalModel::detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
+                                                geo::Point_t const& ScintPoint)
 {
+  DetectedVisibilities.resize(nOpDets);
   for (size_t const OpDet : util::counter(nOpDets)) {
     if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 
     // set detector struct for solid angle function
     const SemiAnalyticalModel::OpticalDetector op{
-    fOpDetHeight[OpDet], fOpDetLength[OpDet],
-    fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
+      fOpDetHeight[OpDet], fOpDetLength[OpDet],
+      fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
 
     double DetThis;
     VUVVisibility(ScintPoint, op, DetThis);
@@ -330,10 +331,10 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
 //......................................................................
 // VIS semi-analytical model visibility calculation
-void 
-SemiAnalyticalModel::detectedReflectedVisibilities(std::map<size_t, double>& ReflDetectedVisibilities,
-                                             geo::Point_t const& ScintPoint,
-                                             bool AnodeMode)   
+void
+SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDetectedVisibilities,
+                                                   geo::Point_t const& ScintPoint,
+                                                   bool AnodeMode)
 {
   // 1). calculate visibility of VUV photons on
   // reflective foils via solid angle + Gaisser-Hillas
@@ -395,6 +396,7 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::map<size_t, double>& Ref
 
   // 2). detemine visibility of each PD
   const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
+  ReflDetectedVisibilities.resize(nOpDets);
   for (size_t const OpDet : util::counter(nOpDets)) {
     if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
 

@@ -32,14 +32,14 @@ public:
     SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::ParameterSet VISHits, bool doReflectedLight = false, bool includeAnodeReflections = false);
 
     // direct / VUV light
-    void detectedDirectVisibilities(std::map<size_t, double>& DetectedVisibilities,
-                                    geo::Point_t const& ScintPoint);   
-    
+    void detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
+                                    geo::Point_t const& ScintPoint);
+
     // reflected / visible light
-    void detectedReflectedVisibilities(std::map<size_t, double>& ReflDetectedVisibilities,
+    void detectedReflectedVisibilities(std::vector<double>& ReflDetectedVisibilities,
                                        geo::Point_t const& ScintPoint,
-                                       bool AnodeMode = false);    
-    
+                                       bool AnodeMode = false);
+
 private:
 
     // parameter and geometry initialization

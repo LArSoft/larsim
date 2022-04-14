@@ -124,8 +124,8 @@ namespace phot {
     
     void Initialization();
 
-    void detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, 
-                            const std::map<size_t, double>& OpDetVisibilities, 
+    void detectedNumPhotons(std::vector<int>& DetectedNumPhotons,
+                            const std::vector<double>& OpDetVisibilities,
                             const double NumPhotons);
 
     void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
@@ -327,37 +327,37 @@ namespace phot {
       num_slowph += nphot_slow;
 
       // direct light
-      std::map<size_t, int> DetectedNumFast;
-      std::map<size_t, int> DetectedNumSlow;
+      std::vector<int> DetectedNumFast;
+      std::vector<int> DetectedNumSlow;
 
       bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
       if ( needHits ) {
-        std::map<size_t, double> OpDetVisibilities;
+        std::vector<double> OpDetVisibilities;
         fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
         detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
         detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
         
         if ( fIncludeAnodeReflections ) {
-          std::map<size_t, int> AnodeDetectedNumFast;
-          std::map<size_t, int> AnodeDetectedNumSlow;
-          
-          std::map<size_t, double> OpDetVisibilitiesAnode;
+          std::vector<int> AnodeDetectedNumFast;
+          std::vector<int> AnodeDetectedNumSlow;
+
+          std::vector<double> OpDetVisibilitiesAnode;
           fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
           detectedNumPhotons(AnodeDetectedNumFast, OpDetVisibilitiesAnode, nphot_fast);
           detectedNumPhotons(AnodeDetectedNumSlow, OpDetVisibilitiesAnode, nphot_slow);
 
           // add to existing count
-          for (auto const& x : AnodeDetectedNumFast) DetectedNumFast[x.first] += x.second;
-          for (auto const& x : AnodeDetectedNumSlow) DetectedNumSlow[x.first] += x.second;
+          for (size_t i=0; i<AnodeDetectedNumFast.size(); ++i) {DetectedNumFast[i] += AnodeDetectedNumFast[i];}
+          for (size_t i=0; i<AnodeDetectedNumSlow.size(); ++i) {DetectedNumSlow[i] += AnodeDetectedNumSlow[i];}
         }
       }
 
       // reflected light, if enabled
-      std::map<size_t, int> ReflDetectedNumFast;
-      std::map<size_t, int> ReflDetectedNumSlow;
-      
+      std::vector<int> ReflDetectedNumFast;
+      std::vector<int> ReflDetectedNumSlow;
+
       if (fDoReflectedLight && needHits) {
-        std::map<size_t, double> OpDetVisibilitiesRefl;
+        std::vector<double> OpDetVisibilitiesRefl;
         fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesRefl, ScintPoint, false);
         detectedNumPhotons(ReflDetectedNumFast, OpDetVisibilitiesRefl, nphot_fast);
         detectedNumPhotons(ReflDetectedNumSlow, OpDetVisibilitiesRefl, nphot_slow);
@@ -580,13 +580,13 @@ namespace phot {
 
   //......................................................................
   // calculates number of photons detected given visibility and emitted number of photons
-  void 
-  PDFastSimPAR::detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, const std::map<size_t, double>& OpDetVisibilities, const double NumPhotons)
+  void
+  PDFastSimPAR::detectedNumPhotons(std::vector<int>& DetectedNumPhotons, const std::vector<double>& OpDetVisibilities, const double NumPhotons)
   {
-      for (auto const& x : OpDetVisibilities)
-      {
-        DetectedNumPhotons[x.first] = fRandPoissPhot->fire(x.second * NumPhotons);
-      }
+    DetectedNumPhotons.resize(nOpDets);
+    for (size_t i=0; i<OpDetVisibilities.size(); ++i){
+      DetectedNumPhotons[i] = fRandPoissPhot->fire(OpDetVisibilities[i] * NumPhotons);
+    }
   }
 
   //......................................................................
