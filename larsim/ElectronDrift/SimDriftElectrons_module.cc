@@ -527,7 +527,7 @@ namespace detsim {
 
               // Has this step contributed to this channel before?
               auto& stepList = bookKeeping.stepList;
-              if (std::binary_search(stepList.begin(), stepList.end(), edIndex)) {
+              if (!std::binary_search(stepList.begin(), stepList.end(), edIndex)) {
                 // No, so add this step's index to the list.
                 stepList.push_back(edIndex);
               }
