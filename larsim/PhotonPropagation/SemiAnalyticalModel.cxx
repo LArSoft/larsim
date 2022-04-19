@@ -27,7 +27,14 @@ SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::Par
   , fGeom{*(lar::providerFrom<geo::Geometry>())}
   , fNTPC(fGeom.NTPC())
   , fActiveVolumes(fISTPC.extractActiveLArVolume(fGeom))
+  , fcathode_centre{fGeom.TPC(0, 0).GetCathodeCenter().X(),
+                    fActiveVolumes[0].CenterY(),
+                    fActiveVolumes[0].CenterZ()}
+  , fanode_centre{fGeom.TPC(0, 0).FirstPlane().GetCenter().X(),
+                  fActiveVolumes[0].CenterY(),
+                  fActiveVolumes[0].CenterZ()}
   , nOpDets(fGeom.NOpDets())
+  , fvuv_absorption_length(VUVAbsorptionLength())
   , fDoReflectedLight(doReflectedLight)
   , fIncludeAnodeReflections(includeAnodeReflections)
 {
@@ -39,15 +46,6 @@ SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::Par
 // initialization
 void SemiAnalyticalModel::Initialization()
 {
-
-  fcathode_centre = {fGeom.TPC(0, 0).GetCathodeCenter().X(),
-                     fActiveVolumes[0].CenterY(),
-                     fActiveVolumes[0].CenterZ()};
-
-  fanode_centre = {fGeom.TPC(0, 0).FirstPlane().GetCenter().X(),
-                   fActiveVolumes[0].CenterY(),
-                   fActiveVolumes[0].CenterZ() };
-
   // get PDS information
   fOpDetType.reserve(nOpDets); fOpDetOrientation.reserve(nOpDets);
   fOpDetCenter.reserve(nOpDets); fOpDetLength.reserve(nOpDets); fOpDetHeight.reserve(nOpDets);
@@ -82,15 +80,6 @@ void SemiAnalyticalModel::Initialization()
       fOpDetHeight.push_back(-1);
     }
   }
-
-  // determine LAr absorption length in cm
-  std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
-  std::vector<double> x_v, y_v;
-  for (auto elem : abs_length_spectrum) {
-    x_v.push_back(elem.first);
-    y_v.push_back(elem.second);
-  }
-  fvuv_absorption_lenght = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum   // TO DO UNHARDCODE FOR XENON
 
   // Load Gaisser-Hillas corrections for VUV semi-analytic hits
   mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
@@ -139,13 +128,9 @@ void SemiAnalyticalModel::Initialization()
       fvispars_dome         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
     }
 
-    // cathode dimensions
-    fcathode_ydimension = fActiveVolumes[0].SizeY();
-    fcathode_zdimension = fActiveVolumes[0].SizeZ();
-
     // set cathode plane struct for solid angle function
-    fcathode_plane.h = fcathode_ydimension;
-    fcathode_plane.w = fcathode_zdimension;
+    fcathode_plane.h = fActiveVolumes[0].SizeY();
+    fcathode_plane.w = fActiveVolumes[0].SizeZ();
     fplane_depth = std::abs(fcathode_centre[0]);
   }
 
@@ -167,16 +152,30 @@ void SemiAnalyticalModel::Initialization()
       fvispars_flat_lateral         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat_lateral");
     }
 
-    // anode dimensions
-    fanode_ydimension = fActiveVolumes[0].SizeY();
-    fanode_zdimension = fActiveVolumes[0].SizeZ();
-
     // set anode plane struct for solid angle function
-    fanode_plane.h = fanode_ydimension;
-    fanode_plane.w = fanode_zdimension;
+    fanode_plane.h = fActiveVolumes[0].SizeY();
+    fanode_plane.w = fActiveVolumes[0].SizeZ();
     fanode_plane_depth = fanode_centre[0];
   }
 
+}
+
+int
+SemiAnalyticalModel::VUVAbsorptionLength() const
+{
+  // determine LAr absorption length in cm
+  std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+  std::vector<double> x_v, y_v;
+  for (auto elem : abs_length_spectrum) {
+    x_v.push_back(elem.first);
+    y_v.push_back(elem.second);
+  }
+  int vuv_absorption_length = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum   // TO DO UNHARDCODE FOR XENON
+  if (vuv_absorption_length <= 0){
+    throw cet::exception("SemiAnalyticalModel")
+      << "Error: VUV Absorption Length is 0 or negative.\n";
+  }
+  return vuv_absorption_length;
 }
 
 //......................................................................
@@ -236,7 +235,7 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
   // calculate visibility by geometric acceptance
   // accounting for solid angle and LAr absorbtion length
-  double visibility_geo = std::exp(-1. * distance / fvuv_absorption_lenght) * (solid_angle / (4 * CLHEP::pi));
+  double visibility_geo = std::exp(-1. * distance / fvuv_absorption_length) * (solid_angle / (4 * CLHEP::pi));
 
   // apply Gaisser-Hillas correction for Rayleigh scattering distance
   // and angular dependence offset angle bin
@@ -354,7 +353,7 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDete
   // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
   double distance_cathode = std::abs(plane_depth - ScintPoint.X());
   // calculate hits on cathode plane via geometric acceptance
-  double cathode_visibility_geo = std::exp(-1. * distance_cathode / fvuv_absorption_lenght) * (solid_angle_cathode / (4. * CLHEP::pi));
+  double cathode_visibility_geo = std::exp(-1. * distance_cathode / fvuv_absorption_length) * (solid_angle_cathode / (4. * CLHEP::pi));
 
   // determine Gaisser-Hillas correction including border effects
   // use flat correction

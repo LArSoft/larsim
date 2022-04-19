@@ -45,6 +45,8 @@ private:
     // parameter and geometry initialization
     void Initialization();
 
+    int VUVAbsorptionLength() const;
+
     // structure for rectangular solid angle calculation
     struct Dims {
       double h, w; // height, width
@@ -150,9 +152,8 @@ private:
     geo::GeometryCore const& fGeom;
     const int fNTPC;
     const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
-    double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-    double fanode_plane_depth, fanode_ydimension, fanode_zdimension;
-    TVector3 fcathode_centre, fanode_centre;
+    const TVector3 fcathode_centre, fanode_centre;
+    double fplane_depth, fanode_plane_depth;
 
     // photodetector geometry properties
     const size_t nOpDets;
@@ -165,7 +166,7 @@ private:
     std::vector<double> fOpDetLength;
     std::vector<double> fOpDetHeight;
 
-    int fvuv_absorption_lenght;
+    const int fvuv_absorption_length;
 
     // For VUV semi-analytic hits
     double fdelta_angulo_vuv;
