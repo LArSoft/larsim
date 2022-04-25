@@ -48,8 +48,8 @@ namespace larg4 {
   private:
     double fGeVToElectrons;   ///< from LArG4Parameters service
     double fWion;             ///< W_ion (23.6 eV) == 1/fGeVToElectrons
-    double fWph;              ///< W_ph (19.5 eV)
-    double fScintPreScale;  ///< scintillation pre-scaling factor from LArProperties service
+    double fWph;              ///< from LArG4Parameters service
+    double fScintPreScale;    ///< scintillation pre-scaling factor from LArProperties service
     double fRecombA;          ///< from LArG4Parameters service
     double fRecombk;          ///< from LArG4Parameters service
     double fModBoxA;          ///< from LArG4Parameters service

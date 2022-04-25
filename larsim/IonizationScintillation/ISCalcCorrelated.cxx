@@ -51,8 +51,8 @@ namespace larg4 {
     // ionization work function
     fWion = 1. / fGeVToElectrons * 1e3; // MeV
 
-    // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
-    fWph = 19.5 * 1e-6; // MeV
+    // ion+excitation work function
+    fWph = LArG4PropHandle->Wph() * 1e-6; // MeV
   }
 
   //----------------------------------------------------------------------------
