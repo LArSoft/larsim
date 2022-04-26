@@ -7,7 +7,7 @@
 //              simple microphysics arguments to establish an anticorrelation
 //              between these two quantities.
 // Input: 'sim::SimEnergyDeposit'
-// Output: num of Photons and Electrons
+// Output: Number of Photons and Electrons
 // May 2020 by W Foreman
 // Modified: Adding corrections for low electric field (LArQL model)
 // Jun 2020 by L. Paulucci and F. Marinho
@@ -26,12 +26,10 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
-#include <vector>
-
-#include "CLHEP/Vector/ThreeVector.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandEngine.h"
+#include "CLHEP/Random/RandBinomial.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 
 namespace larg4 {
@@ -64,16 +62,15 @@ namespace larg4 {
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
 
     const spacecharge::SpaceCharge* fSCE;
-    const detinfo::LArProperties* fLArProp;
 
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
-    int BinomFluct(int N0, double prob);
 
     ISTPC fISTPC;
-    CLHEP::HepRandomEngine& fEngine; // random engine 
+    CLHEP::HepRandomEngine& fEngine; // random engine
+    CLHEP::RandBinomial fBinomialGen;
   };
 }
 #endif

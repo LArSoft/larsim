@@ -123,7 +123,7 @@ namespace larg4 {
       fISAlg = std::make_unique<ISCalcSeparate>();
     else if (calcTag.label() == "Correlated") {
       auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
-      fISAlg = std::make_unique<ISCalcCorrelated>(detProp,fEngine);
+      fISAlg = std::make_unique<ISCalcCorrelated>(detProp, fEngine);
     }
     else if (calcTag.label() == "NEST")
       fISAlg = std::make_unique<ISCalcNESTLAr>(fEngine);
