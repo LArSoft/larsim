@@ -113,36 +113,7 @@ namespace larg4 {
       << " recombination: " << num_electrons << std::endl;
     MF_LOG_DEBUG("ISCalcCorrelated") << "number photons: " << num_photons;
 
-    return {energy_deposit, double(num_electrons), double(num_photons), GetScintYieldRatio(edep)};
-  }
-
-  //----------------------------------------------------------------------------
-  double
-  ISCalcCorrelated::GetScintYieldRatio(sim::SimEnergyDeposit const& edep)
-  {
-    // For ISCalcCorrelated, the ScintByParticleType option only controls
-    // the scintillation yield ratio, which is the ratio of fast light (singlet
-    // component) to the total light (singlet+triplet components).
-    //
-    // TODO: move this to ISCalc, since it is the same function used in the
-    //       other ionization/scintillation calculation algs
-
-    if (!fLArProp->ScintByParticleType()) return fLArProp->ScintYieldRatio();
-
-    switch (edep.PdgCode()) {
-    case 2212: return fLArProp->ProtonScintYieldRatio();
-    case 13:
-    case -13: return fLArProp->MuonScintYieldRatio();
-    case 211:
-    case -211: return fLArProp->PionScintYieldRatio();
-    case 321:
-    case -321: return fLArProp->KaonScintYieldRatio();
-    case 1000020040: return fLArProp->AlphaScintYieldRatio();
-    case 11:
-    case -11:
-    case 22: return fLArProp->ElectronScintYieldRatio();
-    default: return fLArProp->ElectronScintYieldRatio();
-    }
+    return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------
