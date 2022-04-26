@@ -99,9 +99,10 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    double const num_electrons = fBinomialGen.fire(num_ions, recomb);
+    double num_electrons = fBinomialGen.fire(num_ions, recomb);
+    num_electrons = (num_electrons > 0.) ? num_electrons : 0.;
     // calculate scintillation photons
-    double const num_photons = (num_quanta - num_electrons) * fScintPreScale;
+    double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
