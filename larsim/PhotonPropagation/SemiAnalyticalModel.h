@@ -33,12 +33,12 @@ public:
 
     // direct / VUV light
     void detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
-                                    geo::Point_t const& ScintPoint);
+                                    geo::Point_t const& ScintPoint) const;
 
     // reflected / visible light
     void detectedReflectedVisibilities(std::vector<double>& ReflDetectedVisibilities,
                                        geo::Point_t const& ScintPoint,
-                                       bool AnodeMode = false);
+                                       bool AnodeMode = false) const;
 
 private:
 
@@ -62,11 +62,12 @@ private:
     };
 
     // direct light photo-detector visibility calculation
-    void VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet, double &DetThis);
+    double VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet) const;
 
     // reflected light photo-detector visibility calculation
-    void VISVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet, const double cathode_visibility,
-                       geo::Point_t const& hotspot, double &ReflDetThis, bool AnodeMode = false);
+    double VISVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet,
+                         const double cathode_visibility, geo::Point_t const& hotspot,
+                         bool AnodeMode = false) const;
 
     // Gaisser-Hillas
     double Gaisser_Hillas(const double x, const double* par) const;

@@ -15,22 +15,21 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-//#include <string>
 
 namespace phot
 {
-    class ScintTime
-    {
-    public:
-        ScintTime();
-        virtual ~ScintTime() = default;
+  class ScintTime
+  {
+  public:
+    ScintTime();
+    virtual ~ScintTime() = default;
 
-        virtual void GenScintTime(bool is_fast, CLHEP::HepRandomEngine& engine)      = 0;
-        double GetScintTime() const        {return timing;}
-        
-    protected:
-        double timing;
-    };
+    virtual void GenScintTime(bool is_fast, CLHEP::HepRandomEngine& engine)      = 0;
+    double GetScintTime() const        {return timing;}
+
+  protected:
+    double timing;
+  };
 }
 
 #endif

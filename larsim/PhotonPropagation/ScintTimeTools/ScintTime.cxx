@@ -10,11 +10,10 @@
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 
 
-namespace phot 
+namespace phot
 {
     //----------------------------------------------------------------------
     ScintTime::ScintTime()
     {
     }
 }
-

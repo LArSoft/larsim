@@ -182,26 +182,26 @@ SemiAnalyticalModel::VUVAbsorptionLength() const
 // VUV semi-analytical model visibility calculation
 void
 SemiAnalyticalModel::detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
-                                                geo::Point_t const& ScintPoint)
+                                                geo::Point_t const& ScintPoint) const
 {
   DetectedVisibilities.resize(nOpDets);
   for (size_t const OpDet : util::counter(nOpDets)) {
-    if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
+    if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) {
+      DetectedVisibilities[OpDet] = 0.;
+      continue;
+    }
 
     // set detector struct for solid angle function
     const SemiAnalyticalModel::OpticalDetector op{
       fOpDetHeight[OpDet], fOpDetLength[OpDet],
       fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
 
-    double DetThis;
-    VUVVisibility(ScintPoint, op, DetThis);
-
-    DetectedVisibilities[OpDet] = DetThis;
+    DetectedVisibilities[OpDet] = VUVVisibility(ScintPoint, op);;
   }
 }
 
-void
-SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet, double &DetThis)
+double
+SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet) const
 {
   // distance and angle between ScintPoint and OpDetPoint
   geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
@@ -316,7 +316,7 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
   }
 
   // determine corrected visibility of photo-detector
-  DetThis = GH_correction * visibility_geo / cosine;
+  return GH_correction * visibility_geo / cosine;
 }
 
 //......................................................................
@@ -324,7 +324,7 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 void
 SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDetectedVisibilities,
                                                    geo::Point_t const& ScintPoint,
-                                                   bool AnodeMode)
+                                                   bool AnodeMode) const
 {
   // 1). calculate visibility of VUV photons on
   // reflective foils via solid angle + Gaisser-Hillas
@@ -388,23 +388,24 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDete
   const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
   ReflDetectedVisibilities.resize(nOpDets);
   for (size_t const OpDet : util::counter(nOpDets)) {
-    if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) continue;
+    if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter[OpDet])) {
+      ReflDetectedVisibilities[OpDet] = 0.;
+      continue;
+    }
 
     // set detector struct for solid angle function
     const  OpticalDetector op{
       fOpDetHeight[OpDet], fOpDetLength[OpDet],
       fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
 
-    double ReflDetThis;
-    VISVisibility(ScintPoint, op, cathode_visibility_rec, hotspot, ReflDetThis, AnodeMode);
-
-    ReflDetectedVisibilities[OpDet] = ReflDetThis;
+    ReflDetectedVisibilities[OpDet] = VISVisibility(ScintPoint, op, cathode_visibility_rec, hotspot, AnodeMode);
   }
 }
 
-void
-SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet, const double cathode_visibility,
-                                   geo::Point_t const& hotspot, double &ReflDetThis, bool AnodeMode)
+double
+SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet,
+                                   const double cathode_visibility, geo::Point_t const& hotspot,
+                                   bool AnodeMode) const
 {
   // set correct plane_depth
   double plane_depth;
@@ -491,7 +492,7 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
     else if (opDet.orientation == 0) border_correction = border_correction * fFieldCageTransparencyCathode;
   }
 
-  ReflDetThis = border_correction * visibility_geo / cosine_vis;
+  return border_correction * visibility_geo / cosine_vis;
 }
 
 //......................................................................
