@@ -16,6 +16,8 @@
 #include "larsim/LegacyLArG4/VisualizationAction.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "Geant4/G4Event.hh"
 #include "Geant4/G4UImanager.hh"
 #include "Geant4/G4VVisManager.hh"

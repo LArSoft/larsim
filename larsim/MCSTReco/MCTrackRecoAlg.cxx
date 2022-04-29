@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "fhiclcpp/ParameterSet.h"                         // for ParameterSet
+#include "cetlib_except/exception.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"  // for PlaneID
 #include "lardataobj/MCBase/MCLimits.h"                    // for kINVALID_UINT

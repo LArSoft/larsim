@@ -48,6 +48,8 @@
 // Optical Photon Boundary Process Class Implementation
 ////////////////////////////////////////////////////////////////////////
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "Geant4/G4GeometryTolerance.hh"
 #include "Geant4/G4Navigator.hh"
 #include "Geant4/G4OpProcessSubType.hh"

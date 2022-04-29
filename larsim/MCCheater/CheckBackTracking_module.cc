@@ -6,7 +6,9 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include <set>
 #include <string>
+#include <vector>
 
 // LArSoft includes
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"

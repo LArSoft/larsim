@@ -9,20 +9,37 @@
 #ifndef CHEAT_BACKTRACKERSERVICESERVICE_H
 #define CHEAT_BACKTRACKERSERVICESERVICE_H
 
-#include <vector>
-
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/View.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Persistency/Provenance/ScheduleContext.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "larsim/MCCheater/BackTracker.h"
 
-// Included Services
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larsim/MCCheater/ParticleInventory.h"
+namespace detinfo {
+  class DetectorClocksData;
+}
+
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/Simulation/SimChannel.h"
+
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
+
+namespace art {
+  class ActivityRegistry;
+  class Event;
+}
+
+#include "canvas/Persistency/Common/Ptr.h"
+
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Table.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
+
+#include <set>
+#include <vector>
 
 namespace cheat {
   class BackTrackerService : private BackTracker {

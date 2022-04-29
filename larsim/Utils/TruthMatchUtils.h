@@ -11,10 +11,12 @@
 #define TRUTHMATCHUTILS_H_SEEN
 
 // LArSoft
-#include "lardataobj/RecoBase/Hit.h"
+namespace recob { class Hit; }
+
+// art
+#include "canvas/Persistency/Common/Ptr.h"
 
 // c++
-#include <limits>
 #include <map>
 #include <vector>
 

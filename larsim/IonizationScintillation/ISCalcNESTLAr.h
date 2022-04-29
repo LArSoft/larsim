@@ -11,13 +11,17 @@
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
-namespace detinfo {
-  class DetectorPropertiesData;
+namespace spacecharge {
+  class SpaceCharge;
 }
 
-#include "CLHEP/Random/RandEngine.h"
+namespace detinfo {
+  class LArProperties;
+}
+
+namespace CLHEP {
+  class HepRandomEngine;
+}
 
 namespace larg4 {
   class ISCalcNESTLAr : public ISCalc {

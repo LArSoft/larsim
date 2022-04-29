@@ -9,11 +9,14 @@
 #ifndef SIMLISTUTILS_H
 #define SIMLISTUTILS_H
 
-#include <string>
-
-#include "art/Framework/Principal/fwd.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/Simulation/LArVoxelList.h"
+
+namespace art {
+  class Event;
+}
+
+#include <string>
 
 namespace sim {
   class SimListUtils {

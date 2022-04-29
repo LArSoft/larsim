@@ -10,12 +10,12 @@ namespace fhicl { class ParameterSet; }
 namespace sim {
   class MCRecoEdep;
   class MCRecoPart;
-  class MCShower;
 }
 
 // STL
-#include <vector>
 #include <memory>
+#include <utility>
+#include <vector>
 
 namespace sim
 {

@@ -5,23 +5,23 @@
 // Ben Jones, MIT, April 2012
 //   bjpjones@mit.edu
 //
-#include <iostream>
-
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Principal/fwd.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
-
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 #include "larcorealg/CoreUtils/DumpUtils.h" // lar::dump::vector3D()
 
+#include "art_root_io/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
+
+#include <iostream>
 
 namespace phot {
 

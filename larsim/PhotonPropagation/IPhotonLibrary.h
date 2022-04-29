@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstddef> // size_t
 
-class TF1; // forward declaration
+#include "TF1.h"
 
 namespace phot
 {

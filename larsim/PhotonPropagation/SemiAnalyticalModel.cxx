@@ -1,9 +1,12 @@
 #include "SemiAnalyticalModel.h"
 
 // LArSoft Libraries
+#include "larcore/CoreUtils/ServiceUtil.h"
+#include "larcore/Geometry/Geometry.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+#include "larcorealg/Geometry/GeometryCore.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 // support libraries

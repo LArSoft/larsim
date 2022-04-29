@@ -1,25 +1,55 @@
+cet_build_plugin(GENIEGen art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcoreobj::SummaryData
+  lardataalg::MCDumpers
+  lardataobj::Simulation
+  nugen::EventGeneratorBase_GENIE
+  nusimdata::SimulationBase
+  nurandom::RandomUtils_NuRandomService_service
+  art_root_io::TFileService_service
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art::Persistency_Common
+  canvas::canvas
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  ROOT::Core
+  ROOT::EG
+  ROOT::Hist
+)
 
-art_make(MODULE_LIBRARIES
-         lardataalg_MCDumpers
-         larsim_Simulation lardataobj_Simulation
-         nusimdata::SimulationBase
-         larcoreobj_SummaryData
-         larcorealg_Geometry
-         larcore_Geometry_Geometry_service
-         nurandom::RandomUtils_NuRandomService_service
-         nugen::EventGeneratorBase_GENIE
-         art::Framework_Services_Registry
-         art_root_io::tfile_support ROOT::Core
-         art_root_io::TFileService_service
-         art::Persistency_Provenance
-         messagefacility::MF_MessageLogger
-         ${GENIE_LIB_LIST}
-         log4cpp::log4cpp
-         ROOT::EGPythia6    # FIXME!!! - resolving genie run time reference
-         ROOT::EG
-         ROOT::Hist
-         ROOT::MathCore
-        ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
+cet_build_plugin(NeutronOsc art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcoreobj::SummaryData
+  nugen::EventGeneratorBase_GENIE
+  nurandom::RandomUtils_NuRandomService_service
+  nusimdata::SimulationBase
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  CLHEP::Random
+  ${GENIE_LIB_LIST}
+  log4cpp::log4cpp
+)
+
+cet_build_plugin(NucleonDecay art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcoreobj::SummaryData
+  nugen::EventGeneratorBase_GENIE
+  nurandom::RandomUtils_NuRandomService_service
+  nusimdata::SimulationBase
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  CLHEP::Random
+  ${GENIE_LIB_LIST}
+  log4cpp::log4cpp
+)
 
 install_headers()
 install_fhicl()

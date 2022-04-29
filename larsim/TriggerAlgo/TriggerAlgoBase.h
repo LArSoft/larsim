@@ -11,14 +11,14 @@
 #define TRIGGERALGOBASE_H
 
 // ART includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+namespace art { class Event; }
+namespace fhicl { class ParameterSet; }
 
 // From this package
 #include "TriggerTypes.hh"
 
 // STL
+#include <map>
 #include <set>
 
 namespace trigger

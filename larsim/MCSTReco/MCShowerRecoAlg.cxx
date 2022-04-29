@@ -15,6 +15,7 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/Exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
@@ -24,6 +25,9 @@
 #include "larsim/MCSTReco/MCRecoEdep.h"
 #include "larsim/MCSTReco/MCRecoPart.h"
 #include "larsim/MCSTReco/MCShowerRecoPart.h"
+
+#include <memory>
+#include <vector>
 
 namespace sim {
 

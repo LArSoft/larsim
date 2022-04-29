@@ -7,12 +7,14 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
-#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include <algorithm>

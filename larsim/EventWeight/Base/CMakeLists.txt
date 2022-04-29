@@ -1,11 +1,19 @@
-art_make(LIB_LIBRARIES
-         nurandom::RandomUtils_NuRandomService_service
-         canvas::canvas
-         cetlib_except::cetlib_except
-         ROOT::Core
-         ROOT::Matrix
-         art::Utilities
-         CLHEP::CLHEP) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
+art_dictionary()
+cet_make_library(SOURCE
+  WeightCalc.cxx
+  WeightCalcCreator.cxx
+  WeightCalcFactory.cxx
+  WeightManager.cxx
+  LIBRARIES
+  PUBLIC
+  ROOT::Matrix
+  lardataobj::Simulation
+  art::Framework_Services_Registry
+  nurandom::RandomUtils_NuRandomService_service
+  PRIVATE
+  canvas::canvas
+  CLHEP::Random
+)
 
 install_headers()
 install_fhicl()

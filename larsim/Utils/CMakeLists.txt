@@ -1,10 +1,17 @@
-art_make(
-             LIB_LIBRARIES 
-                           larsim_MCCheater_BackTrackerService_service
-                           lardataobj_RecoBase
-                           art::Persistency_Common canvas::canvas
-                           messagefacility::MF_MessageLogger
-        ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
+cet_make_library(SOURCE
+  SCEOffsetBounds.cxx
+  TruthMatchUtils.cc
+  LIBRARIES
+  PUBLIC
+  larcoreobj::geo_vectors
+  canvas::canvas
+  PRIVATE
+  lardataobj::RecoBase
+  larsim::MCCheater_BackTrackerService_service
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  canvas::canvas
+)
 
 install_headers()
 install_source()

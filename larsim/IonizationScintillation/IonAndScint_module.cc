@@ -20,13 +20,16 @@
 ////////////////////////////////////////////////////////////////////////
 
 // LArSoft includes
-#include "larcore/CoreUtils/ServiceUtil.h"
+
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
+
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // Framework includes
@@ -36,13 +39,17 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "canvas/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"
+
+#include "CLHEP/Random/RandomEngine.h"
 
 #include <iostream>
-#include <sstream> // std::stringstream, std::stringbuf
-#include <stdio.h>
+#include <sstream> // std::stringstream
 #include <string>
+#include <vector>
 
 using std::string;
 using SimEnergyDepositCollection = std::vector<sim::SimEnergyDeposit>;

@@ -154,6 +154,7 @@
 #ifndef CHEAT_PARTICLEINVENTORY_H
 #define CHEAT_PARTICLEINVENTORY_H
 
+#include <map>
 #include <vector>
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -161,11 +162,9 @@
 #include "fhiclcpp/types/Atom.h"
 namespace fhicl { class ParameterSet; }
 
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "nug4/ParticleNavigation/ParticleList.h"
+namespace simb { class MCParticle; }
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/Simulation/GeneratedParticleInfo.h"
-
+#include "nug4/ParticleNavigation/ParticleList.h"
 
 namespace cheat{
   class ParticleInventory

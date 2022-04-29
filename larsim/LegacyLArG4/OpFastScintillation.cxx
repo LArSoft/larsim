@@ -132,7 +132,7 @@
 #include "larsim/LegacyLArG4/ParticleListAction.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
-
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
 #include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()

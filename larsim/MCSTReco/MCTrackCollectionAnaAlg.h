@@ -10,11 +10,13 @@
  *
  */
 
+#include "lardataobj/MCBase/MCTrack.h"
+
 class TTree;
 
-namespace sim{
+#include <vector>
 
-  class MCTrack;
+namespace sim{
 
   class MCTrackCollectionAnaAlg{
 

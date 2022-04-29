@@ -14,6 +14,7 @@
 #include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h" // lar::providerFrom()
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
 // framework libraries
 #include "art/Utilities/ToolConfigTable.h"
@@ -80,8 +81,8 @@ namespace phot {
      *
      * No exception is ever thrown.
      */
-    virtual geo::Point_t detectorToLibrary
-      (geo::Point_t const& location) const override
+    geo::Point_t detectorToLibrary
+    (geo::Point_t const& location) const override
       { return location; }
 
     /// @}
@@ -103,7 +104,7 @@ namespace phot {
      * The mapping is trivial: each library index has the same value as the
      * ID of the optical detector it corresponds to.
      */
-    virtual LibraryIndex_t opDetToLibraryIndex
+    LibraryIndex_t opDetToLibraryIndex
       (geo::Point_t const& location, OpDetID_t opDetID) const override
       { return LibraryIndex_t{ opDetID }; }
 
@@ -118,7 +119,7 @@ namespace phot {
      * The mapping is trivial: each library index has the same value as the
      * ID of the optical detector it corresponds to.
      */
-    virtual OpDetID_t libraryIndexToOpDet
+    OpDetID_t libraryIndexToOpDet
       (geo::Point_t const& location, LibraryIndex_t libIndex) const override
       { return OpDetID_t{ libIndex }; }
 
@@ -133,7 +134,7 @@ namespace phot {
      * ID of the optical detector it corresponds to.
      * This mapping is global and does not depend on any location.
      */
-    virtual OpDetToLibraryIndexMap const& opDetsToLibraryIndices
+    OpDetToLibraryIndexMap const& opDetsToLibraryIndices
       (geo::Point_t const& location) const override
       { return fOpDetsToLibraryIndicesMap; }
 
@@ -146,7 +147,7 @@ namespace phot {
      * This is effectively the number of available optical detectors, as well
      * as the size of the mapping as returned by `opDetsToLibraryIndices()`.
      */
-    virtual std::size_t opDetMappingSize() const override
+    std::size_t opDetMappingSize() const override
       { return fOpDetsToLibraryIndicesMap.size(); }
 
 
@@ -161,7 +162,7 @@ namespace phot {
      * ID of the optical detector it corresponds to.
      * This mapping is global and does not depend on any location.
      */
-    virtual LibraryIndexToOpDetMap const& libraryIndicesToOpDets
+    LibraryIndexToOpDetMap const& libraryIndicesToOpDets
       (geo::Point_t const& location) const override
       { return fLibraryIndicesToOpDetsMap; }
 
@@ -173,7 +174,7 @@ namespace phot {
      *
      * This is also the number of optical detectors.
      */
-    virtual std::size_t libraryMappingSize
+    std::size_t libraryMappingSize
       (geo::Point_t const& location) const override
       { return fLibraryIndicesToOpDetsMap.size(); }
 
@@ -195,10 +196,10 @@ namespace phot {
 
 
     /// Return a trivial global optical detector identifier mapping.
-    virtual LibraryIndexToOpDetMap makeLibraryIndicesToOpDetsMap() const;
+    LibraryIndexToOpDetMap makeLibraryIndicesToOpDetsMap() const;
 
     /// Return a trivial library index mapping.
-    virtual OpDetToLibraryIndexMap makeOpDetsToLibraryIndicesMap() const;
+    OpDetToLibraryIndexMap makeOpDetsToLibraryIndicesMap() const;
 
   }; // class PhotonMappingIdentityTransformations
 

@@ -11,6 +11,7 @@
 
 // standard library includes
 #include <string>
+#include <sstream>
 #include <vector>
 
 // framework includes

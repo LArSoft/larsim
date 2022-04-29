@@ -54,6 +54,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -84,6 +85,9 @@
 #include <algorithm> // std::find
 #include <cmath>
 #include <map>
+#include <memory>
+#include <utility>
+#include <vector>
 
 // stuff from wes
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"

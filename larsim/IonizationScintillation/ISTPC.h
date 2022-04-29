@@ -9,7 +9,14 @@
 #ifndef IS_ISTPC_H
 #define IS_ISTPC_H
 
-#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+
+namespace geo {
+  class GeometryCore;
+}
+
+#include <vector>
 
 namespace larg4 {
   class ISTPC {

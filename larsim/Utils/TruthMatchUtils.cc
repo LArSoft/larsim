@@ -9,8 +9,11 @@
  */
 
 //STL
+#include <limits>
+#include <map>
 #include <utility>
 //ART
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/Exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 //LARSoft

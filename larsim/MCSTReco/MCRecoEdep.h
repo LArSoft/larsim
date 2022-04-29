@@ -2,11 +2,9 @@
 #define MCRECOEDEP_H
 
 // LArSoft
+#include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
-namespace sim {
-  class SimChannel;
-  class SimEnergyDeposit;
-}
 
 // Framework includes
 namespace fhicl { class ParameterSet; }

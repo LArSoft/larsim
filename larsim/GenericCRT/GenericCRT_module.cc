@@ -7,6 +7,9 @@
 // from cetlib version v3_10_00.
 ////////////////////////////////////////////////////////////////////////
 
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/AuxDetHit.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -19,8 +22,10 @@
 
 #include "GenericCRT.h"
 
-
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace sim {
   class GenericCRT;

@@ -30,7 +30,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+#include "larevt/SpaceCharge/SpaceCharge.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 
 namespace larg4 {

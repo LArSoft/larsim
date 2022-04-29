@@ -1,5 +1,7 @@
-simple_plugin(TriggerAlgoBase service
-              LIBRARIES PRIVATE messagefacility::MF_MessageLogger) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+cet_make_library(SOURCE TriggerAlgoBase.cc
+  LIBRARIES PRIVATE
+  fhiclcpp::fhiclcpp
+)
 
 install_headers()
 install_fhicl()

@@ -15,17 +15,15 @@
 
 #include "larsim/IonizationScintillation/ISCalc.h"
 
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "larsim/Simulation/LArG4Parameters.h"
+namespace spacecharge {
+  class SpaceCharge;
+}
 
-#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
-#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
-#include <vector>
+namespace detinfo {
+  class LArProperties;
+}
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include <utility>
 
 namespace larg4 {
   class ISCalcSeparate : public ISCalc {

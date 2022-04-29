@@ -10,31 +10,29 @@
 #define LARSIM_ALGORITHMS_MARLEYGENERATOR_H
 
 // standard library includes
-#include <array>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 // framework includes
-#include "fhiclcpp/ParameterSet.h"
+namespace fhicl { class ParameterSet; }
 
 // art extensions
 namespace rndm { class NuRandomService; }
 
 // LArSoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
 #include "TLorentzVector.h"
 
 // MARLEY includes
 #include "marley/Generator.hh"
-#include "marley/JSON.hh"
 
 namespace marley {
   class Event;
+  class JSON;
   class Particle;
 }
 

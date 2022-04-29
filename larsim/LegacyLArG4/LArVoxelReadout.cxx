@@ -24,6 +24,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft code
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"

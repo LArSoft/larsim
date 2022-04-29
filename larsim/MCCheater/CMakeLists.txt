@@ -1,97 +1,151 @@
-cet_make_library(
-  LIBRARY_NAME larsim_MCCheater_ParticleInventory
-  SOURCE ParticleInventory.cc ParticleInventory.tcc
+cet_make_library(LIBRARY_NAME larsim_MCCheater_ParticleInventory
+  SOURCE ParticleInventory.cc
   LIBRARIES
-    canvas::canvas
-    nusimdata::SimulationBase
-    nug4::ParticleNavigation
-    messagefacility::MF_MessageLogger
-    fhiclcpp::fhiclcpp
-    cetlib_except::cetlib_except
-    ROOT::Core
-  )
-
-cet_make_library(
-  LIBRARY_NAME larsim_MCCheater_PhotonBackTracker
-  SOURCE PhotonBackTracker.cc PhotonBackTracker.tcc
-  LIBRARIES
-    cetlib_except::cetlib_except
-    fhiclcpp::fhiclcpp
-    messagefacility::MF_MessageLogger
-    art::Framework_Principal
-    ROOT::Core
-    canvas::canvas
-    larsim_MCCheater_ParticleInventory
-    larcorealg_Geometry
-    lardataobj_Simulation
-  )
-
-cet_make_library(
-  LIBRARY_NAME larsim_MCCheater_BackTracker
-  SOURCE BackTracker.cc BackTracker.tcc
-  LIBRARIES
-    canvas::canvas
-    cetlib_except::cetlib_except
-    fhiclcpp::fhiclcpp
-    messagefacility::MF_MessageLogger
-    ROOT::Core
-    larcorealg_Geometry
-    lardataobj_Simulation
-    nug4::ParticleNavigation
-  )
-
-simple_plugin(ParticleInventoryService "service"
-  art::Framework_Principal
-  art::Persistency_Provenance
-  larsim_MCCheater_ParticleInventory
+  PUBLIC
+  lardataobj::Simulation
   nug4::ParticleNavigation
-  ROOT::Core
-  ROOT::Physics
-  messagefacility::MF_MessageLogger) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(PhotonBackTrackerService "service"
-  art::Framework_Principal
-  art::Persistency_Provenance
-  messagefacility::MF_MessageLogger
-  larsim_MCCheater_PhotonBackTracker) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(BackTrackerService "service"
-  art::Framework_Principal
-  art::Persistency_Provenance
-  ROOT::Core
-  messagefacility::MF_MessageLogger
-  larsim_MCCheater_BackTracker
-  larsim_MCCheater_ParticleInventory) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(CheckBackTracking "module"
-  larsim_MCCheater_BackTrackerService_service
-  larsim_MCCheater_ParticleInventoryService_service
-  lardataobj_RecoBase
-  messagefacility::MF_MessageLogger
-  art::Framework_Services_Registry
-  ROOT::Core) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(RecoCheckAna "module"
-  larsim_MCCheater_BackTrackerService_service
-  larsim_MCCheater_ParticleInventoryService_service
   nusimdata::SimulationBase
+  canvas::canvas
+  fhiclcpp::types
+  PRIVATE
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+)
+
+cet_make_library(LIBRARY_NAME larsim_MCCheater_PhotonBackTracker
+  SOURCE PhotonBackTracker.cc
+  LIBRARIES
+  PUBLIC
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::RecoBase
+  lardataobj::Simulation
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  canvas::canvas
+  fhiclcpp::types
+  PRIVATE
+  larsim::MCCheater_ParticleInventory
+  larcorealg::Geometry
+)
+
+cet_make_library(LIBRARY_NAME larsim_MCCheater_BackTracker
+  SOURCE BackTracker.cc
+  LIBRARIES
+  PUBLIC
+  larsim::MCCheater_ParticleInventory
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::RecoBase
+  lardataobj::Simulation
+  canvas::canvas
+  fhiclcpp::types
+  PRIVATE
+  larcorealg::Geometry
+  lardataalg::DetectorInfo
+)
+
+cet_build_plugin(ParticleInventoryService art::service
+  LIBRARIES
+  PUBLIC
+  larsim::MCCheater_ParticleInventory
+  nusimdata::SimulationBase
+  art::Persistency_Provenance
+  fhiclcpp::types
+  PRIVATE
+  nug4::ParticleNavigation
+  art::Framework_Principal
   art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+)
+
+cet_build_plugin(PhotonBackTrackerService art::service
+  LIBRARIES
+  PUBLIC
+  larsim::MCCheater_PhotonBackTracker
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::RecoBase
+  lardataobj::Simulation
+  art::Persistency_Provenance
+  canvas::canvas
+  fhiclcpp::types
+  PRIVATE
+  larsim::MCCheater_ParticleInventoryService_service
+  larsim::MCCheater_ParticleInventory
+  larcore::ServiceUtil
+  larcorealg::Geometry
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+)
+
+cet_build_plugin(BackTrackerService art::service
+  LIBRARIES
+  PUBLIC
+  larsim::MCCheater_BackTracker
+  larcore::ServiceUtil
+  lardataobj::RecoBase
+  lardataobj::Simulation
+  art::Persistency_Provenance
+  canvas::canvas
+  fhiclcpp::types
+  PRIVATE
+  larsim::MCCheater_ParticleInventoryService_service
+  larsim::MCCheater_ParticleInventory
+  lardata::DetectorClocksService
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+)
+
+cet_build_plugin(CheckBackTracking art::EDAnalyzer
+  LIBRARIES PRIVATE
+  larsim::MCCheater_BackTrackerService_service
+  larsim::MCCheater_ParticleInventoryService_service
+  lardata::DetectorClocksService
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::RecoBase
+  nug4::ParticleNavigation
+  art::Framework_Services_Registry
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  canvas::canvas
+)
+
+cet_build_plugin(RecoCheckAna art::EDAnalyzer
+  LIBRARIES PRIVATE
+  larsim::MCCheater_BackTrackerService_service
+  larsim::MCCheater_ParticleInventoryService_service
+  lardata::DetectorClocksService
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::RecoBase
+  lardataobj::Simulation
+  nug4::ParticleNavigation
+  nusimdata::SimulationBase
   art_root_io::TFileService_service
   art_root_io::tfile_support
+  art::Framework_Services_Registry
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  canvas::canvas
   messagefacility::MF_MessageLogger
   ROOT::Core
   ROOT::Hist
-  ROOT::Tree) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+  ROOT::Tree
+)
 
-simple_plugin(BackTrackerLoader "module"
-  larsim_MCCheater_BackTrackerService_service
-  larsim_MCCheater_ParticleInventoryService_service
-  art::Framework_Services_Registry) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+cet_build_plugin(BackTrackerLoader art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::MCCheater_BackTrackerService_service
+  larsim::MCCheater_ParticleInventoryService_service
+  art::Framework_Services_Registry
+)
 
-simple_plugin(PhotonBackTrackerLoader "module"
-  larsim_MCCheater_ParticleInventoryService_service
-  larsim_MCCheater_PhotonBackTrackerService_service
-  art::Framework_Services_Registry) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+cet_build_plugin(PhotonBackTrackerLoader art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::MCCheater_ParticleInventoryService_service
+  larsim::MCCheater_PhotonBackTrackerService_service
+  art::Framework_Services_Registry
+)
 
 install_headers()
 install_fhicl()

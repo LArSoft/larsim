@@ -5,10 +5,11 @@
 namespace fhicl { class ParameterSet; }
 
 // LArSoft
+#include "lardataobj/MCBase/MCTrack.h"
+
 namespace sim {
   class MCRecoEdep;
   class MCRecoPart;
-  class MCTrack;
 }
 
 // STL

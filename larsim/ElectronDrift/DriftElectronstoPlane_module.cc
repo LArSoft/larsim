@@ -53,6 +53,7 @@
  */
 
 // LArSoft includes
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
@@ -74,6 +75,11 @@
 // External libraries
 #include "CLHEP/Random/RandGauss.h"
 #include "TMath.h"
+
+#include <cmath>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace detsim {
 

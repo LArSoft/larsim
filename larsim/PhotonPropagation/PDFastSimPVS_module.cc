@@ -25,35 +25,36 @@
 // Restructured Nov. 21 by P. Green
 ////////////////////////////////////////////////////////////////////////
 
+// LArSoft libraries
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/SimPhotons.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/PhotonPropagation/PropagationTimeModel.h"
+#include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+
+#include "nurandom/RandomUtils/NuRandomService.h"
+
 // Art libraries
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
 #include "fhiclcpp/ParameterSet.h"
 
-// LArSoft libraries
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "lardataobj/Simulation/SimPhotons.h"
-#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
-#include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
-#include "larsim/Simulation/LArG4Parameters.h"
-#include "larsim/PhotonPropagation/PropagationTimeModel.h"
-
-// Random number engine
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
+#include <iostream>
+#include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace phot
@@ -151,7 +152,7 @@ namespace phot
     art::ServiceHandle<PhotonVisibilityService const> pvs;
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     auto const nOpChannels = pvs->NOpChannels();
-        
+
     CLHEP::RandPoissonQ randpoisphot{fPhotonEngine};
         
     std::unique_ptr< std::vector< sim::SimPhotons > >             phot   (new std::vector<sim::SimPhotons>);

@@ -1,15 +1,24 @@
-art_make(LIB_LIBRARIES  lardataobj_Simulation
-                        nusimdata::SimulationBase
-                        ROOT::Physics
-                        ROOT::Core
-           MODULE_LIBRARIES larsim_MergeSimSources
-                        larsim_Simulation
-                        lardataobj_Simulation
-                        nusimdata::SimulationBase
-                        art::Framework_Services_Registry
-                        messagefacility::MF_MessageLogger
-                        fhiclcpp::fhiclcpp
-                ) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.10.00) - deprecated: use art_make_library(), art_dictonary(), and cet_build_plugin() with explicit source lists and plugin base types
+cet_make_library(SOURCE MergeSimSources.cxx
+  LIBRARIES
+  PUBLIC
+  lardataobj::Simulation
+  nusimdata::SimulationBase
+)
+cet_build_plugin(MergeSimSources art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::MergeSimSources
+  larsim::Simulation
+  lardataobj::Simulation
+  larcorealg::headers
+  nusimdata::SimulationBase
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art::Persistency_Common
+  messagefacility::MF_MessageLogger
+  canvas::canvas
+  fhiclcpp::types
+  fhiclcpp::fhiclcpp
+)
 
 install_headers()
 install_fhicl()

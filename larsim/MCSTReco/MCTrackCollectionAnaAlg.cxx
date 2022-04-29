@@ -8,6 +8,7 @@
  */
 
 #include "lardataobj/MCBase/MCTrack.h"
+#include "TBranch.h"
 #include "TTree.h"
 #include <numeric>
 

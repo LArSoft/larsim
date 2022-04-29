@@ -11,9 +11,12 @@
 #ifndef LARG4_ISCALC_H
 #define LARG4_ISCALC_H
 
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
 namespace detinfo {
   class DetectorPropertiesData;
+}
+
+namespace sim {
+  class SimEnergyDeposit;
 }
 
 namespace larg4 {

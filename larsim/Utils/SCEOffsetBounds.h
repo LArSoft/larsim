@@ -11,7 +11,7 @@
 #define LARSIMSCEOFFSETBOUNDS_H_SEEN
 
 //LArSoft
-#include "larcore/Geometry/Geometry.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
 namespace larsim
 {

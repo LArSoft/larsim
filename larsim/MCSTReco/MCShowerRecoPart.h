@@ -3,11 +3,15 @@
 
 // ART includes
 namespace fhicl { class ParameterSet; }
+#include "cetlib_except/exception.h"
 
 // LArSoft
-#include "MCRecoPart.h"
+namespace sim {
+  class MCRecoPart;
+}
 
 // STL
+#include <map>
 #include <vector>
 
 namespace sim

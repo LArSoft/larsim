@@ -3,26 +3,28 @@
  * @brief Provides `phot:PhotonLibraryPropagation` module.
  */
 
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoissonQ.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/SimPhotons.h"
+#include "larsim/IonizationScintillation/ISCalcSeparate.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
+
+#include "nurandom/RandomUtils/NuRandomService.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
-#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "lardataobj/Simulation/SimPhotons.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
-#include "larsim/IonizationScintillation/ISCalcSeparate.h"
-#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
-#include "larsim/Simulation/LArG4Parameters.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
+#include "cetlib_except/exception.h"
+
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
 #include <cmath>
 #include <memory>

@@ -9,6 +9,7 @@
 
 // C++ includes
 #include <string>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"

@@ -21,6 +21,7 @@
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/types/Name.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/Atom.h"
@@ -42,6 +43,7 @@
 
 // LArSoft libraries
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
