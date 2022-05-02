@@ -18,10 +18,10 @@ sim::GenericCRTUtility::GenericCRTUtility(const std::string energyUnitsScale)
   HepTool::Evaluator eval;
   eval.setStdMath();
   eval.setSystemOfUnits();
-  
+
   const std::string scaleExpression = "MeV / " + energyUnitsScale;
   fEnergyUnitsScale = eval.evaluate(scaleExpression.c_str());
-  
+
   if(eval.status() != 0) fEnergyUnitsScale = 1.;
 }
 
@@ -29,16 +29,16 @@ sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit &InputHi
 {
   sim::AuxDetIDE outputIDE;
 
-  outputIDE.trackID		    = InputHit.GetTrackID();
+  outputIDE.trackID = InputHit.GetTrackID();
   outputIDE.energyDeposited	= InputHit.GetEnergyDeposited() * fEnergyUnitsScale;
-  outputIDE.entryX		= InputHit.GetEntryX();
-  outputIDE.entryY		= InputHit.GetEntryY();
-  outputIDE.entryZ		= InputHit.GetEntryZ();
-  outputIDE.entryT		= InputHit.GetEntryT();
-  outputIDE.exitX		= InputHit.GetExitX();
-  outputIDE.exitY		= InputHit.GetExitY();
-  outputIDE.exitZ		= InputHit.GetExitZ();
-  outputIDE.exitT		= InputHit.GetExitT();
+  outputIDE.entryX = InputHit.GetEntryX();
+  outputIDE.entryY = InputHit.GetEntryY();
+  outputIDE.entryZ = InputHit.GetEntryZ();
+  outputIDE.entryT = InputHit.GetEntryT();
+  outputIDE.exitX = InputHit.GetExitX();
+  outputIDE.exitY = InputHit.GetExitY();
+  outputIDE.exitZ	= InputHit.GetExitZ();
+  outputIDE.exitT	= InputHit.GetExitT();
   outputIDE.exitMomentumX	= InputHit.GetExitMomentumX();
   outputIDE.exitMomentumY	= InputHit.GetExitMomentumY();
   outputIDE.exitMomentumZ	= InputHit.GetExitMomentumZ();
@@ -60,11 +60,11 @@ std::vector<unsigned int> sim::GenericCRTUtility::GetAuxDetChannels(const std::v
     {
 
       std::vector<unsigned int>::iterator Chanitr
-	= std::find(AuxDetChanNumber.begin(), AuxDetChanNumber.end(), hit.GetID());
+        = std::find(AuxDetChanNumber.begin(), AuxDetChanNumber.end(), hit.GetID());
 
       if(Chanitr == AuxDetChanNumber.end()){ //If trackID is already in the map, update it
-	//if channel ID is not in the set yet, add it
-	AuxDetChanNumber.push_back(hit.GetID());
+        //if channel ID is not in the set yet, add it
+        AuxDetChanNumber.push_back(hit.GetID());
       }//
 
     }
@@ -84,39 +84,51 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(const 
   size_t ad_sen_id_no = 9999;
 
   for (auto const& auxDetHit : InputHitVector)
+  {
+
+    double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX())/2.0;
+    double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY())/2.0;
+    double zcoordinate = (auxDetHit.GetEntryZ() + auxDetHit.GetExitZ())/2.0;
+    double worldPos[3] = {xcoordinate,ycoordinate,zcoordinate};
+
+    if(auxDetHit.GetID() == inputchannel)   // this is the channel we want.
     {
-
-      double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX())/2.0;
-      double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY())/2.0;
-      double zcoordinate = (auxDetHit.GetEntryZ() + auxDetHit.GetExitZ())/2.0;
-      double worldPos[3] = {xcoordinate,ycoordinate,zcoordinate};
+      // Find the IDs given the hit position
       fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
-      if(auxDetHit.GetID() == inputchannel)   // this is the channel we want.
-	{
-	  auto tempIDE = toAuxDetIDE(auxDetHit);
 
-	  std::vector<sim::AuxDetIDE>::iterator IDEitr
-	    = std::find(IDEvector.begin(), IDEvector.end(), tempIDE);
+      mf::LogDebug("GenericCRTUtility") << "Found an AuxDetHit with ID " << auxDetHit.GetID()
+                                        << " for AuxDet ID " << ad_id_no
+                                        << " Sens ID " << ad_sen_id_no << std::endl;
 
-	  if(IDEitr != IDEvector.end()){ //If trackID is already in the map, update it
-	    //Andrzej's note - following logic from AuxDetReadout in Legacy, but why are the other paremeters getting overwritten like that?
-	    IDEitr->energyDeposited += tempIDE.energyDeposited;
-	    IDEitr->exitX            = tempIDE.exitX;
-	    IDEitr->exitY            = tempIDE.exitY;
-	    IDEitr->exitZ            = tempIDE.exitZ;
-	    IDEitr->exitT            = tempIDE.exitT;
-	    IDEitr->exitMomentumX    = tempIDE.exitMomentumX;
-	    IDEitr->exitMomentumY    = tempIDE.exitMomentumY;
-	    IDEitr->exitMomentumZ    = tempIDE.exitMomentumZ;
-	  }
-	  else{  //if trackID is not in the set yet, add it
-	    IDEvector.push_back(std::move(tempIDE));
-	  }//else
+      auto tempIDE = toAuxDetIDE(auxDetHit);
 
-	  break;
-	} // end if the AuxDetHit channel checks out.
+      std::vector<sim::AuxDetIDE>::iterator IDEitr
+        = std::find(IDEvector.begin(), IDEvector.end(), tempIDE);
 
-    } // end main loop on AuxDetHit
+      if(IDEitr != IDEvector.end()){ //If trackID is already in the map, update it
+        //Andrzej's note - following logic from AuxDetReadout in Legacy, but why are the other paremeters getting overwritten like that?
+        IDEitr->energyDeposited += tempIDE.energyDeposited;
+        IDEitr->exitX            = tempIDE.exitX;
+        IDEitr->exitY            = tempIDE.exitY;
+        IDEitr->exitZ            = tempIDE.exitZ;
+        IDEitr->exitT            = tempIDE.exitT;
+        IDEitr->exitMomentumX    = tempIDE.exitMomentumX;
+        IDEitr->exitMomentumY    = tempIDE.exitMomentumY;
+        IDEitr->exitMomentumZ    = tempIDE.exitMomentumZ;
+      }
+      else{  //if trackID is not in the set yet, add it
+        IDEvector.push_back(std::move(tempIDE));
+      }//else
+
+      // break;
+    } // end if the AuxDetHit channel checks out.
+
+  } // end main loop on AuxDetHit
+
+
+  mf::LogDebug("GenericCRTUtility") << "Returning AuxDetSimChannel for ID "
+                                    << ad_id_no << " " << ad_sen_id_no
+                                    << ", with " << IDEvector.size() << " IDEs." << std::endl;
 
   //push back the AuxDetSimChannel Vector.
   //TODO check the last parameter values.
