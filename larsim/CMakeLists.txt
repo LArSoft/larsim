@@ -1,3 +1,5 @@
+cet_make_library(HEADERS_TARGET_ONLY)
+
 add_subdirectory(Simulation)
 add_subdirectory(IonizationScintillation)
 add_subdirectory(PhotonPropagation)
