@@ -187,11 +187,16 @@ namespace phot
     auto const& edeps = edepHandle;
     for (auto const& edepi: *edeps) {
       num_points ++;
+
+      int nphot_fast    = edepi.NumFPhotons();
+      int nphot_slow    = edepi.NumSPhotons();
+      if(!((nphot_fast > 0 && fDoFastComponent) ||
+           (nphot_slow > 0 && fDoSlowComponent))) continue;
+
       auto const& prt  = edepi.MidPoint();
 
       MappedCounts_t Visibilities = fPVS->GetAllVisibilities(prt);
       MappedCounts_t Visibilities_Ref;
-
       if(fStoreReflected) {
         Visibilities_Ref = fPVS->GetAllVisibilities(prt, true);
         if(!Visibilities_Ref)  mf::LogWarning("PDFastSimPVS") << "Fail to get visibilities for reflected photons.";
@@ -209,8 +214,6 @@ namespace phot
       int nphot         = edepi.NumPhotons();
       double edeposit   = edepi.Energy()/nphot;
       double pos[3]     = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
-      int nphot_fast    = edepi.NumFPhotons();
-      int nphot_slow    = edepi.NumSPhotons();
 
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
@@ -225,10 +228,12 @@ namespace phot
           // number of detected photons
           int ndetected_fast = (nphot_fast > 0) ? fRandPoissPhot->fire(nphot_fast * visibleFraction) : 0;
           int ndetected_slow = (nphot_slow > 0) ? fRandPoissPhot->fire(nphot_slow * visibleFraction) : 0;
+          if(!((ndetected_fast > 0 && fDoFastComponent) ||
+               (ndetected_slow > 0 && fDoSlowComponent))) continue;
 
           // calculate propagation times if included, does not matter whether fast or slow photon
           std::vector<double> transport_time;
-          if (fIncludePropTime && (ndetected_fast + ndetected_slow) > 0) {
+          if (fIncludePropTime) {
             transport_time.resize(ndetected_fast + ndetected_slow);
             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
           }
@@ -237,7 +242,7 @@ namespace phot
           if (fUseLitePhotons) {
             sim::OpDetBacktrackerRecord tmpbtr(channel);
             if (ndetected_fast > 0 && fDoFastComponent) {
-              for (long i = 0; i < ndetected_fast; ++i) {
+              for (int i = 0; i < ndetected_fast; ++i) {
                 // calculate the time at which each photon is seen
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -249,7 +254,7 @@ namespace phot
               }
             }
             if ((ndetected_slow > 0) && fDoSlowComponent) {
-              for (long i = 0; i < ndetected_slow; ++i) {
+              for (int i = 0; i < ndetected_slow; ++i) {
                 // calculate the time at which each photon is seen
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
@@ -272,7 +277,7 @@ namespace phot
             if (Reflected) photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else photon.Energy = 9.7 * CLHEP::eV; // 128 nm
             if (ndetected_fast > 0 && fDoFastComponent) {
-              for (long i = 0; i < ndetected_fast; ++i) {
+              for (int i = 0; i < ndetected_fast; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -284,7 +289,7 @@ namespace phot
               }
             }
             if (ndetected_slow > 0 && fDoSlowComponent) {
-              for (long i = 0; i < ndetected_slow; ++i) {
+              for (int i = 0; i < ndetected_slow; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
                 if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);

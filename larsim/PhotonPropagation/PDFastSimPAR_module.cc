@@ -302,6 +302,15 @@ namespace phot {
     for (auto const& edepi : *edeps) {
       num_points++;
 
+      int nphot_fast = edepi.NumFPhotons();
+      int nphot_slow = edepi.NumSPhotons();
+
+      num_fastph += nphot_fast;
+      num_slowph += nphot_slow;
+
+      if(!((nphot_fast > 0 && fDoFastComponent) ||
+           (nphot_slow > 0 && fDoSlowComponent))) continue;
+
       int trackID = edepi.TrackID();
       int nphot = edepi.NumPhotons();
       double edeposit = edepi.Energy() / nphot;
@@ -310,42 +319,33 @@ namespace phot {
 
       if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
 
-      int nphot_fast = edepi.NumFPhotons();
-      int nphot_slow = edepi.NumSPhotons();
-
-      num_fastph += nphot_fast;
-      num_slowph += nphot_slow;
-
       // direct light
       std::vector<int> DetectedNumFast(fNOpChannels);
       std::vector<int> DetectedNumSlow(fNOpChannels);
 
-      bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
-      if (needHits) {
-        std::vector<double> OpDetVisibilities;
-        fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
-        detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
-        detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
+      std::vector<double> OpDetVisibilities;
+      fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
+      detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
+      detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
 
-        if ( fIncludeAnodeReflections ) {
-          std::vector<int> AnodeDetectedNumFast(fNOpChannels);
-          std::vector<int> AnodeDetectedNumSlow(fNOpChannels);
+      if (fIncludeAnodeReflections) {
+        std::vector<int> AnodeDetectedNumFast(fNOpChannels);
+        std::vector<int> AnodeDetectedNumSlow(fNOpChannels);
 
-          std::vector<double> OpDetVisibilitiesAnode;
-          fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
-          detectedNumPhotons(AnodeDetectedNumFast, OpDetVisibilitiesAnode, nphot_fast);
-          detectedNumPhotons(AnodeDetectedNumSlow, OpDetVisibilitiesAnode, nphot_slow);
+        std::vector<double> OpDetVisibilitiesAnode;
+        fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
+        detectedNumPhotons(AnodeDetectedNumFast, OpDetVisibilitiesAnode, nphot_fast);
+        detectedNumPhotons(AnodeDetectedNumSlow, OpDetVisibilitiesAnode, nphot_slow);
 
-          // add to existing count
-          for (size_t i=0; i<AnodeDetectedNumFast.size(); ++i) {DetectedNumFast[i] += AnodeDetectedNumFast[i];}
-          for (size_t i=0; i<AnodeDetectedNumSlow.size(); ++i) {DetectedNumSlow[i] += AnodeDetectedNumSlow[i];}
-        }
+        // add to existing count
+        for (size_t i=0; i<AnodeDetectedNumFast.size(); ++i) {DetectedNumFast[i] += AnodeDetectedNumFast[i];}
+        for (size_t i=0; i<AnodeDetectedNumSlow.size(); ++i) {DetectedNumSlow[i] += AnodeDetectedNumSlow[i];}
       }
 
       // reflected light, if enabled
       std::vector<int> ReflDetectedNumFast(fNOpChannels);
       std::vector<int> ReflDetectedNumSlow(fNOpChannels);
-      if (fDoReflectedLight && needHits) {
+      if (fDoReflectedLight) {
         std::vector<double> OpDetVisibilitiesRefl;
         fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesRefl, ScintPoint, false);
         detectedNumPhotons(ReflDetectedNumFast, OpDetVisibilitiesRefl, nphot_fast);
@@ -365,10 +365,12 @@ namespace phot {
             ndetected_fast = ReflDetectedNumFast[channel];
             ndetected_slow = ReflDetectedNumSlow[channel];
           }
+          if(!((ndetected_fast > 0 && fDoFastComponent) ||
+               (ndetected_slow > 0 && fDoSlowComponent))) continue;
 
           // calculate propagation time, does not matter whether fast or slow photon
           std::vector<double> transport_time;
-          if (fIncludePropTime && (ndetected_fast + ndetected_slow) > 0) {
+          if (fIncludePropTime) {
             transport_time.resize(ndetected_fast + ndetected_slow);
             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
           }
@@ -379,7 +381,7 @@ namespace phot {
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -393,7 +395,7 @@ namespace phot {
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
                 if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
@@ -416,7 +418,7 @@ namespace phot {
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -430,7 +432,7 @@ namespace phot {
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
                 if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
