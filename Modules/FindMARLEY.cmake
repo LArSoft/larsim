@@ -10,7 +10,7 @@ set(_fm_progs marley)
 set(_fm_transitive_deps_MARLEY)
 set(_fm_transitive_deps_MARLEY_ROOT MARLEY::MARLEY ROOT::Tree ROOT::Hist ROOT::RIO)
 set(_fm_deps GSL)
-set(_fm_fp_ROOT_args COMPONENTS Core Tree Hist RIO EXPORT)
+set(_fm_fp_ROOT_args COMPONENTS Core Tree Hist RIO)
 
 unset(_fm_fphsa_extra_required_vars)
 unset(_fm_fphsa_extra_args)
