@@ -23,6 +23,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 //LArSoft
 #include "lardataobj/RecoBase/OpHit.h"
@@ -46,6 +47,7 @@ namespace cheat{
       struct fhiclConfig{
         fhicl::Atom<double> Delay{fhicl::Name("Delay"), fhicl::Comment("The delay time needed to correctly account for the optical simulation and optical systems simulation. (The time between when a g4partcile was made, and when the simulation write out says a signal was recorded)."), 0};
         fhicl::Atom<art::InputTag> G4ModuleLabel{fhicl::Name("G4ModuleLabel"), fhicl::Comment("The label of the LArG4 module used to produce the art file we will be using."), "largeant"};
+        fhicl::Sequence<art::InputTag> G4ModuleLabels{fhicl::Name("G4ModuleLabels"), fhicl::Comment("The labels of the LArG4 modules used to produce the art file we will be using."), fhicl::Sequence<art::InputTag>::default_type{}};
         fhicl::Atom<art::InputTag> OpHitLabel{fhicl::Name("OpHitLabel"), fhicl::Comment("The default label for the module to use when grabbing OpHits"), "ophit"}; //This should be removed and replaced with some way to access the OpHitLabel given by the user in their own analysis module to avoid differing definitions.
         fhicl::Atom<art::InputTag> OpFlashLabel{fhicl::Name("OpFlashLabel"), fhicl::Comment("The default label for the module to use when grabbing OpFlash"), "opflash"}; //This should be removed and replaced with some way to access the OpFlashLabel given by the user in their own analysis module to avoid differing definitions.
         fhicl::Atom<double> MinOpHitEnergyFraction{fhicl::Name("MinOpHitEnergyFraction"), fhicl::Comment("The minimum contribution an energy deposit must make to a Hit to be considered part of that hit."),0.010};
@@ -244,6 +246,7 @@ namespace cheat{
       //      const detinfo::DetectorClocks* fDetClocks;
       const double fDelay;
       const art::InputTag fG4ModuleLabel;
+      const std::vector<art::InputTag> fG4ModuleLabels;
       const art::InputTag fOpHitLabel;
       const art::InputTag fOpFlashLabel;
       const double fMinOpHitEnergyFraction;

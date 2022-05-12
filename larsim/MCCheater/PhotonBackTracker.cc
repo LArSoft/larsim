@@ -42,6 +42,7 @@ namespace cheat{
 //    fDetClocks (detClock),
     fDelay     (config.Delay()),
     fG4ModuleLabel(config.G4ModuleLabel()),
+    fG4ModuleLabels(config.G4ModuleLabels()),
     fOpHitLabel(config.OpHitLabel()),
     fOpFlashLabel(config.OpFlashLabel()),
     //fWavLabel(config.WavLabel()),
@@ -58,6 +59,7 @@ namespace cheat{
 //    fDetClocks(detClock),
     fDelay(pSet.get<double>("Delay")),
     fG4ModuleLabel(pSet.get<art::InputTag>("G4ModuleLabel", "largeant")),
+    fG4ModuleLabels(pSet.get<std::vector<art::InputTag>>("G4ModuleLabels", {})),
     fOpHitLabel(pSet.get<art::InputTag>("OpHitLabel", "ophit")),
     fOpFlashLabel(pSet.get<art::InputTag>("OpFlashLabel", "opflash")),
     fMinOpHitEnergyFraction(pSet.get<double>("MinimumOpHitEnergyFraction", 0.1))
@@ -167,36 +169,23 @@ namespace cheat{
   //----------------------------------------------------------------
   const std::vector< sim::TrackSDP> PhotonBackTracker::OpHitToTrackSDPs(art::Ptr<recob::OpHit> const& opHit_P)  const
   {
-    //auto opHit = *opHit_P;
     auto OpDetNum =  fGeom->OpDetFromOpChannel(opHit_P->OpChannel()) ;
-    std::vector<sim::TrackSDP> trackSDPs;
     const double pTime = opHit_P->PeakTime();
     const double pWidth= opHit_P->Width();
     const double start = (pTime-pWidth)*1000-fDelay;
     const double end = (pTime+pWidth)*1000-fDelay;
-
-    //this->OpDetToTrackSDPs(trackSDPs, opHit_P->OpChannel(), start, end);
-
-
-    //return trackSDPs;
-    //return this->OpDetToTrackSDPs( opHit_P->OpChannel(), start, end);
     return this->OpDetToTrackSDPs( OpDetNum, start, end);
-
   }
 
   //----------------------------------------------------------------
   const std::vector<sim::TrackSDP> PhotonBackTracker::OpHitToTrackSDPs(recob::OpHit const& opHit) const
   {
     auto OpDetNum =  fGeom->OpDetFromOpChannel(opHit.OpChannel()) ;
-    std::vector<sim::TrackSDP> trackSDPs;
     const double pTime = opHit.PeakTime();
     const double pWidth= opHit.Width();
     const double start = (pTime-pWidth)*1000-fDelay;
     const double end = (pTime+pWidth)*1000-fDelay;
-
-
     return this->OpDetToTrackSDPs( OpDetNum, start, end);
-
   }
 
   //----------------------------------------------------------------
