@@ -26,20 +26,13 @@ namespace cheat{
 
       for (auto& G4ModuleLabel : G4ModuleLabels) {
         auto const& btrHandle = evt.template getValidHandle < std::vector < sim::OpDetBacktrackerRecord > > (G4ModuleLabel);
-        //      if(btrHandle.failedToGet()){
-        /*  mf::LogWarning("PhotonBackTracker") << "failed to get handle to     simb::MCParticle from "
-         *              << fG4ModuleLabel
-         *                          << ", return";*/ //This is now silent as it is expected to    happen every generation run. It is also temporary while we wait for
-        /*if( 0 ){ return;} //Insert check for DivRecs here, or don't use validHandle below.
-          auto const& divrecHandle = evt.template getValidHandle <std::vector<sim::OpDetDivRec>>(fWavLabel);
-          if(divrecHandle.failedToGet()){
-          return;
-          }*/
-
         art::fill_ptr_vector(priv_OpDetBTRs, btrHandle);
         if (!std::is_sorted(priv_OpDetBTRs.begin(), priv_OpDetBTRs.end(), compareBTRlambda))
           std::sort(priv_OpDetBTRs.begin(),priv_OpDetBTRs.end(),compareBTRlambda);
 
+        // // // // // // // // // // // // // // // // // // // // // // // //
+        // DUNE-specific code which hasn't been migrated anywhere better yet //
+        // // // // // // // // // // // // // // // // // // // // // // // //
         //art::fill_ptr_vector(priv_DivRecs, divrecHandle);
         //auto compareDivReclambda = [](art::Ptr<sim::OpDetDivRec> a, art::Ptr<sim::OpDetDivRec> b) {return(a->OpDetNum() < b->OpDetNum());};
         /*if (!std::is_sorted(priv_DivRecs.begin(), priv_DivRecs.end(), compareDivReclambda))
@@ -62,6 +55,9 @@ namespace cheat{
           }
           }else{throw cet::exception("PhotonBackTracker")<<"find Waveforms and DivRecs from BTRs failed.";}
         */
+        // // // // // // // // // // // // // // // // // // // // // // // //
+        // DUNE-specific code which hasn't been migrated anywhere better yet //
+        // // // // // // // // // // // // // // // // // // // // // // // //
       }
       return;
     }
