@@ -158,6 +158,7 @@ cet_build_plugin(TextFileGen art::EDProducer
   art::Framework_Services_Registry
   messagefacility::MF_MessageLogger
   ROOT::Physics
+  curl
 )
 
 install_headers()
