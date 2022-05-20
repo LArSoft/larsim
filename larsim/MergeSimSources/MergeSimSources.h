@@ -20,6 +20,9 @@
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
 
+#include <utility> // std::pair<>
+#include <vector>
+
 namespace sim{
 
   class MergeSimSourcesUtility{

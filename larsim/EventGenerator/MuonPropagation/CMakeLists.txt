@@ -1,21 +1,38 @@
-include_directories($ENV{MuonPropagationHOME}/src)
+cet_build_plugin(GaisserParam art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcoreobj::SummaryData
+  nurandom::RandomUtils_NuRandomService_service
+  nusimdata::SimulationBase
+  art_root_io::TFileService_service
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  cetlib_except::cetlib_except
+  ROOT::EG
+  ROOT::Hist
+  ROOT::Physics
+  ROOT::Tree
+  CLHEP::Random
+)
 
-art_make(MODULE_LIBRARIES
-           larcoreobj_SummaryData
-           larcorealg_Geometry
-           nurandom::RandomUtils_NuRandomService_service
-           nusimdata::SimulationBase
-           art::Framework_Services_Registry
-           art_root_io::TFileService_service
-           art_root_io::tfile_support
-           messagefacility::MF_MessageLogger
-           ROOT::Core
-           ROOT::EG
-           ROOT::Hist
-           ROOT::Physics
-           ROOT::RIO
-           ROOT::Tree
-         )
+cet_build_plugin(MUSUN art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcoreobj::SummaryData
+  nurandom::RandomUtils_NuRandomService_service
+  nusimdata::SimulationBase
+  art_root_io::TFileService_service
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  cetlib_except::cetlib_except
+  ROOT::EG
+  ROOT::Tree
+  CLHEP::Random
+)
 
 install_headers()
 install_fhicl()

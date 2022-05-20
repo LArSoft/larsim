@@ -9,19 +9,23 @@
 
 // Nov 2021 by P. Green
 
+// LArSoft libraries
+#include "larsim/IonizationScintillation/ISTPC.h"
+#include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+
 // fhicl
 #include "fhiclcpp/ParameterSet.h"
 
-// LArSoft libraries
-#include "larsim/IonizationScintillation/ISTPC.h"
-
-// random numbers
-#include "CLHEP/Random/RandFlat.h"
+namespace CLHEP {
+  class HepRandomEngine;
+}
 
 // other
 #include "TVector3.h"
 #include "TF1.h"
 
+#include <array>
 #include <vector>
 
 

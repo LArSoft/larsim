@@ -20,10 +20,13 @@
 #ifndef sim_LArVoxelCalculator_H
 #define sim_LArVoxelCalculator_H
 
-#include <vector>
-
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "fhiclcpp/ParameterSet.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
+
+#include <vector>
 
 namespace sim {
 

@@ -1,8 +1,11 @@
 #include "PropagationTimeModel.h"
 
 // LArSoft libraries
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
 
@@ -11,6 +14,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TMath.h"
+
+#include "CLHEP/Random/RandFlat.h"
 
 #include <iostream>
 

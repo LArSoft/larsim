@@ -89,6 +89,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/Exception.h"
@@ -105,6 +106,7 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 // lar includes
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"

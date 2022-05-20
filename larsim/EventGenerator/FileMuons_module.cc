@@ -7,16 +7,23 @@
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 // C++ includes.
-#include <string>
 #include <cmath>
+#include <fstream>
+#include <iostream>
 #include <memory>
+#include <stdio.h>
+#include <string>
+#include <utility>
+#include <vector>
 
 // Framework includes
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // nusimdata includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -28,15 +35,9 @@
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
-
-#include <string>
-#include "art/Framework/Core/EDProducer.h"
 #include "TFile.h"
 #include "TTree.h"
 
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
 
 namespace evgen {
 

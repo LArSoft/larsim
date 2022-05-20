@@ -2,7 +2,8 @@
 # Test GenerateEventTimestamp plug-in with SeedService's per-event policy,
 # or test SeedService's per-event policy with GenerateEventTimestamp plug-in.
 #
-simple_plugin( TestGeneratedEventTimestamp "module"
+cet_build_plugin(TestGeneratedEventTimestamp art::EDAnalyzer NO_INSTALL
+  LIBRARIES PRIVATE
   nurandom::RandomUtils_NuRandomService_service
   art::Framework_Core
   art::Framework_Principal
@@ -11,12 +12,10 @@ simple_plugin( TestGeneratedEventTimestamp "module"
   art::Persistency_Provenance
   canvas::canvas
   messagefacility::MF_MessageLogger
-  
   fhiclcpp::fhiclcpp
-  cetlib::cetlib cetlib_except
-  NO_INSTALL
+  cetlib::cetlib
+  cetlib_except::cetlib_except
 )
-
 
 #
 # GeneratedEventTimestamp tests

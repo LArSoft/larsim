@@ -11,15 +11,9 @@
 
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Utilities/ToolMacros.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// Random number engine
-#include "CLHEP/Random/RandFlat.h"
+namespace fhicl {
+  class ParameterSet;
+}
 
 namespace phot
 {

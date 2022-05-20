@@ -12,16 +12,15 @@
  */
 
 
+#include "larcore/Geometry/Geometry.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
-#include "larcorealg/Geometry/GeometryCore.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "larcore/Geometry/Geometry.h"
-#include "CLHEP/Evaluator/Evaluator.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace sim{
 

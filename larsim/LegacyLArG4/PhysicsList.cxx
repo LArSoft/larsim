@@ -13,6 +13,8 @@
 
 #include "larsim/LegacyLArG4/PhysicsList.h"
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "Geant4/G4ParallelWorldScoringProcess.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ParticleTable.hh"

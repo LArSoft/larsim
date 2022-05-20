@@ -6,6 +6,8 @@
 
 #include "TriggerAlgoBase.h"
 
+#include "fhiclcpp/ParameterSet.h"
+
 namespace trigger{
 
   //****************************************************************************
@@ -80,8 +82,5 @@ namespace trigger{
     else return ((*start_time).second < time);
 
   }
-
-
-  //DEFINE_ART_SERVICE(TriggerAlgoBase)
 
 } // namespace trigger

@@ -7,42 +7,42 @@
 //
 ////////////////////////////////////////////////////////////////////////
 #include <cstdlib>
-#include <string>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <memory>
-#include <stdio.h>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <vector>
 
 // ROOT includes
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
+#include "TStopwatch.h"
 
 #include "CLHEP/Random/RandFlat.h"
 
 // Framework includes
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"
-
-
-// LArSoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
+
+// LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
-#include "art/Framework/Core/EDProducer.h"
-
-#include "TStopwatch.h"
 
 namespace evgen {
   /// A module to check the results from the Monte Carlo generator

@@ -1,5 +1,7 @@
-simple_plugin(TriggerAlgoBase service
-              LIBRARIES PRIVATE messagefacility::MF_MessageLogger)
+cet_make_library(SOURCE TriggerAlgoBase.cc
+  LIBRARIES PRIVATE
+  fhiclcpp::fhiclcpp
+)
 
 install_headers()
 install_fhicl()

@@ -9,28 +9,30 @@
 #ifndef CHEAT_PHOTONBACKTRACKERSERVICESERVICE_H
 #define CHEAT_PHOTONBACKTRACKERSERVICESERVICE_H
 
-//INCLUDES
-#include <map>
-
-// Framework includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/View.h"
-#include "art/Persistency/Provenance/ScheduleContext.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// LArSoft includes
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larsim/Simulation/SimListUtils.h"
 #include "larsim/MCCheater/PhotonBackTracker.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardataobj/RecoBase/OpHit.h"
+#include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
 
-//Larsoft Services
-#include "larsim/MCCheater/ParticleInventoryService.h"
-#include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+namespace art {
+  class ActivityRegistry;
+  class Event;
+}
+
+#include "canvas/Persistency/Common/Ptr.h"
+
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Table.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
+
+#include <set>
+#include <vector>
 
 namespace cheat{
   class PhotonBackTrackerService: private PhotonBackTracker

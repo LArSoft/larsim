@@ -13,6 +13,8 @@
 // file.  Physics builders to be enabled are specified in the LArG4 config.
 //
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
 #include "Geant4/G4ChargeExchangePhysics.hh"
 #include "Geant4/G4EmExtraPhysics.hh"
 #include "Geant4/G4ParticleDefinition.hh"

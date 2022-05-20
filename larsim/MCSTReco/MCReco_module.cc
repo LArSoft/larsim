@@ -18,6 +18,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "MCRecoEdep.h"
+#include "MCRecoPart.h"
 #include "MCShowerRecoAlg.h"
 #include "MCTrackRecoAlg.h"
 #include "lardataobj/MCBase/MCTrack.h"

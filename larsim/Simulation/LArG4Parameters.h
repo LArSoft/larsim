@@ -12,18 +12,19 @@
 // Ben Jones, MIT, March 2010
 
 
-#include <string>
-#include <iostream>
-
 #ifndef LArG4Parameters_h
 #define LArG4Parameters_h 1
 
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
+
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+
+#include <string>
+#include <vector>
 
 namespace sim {
 
@@ -133,7 +134,6 @@ namespace sim {
     bool const fNoPhotonPropagation;    ///< specifically prevents photon propagation in opfast
   };
 }
-
 
 DECLARE_ART_SERVICE(sim::LArG4Parameters, SHARED)
 #endif

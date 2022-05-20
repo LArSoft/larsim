@@ -8,7 +8,9 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <map>
-#include <utility> // std::move()
+#include <set>
+#include <utility> // std::move(), std::pair
+#include <vector>
 
 #include "TH1.h"
 #include "TH2.h"

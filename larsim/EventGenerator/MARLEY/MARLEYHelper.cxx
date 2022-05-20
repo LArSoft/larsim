@@ -13,6 +13,7 @@
 // LArSoft includes
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 #include "larsim/EventGenerator/MARLEY/MarleyParameterSetWalker.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // ROOT includes
@@ -21,6 +22,7 @@
 
 // MARLEY includes
 #include "marley/Event.hh"
+#include "marley/Particle.hh"
 #include "marley/RootJSONConfig.hh"
 
 namespace {

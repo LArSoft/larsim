@@ -1,23 +1,29 @@
+cet_make_library(SOURCE GenieWeightCalc.cxx
+  LIBRARIES
+  PRIVATE
+  larsim::EventWeight_Base
+  nugen::EventGeneratorBase_GENIE
+  nusimdata::SimulationBase
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  cetlib_except::cetlib_except
+  ${GENIE_LIB_LIST}
+  CLHEP::Random
+  log4cpp::log4cpp # FIXME Should be transitive from GENIE target(s).
+)
 
-# Builds of MicroBooNE-specific larsim releases should uncomment the
-# "add_definitions" line below. It enables extra reweighting functionality
-# which is present only in "MicroBooNE patch" releases of GENIE v3.0.4. These
-# require building against a special ups product.
-#add_definitions(-DGENIE_UB_PATCH)
-
-art_make(LIB_LIBRARIES
-         larsim_EventWeight_Base
-         nurandom::RandomUtils_NuRandomService_service
-         nugen::EventGeneratorBase_GENIE
-         nusimdata::SimulationBase
-         art::Framework_Principal
-         art::Persistency_Provenance
-         art::Framework_Services_Registry
-         fhiclcpp::fhiclcpp
-         ${GENIE_LIB_LIST}
-         log4cpp::log4cpp
-         messagefacility::MF_MessageLogger
-         cetlib_except::cetlib_except)
+find_file(GENIE_HAS_UB_PATCH
+  NAMES GENIE/RwCalculators/GReWrightDeltaradAngle.h
+  HINTS ${GENIE_INCLUDE_DIRS} NO_DEFAULT_PATH)
+mark_as_advanced(GENIE_HAS_UB_PATCH)
+if (GENIE_HAS_UB_PATCH)
+  # Enable extra reweighting functionality which is present only in
+  # "MicroBooNE patch" releases of GENIE v3.0.4. These require building
+  # against a special ups product.
+  target_compile_definitions(larsim_EventWeight_Calculators
+    PRIVATE GENIE_UB_PATCH)
+endif()
 
 install_headers()
 install_fhicl()

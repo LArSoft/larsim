@@ -8,26 +8,35 @@
 #ifndef CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
 #define CHEAT_PARTICLEINVENTORYSERVICESERVICE_H
 
-#include <vector>
-
-#include "canvas/Persistency/Common/Assns.h"
-
-
 #include "larsim/MCCheater/ParticleInventory.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "fhiclcpp/types/Table.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
+
+namespace sim {
+  class EveIdCalculator;
+  class ParticleList;
+}
+
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Persistency/Provenance/ScheduleContext.h"
 
+namespace art {
+  class ActivityRegistry;
+  class Event;
+}
 
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "nug4/ParticleNavigation/ParticleList.h"
-#include "nug4/ParticleNavigation/EveIdCalculator.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Table.h"
 
+namespace fhicl {
+  class ParameterSet;
+}
 
+#include <set>
+#include <vector>
 
 namespace cheat{
   class ParticleInventoryService: private ParticleInventory

@@ -1,21 +1,38 @@
-# using `art_make()` instead of `art_make_library()` because too lazy to list all sources:
-art_make(NO_PLUGINS
-  EXCLUDE
-    PhotonMappingIdentityTransformations_tool.cc
-    PhotonMappingXMirrorTransformations_tool.cc
-  LIB_LIBRARIES
-    ROOT::Core
-    larcorealg_Geometry
-    art::Framework_Services_Registry
-    canvas::canvas
-    art::Utilities
-  )
+cet_make_library(LIBRARY_NAME PhotonMappingTransformations INTERFACE
+  SOURCE
+  IPhotonMappingTransformations.h
+  OpDetVisibilityData.h
+  LIBRARIES INTERFACE
+  larcorealg::headers
+  lardataalg::UtilitiesHeaders
+  larcoreobj::geo_vectors
+)
 
-simple_plugin(PhotonMappingIdentityTransformations "tool"
-              larsim_PhotonPropagation_LibraryMappingTools)
+cet_make_plugin_builder(lar::PhotonMappingTransformations art::tool Modules
+  LIBRARIES CONDITIONAL
+  larsim::PhotonMappingTransformations
+)
 
-simple_plugin(PhotonMappingXMirrorTransformations "tool"
-              larsim_PhotonPropagation_LibraryMappingTools)
+include(lar::PhotonMappingTransformations)
+
+cet_build_plugin(PhotonMappingIdentityTransformations
+  lar::PhotonMappingTransformations
+  IMPL_SOURCE PhotonMappingIdentityTransformations.cxx
+  LIBRARIES
+  CONDITIONAL
+  larcore::Geometry_Geometry_service
+  larcore::ServiceUtil
+  larcoreobj::geo_vectors
+  PRIVATE
+  larcorealg::Geometry
+)
+
+cet_build_plugin(PhotonMappingXMirrorTransformations
+  lar::PhotonMappingTransformations
+  IMPL_SOURCE PhotonMappingXMirrorTransformations.cxx
+  LIBRARIES CONDITIONAL
+  larsim::PhotonPropagation_LibraryMappingTools_PhotonMappingIdentityTransformations_tool
+)
 
 install_headers()
 install_fhicl()

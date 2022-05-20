@@ -16,15 +16,16 @@
 #include <string>
 
 // framework includes
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-#include "cetlib_except/exception.h"
 namespace fhicl { class ParameterSet; }
 
 // art extensions
 namespace rndm { class NuRandomService; }
-#include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
 namespace geo { class Geometry; }

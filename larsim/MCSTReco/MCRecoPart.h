@@ -5,14 +5,16 @@
 namespace fhicl { class ParameterSet; }
 
 // LArSoft
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/MCBase/MCLimits.h"
-namespace simb { class MCParticle; }
+#include "lardataobj/MCBase/MCLimits.h" // kINVALID_X
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
 
 // STL
 #include <set>
+#include <utility> // std::pair<>
 #include <vector>
+
+#include "TLorentzVector.h"
 
 namespace sim
 {

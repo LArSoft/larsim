@@ -14,7 +14,19 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
+
+#include "larsim/Simulation/LArG4Parameters.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include <iostream>
 
 namespace larg4 {
   //----------------------------------------------------------------------------

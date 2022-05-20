@@ -5,20 +5,21 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "lardataobj/Simulation/SimDriftedElectronCluster.h"
+
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "art_root_io/TFileService.h"
 #include "TNtuple.h"
 
-
-#include "lardataobj/Simulation/SimDriftedElectronCluster.h"
-
-
+#include <iostream>
+#include <vector>
 
 namespace detsim {
 

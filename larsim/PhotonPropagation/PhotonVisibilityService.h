@@ -10,9 +10,6 @@
 #ifndef PHOTONVISIBILITYSERVICE_H
 #define PHOTONVISIBILITYSERVICE_H
 
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larcorealg/Geometry/geo_vectors_utils.h"          // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
@@ -20,11 +17,19 @@
 #include "larsim/PhotonPropagation/PhotonVisibilityTypes.h"
 #include "larsim/Simulation/PhotonVoxels.h"
 
-// ROOT libraries
-#include "TF1.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
+
+// ROOT
+class TF1;
 
 // C/C++ standard libraries
 #include <memory> // std::unique_ptr<>
+#include <string>
+#include <vector>
 
 ///General LArSoft Utilities
 namespace phot {

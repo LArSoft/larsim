@@ -27,6 +27,8 @@
 
 // C++ includes
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace evgen {
 

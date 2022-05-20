@@ -1,10 +1,13 @@
-art_make(LIBRARY_NAME     larsim_EventWeight
-         LIB_LIBRARIES    larsim_EventWeight_Base
-                          larsim_EventWeight_Calculators
-         MODULE_LIBRARIES larsim_EventWeight_Base
-                          larsim_EventWeight_Calculators
-                          nugen::EventGeneratorBase_GENIE
-                          messagefacility::MF_MessageLogger)
+cet_build_plugin(EventWeight art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::EventWeight_Calculators
+  larsim::EventWeight_Base
+  nugen::EventGeneratorBase_GENIE
+  nusimdata::SimulationBase
+  art::Framework_Principal
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+)
 
 install_headers()
 install_fhicl()

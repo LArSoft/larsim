@@ -1,17 +1,33 @@
-art_make(MODULE_LIBRARIES
-           larcorealg_Geometry
-           larcoreobj_SummaryData
-           nurandom::RandomUtils_NuRandomService_service
-           nusimdata::SimulationBase
-           nutools::EventGeneratorBase_CRY
-           art::Framework_Services_Registry
-           art_root_io::TFileService_service
-           art_root_io::tfile_support
-           messagefacility::MF_MessageLogger
-           ROOT::Core
-           ROOT::Hist
-           ROOT::Physics
-         )
+cet_build_plugin(CosmicsGen art::EDProducer
+  LIBRARIES PRIVATE
+  larcore::Geometry_Geometry_service
+  larcorealg::Geometry
+  larcoreobj::SummaryData
+  nutools::EventGeneratorBase_CRY
+  nusimdata::SimulationBase
+  nurandom::RandomUtils_NuRandomService_service
+  art_root_io::TFileService_service
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  ROOT::Hist
+)
+         
+# For evgenbase.h:
+if (TARGET nugen::EventGeneratorBase)
+  target_link_libraries(larsim_EventGenerator_CRY_CosmicsGen_module
+    PRIVATE
+    nugen::EventGeneratorBase
+  )
+else()
+  target_link_libraries(larsim_EventGenerator_CRY_CosmicsGen_module
+    PRIVATE
+    ROOT::MathCore
+  )
+  target_include_directories(larsim_EventGenerator_CRY_CosmicsGen_module
+    BEFORE PRIVATE ${nugen_INCLUDE_DIR}
+  )
+endif()
 
 install_headers()
 install_fhicl()

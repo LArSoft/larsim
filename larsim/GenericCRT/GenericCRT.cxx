@@ -10,8 +10,12 @@
 
 #include "GenericCRT.h"
 
-#include <utility> // std::move()
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "CLHEP/Evaluator/Evaluator.h"
+
 #include <algorithm> // std::find()
+#include <utility> // std::move()
 
 sim::GenericCRTUtility::GenericCRTUtility(const std::string energyUnitsScale)
 {

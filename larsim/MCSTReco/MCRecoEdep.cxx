@@ -6,6 +6,7 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
@@ -15,6 +16,11 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "MCRecoEdep.h"
+
+#include <iostream>
+#include <map>
+#include <utility>
+#include <vector>
 
 namespace sim {
 

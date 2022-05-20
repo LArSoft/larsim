@@ -1,3 +1,2 @@
 install_fhicl()
-install_gdml()
-add_subdirectory(RefactoredGDMLSchema)
+install_gdml(_SQUASH_SUBDIRS SUBDIRS RefactoredGDMLSchema)

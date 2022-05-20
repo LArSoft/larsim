@@ -2,23 +2,26 @@
 // Chris Backhouse, UCL, Nov 2017
 ////////////////////////////////////////////////////////////////////////
 
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
-
-#include <iostream>
-
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
+#include "TBranch.h"
+#include "TCanvas.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH1.h"
-#include "TTree.h"
-#include "TCanvas.h"
 #include "TStyle.h"
+#include "TTree.h"
 #include "TVectorD.h"
+
+#include <iostream>
 
 #define PI 3.14159265
 

@@ -1,20 +1,35 @@
-art_make(NO_PLUGINS
-         LIB_LIBRARIES
-           larsim_Simulation_LArVoxelCalculator_service
-           larsim_Simulation_LArG4Parameters_service
-           lardataobj_Simulation
-           lardata_Utilities
-           nusimdata::SimulationBase
-           art::Framework_Services_Registry
-           art::Framework_Principal
-           art::Persistency_Provenance
-           ROOT::Core
-           ROOT::Physics
-           ROOT::GenVector
-           )
+cet_build_plugin(LArVoxelCalculator art::service
+  LIBRARIES PRIVATE
+  fhiclcpp::fhiclcpp
+)
 
-simple_plugin(LArVoxelCalculator "service")
-simple_plugin(LArG4Parameters "service")
+cet_build_plugin(LArG4Parameters art::service
+  LIBRARIES
+  PUBLIC
+  larcoreobj::SimpleTypesAndConstants
+  PRIVATE
+  fhiclcpp::fhiclcpp
+)
+
+cet_make_library(SOURCE
+	PhotonVoxels.cxx
+  LArVoxelData.cxx
+  LArVoxelID.cxx
+  LArVoxelList.cxx
+  SimListUtils.cxx
+  LIBRARIES
+  PUBLIC
+  larcorealg::Geometry
+  larcoreobj::SimpleTypesAndConstants
+  lardataobj::Simulation
+  ROOT::Physics
+  PRIVATE
+  larsim::Simulation_LArVoxelCalculator_service
+  larsim::Simulation_LArG4Parameters_service
+  lardata::DetectorClocksService
+  art::Framework_Principal
+  art::Framework_Services_Registry
+)
 
 install_headers()
 install_fhicl()

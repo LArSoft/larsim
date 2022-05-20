@@ -29,11 +29,14 @@
 
 // ROOT includes
 #include "TComplex.h"
-#include <TMath.h>
+#include "TMath.h"
 
 // C++ includes
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -41,9 +44,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
-#include "cetlib/search_path.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "cetlib_except/exception.h"
 
 // art extensions
 #include "nurandom/RandomUtils/NuRandomService.h"

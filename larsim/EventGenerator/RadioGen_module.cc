@@ -30,23 +30,20 @@
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
-#include <string>
-#include <regex>
-#include <cmath>
-#include <memory>
-#include <iterator>
-#include <utility> // std::pair<>
 #include <cassert>
+#include <cmath>
+#include <iterator>
+#include <memory>
+#include <regex>
+#include <string>
 #include <sys/stat.h>
-#include <TGeoManager.h>
-#include <TGeoMaterial.h>
-#include <TGeoNode.h>
-#include <TGeoVolume.h>
-#include <TGeoBBox.h>
+#include <utility> // std::pair<>, std::tuple<>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -71,6 +68,7 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 #include "lardataalg/DetectorInfo/DetectorClocksData.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/ROOTGeometryNavigator.h"
 #include "larcorealg/Geometry/GeometryCore.h"
@@ -84,13 +82,18 @@
 
 // root includes
 
-#include "TLorentzVector.h"
-#include "TGenPhaseSpace.h"
-#include "TMath.h"
 #include "TFile.h"
+#include "TGenPhaseSpace.h"
+#include "TGeoBBox.h"
+#include "TGeoManager.h"
+#include "TGeoMaterial.h"
+#include "TGeoNode.h"
+#include "TGeoVolume.h"
+#include "TGraph.h"
 #include "TH1.h"
 #include "TH1D.h"
-#include "TGraph.h"
+#include "TLorentzVector.h"
+#include "TMath.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
