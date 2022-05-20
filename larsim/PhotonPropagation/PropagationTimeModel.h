@@ -17,6 +17,8 @@
 // fhicl
 #include "fhiclcpp/ParameterSet.h"
 
+#include "CLHEP/Random/RandFlat.h"
+
 namespace CLHEP {
   class HepRandomEngine;
 }

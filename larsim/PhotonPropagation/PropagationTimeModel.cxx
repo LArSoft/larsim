@@ -15,8 +15,6 @@
 
 #include "TMath.h"
 
-#include "CLHEP/Random/RandFlat.h"
-
 #include <iostream>
 
 // constructor
