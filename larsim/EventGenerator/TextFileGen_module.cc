@@ -275,6 +275,7 @@ void evgen::TextFileGen::produce(art::Event & e)
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(c, CURLOPT_WRITEDATA, &ss);
     curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, curl_callback);
+    curl_easy_setopt(c, CURLOPT_AUTOREFERER, 1);
 
     // Retry loop.
 
@@ -462,6 +463,18 @@ void evgen::TextFileGen::produce(art::Event & e)
       if(http_response != 200) {
         throw cet::exception("TextFileGen") << "Got http response code = " << http_response << " reading url " << fInputURL << "\n";
       }
+
+      // Check content type.
+
+      curl_easy_getinfo(c, CURLINFO_CONTENT_TYPE, &ct);
+      cts = std::string(ct);
+      cts.erase(cts.find(";"));
+      //std::cout << "Content type: " << cts << std::endl;
+
+      // Any content type except "text/plain," throw exception.
+
+      if(cts != std::string("text/plain"))
+        throw cet::exception("TextFileGen") << "Bad content type " << cts << "\n";
 
       // Done (success).
 
