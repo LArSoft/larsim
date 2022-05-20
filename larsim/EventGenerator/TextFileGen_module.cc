@@ -69,15 +69,22 @@
  * "InputFileName" and "InputURL."  One of these should be spceified, and the
  * other left blank or left out of the fcl configuraiton.
  *
- * This module does not make any assumption about how the server should be contacted,
+ * This module does not make any assumption about how the url should be constructed,
  * except that it will read one hepevt event using using a single http(s) GET request.
  * Any parameters that need to be passed to the server should be embedded in the url
  * sent to the server via fcl parameter "InputURL."  This module does not modify
  * the specified url in any way.
  *
+ * If the server is protected behind Fermilab SSO, set fcl parameter UseSSOAuth
+ * to be true.  Cert and key files are specified using environment variables
+ * X509_USER_CERT and X509_USER_KEY, or both can be set using X509_USER_PROXY.
+ * This happens automatically in batch jobs.  It should work to set fcl parameter
+ * UseSSOAuth true if the server does not require SSO authentication.
+ *
  * Http request statuses 5xx are treated as retriable indefinitely, up to some
- * maximum cumulative timeout (fcl parameter "Timeout").  Other http error statuses
- * are treated as fatal errors, and will result in an exception being thrown.
+ * maximum cumulative timeout specified by fcl parameter "Timeout."  Other http 
+ * error statuses are treated as fatal errors, and will result in an exception being
+ * thrown.
  *
  * The details of how to set up a server, and how to construct a server url, are
  * beyond the scope of this comment.  However, here are some hints.  An example
@@ -97,6 +104,7 @@
  * Offset        - Number of events to skip (for file input, default 0).
  * InputURL      - Server url (no default).
  * Timeout       - Maximum server cumulative timeout (seconds, default 7200, 0=none).
+ * UseSSOAuth    - Use SSO Auth (certificat/proxy based, default false).
  * MoveY         - Propagate particles to y-plane (default don't propagate).
  *
  *===========================================================================
@@ -136,6 +144,7 @@ public:
   void produce(art::Event & e)                    override;
   void beginJob()               		  override;
   void beginRun(art::Run & run) 		  override;
+  void endJob()                                   override;
 
 private:
 
@@ -147,6 +156,8 @@ private:
   std::string    fInputFileName; ///< Name of text file containing events to simulate
   std::string    fInputURL;      ///< Input server url.
   double         fTimeout;       ///< Maximum server cumulative timeout.
+  bool           fUseSSOAuth;    ///< SSO flag.
+  std::string    fCookieFile;    ///< Cookie file.
   double fMoveY; ///< Project particles to a new y plane.
 };
 
@@ -158,6 +169,7 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   , fInputFileName{p.get<std::string>("InputFileName", std::string())}
   , fInputURL{p.get<std::string>("InputURL", std::string())}
   , fTimeout{p.get<double>("Timeout", 7200.)}
+  , fUseSSOAuth{p.get<bool>("UseSSOAuth", false)}
   , fMoveY{p.get<double>("MoveY", -1e9)}
 {
   if (fMoveY>-1e8){
@@ -203,6 +215,24 @@ void evgen::TextFileGen::beginJob()
       }
     }
   }
+
+  // Maybe make cookie file.
+
+  if(fUseSSOAuth) {
+    char name[24];
+    strcpy(name, "/tmp/textfilegen.XXXXXX");
+    mkstemp(name);
+    fCookieFile = std::string(name);
+  }
+}
+
+//------------------------------------------------------------------------------
+void evgen::TextFileGen::endJob()
+{
+  // Maybe delete cookie file.
+
+  if(fUseSSOAuth)
+    unlink(fCookieFile.c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -234,17 +264,21 @@ void evgen::TextFileGen::produce(art::Event & e)
 
     // Input from server.
 
-    bool retry = true;
     int delay = 0;
     double total_delay = 0.;
-    long http_response = 0;
     std::stringstream ss;
 
-    // Make curl handle.
+    // Make curl handle and set global options.
 
     CURL* c = curl_easy_init();
+    curl_easy_setopt(c, CURLOPT_CAPATH, "/cvmfs/oasis.opensciencegrid.org/mis/certificates");
+    curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_setopt(c, CURLOPT_WRITEDATA, &ss);
+    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, curl_callback);
 
-    while(retry) {
+    // Retry loop.
+
+    for(;;) {
 
       // Increasing delay period starts on second execution of retry loop.
 
@@ -261,23 +295,51 @@ void evgen::TextFileGen::produce(art::Event & e)
       else
         delay = 10;
 
-      // Set url and basic options.
+      // Set url.
 
       curl_easy_setopt(c, CURLOPT_URL, fInputURL.c_str());
-      curl_easy_setopt(c, CURLOPT_CAPATH, "/cvmfs/oasis.opensciencegrid.org/mis/certificates");
-      curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1);
+      curl_easy_setopt(c, CURLOPT_HTTPGET, 1);
 
-      // Set buffer and callback function.
+      // Set SSO options (if requested.)
 
-      curl_easy_setopt(c, CURLOPT_WRITEDATA, &ss);
-      curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, curl_callback);
+      if(fUseSSOAuth) {
+
+        // Cert and key files.
+
+        std::string cert;
+        std::string key;
+
+        const char* vcert = getenv("X509_USER_CERT");
+        const char* vkey = getenv("X509_USER_KEY");
+        const char* vproxy = getenv("X509_USER_PROXY");
+
+        if(vcert != 0 && *vcert != 0)
+          cert = std::string(vcert);
+        if(vkey != 0 && *vkey != 0)
+          key = std::string(vkey);
+        if(vproxy != 0 && *vproxy != 0) {
+          if(cert == std::string())
+            cert = std::string(vproxy);
+          if(key == std::string())
+            key = std::string(vproxy);
+        }
+        if(cert.size() > 0 && key.size() > 0) {
+          curl_easy_setopt(c, CURLOPT_SSLCERT, cert.c_str());
+          curl_easy_setopt(c, CURLOPT_SSLKEY, key.c_str());
+        }
+
+        // Cookies.
+        // The cookie generated on the first call in a job will allow to
+        // bypass the follow-up request in subsequent calls.
+
+        curl_easy_setopt(c, CURLOPT_COOKIEFILE, fCookieFile.c_str());
+        curl_easy_setopt(c, CURLOPT_COOKIEJAR, fCookieFile.c_str());
+        curl_easy_setopt(c, CURLOPT_COOKIE, "pfidpaid=ad..CILogonForm");
+      }
 
       // Read data.
 
       CURLcode res = curl_easy_perform(c);
-
-      // Don't expect a curl error here.  Http errors handled below.
-
       if(res != CURLE_OK) {
         throw cet::exception("TextFileGen") << "Curl returned status " << res << " reading url " << fInputURL << "\n";
       }
@@ -288,15 +350,122 @@ void evgen::TextFileGen::produce(art::Event & e)
       // 404 - Not found.
       // 503 - Service unavailable (temporarily).
 
+      long http_response = 0;
+      curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &http_response);
+      //std::cout << "http response = " << http_response << std::endl;
+
+      // Any response 5xx, retry.
+
+      if(http_response >= 500 && http_response < 600) {
+        ss = std::stringstream();
+        continue;
+      }
+
+      // At this point, if any repsonse except 200, throw exception.
+
+      if(http_response != 200) {
+        throw cet::exception("TextFileGen") << "Got http response code = " << http_response << " reading url " << fInputURL << "\n";
+      }
+
+      // Check content type.
+
+      char* ct;
+      curl_easy_getinfo(c, CURLINFO_CONTENT_TYPE, &ct);
+      std::string cts(ct);
+      cts.erase(cts.find(";"));
+      //std::cout << "Content type: " << cts << std::endl;
+
+      // If content type is text/plain, assume content is hepevt event.
+      // We are done.
+
+      if(cts == std::string("text/plain"))
+        break;
+
+      // If we requested SSO authentication, and we got back an html document,
+      // assume this is an SSO form, and we need a follow up request.
+      // Anything else is an error (throw exception).
+
+      if(!fUseSSOAuth || cts != std::string("text/html"))
+        throw cet::exception("TextFileGen") << "Unknown content type " << cts << "\n";
+
+      // Extract action url.
+
+      std::string doc = ss.str();
+      size_t n = doc.find("action=") + 8;
+      if(n == std::string::npos)
+        throw cet::exception("TextFileGen") << "No action using SSO.\n";
+      int m = doc.find("\"", n);
+      std::string action = doc.substr(n, m-n);
+      //std::cout << "action = " << action << std::endl;
+
+      // Extract SAMLResponse.
+
+      n = doc.find("name=\"SAMLResponse\"");
+      if(n == std::string::npos)
+        throw cet::exception("TextFileGen") << "No SAMLResponse using SSO.\n";
+      n = doc.find("value=", n) + 7;
+      m = doc.find("\"", n);
+      std::string saml = doc.substr(n, m-n);
+      char* cs = curl_easy_escape(c, saml.c_str(), 0);
+      std::string saml_urlencode = std::string(cs);
+      curl_free(cs);
+      //std::cout << "SAMLResponse = " << saml << std::endl;
+
+      // Extract RelayState.
+
+      n = doc.find("name=\"RelayState\"");
+      if(n == std::string::npos)
+        throw cet::exception("TextFileGen") << "No RelayState using SSO.\n";
+      n = doc.find("value=", n) + 7;
+      m = doc.find("\"", n);
+      std::string relay = doc.substr(n, m-n);
+      cs = curl_easy_escape(c, relay.c_str(), 0);
+      std::string relay_urlencode = std::string(cs);
+      curl_free(cs);
+      //std::cout << "RelayState= = " << relay << std::endl;
+
+      // Prepare to issue follow up request.
+
+      ss = std::stringstream();
+      curl_easy_setopt(c, CURLOPT_URL, action.c_str());
+
+      // Construct post data for follow up request.
+
+      std::stringstream postargs;
+      postargs << "RelayState=" << relay_urlencode << "&SAMLResponse=" << saml_urlencode;
+      //std::cout << "postargs = " << postargs.str() << std::endl;
+      curl_easy_setopt(c, CURLOPT_POST, 1);
+      std::string s = postargs.str();
+      curl_easy_setopt(c, CURLOPT_POSTFIELDS, s.c_str());
+
+      // Do request.
+
+      res = curl_easy_perform(c);
+      if(res != CURLE_OK) {
+        throw cet::exception("TextFileGen") << "Curl returned status " << res << " doing follow up request.\n";
+      }
+
+      // Get http response code.
+
+      http_response = 0;
       curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &http_response);
 
       // Any response 5xx, retry.
-      // Any other response, exit loop.
 
-      if(http_response >= 500 && http_response < 600)
+      if(http_response >= 500 && http_response < 600) {
         ss = std::stringstream();
-      else
-        retry = false;
+        continue;
+      }
+
+      // Any response except 200, throw exception.
+
+      if(http_response != 200) {
+        throw cet::exception("TextFileGen") << "Got http response code = " << http_response << " reading url " << fInputURL << "\n";
+      }
+
+      // Done (success).
+
+      break;
 
     } // end of retry loop
 
@@ -304,13 +473,9 @@ void evgen::TextFileGen::produce(art::Event & e)
 
     curl_easy_cleanup(c);
 
-    // Outside of retry loop, treat any response code except 200 as fatal.
-
-    if(http_response != 200) {
-      throw cet::exception("TextFileGen") << "Got http response code = " << http_response << " reading url " << fInputURL << "\n";
-    }
-
     // Process event data.
+    // If we exited the retry loop without throwing an exception, hepevt data is 
+    // contained in stringstream ss.
 
     truthcol->push_back(readNextHepEvt(&ss));
   }
@@ -356,6 +521,7 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt(std::istream* is)
   // status = 1 get tracked in Geant4.
   for(unsigned short i = 0; i < nParticles; ++i){
     std::getline(*is, oneLine);
+    //std::cout << oneLine << std::endl;
     inputLine.clear();
     inputLine.str(oneLine);
 
@@ -399,6 +565,7 @@ std::pair<unsigned, unsigned> evgen::TextFileGen::readEventInfo(std::istream& is
 {
   std::string line;
   getline(iss, line);
+  //std::cout << line << std::endl;
   std::istringstream buffer{line};
 
   // Parse read line for the event number and particles per event
