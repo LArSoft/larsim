@@ -76,10 +76,16 @@
  * the specified url in any way.
  *
  * If the server is protected behind Fermilab SSO, set fcl parameter UseSSOAuth
- * to be true.  Cert and key files are specified using environment variables
- * X509_USER_CERT and X509_USER_KEY, or both can be set using X509_USER_PROXY.
- * This happens automatically in batch jobs.  It should work to set fcl parameter
- * UseSSOAuth true if the server does not require SSO authentication.
+ * to be true.  The remaining fcl parameters (Cert, Key, CertType, KeyType, and
+ * KeyPasswd) give access to most of the relevant curl options for dealing with
+ * certificates and keys.  When running interactively, these remaining fcl parameters
+ * can be left as their default values if a certificate is obtained using command "kx509."
+ * To directly use a p12 certficate obtained from cilogon.org, set the name of the 
+ * certificate file using fcl parameter "Cert" or by setting an environment variable,
+ * set "CertType" to "P12," and set "KeyPasswd" to the password you entered when you 
+ * obtained the certificate from cilogon.org.  Note that grid proxies obtained using
+ * "voms_proxy_init," including managed proxies, and proxies supplied to batch jobs,
+ * do not (currently) work for accessing SSO-protected web pages.
  *
  * Http request statuses 5xx are treated as retriable indefinitely, up to some
  * maximum cumulative timeout specified by fcl parameter "Timeout."  Other http 
@@ -104,8 +110,13 @@
  * Offset        - Number of events to skip (for file input, default 0).
  * InputURL      - Server url (no default).
  * Timeout       - Maximum server cumulative timeout (seconds, default 7200, 0=none).
- * UseSSOAuth    - Use SSO Auth (certificat/proxy based, default false).
  * MoveY         - Propagate particles to y-plane (default don't propagate).
+ * UseSSOAuth    - Use SSO Auth (certificat/proxy based, default false).
+ * Cert          - Certificate file (defaults: $X509_USER_CERT, $X509_USER_PROXY, /tmp/x509up_u<uid>
+ * Key           - Private key file (defaults: $X509_USER_KEY, $X509_USER_PROXY, /tmp/x509up_u<uid>
+ * CertType      - Type of certificate file (default: libcurl decides).
+ * KeyType       - Type of key file (default: libcurl decides).
+ * KeyPasswd     - Key file password (default: none).
  *
  *===========================================================================
  */
@@ -156,9 +167,14 @@ private:
   std::string    fInputFileName; ///< Name of text file containing events to simulate
   std::string    fInputURL;      ///< Input server url.
   double         fTimeout;       ///< Maximum server cumulative timeout.
-  bool           fUseSSOAuth;    ///< SSO flag.
   std::string    fCookieFile;    ///< Cookie file.
   double fMoveY; ///< Project particles to a new y plane.
+  bool           fUseSSOAuth;    ///< SSO flag.
+  std::string    fCert;          ///< Certificate file name.
+  std::string    fKey;           ///< Private file name.
+  std::string    fCertType;      ///< Certificate file type.
+  std::string    fKeyType;       ///< Key file type.
+  std::string    fKeyPasswd;     ///< Key file password.
 };
 
 //------------------------------------------------------------------------------
@@ -169,8 +185,13 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   , fInputFileName{p.get<std::string>("InputFileName", std::string())}
   , fInputURL{p.get<std::string>("InputURL", std::string())}
   , fTimeout{p.get<double>("Timeout", 7200.)}
-  , fUseSSOAuth{p.get<bool>("UseSSOAuth", false)}
   , fMoveY{p.get<double>("MoveY", -1e9)}
+  , fUseSSOAuth{p.get<bool>("UseSSOAuth", false)}
+  , fCert{p.get<std::string>("Cert", std::string())}
+  , fKey{p.get<std::string>("Key", std::string())}
+  , fCertType{p.get<std::string>("CertType", std::string())}
+  , fKeyType{p.get<std::string>("KeyType", std::string())}
+  , fKeyPasswd{p.get<std::string>("KeyPasswd", std::string())}
 {
   if (fMoveY>-1e8){
     mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
@@ -178,14 +199,53 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
 
   // Input should include one of InputFileName and InputURL, but not both.
 
-  if(fInputFileName.size() == 0 && fInputURL.size() == 0)
+  if(fInputFileName.empty() && fInputURL.empty())
     throw cet::exception("TextFileGen") << "No input specified.\n";
-  if(fInputFileName.size() > 0 && fInputURL.size() > 0) 
+  if(!fInputFileName.empty() && !fInputURL.empty()) 
     throw cet::exception("TextFileGen") << "Input file and URL both specified.\n";
+
+  if(fUseSSOAuth) {
+
+    // Set the default value of fCert.
+
+    if(fCert.empty()) {
+      const char* vcert = getenv("X509_USER_CERT");
+      if(vcert != 0 && *vcert != 0)
+        fCert = std::string(vcert);
+      if(fCert.empty()) {
+        vcert = getenv("X509_USER_PROXY");
+        if(vcert != 0 && *vcert != 0)
+          fCert = std::string(vcert);
+      }
+      if(fCert.empty()) {
+        std::ostringstream ss;
+        ss << "/tmp/x509up_u" << getuid();
+        fCert = ss.str();
+      }
+    }
+
+    // Set the default value of fKey.
+
+    if(fKey.empty()) {
+      const char* vkey = getenv("X509_USER_KEY");
+      if(vkey != 0 && *vkey != 0)
+        fKey = std::string(vkey);
+      if(fKey.empty()) {
+        vkey = getenv("X509_USER_PROXY");
+        if(vkey != 0 && *vkey != 0)
+          fKey = std::string(vkey);
+      }
+      if(fKey.empty()) {
+        std::ostringstream ss;
+        ss << "/tmp/x509up_u" << getuid();
+        fKey = ss.str();
+      }
+    }
+  }
 
   // If using server input, initialize libcurl.
 
-  if(fInputURL.size() > 0)
+  if(!fInputURL.empty())
     curl_global_init(CURL_GLOBAL_ALL);
 
   produces< std::vector<simb::MCTruth>   >();
@@ -197,7 +257,7 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void evgen::TextFileGen::beginJob()
 {
-  if(fInputFileName.size() > 0) {
+  if(!fInputFileName.empty()) {
     fInputFile = new std::ifstream(fInputFileName.c_str());
 
     // check that the file is a good one
@@ -249,7 +309,7 @@ void evgen::TextFileGen::produce(art::Event & e)
 
   auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
 
-  if(fInputFileName.size() > 0) {
+  if(!fInputFileName.empty()) {
 
     // Input from file.
     // Check that the file is still good
@@ -260,7 +320,7 @@ void evgen::TextFileGen::produce(art::Event & e)
                                           << " cannot be read in produce().\n";
     truthcol->push_back(readNextHepEvt(fInputFile));
   }
-  else if(fInputURL.size() > 0) {
+  else if(!fInputURL.empty()) {
 
     // Input from server.
 
@@ -305,33 +365,20 @@ void evgen::TextFileGen::produce(art::Event & e)
 
       if(fUseSSOAuth) {
 
-        // Cert and key files.
+        // Set cert and key options.
 
-        std::string cert;
-        std::string key;
-
-        const char* vcert = getenv("X509_USER_CERT");
-        const char* vkey = getenv("X509_USER_KEY");
-        const char* vproxy = getenv("X509_USER_PROXY");
-
-        if(vcert != 0 && *vcert != 0)
-          cert = std::string(vcert);
-        if(vkey != 0 && *vkey != 0)
-          key = std::string(vkey);
-        if(vproxy != 0 && *vproxy != 0) {
-          if(cert == std::string())
-            cert = std::string(vproxy);
-          if(key == std::string())
-            key = std::string(vproxy);
-        }
-        if(cert.size() > 0 && key.size() > 0) {
-          curl_easy_setopt(c, CURLOPT_SSLCERT, cert.c_str());
-          curl_easy_setopt(c, CURLOPT_SSLKEY, key.c_str());
-        }
+        curl_easy_setopt(c, CURLOPT_SSLCERT, fCert.c_str());
+        curl_easy_setopt(c, CURLOPT_SSLKEY, fKey.c_str());
+        if(!fCertType.empty())
+          curl_easy_setopt(c, CURLOPT_SSLCERTTYPE, fCertType.c_str());
+        if(!fKeyType.empty())
+          curl_easy_setopt(c, CURLOPT_SSLKEYTYPE, fKeyType.c_str());
+        if(!fKeyPasswd.empty())
+          curl_easy_setopt(c, CURLOPT_SSLKEYPASSWD, fKeyPasswd.c_str());
 
         // Cookies.
         // The cookie generated on the first call in a job will allow to
-        // bypass the follow-up request in subsequent calls.
+        // bypass the follow-up request in subsequent calls in the same job.
 
         curl_easy_setopt(c, CURLOPT_COOKIEFILE, fCookieFile.c_str());
         curl_easy_setopt(c, CURLOPT_COOKIEJAR, fCookieFile.c_str());
