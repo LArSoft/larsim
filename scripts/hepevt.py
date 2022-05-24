@@ -56,9 +56,10 @@
 #     recently read HepEvt event.  If no events have been read, the event counter file
 #     doesn't exist.
 #
-# 6.  This script can optionally be invoked with a stream name argument.  This
-#     changes the name of the event counter file, allowing multiple independent 
-#     event streams.
+# 6.  The name of event counter file is as follows:
+#     <hepevt-file>.<user>.<stream>.txt
+#     The user name is only included if using SSO authentication.
+#     The stream name is as specified by the CGI or CLI argument.
 #
 # 7.  If a minimum or maximum event number is specified, returned events are limited
 #     to the range min_event <= e < max_event.
@@ -410,7 +411,11 @@ def main(argv):
     # Construct path of the event counter file.
     # At this point, this file may or may not exist.
 
-    event_counter_path = '%s.%s.next' % (hepevt_file_path, stream_name)
+    event_counter_path = ''
+    if 'SSO_USERID' in os.environ:
+        event_counter_path = '%s.%s.%s.next' % (hepevt_file_path, os.environ['SSO_USERID'], stream_name)
+    else:
+        event_counter_path = '%s.%s.next' % (hepevt_file_path, stream_name)
 
     # Reset event counter?
 
