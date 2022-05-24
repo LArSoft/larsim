@@ -330,12 +330,15 @@ void evgen::TextFileGen::produce(art::Event & e)
 
     // Make curl handle and set global options.
 
+    char errorbuf[CURL_ERROR_SIZE];
+    errorbuf[0] = 0;
     CURL* c = curl_easy_init();
     curl_easy_setopt(c, CURLOPT_CAPATH, "/cvmfs/oasis.opensciencegrid.org/mis/certificates");
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(c, CURLOPT_WRITEDATA, &ss);
     curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, curl_callback);
     curl_easy_setopt(c, CURLOPT_AUTOREFERER, 1);
+    curl_easy_setopt(c, CURLOPT_ERRORBUFFER, errorbuf);
 
     // Retry loop.
 
@@ -346,7 +349,7 @@ void evgen::TextFileGen::produce(art::Event & e)
       if(delay > 0) {
         if(total_delay > fTimeout && fTimeout > 0.)
           throw cet::exception("TextFileGen") << "Exceeded maximum server cumulative timeout.\n";
-        std::cout << "TextFileGen: server unavailable, wait " << delay << " seconds." << std::endl;
+        mf::LogInfo("TextFileGen") << "Server unavailable, wait " << delay << " seconds.";
         sleep(delay);
         total_delay += delay;
         delay *= 2;
@@ -389,7 +392,12 @@ void evgen::TextFileGen::produce(art::Event & e)
 
       CURLcode res = curl_easy_perform(c);
       if(res != CURLE_OK) {
-        throw cet::exception("TextFileGen") << "Curl returned status " << res << " reading url " << fInputURL << "\n";
+        std::ostringstream ss;
+        ss << "Curl returned status " << res << " from url " << fInputURL << "\n"
+           << curl_easy_strerror(res) << "\n"
+           << errorbuf;
+        mf::LogError("TextFileGen") << ss.str();
+        throw cet::exception("TextFileGen") << ss.str() << "\n";
       }
 
       // Get http response code.
@@ -490,7 +498,12 @@ void evgen::TextFileGen::produce(art::Event & e)
 
       res = curl_easy_perform(c);
       if(res != CURLE_OK) {
-        throw cet::exception("TextFileGen") << "Curl returned status " << res << " doing follow up request.\n";
+        std::ostringstream ss;
+        ss << "Curl returned status " << res << " doing follow up request from url " << fInputURL << "\n"
+           << curl_easy_strerror(res) << "\n"
+           << errorbuf;
+        mf::LogError("TextFileGen") << ss.str();
+        throw cet::exception("TextFileGen") << ss.str() << "\n";
       }
 
       // Get http response code.
