@@ -3,7 +3,7 @@
 #
 # Name: hepevt.py
 #
-# Purpose: CGI script for serving HepEvt events.
+# Purpose: CGI script for serving HepEvt or HepMC events.
 #
 # Created: 11-May-2022  H. Greenlee
 #
@@ -14,7 +14,8 @@
 # CLI arguments (for testing):
 #
 # -h|--help               - Print help message.
-# -f|--file <hepevt-file> - HepEvt file.
+# -f|--file <hepevt-file> - HepEvt or HepMC file.
+# --format <format>       - File format, "hepevt" or "hepmc" (default "hepevt").
 # -s|--stream <stream>    - Event counter stream name (default='default').
 # -e|--event <event>      - Specify event number.
 # -r|--reset              - Reset event counter for the specified stream.
@@ -24,7 +25,8 @@
 #
 # CGI arguments:
 #
-# file      - Name of hepevt file (just file name, not path).
+# file      - Name of hepevt or hepmc file.
+# format    - File format, "hepevt" or "hepmc" (default "hepevt").
 # stream    - Event counter stream name (default='default').
 # event     - Specify event number.
 # reset     - Event counter reset flag (reset if "1").
@@ -40,43 +42,47 @@
 #
 # 2.  This script accepts command line arguments or CGI arguments embedded in a url.
 #
-# 3.  The HepEvt file name can be specified as an absolute or relative path name.
-#     If a HepEvt file specified using a relative path is not found relative to
-#     the current directory, this script searches for the file using a search path
-#     that consists of the following directories.
+# 3.  The HepEvt or HepMC file name should be specified as a plain file or relative
+#     path name (absolute path names are not allowed for security reasons).  If a
+#     file specified using a relative path is not found relative to the current
+#     directory, this script searches for the file using a search path that consists
+#     of the following directories.
 #
 #     a) $DOCUMENT_ROOT/../data/hepevt
 #     b) /web/sites/<letter>/<group>-exp.fnal.gov/data/hepevt   (linux group name)
-#     c) /web/sites/<letter>/${GROUP}-exp.fnal.gov/data/hepevt
+#     c) /web/sites/<letter>/${GROUP}-exp.fnal.gov/data/hepevt  (group env variable)
 #
-# 4.  The event counter file is located in the same directory as the HepEvt file.
+# 4.  HepMC format can be auto-sensed, making the format argument optional for either
+#     HepEvt or HepMC format files.
+#
+# 5.  The event counter file is located in the same directory as the HepEvt file.
 #     This means that this script requires write access to this directory.
 #
-# 5.  The event counter file contains the event number and byte offset of the most
+# 6.  The event counter file contains the event number and byte offset of the most
 #     recently read HepEvt event.  If no events have been read, the event counter file
 #     doesn't exist.
 #
-# 6.  The name of event counter file is as follows:
+# 7.  The name of event counter file is as follows:
 #     <hepevt-file>.<user>.<stream>.txt
 #     The user name is only included if using SSO authentication.
 #     The stream name is as specified by the CGI or CLI argument.
 #
-# 7.  If a minimum or maximum event number is specified, returned events are limited
+# 8.  If a minimum or maximum event number is specified, returned events are limited
 #     to the range min_event <= e < max_event.
 #
-# 8.  This script uses posix file locking to prevent multiple processes from 
+# 9.  This script uses posix file locking to prevent multiple processes from
 #     updating the event counter at the same time.  If the script can't acquire a
 #     lock, this script reutrns error 503 (service unavailable) so as to not block
 #     the entire server.  In such cases, the client should retry the operation.
 #     Resetting the event counter does not make use of file locking.
 #
-# 9.  The sleep time per event option can be used to reduce rate at which events
-#     can be delivered.  It is intended for testing, and is not useful for production.
+# 10.  The sleep time per event option can be used to reduce rate at which events
+#      can be delivered.  It is intended for testing, and is not useful for production.
 #
-# 10.  If a specific event number is specified, the event counter file is not
+# 11.  If a specific event number is specified, the event counter file is not
 #      read or updated.
 #
-# 11.  This script may return the following error codes.
+# 12.  This script may return the following error codes.
 #      404 - Not found.
 #            This error is returned for various errors, including:
 #            a) No HepEvent file was specified.
@@ -93,6 +99,11 @@ import sys, os, fcntl, time, grp
 import cgi
 import cgitb
 cgitb.enable()
+
+
+# Global variables
+
+file_format = ''
 
 
 # Print help.
@@ -122,6 +133,8 @@ def help():
 
 def seek_event_number(fhepevt, evnum):
 
+    global file_format
+
     result = -1
 
     # Read lines until we find a compatible event number.
@@ -136,12 +149,48 @@ def seek_event_number(fhepevt, evnum):
 
         # Check event number.
 
-        if len(words) == 2:
-            n = int(words[0])
-            if n >= evnum:
+        if file_format == 'hepevt':
+
+            # Hepevt format.
+            # New events are indicated by a line with two words:
+            # <evnum> <nparticles>
+
+            if len(words) == 2 and words[0].isdigit() and words[1].isdigit():
+                n = int(words[0])
+                if n >= evnum:
+                    fhepevt.seek(pos)
+                    result = n
+                    break
+
+            # If this looks like a hepmc event header, switch the format.
+
+            elif len(words) == 4 and words[0] == 'E' and words[1].isdigit() and \
+               words[2].isdigit() and words[3].isdigit():
+                file_format = 'hepmc'
                 fhepevt.seek(pos)
-                result = n
-                break
+                continue
+
+
+        elif file_format == 'hepmc':
+
+            # Hepmc format.
+            # New events are indicated by a line with four words:
+            # E <evnum> <nvertices> <nparticles>
+
+            if len(words) == 4 and words[0] == 'E' and words[1].isdigit() and \
+               words[2].isdigit() and words[3].isdigit():
+                n = int(words[1])
+                if n >= evnum:
+                    fhepevt.seek(pos)
+                    result = n
+                    break
+
+        else:
+
+            # Unknown format.
+
+            break
+
 
     # Done.
 
@@ -225,16 +274,47 @@ def seek_next_event(fhepevt, event_counter_path, min_event, max_event, sleep_tim
 
 def read_event(f):
 
-    # Read event header.
+    global file_format
 
-    line = f.readline()
-    print(line, end='')
-    words = line.split()
-    npart = int(words[1])
-    while npart > 0:
+    if file_format == 'hepevt':
+
+        # Hepevt format.
+        # Read and print event header line.
+
         line = f.readline()
         print(line, end='')
-        npart -= 1
+        words = line.split()
+        npart = int(words[1])
+
+        # Read and print particles.
+
+        while npart > 0:
+            line = f.readline()
+            print(line, end='')
+            npart -= 1
+
+    elif file_format == 'hepmc':
+
+        # Hepmc format.
+        # Read and print event header line.
+
+        line = f.readline()
+        print(line, end='')
+
+        # Read and print remaining lines until we get to the next event or footer or end-of-file.
+
+        while True:
+            pos = f.tell()
+            line = f.readline()
+            if line == '':
+                break
+            words = line.split()
+            if words[0] == 'E':
+                f.seek(pos)
+                break
+            if line.startswith('HepMC::'):
+                break
+            print(line, end='')
 
     # Done.
 
@@ -281,9 +361,12 @@ def search_path():
 
 def main(argv):
 
+    global file_format
+
     # Extract arguments.
 
     hepevt_file_name = ''
+    file_format = 'hepevt'
     stream_name = 'default'
     evnum = None
     reset = None
@@ -314,6 +397,13 @@ def main(argv):
             # HepEvt file.
             
             hepevt_file_name = args[1]
+            del args[0:2]
+
+        elif len(args) > 1 and args[0] == '--format':
+
+            # File format, hepevt or hepmc.
+
+            file_format = args[1]
             del args[0:2]
 
         elif len(args) > 1 and (args[0] == '-s' or args[0] == '--stream'):
@@ -370,6 +460,8 @@ def main(argv):
     args = cgi.FieldStorage()
     if 'file' in args:
         hepevt_file_name = args['file'].value
+    if 'format' in args:
+        file_format = args['format'].value
     if 'stream' in args:
         stream_name = args['stream'].value
     if 'event' in args:
@@ -392,11 +484,20 @@ def main(argv):
         print('No HepEvt file specified.')
         return 0
 
+    # Reject absolute file paths.
+
+    if hepevt_file_name[0] == '/' or hepevt_file_name[0] == '.':
+        print('Content-type: text/plain')
+        print('Status: 404 Not Found')
+        print('')
+        print('Absolute path not allowed.')
+        return 0
+
     # Locate HepEvt file.
     # Return error 404 if not found.
 
     hepevt_file_path = hepevt_file_name
-    if not os.path.exists(hepevt_file_path) and hepevt_file_path[0] != '/':
+    if not os.path.exists(hepevt_file_path):
         for dir in search_path():
             hepevt_file_path = os.path.join(dir, hepevt_file_name)
             if os.path.exists(hepevt_file_path):
@@ -406,6 +507,15 @@ def main(argv):
         print('Status: 404 Not Found')
         print('')
         print('HepEvt file %s does not exist.' % hepevt_file_name)
+        return 0
+
+    # Check file format.
+
+    if file_format != 'hepevt' and file_format != 'hepmc':
+        print('Content-type: text/plain')
+        print('Status: 404 Not Found')
+        print('')
+        print('Invalid file format %s.' % file_format)
         return 0
 
     # Construct path of the event counter file.
