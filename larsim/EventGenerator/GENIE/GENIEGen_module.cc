@@ -262,16 +262,16 @@ namespace evgen{
     fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.);
     fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
-    art::ServiceHandle<geo::Geometry const> geo;
-    double x = 2.1*geo->DetHalfWidth();
-    double y = 2.1*geo->DetHalfHeight();
-    double z = 2.*geo->DetLength();
-    int xdiv = TMath::Nint(2*x/5.);
-    int ydiv = TMath::Nint(2*y/5.);
-    int zdiv = TMath::Nint(2*z/5.);
-
     if (fDefinedVtxHistRange == false)
     {
+        art::ServiceHandle<geo::Geometry const> geo;
+        double x = 2.1*geo->DetHalfWidth();
+        double y = 2.1*geo->DetHalfHeight();
+        double z = 2.*geo->DetLength();
+        int xdiv = TMath::Nint(2*x/5.);
+        int ydiv = TMath::Nint(2*y/5.);
+        int zdiv = TMath::Nint(2*z/5.);
+      
     	fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, -0.1*x, x);
     	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, -y,     y);
     	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.1*z, z);
@@ -282,6 +282,10 @@ namespace evgen{
     }
     else
     {
+        int xdiv = TMath::Nint((fVtxPosHistRange[1]-fVtxPosHistRange[0])/5.);
+        int ydiv = TMath::Nint((fVtxPosHistRange[3]-fVtxPosHistRange[2])/5.);
+        int zdiv = TMath::Nint((fVtxPosHistRange[5]-fVtxPosHistRange[4])/5.);
+
         fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, fVtxPosHistRange[0], fVtxPosHistRange[1]);
     	fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, fVtxPosHistRange[2], fVtxPosHistRange[3]);
     	fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, fVtxPosHistRange[4], fVtxPosHistRange[5]);
