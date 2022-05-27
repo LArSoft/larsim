@@ -17,6 +17,7 @@
 # -f|--file <hepevt-file> - HepEvt or HepMC file.
 # --format <format>       - File format, "hepevt" or "hepmc" (default "hepevt").
 # -s|--stream <stream>    - Event counter stream name (default='default').
+# -u|--user <user>        - User name (default none or SSO userid).
 # -e|--event <event>      - Specify event number.
 # -r|--reset              - Reset event counter for the specified stream.
 # --sleep <secs>          - Sleep time per event (default 0)
@@ -28,6 +29,7 @@
 # file      - Name of hepevt or hepmc file.
 # format    - File format, "hepevt" or "hepmc" (default "hepevt").
 # stream    - Event counter stream name (default='default').
+# user      - User name (default none or SSO userid).
 # event     - Specify event number.
 # reset     - Event counter reset flag (reset if "1").
 # sleep     - Sleep time per event.
@@ -63,9 +65,9 @@
 #     doesn't exist.
 #
 # 7.  The name of event counter file is as follows:
-#     <hepevt-file>.<user>.<stream>.txt
-#     The user name is only included if using SSO authentication.
-#     The stream name is as specified by the CGI or CLI argument.
+#     <hepevt-file>.<user>.<stream>.next
+#     The user name will be included if specified by argument "user", or if known
+#     via SSO authentication.  The stream name is as specified by argument "stream".
 #
 # 8.  If a minimum or maximum event number is specified, returned events are limited
 #     to the range min_event <= e < max_event.
@@ -368,6 +370,9 @@ def main(argv):
     hepevt_file_name = ''
     file_format = 'hepevt'
     stream_name = 'default'
+    user = ''
+    if 'SSO_USERID' in os.environ:
+        user = os.environ['SSO_USERID']
     evnum = None
     reset = None
     sleep_time = 0
@@ -411,6 +416,13 @@ def main(argv):
             # Stream name
             
             stream_name = args[1]
+            del args[0:2]
+
+        elif len(args) > 1 and (args[0] == '-u' or args[0] == '--user'):
+
+            # User name
+
+            user = args[1]
             del args[0:2]
 
         elif len(args) > 1 and (args[0] == '-e' or args[0] == '--event'):
@@ -464,6 +476,8 @@ def main(argv):
         file_format = args['format'].value
     if 'stream' in args:
         stream_name = args['stream'].value
+    if 'user' in args:
+        user = args['user'].value
     if 'event' in args:
         evnum = int(args['event'].value)
     if 'reset' in args:
@@ -522,8 +536,8 @@ def main(argv):
     # At this point, this file may or may not exist.
 
     event_counter_path = ''
-    if 'SSO_USERID' in os.environ:
-        event_counter_path = '%s.%s.%s.next' % (hepevt_file_path, os.environ['SSO_USERID'], stream_name)
+    if user != '':
+        event_counter_path = '%s.%s.%s.next' % (hepevt_file_path, user, stream_name)
     else:
         event_counter_path = '%s.%s.next' % (hepevt_file_path, stream_name)
 
