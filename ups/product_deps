@@ -252,7 +252,7 @@ product		version		qual	flags		<table_format=2>
 larg4		v09_11_02	-
 larsoft_data	v1_02_02	-
 marley		v1_2_0g		-
-nugen		v1_15_08	-
+nugen		v1_15_09	-
 nurandom	v1_08_01	-
 nutools		v3_12_03	-
 cetmodules	v3_13_02	-	only_for_build
