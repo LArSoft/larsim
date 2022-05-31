@@ -77,7 +77,7 @@ namespace phot {
   class PDFastSimPAR : public art::EDProducer {
   public:
 
-    // Define the fhicl configuration 
+    // Define the fhicl configuration
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -95,10 +95,10 @@ namespace phot {
       fhicl::Atom<bool>          OpaqueCathode    { Name("OpaqueCathode"),    Comment("Photons cannot cross the cathode") };
       fhicl::Atom<bool>          OnlyActiveVolume { Name("OnlyActiveVolume"), Comment("PAR fast sim usually only for active volume, default true"), true };
       fhicl::Atom<bool>          OnlyOneCryostat  { Name("OnlyOneCryostat"),  Comment("Set to true if light is only supported in C:1") };
-      DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")}; 
-      ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")}; 
-      ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")}; 
-      DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")}; 
+      DP                         ScintTimeTool    { Name("ScintTimeTool"),    Comment("Tool describing scintillation time structure")};
+      ODP                        VUVTiming        { Name("VUVTiming"),        Comment("Configuration for UV timing parameterization")};
+      ODP                        VISTiming        { Name("VISTiming"),        Comment("Configuration for visible timing parameterization")};
+      DP                         VUVHits          { Name("VUVHits"),          Comment("Configuration for UV visibility parameterization")};
       ODP                        VISHits          { Name("VISHits"),          Comment("Configuration for visibile visibility parameterization")};
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -107,18 +107,19 @@ namespace phot {
     void produce(art::Event&) override;
 
   private:
-    
+
     void Initialization();
 
-    void detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, 
-                            const std::map<size_t, double>& OpDetVisibilities, 
-                            const double NumPhotons);
+    void detectedNumPhotons(std::vector<int>& DetectedNumPhotons,
+                            const std::vector<double>& OpDetVisibilities,
+                            const int NumPhotons) const;
 
-    void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
-                     std::map<size_t, int>& ChannelMap,
-                     sim::OpDetBacktrackerRecord btr);
+    void AddOpDetBTR(std::vector< sim::OpDetBacktrackerRecord > & opbtr,
+                     std::vector<int> & ChannelMap,
+                     const sim::OpDetBacktrackerRecord & btr) const;
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, 
+
+    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint,
                           geo::Point_t const& OpDetPoint) const;
 
     // ISTPC
@@ -128,48 +129,45 @@ namespace phot {
     std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
 
     // propagation time model
-    std::unique_ptr<PropagationTimeModel> fPropTimeModel;  
+    std::unique_ptr<PropagationTimeModel> fPropTimeModel;
 
     // random numbers
     CLHEP::HepRandomEngine& fPhotonEngine;
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
-    
-    size_t nOpDets; // Pulled from geom during Initialization()
 
-    std::map<size_t, int> PDChannelToSOCMapDirect; // Where each OpChan is.
-    std::map<size_t, int> PDChannelToSOCMapReflect; // Where each OpChan is.
+    size_t fNOpChannels; // Pulled from geom during Initialization()
 
     // geometry properties
     std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     int fNTPC;
-    
+
     // optical detector properties
-    std::vector<geo::Point_t> fOpDetCenter;    
+    std::vector<geo::Point_t> fOpDetCenter;
 
     //////////////////////
     // Input Parameters //
     //////////////////////
 
     // Module behavior
-    art::InputTag simTag;
-    bool fDoFastComponent;
-    bool fDoSlowComponent;
-    bool fDoReflectedLight;
-    bool fIncludeAnodeReflections;
-    bool fIncludePropTime;
-    bool fGeoPropTimeOnly;
-    bool fUseLitePhotons;
-    bool fOpaqueCathode;
-    bool fOnlyActiveVolume;
-    bool fOnlyOneCryostat;
-    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timing of scintillation
+    const art::InputTag simTag;
+    const bool fDoFastComponent;
+    const bool fDoSlowComponent;
+    const bool fDoReflectedLight;
+    const bool fIncludeAnodeReflections;
+    const bool fIncludePropTime;
+    const bool fGeoPropTimeOnly;
+    const bool fUseLitePhotons;
+    const bool fOpaqueCathode;
+    const bool fOnlyActiveVolume;
+    const bool fOnlyOneCryostat;
+    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
 
     // Parameterized Simulation
     fhicl::ParameterSet fVUVTimingParams;
     fhicl::ParameterSet fVISTimingParams;
     fhicl::ParameterSet fVUVHitsParams;
-    fhicl::ParameterSet fVISHitsParams;  
+    fhicl::ParameterSet fVISHitsParams;
 
   };
 
@@ -177,16 +175,10 @@ namespace phot {
   PDFastSimPAR::PDFastSimPAR(Parameters const & config)
     : art::EDProducer{config}
     , fISTPC{*(lar::providerFrom<geo::Geometry>())}
-    , fPhotonEngine(   art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, 
-                                                                                 "HepJamesRandom",
-                                                                                 "photon", 
-                                                                                 config.get_PSet(), 
-                                                                                 "SeedPhoton"))
-    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
-                                                                                 "HepJamesRandom",
-                                                                                 "scinttime",
-                                                                                 config.get_PSet(),
-                                                                                 "SeedScintTime"))
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(
+                      *this, "HepJamesRandom", "photon", config.get_PSet(), "SeedPhoton"))
+    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(
+                         *this, "HepJamesRandom", "scinttime", config.get_PSet(), "SeedScintTime"))
     , simTag(config().SimulationLabel())
     , fDoFastComponent(config().DoFastComponent())
     , fDoSlowComponent(config().DoSlowComponent())
@@ -198,55 +190,49 @@ namespace phot {
     , fOpaqueCathode(config().OpaqueCathode())
     , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
-    , fScintTime{art::make_tool<ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
+    , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
     , fVUVHitsParams(config().VUVHits.get<fhicl::ParameterSet>())
   {
-
     // Validate configuration options
     if(fIncludePropTime && !config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams)) {
       throw art::Exception(art::errors::Configuration)
-          << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
+        << "Propagation time simulation requested, but VUVTiming not specified." << "\n";
     }
-    
+
     if(fDoReflectedLight && !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
       throw art::Exception(art::errors::Configuration)
-          << "Reflected light simulation requested, but VisHits not specified." << "\n";
+        << "Reflected light simulation requested, but VisHits not specified." << "\n";
     }
 
     if (fDoReflectedLight && fIncludePropTime && !config().VISTiming.get_if_present<fhicl::ParameterSet>(fVISTimingParams)) {
       throw art::Exception(art::errors::Configuration)
-          << "Reflected light propagation time simulation requested, but VISTiming not specified." << "\n";
+        << "Reflected light propagation time simulation requested, but VISTiming not specified." << "\n";
     }
 
     if(fIncludeAnodeReflections && !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
       throw art::Exception(art::errors::Configuration)
-          << "Anode reflections light simulation requested, but VisHits not specified." << "\n";
+        << "Anode reflections light simulation requested, but VisHits not specified." << "\n";
     }
 
-    Initialization();    
+    Initialization();
 
-    if (fUseLitePhotons)
-    {
-        mf::LogInfo("PDFastSimPAR") << "Using Lite Photons";
-        produces< std::vector<sim::SimPhotonsLite> >();
-        produces< std::vector<sim::OpDetBacktrackerRecord> >();
-
-        if(fDoReflectedLight)
-        {
-            mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
-            produces< std::vector<sim::SimPhotonsLite> >("Reflected");
-            produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");
-        }
+    if (fUseLitePhotons) {
+      mf::LogInfo("PDFastSimPAR") << "Using Lite Photons";
+      produces< std::vector<sim::SimPhotonsLite> >();
+      produces< std::vector<sim::OpDetBacktrackerRecord> >();
+      if(fDoReflectedLight) {
+        mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
+        produces< std::vector<sim::SimPhotonsLite> >("Reflected");
+        produces< std::vector<sim::OpDetBacktrackerRecord> >("Reflected");
+      }
     }
-    else
-    {
-        mf::LogInfo("PDFastSimPAR") << "Using Sim Photons";
-        produces< std::vector<sim::SimPhotons> >();
-        if(fDoReflectedLight)
-        {
-            mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
-            produces< std::vector<sim::SimPhotons> >("Reflected");
-        }
+    else {
+      mf::LogInfo("PDFastSimPAR") << "Using Sim Photons";
+      produces< std::vector<sim::SimPhotons> >();
+      if(fDoReflectedLight) {
+        mf::LogInfo("PDFastSimPAR") << "Storing Reflected Photons";
+        produces< std::vector<sim::SimPhotons> >("Reflected");
+      }
     }
   }
 
@@ -257,28 +243,36 @@ namespace phot {
     mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR Module Producer"
                                  << "EventID: " << event.event();
 
-    auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
+    std::vector<int> PDChannelToSOCMapDirect(fNOpChannels, -1); // Where each OpChan is.
+    std::vector<int> PDChannelToSOCMapReflect(fNOpChannels, -1); // Where each OpChan is.
+
+    // SimPhotonsLite
     auto phlit = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
-
-    auto phot_ref = std::make_unique<std::vector<sim::SimPhotons>>();
     auto phlit_ref = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr_ref = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
-
-    auto& dir_photcol(*phot);
-    auto& ref_photcol(*phot_ref);
     auto& dir_phlitcol(*phlit);
     auto& ref_phlitcol(*phlit_ref);
-    dir_photcol.resize(nOpDets);
-    ref_photcol.resize(nOpDets);
-    dir_phlitcol.resize(nOpDets);
-    ref_phlitcol.resize(nOpDets);
-    for (unsigned int i = 0; i < nOpDets; i ++)
-    {
-        dir_photcol[i].fOpChannel  = i;
-        ref_photcol[i].fOpChannel  = i;
+    // SimPhotons
+    auto phot = std::make_unique<std::vector<sim::SimPhotons>>();
+    auto phot_ref = std::make_unique<std::vector<sim::SimPhotons>>();
+    auto& dir_photcol(*phot);
+    auto& ref_photcol(*phot_ref);
+    if(fUseLitePhotons){
+      dir_phlitcol.resize(fNOpChannels);
+      ref_phlitcol.resize(fNOpChannels);
+      for (unsigned int i = 0; i < fNOpChannels; i ++) {
         dir_phlitcol[i].OpChannel  = i;
         ref_phlitcol[i].OpChannel  = i;
+      }
+    }
+    else{ // SimPhotons
+      dir_photcol.resize(fNOpChannels);
+      ref_photcol.resize(fNOpChannels);
+      for (unsigned int i = 0; i < fNOpChannels; i ++) {
+        dir_photcol[i].fOpChannel  = i;
+        ref_photcol[i].fOpChannel  = i;
+      }
     }
 
     art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
@@ -298,67 +292,60 @@ namespace phot {
     for (auto const& edepi : *edeps) {
       num_points++;
 
+      int nphot_fast = edepi.NumFPhotons();
+      int nphot_slow = edepi.NumSPhotons();
+
+      num_fastph += nphot_fast;
+      num_slowph += nphot_slow;
+
+      if(!((nphot_fast > 0 && fDoFastComponent) ||
+           (nphot_slow > 0 && fDoSlowComponent))) continue;
+
       int trackID = edepi.TrackID();
-      double nphot = edepi.NumPhotons();
+      int nphot = edepi.NumPhotons();
       double edeposit = edepi.Energy() / nphot;
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
       if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
 
-      double nphot_fast = edepi.NumFPhotons();
-      double nphot_slow = edepi.NumSPhotons();
-
-      num_fastph += nphot_fast;
-      num_slowph += nphot_slow;
-
       // direct light
-      std::map<size_t, int> DetectedNumFast;
-      std::map<size_t, int> DetectedNumSlow;
+      std::vector<int> DetectedNumFast(fNOpChannels);
+      std::vector<int> DetectedNumSlow(fNOpChannels);
 
-      bool needHits = (nphot_fast > 0 && fDoFastComponent) || (nphot_slow > 0 && fDoSlowComponent);
-      if ( needHits ) {
-        std::map<size_t, double> OpDetVisibilities;
-        fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
-        detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
-        detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
-        
-        if ( fIncludeAnodeReflections ) {
-          std::map<size_t, int> AnodeDetectedNumFast;
-          std::map<size_t, int> AnodeDetectedNumSlow;
-          
-          std::map<size_t, double> OpDetVisibilitiesAnode;
-          fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
-          detectedNumPhotons(AnodeDetectedNumFast, OpDetVisibilitiesAnode, nphot_fast);
-          detectedNumPhotons(AnodeDetectedNumSlow, OpDetVisibilitiesAnode, nphot_slow);
+      std::vector<double> OpDetVisibilities;
+      fVisibilityModel->detectedDirectVisibilities(OpDetVisibilities, ScintPoint);
+      detectedNumPhotons(DetectedNumFast, OpDetVisibilities, nphot_fast);
+      detectedNumPhotons(DetectedNumSlow, OpDetVisibilities, nphot_slow);
 
-          // add to existing count
-          for (auto const& x : AnodeDetectedNumFast) DetectedNumFast[x.first] += x.second;
-          for (auto const& x : AnodeDetectedNumSlow) DetectedNumSlow[x.first] += x.second;
-        }
+      if (fIncludeAnodeReflections) {
+        std::vector<int> AnodeDetectedNumFast(fNOpChannels);
+        std::vector<int> AnodeDetectedNumSlow(fNOpChannels);
+
+        std::vector<double> OpDetVisibilitiesAnode;
+        fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesAnode, ScintPoint, true);
+        detectedNumPhotons(AnodeDetectedNumFast, OpDetVisibilitiesAnode, nphot_fast);
+        detectedNumPhotons(AnodeDetectedNumSlow, OpDetVisibilitiesAnode, nphot_slow);
+
+        // add to existing count
+        for (size_t i=0; i<AnodeDetectedNumFast.size(); ++i) {DetectedNumFast[i] += AnodeDetectedNumFast[i];}
+        for (size_t i=0; i<AnodeDetectedNumSlow.size(); ++i) {DetectedNumSlow[i] += AnodeDetectedNumSlow[i];}
       }
 
       // reflected light, if enabled
-      std::map<size_t, int> ReflDetectedNumFast;
-      std::map<size_t, int> ReflDetectedNumSlow;
-      
-      if (fDoReflectedLight && needHits) {
-        std::map<size_t, double> OpDetVisibilitiesRefl;
+      std::vector<int> ReflDetectedNumFast(fNOpChannels);
+      std::vector<int> ReflDetectedNumSlow(fNOpChannels);
+      if (fDoReflectedLight) {
+        std::vector<double> OpDetVisibilitiesRefl;
         fVisibilityModel->detectedReflectedVisibilities(OpDetVisibilitiesRefl, ScintPoint, false);
         detectedNumPhotons(ReflDetectedNumFast, OpDetVisibilitiesRefl, nphot_fast);
         detectedNumPhotons(ReflDetectedNumSlow, OpDetVisibilitiesRefl, nphot_slow);
       }
 
-      // propagation time
-      std::vector<double> transport_time;
-
       // loop through direct photons then reflected photons cases
-      for (size_t Reflected = 0; Reflected <= 1; ++Reflected) {
-
-        // only do the reflected loop if including reflected light
-        if (Reflected && !fDoReflectedLight) continue;
-
-        for (size_t channel = 0; channel < nOpDets; channel++) {
+      size_t DoReflected = (fDoReflectedLight) ? 1 : 0;
+      for (size_t Reflected = 0; Reflected <= DoReflected; ++Reflected) {
+        for (size_t channel = 0; channel < fNOpChannels; channel++) {
 
           if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter[channel])) continue;
 
@@ -368,22 +355,23 @@ namespace phot {
             ndetected_fast = ReflDetectedNumFast[channel];
             ndetected_slow = ReflDetectedNumSlow[channel];
           }
+          if(!((ndetected_fast > 0 && fDoFastComponent) ||
+               (ndetected_slow > 0 && fDoSlowComponent))) continue;
 
-          // calculate propagation time, does not matter whether fast or slow photon          
-          if (fIncludePropTime && needHits) {
+          // calculate propagation time, does not matter whether fast or slow photon
+          std::vector<double> transport_time;
+          if (fIncludePropTime) {
             transport_time.resize(ndetected_fast + ndetected_slow);
             fPropTimeModel->propagationTime(transport_time, ScintPoint, channel, Reflected);
           }
 
           // SimPhotonsLite case
           if (fUseLitePhotons) {
-
             sim::OpDetBacktrackerRecord tmpbtr(channel);
-
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -394,11 +382,10 @@ namespace phot {
                 tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
               }
             }
-
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
                 if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
@@ -408,23 +395,20 @@ namespace phot {
                 tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
               }
             }
-
             if (Reflected) AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr);
             else AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
           }
           // SimPhotons case
           else {
-
             sim::OnePhoton photon;
             photon.SetInSD         = false;
             photon.InitialPosition = edepi.End();
             if (Reflected) photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else photon.Energy = 9.7 * CLHEP::eV; // 128 nm
-
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 fScintTime->GenScintTime(true, fScintTimeEngine);
                 int time;
@@ -435,11 +419,10 @@ namespace phot {
                 else dir_photcol[channel].insert(dir_photcol[channel].end(), 1, photon);
               }
             }
-
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
-              for (long i = 0; i < n; ++i) {
+              for (int i = 0; i < n; ++i) {
                 fScintTime->GenScintTime(false, fScintTimeEngine);
                 int time;
                 if (fIncludePropTime) time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() + transport_time[ndetected_fast + i]);
@@ -460,50 +443,45 @@ namespace phot {
                                  << "\ndetected fast photons: " << num_fastdp
                                  << ", detected slow photons: " << num_slowdp;
 
-    PDChannelToSOCMapDirect.clear();
-    PDChannelToSOCMapReflect.clear();
-
     if (fUseLitePhotons) {
-        event.put(move(phlit));
-        event.put(move(opbtr));
-        if (fDoReflectedLight) {
-            event.put(move(phlit_ref), "Reflected");
-            event.put(move(opbtr_ref), "Reflected");
-        }
+      event.put(move(phlit));
+      event.put(move(opbtr));
+      if (fDoReflectedLight) {
+        event.put(move(phlit_ref), "Reflected");
+        event.put(move(opbtr_ref), "Reflected");
+      }
     }
     else {
-        event.put(move(phot));
-        if (fDoReflectedLight) {
-            event.put(move(phot_ref), "Reflected");
-        }
+      event.put(move(phot));
+      if (fDoReflectedLight) {
+        event.put(move(phot_ref), "Reflected");
+      }
     }
 
     return;
   }
 
   //......................................................................
-  void
-  PDFastSimPAR::AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
-                            std::map<size_t, int>& ChannelMap,
-                            sim::OpDetBacktrackerRecord btr
-                            )
+  void PDFastSimPAR::AddOpDetBTR(std::vector< sim::OpDetBacktrackerRecord > & opbtr,
+                                 std::vector<int> & ChannelMap,
+                                 const sim::OpDetBacktrackerRecord & btr) const
   {
-    size_t iChan = btr.OpDetNum();
-    auto channelPosition = ChannelMap.find(iChan);
-
-    if (channelPosition == ChannelMap.end()) {
+    int iChan = btr.OpDetNum();
+    if (ChannelMap[iChan] < 0) {
       ChannelMap[iChan] = opbtr.size();
       opbtr.emplace_back(std::move(btr));
     }
     else {
-      unsigned int idtest = channelPosition->second;
+      size_t idtest = ChannelMap[iChan];
       auto const& timePDclockSDPsMap = btr.timePDclockSDPsMap();
-
-      for (auto const& timePDclockSDP : timePDclockSDPsMap) {
-        for (auto const& sdp : timePDclockSDP.second) {
+      for(auto const& timePDclockSDP : timePDclockSDPsMap) {
+        for(auto const& sdp : timePDclockSDP.second) {
           double xyz[3] = {sdp.x, sdp.y, sdp.z};
-          opbtr.at(idtest).AddScintillationPhotons(
-            sdp.trackID, timePDclockSDP.first, sdp.numPhotons, xyz, sdp.energy);
+          opbtr.at(idtest).AddScintillationPhotons(sdp.trackID,
+                                                   timePDclockSDP.first,
+                                                   sdp.numPhotons,
+                                                   xyz,
+                                                   sdp.energy);
         }
       }
     }
@@ -524,10 +502,10 @@ namespace phot {
     fVisibilityModel = std::make_unique<SemiAnalyticalModel>(fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
 
     // propagation time model
-    if (fIncludePropTime) fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);   
+    if (fIncludePropTime) fPropTimeModel = std::make_unique<PropagationTimeModel>(fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);
 
     // Store info from the Geometry service
-    nOpDets = geom.NOpDets();
+    fNOpChannels = geom.NOpDets();
     fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
     fNTPC = geom.NTPC();
 
@@ -558,7 +536,7 @@ namespace phot {
       }
     }
 
-    for (size_t const i : util::counter(nOpDets)) {
+    for (size_t const i : util::counter(fNOpChannels)) {
       geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
       fOpDetCenter.push_back(opDet.GetCenter());
     }
@@ -566,13 +544,12 @@ namespace phot {
 
   //......................................................................
   // calculates number of photons detected given visibility and emitted number of photons
-  void 
-  PDFastSimPAR::detectedNumPhotons(std::map<size_t, int>& DetectedNumPhotons, const std::map<size_t, double>& OpDetVisibilities, const double NumPhotons)
+  void
+  PDFastSimPAR::detectedNumPhotons(std::vector<int>& DetectedNumPhotons, const std::vector<double>& OpDetVisibilities, const int NumPhotons) const
   {
-      for (auto const& x : OpDetVisibilities)
-      {
-        DetectedNumPhotons[x.first] = fRandPoissPhot->fire(x.second * NumPhotons);
-      }
+    for (size_t i=0; i<OpDetVisibilities.size(); ++i){
+      DetectedNumPhotons[i] = fRandPoissPhot->fire(OpDetVisibilities[i] * NumPhotons);
+    }
   }
 
   //......................................................................

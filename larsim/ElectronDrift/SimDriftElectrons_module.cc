@@ -84,7 +84,7 @@
 // C++ includes
 #include <algorithm> // std::find
 #include <cmath>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -135,7 +135,7 @@ namespace detsim {
     };
 
     // Define type: channel -> sim::SimChannel's bookkeeping.
-    typedef std::map<raw::ChannelID_t, ChannelBookKeeping> ChannelMap_t;
+    typedef std::unordered_map<raw::ChannelID_t, ChannelBookKeeping> ChannelMap_t;
 
     // Array of maps of channel data indexed by [cryostat,tpc]
     std::vector<ChannelMap_t> fChannelMaps;
@@ -473,9 +473,9 @@ namespace detsim {
           // Also take into account special case for ArgoNeuT (Nplanes = 2 and
           // drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
-            TDiff +=  
-				tpcGeo.PlanePitch(ip+1, ip) *
-              	fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
+            TDiff +=
+              tpcGeo.PlanePitch(ip+1, ip) *
+              fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 
           fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
@@ -531,8 +531,7 @@ namespace detsim {
 
               // Has this step contributed to this channel before?
               auto& stepList = bookKeeping.stepList;
-              auto stepSearch = std::find(stepList.begin(), stepList.end(), edIndex);
-              if (stepSearch == stepList.end()) {
+              if (!std::binary_search(stepList.begin(), stepList.end(), edIndex)) {
                 // No, so add this step's index to the list.
                 stepList.push_back(edIndex);
               }
