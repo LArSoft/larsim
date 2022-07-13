@@ -106,8 +106,10 @@ void SemiAnalyticalModel::Initialization()
     fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
   }
   if (fIsFlatPDCorrLat) {
-    fGHvuvpars_flat_lateral  = fVUVHitsParams.get<std::vector<std::vector<std::vector<double>>>>("GH_PARS_flat_lateral");
-    fGH_distances_anode      = fVUVHitsParams.get<std::vector<double>>("GH_distances_anode");
+    fGHvuvpars_flat_lateral          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat_lateral");
+    fborder_corr_angulo_flat_lateral = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat_lateral");
+    fborder_corr_flat_lateral        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat_lateral");
+
   }
   if (fIsDomePDCorr) {
     fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
@@ -252,29 +254,17 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
   double s1 = 0; double s2 = 0; double s3 = 0;
   // flat PDs
   if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)){
-    if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals, alternate parameterisation method
-      // distance to anode plane
-      double d_anode = std::abs(fanode_centre[0] - ScintPoint.X());
-
-      // build arrays for interpolation
-      int n_distances = fGH_distances_anode.size();
-      std::vector<double> p1, p2, p3, p4;
-      p1.reserve(n_distances); p2.reserve(n_distances); p3.reserve(n_distances); p4.reserve(n_distances);
-      for (int i = 0; i < n_distances; i++) {
-        p1.push_back(fGHvuvpars_flat_lateral[0][i][j]);
-        p2.push_back(fGHvuvpars_flat_lateral[1][i][j]);
-        p3.push_back(fGHvuvpars_flat_lateral[2][i][j]);
-        p4.push_back(fGHvuvpars_flat_lateral[3][i][j]);
-      }
-
-      // interpolate in distance to anode
-      pars_ini[0] = interpolate(fGH_distances_anode, p1, d_anode, false);
-      pars_ini[1] = interpolate(fGH_distances_anode, p2, d_anode, false);
-      pars_ini[2] = interpolate(fGH_distances_anode, p3, d_anode, false);
-      pars_ini[3] = interpolate(fGH_distances_anode, p4, d_anode, false);
+    if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals
+      pars_ini[0] = fGHvuvpars_flat_lateral[0][j];
+      pars_ini[1] = fGHvuvpars_flat_lateral[1][j];
+      pars_ini[2] = fGHvuvpars_flat_lateral[2][j];
+      pars_ini[3] = fGHvuvpars_flat_lateral[3][j];
+      s1 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[0], theta, true);
+      s2 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[1], theta, true);
+      s3 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[2], theta, true);
 
     }
-    else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode, default parameterisation method
+    else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode
       pars_ini[0] = fGHvuvpars_flat[0][j];
       pars_ini[1] = fGHvuvpars_flat[1][j];
       pars_ini[2] = fGHvuvpars_flat[2][j];

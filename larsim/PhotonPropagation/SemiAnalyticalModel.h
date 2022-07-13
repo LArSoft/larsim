@@ -182,8 +182,10 @@ private:
     std::vector<std::vector<double>> fborder_corr_flat;
     // lateral PDs
     bool fIsFlatPDCorrLat;
-    std::vector<double> fGH_distances_anode;
-    std::vector<std::vector<std::vector<double>>> fGHvuvpars_flat_lateral;
+    std::vector<std::vector<double>> fGHvuvpars_flat_lateral;
+    std::vector<double> fborder_corr_angulo_flat_lateral;
+    std::vector<std::vector<double>> fborder_corr_flat_lateral;
+
     // dome PDs
     bool fIsDomePDCorr;
     std::vector<std::vector<double>> fGHvuvpars_dome;
