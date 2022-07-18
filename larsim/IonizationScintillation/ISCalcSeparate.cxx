@@ -143,25 +143,5 @@ namespace larg4 {
     return std::hypot(
       efield + efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
   }
-  //----------------------------------------------------------------------------
-  double
-  ISCalcSeparate::GetScintYieldRatio(sim::SimEnergyDeposit const& edep)
-  {
-    if (!fLArProp->ScintByParticleType()) { return fLArProp->ScintYieldRatio(); }
-    switch (edep.PdgCode()) {
-    case 2212: return fLArProp->ProtonScintYieldRatio();
-    case 13:
-    case -13: return fLArProp->MuonScintYieldRatio();
-    case 211:
-    case -211: return fLArProp->PionScintYieldRatio();
-    case 321:
-    case -321: return fLArProp->KaonScintYieldRatio();
-    case 1000020040: return fLArProp->AlphaScintYieldRatio();
-    case 11:
-    case -11:
-    case 22: return fLArProp->ElectronScintYieldRatio();
-    default: return fLArProp->ElectronScintYieldRatio();
-    }
-  }
 
 } // namespace

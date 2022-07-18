@@ -41,7 +41,6 @@ namespace larg4 {
 
     int BinomFluct(int N0, double prob);
     double CalcElectronLET(double E);
-    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
   };
 }
 #endif // LARG4_ISCALCNESTLAr_H

@@ -390,7 +390,7 @@ namespace detsim {
                   tpcGeo.PlanePitch(0, 1) * fRecipDriftVel[1]);
       }
 
-      const int nIonizedElectrons = fISAlg.CalcIonAndScint(detProp, energyDeposit).numElectrons;
+      const int nIonizedElectrons = energyDeposit.NumElectrons(); //fISAlg.CalcIonAndScint(detProp, energyDeposit).numElectrons;
       const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
       const double energy = energyDeposit.Energy();
 

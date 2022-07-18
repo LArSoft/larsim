@@ -28,20 +28,24 @@
 
 #include <iostream>
 
+
 namespace larg4 {
   //----------------------------------------------------------------------------
-  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp)
+  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine)
     : fISTPC{*(lar::providerFrom<geo::Geometry>())}
+    , fEngine(Engine)
+    , fBinomialGen(fEngine)
   {
-    std::cout << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
+    MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
+    fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+    fScintPreScale = lar::providerFrom<detinfo::LArPropertiesService>()->ScintPreScale();
+
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;
 
-    fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
-    fScintPreScale = fLArProp->ScintPreScale();
-
-    //the recombination coefficient is in g/(MeVcm^2), but we report energy depositions in MeV/cm,
-    //need to divide Recombk from the LArG4Parameters service by the density of the argon we got above.
+    // The recombination coefficient is in g/(MeVcm^2), but we report
+    // energy depositions in MeV/cm, need to divide Recombk from the
+    // LArG4Parameters service by the density of the argon we got
+    // above.
     fRecombA = LArG4PropHandle->RecombA();
     fRecombk = LArG4PropHandle->Recombk() / detProp.Density(detProp.Temperature());
     fModBoxA = LArG4PropHandle->ModBoxA();
@@ -59,8 +63,8 @@ namespace larg4 {
     // ionization work function
     fWion = 1. / fGeVToElectrons * 1e3; // MeV
 
-    // ion+excitation work function (\todo: get from LArG4Parameters or LArProperties?)
-    fWph = 19.5 * 1e-6; // MeV
+    // ion+excitation work function
+    fWph = LArG4PropHandle->Wph() * 1e-6; // MeV
   }
 
   //----------------------------------------------------------------------------
@@ -68,34 +72,36 @@ namespace larg4 {
   ISCalcCorrelated::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
                                     sim::SimEnergyDeposit const& edep)
   {
+
     double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
-    double Nq = energy_deposit / fWph;
+    double num_ions = energy_deposit / fWion;
+    double num_quanta = energy_deposit / fWph;
 
-    float ds = edep.StepLength();
+    double ds = edep.StepLength();
     double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0.;
 
     //calculate recombination survival fraction value inside, otherwise zero
 
-    if(EFieldStep > 0) {
+    if(EFieldStep > 0.) {
       // Guard against spurious values of dE/dx. Note: assumes density of LAr
-      if (dEdx < 1.) dEdx = 1.;
+      //if (dEdx < 1.) dEdx = 1.;
 
       // calculate recombination survival fraction
       if (fUseModBoxRecomb) {
-	if (ds > 0) {
-	  double Xi = fModBoxB * dEdx / EFieldStep;
-	  recomb = log(fModBoxA + Xi) / Xi;
-	}
-	else {
-	  recomb = 0;
-	}
+        if (ds > 0.) {
+          double Xi = fModBoxB * dEdx / EFieldStep;
+          recomb = std::log(fModBoxA + Xi) / Xi;
+        }
+        else {
+          recomb = 0.;
+        }
       }
       else {
-	recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
+        recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
       }
 
     }//Efield
@@ -104,60 +110,28 @@ namespace larg4 {
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
-
-   
-
     // using this recombination, calculate number of ionization electrons
-    double const num_electrons = (energy_deposit / fWion) * recomb;
-
+    double num_electrons = fBinomialGen.fire(num_ions, recomb);
+    num_electrons = (num_electrons > 0.) ? num_electrons : 0.;
     // calculate scintillation photons
-    double const num_photons = (Nq - num_electrons) * fScintPreScale;
+    double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
     MF_LOG_DEBUG("ISCalcCorrelated")
-      << " Electrons produced for " << energy_deposit << " MeV deposited with " << recomb
-      << " recombination: " << num_electrons << std::endl;
-    MF_LOG_DEBUG("ISCalcCorrelated") << "number photons: " << num_photons;
+      << "With " << energy_deposit << " MeV of deposited energy, "
+      << "and a recombination of " << recomb << ", \nthere are "
+      << num_electrons << " electrons, and " << num_photons   <<  " photons.\n";
 
     return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
-  }
-
-  //----------------------------------------------------------------------------
-  double
-  ISCalcCorrelated::GetScintYieldRatio(sim::SimEnergyDeposit const& edep)
-  {
-    // For ISCalcCorrelated, the ScintByParticleType option only controls
-    // the scintillation yield ratio, which is the ratio of fast light (singlet
-    // component) to the total light (singlet+triplet components).
-    //
-    // TODO: move this to ISCalc, since it is the same function used in the
-    //       other ionization/scintillation calculation algs
-
-    if (!fLArProp->ScintByParticleType()) return fLArProp->ScintYieldRatio();
-
-    switch (edep.PdgCode()) {
-    case 2212: return fLArProp->ProtonScintYieldRatio();
-    case 13:
-    case -13: return fLArProp->MuonScintYieldRatio();
-    case 211:
-    case -211: return fLArProp->PionScintYieldRatio();
-    case 321:
-    case -321: return fLArProp->KaonScintYieldRatio();
-    case 1000020040: return fLArProp->AlphaScintYieldRatio();
-    case 11:
-    case -11:
-    case 22: return fLArProp->ElectronScintYieldRatio();
-    default: return fLArProp->ElectronScintYieldRatio();
-    }
   }
 
   //----------------------------------------------------------------------------
    double
    ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
    {
-     //electric field outside active volume set to zero                                                                                                                                                      
-     if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0;
+     // electric field outside active volume set to zero
+     if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-     //electric field inside active volume                                                                                                                                                                   
+     // electric field inside active volume
      if (!fSCE->EnableSimEfieldSCE()) return efield;
 
      auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
@@ -167,11 +141,11 @@ namespace larg4 {
 
 
   double ISCalcCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
-    return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
+    return fLarqlChi0A/(fLarqlChi0B+std::exp(fLarqlChi0C+fLarqlChi0D*dEdx));
   }
 
   double ISCalcCorrelated::FieldCorrection(double const EF, double const dEdx){ //LArQL f_corr function = correction factor for electric field dependence
-    return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
+    return std::exp(-EF/(fLarqlAlpha*std::log(dEdx)+fLarqlBeta));
   }
 
-} // namespace
+} // namespace larg4

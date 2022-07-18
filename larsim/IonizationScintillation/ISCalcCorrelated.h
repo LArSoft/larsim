@@ -7,7 +7,7 @@
 //              simple microphysics arguments to establish an anticorrelation
 //              between these two quantities.
 // Input: 'sim::SimEnergyDeposit'
-// Output: num of Photons and Electrons
+// Output: Number of Photons and Electrons
 // May 2020 by W Foreman
 // Modified: Adding corrections for low electric field (LArQL model)
 // Jun 2020 by L. Paulucci and F. Marinho
@@ -30,7 +30,7 @@ namespace detinfo {
 namespace larg4 {
   class ISCalcCorrelated : public ISCalc {
   public:
-    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
+    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine);
 
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)
@@ -41,8 +41,8 @@ namespace larg4 {
   private:
     double fGeVToElectrons;   ///< from LArG4Parameters service
     double fWion;             ///< W_ion (23.6 eV) == 1/fGeVToElectrons
-    double fWph;              ///< W_ph (19.5 eV)
-    double fScintPreScale;  ///< scintillation pre-scaling factor from LArProperties service
+    double fWph;              ///< from LArG4Parameters service
+    double fScintPreScale;    ///< scintillation pre-scaling factor from LArProperties service
     double fRecombA;          ///< from LArG4Parameters service
     double fRecombk;          ///< from LArG4Parameters service
     double fModBoxA;          ///< from LArG4Parameters service
@@ -57,14 +57,15 @@ namespace larg4 {
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
 
     const spacecharge::SpaceCharge* fSCE;
-    const detinfo::LArProperties* fLArProp;
 
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
-    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
+
     ISTPC fISTPC;
+    CLHEP::HepRandomEngine& fEngine; // random engine
+    CLHEP::RandBinomial fBinomialGen;
   };
 }
 #endif

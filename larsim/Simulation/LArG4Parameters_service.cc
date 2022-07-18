@@ -16,4 +16,5 @@
 
 #include "larsim/Simulation/LArG4Parameters.h"
 
+
 DEFINE_ART_SERVICE(sim::LArG4Parameters)
