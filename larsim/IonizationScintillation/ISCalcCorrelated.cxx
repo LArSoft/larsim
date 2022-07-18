@@ -24,20 +24,20 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "CLHEP/Random/RandBinomial.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <iostream>
-
 
 namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine)
     : fISTPC{*(lar::providerFrom<geo::Geometry>())}
-    , fEngine(Engine)
-    , fBinomialGen(fEngine)
+    , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
+    , fBinomialGen{CLHEP::RandBinomial(Engine)}
   {
     MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
-    fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
+
     fScintPreScale = lar::providerFrom<detinfo::LArPropertiesService>()->ScintPreScale();
 
     art::ServiceHandle<sim::LArG4Parameters const> LArG4PropHandle;

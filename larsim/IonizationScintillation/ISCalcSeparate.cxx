@@ -24,16 +24,11 @@
 
 #include <numeric>
 
-namespace {
-  constexpr double scint_yield_factor{1.}; // default
-}
-
 namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcSeparate::ISCalcSeparate()
   {
     fSCE = lar::providerFrom<spacecharge::SpaceChargeService>();
-    fLArProp = lar::providerFrom<detinfo::LArPropertiesService>();
 
     // the recombination coefficient is in g/(MeVcm^2), but we report
     // energy depositions in MeV/cm, need to divide Recombk from the
@@ -92,35 +87,7 @@ namespace larg4 {
   std::pair<double, double>
   ISCalcSeparate::CalcScint(sim::SimEnergyDeposit const& edep)
   {
-    float const e = edep.Energy();
-    int const pdg = edep.PdgCode();
-
-    double numScintPhotons{};
-    double scintYield = fLArProp->ScintYield(true);
-    if (fLArProp->ScintByParticleType()) {
-      MF_LOG_DEBUG("ISCalcSeparate") << "scintillating by particle type";
-
-      switch (pdg) {
-      case 2212: scintYield = fLArProp->ProtonScintYield(true); break;
-      case 13:
-      case -13: scintYield = fLArProp->MuonScintYield(true); break;
-      case 211:
-      case -211: scintYield = fLArProp->PionScintYield(true); break;
-      case 321:
-      case -321: scintYield = fLArProp->KaonScintYield(true); break;
-      case 1000020040: scintYield = fLArProp->AlphaScintYield(true); break;
-      case 11:
-      case -11:
-      case 22: scintYield = fLArProp->ElectronScintYield(true); break;
-      default: scintYield = fLArProp->ElectronScintYield(true);
-      }
-
-      numScintPhotons = scintYield * e;
-    }
-    else {
-      numScintPhotons = scint_yield_factor * scintYield * e;
-    }
-
+    double numScintPhotons = GetScintYield(edep, true) * edep.Energy();
     return {numScintPhotons, GetScintYieldRatio(edep)};
   }
 

@@ -53,6 +53,7 @@ namespace sim {
     , fLarqlChi0D              {pset.get< double                   >("LarqlChi0D"            )}
     , fLarqlAlpha              {pset.get< double                   >("LarqlAlpha"            )}
     , fLarqlBeta               {pset.get< double                   >("LarqlBeta"             )}
+    , fWph                     {pset.get< double                   >("Wph"                   )}
     , fUseModBoxRecomb         {pset.get< bool                     >("UseModBoxRecomb"         )}
     , fUseModLarqlRecomb       {pset.get< bool                     >("UseModLarqlRecomb"       )}
     , fIonAndScintCalculator   {pset.get< std::string              >("IonAndScintCalculator", "Separate")}

@@ -19,12 +19,14 @@
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
+#include "CLHEP/Random/RandBinomial.h"
+
 namespace spacecharge {
   class SpaceCharge;
 }
 
-namespace detinfo {
-  class LArProperties;
+namespace CLHEP {
+  class HepRandomEngine;
 }
 
 namespace larg4 {
@@ -39,6 +41,10 @@ namespace larg4 {
                                sim::SimEnergyDeposit const& edep) override;
 
   private:
+    ISTPC fISTPC;
+    const spacecharge::SpaceCharge* fSCE;
+    CLHEP::RandBinomial fBinomialGen;
+
     double fGeVToElectrons;   ///< from LArG4Parameters service
     double fWion;             ///< W_ion (23.6 eV) == 1/fGeVToElectrons
     double fWph;              ///< from LArG4Parameters service
@@ -56,16 +62,11 @@ namespace larg4 {
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
 
-    const spacecharge::SpaceCharge* fSCE;
-
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
     double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
     double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
 
-    ISTPC fISTPC;
-    CLHEP::HepRandomEngine& fEngine; // random engine
-    CLHEP::RandBinomial fBinomialGen;
   };
 }
 #endif

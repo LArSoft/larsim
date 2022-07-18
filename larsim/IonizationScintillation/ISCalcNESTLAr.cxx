@@ -33,7 +33,6 @@ namespace larg4 {
   ISCalcNESTLAr::ISCalcNESTLAr(CLHEP::HepRandomEngine& Engine)
     : fEngine(Engine)
     , fSCE{lar::providerFrom<spacecharge::SpaceChargeService>()}
-    , fLArProp{lar::providerFrom<detinfo::LArPropertiesService>()}
   {
     std::cout << "ISCalcNESTLAr Initialize." << std::endl;
   }
@@ -225,9 +224,7 @@ namespace larg4 {
   {
     geo::Point_t pos = edep.MidPoint();
     double EField = efield;
-
     geo::Vector_t eFieldOffsets;
-
     if (fSCE->EnableSimEfieldSCE()) {
       eFieldOffsets = fSCE->GetEfieldOffsets(pos);
       EField =
@@ -235,7 +232,6 @@ namespace larg4 {
                   (efield * eFieldOffsets.Y() * efield * eFieldOffsets.Y()) +
                   (efield * eFieldOffsets.Z() * efield * eFieldOffsets.Z()));
     }
-
     return EField;
   }
 
