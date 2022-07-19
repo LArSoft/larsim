@@ -56,6 +56,7 @@ namespace sim {
     , fWph                     {pset.get< double                   >("Wph"                   )}
     , fUseModBoxRecomb         {pset.get< bool                     >("UseModBoxRecomb"         )}
     , fUseModLarqlRecomb       {pset.get< bool                     >("UseModLarqlRecomb"       )}
+    , fUseBinomialFlucts       {pset.get< bool                     >("UseBinomialFlucts", true)}
     , fIonAndScintCalculator   {pset.get< std::string              >("IonAndScintCalculator", "Separate")}
     , fOpticalParamVolumes     {pset.get< std::vector<std::string> >("OpticalParamVolumes"     )}
     , fOpticalParamModels      {pset.get< std::vector<std::string> >("OpticalParamModels"      )}

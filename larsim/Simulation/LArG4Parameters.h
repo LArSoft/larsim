@@ -53,6 +53,7 @@ namespace sim {
     double Wph()                                              const { return fWph;                    }
     bool   UseModBoxRecomb()                                  const { return fUseModBoxRecomb;        }
     bool   UseModLarqlRecomb()                                const { return fUseModLarqlRecomb;      }
+    bool   UseBinomialFlucts()                                const { return fUseBinomialFlucts;      }
     double GeVToElectrons()                                   const { return util::kGeVToElectrons;   }
     double LongitudinalDiffusion()                            const { return fLongitudinalDiffusion;  }
     double TransverseDiffusion()                              const { return fTransverseDiffusion;    }
@@ -116,6 +117,7 @@ namespace sim {
     double const             fWph;                   ///< Possibly override the Wph parameter
     bool const               fUseModBoxRecomb;       ///< Use Modified Box model recombination instead of Birks
     bool const               fUseModLarqlRecomb;     ///< Use LArQL model recombination correction (dependence on EF)
+    bool const               fUseBinomialFlucts;     ///< Use binomial fluctuations in correlated method
     std::string const        fIonAndScintCalculator; ///< Name of algorithm to use to calculate the number of
                                                      ///< ionization electrons and scintillation photons
                                                      ///< for each G4 step, used by

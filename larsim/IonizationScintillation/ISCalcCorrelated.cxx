@@ -36,7 +36,7 @@ namespace larg4 {
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
     , fBinomialGen{CLHEP::RandBinomial(Engine)}
   {
-    MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
+    MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize.";
 
     fScintPreScale = lar::providerFrom<detinfo::LArPropertiesService>()->ScintPreScale();
 
@@ -52,6 +52,7 @@ namespace larg4 {
     fModBoxB = LArG4PropHandle->ModBoxB() / detProp.Density(detProp.Temperature());
     fUseModBoxRecomb = (bool)LArG4PropHandle->UseModBoxRecomb();
     fUseModLarqlRecomb  = (bool)LArG4PropHandle->UseModLarqlRecomb();
+    fUseBinomialFlucts  = (bool)LArG4PropHandle->UseBinomialFlucts();
     fLarqlChi0A = LArG4PropHandle->LarqlChi0A();
     fLarqlChi0B = LArG4PropHandle->LarqlChi0B();
     fLarqlChi0C = LArG4PropHandle->LarqlChi0C();
@@ -111,7 +112,8 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    double num_electrons = fBinomialGen.fire(num_ions, recomb);
+    double num_electrons = (fUseBinomialFlucts) ?
+      fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
     num_electrons = (num_electrons > 0.) ? num_electrons : 0.;
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
@@ -119,7 +121,7 @@ namespace larg4 {
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
       << "and a recombination of " << recomb << ", \nthere are "
-      << num_electrons << " electrons, and " << num_photons   <<  " photons.\n";
+      << num_electrons << " electrons, and " << num_photons   <<  " photons.";
 
     return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
   }

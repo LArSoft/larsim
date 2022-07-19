@@ -61,6 +61,7 @@ namespace larg4 {
     double fLarqlBeta;        ///< from LArG4Parameters service
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
+    bool fUseBinomialFlucts;  ///< from LArG4Parameters service
 
     void CalcIon(sim::SimEnergyDeposit const& edep);
     void CalcScint(sim::SimEnergyDeposit const& edep);
