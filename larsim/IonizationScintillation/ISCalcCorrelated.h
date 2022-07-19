@@ -19,7 +19,7 @@
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
-#include <memory> // std::unique_ptr
+#include "CLHEP/Random/RandBinomial.h"
 
 namespace spacecharge {
   class SpaceCharge;
@@ -27,14 +27,12 @@ namespace spacecharge {
 
 namespace CLHEP {
   class HepRandomEngine;
-  class RandBinomial;
 }
 
 namespace larg4 {
   class ISCalcCorrelated : public ISCalc {
   public:
     ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine);
-    ~ISCalcCorrelated();
 
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)
@@ -45,7 +43,7 @@ namespace larg4 {
   private:
     ISTPC fISTPC;
     const spacecharge::SpaceCharge* fSCE;
-    std::unique_ptr<CLHEP::RandBinomial> fBinomialGen;
+    CLHEP::RandBinomial fBinomialGen;
 
     double fGeVToElectrons;   ///< from LArG4Parameters service
     double fWion;             ///< W_ion (23.6 eV) == 1/fGeVToElectrons

@@ -17,9 +17,10 @@
 // fhicl
 #include "fhiclcpp/ParameterSet.h"
 
+#include "CLHEP/Random/RandFlat.h"
+
 namespace CLHEP {
   class HepRandomEngine;
-  class RandFlat;
 }
 
 // other
@@ -27,7 +28,6 @@ namespace CLHEP {
 #include "TF1.h"
 
 #include <array>
-#include <memory>
 #include <vector>
 
 
@@ -41,8 +41,6 @@ public:
                        CLHEP::HepRandomEngine& ScintTimeEngine,
                        bool doReflectedLight = false,
                        bool GeoPropTimeOnly = false);
-  // destructor
-  ~PropagationTimeModel();
 
   // propagation time
   void propagationTime(std::vector<double>& arrival_time_dist,
@@ -107,7 +105,7 @@ private:
 
   // random numbers
   CLHEP::HepRandomEngine& fScintTimeEngine;
-  std::unique_ptr<CLHEP::RandFlat> fUniformGen;
+  CLHEP::RandFlat fUniformGen;
 
   // geometry properties
   double fplane_depth;

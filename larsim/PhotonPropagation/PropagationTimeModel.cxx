@@ -15,8 +15,6 @@
 
 #include "TMath.h"
 
-#include "CLHEP/Random/RandFlat.h"
-
 #include <iostream>
 
 // constructor
@@ -28,15 +26,12 @@ PropagationTimeModel::PropagationTimeModel(fhicl::ParameterSet VUVTimingParams, 
   , fGeoPropTimeOnly(GeoPropTimeOnly)
   , fISTPC{*(lar::providerFrom<geo::Geometry>())}
   , fScintTimeEngine(ScintTimeEngine)
-  , fUniformGen(std::make_unique<CLHEP::RandFlat>(fScintTimeEngine))
+  , fUniformGen(fScintTimeEngine)
 {
   // initialise parameters and geometry
   mf::LogInfo("PropagationTimeModel") << "Photon propagation time model initalized." << std::endl;
   Initialization();
 }
-
-// destructor
-PropagationTimeModel::~PropagationTimeModel() = default;
 
 // initialization
 void
@@ -413,7 +408,7 @@ PropagationTimeModel::getVISTimes(std::vector<double>& arrivalTimes,
         }
         else {
           // generate random number in appropriate range
-          double x = fUniformGen->fire(0.5, 1.0);
+          double x = fUniformGen.fire(0.5, 1.0);
           // apply the exponential smearing
           arrival_time_smeared =
             arrivalTimes[i] + (arrivalTimes[i] - fastest_time) * (std::pow(x, -tau) - 1);

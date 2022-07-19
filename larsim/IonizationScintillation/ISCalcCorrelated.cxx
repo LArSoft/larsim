@@ -34,7 +34,7 @@ namespace larg4 {
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine)
     : fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
-    , fBinomialGen(std::make_unique<CLHEP::RandBinomial>(Engine))
+    , fBinomialGen{CLHEP::RandBinomial(Engine)}
   {
     MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize." << std::endl;
 
@@ -66,9 +66,6 @@ namespace larg4 {
     // ion+excitation work function
     fWph = LArG4PropHandle->Wph() * 1e-6; // MeV
   }
-
-  //----------------------------------------------------------------------------
-  ISCalcCorrelated::~ISCalcCorrelated() = default;
 
   //----------------------------------------------------------------------------
   ISCalcData
@@ -114,7 +111,7 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    double num_electrons = fBinomialGen->fire(num_ions, recomb);
+    double num_electrons = fBinomialGen.fire(num_ions, recomb);
     num_electrons = (num_electrons > 0.) ? num_electrons : 0.;
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
