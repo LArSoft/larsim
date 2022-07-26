@@ -86,26 +86,20 @@ namespace larg4 {
     double recomb = 0.;
 
     //calculate recombination survival fraction value inside, otherwise zero
-
-    if(EFieldStep > 0.) {
-      // Guard against spurious values of dE/dx. Note: assumes density of LAr
-      //if (dEdx < 1.) dEdx = 1.;
-
+    if(EFieldStep > 0. && dEdx > 0) {
       // calculate recombination survival fraction
+      // ...using Modified Box model
       if (fUseModBoxRecomb) {
-        if (ds > 0.) {
-          double Xi = fModBoxB * dEdx / EFieldStep;
-          recomb = std::log(fModBoxA + Xi) / Xi;
-        }
-        else {
-          recomb = 0.;
-        }
+        double Xi = fModBoxB * dEdx / EFieldStep;
+        recomb = std::log(fModBoxA + Xi) / Xi;
       }
+      // ... or using Birks/Doke
       else {
         recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
       }
-
-    }//Efield
+      // Guard against unphysical recombination values
+      recomb = (recomb < 0.) ? 0. : recomb;
+    }
 
     if(fUseModLarqlRecomb){ //Use corrections from LArQL model
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
