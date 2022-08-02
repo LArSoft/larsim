@@ -82,11 +82,12 @@ namespace larg4 {
 
     double ds = edep.StepLength();
     double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
+    dEdx = (dEdx < 1.) ? 1. : dEdx;
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0.;
 
     //calculate recombination survival fraction value inside, otherwise zero
-    if(EFieldStep > 0. && dEdx > 0) {
+    if(EFieldStep > 0.) {
       // calculate recombination survival fraction
       // ...using Modified Box model
       if (fUseModBoxRecomb) {
@@ -97,18 +98,30 @@ namespace larg4 {
       else {
         recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
       }
-      // Guard against unphysical recombination values
-      recomb = (recomb < 0.) ? 0. : recomb;
     }
 
     if(fUseModLarqlRecomb){ //Use corrections from LArQL model
       recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
+    // Guard against unphysical recombination values
+    if (recomb < 0.){
+      mf::LogWarning("ISCalcCorrelated")
+        << "Recombination survival fraction is lower than 0.: " << recomb
+        << ", fixing it to 0.";
+      recomb = 0.;
+    }
+    else if (recomb > 1.){
+      mf::LogWarning("ISCalcCorrelated")
+        << "Recombination survival fraction is higher than 1.: " << recomb
+        << ", fixing it to 1.";
+      recomb = 1.;
+    }
+
     // using this recombination, calculate number of ionization electrons
     double num_electrons = (fUseBinomialFlucts) ?
       fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
-    num_electrons = (num_electrons > 0.) ? num_electrons : 0.;
+
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
