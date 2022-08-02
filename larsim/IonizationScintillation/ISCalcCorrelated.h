@@ -63,10 +63,8 @@ namespace larg4 {
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
     bool fUseBinomialFlucts;  ///< from LArG4Parameters service
 
-    void CalcIon(sim::SimEnergyDeposit const& edep);
-    void CalcScint(sim::SimEnergyDeposit const& edep);
-    double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
-    double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
+    double EscapingEFraction(double const dEdx) const; //LArQL chi0 function = fraction of escaping electrons
+    double FieldCorrection(double const EF, double const dEdx) const; //LArQL f_corr function = correction factor for electric field dependence
 
   };
 }

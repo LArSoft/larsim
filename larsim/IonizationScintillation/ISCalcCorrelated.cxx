@@ -134,26 +134,34 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-   double
-   ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
-   {
-     // electric field outside active volume set to zero
-     if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
+  double
+  ISCalcCorrelated::EFieldAtStep(double efield,
+                                 sim::SimEnergyDeposit const& edep)
+  {
+    // electric field outside active volume set to zero
+    if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-     // electric field inside active volume
-     if (!fSCE->EnableSimEfieldSCE()) return efield;
+    // electric field inside active volume
+    if (!fSCE->EnableSimEfieldSCE()) return efield;
 
-     auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
-   }
+    auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+    return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+  }
 
 
-
-  double ISCalcCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
+  //----------------------------------------------------------------------------
+  // LArQL chi0 function = fraction of escaping electrons
+  double
+  ISCalcCorrelated::EscapingEFraction(double const dEdx) const
+  {
     return fLarqlChi0A/(fLarqlChi0B+std::exp(fLarqlChi0C+fLarqlChi0D*dEdx));
   }
 
-  double ISCalcCorrelated::FieldCorrection(double const EF, double const dEdx){ //LArQL f_corr function = correction factor for electric field dependence
+  //----------------------------------------------------------------------------
+  // LArQL f_corr function = correction factor for electric field dependence
+  double ISCalcCorrelated::FieldCorrection(double const EF,
+                                           double const dEdx) const
+  {
     return std::exp(-EF/(fLarqlAlpha*std::log(dEdx)+fLarqlBeta));
   }
 
