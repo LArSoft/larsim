@@ -86,9 +86,14 @@ public:
 
 private:
 
+
+  void ReadNextHepEvt(std::vector<simb::MCParticle> & NextEvent);
+//  void ReadNextHepEvt(HepEvtStruct & NextEvent);
   std::ifstream* fInputFile;
   std::string    fInputFileName; ///< Name of text file containing events to simulate
   double fMoveY; ///< Project particles to a new y plane.
+ // long int fOffset;
+//  int fRunNumber;
 };
 
 //------------------------------------------------------------------------------
@@ -97,6 +102,8 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   , fInputFile(0)
   , fInputFileName{p.get<std::string>("InputFileName")}
   , fMoveY{p.get<double>("MoveY", -1e9)}
+//  , fRunNumber(1)
+//  , fOffset(0)
 
 {
   if (fMoveY>-1e8){
@@ -105,6 +112,9 @@ evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
 
   produces< std::vector<simb::MCTruth>   >();
   produces< sumdata::RunData, art::InRun >();
+
+// fOffset=50;
+
 }
 
 //------------------------------------------------------------------------------
@@ -117,6 +127,9 @@ void evgen::TextFileGen::beginJob()
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
 					<< " cannot be read.\n";
+                    
+  std::cout << "testing 1 2 3 " << std::endl;
+  printf("++++++++ testing 3 4 5 \n");
 }
 
 //------------------------------------------------------------------------------
@@ -139,6 +152,99 @@ void evgen::TextFileGen::produce(art::Event & e)
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
   simb::MCTruth truth;
 
+ // long int eventcounter=0;
+
+
+//  // declare the variables for reading in the event record
+//  int            event          = 0;
+//  unsigned short nParticles 	= 0;
+//  int            status         = 0;
+//  int 	 	 pdg            = 0;
+//  int 	 	 firstMother    = 0;
+//  int 	 	 secondMother   = 0;
+//  int 	 	 firstDaughter  = 0;
+//  int 	 	 secondDaughter = 0;
+//  double 	 xMomentum      = 0.;
+//  double 	 yMomentum   	= 0.;
+//  double 	 zMomentum   	= 0.;
+//  double 	 energy      	= 0.;
+//  double 	 mass        	= 0.;
+//  double 	 xPosition   	= 0.;
+//  double 	 yPosition   	= 0.;
+//  double 	 zPosition   	= 0.;
+//  double 	 time        	= 0.;
+
+//while(fInputFile->good() && (!fOffsetApplied
+
+
+//  // read in line to get event number and number of particles
+//  std::string oneLine;
+//  std::getline(*fInputFile, oneLine);
+//  std::istringstream inputLine;
+//  inputLine.str(oneLine);
+
+//  inputLine >> event >> nParticles;
+
+//  // now read in all the lines for the particles
+//  // in this interaction. only particles with
+//  // status = 1 get tracked in Geant4.
+//  for(unsigned short i = 0; i < nParticles; ++i){
+//    std::getline(*fInputFile, oneLine);
+//    inputLine.clear();
+//    inputLine.str(oneLine);
+
+//    inputLine >> status      >> pdg
+//	      >> firstMother >> secondMother >> firstDaughter >> secondDaughter
+//	      >> xMomentum   >> yMomentum    >> zMomentum     >> energy >> mass
+//	      >> xPosition   >> yPosition    >> zPosition     >> time;
+
+
+//    //Project the particle to a new y plane
+//    if (fMoveY>-1e8){
+//      double totmom = sqrt(pow(xMomentum,2)+pow(yMomentum,2)+pow(zMomentum,2));
+//      double kx = xMomentum/totmom;
+//      double ky = yMomentum/totmom;
+//      double kz = zMomentum/totmom;
+//      if (ky){
+//	double l = (fMoveY-yPosition)/ky;
+//	xPosition += kx*l;
+//	yPosition += ky*l;
+//	zPosition += kz*l;
+//      }
+//    }
+
+//    TLorentzVector pos(xPosition, yPosition, zPosition, time);
+//    TLorentzVector mom(xMomentum, yMomentum, zMomentum, energy);
+
+//    simb::MCParticle part(i, pdg, "primary", firstMother, mass, status);
+//    part.AddTrajectoryPoint(pos, mom);
+
+//    truth.Add(part);
+//  }
+
+std::vector<simb::MCParticle> NextEvents;
+
+ReadNextHepEvt(NextEvents);
+
+std::cout << "NParticles :  " << NextEvents.size() << std::endl;
+
+
+for(unsigned int ip=0;ip<NextEvents.size();ip++)
+{   truth.Add(NextEvents[ip]);
+    std::cout << " Particle: " << ip << " pdg " << NextEvents[ip].PdgCode() << "Px,PY,PZ: " << NextEvents[ip].Px() << " " << NextEvents[ip].Py() << " "<< NextEvents[ip].Pz() << " " << std::endl; 
+}
+
+  truthcol->push_back(truth);
+
+  e.put(std::move(truthcol));
+}
+
+
+
+
+void evgen::TextFileGen::ReadNextHepEvt(std::vector<simb::MCParticle> & NextEvent)
+{
+
   // declare the variables for reading in the event record
   int            event          = 0;
   unsigned short nParticles 	= 0;
@@ -157,6 +263,8 @@ void evgen::TextFileGen::produce(art::Event & e)
   double 	 yPosition   	= 0.;
   double 	 zPosition   	= 0.;
   double 	 time        	= 0.;
+
+
 
   // read in line to get event number and number of particles
   std::string oneLine;
@@ -179,6 +287,8 @@ void evgen::TextFileGen::produce(art::Event & e)
 	      >> xMomentum   >> yMomentum    >> zMomentum     >> energy >> mass
 	      >> xPosition   >> yPosition    >> zPosition     >> time;
 
+
+
     //Project the particle to a new y plane
     if (fMoveY>-1e8){
       double totmom = sqrt(pow(xMomentum,2)+pow(yMomentum,2)+pow(zMomentum,2));
@@ -199,12 +309,15 @@ void evgen::TextFileGen::produce(art::Event & e)
     simb::MCParticle part(i, pdg, "primary", firstMother, mass, status);
     part.AddTrajectoryPoint(pos, mom);
 
-    truth.Add(part);
-  }
+    NextEvent.push_back(part);
 
-  truthcol->push_back(truth);
+  }  //  end loop on particles.
 
-  e.put(std::move(truthcol));
+
 }
+
+
+
+
 
 DEFINE_ART_MODULE(evgen::TextFileGen)
