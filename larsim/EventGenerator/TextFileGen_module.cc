@@ -56,7 +56,6 @@
  *   (do not use `TLorentzVector::Boost()`).
  */
 #include <string>
-#include <iostream>
 #include <fstream>
 
 #include "art/Framework/Core/EDProducer.h"
@@ -126,7 +125,7 @@ void evgen::TextFileGen::beginRun(art::Run& run)
 {
 
     // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     auto runcol = std::make_unique<sumdata::RunData>(geo->DetectorName());
 
     run.put(std::move(runcol));
