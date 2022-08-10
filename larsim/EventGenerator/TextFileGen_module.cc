@@ -86,8 +86,8 @@ public:
 
 private:
 
-
-  void ReadNextHepEvt(std::vector<simb::MCParticle> & NextEvent);
+  std::pair<unsigned, unsigned> readEventInfo(std::istream& is);
+  simb::MCTruth  readNextHepEvt();
   unsigned long int fOffset;
   std::ifstream* fInputFile;
   std::string    fInputFileName; ///< Name of text file containing events to simulate
@@ -128,6 +128,15 @@ void evgen::TextFileGen::beginJob()
     throw cet::exception("TextFileGen") << "input text file "
 					<< fInputFileName
 					<< " cannot be read.\n";
+        
+
+  for (unsigned i = 0; i != fOffset; ++i) {
+    auto const [eventNo, nparticles] = readEventInfo(*fInputFile);
+    for (unsigned p = 0; p != nparticles; ++p) {
+       constexpr auto all_chars_until = std::numeric_limits<unsigned>::max();
+       fInputFile->ignore(all_chars_until, '\n');
+    }
+  }                    
                     
 
 }
@@ -149,39 +158,48 @@ void evgen::TextFileGen::produce(art::Event & e)
 					<< " cannot be read in produce().\n";
 
 
-  std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
-  simb::MCTruth truth;
+//  std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
+//  simb::MCTruth truth;
 
  
 
-std::vector<simb::MCParticle> NextEvents;
+//std::vector<simb::MCParticle> NextEvents;
 
 // if fOffset is non-zero means it is requested. But only apply the first time around, after that fOffsetApplied = true.
 
 
-if(!fOffsetApplied && fOffset>0)  
-{
-    for(unsigned long int ioff=0;ioff<fOffset;ioff++)
-    { 
-      ReadNextHepEvt(NextEvents);
-      NextEvents.clear();   
-    }
-    
-    fOffsetApplied=true;
-}
+// if(!fOffsetApplied && fOffset>0)  
+// {
+//     for(unsigned long int ioff=0;ioff<fOffset;ioff++)
+//     { 
+//       ReadNextHepEvt(NextEvents);
+//       NextEvents.clear();   
+//     }
+//     
+//     fOffsetApplied=true;
+// }
 
 
 //Now, read the Event to be used.
 
-ReadNextHepEvt(NextEvents);
+//ReadNextHepEvt(NextEvents);
 
 
 
-for(unsigned int ip=0;ip<NextEvents.size();ip++)
-{   truth.Add(NextEvents[ip]);
-}
+//for(unsigned int ip=0;ip<NextEvents.size();ip++)
+//{   truth.Add(NextEvents[ip]);
+//}
 
-  truthcol->push_back(truth);
+  //truthcol->push_back(truth);
+
+ // check that the file is still good
+  if( !fInputFile->good() )
+    throw cet::exception("TextFileGen") << "input text file "
+					<< fInputFileName
+					<< " cannot be read in produce().\n";
+   auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
+   truthcol->push_back(readNextHepEvt());
+
 
   e.put(std::move(truthcol));
 }
@@ -189,12 +207,12 @@ for(unsigned int ip=0;ip<NextEvents.size();ip++)
 
 
 
-void evgen::TextFileGen::ReadNextHepEvt(std::vector<simb::MCParticle> & NextEvent)
+simb::MCTruth evgen::TextFileGen::readNextHepEvt()
 {
 
   // declare the variables for reading in the event record
-  int            event          = 0;
-  unsigned short nParticles 	= 0;
+//  int            event          = 0;
+//  unsigned short nParticles 	= 0;
   int            status         = 0;
   int 	 	 pdg            = 0;
   int 	 	 firstMother    = 0;
@@ -215,14 +233,18 @@ void evgen::TextFileGen::ReadNextHepEvt(std::vector<simb::MCParticle> & NextEven
 
   // read in line to get event number and number of particles
   std::string oneLine;
-  std::getline(*fInputFile, oneLine);
+  //std::getline(*fInputFile, oneLine);
   std::istringstream inputLine;
-  inputLine.str(oneLine);
-
-  inputLine >> event >> nParticles;
+  //inputLine.str(oneLine);
+  simb::MCTruth nextEvent;
+  auto const [eventNo, nParticles] = readEventInfo(*fInputFile);
+  
+  
+  
+  //inputLine >> event >> nParticles;
 
   //std::cout << "reading in event nr " << event << std::endl;
-  
+ 
   // now read in all the lines for the particles
   // in this interaction. only particles with
   // status = 1 get tracked in Geant4.
@@ -258,12 +280,29 @@ void evgen::TextFileGen::ReadNextHepEvt(std::vector<simb::MCParticle> & NextEven
     simb::MCParticle part(i, pdg, "primary", firstMother, mass, status);
     part.AddTrajectoryPoint(pos, mom);
 
-    NextEvent.push_back(part);
+    nextEvent.Add(part);
 
   }  //  end loop on particles.
 
-
+return nextEvent;
 }
+
+
+
+std::pair<unsigned, unsigned> evgen::TextFileGen::readEventInfo(std::istream& iss)
+{
+  std::string line;
+  getline(iss, line);
+  std::istringstream buffer{line};
+
+  // Parse read line for the event number and particles per event
+  unsigned event, nparticles;
+  buffer >> event >> nparticles;
+  return {event, nparticles};
+}
+
+
+
 
 
 
