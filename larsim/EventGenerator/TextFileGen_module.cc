@@ -6,28 +6,28 @@
  */
 /**
  * @class evgen::TextFileGen
- * 
+ *
  *  This module assumes that the input file has the hepevt format for
- *  each event to be simulated.  See 
- * 
+ *  each event to be simulated.  See
+ *
  *  http://cepa.fnal.gov/psm/simulation/mcgen/lund/pythia_manual/pythia6.3/pythia6301/node39.html
- * 
- *  for details on the format.  In brief each event contains at least two 
+ *
+ *  for details on the format.  In brief each event contains at least two
  *  lines.  The first line contains two entries, the event number (which is
  *  ignored in ART/LArSoft) and the number of particles in the event.  Each
  *  following line containes 15 entries to describe each particle.  The entries
- *  are: 
- *  
+ *  are:
+ *
  *  1.  status code (should be set to 1 for any particle to be tracked, others
  *      won't be tracked)
  *  2.  the pdg code for the particle
- *  3.  the entry of the first mother for this particle in the event, 
+ *  3.  the entry of the first mother for this particle in the event,
  *      0 means no mother
- *  4.  the entry of the second mother for this particle in the event, 
+ *  4.  the entry of the second mother for this particle in the event,
  *      0 means no mother
- *  5. the entry of the first daughter for this particle in the event, 
+ *  5. the entry of the first daughter for this particle in the event,
  *      0 means no daughter
- *  6. the entry of the second daughter for this particle in the event, 
+ *  6. the entry of the second daughter for this particle in the event,
  *      0 means no daughter
  *  7. x component of the particle momentum
  *  8. y component of the particle momentum
@@ -38,19 +38,19 @@
  *  13. y position of the particle initial position
  *  14. z position of the particle initial position
  *  15. time of the particle production
- * 
- *  For example, if you want to simulate a single muon with a 5 GeV energy 
+ *
+ *  For example, if you want to simulate a single muon with a 5 GeV energy
  *  moving only in the z direction, the entry would be
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  0 1
  *  1 13 0 0 0 0 0. 0. 1.0 5.0011 0.105 1.0 1.0 1.0 0.0
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  There are some assumptions that go into using this format that may not
- *  be obvious.  The first is that only particles with status code = 1 
+ *  be obvious.  The first is that only particles with status code = 1
  *  are tracked in the LArSoft/Geant4 combination making the mother daughter
- *  relations somewhat irrelevant.  That also means that you should let 
+ *  relations somewhat irrelevant.  That also means that you should let
  *  Geant4 handle any decays.
- * 
+ *
  *  The units in LArSoft are cm for distances and ns for time.
  *  The use of `TLorentzVector` below does not imply space and time have the same units
  *   (do not use `TLorentzVector::Boost()`).
@@ -144,17 +144,17 @@ void evgen::TextFileGen::produce(art::Event & e)
 
 
   std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
-  simb::MCTruth truth;  
+  simb::MCTruth truth;
 
   // declare the variables for reading in the event record
   int            event          = 0;
   unsigned short nParticles 	= 0;
-  int            status         = 0; 
-  int 	 	 pdg            = 0; 
-  int 	 	 firstMother    = 0; 
-  int 	 	 secondMother   = 0; 
-  int 	 	 firstDaughter  = 0; 
-  int 	 	 secondDaughter = 0; 
+  int            status         = 0;
+  int 	 	 pdg            = 0;
+  int 	 	 firstMother    = 0;
+  int 	 	 secondMother   = 0;
+  int 	 	 firstDaughter  = 0;
+  int 	 	 secondDaughter = 0;
   double 	 xMomentum      = 0.;
   double 	 yMomentum   	= 0.;
   double 	 zMomentum   	= 0.;
@@ -173,15 +173,15 @@ void evgen::TextFileGen::produce(art::Event & e)
 
   inputLine >> event >> nParticles;
 
-  // now read in all the lines for the particles 
-  // in this interaction. only particles with 
+  // now read in all the lines for the particles
+  // in this interaction. only particles with
   // status = 1 get tracked in Geant4.
   for(unsigned short i = 0; i < nParticles; ++i){
     std::getline(*fInputFile, oneLine);
     inputLine.clear();
     inputLine.str(oneLine);
 
-    inputLine >> status      >> pdg 
+    inputLine >> status      >> pdg
 	      >> firstMother >> secondMother >> firstDaughter >> secondDaughter
 	      >> xMomentum   >> yMomentum    >> zMomentum     >> energy >> mass
 	      >> xPosition   >> yPosition    >> zPosition     >> time;
@@ -199,7 +199,7 @@ void evgen::TextFileGen::produce(art::Event & e)
 	zPosition += kz*l;
       }
     }
-    
+
     TLorentzVector pos(xPosition, yPosition, zPosition, time);
     TLorentzVector mom(xMomentum, yMomentum, zMomentum, energy);
 
