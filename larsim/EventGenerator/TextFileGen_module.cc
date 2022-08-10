@@ -97,7 +97,7 @@ private:
 //------------------------------------------------------------------------------
 evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
   : EDProducer{p}
-  , fOffset{p.get<unsigned long int>("Offset",0)}
+  , fOffset{p.get<unsigned long int>("Offset")}
   , fInputFile(0)
   , fInputFileName{p.get<std::string>("InputFileName")}
   , fMoveY{p.get<double>("MoveY", -1e9)}
