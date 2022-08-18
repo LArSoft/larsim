@@ -89,7 +89,7 @@ namespace larg4 {
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
-                ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
+              ->createEngine(*this, "HepJamesRandom", "ISCalcAlg", pset, "SeedISCalcAlg"))
     , Instances{
         pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive"),
       }

@@ -89,9 +89,6 @@
 #include <utility>
 #include <vector>
 
-// stuff from wes
-#include "larsim/IonizationScintillation/ISCalcSeparate.h"
-
 namespace detsim {
 
   // Base class for creation of raw signals on wires.
@@ -157,9 +154,6 @@ namespace detsim {
     double fDriftClusterPos[3];
 
     art::ServiceHandle<geo::Geometry const> fGeometry; ///< Handle to the Geometry service
-
-    // IS calculationg
-    larg4::ISCalcSeparate fISAlg;
 
   }; // class SimDriftElectrons
 
