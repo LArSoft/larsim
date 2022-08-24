@@ -15,10 +15,6 @@ namespace spacecharge {
   class SpaceCharge;
 }
 
-namespace detinfo {
-  class LArProperties;
-}
-
 namespace CLHEP {
   class HepRandomEngine;
 }
@@ -37,11 +33,9 @@ namespace larg4 {
   private:
     CLHEP::HepRandomEngine& fEngine; // random engine
     const spacecharge::SpaceCharge* fSCE;
-    const detinfo::LArProperties* fLArProp;
 
     int BinomFluct(int N0, double prob);
     double CalcElectronLET(double E);
-    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
   };
 }
 #endif // LARG4_ISCALCNESTLAr_H

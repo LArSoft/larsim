@@ -7,7 +7,7 @@
 //              simple microphysics arguments to establish an anticorrelation
 //              between these two quantities.
 // Input: 'sim::SimEnergyDeposit'
-// Output: num of Photons and Electrons
+// Output: Number of Photons and Electrons
 // May 2020 by W Foreman
 // Modified: Adding corrections for low electric field (LArQL model)
 // Jun 2020 by L. Paulucci and F. Marinho
@@ -19,18 +19,20 @@
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
+#include "CLHEP/Random/RandBinomial.h"
+
 namespace spacecharge {
   class SpaceCharge;
 }
 
-namespace detinfo {
-  class LArProperties;
+namespace CLHEP {
+  class HepRandomEngine;
 }
 
 namespace larg4 {
   class ISCalcCorrelated : public ISCalc {
   public:
-    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp);
+    ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine);
 
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)
@@ -39,10 +41,14 @@ namespace larg4 {
                                sim::SimEnergyDeposit const& edep) override;
 
   private:
+    ISTPC fISTPC;
+    const spacecharge::SpaceCharge* fSCE;
+    CLHEP::RandBinomial fBinomialGen;
+
     double fGeVToElectrons;   ///< from LArG4Parameters service
     double fWion;             ///< W_ion (23.6 eV) == 1/fGeVToElectrons
-    double fWph;              ///< W_ph (19.5 eV)
-    double fScintPreScale;  ///< scintillation pre-scaling factor from LArProperties service
+    double fWph;              ///< from LArG4Parameters service
+    double fScintPreScale;    ///< scintillation pre-scaling factor from LArProperties service
     double fRecombA;          ///< from LArG4Parameters service
     double fRecombk;          ///< from LArG4Parameters service
     double fModBoxA;          ///< from LArG4Parameters service
@@ -55,16 +61,11 @@ namespace larg4 {
     double fLarqlBeta;        ///< from LArG4Parameters service
     bool fUseModBoxRecomb;    ///< from LArG4Parameters service
     bool fUseModLarqlRecomb;  ///< from LArG4Parameters service
+    bool fUseBinomialFlucts;  ///< from LArG4Parameters service
 
-    const spacecharge::SpaceCharge* fSCE;
-    const detinfo::LArProperties* fLArProp;
+    double EscapingEFraction(double const dEdx) const; //LArQL chi0 function = fraction of escaping electrons
+    double FieldCorrection(double const EF, double const dEdx) const; //LArQL f_corr function = correction factor for electric field dependence
 
-    void CalcIon(sim::SimEnergyDeposit const& edep);
-    void CalcScint(sim::SimEnergyDeposit const& edep);
-    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
-    double EscapingEFraction(double const dEdx); //LArQL chi0 function = fraction of escaping electrons
-    double FieldCorrection(double const EF, double const dEdx); //LArQL f_corr function = correction factor for electric field dependence
-    ISTPC fISTPC;
   };
 }
 #endif

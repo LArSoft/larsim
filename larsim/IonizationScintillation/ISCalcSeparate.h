@@ -19,10 +19,6 @@ namespace spacecharge {
   class SpaceCharge;
 }
 
-namespace detinfo {
-  class LArProperties;
-}
-
 #include <utility>
 
 namespace larg4 {
@@ -46,12 +42,11 @@ namespace larg4 {
     bool fUseModBoxRecomb;  ///< from LArG4Parameters service
 
     const spacecharge::SpaceCharge* fSCE;
-    const detinfo::LArProperties* fLArProp;
 
     double CalcIon(detinfo::DetectorPropertiesData const& detProp,
                    sim::SimEnergyDeposit const& edep);
     std::pair<double, double> CalcScint(sim::SimEnergyDeposit const& edep);
-    double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
   };
+
 }
 #endif // LARG4_ISCALCULATIONSEPARATE_H

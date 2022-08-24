@@ -1,10 +1,10 @@
-////////////////////////////////////////////////////////////////////////                                                           
-//Class: ISTPC                                                                                                                     
-//File: ISTPC.h and ISTPC.cxx                                                                                                      
-//Description: Class including common functions needed for using the                                                               
-//Hybrid Model for Photon Propagation                                                                                              
-//UGR, 2021                                                                                                                        
-//////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////
+//Class: ISTPC
+//File: ISTPC.h and ISTPC.cxx
+//Description: Class including common functions needed for using the
+//Hybrid Model for Photon Propagation
+//UGR, 2021
+////////////////////////////////////////////////////////////////////////
 
 
 
@@ -19,34 +19,34 @@
 
 
 namespace larg4 {
-  //----------------------------------------------------------------------------                 
+  //----------------------------------------------------------------------------
   ISTPC::ISTPC(geo::GeometryCore const& geom)
     : fActiveVolumes{extractActiveLArVolume(geom)}
   {
     mf::LogTrace("IonAndScint") << "IonizationAndScintillation/ISTPC Initialize.\n"
                                 << "Initializing the geometry of the detector.";
-    
+
     {
       auto log = mf::LogTrace("IonAndScint") << "IonAndScint: active volume boundaries from "
                                              << fActiveVolumes.size() << " volumes:";
       for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
         log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
-    } // local scope        
+    } // local scope
   }
 
 
-  //---------------------------------------------------------------------------- 
+  //----------------------------------------------------------------------------
 
 
  bool
  ISTPC::isScintInActiveVolume(geo::Point_t const& ScintPoint)
- {       
+ {
    return fActiveVolumes[0].ContainsPosition(ScintPoint);
  }
-  //----------------------------------------------------------------------------                                 
+  //----------------------------------------------------------------------------
 
-         
+
 std::vector<geo::BoxBoundedGeo>
 ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
 {
@@ -55,7 +55,7 @@ ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
 
   for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
 
-    // can't use it default-constructed since it would always include origin                                                
+    // can't use it default-constructed since it would always include origin
 
     geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
 
@@ -64,7 +64,7 @@ ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
 
     activeVolumes.push_back(std::move(box));
 
-  } // for cryostats                                                                                                         
+  } // for cryostats
 
  return activeVolumes;
 }

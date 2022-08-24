@@ -1,4 +1,5 @@
 cet_make_library(SOURCE
+  ISCalc.cxx
   ISCalcCorrelated.cxx
   ISCalcNESTLAr.cxx
   ISCalcSeparate.cxx

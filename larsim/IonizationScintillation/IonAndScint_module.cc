@@ -89,7 +89,7 @@ namespace larg4 {
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
-                ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
+              ->createEngine(*this, "HepJamesRandom", "ISCalcAlg", pset, "SeedISCalcAlg"))
     , Instances{
         pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive"),
       }
@@ -130,7 +130,7 @@ namespace larg4 {
       fISAlg = std::make_unique<ISCalcSeparate>();
     else if (calcTag.label() == "Correlated") {
       auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataForJob();
-      fISAlg = std::make_unique<ISCalcCorrelated>(detProp);
+      fISAlg = std::make_unique<ISCalcCorrelated>(detProp, fEngine);
     }
     else if (calcTag.label() == "NEST")
       fISAlg = std::make_unique<ISCalcNESTLAr>(fEngine);
