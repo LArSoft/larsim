@@ -61,6 +61,7 @@ namespace larg4 {
                                          )
     : fenergyCut(energyCut * CLHEP::GeV)
     , fparticleList(keepMCParticleList ? std::make_unique<sim::ParticleList>() : nullptr)
+    , fdroppedParticleList(keepMCParticleList ? std::make_unique<sim::ParticleList>() : nullptr)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
   {}
@@ -73,6 +74,7 @@ namespace larg4 {
     // Clear any previous particle information.
     fCurrentParticle.clear();
     if (fparticleList) fparticleList->clear();
+    if (fdroppedParticleList) fdroppedParticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
     fCurrentPdgCode = 0;
@@ -130,6 +132,7 @@ namespace larg4 {
     G4int parentID = track->GetParentID() + fTrackIDOffset;
 
     std::string process_name = "unknown";
+    bool drop_shower_daughter = false;
 
     // Is there an MCTruth object associated with this G4Track?  We
     // have to go up a "chain" of information to find out:
@@ -162,7 +165,7 @@ namespace larg4 {
       // bremstrahlung, annihilation, any ionization - who wants to save
       // a buttload of electrons that arent from a CC interaction?
       process_name = track->GetCreatorProcess()->GetProcessName();
-      if (!fKeepEMShowerDaughters && (process_name.find("conv") != std::string::npos ||
+      drop_shower_daughter = (!fKeepEMShowerDaughters && (process_name.find("conv") != std::string::npos ||
                                       process_name.find("LowEnConversion") != std::string::npos ||
                                       process_name.find("Pair") != std::string::npos ||
                                       process_name.find("compt") != std::string::npos ||
@@ -171,7 +174,8 @@ namespace larg4 {
                                       process_name.find("phot") != std::string::npos ||
                                       process_name.find("Photo") != std::string::npos ||
                                       process_name.find("Ion") != std::string::npos ||
-                                      process_name.find("annihil") != std::string::npos)) {
+                                      process_name.find("annihil") != std::string::npos));
+      if (drop_shower_daughter) {
 
         // figure out the ultimate parentage of this particle
         // first add this track id and its parent to the fParentIDMap
@@ -187,11 +191,6 @@ namespace larg4 {
         // which will put a bogus track id value into the sim::IDE object for
         // the sim::SimChannel if we don't check it.
         if (!fparticleList->KnownParticle(fCurrentTrackID)) fCurrentTrackID = sim::NoParticleId;
-
-        // clear current particle as we are not stepping this particle and
-        // adding trajectory points to it
-        fCurrentParticle.clear();
-        return;
 
       } // end if keeping EM shower daughters
 
@@ -251,6 +250,13 @@ namespace larg4 {
     fCurrentParticle.particle->SetPolarization(
       TVector3(polarization.x(), polarization.y(), polarization.z()));
 
+    // if KeepEMShowerDaughters = False and we decided to drop this particle,
+    // record it before throwing it away.
+    if (drop_shower_daughter) {
+      fCurrentParticle.drop = true;
+      return;
+    }
+
     // Save the particle in the ParticleList.
     fparticleList->Add(fCurrentParticle.particle.get());
   }
@@ -262,6 +268,22 @@ namespace larg4 {
     if (!fCurrentParticle.hasParticle()) return;
     assert(fparticleList);
 
+    if (aTrack) {
+      fCurrentParticle.particle->SetWeight(aTrack->GetWeight());
+      G4String process =
+        aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+      fCurrentParticle.particle->SetEndProcess(process);
+    }
+
+    // We would keep it if it wasn't for KeepEMShowerDaughters = false
+    // It goes into fDroppedParticleList in case LArG4 is configured
+    // to keep a minimal version of it.
+    if (fCurrentParticle.drop) {
+      if (fCurrentParticle.keep) fdroppedParticleList->Add(fCurrentParticle.particle.get());
+      fCurrentParticle.clear();
+      return;
+    }
+
     // if we have found no reason to keep it, drop it!
     // (we might still need parentage information though)
     if (!fCurrentParticle.keep) {
@@ -269,13 +291,6 @@ namespace larg4 {
       // after the particle is archived, it is deleted
       fCurrentParticle.clear();
       return;
-    }
-
-    if (aTrack) {
-      fCurrentParticle.particle->SetWeight(aTrack->GetWeight());
-      G4String process =
-        aTrack->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-      fCurrentParticle.particle->SetEndProcess(process);
     }
 
     // store truth record pointer, only if it is available
@@ -354,8 +369,12 @@ namespace larg4 {
     // We store the initial creation point of the particle
     // and its final position (ie where it has no more energy, or at least < 1 eV) no matter
     // what, but whether we store the rest of the trajectory depends
-    // on the process, and on a user switch.
+    // on the process, and on a user switch
     if (fstoreTrajectories && !ignoreProcess) {
+      // If the particle was marked to drop (EM shower daughters),
+      // then skip unless this step is last in volume.
+      //if (fCurrentParticle.drop && !step->IsLastStepInVolume()) return;
+
       // Get the post-step information from the G4Step.
       const G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
@@ -467,6 +486,13 @@ namespace larg4 {
     for (auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
       if ((*pn).first > highestID) highestID = (*pn).first;
 
+    // If we have stored dropped particles,
+    // include them in the offset.
+    if (fdroppedParticleList) {
+      for (auto pn = fdroppedParticleList->begin(); pn != fdroppedParticleList->end(); pn++)
+        if ((*pn).first > highestID) highestID = (*pn).first;
+    }
+
     //Only change the fTrackIDOffset if there is in fact a particle to add to the event
     if ((fparticleList->size()) != 0) { fTrackIDOffset = highestID + 1; }
 
@@ -498,12 +524,45 @@ namespace larg4 {
     for (auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
       if ((*pn).first > highestID) highestID = (*pn).first;
 
+    // If we have stored dropped particles,
+    // include them in the offset.
+    if (fdroppedParticleList) {
+      for (auto pn = fdroppedParticleList->begin(); pn != fdroppedParticleList->end(); pn++)
+        if ((*pn).first > highestID) highestID = (*pn).first;
+    }
+
     //Only change the fTrackIDOffset if there is in fact a particle to add to the event
     if ((fparticleList->size()) != 0) { fTrackIDOffset = highestID + 1; }
 
     return std::move(*fparticleList);
   } // ParticleList&& ParticleListAction::YieldList()
 
+  //----------------------------------------------------------------------------
+  // Yields the (dropped) ParticleList accumulated during the current event.
+  sim::ParticleList&&
+  ParticleListAction::YieldDroppedList()
+  {
+    if (!fdroppedParticleList) {
+      throw cet::exception("ParticleListAction")
+        << "ParticleListAction::YieldDroppedList(): dropped particle list not build by user request.\n";
+    }
+    // check if the ParticleNavigator has entries, and if
+    // so grab the highest track id value from it to
+    // add to the fTrackIDOffset
+    int highestID = 0;
+    for (auto pn = fparticleList->begin(); pn != fparticleList->end(); pn++)
+      if ((*pn).first > highestID) highestID = (*pn).first;
+
+    // If we have stored dropped particles,
+    // include them in the offset.
+    for (auto pn = fdroppedParticleList->begin(); pn != fdroppedParticleList->end(); pn++)
+      if ((*pn).first > highestID) highestID = (*pn).first;
+
+    //Only change the fTrackIDOffset if there is in fact a particle to add to the event
+    if ((fparticleList->size()) != 0) { fTrackIDOffset = highestID + 1; }
+
+    return std::move(*fdroppedParticleList);
+  } // ParticleList&& ParticleListAction::YieldDroppedList()
   //----------------------------------------------------------------------------
   void
   ParticleListAction::AddPointToCurrentParticle(TLorentzVector const& pos,

@@ -6,6 +6,7 @@ namespace fhicl { class ParameterSet; }
 
 // LArSoft
 #include "lardataobj/MCBase/MCLimits.h" // kINVALID_X
+#include "lardataobj/MCBase/MCMiniPart.h" // sim::MCMiniPart
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
 
@@ -18,48 +19,6 @@ namespace fhicl { class ParameterSet; }
 
 namespace sim
 {
-
-  class MCMiniPart {
-
-  public:
-
-    MCMiniPart() {Reset();}
-
-    virtual ~MCMiniPart(){}
-
-    unsigned int   _track_id;
-    std::string    _process;
-    unsigned int   _mother;
-    unsigned int   _ancestor;
-    int            _pdgcode;
-    TLorentzVector _start_vtx;
-    TLorentzVector _start_mom;
-    TLorentzVector _end_vtx;
-    TLorentzVector _end_mom;
-    std::vector<std::pair<TLorentzVector,TLorentzVector> > _det_path;
-    std::set<unsigned int> _daughters;
-    ::simb::Origin_t _origin;
-
-    void Reset(){
-      _track_id = _mother = _ancestor = kINVALID_UINT;
-      _pdgcode  = kINVALID_INT;
-      _process  = "";
-      _origin   = ::simb::kUnknown;
-
-      TLorentzVector invalid(kINVALID_DOUBLE,
-			     kINVALID_DOUBLE,
-			     kINVALID_DOUBLE,
-			     kINVALID_DOUBLE);
-      _start_vtx = invalid;
-      _start_mom = invalid;
-      _end_vtx = invalid;
-      _end_mom = invalid;
-      _daughters.clear();
-      _det_path.clear();
-    }
-
-  };
-
   class MCRecoPart : public std::vector<sim::MCMiniPart> {
 
   public:
@@ -71,7 +30,8 @@ namespace sim
     virtual ~MCRecoPart(){};
 
     void AddParticles(const std::vector<simb::MCParticle>& mcp_v,
-		      const std::vector<simb::Origin_t>&   orig_v);
+                      const std::vector<simb::Origin_t>&   orig_v,
+                      const std::vector<sim::MCMiniPart>&  mcmp_v = {});
 
     unsigned int AncestorTrackID(const unsigned int part_index);
 
@@ -89,8 +49,8 @@ namespace sim
     }
 
     bool InDetector(const double& x,
-		    const double& y,
-		    const double& z) const;
+                    const double& y,
+                    const double& z) const;
 
   public:
 

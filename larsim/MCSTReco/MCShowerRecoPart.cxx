@@ -42,52 +42,52 @@ namespace sim {
       auto const& mcp = part_v[i];
 
       int candidate_mom_index=-1;
-      if( mcp._pdgcode == 22 ||
-          mcp._pdgcode == 11 ||
-          mcp._pdgcode == -11 )
-	candidate_mom_index = i;
+      if( mcp.PdgCode() == 22 ||
+          mcp.PdgCode() == 11 ||
+          mcp.PdgCode() == -11 )
+  candidate_mom_index = i;
 
-      unsigned int mom_track = mcp._mother;
+      unsigned int mom_track = mcp.Mother();
       auto mom_iter = part_v._track_index.find(mom_track);
       while(mom_iter != part_v._track_index.end()) {
 
         unsigned int mom_index = (*mom_iter).second;
 
-        if( part_v.at(mom_index)._pdgcode == 22 || part_v.at(mom_index)._pdgcode == 11 || part_v.at(mom_index)._pdgcode == -11 )
+        if( part_v.at(mom_index).PdgCode() == 22 || part_v.at(mom_index).PdgCode() == 11 || part_v.at(mom_index).PdgCode() == -11 )
 
           candidate_mom_index = mom_index;
 
-        mom_iter = part_v._track_index.find(part_v.at(mom_index)._mother);
+        mom_iter = part_v._track_index.find(part_v.at(mom_index).Mother());
 
       }
 
       if(candidate_mom_index >= 0) {
 
-	auto candidate_mom_iter = _shower_index.find(candidate_mom_index);
-	if(candidate_mom_iter == _shower_index.end()) {
-	  _shower_index.insert(std::make_pair((unsigned int)candidate_mom_index, (unsigned int)_shower_index.size()));
-	  daughter_map.push_back(std::multimap<double,unsigned int>());
-	}
-	unsigned int shower_index = (*_shower_index.find(candidate_mom_index)).second;
-	daughter_map.at(shower_index).insert(std::make_pair((double)(mcp._start_vtx[3]),(unsigned int)i));
-	_shower_id.at(i) = shower_index;
+  auto candidate_mom_iter = _shower_index.find(candidate_mom_index);
+  if(candidate_mom_iter == _shower_index.end()) {
+    _shower_index.insert(std::make_pair((unsigned int)candidate_mom_index, (unsigned int)_shower_index.size()));
+    daughter_map.push_back(std::multimap<double,unsigned int>());
+  }
+  unsigned int shower_index = (*_shower_index.find(candidate_mom_index)).second;
+  daughter_map.at(shower_index).insert(std::make_pair((double)(mcp.StartVtx()[3]),(unsigned int)i));
+  _shower_id.at(i) = shower_index;
 
       } else if(_debug_mode) {
 
-	std::cout
-	  << "Found a particle that does not belong to a shower!" << std::endl
-	  << Form(" PDGID: %d ... Track %d @ (%g,%g,%g,%g) with (%g,%g,%g,%g)",
-		  mcp._pdgcode,
-		  mcp._track_id,
-		  mcp._start_vtx[0],
-		  mcp._start_vtx[1],
-		  mcp._start_vtx[2],
-		  mcp._start_vtx[3],
-		  mcp._start_mom[0],
-		  mcp._start_mom[1],
-		  mcp._start_mom[2],
-		  mcp._start_mom[3])
-	  << std::endl << std::endl;
+  std::cout
+    << "Found a particle that does not belong to a shower!" << std::endl
+    << Form(" PDGID: %d ... Track %d @ (%g,%g,%g,%g) with (%g,%g,%g,%g)",
+      mcp.PdgCode(),
+      mcp.TrackID(),
+      mcp.StartVtx()[0],
+      mcp.StartVtx()[1],
+      mcp.StartVtx()[2],
+      mcp.StartVtx()[3],
+      mcp.StartMom()[0],
+      mcp.StartMom()[1],
+      mcp.StartMom()[2],
+      mcp.StartMom()[3])
+    << std::endl << std::endl;
 
       }
     }
@@ -95,7 +95,7 @@ namespace sim {
 
     if(_debug_mode)
       std::cout
-	<< Form("Found %zu MCShowers....",_shower_index.size()) << std::endl;
+  << Form("Found %zu MCShowers....",_shower_index.size()) << std::endl;
 
     _shower_daughters.resize(_shower_index.size(),std::vector<unsigned int>());
     for(auto const &mom : _shower_index) {
@@ -103,24 +103,24 @@ namespace sim {
       _shower_daughters.at(mom.second).reserve(daughter_map.at(mom.second).size());
       for(auto const &part_index : daughter_map.at(mom.second))
 
-	_shower_daughters.at(mom.second).push_back(part_index.second);
+  _shower_daughters.at(mom.second).push_back(part_index.second);
 
       auto const& mcp = part_v.at(mom.first);
       if(_debug_mode)
-	std::cout
-	  << Form("PDGID: %d ... Track %d @ (%g,%g,%g,%g) with (%g,%g,%g,%g) ... %zu daughters!",
-		  mcp._pdgcode,
-		  mcp._track_id,
-		  mcp._start_vtx[0],
-		  mcp._start_vtx[1],
-		  mcp._start_vtx[2],
-		  mcp._start_vtx[3],
-		  mcp._start_mom[0],
-		  mcp._start_mom[1],
-		  mcp._start_mom[2],
-		  mcp._start_mom[3],
-		  _shower_daughters.at(mom.second).size())
-	  << std::endl;
+  std::cout
+    << Form("PDGID: %d ... Track %d @ (%g,%g,%g,%g) with (%g,%g,%g,%g) ... %zu daughters!",
+      mcp.PdgCode(),
+      mcp.TrackID(),
+      mcp.StartVtx()[0],
+      mcp.StartVtx()[1],
+      mcp.StartVtx()[2],
+      mcp.StartVtx()[3],
+      mcp.StartMom()[0],
+      mcp.StartMom()[1],
+      mcp.StartMom()[2],
+      mcp.StartMom()[3],
+      _shower_daughters.at(mom.second).size())
+    << std::endl;
     }
 
     if(_debug_mode)

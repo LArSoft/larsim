@@ -12,8 +12,6 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
-#include "lardataobj/Simulation/SimChannel.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "MCRecoEdep.h"
 
@@ -261,6 +259,15 @@ namespace sim {
     }
 
     return;
+  }
+
+  void MCRecoEdep::MakeMCEdep(const std::vector<sim::SimEnergyDepositLite>& sedArray) {
+    // Create a substitue array of sim::SimEnergyDeposit to avoid duplicating code...
+    // Note that this makes use of the explicit conversion operator
+    // defined in SimEnergyDepositLite class. Information will be partial.
+    // Most notably for MakeMCEdep, charge (numElectrons) will be 0.
+    std::vector<sim::SimEnergyDeposit> new_sedArray(sedArray.begin(), sedArray.end());
+    MakeMCEdep(new_sedArray);
   }
 
 

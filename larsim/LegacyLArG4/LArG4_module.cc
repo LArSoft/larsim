@@ -73,6 +73,7 @@
 #include "nug4/G4Base/UserActionManager.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "lardataobj/MCBase/MCMiniPart.h"
 
 // G4 Includes
 #include "Geant4/G4LogicalVolumeStore.hh"
@@ -332,6 +333,7 @@ namespace larg4 {
                                  ///< executed before main MC processing.
     bool fCheckOverlaps;         ///< Whether to use the G4 overlap checker
     bool fMakeMCParticles;       ///< Whether to keep a `sim::MCParticle` list
+    bool fStoreDroppedMCParticles;///< Whether to keep a `sim::MCMiniPart` list of dropped particles
     bool fdumpParticleList;      ///< Whether each event's sim::ParticleList will be displayed.
     bool fdumpSimChannels;       ///< Whether each event's sim::Channel will be displayed.
     bool fUseLitePhotons;
@@ -406,6 +408,7 @@ namespace larg4 {
     , fG4PhysListName(pset.get<std::string>("G4PhysListName", "larg4::PhysicsList"))
     , fCheckOverlaps(pset.get<bool>("CheckOverlaps", false))
     , fMakeMCParticles(pset.get<bool>("MakeMCParticles", true))
+    , fStoreDroppedMCParticles(pset.get<bool>("StoreDroppedMCParticles", false))
     , fdumpParticleList(pset.get<bool>("DumpParticleList", false))
     , fdumpSimChannels(pset.get<bool>("DumpSimChannels", false))
     , fSmartStacking(pset.get<int>("SmartStacking", 0))
@@ -487,6 +490,9 @@ namespace larg4 {
     if (fMakeMCParticles) {
       produces<std::vector<simb::MCParticle>>();
       produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
+    }
+    if (fStoreDroppedMCParticles) {
+      produces<std::vector<sim::MCMiniPart>>();
     }
     if (!lgp->NoElectronPropagation()) produces<std::vector<sim::SimChannel>>();
     produces<std::vector<sim::AuxDetSimChannel>>();
@@ -647,6 +653,10 @@ namespace larg4 {
       fMakeMCParticles ?
       std::make_unique<std::vector<simb::MCParticle>>() :
       nullptr;
+    auto droppedPartCol =
+      fStoreDroppedMCParticles ?
+      std::make_unique<std::vector<sim::MCMiniPart>>() :
+      nullptr;
     auto PhotonCol = std::make_unique<std::vector<sim::SimPhotons>>();
     auto PhotonColRefl = std::make_unique<std::vector<sim::SimPhotons>>();
     auto LitePhotonCol = std::make_unique<std::vector<sim::SimPhotonsLite>>();
@@ -736,6 +746,35 @@ namespace larg4 {
           tpassn->addSingle(mct, (*makeMCPartPtr)(partCol->size() - 1), truthInfo);
 
         } // for(particleList)
+
+        if (fStoreDroppedMCParticles && droppedPartCol) {
+          // Request a list of dropped particles
+          // Store them in MCMiniPart format
+          sim::ParticleList droppedParticleList = fparticleListAction->YieldDroppedList();
+          droppedPartCol->reserve(droppedParticleList.size());
+
+          for (auto const& partPair : droppedParticleList) {
+            simb::MCParticle& p = *(partPair.second);
+
+            sim::MCMiniPart mini_mcp;
+            mini_mcp.Reset();
+
+            mini_mcp.TrackID( (unsigned int)p.TrackId() );
+            mini_mcp.PdgCode( p.PdgCode() );
+            mini_mcp.Mother( (unsigned int) p.Mother() );
+            mini_mcp.Process( p.Process() );
+            mini_mcp.StartVtx( p.Position() );
+            mini_mcp.StartMom( p.Momentum() );
+            mini_mcp.EndVtx( p.EndPosition() );
+            mini_mcp.EndMom( p.EndMomentum() );
+            // Change units to LArSoft (MeV, cm, us)
+            mini_mcp.ScaleStartMom(1.e3);
+            mini_mcp.ScaleEndMom(1.e3);
+            mini_mcp.Origin( mct->Origin() );
+
+            droppedPartCol->push_back(std::move(mini_mcp));
+          } // for(droppedParticleList)
+        }
 
         // Has the user request a detailed dump of the output objects?
         if (fdumpParticleList) {
@@ -963,6 +1002,10 @@ namespace larg4 {
 
     evt.put(std::move(adCol));
     if (partCol) evt.put(std::move(partCol));
+    if (droppedPartCol) {
+      std::cout << "LArG4 dropped particles length = " << droppedPartCol->size() << std::endl;
+      evt.put(std::move(droppedPartCol));
+    }
     if (tpassn) evt.put(std::move(tpassn));
     if (!lgp->NoPhotonPropagation()) {
       if (!fUseLitePhotons) {

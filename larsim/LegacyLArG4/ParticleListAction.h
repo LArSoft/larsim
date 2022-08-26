@@ -50,6 +50,7 @@ namespace larg4 {
 
       cet::exempt_ptr<simb::MCParticle> particle; ///< Object representing particle.
       bool keep = false;                          ///< if there was decision to keep
+      bool drop = false;                          ///< For EM shower daughters, whether to drop them (independently of `keep`)
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
 
@@ -59,6 +60,7 @@ namespace larg4 {
       {
         particle = nullptr;
         keep = false;
+        drop = false;
         truthIndex = simb::NoGeneratedParticleIndex;
       }
 
@@ -76,7 +78,7 @@ namespace larg4 {
         return simb::isGeneratedParticleIndex(truthIndex);
       }
 
-      /// Rerturns whether there is a particle known to be kept
+      /// Returns whether there is a particle known to be kept
       bool
       keepParticle() const
       {
@@ -155,6 +157,9 @@ namespace larg4 {
     // Yields the ParticleList accumulated during the current event.
     sim::ParticleList&& YieldList();
 
+    /// Yields the (dropped) ParticleList accumulated during the current event.
+    sim::ParticleList&& YieldDroppedList();
+
     /// returns whether the specified particle has been marked as dropped
     static bool isDropped(simb::MCParticle const* p);
 
@@ -169,6 +174,8 @@ namespace larg4 {
                                      ///< for a single particle.
     std::unique_ptr<sim::ParticleList> fparticleList; ///< The accumulated particle information for
                                                       ///< all particles in the event.
+    std::unique_ptr<sim::ParticleList> fdroppedParticleList; ///< The accumulated particle information for
+                                                             ///< all dropped particles in the event.
     G4bool fstoreTrajectories;       ///< Whether to store particle trajectories with each particle.
     std::map<int, int> fParentIDMap; ///< key is current track ID, value is parent ID
     static int fCurrentTrackID;      ///< track ID of the current particle, set to eve ID
