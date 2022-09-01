@@ -93,13 +93,15 @@ namespace sim {
 
       // Skip if mother energy is less than the enery threshold
       if(shower_g4_energy < fMinShowerEnergy) {
-  if(fDebugMode)
-    std::cout << " ... below energy threshold: skipping!"<<std::endl;
-  continue;
+        if(fDebugMode)
+          std::cout << " ... below energy threshold: skipping!"<<std::endl;
+
+        continue;
       }else if(shower_part.Daughters().size() < fMinNumDaughters) {
-  if(fDebugMode)
-    std::cout << " ... below # daughter particle count threshold: skipping!"<<std::endl;
-  continue;
+        if(fDebugMode)
+          std::cout << " ... below # daughter particle count threshold: skipping!"<<std::endl;
+
+        continue;
       }else if(fDebugMode) {
   std::cout << " ... condition matched. Storing this MCShower..."<<std::endl;
       }
@@ -140,7 +142,7 @@ namespace sim {
 
       for(auto const& index : fPartAlg.ShowerDaughters(shower_index))
 
-  daughter_track_id.push_back( part_v.at(index).TrackID() );
+        daughter_track_id.push_back( part_v.at(index).TrackID() );
 
       shower_prof.DaughterTrackID(daughter_track_id);
 
@@ -151,6 +153,7 @@ namespace sim {
 
     if(fDebugMode)
       std::cout << " Found " << mcshower.size() << " MCShowers. Now computing DetProfile position..." << std::endl;
+
 
     //
     // Daughter vtx

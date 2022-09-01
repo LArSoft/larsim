@@ -57,13 +57,15 @@ namespace larg4 {
   ParticleListAction::ParticleListAction(double energyCut,
                                          bool storeTrajectories,
                                          bool keepEMShowerDaughters,
-                                         bool keepMCParticleList /* = true */
+                                         bool keepMCParticleList, /* = true */
+                                         bool storeDroppedMCParticles
                                          )
     : fenergyCut(energyCut * CLHEP::GeV)
     , fparticleList(keepMCParticleList ? std::make_unique<sim::ParticleList>() : nullptr)
-    , fdroppedParticleList(keepMCParticleList ? std::make_unique<sim::ParticleList>() : nullptr)
+    , fdroppedParticleList(storeDroppedMCParticles ? std::make_unique<sim::ParticleList>() : nullptr)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
+    , fstoreDroppedMCParticles(storeDroppedMCParticles)
   {}
 
   //----------------------------------------------------------------------------
@@ -175,7 +177,9 @@ namespace larg4 {
                                       process_name.find("Photo") != std::string::npos ||
                                       process_name.find("Ion") != std::string::npos ||
                                       process_name.find("annihil") != std::string::npos));
-      if (drop_shower_daughter) {
+      // If we want to keep minimal information, we need to keep the association
+      // of sim::SimEnergyDeposit with these secondaries.
+      if (drop_shower_daughter && !fstoreDroppedMCParticles) {
 
         // figure out the ultimate parentage of this particle
         // first add this track id and its parent to the fParentIDMap
@@ -190,7 +194,7 @@ namespace larg4 {
         // isn't saved in the particle list because it is below the energy cut
         // which will put a bogus track id value into the sim::IDE object for
         // the sim::SimChannel if we don't check it.
-        if (!fparticleList->KnownParticle(fCurrentTrackID)) fCurrentTrackID = sim::NoParticleId;
+        if (!fparticleList->KnownParticle(fCurrentTrackID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(fCurrentTrackID))) fCurrentTrackID = sim::NoParticleId;
 
       } // end if keeping EM shower daughters
 
@@ -213,7 +217,7 @@ namespace larg4 {
       // if not, then see if it is possible to walk up the fParentIDMap to find the
       // ultimate parent of this particle.  Use that ID as the parent ID for this
       // particle
-      if (!fparticleList->KnownParticle(parentID)) {
+      if (!fparticleList->KnownParticle(parentID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(parentID))) {
         // do add the particle to the parent id map
         // just in case it makes a daughter that we have to track as well
         fParentIDMap[trackID] = parentID;
@@ -221,7 +225,7 @@ namespace larg4 {
 
         // if we still can't find the parent in the particle navigator,
         // we have to give up
-        if (!fparticleList->KnownParticle(pid)) {
+        if (!fparticleList->KnownParticle(pid) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(pid))) {
           MF_LOG_WARNING("ParticleListAction")
             << "can't find parent id: " << parentID << " in the particle list, or fParentIDMap."
             << " Make " << parentID << " the mother ID for"
@@ -254,6 +258,7 @@ namespace larg4 {
     // record it before throwing it away.
     if (drop_shower_daughter) {
       fCurrentParticle.drop = true;
+      if (fdroppedParticleList) fdroppedParticleList->Add(fCurrentParticle.particle.get());
       return;
     }
 
@@ -279,7 +284,7 @@ namespace larg4 {
     // It goes into fDroppedParticleList in case LArG4 is configured
     // to keep a minimal version of it.
     if (fCurrentParticle.drop) {
-      if (fCurrentParticle.keep) fdroppedParticleList->Add(fCurrentParticle.particle.get());
+      if (!fCurrentParticle.keep && fdroppedParticleList) fdroppedParticleList->Archive(fCurrentParticle.particle.get());
       fCurrentParticle.clear();
       return;
     }

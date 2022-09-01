@@ -68,6 +68,9 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
     fMCMiniPartLabel = pset.get<art::InputTag>("G4ModName","largeant");
     fSimChannelLabel = pset.get<art::InputTag>("G4ModName","largeant");
   }
+  else {
+    fMCMiniPartLabel = pset.get<art::InputTag>("MCMiniPartLabel", "largeant");
+  }
 
   fUseSimEnergyDeposit = pset.get<bool>("UseSimEnergyDeposit",false);
   fUseSimEnergyDepositLite = pset.get<bool>("UseSimEnergyDepositLite",false);

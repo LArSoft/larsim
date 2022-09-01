@@ -565,7 +565,8 @@ namespace larg4 {
     fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
                                                         lgp->StoreTrajectories(),
                                                         lgp->KeepEMShowerDaughters(),
-                                                        fMakeMCParticles);
+                                                        fMakeMCParticles,
+                                                        fStoreDroppedMCParticles);
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
@@ -755,21 +756,10 @@ namespace larg4 {
 
           for (auto const& partPair : droppedParticleList) {
             simb::MCParticle& p = *(partPair.second);
+            if (ParticleListAction::isDropped(&p)) continue;
+            if (p.StatusCode() != 1) continue;
 
-            sim::MCMiniPart mini_mcp;
-            mini_mcp.Reset();
-
-            mini_mcp.TrackID( (unsigned int)p.TrackId() );
-            mini_mcp.PdgCode( p.PdgCode() );
-            mini_mcp.Mother( (unsigned int) p.Mother() );
-            mini_mcp.Process( p.Process() );
-            mini_mcp.StartVtx( p.Position() );
-            mini_mcp.StartMom( p.Momentum() );
-            mini_mcp.EndVtx( p.EndPosition() );
-            mini_mcp.EndMom( p.EndMomentum() );
-            // Change units to LArSoft (MeV, cm, us)
-            mini_mcp.ScaleStartMom(1.e3);
-            mini_mcp.ScaleEndMom(1.e3);
+            sim::MCMiniPart mini_mcp(p);
             mini_mcp.Origin( mct->Origin() );
 
             droppedPartCol->push_back(std::move(mini_mcp));

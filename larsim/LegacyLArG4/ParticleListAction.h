@@ -98,7 +98,8 @@ namespace larg4 {
     ParticleListAction(double energyCut,
                        bool storeTrajectories = false,
                        bool keepEMShowerDaughters = false,
-                       bool keepMCParticleList = true);
+                       bool keepMCParticleList = true,
+                       bool storeDroppedMCParticles = false);
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
@@ -184,6 +185,7 @@ namespace larg4 {
     static int fTrackIDOffset;       ///< offset added to track ids when running over
                                      ///< multiple MCTruth objects.
     bool fKeepEMShowerDaughters;     ///< whether to keep EM shower secondaries, tertiaries, etc
+    bool fstoreDroppedMCParticles;   ///< Whether to keep the dropped EM shower secondaries, tertiaries etc in a separate list
 
     std::unique_ptr<util::PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
 
