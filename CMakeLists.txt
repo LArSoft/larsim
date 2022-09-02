@@ -61,6 +61,9 @@ find_package(lardataalg REQUIRED EXPORT)
 find_package(lardataobj REQUIRED EXPORT)
 find_package(larevt REQUIRED EXPORT)
 
+find_package(TensorFlow 2.6.0 QUIET EXPORT)
+find_package (Eigen3 REQUIRED NO_MODULE)
+
 # Wes put this here to use TRACE for debugging...
 #find_ups_product( TRACE )
 

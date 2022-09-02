@@ -1,0 +1,16 @@
+#include "scintillationtime_tool.fcl"
+#include "tfloader_tool.fcl"
+
+BEGIN_PROLOG
+
+standard_pdfastsim_ann:
+{
+  module_type:            "PDFastSimANN"
+  SimulationLabel:        "IonAndScint"
+  DoSlowComponent:        true
+  ScintTimeTool:          @local::ScintTimeLAr
+  TFLoaderTool:           @local::TFLoaderTool
+}
+
+END_PROLOG
+
