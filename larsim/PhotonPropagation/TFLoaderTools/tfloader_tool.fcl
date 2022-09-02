@@ -1,0 +1,15 @@
+// tfloader_tool.fcl
+// Aug. 20 2022 Wei Mu
+BEGIN_PROLOG
+
+TFLoaderTool:
+{
+    tool_type:       TFLoaderMLP
+    ModelName:       "/dune/app/users/wmu/ann/models/pdhdv2/"  //the path of the saved model
+    InputsName:      ["serving_default_pos_x:0",
+                      "serving_default_pos_y:0",
+                      "serving_default_pos_z:0"]
+    OutputName:      "StatefulPartitionedCall:0"
+}
+
+END_PROLOG
