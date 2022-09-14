@@ -35,9 +35,6 @@ namespace sim {
       return m;
     }
   }
-  //const unsigned short MCEdepHit::kINVALID_USHORT = std::numeric_limits<unsigned short>::max();
-
-  //const short MCEdep::kINVALID_SHORT = std::numeric_limits<short>::max();
 
   //##################################################################
   MCRecoEdep::MCRecoEdep(fhicl::ParameterSet const& pset)
@@ -68,7 +65,6 @@ namespace sim {
     _track_index.clear();
 
     art::ServiceHandle<geo::Geometry const> geom;
-    //    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // Key map to identify a unique particle energy deposition point
     std::map<std::pair<UniquePosition, unsigned int>, int> hit_index_m;
@@ -86,8 +82,6 @@ namespace sim {
       UInt_t ch = sch.Channel();
       // Loop over ticks
       for (auto tdc_iter = sch_map.begin(); tdc_iter != sch_map.end(); ++tdc_iter) {
-        // for c2: hit_time is unused
-        //unsigned short hit_time = (*tdc_iter).first;
         // Loop over IDEs
         for (auto const& ide : (*tdc_iter).second) {
 
@@ -130,13 +124,6 @@ namespace sim {
     if (_debug_mode) {
       std::cout << Form("  Collected %zu particles' energy depositions...", _mc_edeps.size())
                 << std::endl;
-      // for c2: disable the entire loop instead of just the print statement
-      //for(auto const& track_id_index : _track_index ) {
-      //auto track_id   = track_id_index.first;
-      //auto edep_index = track_id_index.second;
-      //	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
-      //}
-      std::cout << std::endl;
     }
   }
 
@@ -146,7 +133,6 @@ namespace sim {
     _track_index.clear();
 
     art::ServiceHandle<geo::Geometry const> geom;
-    //    const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     // Key map to identify a unique particle energy deposition point
     std::map<std::pair<UniquePosition, unsigned int>, int> hit_index_m;
@@ -170,13 +156,12 @@ namespace sim {
       // coordinates. Note that the units of distance in
       // sim::SimEnergyDeposit are supposed to be cm.
       auto const mp = sed.MidPoint();
-      double const xyz[3] = {mp.X(), mp.Y(), mp.Z()};
       // From the position in world coordinates, determine the
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
       try {
-        geom->PositionToCryostat(xyz, cryostat);
+        geom->PositionToCryostatID(mp).Cryostat;
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -186,7 +171,7 @@ namespace sim {
       }
       unsigned int tpc = 0;
       try {
-        geom->PositionToTPC(xyz, tpc, cryostat);
+        geom->PositionToTPCID(mp).TPC;
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -209,7 +194,7 @@ namespace sim {
         // David Caratelli, comment end.
         raw::ChannelID_t ch;
         try {
-          ch = geom->NearestChannel(xyz, p, tpc, cryostat);
+          ch = geom->NearestChannel(mp, p, tpc, cryostat);
         }
         catch (cet::exception& e) {
           mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -223,7 +208,7 @@ namespace sim {
         if (track_id < 0) track_id = track_id * (-1);
         unsigned int real_track_id = track_id;
 
-        UniquePosition pos(xyz[0], xyz[1], xyz[2]);
+        UniquePosition pos(mp.X(), mp.Y(), mp.Z());
 
         int hit_index = -1;
         auto key = std::make_pair(pos, real_track_id);
@@ -257,21 +242,12 @@ namespace sim {
     if (_debug_mode) {
       std::cout << Form("  Collected %zu particles' energy depositions...", _mc_edeps.size())
                 << std::endl;
-      // for c2: disable the entire loop instead of just the print statement
-      //for(auto const& track_id_index : _track_index ) {
-      //auto track_id   = track_id_index.first;
-      //auto edep_index = track_id_index.second;
-      //	std::cout<< Form("    Track ID: %d ... %zu Edep!", track_id, edep_index) << std::endl;
-      //}
-      std::cout << std::endl;
     }
-
-    return;
   }
 
   void MCRecoEdep::MakeMCEdep(const std::vector<sim::SimEnergyDepositLite>& sedArray)
   {
-    // Create a substitue array of sim::SimEnergyDeposit to avoid duplicating code...
+    // Create a substitute array of sim::SimEnergyDeposit to avoid duplicating code...
     // Note that this makes use of the explicit conversion operator
     // defined in SimEnergyDepositLite class. Information will be partial.
     // Most notably for MakeMCEdep, charge (numElectrons) will be 0.

@@ -47,55 +47,45 @@ namespace {
   }
 
   template <class STREAM>
-  int DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
+  void DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
   {
     const G4ThreeVector& pos = PV.GetTranslation();
     const G4LogicalVolume* LV = PV.GetLogicalVolume();
 
-    int count = 1;
     out << indentstr << PV.GetName() << " [" << demangle_cxx_symbol(PV) << "]"
         << " at (" << pos.x() << ", " << pos.y() << ", " << pos.z() << ")";
-    if (LV) {
-      out << ", a " << LV->GetName();
 
-      const G4VSolid* Solid = LV->GetSolid();
-      if (Solid) {
-        out << " shaped as " << Solid->GetName();
-        const G4Box* pBox;
+    if (!LV) {
+      out << " with no logical volume (!?)\n";
+      return;
+    }
 
-        try {
-          pBox = dynamic_cast<const G4Box*>(Solid);
-        }
-        catch (std::bad_cast&) {
-          pBox = nullptr;
-        }
+    out << ", a " << LV->GetName();
 
-        if (pBox) {
-          out << ", a (" << (2. * pBox->GetXHalfLength()) << " x " << (2. * pBox->GetYHalfLength())
-              << " x " << (2. * pBox->GetZHalfLength()) << ") cm box";
-        } // if box
-        else {
-          out << ", a " << demangle_cxx_symbol(*Solid);
-        }
+    const G4VSolid* Solid = LV->GetSolid();
+    if (Solid) {
+      out << " shaped as " << Solid->GetName();
+      if (auto pBox = dynamic_cast<const G4Box*>(Solid)) {
+        out << ", a (" << (2. * pBox->GetXHalfLength()) << " x " << (2. * pBox->GetYHalfLength())
+            << " x " << (2. * pBox->GetZHalfLength()) << ") cm box";
       }
       else {
-        out << " with no shape (!?!)";
+        out << ", a " << demangle_cxx_symbol(*Solid);
       }
+    }
+    else {
+      out << " with no shape (!?!)";
+    }
 
-      G4int nDaughters = LV->GetNoDaughters();
-      if (nDaughters > 0) {
-        out << " with " << nDaughters << " subvolumes:\n";
-        for (G4int i = 0; i < nDaughters; ++i) {
-          count += DumpPhysicalVolume(out, *LV->GetDaughter(i), indentstr + "  ");
-        }
+    G4int nDaughters = LV->GetNoDaughters();
+    if (nDaughters > 0) {
+      out << " with " << nDaughters << " subvolumes:\n";
+      for (G4int i = 0; i < nDaughters; ++i) {
+        DumpPhysicalVolume(out, *LV->GetDaughter(i), indentstr + "  ");
       }
-      else
-        out << '\n';
     }
     else
-      out << " with no logical volume (!?)\n";
-
-    return count;
+      out << '\n';
   } // DumpPhysicalVolume()
 
 }
@@ -103,7 +93,7 @@ namespace {
 namespace larg4 {
 
   // Constructor and destructor.
-  LArVoxelReadoutGeometry::LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData)
+  LArVoxelReadoutGeometry::LArVoxelReadoutGeometry(const G4String& name, Setup_t const& setupData)
     : G4VUserParallelWorld(name), fReadoutSetupData(setupData.readoutSetup)
   {
     larg4::IonizationAndScintillation* ios = larg4::IonizationAndScintillation::Instance();
@@ -131,12 +121,11 @@ namespace larg4 {
     // first get the volDetEnclosure
     std::string daughterName("volDetEnclosure");
     G4Transform3D detEnclosureTransform;
-    G4VPhysicalVolume* detEnclosureVolume =
-      this->FindNestedVolume(g4b::DetectorConstruction::GetWorld(),
-                             worldTransform,
-                             detEnclosureTransform,
-                             daughterName,
-                             0);
+    G4VPhysicalVolume* detEnclosureVolume = FindNestedVolume(g4b::DetectorConstruction::GetWorld(),
+                                                             worldTransform,
+                                                             detEnclosureTransform,
+                                                             daughterName,
+                                                             0);
 
     // we keep track of all the voxel boxes with different geometries we create
     struct VoxelSpecs_t {
@@ -193,7 +182,7 @@ namespace larg4 {
       // next get the cryostat
       daughterName = "volCryostat";
       G4Transform3D cryostatTransform;
-      G4VPhysicalVolume* cryostatVolume = this->FindNestedVolume(
+      G4VPhysicalVolume* cryostatVolume = FindNestedVolume(
         detEnclosureVolume, detEnclosureTransform, cryostatTransform, daughterName, c);
 
       for (unsigned int t = 0; t < fGeo->Cryostat(c).NTPC(); ++t) {
@@ -202,12 +191,12 @@ namespace larg4 {
         daughterName = "volTPC";
         G4Transform3D tpcTransform;
         G4VPhysicalVolume* tpcVolume =
-          this->FindNestedVolume(cryostatVolume, cryostatTransform, tpcTransform, daughterName, t);
+          FindNestedVolume(cryostatVolume, cryostatTransform, tpcTransform, daughterName, t);
 
         daughterName = "volTPCActive";
         G4Transform3D transform;
         G4VPhysicalVolume* larTPCPhysical =
-          this->FindNestedVolume(tpcVolume, tpcTransform, transform, daughterName, t);
+          FindNestedVolume(tpcVolume, tpcTransform, transform, daughterName, t);
 
         // Get the LAr TPC volume, and its shape.
         G4LogicalVolume* larTPCLogical = larTPCPhysical->GetLogicalVolume();
@@ -437,7 +426,7 @@ namespace larg4 {
   G4VPhysicalVolume* LArVoxelReadoutGeometry::FindNestedVolume(G4VPhysicalVolume* mother,
                                                                G4Transform3D& motherTransform,
                                                                G4Transform3D& daughterTransform,
-                                                               std::string& daughterName,
+                                                               std::string const& daughterName,
                                                                unsigned int expectedNum)
   {
     G4LogicalVolume* logicalVolume = mother->GetLogicalVolume();
@@ -465,13 +454,13 @@ namespace larg4 {
         // we don't bother with the cryostat number when calling Geometry::PositionToTPC
         // because we know we have already started off with the correct cryostat volume
         // G4 uses mm, we want cm
-        double worldPos[3] = {world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm};
+        geo::Point_t const worldPos{
+          world.x() / CLHEP::cm, world.y() / CLHEP::cm, world.z() / CLHEP::cm};
         unsigned int daughterNum = 0;
-        unsigned int extra = 0;
         if (daughterName.compare("volCryostat") == 0)
-          fGeo->PositionToCryostat(worldPos, daughterNum);
+          daughterNum = fGeo->PositionToCryostatID(worldPos).Cryostat;
         else if (daughterName.compare("volTPC") == 0)
-          fGeo->PositionToTPC(worldPos, daughterNum, extra);
+          daughterNum = fGeo->PositionToTPCID(worldPos).TPC;
         else if (daughterName.compare("volTPCActive") == 0 ||
                  daughterName.compare("volDetEnclosure") == 0) {
           // for either of these volumes, we know there is only 1 in the mother volume
@@ -489,8 +478,6 @@ namespace larg4 {
 
     throw cet::exception("LArVoxelReadoutGeometry")
       << "could not find the desired " << daughterName << " to make LArVoxelReadoutGeometry\n";
-
-    return 0;
   }
 
 } // namespace larg4

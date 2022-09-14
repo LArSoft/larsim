@@ -85,7 +85,7 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
     double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX()) / 2.0;
     double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY()) / 2.0;
     double zcoordinate = (auxDetHit.GetEntryZ() + auxDetHit.GetExitZ()) / 2.0;
-    double worldPos[3] = {xcoordinate, ycoordinate, zcoordinate};
+    geo::Point_t const worldPos{xcoordinate, ycoordinate, zcoordinate};
 
     if (auxDetHit.GetID() == inputchannel) // this is the channel we want.
     {

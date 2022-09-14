@@ -278,15 +278,15 @@ namespace detsim {
         driftsign = -1;
 
       //Check for charge deposits behind charge readout planes
-      if (driftsign == 1 && tpcGeo.PlaneLocation(0)[driftcoordinate] < xyz[driftcoordinate])
+      if (driftsign == 1 && tpcGeo.Plane(0).GetCenter()[driftcoordinate] < xyz[driftcoordinate])
         continue;
-      if (driftsign == -1 && tpcGeo.PlaneLocation(0)[driftcoordinate] > xyz[driftcoordinate])
+      if (driftsign == -1 && tpcGeo.Plane(0).GetCenter()[driftcoordinate] > xyz[driftcoordinate])
         continue;
 
       /// \todo think about effects of drift between planes.
       // Center of plane is also returned in cm units
       double DriftDistance =
-        std::abs(xyz[driftcoordinate] - tpcGeo.PlaneLocation(0)[driftcoordinate]);
+        std::abs(xyz[driftcoordinate] - tpcGeo.Plane(0).GetCenter()[driftcoordinate]);
 
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
@@ -398,7 +398,7 @@ namespace detsim {
       // make a collection of electrons for each plane
       for (size_t p = 0; p < tpcGeo.Nplanes(); ++p) {
 
-        fDriftClusterPos[driftcoordinate] = tpcGeo.PlaneLocation(p)[driftcoordinate];
+        fDriftClusterPos[driftcoordinate] = tpcGeo.Plane(p).GetCenter()[driftcoordinate];
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
@@ -410,8 +410,8 @@ namespace detsim {
           // Also take into account special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
             TDiff +=
-              (tpcGeo.PlaneLocation(ip + 1)[driftcoordinate] -
-               tpcGeo.PlaneLocation(ip)[driftcoordinate]) *
+              (tpcGeo.Plane(ip + 1).GetCenter()[driftcoordinate] -
+               tpcGeo.Plane(ip).GetCenter()[driftcoordinate]) *
               fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 

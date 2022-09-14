@@ -558,7 +558,6 @@ namespace cheat {
     detinfo::DetectorClocksData const& clockData,
     std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
-    std::vector<double> xyz(3, -99999.9);
     std::vector<std::vector<std::vector<int>>> numHits(fGeom->Ncryostats());
     std::vector<std::vector<std::vector<double>>> hitWeight(fGeom->Ncryostats());
     std::vector<std::vector<std::vector<std::vector<double>>>> hitPos(fGeom->Ncryostats());
@@ -574,18 +573,16 @@ namespace cheat {
       }
     }
 
-    for (art::PtrVector<recob::Hit>::const_iterator ihit = hits.begin(); ihit != hits.end();
-         ++ihit) {
-
-      const recob::Hit& hit = **ihit;
+    for (auto const& hit_ptr : hits) {
+      const recob::Hit& hit = *hit_ptr;
 
       // use the HitToXYZ and Geometry::PositionToTPC
       // to figure out which drift volume the hit originates from
-      std::vector<double> hitOrigin = this->HitToXYZ(clockData, *ihit);
-      unsigned int cstat = 0;
-      unsigned int tpc = 0;
-      const double worldLoc[3] = {hitOrigin[0], hitOrigin[1], hitOrigin[2]};
-      fGeom->PositionToTPC(worldLoc, tpc, cstat);
+      std::vector<double> hitOrigin = this->HitToXYZ(clockData, hit_ptr);
+      geo::Point_t const worldLoc{hitOrigin[0], hitOrigin[1], hitOrigin[2]};
+      auto const tpcid = fGeom->PositionToTPCID(worldLoc);
+
+      auto const [cstat, tpc] = std::make_tuple(tpcid.Cryostat, tpcid.TPC);
 
       if (hit.WireID().Cryostat == cstat && hit.WireID().TPC == tpc) {
         ++numHits[cstat][tpc][hit.WireID().Plane];
@@ -597,9 +594,7 @@ namespace cheat {
     // loop over the vectors we made and find the average position for the hits
     // in the future we might take a weighted average
     int nhits = 0;
-    xyz[0] = 0.;
-    xyz[1] = 0.;
-    xyz[2] = 0.;
+    std::vector<double> xyz(3);
     for (size_t c = 0; c < numHits.size(); ++c) {
       for (size_t t = 0; t < numHits[c].size(); ++t) {
         for (size_t p = 0; p < numHits[c][t].size(); ++p) {

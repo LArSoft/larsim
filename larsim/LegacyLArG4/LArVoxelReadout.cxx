@@ -377,12 +377,13 @@ namespace larg4 {
       // the positive or negative direction, so use std::abs
 
       /// \todo think about effects of drift between planes
-      double XDrift = std::abs(stepMidPoint.x() / CLHEP::cm - tpcg.PlaneLocation(0)[0]);
+      auto const& plane_center = tpcg.Plane(0).GetCenter();
+      double XDrift = std::abs(stepMidPoint.x() / CLHEP::cm - plane_center[0]);
       //std::cout<<tpcg.DriftDirection()<<std::endl;
       if (tpcg.DriftDirection() == geo::kNegX)
-        XDrift = stepMidPoint.x() / CLHEP::cm - tpcg.PlaneLocation(0)[0];
+        XDrift = stepMidPoint.x() / CLHEP::cm - plane_center[0];
       else if (tpcg.DriftDirection() == geo::kPosX)
-        XDrift = tpcg.PlaneLocation(0)[0] - stepMidPoint.x() / CLHEP::cm;
+        XDrift = plane_center[0] - stepMidPoint.x() / CLHEP::cm;
 
       if (XDrift < 0.) return;
 
@@ -483,7 +484,7 @@ namespace larg4 {
         double Plane0Pitch = tpcg.Plane0Pitch(p);
 
         // "-" sign is because Plane0Pitch output is positive. Andrzej
-        xyz1[0] = tpcg.PlaneLocation(0)[0] - Plane0Pitch;
+        xyz1[0] = tpcg.Plane(0).GetCenter()[0] - Plane0Pitch;
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {

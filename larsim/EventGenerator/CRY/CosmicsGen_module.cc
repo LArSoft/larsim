@@ -232,10 +232,10 @@ namespace evgen {
 
         // now check if the particle goes through any cryostat in the detector
         // if so, add it to the truth object.
-        for (unsigned int c = 0; c < geom->Ncryostats(); ++c) {
+        for (auto const& cryostat : geom->IterateCryostats()) {
 
           double bounds[6] = {0.};
-          geom->CryostatBoundaries(bounds, c);
+          cryostat.Boundaries(bounds);
 
           //add a buffer box around the cryostat bounds to increase the acceptance
           //(geometrically) at the CRY level to make up for particles we will loose
@@ -293,16 +293,16 @@ namespace evgen {
             //For example, the particle could intersect this cryostat but miss its TPC, but intersect a TPC
             //in another cryostat
             /*try{
-	      unsigned int tpc   = 0;
-	      unsigned int cstat = 0;
-	      geom->PositionToTPC(x2, tpc, cstat);
-	      if      (std::abs(particle.PdgCode())==13) ++tpcMuons;
-	      else if (std::abs(particle.PdgCode())==22) ++tpcPhotons;
-	      else if (std::abs(particle.PdgCode())==11) ++tpcElectrons;
-	    }
-	    catch(cet::exception &e){
-	      MF_LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
-	    }*///
+              unsigned int tpc   = 0;
+              unsigned int cstat = 0;
+              geom->PositionToTPC(x2, tpc, cstat);
+              if      (std::abs(particle.PdgCode())==13) ++tpcMuons;
+              else if (std::abs(particle.PdgCode())==22) ++tpcPhotons;
+              else if (std::abs(particle.PdgCode())==11) ++tpcElectrons;
+            }
+            catch(cet::exception &e){
+              MF_LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
+            }*///
 
             if (hCosQ != 0) {
               double cosq = -p4.Py() / p4.P();

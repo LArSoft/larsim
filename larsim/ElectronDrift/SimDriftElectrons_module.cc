@@ -264,14 +264,15 @@ namespace detsim {
       // coordinates. Note that the units of distance in
       // sim::SimEnergyDeposit are supposed to be cm.
       auto const mp = energyDeposit.MidPoint();
-      double const xyz[3] = {mp.X(), mp.Y(), mp.Z()};
+      std::array<double, 3> xyz;
+      mp.GetCoordinates(data(xyz));
 
       // From the position in world coordinates, determine the
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
       try {
-        fGeometry->PositionToCryostat(xyz, cryostat);
+        cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -280,9 +281,9 @@ namespace detsim {
         continue;
       }
 
-      unsigned int tpc = 0;
+      geo::TPCID tpcid;
       try {
-        fGeometry->PositionToTPC(xyz, tpc, cryostat);
+        tpcid = fGeometry->PositionToTPCID(mp);
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -291,7 +292,7 @@ namespace detsim {
         continue;
       }
 
-      const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpc, cryostat);
+      const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
       // The drift direction can be either in the positive
       // or negative direction in any coordinate x, y or z.
@@ -333,15 +334,13 @@ namespace detsim {
         driftsign = -1;
 
       // Check for charge deposits behind charge readout planes
-      if (driftsign == 1 && tpcGeo.PlaneLocation(0)[driftcoordinate] < xyz[driftcoordinate])
-        continue;
-      if (driftsign == -1 && tpcGeo.PlaneLocation(0)[driftcoordinate] > xyz[driftcoordinate])
-        continue;
+      auto const& plane_location = tpcGeo.Plane(0).GetCenter();
+      if (driftsign == 1 && plane_location[driftcoordinate] < xyz[driftcoordinate]) continue;
+      if (driftsign == -1 && plane_location[driftcoordinate] > xyz[driftcoordinate]) continue;
 
       /// \todo think about effects of drift between planes.
       // Center of plane is also returned in cm units
-      double DriftDistance =
-        std::abs(xyz[driftcoordinate] - tpcGeo.PlaneLocation(0)[driftcoordinate]);
+      double DriftDistance = std::abs(xyz[driftcoordinate] - plane_location[driftcoordinate]);
 
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
@@ -449,9 +448,9 @@ namespace detsim {
       }
 
       // make a collection of electrons for each plane
-      for (size_t p = 0; p < tpcGeo.Nplanes(); ++p) {
+      for (unsigned int p = 0; p < tpcGeo.Nplanes(); ++p) {
 
-        fDriftClusterPos[driftcoordinate] = tpcGeo.PlaneLocation(p)[driftcoordinate];
+        fDriftClusterPos[driftcoordinate] = plane_location[driftcoordinate];
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
@@ -462,7 +461,7 @@ namespace detsim {
           // Take into account different Efields between planes
           // Also take into account special case for ArgoNeuT (Nplanes = 2 and
           // drift direction = x): plane 0 is the second wire plane
-          for (size_t ip = 0; ip < p; ++ip) {
+          for (unsigned int ip = 0; ip < p; ++ip) {
             TDiff +=
               tpcGeo.PlanePitch(ip + 1, ip) *
               fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
@@ -476,7 +475,7 @@ namespace detsim {
           // grab the nearest channel to the fDriftClusterPos position
           try {
             raw::ChannelID_t channel =
-              fGeometry->NearestChannel(fDriftClusterPos, p, tpc, cryostat);
+              fGeometry->NearestChannel(fDriftClusterPos, geo::PlaneID{tpcid, p});
 
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks
@@ -532,7 +531,7 @@ namespace detsim {
             // Add the electron clusters and energy to the
             // sim::SimChannel
             channelPtr->AddIonizationElectrons(
-              energyDeposit.TrackID(), tdc, fnElDiff[k], xyz, fnEnDiff[k]);
+              energyDeposit.TrackID(), tdc, fnElDiff[k], data(xyz), fnEnDiff[k]);
 
             if (fStoreDriftedElectronClusters)
               SimDriftedElectronClusterCollection->emplace_back(

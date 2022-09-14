@@ -285,14 +285,13 @@ namespace phot {
     if (!fUseNhitsModel) {
 
       if (fUseCryoBoundary) {
-        double CryoBounds[6];
-        geom->CryostatBoundaries(CryoBounds);
-        fXmin = CryoBounds[0];
-        fXmax = CryoBounds[1];
-        fYmin = CryoBounds[2];
-        fYmax = CryoBounds[3];
-        fZmin = CryoBounds[4];
-        fZmax = CryoBounds[5];
+        auto const CryoBounds = geom->Cryostat().Boundaries();
+        fXmin = CryoBounds.MinX();
+        fXmax = CryoBounds.MaxX();
+        fYmin = CryoBounds.MinY();
+        fYmax = CryoBounds.MaxY();
+        fZmin = CryoBounds.MinZ();
+        fZmax = CryoBounds.MaxZ();
       }
       else {
         fXmin = p.get<double>("XMin");

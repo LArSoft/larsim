@@ -49,7 +49,7 @@ namespace larg4 {
     }; // struct Setup_t
 
     /// Constructor: sets up all its LArVoxelReadout instances.
-    LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
+    LArVoxelReadoutGeometry(const G4String& name, Setup_t const& setupData);
 
     /// N.B. Sets the relevant DetectorClocksData and
     /// DetectorPropertiesData for the event in flight.  See
@@ -65,7 +65,7 @@ namespace larg4 {
     G4VPhysicalVolume* FindNestedVolume(G4VPhysicalVolume* mother,
                                         G4Transform3D& motherTransform,
                                         G4Transform3D& daughterTransform,
-                                        std::string& daughterName,
+                                        std::string const& daughterName,
                                         unsigned int expectedNum);
 
     art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry

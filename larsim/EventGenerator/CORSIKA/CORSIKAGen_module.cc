@@ -537,9 +537,9 @@ namespace evgen {
 
     //compute shower area based on the maximal x,z dimensions of cryostat boundaries + fShowerAreaExtension
     art::ServiceHandle<geo::Geometry const> geom;
-    for (unsigned int c = 0; c < geom->Ncryostats(); ++c) {
+    for (auto const& cryostat : geom->IterateCryostats()) {
       double bounds[6] = {0.};
-      geom->CryostatBoundaries(bounds, c);
+      cryostat.Boundaries(bounds);
       for (unsigned int bnd = 0; bnd < 6; bnd++) {
         mf::LogVerbatim("CORSIKAGen") << "Cryo Boundary: " << bnd << "=" << bounds[bnd]
                                       << " ( + Buffer=" << fBuffBox[bnd] << ")\n";
@@ -819,9 +819,9 @@ namespace evgen {
 
       // now check if the particle goes through any cryostat in the detector
       // if so, add it to the truth object.
-      for (unsigned int c = 0; c < geom->Ncryostats(); ++c) {
+      for (auto const& cryostat : geom->IterateCryostats()) {
         double bounds[6] = {0.};
-        geom->CryostatBoundaries(bounds, c);
+        cryostat.Boundaries(bounds);
 
         //add a buffer box around the cryostat bounds to increase the acceptance and account for scattering
         //By default, the buffer box has zero size

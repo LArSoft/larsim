@@ -125,21 +125,6 @@ namespace evgen {
     bool fSetReWrite; ///< Whether to ReWrite pdfs
     double fEpsilon;  ///< Minimum integration sum....
 
-    //Define TFS histograms.....
-    /*
-    TH1D* fPositionX;
-    TH1D* fPositionY;
-    TH1D* fPositionZ;
-    TH1D* fTime;
-    TH1D* fMomentumHigh;
-    TH1D* fMomentum;
-    TH1D* fEnergy;
-    TH1D* fDirCosineX;
-    TH1D* fDirCosineY;
-    TH1D* fDirCosineZ;
-    TH1D* fTheta;
-    TH1D* fPhi;
-    */
     //Define some variables....
     double fCryoBoundaries[6];
     double xNeg = 0;
@@ -198,8 +183,8 @@ namespace evgen {
   {
     //Work out center of cryostat(s)
     art::ServiceHandle<geo::Geometry const> geom;
-    for (unsigned int i = 0; i < geom->Ncryostats(); i++) {
-      geom->CryostatBoundaries(fCryoBoundaries, i);
+    for (auto const& cryostat : geom->IterateCryostats()) {
+      cryostat.Boundaries(fCryoBoundaries);
       if (xNeg > fCryoBoundaries[0]) xNeg = fCryoBoundaries[0];
       if (xPos < fCryoBoundaries[1]) xPos = fCryoBoundaries[1];
       if (zNeg > fCryoBoundaries[4]) zNeg = fCryoBoundaries[4];
@@ -210,22 +195,6 @@ namespace evgen {
 
     // Make the Histograms....
     art::ServiceHandle<art::TFileService const> tfs;
-    /*
-    fPositionX    = tfs->make<TH1D>("fPositionX"   ,"Position (cm)" ,500,fCenterX-(fXHalfRange+10) ,fCenterX+(fXHalfRange+10));
-    fPositionY    = tfs->make<TH1D>("fPositionY"   ,"Position (cm)" ,500,-(fYInput+10),(fYInput+10));
-    fPositionZ    = tfs->make<TH1D>("fPositionZ"   ,"Position (cm)" ,500,fCenterZ-(fZHalfRange+10) ,fCenterZ+(fZHalfRange+10));
-    fTime         = tfs->make<TH1D>("fTime"        ,"Time (s)"      ,500,0,1e6);
-    fMomentumHigh = tfs->make<TH1D>("fMomentumHigh","Momentum (GeV)",500,0,fEmax);
-    fMomentum     = tfs->make<TH1D>("fMomentum"    ,"Momentum (GeV)",500,0,100);
-    fEnergy       = tfs->make<TH1D>("fEnergy"      ,"Energy (GeV)"  ,500,0,fEmax);
-
-    fDirCosineX = tfs->make<TH1D>("fDirCosineX","Normalised Direction cosine",500,-1,1);
-    fDirCosineY = tfs->make<TH1D>("fDirCosineY","Normalised Direction cosine",500,-1,1);
-    fDirCosineZ = tfs->make<TH1D>("fDirCosineZ","Normalised Direction cosine",500,-1,1);
-
-    fTheta      = tfs->make<TH1D>("fTheta"     ,"Angle (radians)",500,-365,365);
-    fPhi        = tfs->make<TH1D>("fPhi"       ,"Angle (radians)",500,-365,365);
-    */
     fTree = tfs->make<TTree>("Generator", "analysis tree");
     fTree->Branch("XPosition", &XPosition, "XPosition/D");
     fTree->Branch("YPosition", &YPosition, "YPosition/D");
@@ -366,23 +335,6 @@ namespace evgen {
 
     simb::MCParticle part(trackid, fPDG[i], primary);
     part.AddTrajectoryPoint(pos, pvec);
-    /*
-    fTree->Branch();
-    fTree->Branch();
-    fTree->Branch();
-    fPositionX    ->Fill (x[0]);
-    fPositionY    ->Fill (x[1]);
-    fPositionZ    ->Fill (x[2]);
-    fTime         ->Fill (Time);
-    fMomentumHigh ->Fill (Momentum);
-    fMomentum     ->Fill (Momentum);
-    fEnergy       ->Fill (Energy);
-    fDirCosineX   ->Fill (DirCosineX);
-    fDirCosineY   ->Fill (DirCosineY);
-    fDirCosineZ   ->Fill (DirCosineZ);
-    fTheta        ->Fill (Theta*180/M_PI);
-    fPhi          ->Fill (Phi  *180/M_PI);
-    */
     XPosition = x[0];
     YPosition = x[1];
     ZPosition = x[2];
