@@ -31,7 +31,7 @@ public:
 //  virtual ~MCReco();
 
   void produce(art::Event & e) override;
-  template <typename T> void MakeMCEdep(art::Event& evt, const std::string& errorMessage);
+  template <typename T> void MakeMCEdep(art::Event& evt);
 
 private:
 
@@ -111,14 +111,8 @@ void MCReco::produce(art::Event & evt)
   const std::vector<simb::MCParticle>& mcp_array(*mcpHandle);
 
   if (fIncludeDroppedParticles) {
-    art::Handle<std::vector<sim::MCMiniPart> > mcmpHandle;
-    evt.getByLabel(fMCMiniPartLabel,mcmpHandle);
-    if(!mcmpHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve sim::MCMiniPart";;
-
-    const std::vector<sim::MCMiniPart>& mcmp_array(*mcmpHandle);
-
+    auto const& mcmp_array = *evt.getValidHandle<std::vector<sim::MCMiniPart>>(fMCMiniPartLabel);
     fPart.AddParticles(mcp_array, orig_array, mcmp_array);
-
   } // end if fIncludeDroppedParticles
   else {
     fPart.AddParticles(mcp_array,orig_array);
@@ -127,14 +121,14 @@ void MCReco::produce(art::Event & evt)
   // change implemented by David Caratelli to allow for MCRECO to run without SimChannels and using
   // SimEnergyDeposits instead
   if (fUseSimEnergyDeposit == true) {
-    MakeMCEdep<sim::SimEnergyDeposit>(evt, "sim::SimEnergyDeposit");
+    MakeMCEdep<sim::SimEnergyDeposit>(evt);
   }
   // change implemented by Laura Domine to allow for MCRECO to run with SimEnergyDepositLite
   else if (fUseSimEnergyDepositLite == true) {
-    MakeMCEdep<sim::SimEnergyDepositLite>(evt, "sim::SimEnergyDepositLite");
+    MakeMCEdep<sim::SimEnergyDepositLite>(evt);
   }
   else {
-    MakeMCEdep<sim::SimChannel>(evt, "sim::SimChannel");
+    MakeMCEdep<sim::SimChannel>(evt);
   }
 
   //Add MCShowers and MCTracks to the event
@@ -145,13 +139,9 @@ void MCReco::produce(art::Event & evt)
   fPart.clear();
 }
 
-template <typename T> void MCReco::MakeMCEdep(art::Event& evt, const std::string& errorMessage) {
+template <typename T> void MCReco::MakeMCEdep(art::Event& evt) {
   // Retrieve T
-  art::Handle<std::vector<T> > sedHandle;
-  evt.getByLabel(fSimChannelLabel, sedHandle);
-  if(!sedHandle.isValid()) throw cet::exception(__FUNCTION__) << "Failed to retrieve " << errorMessage;
-
-  const std::vector<T>&  sed_array(*sedHandle);
+  auto const& sed_array = *evt.getValidHandle<std::vector<T>>(fSimChannelLabel);
   fEdep.MakeMCEdep(sed_array);
 }
 

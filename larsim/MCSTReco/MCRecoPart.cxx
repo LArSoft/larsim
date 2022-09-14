@@ -190,22 +190,21 @@ namespace sim {
       TLorentzVector vec(mcp.Momentum(index));
       for(size_t i=0; i<4; ++i) vec[i] *= 1.e3;
 
-      det_path.push_back(std::make_pair(mcp.Position(index),vec));
+      det_path.emplace_back(mcp.Position(index), vec);
 
     }
-    mini_mcp.DetPath(det_path);
+    mini_mcp.DetPath(std::move(det_path));
   }
       } // end if in _pdg_list
     } // end for loop over mcp_v
 
     // Now loop over dropped particles
-    for(size_t i=0; i < mcmp_v.size(); ++i) {
+    for(auto const& mcmp : mcmp_v) {
 
-      auto const& mcmp = mcmp_v[i];
-
-      _track_index.insert(std::make_pair((size_t)(mcmp.TrackID()),(size_t)(this->size())));
+      _track_index.try_emplace(mcmp.TrackID(), this->size());
 
       this->push_back(mcmp);
+
     } // end for loop over mcmp_v
   } // end AddParticles
 }

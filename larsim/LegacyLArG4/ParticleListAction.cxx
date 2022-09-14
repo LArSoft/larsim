@@ -225,7 +225,7 @@ namespace larg4 {
 
         // if we still can't find the parent in the particle navigator,
         // we have to give up
-        if (!fparticleList->KnownParticle(pid) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(pid))) {
+        if (!fparticleList->KnownParticle(pid) && !(fdroppedParticleList && fdroppedParticleList->KnownParticle(pid))) {
           MF_LOG_WARNING("ParticleListAction")
             << "can't find parent id: " << parentID << " in the particle list, or fParentIDMap."
             << " Make " << parentID << " the mother ID for"
