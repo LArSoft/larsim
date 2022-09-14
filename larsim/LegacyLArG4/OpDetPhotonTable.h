@@ -78,7 +78,7 @@ namespace larg4 {
 			    float start_x,float start_y, float start_z,
 			    float end_x,float end_y,float end_z,
 			    double start_time,double end_time,
-			    int trackid,int pdgcode,
+			    int trackid,int pdgcode,int groupid,
 			    std::string const& vol="EMPTY");
       /// Returns the map of energy deposits by volume name.
       std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit> > const& GetSimEnergyDeposits() const;

@@ -238,6 +238,10 @@ namespace larg4 {
         // energy.  if we are only storing primary EM shower particles, and this energy
         // is from a secondary etc EM shower particle, the ID returned is the primary
         const int trackID = ParticleListAction::GetCurrentTrackID();
+        // For all particles but shower daughters, groupID is the same as trackID.
+        // For shower daughters it contains their original trackID instead of the
+        // shower primary's trackID.
+        const int groupID = ParticleListAction::GetCurrentGroupID();
 
         // Find out which TPC we are in.
         // If this readout object covers just one, we already know it.
@@ -279,7 +283,7 @@ namespace larg4 {
         // Note that if there is no particle ID for this energy deposit, the
         // trackID will be sim::NoParticleId.
 
-        DriftIonizationElectrons(*fClockData, midPoint, g4time, trackID, cryostat, tpc);
+        DriftIonizationElectrons(*fClockData, midPoint, g4time, trackID, cryostat, tpc, groupID);
       } // end we are drifting
     }   // end there is non-zero energy deposition
 
@@ -338,7 +342,8 @@ namespace larg4 {
                                             const double simTime,
                                             int trackID,
                                             unsigned short int cryostat,
-                                            unsigned short int tpc)
+                                            unsigned short int tpc,
+                                            int groupID)
   {
     auto const tpcClock = clockData.TPCClock();
 
@@ -570,7 +575,8 @@ namespace larg4 {
                                              deposit_per_tdc.first,
                                              deposit_per_tdc.second.electrons,
                                              xyz,
-                                             deposit_per_tdc.second.energy);
+                                             deposit_per_tdc.second.energy,
+                                             groupID);
 
         } // for deposit on TDCs
       }   // for deposit on channels

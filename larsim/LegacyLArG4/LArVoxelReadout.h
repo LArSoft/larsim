@@ -322,7 +322,8 @@ namespace larg4 {
                                   const double simTime,
                                   int trackID,
                                   unsigned short int cryostat,
-                                  unsigned short int tpc);
+                                  unsigned short int tpc,
+                                  int groupID);
 
     bool
     Has(std::vector<unsigned short int> v, unsigned short int tpc) const

@@ -40,6 +40,7 @@ namespace larg4 {
 
   // Initialize static members.
   int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
+  int ParticleListAction::fCurrentGroupID = sim::NoParticleId;
   int ParticleListAction::fCurrentPdgCode = 0;
   int ParticleListAction::fTrackIDOffset = 0;
 
@@ -79,6 +80,7 @@ namespace larg4 {
     if (fdroppedParticleList) fdroppedParticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
+    fCurrentGroupID = sim::NoParticleId;
     fCurrentPdgCode = 0;
   }
 
@@ -123,6 +125,7 @@ namespace larg4 {
     // runs (if any)
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
+    fCurrentGroupID = trackID;
     fCurrentPdgCode = pdgCode;
 
     if (!fparticleList) {
@@ -177,15 +180,13 @@ namespace larg4 {
                                       process_name.find("Photo") != std::string::npos ||
                                       process_name.find("Ion") != std::string::npos ||
                                       process_name.find("annihil") != std::string::npos));
-      // If we want to keep minimal information, we need to keep the association
-      // of sim::SimEnergyDeposit with these secondaries.
-      if (drop_shower_daughter && !fstoreDroppedMCParticles) {
+      if (drop_shower_daughter) {
 
         // figure out the ultimate parentage of this particle
         // first add this track id and its parent to the fParentIDMap
         fParentIDMap[trackID] = parentID;
 
-        fCurrentTrackID = -1 * this->GetParentage(trackID);
+        fCurrentTrackID = -1 * this->GetParentage(trackID); // the real trackID remains stored in fCurrentGroupID
 
         // check that fCurrentTrackID is in the particle list - it is possible
         // that this particle's parent is a particle that did not get tracked.
@@ -209,6 +210,7 @@ namespace larg4 {
         fParentIDMap[trackID] = parentID;
 
         fCurrentTrackID = -1 * this->GetParentage(trackID);
+        fCurrentGroupID = fCurrentTrackID;
 
         return;
       }

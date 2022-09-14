@@ -539,6 +539,7 @@ namespace larg4 {
       //step.GetTrack()->GetTrackID(),
       ParticleListAction::GetCurrentTrackID(),
       step.GetTrack()->GetParticleDefinition()->GetPDGEncoding(),
+      ParticleListAction::GetCurrentGroupID(),
       step.GetPreStepPoint()->GetPhysicalVolume()->GetName());
   }
 
