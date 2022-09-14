@@ -48,7 +48,6 @@ namespace evgen {
   class NDKGen : public art::EDProducer {
   public:
     explicit NDKGen(fhicl::ParameterSet const& pset);
-    virtual ~NDKGen();
 
   private:
     void produce(art::Event& evt) override;
@@ -63,7 +62,6 @@ namespace evgen {
 
     std::string fNdkFile;
     std::ifstream fEventFile;
-    TStopwatch fStopwatch; ///keep track of how long it takes to run the job
 
     std::string fNDKModuleLabel;
     CLHEP::HepRandomEngine& fEngine; ///< art-managed random-number engine
@@ -110,8 +108,6 @@ namespace evgen {
     // unless overridden in configuration with key "Seed"
     , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
   {
-    fStopwatch.Start();
-
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();
 
@@ -119,9 +115,6 @@ namespace evgen {
       throw cet::exception("NDKGen") << "Could not open file: " << fNdkFile << '\n';
     }
   }
-
-  //____________________________________________________________________________
-  NDKGen::~NDKGen() { fStopwatch.Stop(); }
 
   //___________________________________________________________________________
 
@@ -202,26 +195,7 @@ namespace evgen {
     std::cout << std::endl;
     std::cout << "------------------------------------------------------------------------------"
               << std::endl;
-    //std::cout << "run    : " << evt.Header().Run() << std::endl;
-    //std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
-    //std::cout << "event  : " << evt.Header().Event() << std::endl;
     std::cout << "event  : " << evt.id().event() << std::endl;
-
-    // TODO: fill more quantities out, as below.
-    /*
-    double X; // vertex position from Ndk
-    double Y; // vertex position from Ndk
-    double Z; // vertex position from Ndk
-    double PDGCODE = -9999.;
-    double CHANNEL = -9999.;
-    int channel = -9999;
-    double energy = 0.; // in MeV from Ndk
-    double cosx = 0.;
-    double cosy = 0.;
-    double cosz = 0.;
-
-    int partnumber = 0;
-    */
 
     std::string name, k, dollar;
 
@@ -241,25 +215,11 @@ namespace evgen {
 
     double P; // momentum of MCParticle IN GeV/c
 
-    // TODO: Could perhaps imagine using these in NDk.
-    /*
-    int targetnucleusPdg = -9999;
-    int hitquarkPdg = -9999;
-    double Q2 = -9999;
-    */
     TLorentzVector Neutrino;
     TLorentzVector Lepton;
     TLorentzVector Target;
     TLorentzVector q;
     TLorentzVector Hadron4mom;
-
-    // TODO: Could perhaps imagine using these in NDk.
-    /*
-    int Tpdg = 0;  // for target
-    double Tmass = 0;
-    int Tstatus = 11;
-    double Tcosx, Tcosy, Tcosz, Tenergy;
-    */
 
     TLorentzVector Tpos;
 
@@ -278,17 +238,16 @@ namespace evgen {
     double maxy = -1e9;
     double minz = 1e9;
     double maxz = -1e9;
-    for (size_t i = 0; i < geo->NTPC(); ++i) {
-      double local[3] = {0., 0., 0.};
+    double const local[3] = {0., 0., 0.};
+    for (auto const& tpc : geo->Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
       double world[3] = {0., 0., 0.};
-      const geo::TPCGeo& tpc = geo->TPC(i);
       tpc.LocalToWorld(local, world);
-      if (minx > world[0] - geo->DetHalfWidth(i)) minx = world[0] - geo->DetHalfWidth(i);
-      if (maxx < world[0] + geo->DetHalfWidth(i)) maxx = world[0] + geo->DetHalfWidth(i);
-      if (miny > world[1] - geo->DetHalfHeight(i)) miny = world[1] - geo->DetHalfHeight(i);
-      if (maxy < world[1] + geo->DetHalfHeight(i)) maxy = world[1] + geo->DetHalfHeight(i);
-      if (minz > world[2] - geo->DetLength(i) / 2.) minz = world[2] - geo->DetLength(i) / 2.;
-      if (maxz < world[2] + geo->DetLength(i) / 2.) maxz = world[2] + geo->DetLength(i) / 2.;
+      if (minx > world[0] - tpc.HalfWidth()) minx = world[0] - tpc.HalfWidth();
+      if (maxx < world[0] + tpc.HalfWidth()) maxx = world[0] + tpc.HalfWidth();
+      if (miny > world[1] - tpc.HalfHeight()) miny = world[1] - tpc.HalfHeight();
+      if (maxy < world[1] + tpc.HalfHeight()) maxy = world[1] + tpc.HalfHeight();
+      if (minz > world[2] - tpc.Length() / 2.) minz = world[2] - tpc.Length() / 2.;
+      if (maxz < world[2] + tpc.Length() / 2.) maxz = world[2] + tpc.Length() / 2.;
     }
 
     // Assign vertice position
@@ -330,7 +289,6 @@ namespace evgen {
         if (k.find("FLAGS") != std::string::npos) break;       // Event end. gevgen_ndcy
         if (k.find("Vertex") != std::string::npos) break;      // Event end. atmo
 
-        //      if (!k.compare(26,1,"3") || !k.compare(26,1,"1")) ; // New event or stable particles.
         if (!k.compare(26, 1, "1")) // New event or stable particles.
         {
 
@@ -341,7 +299,6 @@ namespace evgen {
           in >> p1 >> Idx >> p2 >> Name >> p3 >> Ist >> p4 >> PDG >> p5 >> Mother1 >> p6 >>
             Mother2 >> p7 >> Daughter1 >> p8 >> Daughter2 >> p9 >> Px >> p10 >> Py >> p11 >> Pz >>
             p12 >> E >> p13 >> m >> p14;
-          //std::cout<<std::setprecision(9)<<dollar<<"  "<<name<<"  "<<PDGCODE<<"  "<<energy<<"  "<<cosx<<" "<<cosy<<"  "<<cosz<<"  "<<partnumber<<std::endl;
           if (Ist != 1) continue;
 
           std::cout << "PDG = " << PDG << std::endl;
@@ -351,7 +308,6 @@ namespace evgen {
           Mass = definition->Mass();      // GeV
           if (E - Mass < 0.001) continue; // KE is too low.
 
-          //	  if(partnumber == -1)
           Status = 1;
 
           simb::MCParticle mcpart(trackid, PDG, primary, FirstMother, Mass, Status);
@@ -370,34 +326,24 @@ namespace evgen {
 
         } // loop over particles in an event
         truth.SetOrigin(simb::kUnknown);
-
-        //if (!k.compare(1,1,"FLAGS")) // end of event
-        //  break;
       }
     } // end while loop
 
     /////////////////////////////////
     std::cout << "NDKGen.cxx: Putting " << truth.NParticles() << " tracks on stack." << std::endl;
     truthcol->push_back(truth);
-    //FillHistograms(truth);
     evt.put(std::move(truthcol));
-
-    return;
   }
 
   //   //......................................................................
   std::string NDKGen::ParticleStatus(int StatusCode)
   {
-    int code = StatusCode;
-    std::string ParticleStatusName;
-
-    switch (code) {
-    case 0: ParticleStatusName = "kIStInitialState"; break;
-    case 1: ParticleStatusName = "kIStFinalState"; break;
-    case 11: ParticleStatusName = "kIStNucleonTarget"; break;
-    default: ParticleStatusName = "Status Unknown";
+    switch (StatusCode) {
+    case 0: return "kIStInitialState";
+    case 1: return "kIStFinalState";
+    case 11: return "kIStNucleonTarget";
+    default: return "Status Unknown";
     }
-    return ParticleStatusName;
   }
 
   //   //......................................................................
@@ -480,45 +426,6 @@ namespace evgen {
       fDCosZ->Fill(nu.Pz() / mom);
     }
 
-    //     MF_LOG_DEBUG("GENIEInteractionInformation")
-    //       << std::endl
-    //       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode())
-    //       << std::endl
-    //       << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl
-    //       << std::setiosflags(std::ios::left)
-    //       << std::setw(20) << "PARTICLE"
-    //       << std::setiosflags(std::ios::left)
-    //       << std::setw(32) << "STATUS"
-    //       << std::setw(18) << "E (GeV)"
-    //       << std::setw(18) << "m (GeV/c2)"
-    //       << std::setw(18) << "Ek (GeV)"
-    //       << std::endl << std::endl;
-
-    //     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
-
-    //     // Loop over the particle stack for this event
-    //     for(int i = 0; i < mc.NParticles(); ++i){
-    //       simb::MCParticle part(mc.GetParticle(i));
-    //       std::string name = databasePDG->GetParticle(part.PdgCode())->GetName();
-    //       int code = part.StatusCode();
-    //       std::string status = ParticleStatus(code);
-    //       double mass = part.Mass();
-    //       double energy = part.E();
-    //       double Ek = (energy-mass); // Kinetic Energy (GeV)
-    //       if(status=="kIStFinalStB4Interactions")
-    // 	MF_LOG_DEBUG("GENIEFinalState")
-    // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
-    // 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
-    // 	  << std::setw(18)<< energy
-    // 	  << std::setw(18)<< mass
-    // 	  << std::setw(18)<< Ek <<std::endl;
-    //       else
-    // 	MF_LOG_DEBUG("GENIEFinalState")
-    // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
-    // 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
-    // 	  << std::setw(18) << energy
-    // 	  << std::setw(18) << mass <<std::endl;
-
     std::cout << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(), mc.GetNeutrino().Mode())
               << std::endl;
     std::cout << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl;
@@ -575,8 +482,6 @@ namespace evgen {
         }
       } // end loop over particles
     }   //end if CC interaction
-
-    return;
   }
 
   DEFINE_ART_MODULE(NDKGen)

@@ -61,10 +61,10 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(const geo::Ge
   if (fVertexType == vertex_type_t::kSampled) {
 
     // Sample a TPC index using the active masses as weights
-    size_t tpc_index = fTPCDist->operator()(fTPCEngine);
+    size_t tpc_index = (*fTPCDist)(fTPCEngine);
 
     // Get the dimensions of the chosen TPC's active volume
-    const auto& tpc = geom.TPC(tpc_index);
+    const auto& tpc = geom.TPC(geo::TPCID(0, tpc_index));
     double minX = tpc.MinX();
     double maxX = tpc.MaxX();
     double minY = tpc.MinY();
@@ -113,8 +113,7 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(const geo::Ge
       // first vertex position that was sampled unconditionally.
       if (fCheckActive) {
         size_t num_tpcs = geom.NTPC();
-        for (size_t iTPC = 0; iTPC < num_tpcs; ++iTPC) {
-          const auto& tpc = geom.TPC(iTPC);
+        for (auto const& tpc : geom.Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
           double minX = tpc.MinX();
           double maxX = tpc.MaxX();
           double minY = tpc.MinY();
@@ -161,10 +160,9 @@ void evgen::ActiveVolumeVertexSampler::reconfigure(
     // them as weights for sampling a TPC to use for the primary vertex.
     std::vector<double> tpc_masses;
     size_t num_tpcs = geom.NTPC();
-    for (size_t iTPC = 0; iTPC < num_tpcs; ++iTPC) {
-      // For each TPC, use its active mass (returned in kg) as its sampling
-      // weight
-      tpc_masses.push_back(geom.TPC(iTPC).ActiveMass());
+    for (auto const& tpc : geom.Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
+      // For each TPC, use its active mass (returned in kg) as its sampling weight
+      tpc_masses.push_back(tpc.ActiveMass());
     }
 
     // Load the discrete distribution used to sample TPCs with the up-to-date

@@ -237,7 +237,7 @@ namespace larg4 {
         }
       } // if
 
-      geo::Point_t const Cathode_centre{geom.TPC(0, 0).GetCathodeCenter().X(),
+      geo::Point_t const Cathode_centre{geom.TPC().GetCathodeCenter().X(),
                                         fActiveVolumes[0].CenterY(),
                                         fActiveVolumes[0].CenterZ()};
       mf::LogTrace("OpFastScintillation") << "Cathode_centre: " << Cathode_centre << " cm";
@@ -341,7 +341,7 @@ namespace larg4 {
           fPVS->LoadGHDome(fGHvuvpars_dome, fborder_corr_angulo_dome, fborder_corr_dome);
         }
         // cathode center coordinates required for corrections
-        fcathode_centre = geom.TPC(0, 0).GetCathodeCenter();
+        fcathode_centre = geom.TPC().GetCathodeCenter();
         fcathode_centre[1] = fActiveVolumes[0].CenterY();
         fcathode_centre[2] =
           fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
@@ -2150,7 +2150,7 @@ namespace larg4 {
     std::vector<geo::BoxBoundedGeo> activeVolumes;
     activeVolumes.reserve(geom.Ncryostats());
 
-    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+    for (geo::CryostatGeo const& cryo : geom.Iterate<geo::CryostatGeo>()) {
 
       // can't use it default-constructed since it would always include origin
       geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};

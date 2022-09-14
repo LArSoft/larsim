@@ -104,9 +104,10 @@ namespace larg {
     art::ServiceHandle<geo::Geometry const> geom;
 
     // assumes all TPCs are the same
-    double width = 2 * geom->TPC(0).HalfWidth();
-    double halfHeight = geom->TPC(0).HalfHeight();
-    double length = geom->TPC(0).Length();
+    auto const& tpc = geom->TPC();
+    double width = 2 * tpc.HalfWidth();
+    double halfHeight = tpc.HalfHeight();
+    double length = tpc.Length();
 
     // Assumes microboone dimensions. Ideally we'd fix this later...
     fChargeXpos =

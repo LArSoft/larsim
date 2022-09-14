@@ -165,7 +165,7 @@ namespace larg4 {
     // a voxel that overlaps the LAr TPC.
     flarVoxelReadout = new LArVoxelReadout("LArVoxelSD");
     flarVoxelReadout->Setup(fReadoutSetupData);
-    if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat(0).NTPC() == 1))
+    if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat().NTPC() == 1))
       flarVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
 
     // Tell Geant4's sensitive-detector manager that the voxel SD
@@ -185,7 +185,7 @@ namespace larg4 {
       G4VPhysicalVolume* cryostatVolume = FindNestedVolume(
         detEnclosureVolume, detEnclosureTransform, cryostatTransform, daughterName, c);
 
-      for (unsigned int t = 0; t < fGeo->Cryostat(c).NTPC(); ++t) {
+      for (unsigned int t = 0; t < fGeo->Cryostat(geo::CryostatID(c)).NTPC(); ++t) {
 
         // now for the TPC
         daughterName = "volTPC";

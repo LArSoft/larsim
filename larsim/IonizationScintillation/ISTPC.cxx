@@ -44,7 +44,7 @@ namespace larg4 {
     std::vector<geo::BoxBoundedGeo> activeVolumes;
     activeVolumes.reserve(geom.Ncryostats());
 
-    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+    for (geo::CryostatGeo const& cryo : geom.Iterate<geo::CryostatGeo>()) {
 
       // can't use it default-constructed since it would always include origin
 

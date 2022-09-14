@@ -145,7 +145,7 @@ namespace larg4 {
     fChannelMaps.resize(fGeoHandle->Ncryostats());
     size_t cryo = 0;
     for (auto& cryoData : fChannelMaps) { // each, a vector of maps
-      cryoData.resize(fGeoHandle->NTPC(cryo++));
+      cryoData.resize(fGeoHandle->NTPC(geo::CryostatID(cryo++)));
       for (auto& channelsMap : cryoData)
         channelsMap.clear(); // each, a map
     }                        // for cryostats
@@ -371,7 +371,7 @@ namespace larg4 {
     // Already know which TPC we're in because we have been told
 
     try {
-      const geo::TPCGeo& tpcg = fGeoHandle->TPC(tpc, cryostat);
+      const geo::TPCGeo& tpcg = fGeoHandle->TPC(geo::TPCID{cryostat, tpc});
 
       // X drift distance - the drift direction can be either in
       // the positive or negative direction, so use std::abs
@@ -517,7 +517,7 @@ namespace larg4 {
               xyz1[2] = landingPos.Z();
 
             } // if charge lands off plane
-            uint32_t channel = fGeoHandle->NearestChannel(xyz1, p, tpc, cryostat);
+            uint32_t channel = fGeoHandle->NearestChannel(xyz1, plane.ID());
 
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks

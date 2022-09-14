@@ -199,12 +199,12 @@ namespace evgen {
         else if (std::abs(particle.PdgCode()) == 11)
           ++allElectrons;
 
-        TH1F* hCosQ = 0;
-        TH2F* hAngles = 0;
-        TH2F* hAnglesLo = 0;
-        TH2F* hAnglesMi = 0;
-        TH2F* hAnglesHi = 0;
-        TH1F* hEnergy = 0;
+        TH1F* hCosQ = nullptr;
+        TH2F* hAngles = nullptr;
+        TH2F* hAnglesLo = nullptr;
+        TH2F* hAnglesMi = nullptr;
+        TH2F* hAnglesHi = nullptr;
+        TH1F* hEnergy = nullptr;
         if (std::abs(particle.PdgCode()) == 13) {
           hCosQ = fMuonCosQ;
           hAngles = fMuonAngles;
@@ -232,7 +232,7 @@ namespace evgen {
 
         // now check if the particle goes through any cryostat in the detector
         // if so, add it to the truth object.
-        for (auto const& cryostat : geom->IterateCryostats()) {
+        for (auto const& cryostat : geom->Iterate<geo::CryostatGeo>()) {
 
           double bounds[6] = {0.};
           cryostat.Boundaries(bounds);
@@ -289,21 +289,6 @@ namespace evgen {
             else if (std::abs(particle.PdgCode()) == 11)
               ++numElectrons;
 
-            //The following code no longer works now that we require intersection with the cryostat boundary
-            //For example, the particle could intersect this cryostat but miss its TPC, but intersect a TPC
-            //in another cryostat
-            /*try{
-              unsigned int tpc   = 0;
-              unsigned int cstat = 0;
-              geom->PositionToTPC(x2, tpc, cstat);
-              if      (std::abs(particle.PdgCode())==13) ++tpcMuons;
-              else if (std::abs(particle.PdgCode())==22) ++tpcPhotons;
-              else if (std::abs(particle.PdgCode())==11) ++tpcElectrons;
-            }
-            catch(cet::exception &e){
-              MF_LOG_DEBUG("CosmicsGen") << "current particle does not go through any tpc";
-            }*///
-
             if (hCosQ != 0) {
               double cosq = -p4.Py() / p4.P();
               double phi = std::atan2(p4.Pz(), p4.Px());
@@ -333,10 +318,6 @@ namespace evgen {
       fPhotonsInCStat->Fill(numPhotons);
       fElectronsInCStat->Fill(numElectrons);
       fMuonsInCStat->Fill(numMuons);
-
-      /*fPhotonsInTPC  ->Fill(tpcPhotons);
-      fElectronsInTPC->Fill(tpcElectrons);
-      fMuonsInTPC    ->Fill(tpcMuons);*/
     }
 
     truthcol->push_back(truth);
@@ -345,8 +326,4 @@ namespace evgen {
 
 } // end namespace
 
-namespace evgen {
-
-  DEFINE_ART_MODULE(CosmicsGen)
-
-}
+DEFINE_ART_MODULE(evgen::CosmicsGen)

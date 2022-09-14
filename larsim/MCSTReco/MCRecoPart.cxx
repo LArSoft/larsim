@@ -17,7 +17,12 @@ namespace sim {
 
   //--------------------------------------------------------------------------------------------
   MCRecoPart::MCRecoPart(fhicl::ParameterSet const& pset)
-  //--------------------------------------------------------------------------------------------
+    : _x_max{std::numeric_limits<double>::min()}
+    , _x_min{std::numeric_limits<double>::max()}
+    , _y_max{std::numeric_limits<double>::min()}
+    , _y_min{std::numeric_limits<double>::max()}
+    , _z_max{std::numeric_limits<double>::min()}
+    , _z_min{std::numeric_limits<double>::max()}
   {
     this->clear();
     _track_index.clear();
@@ -30,42 +35,14 @@ namespace sim {
     // Build "Fiducial" Volume Definition:
     //
     // Iterate over all TPC's to get bounding box that covers volumes of each individual TPC in the detector
-    _x_min = std::min_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MinX() < rhs.BoundingBox().MinX();
-                              })
-               ->MinX();
-    _y_min = std::min_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MinY() < rhs.BoundingBox().MinY();
-                              })
-               ->MinY();
-    _z_min = std::min_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MinZ() < rhs.BoundingBox().MinZ();
-                              })
-               ->MinZ();
-    _x_max = std::max_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MaxX() < rhs.BoundingBox().MaxX();
-                              })
-               ->MaxX();
-    _y_max = std::max_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MaxY() < rhs.BoundingBox().MaxY();
-                              })
-               ->MaxY();
-    _z_max = std::max_element(geo->begin_TPC(),
-                              geo->end_TPC(),
-                              [](auto const& lhs, auto const& rhs) {
-                                return lhs.BoundingBox().MaxZ() < rhs.BoundingBox().MaxZ();
-                              })
-               ->MaxZ();
+    for (auto const& tpc : geo->Iterate<geo::TPCGeo>()) {
+      _x_max = std::max(_x_max, tpc.BoundingBox().MaxX());
+      _x_min = std::min(_x_min, tpc.BoundingBox().MinX());
+      _y_max = std::max(_y_max, tpc.BoundingBox().MaxY());
+      _y_min = std::min(_y_min, tpc.BoundingBox().MinY());
+      _z_max = std::max(_z_max, tpc.BoundingBox().MaxZ());
+      _z_min = std::min(_z_min, tpc.BoundingBox().MinZ());
+    }
   }
 
   //--------------------------------------------------------------------------------------------

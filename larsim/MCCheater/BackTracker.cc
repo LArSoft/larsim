@@ -553,7 +553,8 @@ namespace cheat {
     return eveIds;
   }
 
-  //This function definitely needs a new implimentation. There must be abetter way than so many loops.
+  // This function definitely needs a new implementation. There must
+  // be a better way than so many loops.
   std::vector<double> BackTracker::SpacePointHitsToWeightedXYZ(
     detinfo::DetectorClocksData const& clockData,
     std::vector<art::Ptr<recob::Hit>> const& hits) const
@@ -561,15 +562,17 @@ namespace cheat {
     std::vector<std::vector<std::vector<int>>> numHits(fGeom->Ncryostats());
     std::vector<std::vector<std::vector<double>>> hitWeight(fGeom->Ncryostats());
     std::vector<std::vector<std::vector<std::vector<double>>>> hitPos(fGeom->Ncryostats());
-    //Do we need to resize everything...
+    // Do we need to resize everything...
     for (size_t c = 0; c < numHits.size(); ++c) {
-      numHits[c].resize(fGeom->NTPC(c));
-      hitWeight[c].resize(fGeom->NTPC(c));
-      hitPos[c].resize(fGeom->NTPC(c));
+      geo::CryostatID const cid(c);
+      numHits[c].resize(fGeom->NTPC(cid));
+      hitWeight[c].resize(fGeom->NTPC(cid));
+      hitPos[c].resize(fGeom->NTPC(cid));
       for (size_t t = 0; t < numHits[c].size(); ++t) {
-        numHits[c][t].resize(fGeom->Nplanes(t, c));
-        hitWeight[c][t].resize(fGeom->Nplanes(t, c));
-        hitPos[c][t].resize(fGeom->Nplanes(t, c));
+        geo::TPCID const tpcid(cid, t);
+        numHits[c][t].resize(fGeom->Nplanes(tpcid));
+        hitWeight[c][t].resize(fGeom->Nplanes(tpcid));
+        hitPos[c][t].resize(fGeom->Nplanes(tpcid));
       }
     }
 

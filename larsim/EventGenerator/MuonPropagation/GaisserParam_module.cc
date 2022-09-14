@@ -183,7 +183,7 @@ namespace evgen {
   {
     //Work out center of cryostat(s)
     art::ServiceHandle<geo::Geometry const> geom;
-    for (auto const& cryostat : geom->IterateCryostats()) {
+    for (auto const& cryostat : geom->Iterate<geo::CryostatGeo>()) {
       cryostat.Boundaries(fCryoBoundaries);
       if (xNeg > fCryoBoundaries[0]) xNeg = fCryoBoundaries[0];
       if (xPos < fCryoBoundaries[1]) xPos = fCryoBoundaries[1];
@@ -483,9 +483,6 @@ namespace evgen {
     pdfFilePath << fInputDir << tmpfileName;
     std::string fileName = pdfFilePath.str();
 
-    // fTemplateFile           = pset.get< std::string >("TemplateFile");
-    // //fCalorimetryModuleLabel = pset.get< std::string >("CalorimetryModuleLabel");
-
     cet::search_path sp("FW_SEARCH_PATH");
     std::string fROOTfile; //return /lbne/data/0-100-1.57.root
     if (sp.find_file(tmpfileName, fROOTfile)) fileName = fROOTfile;
@@ -562,8 +559,6 @@ namespace evgen {
           double dj = double(j);
           double int_j = muonSpec->Integral(
             fEmin, fEmin + dj * (fEmid - fEmin) / dnbins, thetalow, theta, fEpsilon);
-          //	std::std::cout << j << "(" << m_emin << " --> " << m_emin + dj*m_emid/dnbins << ") = " << int_j/int_tot << std::std::endl;
-          //	std::std::cout << j << "(" << m_emin << " --> " << m_emin + dj*(m_emid-m_emin)/dnbins << ") = " << int_j/int_tot << std::std::endl;
           pdf_lowenergy->SetBinContent(j, int_j / int_tot);
         }
 
@@ -575,7 +570,6 @@ namespace evgen {
           double dj = double(j);
           double int_j = muonSpec->Integral(
             fEmin, fEmid + dj * (fEmax - fEmid) / dnbins, thetalow, theta, fEpsilon);
-          //      std::cout << j << "(" << m_emin << " --> " << m_emid + dj*(m_emax-m_emid)/dnbins << ") = " << int_j/int_tot << std::endl;
           pdf_highenergy->SetBinContent(j, int_j / int_tot);
         }
 
@@ -659,8 +653,6 @@ namespace evgen {
     double ct = cos(theta);
     double di;
     if (fSetParam) {
-      //    double gamma=2.77;   // LVD spectrum: spectral index
-      //    double A=1.84*0.14;  // normalisation
       double gamma = 2.7;
       double A = 0.14;
       double rc = 1.e-4; // fraction of prompt muons

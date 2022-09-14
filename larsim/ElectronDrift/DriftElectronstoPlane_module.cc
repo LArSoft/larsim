@@ -197,7 +197,7 @@ namespace detsim {
     fNCryostats = fGeometry->Ncryostats();
     fNTPCs.resize(fNCryostats);
     for (size_t n = 0; n < fNCryostats; ++n)
-      fNTPCs[n] = fGeometry->NTPC(n);
+      fNTPCs[n] = fGeometry->NTPC(geo::CryostatID(n));
   }
 
   //-------------------------------------------------
@@ -236,9 +236,7 @@ namespace detsim {
       // From the position in world coordinates, determine the
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
-      unsigned int cryostat = 0;
-      unsigned int tpc = 0;
-      const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpc, cryostat);
+      const geo::TPCGeo& tpcGeo = fGeometry->TPC();
 
       // The drift direction can be either in the positive
       // or negative direction in any coordinate x, y or z.

@@ -158,8 +158,7 @@ void evgen::NeutronOsc::produce(art::Event& e)
   double maxy = -1e9;
   double minz = 1e9;
   double maxz = -1e9;
-  for (size_t i = 0; i < geo->NTPC(); ++i) {
-    const geo::TPCGeo& tpc = geo->TPC(i);
+  for (auto const& tpc : geo->Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
     if (minx > tpc.MinX()) minx = tpc.MinX();
     if (maxx < tpc.MaxX()) maxx = tpc.MaxX();
     if (miny > tpc.MinY()) miny = tpc.MinY();

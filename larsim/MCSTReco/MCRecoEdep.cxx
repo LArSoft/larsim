@@ -28,7 +28,7 @@ namespace sim {
       art::ServiceHandle<geo::Geometry const> geom;
       std::map<geo::PlaneID, size_t> m;
       size_t i = 0;
-      for (auto const& pid : geom->IteratePlaneIDs()) {
+      for (auto const& pid : geom->Iterate<geo::PlaneID>()) {
         m[pid] = i;
         i++;
       }
@@ -179,13 +179,13 @@ namespace sim {
                                             << e;
         continue;
       }
-      const geo::TPCGeo& tpcGeo = geom->TPC(tpc, cryostat);
+      geo::TPCID const tpcid{cryostat, tpc};
 
       //Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
       // unused int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection())-1;  //x:0, y:1, z:2
 
       // make a collection of electrons for each plane
-      for (size_t p = 0; p < tpcGeo.Nplanes(); ++p) {
+      for (auto const& planeid : geom->Iterate<geo::PlaneID>()) {
 
         // grab the nearest channel to the fDriftClusterPos position
         // David Caratelli, comment begin:
@@ -194,7 +194,7 @@ namespace sim {
         // David Caratelli, comment end.
         raw::ChannelID_t ch;
         try {
-          ch = geom->NearestChannel(mp, p, tpc, cryostat);
+          ch = geom->NearestChannel(mp, planeid);
         }
         catch (cet::exception& e) {
           mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"

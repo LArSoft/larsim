@@ -214,7 +214,7 @@ namespace detsim {
     fNCryostats = fGeometry->Ncryostats();
     fNTPCs.resize(fNCryostats);
     for (size_t n = 0; n < fNCryostats; ++n)
-      fNTPCs[n] = fGeometry->NTPC(n);
+      fNTPCs[n] = fGeometry->NTPC(geo::CryostatID(n));
   }
 
   //-------------------------------------------------

@@ -852,7 +852,7 @@ namespace larg4 {
 
         std::map<unsigned int, unsigned int> channelToscCol;
 
-        unsigned int ntpcs = geom->Cryostat(c).NTPC();
+        unsigned int ntpcs = geom->Cryostat(geo::CryostatID(c)).NTPC();
         for (unsigned int t = 0; t < ntpcs; ++t) {
           std::string name("LArVoxelSD");
           std::ostringstream sstr;

@@ -537,7 +537,7 @@ namespace evgen {
 
     //compute shower area based on the maximal x,z dimensions of cryostat boundaries + fShowerAreaExtension
     art::ServiceHandle<geo::Geometry const> geom;
-    for (auto const& cryostat : geom->IterateCryostats()) {
+    for (auto const& cryostat : geom->Iterate<geo::CryostatGeo>()) {
       double bounds[6] = {0.};
       cryostat.Boundaries(bounds);
       for (unsigned int bnd = 0; bnd < 6; bnd++) {
@@ -819,7 +819,7 @@ namespace evgen {
 
       // now check if the particle goes through any cryostat in the detector
       // if so, add it to the truth object.
-      for (auto const& cryostat : geom->IterateCryostats()) {
+      for (auto const& cryostat : geom->Iterate<geo::CryostatGeo>()) {
         double bounds[6] = {0.};
         cryostat.Boundaries(bounds);
 

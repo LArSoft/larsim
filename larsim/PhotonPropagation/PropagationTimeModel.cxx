@@ -106,11 +106,10 @@ void PropagationTimeModel::Initialization()
   geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
   // get TPC information
-  fplane_depth = std::abs(geom.TPC(0, 0).GetCathodeCenter().X());
+  fplane_depth = std::abs(geom.TPC().GetCathodeCenter().X());
   fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
-  fcathode_centre = {geom.TPC(0, 0).GetCathodeCenter().X(),
-                     fActiveVolumes[0].CenterY(),
-                     fActiveVolumes[0].CenterZ()};
+  fcathode_centre = {
+    geom.TPC().GetCathodeCenter().X(), fActiveVolumes[0].CenterY(), fActiveVolumes[0].CenterZ()};
 
   // get PDS information
   nOpDets = geom.NOpDets();

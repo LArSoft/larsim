@@ -77,7 +77,7 @@ namespace simfilter {
   void FilterGenInTime::beginJob()
   {
     auto const& geom = *art::ServiceHandle<geo::Geometry const>();
-    for (auto const& cryo : geom.IterateCryostats()) {
+    for (auto const& cryo : geom.Iterate<geo::CryostatGeo>()) {
       std::array<double, 6> this_cryo_boundaries{};
       cryo.Boundaries(&this_cryo_boundaries[0]);
       fCryostatBoundaries.push_back(this_cryo_boundaries);

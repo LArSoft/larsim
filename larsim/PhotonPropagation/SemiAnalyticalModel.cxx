@@ -32,10 +32,10 @@ SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits,
   , fGeom{*(lar::providerFrom<geo::Geometry>())}
   , fNTPC(fGeom.NTPC())
   , fActiveVolumes(fISTPC.extractActiveLArVolume(fGeom))
-  , fcathode_centre{fGeom.TPC(0, 0).GetCathodeCenter().X(),
+  , fcathode_centre{fGeom.TPC().GetCathodeCenter().X(),
                     fActiveVolumes[0].CenterY(),
                     fActiveVolumes[0].CenterZ()}
-  , fanode_centre{fGeom.TPC(0, 0).FirstPlane().GetCenter().X(),
+  , fanode_centre{fGeom.TPC().FirstPlane().GetCenter().X(),
                   fActiveVolumes[0].CenterY(),
                   fActiveVolumes[0].CenterZ()}
   , nOpDets(fGeom.NOpDets())
