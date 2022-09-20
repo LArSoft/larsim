@@ -40,7 +40,7 @@ namespace larg4 {
 
   // Initialize static members.
   int ParticleListAction::fCurrentTrackID = sim::NoParticleId;
-  int ParticleListAction::fCurrentGroupID = sim::NoParticleId;
+  int ParticleListAction::fCurrentG4TrackID = sim::NoParticleId;
   int ParticleListAction::fCurrentPdgCode = 0;
   int ParticleListAction::fTrackIDOffset = 0;
 
@@ -80,7 +80,7 @@ namespace larg4 {
     if (fdroppedParticleList) fdroppedParticleList->clear();
     fParentIDMap.clear();
     fCurrentTrackID = sim::NoParticleId;
-    fCurrentGroupID = sim::NoParticleId;
+    fCurrentG4TrackID = sim::NoParticleId;
     fCurrentPdgCode = 0;
   }
 
@@ -90,20 +90,21 @@ namespace larg4 {
   // assume that the current track id has already been added to
   // the fParentIDMap
   int
-  ParticleListAction::GetParentage(int trackid) const
+  ParticleListAction::GetParentage(int trackid, bool useG4TrackIDMap) const
   {
     int parentid = sim::NoParticleId;
+    const std::map<int, int>* parentIDMap = useG4TrackIDMap ? &fParentIDMap_G4TrackID : &fParentIDMap;
 
     // search the fParentIDMap recursively until we have the parent id
     // of the first EM particle that led to this one
-    std::map<int, int>::const_iterator itr = fParentIDMap.find(trackid);
-    while (itr != fParentIDMap.end()) {
+    std::map<int, int>::const_iterator itr = parentIDMap->find(trackid);
+    while (itr != parentIDMap->end()) {
       MF_LOG_DEBUG("ParticleListAction") << "parentage for " << trackid << " " << (*itr).second;
 
       // set the parentid to the current parent ID, when the loop ends
       // this id will be the first EM particle
       parentid = (*itr).second;
-      itr = fParentIDMap.find(parentid);
+      itr = parentIDMap->find(parentid);
     }
     MF_LOG_DEBUG("ParticleListAction") << "final parent ID " << parentid;
 
@@ -125,7 +126,7 @@ namespace larg4 {
     // runs (if any)
     G4int trackID = track->GetTrackID() + fTrackIDOffset;
     fCurrentTrackID = trackID;
-    fCurrentGroupID = trackID;
+    fCurrentG4TrackID = trackID;
     fCurrentPdgCode = pdgCode;
 
     if (!fparticleList) {
@@ -186,7 +187,7 @@ namespace larg4 {
         // first add this track id and its parent to the fParentIDMap
         fParentIDMap[trackID] = parentID;
 
-        fCurrentTrackID = -1 * this->GetParentage(trackID); // the real trackID remains stored in fCurrentGroupID
+        fCurrentTrackID = -1 * this->GetParentage(trackID); // the real trackID remains stored in fCurrentG4TrackID
 
         // check that fCurrentTrackID is in the particle list - it is possible
         // that this particle's parent is a particle that did not get tracked.
@@ -195,7 +196,8 @@ namespace larg4 {
         // isn't saved in the particle list because it is below the energy cut
         // which will put a bogus track id value into the sim::IDE object for
         // the sim::SimChannel if we don't check it.
-        if (!fparticleList->KnownParticle(fCurrentTrackID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(fCurrentTrackID))) fCurrentTrackID = sim::NoParticleId;
+        //if (!fparticleList->KnownParticle(fCurrentTrackID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(fCurrentTrackID))) fCurrentTrackID = sim::NoParticleId;
+        if (!fparticleList->KnownParticle(fCurrentTrackID)) fCurrentTrackID = sim::NoParticleId;
 
       } // end if keeping EM shower daughters
 
@@ -208,9 +210,10 @@ namespace larg4 {
         // do add the particle to the parent id map though
         // and set the current track id to be it's ultimate parent
         fParentIDMap[trackID] = parentID;
+        fParentIDMap_G4TrackID[trackID] = parentID;
 
         fCurrentTrackID = -1 * this->GetParentage(trackID);
-        fCurrentGroupID = fCurrentTrackID;
+        fCurrentG4TrackID = -1 * this->GetParentage(trackID, true);
 
         return;
       }
@@ -223,6 +226,7 @@ namespace larg4 {
         // do add the particle to the parent id map
         // just in case it makes a daughter that we have to track as well
         fParentIDMap[trackID] = parentID;
+        fParentIDMap_G4TrackID[trackID] = parentID;
         int pid = this->GetParentage(parentID);
 
         // if we still can't find the parent in the particle navigator,

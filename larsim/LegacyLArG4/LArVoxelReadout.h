@@ -323,7 +323,7 @@ namespace larg4 {
                                   int trackID,
                                   unsigned short int cryostat,
                                   unsigned short int tpc,
-                                  int groupID);
+                                  int g4trackID);
 
     bool
     Has(std::vector<unsigned short int> v, unsigned short int tpc) const

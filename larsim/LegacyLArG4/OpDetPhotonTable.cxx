@@ -204,7 +204,7 @@ namespace larg4 {
 					  float start_x,float start_y, float start_z,
 					  float end_x,float end_y,float end_z,
 					  double start_time,double end_time,
-					  int trackid,int pdgcode, int groupid,
+					  int trackid,int pdgcode, int g4trackid,
 					  std::string const& vol)
   {
     fSimEDepCol[vol].emplace_back(n_photon, n_elec, scint_yield,
@@ -212,7 +212,7 @@ namespace larg4 {
 				  geo::Point_t{start_x,start_y,start_z},
 				  geo::Point_t{end_x,end_y,end_z},
 				  start_time,end_time,
-				  trackid,pdgcode,groupid);
+				  trackid,pdgcode,g4trackid);
   }
 
   //--------------------------------------------------
