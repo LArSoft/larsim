@@ -7,6 +7,7 @@ namespace fhicl { class ParameterSet; }
 // LArSoft
 #include "lardataobj/MCBase/MCLimits.h" // kINVALID_X
 #include "lardataobj/MCBase/MCMiniPart.h" // sim::MCMiniPart
+#include "lardataobj/MCBase/MCParticleLite.h" // sim::MCParticleLite
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
 
@@ -31,7 +32,7 @@ namespace sim
 
     void AddParticles(const std::vector<simb::MCParticle>& mcp_v,
                       const std::vector<simb::Origin_t>&   orig_v,
-                      const std::vector<sim::MCMiniPart>&  mcmp_v = {});
+                      const std::vector<sim::MCParticleLite>&  mcmp_v = {});
 
     unsigned int AncestorTrackID(const unsigned int part_index);
 

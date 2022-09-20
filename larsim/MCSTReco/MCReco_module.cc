@@ -37,7 +37,7 @@ private:
 
   // Declare member data here.
   art::InputTag fMCParticleLabel;
-  art::InputTag fMCMiniPartLabel;
+  art::InputTag fMCParticleLiteLabel;
   art::InputTag fSimChannelLabel;
   bool fUseSimEnergyDeposit;
   bool fUseSimEnergyDepositLite;
@@ -65,11 +65,11 @@ MCReco::MCReco(fhicl::ParameterSet const & pset)
             << "\nUse 'MCParticleLabel' and 'SimChannelLabel' instead.";
 
     fMCParticleLabel = pset.get<art::InputTag>("G4ModName","largeant");
-    fMCMiniPartLabel = pset.get<art::InputTag>("G4ModName","largeant");
+    fMCParticleLiteLabel = pset.get<art::InputTag>("G4ModName","largeant");
     fSimChannelLabel = pset.get<art::InputTag>("G4ModName","largeant");
   }
   else {
-    fMCMiniPartLabel = pset.get<art::InputTag>("MCMiniPartLabel", "largeant");
+    fMCParticleLiteLabel = pset.get<art::InputTag>("MCParticleLiteLabel", "largeant");
   }
 
   fUseSimEnergyDeposit = pset.get<bool>("UseSimEnergyDeposit",false);
@@ -111,7 +111,7 @@ void MCReco::produce(art::Event & evt)
   const std::vector<simb::MCParticle>& mcp_array(*mcpHandle);
 
   if (fIncludeDroppedParticles) {
-    auto const& mcmp_array = *evt.getValidHandle<std::vector<sim::MCMiniPart>>(fMCMiniPartLabel);
+    auto const& mcmp_array = *evt.getValidHandle<std::vector<sim::MCParticleLite>>(fMCParticleLiteLabel);
     fPart.AddParticles(mcp_array, orig_array, mcmp_array);
   } // end if fIncludeDroppedParticles
   else {

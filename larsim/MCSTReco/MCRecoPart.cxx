@@ -127,7 +127,7 @@ namespace sim {
   //--------------------------------------------------------------------------------------------
   void MCRecoPart::AddParticles(const std::vector<simb::MCParticle>& mcp_v,
         const std::vector<simb::Origin_t>&   orig_v,
-        const std::vector<sim::MCMiniPart>&  mcmp_v)
+        const std::vector<sim::MCParticleLite>&  mcmp_v)
   //--------------------------------------------------------------------------------------------
   {
     if(orig_v.size() != mcp_v.size()) throw cet::exception(__FUNCTION__) << "MCParticle and Origin_t vector size not same!";
@@ -203,7 +203,7 @@ namespace sim {
 
       _track_index.try_emplace(mcmp.TrackID(), this->size());
 
-      this->push_back(mcmp);
+      this->push_back(sim::MCMiniPart(mcmp));
 
     } // end for loop over mcmp_v
   } // end AddParticles

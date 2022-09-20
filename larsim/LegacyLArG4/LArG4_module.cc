@@ -73,7 +73,7 @@
 #include "nug4/G4Base/UserActionManager.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/MCBase/MCMiniPart.h"
+#include "lardataobj/MCBase/MCParticleLite.h"
 
 // G4 Includes
 #include "Geant4/G4LogicalVolumeStore.hh"
@@ -333,7 +333,7 @@ namespace larg4 {
                                  ///< executed before main MC processing.
     bool fCheckOverlaps;         ///< Whether to use the G4 overlap checker
     bool fMakeMCParticles;       ///< Whether to keep a `sim::MCParticle` list
-    bool fStoreDroppedMCParticles;///< Whether to keep a `sim::MCMiniPart` list of dropped particles
+    bool fStoreDroppedMCParticles;///< Whether to keep a `sim::MCParticleLite` list of dropped particles
     bool fdumpParticleList;      ///< Whether each event's sim::ParticleList will be displayed.
     bool fdumpSimChannels;       ///< Whether each event's sim::Channel will be displayed.
     bool fUseLitePhotons;
@@ -492,7 +492,7 @@ namespace larg4 {
       produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
     }
     if (fStoreDroppedMCParticles) {
-      produces<std::vector<sim::MCMiniPart>>();
+      produces<std::vector<sim::MCParticleLite>>();
     }
     if (!lgp->NoElectronPropagation()) produces<std::vector<sim::SimChannel>>();
     produces<std::vector<sim::AuxDetSimChannel>>();
@@ -656,7 +656,7 @@ namespace larg4 {
       nullptr;
     auto droppedPartCol =
       fStoreDroppedMCParticles ?
-      std::make_unique<std::vector<sim::MCMiniPart>>() :
+      std::make_unique<std::vector<sim::MCParticleLite>>() :
       nullptr;
     auto PhotonCol = std::make_unique<std::vector<sim::SimPhotons>>();
     auto PhotonColRefl = std::make_unique<std::vector<sim::SimPhotons>>();
@@ -750,7 +750,7 @@ namespace larg4 {
 
         if (fStoreDroppedMCParticles && droppedPartCol) {
           // Request a list of dropped particles
-          // Store them in MCMiniPart format
+          // Store them in MCParticleLite format
           sim::ParticleList droppedParticleList = fparticleListAction->YieldDroppedList();
           droppedPartCol->reserve(droppedParticleList.size());
 
@@ -759,7 +759,7 @@ namespace larg4 {
             if (ParticleListAction::isDropped(&p)) continue;
             if (p.StatusCode() != 1) continue;
 
-            sim::MCMiniPart mini_mcp(p);
+            sim::MCParticleLite mini_mcp(p);
             mini_mcp.Origin( mct->Origin() );
 
             droppedPartCol->push_back(std::move(mini_mcp));
