@@ -80,12 +80,12 @@ namespace sim {
       unsigned int ancestor_index = part_v.TrackToParticleIndex(ancestor_track);
 
       if(mother_index != kINVALID_UINT)   mother_part   = part_v[mother_index];
-      else mother_part.TrackID(mother_track);
+      else mother_part._track_id = mother_track;
 
       if(ancestor_index != kINVALID_UINT) ancestor_part = part_v[ancestor_index];
-      else ancestor_part.TrackID(ancestor_track);
+      else ancestor_part._track_id = ancestor_track;
 
-      double shower_g4_energy = shower_part.StartMom()[3];
+      double shower_g4_energy = shower_part._start_mom[3];
 
       if(fDebugMode)
 
@@ -97,7 +97,7 @@ namespace sim {
           std::cout << " ... below energy threshold: skipping!"<<std::endl;
 
         continue;
-      }else if(shower_part.Daughters().size() < fMinNumDaughters) {
+      }else if(shower_part._daughters.size() < fMinNumDaughters) {
         if(fDebugMode)
           std::cout << " ... below # daughter particle count threshold: skipping!"<<std::endl;
 
@@ -116,25 +116,25 @@ namespace sim {
 
       ::sim::MCShower shower_prof;
 
-      shower_prof.Origin  ( shower_part.Origin()   );
-      shower_prof.PdgCode ( shower_part.PdgCode()  );
-      shower_prof.TrackID ( shower_part.TrackID() );
-      shower_prof.Process ( shower_part.Process()  );
+      shower_prof.Origin  ( shower_part._origin   );
+      shower_prof.PdgCode ( shower_part._pdgcode  );
+      shower_prof.TrackID ( shower_part._track_id );
+      shower_prof.Process ( shower_part._process  );
 
-      shower_prof.MotherPdgCode ( mother_part.PdgCode()  );
-      shower_prof.MotherTrackID ( mother_part.TrackID() );
-      shower_prof.MotherProcess ( mother_part.Process()  );
+      shower_prof.MotherPdgCode ( mother_part._pdgcode  );
+      shower_prof.MotherTrackID ( mother_part._track_id );
+      shower_prof.MotherProcess ( mother_part._process  );
 
-      shower_prof.AncestorPdgCode ( ancestor_part.PdgCode()  );
-      shower_prof.AncestorTrackID ( ancestor_part.TrackID()  );
-      shower_prof.AncestorProcess ( ancestor_part.Process()  );
+      shower_prof.AncestorPdgCode ( ancestor_part._pdgcode  );
+      shower_prof.AncestorTrackID ( ancestor_part._track_id  );
+      shower_prof.AncestorProcess ( ancestor_part._process  );
 
-      shower_prof.Start         ( MCStep ( shower_part.StartVtx(),   shower_part.StartMom()   ) );
-      shower_prof.End           ( MCStep ( shower_part.EndVtx(),     shower_part.EndMom()     ) );
-      shower_prof.MotherStart   ( MCStep ( mother_part.StartVtx(),   mother_part.StartMom()   ) );
-      shower_prof.MotherEnd     ( MCStep ( mother_part.EndVtx(),     mother_part.EndMom()     ) );
-      shower_prof.AncestorStart ( MCStep ( ancestor_part.StartVtx(), ancestor_part.StartMom() ) );
-      shower_prof.AncestorEnd   ( MCStep ( ancestor_part.EndVtx(),   ancestor_part.EndMom()   ) );
+      shower_prof.Start         ( MCStep ( shower_part._start_vtx,   shower_part._start_mom   ) );
+      shower_prof.End           ( MCStep ( shower_part._end_vtx,     shower_part._end_mom     ) );
+      shower_prof.MotherStart   ( MCStep ( mother_part._start_vtx,   mother_part._start_mom   ) );
+      shower_prof.MotherEnd     ( MCStep ( mother_part._end_vtx,     mother_part._end_mom     ) );
+      shower_prof.AncestorStart ( MCStep ( ancestor_part._start_vtx, ancestor_part._start_mom ) );
+      shower_prof.AncestorEnd   ( MCStep ( ancestor_part._end_vtx,   ancestor_part._end_mom   ) );
 
       // Daughter list
       std::vector<unsigned int> daughter_track_id;
@@ -142,7 +142,7 @@ namespace sim {
 
       for(auto const& index : fPartAlg.ShowerDaughters(shower_index))
 
-        daughter_track_id.push_back( part_v.at(index).TrackID() );
+        daughter_track_id.push_back( part_v.at(index)._track_id );
 
       shower_prof.DaughterTrackID(daughter_track_id);
 
@@ -200,16 +200,16 @@ namespace sim {
   double min_dist = sim::kINVALID_DOUBLE;
   for(auto const& edep : daughter_edep) {
 
-    double dist = sqrt( pow(edep.pos._x - daughter_part.StartVtx()[0],2) +
-            pow(edep.pos._y - daughter_part.StartVtx()[1],2) +
-            pow(edep.pos._z - daughter_part.StartVtx()[2],2) );
+    double dist = sqrt( pow(edep.pos._x - daughter_part._start_vtx[0],2) +
+            pow(edep.pos._y - daughter_part._start_vtx[1],2) +
+            pow(edep.pos._z - daughter_part._start_vtx[2],2) );
 
     if(dist < min_dist) {
       min_dist = dist;
       mcs_daughter_vtx[0] = edep.pos._x;
       mcs_daughter_vtx[1] = edep.pos._y;
       mcs_daughter_vtx[2] = edep.pos._z;
-      mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + daughter_part.StartVtx()[3];
+      mcs_daughter_vtx[3] = (dist/100. / 2.998e8)*1.e9 + daughter_part._start_vtx[3];
     }
 
   }

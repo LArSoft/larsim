@@ -44,21 +44,21 @@ namespace sim {
   {
     if(this->size() <= part_index) return ::sim::kINVALID_UINT;
 
-    unsigned int result = this->at(part_index).Mother();
+    unsigned int result = this->at(part_index)._mother;
 
-    if(!result) return this->at(part_index).TrackID();
+    if(!result) return this->at(part_index)._track_id;
 
     if(TrackToParticleIndex(result) != ::sim::kINVALID_UINT) return result;
 
     //std::cout<< "\033[95mWarning:\033[00m Mother particle not in the particle list!"<<std::endl;
     // Do brute search
-    unsigned int daughter_id = this->at(part_index).TrackID();
+    unsigned int daughter_id = this->at(part_index)._track_id;
 
     for(auto const& part : *this) {
 
       if(part.HasDaughter(daughter_id) )
 
-        return part.TrackID();
+        return part._track_id;
 
     }
     return result;
@@ -70,13 +70,13 @@ namespace sim {
   {
     if(part_index >= this->size()) return kINVALID_UINT;
 
-    if((*this)[part_index].Ancestor() != kINVALID_UINT) return (*this)[part_index].Ancestor();
+    if((*this)[part_index]._ancestor != kINVALID_UINT) return (*this)[part_index]._ancestor;
 
     auto result = MotherTrackID(part_index);
 
-    if(result == this->at(part_index).TrackID()) return result;
+    if(result == this->at(part_index)._track_id) return result;
 
-    if(!result) return this->at(part_index).TrackID();
+    if(!result) return this->at(part_index)._track_id;
 
     auto mother_index = TrackToParticleIndex(result);
 
@@ -86,48 +86,48 @@ namespace sim {
 
   auto const new_result = MotherTrackID(mother_index);
 
-  if(new_result == this->at(mother_index).TrackID()) break;
+  if(new_result == this->at(mother_index)._track_id) break;
 
   result = new_result;
 
       }else{
 
-  // Look for a particle that has a daughter = this mother
-  auto const old_result = result;
-  for(auto const& p : *this) {
+        // Look for a particle that has a daughter = this mother
+        auto const old_result = result;
+        for(auto const& p : *this) {
 
-    if(p.HasDaughter(result)) {
-      result = p.TrackID();
-      break;
-    }
-  }
-  if(result == old_result)
-    break;
+          if(p.HasDaughter(result)) {
+            result = p._track_id;
+            break;
+          }
+        }
+        if(result == old_result)
+          break;
       }
 
       mother_index = TrackToParticleIndex(result);
 
     }
 
-    (*this)[part_index].Ancestor(result);
+    (*this)[part_index]._ancestor = result;
     return result;
   }
 
   //--------------------------------------------------------------------------------------------
   bool MCRecoPart::InDetector(const double& x,
-            const double& y,
-            const double& z) const
+                              const double& y,
+                              const double& z) const
   //--------------------------------------------------------------------------------------------
   {
     return !( x > _x_max || x < _x_min ||
-        z > _z_max || z < _z_min ||
-        y > _y_max || y < _y_min );
+              z > _z_max || z < _z_min ||
+              y > _y_max || y < _y_min );
   }
 
   //--------------------------------------------------------------------------------------------
   void MCRecoPart::AddParticles(const std::vector<simb::MCParticle>& mcp_v,
-        const std::vector<simb::Origin_t>&   orig_v,
-        const std::vector<sim::MCParticleLite>&  mcmp_v)
+                                const std::vector<simb::Origin_t>&   orig_v,
+                                const std::vector<sim::MCParticleLite>&  mcmp_v)
   //--------------------------------------------------------------------------------------------
   {
     if(orig_v.size() != mcp_v.size()) throw cet::exception(__FUNCTION__) << "MCParticle and Origin_t vector size not same!";
@@ -143,58 +143,48 @@ namespace sim {
 
       _track_index.insert(std::make_pair((size_t)(mcp.TrackId()),(size_t)(this->size())));
 
-      this->push_back(MCMiniPart());
+      // Change units to LArSoft (MeV, cm, us)
+      // (done inside constructor of MCMiniPart)
+      this->push_back(MCMiniPart(mcp));
 
       auto& mini_mcp = (*this->rbegin());
 
       for(size_t i=0; i<(size_t)(mcp.NumberDaughters()); ++i) {
-        mini_mcp.AddDaughter( (unsigned int) mcp.Daughter(i) );
+        mini_mcp.AddDaughter( mcp.Daughter(i) );
       }
-      mini_mcp.TrackID((unsigned int) mcp.TrackId());
-      mini_mcp.PdgCode(mcp.PdgCode());
-      mini_mcp.Mother( (unsigned int) mcp.Mother() );
-      mini_mcp.Process( mcp.Process() );
-      mini_mcp.StartVtx( mcp.Position() );
-      mini_mcp.StartMom( mcp.Momentum() );
-      mini_mcp.EndVtx( mcp.EndPosition() );
-      mini_mcp.EndMom( mcp.EndMomentum() );
-      mini_mcp.Origin( orig_v[i] );
-
-      // Change units to LArSoft (MeV, cm, us)
-      mini_mcp.ScaleStartMom(1.e3);
-      mini_mcp.ScaleEndMom(1.e3);
+      mini_mcp._origin = orig_v[i];
 
       if(_pdg_list.find(mcp.PdgCode()) != _pdg_list.end()) {
 
-  std::set<size_t> det_path_index;
+        std::set<size_t> det_path_index;
 
-  for(size_t i=0; i<mcp.NumberTrajectoryPoints(); ++i) {
+        for(size_t i=0; i<mcp.NumberTrajectoryPoints(); ++i) {
 
-    if(InDetector(mcp.Vx(i),mcp.Vy(i),mcp.Vz(i)))
+          if(InDetector(mcp.Vx(i),mcp.Vy(i),mcp.Vz(i)))
 
-      det_path_index.insert(i);
+            det_path_index.insert(i);
 
-  }
+        }
 
-  if(det_path_index.size()) {
-    if( (*det_path_index.begin()) )
-      det_path_index.insert( (*det_path_index.begin())-1 );
-    if( det_path_index.size()>1 ) {
-      if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() )
-        det_path_index.insert( (*det_path_index.rbegin())+1 );
-    }
-    std::vector<std::pair<TLorentzVector,TLorentzVector>> det_path;
-    det_path.reserve(det_path_index.size());
-    for(auto const& index : det_path_index) {
+        if(det_path_index.size()) {
+          if( (*det_path_index.begin()) )
+            det_path_index.insert( (*det_path_index.begin())-1 );
+          if( det_path_index.size()>1 ) {
+            if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() )
+              det_path_index.insert( (*det_path_index.rbegin())+1 );
+          }
+          std::vector<std::pair<TLorentzVector,TLorentzVector>> det_path;
+          det_path.reserve(det_path_index.size());
+          for(auto const& index : det_path_index) {
 
-      TLorentzVector vec(mcp.Momentum(index));
-      for(size_t i=0; i<4; ++i) vec[i] *= 1.e3;
+            TLorentzVector vec(mcp.Momentum(index));
+            for(size_t i=0; i<4; ++i) vec[i] *= 1.e3;
 
-      det_path.emplace_back(mcp.Position(index), vec);
+            det_path.emplace_back(mcp.Position(index), vec);
 
-    }
-    mini_mcp.DetPath(std::move(det_path));
-  }
+          }
+          mini_mcp._det_path = std::move(det_path);
+        }
       } // end if in _pdg_list
     } // end for loop over mcp_v
 

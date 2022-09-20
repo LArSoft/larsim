@@ -37,7 +37,7 @@ namespace sim {
 
     for(size_t i=0; i<part_v.size(); ++i) {
       auto const& mini_part = part_v[i];
-      if( part_v._pdg_list.find(mini_part.PdgCode()) == part_v._pdg_list.end() ) continue;
+      if( part_v._pdg_list.find(mini_part._pdgcode) == part_v._pdg_list.end() ) continue;
 
       ::sim::MCTrack mini_track;
 
@@ -45,12 +45,12 @@ namespace sim {
       std::vector<std::vector<double> > dQdx;
       dQdx.resize(3);
 
-      mini_track.Origin  ( mini_part.Origin()   );
-      mini_track.PdgCode ( mini_part.PdgCode()  );
-      mini_track.TrackID ( mini_part.TrackID() );
-      mini_track.Process ( mini_part.Process()  );
-      mini_track.Start   ( MCStep( mini_part.StartVtx(), mini_part.StartMom() ) );
-      mini_track.End     ( MCStep( mini_part.EndVtx(),   mini_part.EndMom()   ) );
+      mini_track.Origin  ( mini_part._origin   );
+      mini_track.PdgCode ( mini_part._pdgcode  );
+      mini_track.TrackID ( mini_part._track_id );
+      mini_track.Process ( mini_part._process  );
+      mini_track.Start   ( MCStep( mini_part._start_vtx, mini_part._start_mom ) );
+      mini_track.End     ( MCStep( mini_part._end_vtx,   mini_part._end_mom   ) );
 
       unsigned int mother_track   = part_v.MotherTrackID(i);
       unsigned int ancestor_track = part_v.AncestorTrackID(i);
@@ -66,27 +66,27 @@ namespace sim {
       unsigned int ancestor_index = part_v.TrackToParticleIndex(ancestor_track);
 
       if(mother_index != kINVALID_UINT)   mother_part   = part_v[mother_index];
-      else mother_part.TrackID(mother_track);
+      else mother_part._track_id = mother_track;
 
       if(ancestor_index != kINVALID_UINT) ancestor_part = part_v[ancestor_index];
-      else ancestor_part.TrackID(ancestor_track);
+      else ancestor_part._track_id = ancestor_track;
 
-      mini_track.MotherPdgCode ( mother_part.PdgCode()  );
-      mini_track.MotherTrackID ( mother_part.TrackID() );
-      mini_track.MotherProcess ( mother_part.Process()  );
-      mini_track.MotherStart   ( MCStep( mother_part.StartVtx(), mother_part.StartMom() ) );
-      mini_track.MotherEnd     ( MCStep( mother_part.EndVtx(),   mother_part.EndMom()   ) );
+      mini_track.MotherPdgCode ( mother_part._pdgcode  );
+      mini_track.MotherTrackID ( mother_part._track_id );
+      mini_track.MotherProcess ( mother_part._process  );
+      mini_track.MotherStart   ( MCStep( mother_part._start_vtx, mother_part._start_mom ) );
+      mini_track.MotherEnd     ( MCStep( mother_part._end_vtx,   mother_part._end_mom   ) );
 
-      mini_track.AncestorPdgCode ( ancestor_part.PdgCode()  );
-      mini_track.AncestorTrackID ( ancestor_part.TrackID() );
-      mini_track.AncestorProcess ( ancestor_part.Process()  );
-      mini_track.AncestorStart   ( MCStep( ancestor_part.StartVtx(), ancestor_part.StartMom() ) );
-      mini_track.AncestorEnd     ( MCStep( ancestor_part.EndVtx(),   ancestor_part.EndMom()   ) );
+      mini_track.AncestorPdgCode ( ancestor_part._pdgcode  );
+      mini_track.AncestorTrackID ( ancestor_part._track_id );
+      mini_track.AncestorProcess ( ancestor_part._process  );
+      mini_track.AncestorStart   ( MCStep( ancestor_part._start_vtx, ancestor_part._start_mom ) );
+      mini_track.AncestorEnd     ( MCStep( ancestor_part._end_vtx,   ancestor_part._end_mom   ) );
 
 
       // Fill trajectory points
 
-      for(auto const& vtx_mom : mini_part.DetPath()){
+      for(auto const& vtx_mom : mini_part._det_path){
         mini_track.push_back(MCStep(vtx_mom.first,vtx_mom.second));
       }
 
@@ -98,7 +98,7 @@ namespace sim {
         continue;
       }
 
-      auto const& edep_index = edep_v.TrackToEdepIndex(mini_part.TrackID());
+      auto const& edep_index = edep_v.TrackToEdepIndex(mini_part._track_id);
       if(edep_index < 0 ) continue;
       auto const& edeps = edep_v.GetEdepArrayAt(edep_index);
 

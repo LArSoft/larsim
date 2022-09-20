@@ -6,7 +6,6 @@ namespace fhicl { class ParameterSet; }
 
 // LArSoft
 #include "lardataobj/MCBase/MCLimits.h" // kINVALID_X
-#include "lardataobj/MCBase/MCMiniPart.h" // sim::MCMiniPart
 #include "lardataobj/MCBase/MCParticleLite.h" // sim::MCParticleLite
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
@@ -20,6 +19,94 @@ namespace fhicl { class ParameterSet; }
 
 namespace sim
 {
+
+  class MCMiniPart {
+
+  public:
+
+    MCMiniPart() {Reset();}
+
+    virtual ~MCMiniPart(){}
+
+    unsigned int   _track_id;
+    std::string    _process;
+    unsigned int   _mother;
+    unsigned int   _ancestor;
+    int            _pdgcode;
+    TLorentzVector _start_vtx;
+    TLorentzVector _start_mom;
+    TLorentzVector _end_vtx;
+    TLorentzVector _end_mom;
+    std::vector<std::pair<TLorentzVector,TLorentzVector> > _det_path;
+    std::set<unsigned int> _daughters;
+    ::simb::Origin_t _origin;
+
+    void Reset(){
+      _track_id = _mother = _ancestor = kINVALID_UINT;
+      _pdgcode  = kINVALID_INT;
+      _process  = "";
+      _origin   = ::simb::kUnknown;
+
+      TLorentzVector invalid(kINVALID_DOUBLE,
+           kINVALID_DOUBLE,
+           kINVALID_DOUBLE,
+           kINVALID_DOUBLE);
+      _start_vtx = invalid;
+      _start_mom = invalid;
+      _end_vtx = invalid;
+      _end_mom = invalid;
+      _daughters.clear();
+      _det_path.clear();
+    }
+
+    bool HasDaughter(unsigned int d) const {
+      return std::find(_daughters.begin(), _daughters.end(), d) != _daughters.end();
+    }
+
+    void AddDaughter(unsigned int d) {
+      _daughters.insert(d);
+    }
+
+    operator simb::MCParticle() const {
+      simb::MCParticle mcpart(_track_id,
+                              _pdgcode,
+                              _process,
+                              _mother);
+      // Also converting back from LArSoft units
+      mcpart.AddTrajectoryPoint(_start_vtx, 1.e-3 * _start_mom);
+      mcpart.AddTrajectoryPoint(_end_vtx, 1.e-3 * _end_mom);
+      for (auto const & d : _daughters) mcpart.AddDaughter(d);
+      return mcpart;
+    }
+
+    MCMiniPart(const simb::MCParticle& p) {
+      _daughters.clear();
+      _det_path.clear();
+      _track_id = p.TrackId();
+      _pdgcode  = p.PdgCode();
+      _mother   = p.Mother();
+      _process  = p.Process();
+      _start_vtx = p.Position();
+      _start_mom = 1.e3 * p.Momentum(); // Change units to (MeV, cm, us)
+      _end_vtx = p.EndPosition();
+      _end_mom = 1.e3 * p.EndMomentum(); // idem as above
+    }
+
+    MCMiniPart(const sim::MCParticleLite& p) {
+      _daughters.clear();
+      _det_path.clear();
+      _track_id = p.TrackID();
+      _pdgcode  = p.PdgCode();
+      _mother   = p.Mother();
+      _process  = p.Process();
+      _start_vtx = p.StartVtx();
+      _start_mom = 1.e3 * p.StartMom(); // Change units to (MeV, cm, us)
+      _end_vtx = p.EndVtx();
+      _end_mom = 1.e3 * p.EndMom(); // idem as above
+    }
+
+  };
+
   class MCRecoPart : public std::vector<sim::MCMiniPart> {
 
   public:
