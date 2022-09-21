@@ -123,9 +123,9 @@ namespace larg4 {
       return fCurrentTrackID;
     }
     static int
-    GetCurrentG4TrackID()
+    GetCurrentOrigTrackID()
     {
-      return fCurrentG4TrackID;
+      return fCurrentOrigTrackID;
     }
     static int
     GetCurrentPdgCode()
@@ -172,7 +172,7 @@ namespace larg4 {
   private:
     // this method will loop over the fParentIDMap to get the
     // parentage of the provided trackid
-    int GetParentage(int trackid, bool useG4TrackIDMap = false) const;
+    int GetParentage(int trackid, bool useOrigTrackIDMap = false) const;
 
     G4double fenergyCut;             ///< The minimum energy for a particle to
                                      ///< be included in the list.
@@ -184,10 +184,10 @@ namespace larg4 {
                                                              ///< all dropped particles in the event.
     G4bool fstoreTrajectories;       ///< Whether to store particle trajectories with each particle.
     std::map<int, int> fParentIDMap; ///< key is current track ID, value is parent ID
-    std::map<int, int> fParentIDMap_G4TrackID; ///< key is current track ID, value is parent ID -- for real G4 track ID tracking only
+    std::map<int, int> fParentIDMap_OrigTrackID; ///< key is current track ID, value is parent ID -- for real G4 track ID tracking only
     static int fCurrentTrackID;      ///< track ID of the current particle, set to eve ID
                                      ///< for EM shower particles
-    static int fCurrentG4TrackID;    ///< g4 real track ID of the current particle (including for EM shower daughters)
+    static int fCurrentOrigTrackID;    ///< g4 real track ID of the current particle (including for EM shower daughters)
                                      ///< except for EM shower particles where it always shows the original track ID
     static int fCurrentPdgCode;      ///< pdg code of current particle
     static int fTrackIDOffset;       ///< offset added to track ids when running over

@@ -917,7 +917,7 @@ namespace larg4 {
                   for (auto const& ide : tdcide.second) {
                     double xyz[3] = {ide.x, ide.y, ide.z};
                     scCol->at(idtest).AddIonizationElectrons(
-                      ide.trackID, tdcide.first, ide.numElectrons, xyz, ide.energy, ide.g4trackID);
+                      ide.trackID, tdcide.first, ide.numElectrons, xyz, ide.energy, ide.origTrackID);
                   } // end loop to add ionization electrons to  scCol->at(idtest)
                 }   // end loop over tdc to vector<sim::IDE> map
               }     // end if check to see if we've put SimChannels in for ichan yet or not
