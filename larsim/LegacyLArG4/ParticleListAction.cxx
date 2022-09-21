@@ -196,7 +196,6 @@ namespace larg4 {
         // isn't saved in the particle list because it is below the energy cut
         // which will put a bogus track id value into the sim::IDE object for
         // the sim::SimChannel if we don't check it.
-        //if (!fparticleList->KnownParticle(fCurrentTrackID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(fCurrentTrackID))) fCurrentTrackID = sim::NoParticleId;
         if (!fparticleList->KnownParticle(fCurrentTrackID)) fCurrentTrackID = sim::NoParticleId;
 
       } // end if keeping EM shower daughters
@@ -222,7 +221,7 @@ namespace larg4 {
       // if not, then see if it is possible to walk up the fParentIDMap to find the
       // ultimate parent of this particle.  Use that ID as the parent ID for this
       // particle
-      if (!fparticleList->KnownParticle(parentID) && (!fdroppedParticleList || !fdroppedParticleList->KnownParticle(parentID))) {
+      if (!fparticleList->KnownParticle(parentID) && !(fdroppedParticleList && fdroppedParticleList->KnownParticle(parentID))) {
         // do add the particle to the parent id map
         // just in case it makes a daughter that we have to track as well
         fParentIDMap[trackID] = parentID;
@@ -231,7 +230,7 @@ namespace larg4 {
 
         // if we still can't find the parent in the particle navigator,
         // we have to give up
-        if (!fparticleList->KnownParticle(pid) && !(fdroppedParticleList && fdroppedParticleList->KnownParticle(pid))) {
+        if (!fparticleList->KnownParticle(pid) && !(fdroppedParticleList && fdroppedParticleList->KnownParticle(parentID))) {
           MF_LOG_WARNING("ParticleListAction")
             << "can't find parent id: " << parentID << " in the particle list, or fParentIDMap."
             << " Make " << parentID << " the mother ID for"

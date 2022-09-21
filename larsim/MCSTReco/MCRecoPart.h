@@ -80,8 +80,7 @@ namespace sim
     }
 
     MCMiniPart(const simb::MCParticle& p) {
-      _daughters.clear();
-      _det_path.clear();
+      Reset();
       _track_id = p.TrackId();
       _pdgcode  = p.PdgCode();
       _mother   = p.Mother();
@@ -93,8 +92,7 @@ namespace sim
     }
 
     MCMiniPart(const sim::MCParticleLite& p) {
-      _daughters.clear();
-      _det_path.clear();
+      Reset();
       _track_id = p.TrackID();
       _pdgcode  = p.PdgCode();
       _mother   = p.Mother();
