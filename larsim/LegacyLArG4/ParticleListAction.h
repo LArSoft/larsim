@@ -193,7 +193,6 @@ namespace larg4 {
     static int fTrackIDOffset;       ///< offset added to track ids when running over
                                      ///< multiple MCTruth objects.
     bool fKeepEMShowerDaughters;     ///< whether to keep EM shower secondaries, tertiaries, etc
-    bool fstoreDroppedMCParticles;   ///< Whether to keep the dropped EM shower secondaries, tertiaries etc in a separate list
 
     std::unique_ptr<util::PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
 

@@ -66,7 +66,6 @@ namespace larg4 {
     , fdroppedParticleList(storeDroppedMCParticles ? std::make_unique<sim::ParticleList>() : nullptr)
     , fstoreTrajectories(storeTrajectories)
     , fKeepEMShowerDaughters(keepEMShowerDaughters)
-    , fstoreDroppedMCParticles(storeDroppedMCParticles)
   {}
 
   //----------------------------------------------------------------------------
