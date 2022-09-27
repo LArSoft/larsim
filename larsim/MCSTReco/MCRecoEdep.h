@@ -4,6 +4,7 @@
 // LArSoft
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/SimEnergyDepositLite.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
 // Framework includes
@@ -102,6 +103,8 @@ namespace sim
     void MakeMCEdep(const std::vector<sim::SimChannel>& schArray);
 
     void MakeMCEdep(const std::vector<sim::SimEnergyDeposit>& sedArray);
+
+    void MakeMCEdep(const std::vector<sim::SimEnergyDepositLite>& sedArray);
 
     bool ExistTrack(const unsigned int track_id) const
     { return (_track_index.find(track_id) != _track_index.end()); }

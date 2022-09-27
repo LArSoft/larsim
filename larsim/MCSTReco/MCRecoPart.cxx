@@ -56,9 +56,9 @@ namespace sim {
 
     for(auto const& part : *this) {
 
-      if(part._daughters.find(daughter_id) != part._daughters.end())
+      if(part.HasDaughter(daughter_id) )
 
-	return part._track_id;
+        return part._track_id;
 
     }
     return result;
@@ -72,7 +72,7 @@ namespace sim {
 
     if((*this)[part_index]._ancestor != kINVALID_UINT) return (*this)[part_index]._ancestor;
 
-    unsigned int result = MotherTrackID(part_index);
+    auto result = MotherTrackID(part_index);
 
     if(result == this->at(part_index)._track_id) return result;
 
@@ -84,25 +84,25 @@ namespace sim {
 
       if(mother_index != kINVALID_UINT) {
 
-	auto const new_result = MotherTrackID(mother_index);
+  auto const new_result = MotherTrackID(mother_index);
 
-	if(new_result == this->at(mother_index)._track_id) break;
+  if(new_result == this->at(mother_index)._track_id) break;
 
-	result = new_result;
+  result = new_result;
 
       }else{
 
-	// Look for a particle that has a daughter = this mother
-	auto const old_result = result;
-	for(auto const& p : *this) {
+        // Look for a particle that has a daughter = this mother
+        auto const old_result = result;
+        for(auto const& p : *this) {
 
-	  if(p._daughters.find(result) != p._daughters.end()) {
-	    result = p._track_id;
-	    break;
-	  }
-	}
-	if(result == old_result)
-	  break;
+          if(p.HasDaughter(result)) {
+            result = p._track_id;
+            break;
+          }
+        }
+        if(result == old_result)
+          break;
       }
 
       mother_index = TrackToParticleIndex(result);
@@ -115,18 +115,19 @@ namespace sim {
 
   //--------------------------------------------------------------------------------------------
   bool MCRecoPart::InDetector(const double& x,
-			      const double& y,
-			      const double& z) const
+                              const double& y,
+                              const double& z) const
   //--------------------------------------------------------------------------------------------
   {
     return !( x > _x_max || x < _x_min ||
-	      z > _z_max || z < _z_min ||
-	      y > _y_max || y < _y_min );
+              z > _z_max || z < _z_min ||
+              y > _y_max || y < _y_min );
   }
 
   //--------------------------------------------------------------------------------------------
   void MCRecoPart::AddParticles(const std::vector<simb::MCParticle>& mcp_v,
-				const std::vector<simb::Origin_t>&   orig_v)
+                                const std::vector<simb::Origin_t>&   orig_v,
+                                const std::vector<sim::MCParticleLite>&  mcmp_v)
   //--------------------------------------------------------------------------------------------
   {
     if(orig_v.size() != mcp_v.size()) throw cet::exception(__FUNCTION__) << "MCParticle and Origin_t vector size not same!";
@@ -142,67 +143,58 @@ namespace sim {
 
       _track_index.insert(std::make_pair((size_t)(mcp.TrackId()),(size_t)(this->size())));
 
-      this->push_back(MCMiniPart());
+      // Change units to LArSoft (MeV, cm, us)
+      // (done inside constructor of MCMiniPart)
+      this->push_back(MCMiniPart(mcp));
 
       auto& mini_mcp = (*this->rbegin());
 
-      for(size_t i=0; i<(size_t)(mcp.NumberDaughters()); ++i)
-	mini_mcp._daughters.insert(mcp.Daughter(i));
-
-      mini_mcp._track_id  = mcp.TrackId();
-      mini_mcp._pdgcode   = mcp.PdgCode();
-      mini_mcp._mother    = mcp.Mother();
-      mini_mcp._process   = mcp.Process();
-      mini_mcp._start_vtx = mcp.Position();
-      mini_mcp._start_mom = mcp.Momentum();
-      mini_mcp._end_vtx   = mcp.EndPosition();
-      mini_mcp._end_mom   = mcp.EndMomentum();
-      mini_mcp._origin    = orig_v[i];
-
-      // Change units to LArSoft (MeV, cm, us)
-      for(size_t i=0; i<4; ++i) {
-	mini_mcp._start_mom[i] *= 1.e3;
-	mini_mcp._end_mom[i]   *= 1.e3;
+      for(size_t i=0; i<(size_t)(mcp.NumberDaughters()); ++i) {
+        mini_mcp.AddDaughter( mcp.Daughter(i) );
       }
-      /*
-      for(size_t i=0; i<3; ++i) {
-	mini_mcp._start_vtx[i] /= 10.;
-	mini_mcp._end_vtx[i] /= 10.;
-      }
-      mini_mcp.start_vtx[3] /= 1.e-3;
-      mini_mcp.end_vtx[3]   /= 1.e-3;
-      */
+      mini_mcp._origin = orig_v[i];
 
       if(_pdg_list.find(mcp.PdgCode()) != _pdg_list.end()) {
 
-	std::set<size_t> det_path_index;
+        std::set<size_t> det_path_index;
 
-	for(size_t i=0; i<mcp.NumberTrajectoryPoints(); ++i) {
+        for(size_t i=0; i<mcp.NumberTrajectoryPoints(); ++i) {
 
-	  if(InDetector(mcp.Vx(i),mcp.Vy(i),mcp.Vz(i)))
+          if(InDetector(mcp.Vx(i),mcp.Vy(i),mcp.Vz(i)))
 
-	    det_path_index.insert(i);
+            det_path_index.insert(i);
 
-	}
+        }
 
-	if(det_path_index.size()) {
-	  if( (*det_path_index.begin()) )
-	    det_path_index.insert( (*det_path_index.begin())-1 );
-	  if( det_path_index.size()>1 ) {
-	    if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() )
-	      det_path_index.insert( (*det_path_index.rbegin())+1 );
-	  }
-	  mini_mcp._det_path.reserve(det_path_index.size());
-	  for(auto const& index : det_path_index) {
+        if(det_path_index.size()) {
+          if( (*det_path_index.begin()) )
+            det_path_index.insert( (*det_path_index.begin())-1 );
+          if( det_path_index.size()>1 ) {
+            if( ((*det_path_index.rbegin())+1) < mcp.NumberTrajectoryPoints() )
+              det_path_index.insert( (*det_path_index.rbegin())+1 );
+          }
+          std::vector<std::pair<TLorentzVector,TLorentzVector>> det_path;
+          det_path.reserve(det_path_index.size());
+          for(auto const& index : det_path_index) {
 
-	    TLorentzVector vec(mcp.Momentum(index));
-	    for(size_t i=0; i<4; ++i) vec[i] *= 1.e3;
+            TLorentzVector vec(mcp.Momentum(index));
+            for(size_t i=0; i<4; ++i) vec[i] *= 1.e3;
 
-	    mini_mcp._det_path.push_back(std::make_pair(mcp.Position(index),vec));
+            det_path.emplace_back(mcp.Position(index), vec);
 
-	  }
-	}
-      }
-    }
-  }
+          }
+          mini_mcp._det_path = std::move(det_path);
+        }
+      } // end if in _pdg_list
+    } // end for loop over mcp_v
+
+    // Now loop over dropped particles
+    for(auto const& mcmp : mcmp_v) {
+
+      _track_index.try_emplace(mcmp.TrackID(), this->size());
+
+      this->push_back(sim::MCMiniPart(mcmp));
+
+    } // end for loop over mcmp_v
+  } // end AddParticles
 }

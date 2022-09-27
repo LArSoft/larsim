@@ -73,6 +73,7 @@
 #include "nug4/G4Base/UserActionManager.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "lardataobj/MCBase/MCParticleLite.h"
 
 // G4 Includes
 #include "Geant4/G4LogicalVolumeStore.hh"
@@ -332,6 +333,7 @@ namespace larg4 {
                                  ///< executed before main MC processing.
     bool fCheckOverlaps;         ///< Whether to use the G4 overlap checker
     bool fMakeMCParticles;       ///< Whether to keep a `sim::MCParticle` list
+    bool fStoreDroppedMCParticles;///< Whether to keep a `sim::MCParticleLite` list of dropped particles
     bool fdumpParticleList;      ///< Whether each event's sim::ParticleList will be displayed.
     bool fdumpSimChannels;       ///< Whether each event's sim::Channel will be displayed.
     bool fUseLitePhotons;
@@ -406,6 +408,7 @@ namespace larg4 {
     , fG4PhysListName(pset.get<std::string>("G4PhysListName", "larg4::PhysicsList"))
     , fCheckOverlaps(pset.get<bool>("CheckOverlaps", false))
     , fMakeMCParticles(pset.get<bool>("MakeMCParticles", true))
+    , fStoreDroppedMCParticles(pset.get<bool>("StoreDroppedMCParticles", false))
     , fdumpParticleList(pset.get<bool>("DumpParticleList", false))
     , fdumpSimChannels(pset.get<bool>("DumpSimChannels", false))
     , fSmartStacking(pset.get<int>("SmartStacking", 0))
@@ -488,6 +491,9 @@ namespace larg4 {
       produces<std::vector<simb::MCParticle>>();
       produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
     }
+    if (fStoreDroppedMCParticles) {
+      produces<std::vector<sim::MCParticleLite>>();
+    }
     if (!lgp->NoElectronPropagation()) produces<std::vector<sim::SimChannel>>();
     produces<std::vector<sim::AuxDetSimChannel>>();
 
@@ -559,7 +565,8 @@ namespace larg4 {
     fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
                                                         lgp->StoreTrajectories(),
                                                         lgp->KeepEMShowerDaughters(),
-                                                        fMakeMCParticles);
+                                                        fMakeMCParticles,
+                                                        fStoreDroppedMCParticles);
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
@@ -646,6 +653,10 @@ namespace larg4 {
     auto partCol =
       fMakeMCParticles ?
       std::make_unique<std::vector<simb::MCParticle>>() :
+      nullptr;
+    auto droppedPartCol =
+      fStoreDroppedMCParticles ?
+      std::make_unique<std::vector<sim::MCParticleLite>>() :
       nullptr;
     auto PhotonCol = std::make_unique<std::vector<sim::SimPhotons>>();
     auto PhotonColRefl = std::make_unique<std::vector<sim::SimPhotons>>();
@@ -736,6 +747,24 @@ namespace larg4 {
           tpassn->addSingle(mct, (*makeMCPartPtr)(partCol->size() - 1), truthInfo);
 
         } // for(particleList)
+
+        if (fStoreDroppedMCParticles && droppedPartCol) {
+          // Request a list of dropped particles
+          // Store them in MCParticleLite format
+          sim::ParticleList droppedParticleList = fparticleListAction->YieldDroppedList();
+          droppedPartCol->reserve(droppedParticleList.size());
+
+          for (auto const& partPair : droppedParticleList) {
+            simb::MCParticle& p = *(partPair.second);
+            if (ParticleListAction::isDropped(&p)) continue;
+            if (p.StatusCode() != 1) continue;
+
+            sim::MCParticleLite mini_mcp(p);
+            mini_mcp.Origin( mct->Origin() );
+
+            droppedPartCol->push_back(std::move(mini_mcp));
+          } // for(droppedParticleList)
+        }
 
         // Has the user request a detailed dump of the output objects?
         if (fdumpParticleList) {
@@ -888,7 +917,7 @@ namespace larg4 {
                   for (auto const& ide : tdcide.second) {
                     double xyz[3] = {ide.x, ide.y, ide.z};
                     scCol->at(idtest).AddIonizationElectrons(
-                      ide.trackID, tdcide.first, ide.numElectrons, xyz, ide.energy);
+                      ide.trackID, tdcide.first, ide.numElectrons, xyz, ide.energy, ide.origTrackID);
                   } // end loop to add ionization electrons to  scCol->at(idtest)
                 }   // end loop over tdc to vector<sim::IDE> map
               }     // end if check to see if we've put SimChannels in for ichan yet or not
@@ -963,6 +992,10 @@ namespace larg4 {
 
     evt.put(std::move(adCol));
     if (partCol) evt.put(std::move(partCol));
+    if (droppedPartCol) {
+      std::cout << "LArG4 dropped particles length = " << droppedPartCol->size() << std::endl;
+      evt.put(std::move(droppedPartCol));
+    }
     if (tpassn) evt.put(std::move(tpassn));
     if (!lgp->NoPhotonPropagation()) {
       if (!fUseLitePhotons) {

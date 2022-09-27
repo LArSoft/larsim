@@ -50,6 +50,7 @@ namespace larg4 {
 
       cet::exempt_ptr<simb::MCParticle> particle; ///< Object representing particle.
       bool keep = false;                          ///< if there was decision to keep
+      bool drop = false;                          ///< For EM shower daughters, whether to drop them (independently of `keep`)
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
 
@@ -59,6 +60,7 @@ namespace larg4 {
       {
         particle = nullptr;
         keep = false;
+        drop = false;
         truthIndex = simb::NoGeneratedParticleIndex;
       }
 
@@ -76,7 +78,7 @@ namespace larg4 {
         return simb::isGeneratedParticleIndex(truthIndex);
       }
 
-      /// Rerturns whether there is a particle known to be kept
+      /// Returns whether there is a particle known to be kept
       bool
       keepParticle() const
       {
@@ -96,7 +98,8 @@ namespace larg4 {
     ParticleListAction(double energyCut,
                        bool storeTrajectories = false,
                        bool keepEMShowerDaughters = false,
-                       bool keepMCParticleList = true);
+                       bool keepMCParticleList = true,
+                       bool storeDroppedMCParticles = false);
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
@@ -118,6 +121,11 @@ namespace larg4 {
     GetCurrentTrackID()
     {
       return fCurrentTrackID;
+    }
+    static int
+    GetCurrentOrigTrackID()
+    {
+      return fCurrentOrigTrackID;
     }
     static int
     GetCurrentPdgCode()
@@ -155,13 +163,16 @@ namespace larg4 {
     // Yields the ParticleList accumulated during the current event.
     sim::ParticleList&& YieldList();
 
+    /// Yields the (dropped) ParticleList accumulated during the current event.
+    sim::ParticleList&& YieldDroppedList();
+
     /// returns whether the specified particle has been marked as dropped
     static bool isDropped(simb::MCParticle const* p);
 
   private:
     // this method will loop over the fParentIDMap to get the
     // parentage of the provided trackid
-    int GetParentage(int trackid) const;
+    int GetParentage(int trackid, bool useOrigTrackIDMap = false) const;
 
     G4double fenergyCut;             ///< The minimum energy for a particle to
                                      ///< be included in the list.
@@ -169,10 +180,15 @@ namespace larg4 {
                                      ///< for a single particle.
     std::unique_ptr<sim::ParticleList> fparticleList; ///< The accumulated particle information for
                                                       ///< all particles in the event.
+    std::unique_ptr<sim::ParticleList> fdroppedParticleList; ///< The accumulated particle information for
+                                                             ///< all dropped particles in the event.
     G4bool fstoreTrajectories;       ///< Whether to store particle trajectories with each particle.
     std::map<int, int> fParentIDMap; ///< key is current track ID, value is parent ID
+    std::map<int, int> fParentIDMap_OrigTrackID; ///< key is current track ID, value is parent ID -- for real G4 track ID tracking only
     static int fCurrentTrackID;      ///< track ID of the current particle, set to eve ID
                                      ///< for EM shower particles
+    static int fCurrentOrigTrackID;    ///< g4 real track ID of the current particle (including for EM shower daughters)
+                                     ///< except for EM shower particles where it always shows the original track ID
     static int fCurrentPdgCode;      ///< pdg code of current particle
     static int fTrackIDOffset;       ///< offset added to track ids when running over
                                      ///< multiple MCTruth objects.
