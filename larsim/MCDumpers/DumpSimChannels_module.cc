@@ -6,7 +6,6 @@
  *
  */
 
-
 // lardataobj libraries
 #include "lardataobj/Simulation/SimChannel.h"
 
@@ -18,7 +17,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
 
 namespace sim {
   class DumpSimChannels;
@@ -32,25 +30,22 @@ namespace {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
-    fhicl::Atom<art::InputTag> InputSimChannels {
+    fhicl::Atom<art::InputTag> InputSimChannels{
       Name("InputSimChannels"),
-      Comment("data product with the SimChannels to be dumped")
-      };
+      Comment("data product with the SimChannels to be dumped")};
 
-    fhicl::Atom<std::string> OutputCategory {
+    fhicl::Atom<std::string> OutputCategory{
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpSimChannels" /* default value */
-      };
+    };
 
   }; // struct Config
 
-
 } // local namespace
 
-
-class sim::DumpSimChannels: public art::EDAnalyzer {
-    public:
+class sim::DumpSimChannels : public art::EDAnalyzer {
+public:
   // type to enable module parameters description by art
   using Parameters = art::EDAnalyzer::Table<Config>;
 
@@ -59,14 +54,12 @@ class sim::DumpSimChannels: public art::EDAnalyzer {
 
   // Plugins should not be copied or assigned.
   DumpSimChannels(DumpSimChannels const&) = delete;
-  DumpSimChannels(DumpSimChannels &&) = delete;
-  DumpSimChannels& operator = (DumpSimChannels const&) = delete;
-  DumpSimChannels& operator = (DumpSimChannels &&) = delete;
-
+  DumpSimChannels(DumpSimChannels&&) = delete;
+  DumpSimChannels& operator=(DumpSimChannels const&) = delete;
+  DumpSimChannels& operator=(DumpSimChannels&&) = delete;
 
   // Operates on the event
   void analyze(art::Event const& event) override;
-
 
   /**
    * @brief Dumps the content of the specified SimChannel in the output stream
@@ -82,19 +75,16 @@ class sim::DumpSimChannels: public art::EDAnalyzer {
    * The output starts on the current line, and the last line is NOT broken.
    */
   template <typename Stream>
-  void DumpSimChannel(
-    Stream&& out, sim::SimChannel const& simchannel,
-    std::string indent = "", bool bIndentFirst = true
-    ) const;
+  void DumpSimChannel(Stream&& out,
+                      sim::SimChannel const& simchannel,
+                      std::string indent = "",
+                      bool bIndentFirst = true) const;
 
-
-    private:
-
+private:
   art::InputTag fInputChannels; ///< name of SimChannel's data product
-  std::string fOutputCategory; ///< name of the stream for output
+  std::string fOutputCategory;  ///< name of the stream for output
 
 }; // class sim::DumpSimChannels
-
 
 //------------------------------------------------------------------------------
 //---  module implementation
@@ -106,31 +96,31 @@ sim::DumpSimChannels::DumpSimChannels(Parameters const& config)
   , fOutputCategory(config().OutputCategory())
 {}
 
-
 //------------------------------------------------------------------------------
 template <typename Stream>
-void sim::DumpSimChannels::DumpSimChannel(
-  Stream&& out, sim::SimChannel const& channel,
-  std::string indent /* = "" */, bool bIndentFirst /* = true */
-) const {
+void sim::DumpSimChannels::DumpSimChannel(Stream&& out,
+                                          sim::SimChannel const& channel,
+                                          std::string indent /* = "" */,
+                                          bool bIndentFirst /* = true */
+                                          ) const
+{
   if (bIndentFirst) out << indent;
   channel.Dump(out, indent);
 } // sim::DumpSimChannels::DumpSimChannels()
 
-
 //------------------------------------------------------------------------------
-void sim::DumpSimChannels::analyze(art::Event const& event) {
+void sim::DumpSimChannels::analyze(art::Event const& event)
+{
 
   // get the particles from the event
-  auto const& SimChannels
-    = *(event.getValidHandle<std::vector<sim::SimChannel>>(fInputChannels));
+  auto const& SimChannels = *(event.getValidHandle<std::vector<sim::SimChannel>>(fInputChannels));
 
-  mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
-    << " : data product '" << fInputChannels.encode() << "' contains "
+  mf::LogVerbatim(fOutputCategory)
+    << "Event " << event.id() << " : data product '" << fInputChannels.encode() << "' contains "
     << SimChannels.size() << " SimChannels";
 
   unsigned int iSimChannel = 0;
-  for (sim::SimChannel const& simChannel: SimChannels) {
+  for (sim::SimChannel const& simChannel : SimChannels) {
 
     // a bit of a header
     mf::LogVerbatim log(fOutputCategory);
@@ -141,7 +131,6 @@ void sim::DumpSimChannels::analyze(art::Event const& event) {
   mf::LogVerbatim(fOutputCategory) << "\n";
 
 } // sim::DumpSimChannels::analyze()
-
 
 //------------------------------------------------------------------------------
 DEFINE_ART_MODULE(sim::DumpSimChannels)

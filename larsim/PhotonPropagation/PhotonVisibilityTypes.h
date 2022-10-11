@@ -15,13 +15,11 @@
 #ifndef LARSIM_PHOTONPROPAGATION_PHOTONVISIBILITYTYPES_H
 #define LARSIM_PHOTONPROPAGATION_PHOTONVISIBILITYTYPES_H
 
-
 // LArSoft libraries
 #include "larsim/PhotonPropagation/IPhotonLibrary.h"
 #include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 
-
-namespace phot{
+namespace phot {
 
   /// Type of (global) optical detector ID.
   using OpDetID_t = phot::IPhotonMappingTransformations::OpDetID_t;
@@ -36,10 +34,8 @@ namespace phot{
    *
    * It used to be `float const*`.
    */
-  using MappedCounts_t
-    = phot::IPhotonMappingTransformations::MappedOpDetData_t
-      <phot::IPhotonLibrary::Counts_t>
-    ;
+  using MappedCounts_t =
+    phot::IPhotonMappingTransformations::MappedOpDetData_t<phot::IPhotonLibrary::Counts_t>;
 
   /**
    * @brief Type of mapped arrival times.
@@ -49,10 +45,8 @@ namespace phot{
    * This is the type returned by `phot::PhotonVisibilityService` when asked
    * about time of arrival from a point to _all_ the optical detectors.
    */
-  using MappedT0s_t
-    = phot::IPhotonMappingTransformations::MappedOpDetData_t
-      <phot::IPhotonLibrary::T0s_t>
-    ;
+  using MappedT0s_t =
+    phot::IPhotonMappingTransformations::MappedOpDetData_t<phot::IPhotonLibrary::T0s_t>;
 
   /**
    * @brief Type of set of parameters for functions.
@@ -63,10 +57,8 @@ namespace phot{
    * about any parametrized... parameter, from a point to _all_ the optical
    * detectors.
    */
-  using MappedParams_t
-    = phot::IPhotonMappingTransformations::MappedOpDetData_t
-      <phot::IPhotonLibrary::Params_t>
-    ;
+  using MappedParams_t =
+    phot::IPhotonMappingTransformations::MappedOpDetData_t<phot::IPhotonLibrary::Params_t>;
 
   /**
    * @brief Type of mapped parametrization functions.
@@ -77,12 +69,9 @@ namespace phot{
    * about any parameter directlyt described by functions (glorious ROOT `TF1`),
    * from a point to _all_ the optical detectors.
    */
-  using MappedFunctions_t
-    = phot::IPhotonMappingTransformations::MappedOpDetData_t
-      <phot::IPhotonLibrary::Functions_t>
-    ;
+  using MappedFunctions_t =
+    phot::IPhotonMappingTransformations::MappedOpDetData_t<phot::IPhotonLibrary::Functions_t>;
 
 } // namespace phot
-
 
 #endif // LARSIM_PHOTONPROPAGATION_PHOTONVISIBILITYTYPES_H

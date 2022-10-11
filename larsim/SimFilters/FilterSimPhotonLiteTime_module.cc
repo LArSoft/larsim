@@ -78,8 +78,7 @@ simfilter::FilterSimPhotonLiteTime::FilterSimPhotonLiteTime(fhicl::ParameterSet 
   }
 }
 
-void
-simfilter::FilterSimPhotonLiteTime::CheckTimeWindows() const
+void simfilter::FilterSimPhotonLiteTime::CheckTimeWindows() const
 {
 
   if (fDebug)
@@ -97,8 +96,7 @@ simfilter::FilterSimPhotonLiteTime::CheckTimeWindows() const
   }
 }
 
-bool
-simfilter::FilterSimPhotonLiteTime::filter(art::Event& e, art::ProcessingFrame const&)
+bool simfilter::FilterSimPhotonLiteTime::filter(art::Event& e, art::ProcessingFrame const&)
 {
   auto const& simPhotonsLiteCollection =
     *e.getValidHandle<std::vector<sim::SimPhotonsLite>>(fSimPhotonsLiteCollectionLabel);

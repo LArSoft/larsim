@@ -7,8 +7,8 @@
 // from cetlib version v3_10_00.
 ////////////////////////////////////////////////////////////////////////
 
-#include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -31,7 +31,6 @@ namespace sim {
   class GenericCRT;
 }
 
-
 class sim::GenericCRT : public art::EDProducer {
 public:
   explicit GenericCRT(fhicl::ParameterSet const& p);
@@ -47,26 +46,22 @@ public:
   // Required functions.
   void produce(art::Event& e) override;
 
-
 private:
-
   std::string fEnergyUnitsScale;
   sim::GenericCRTUtility fCRTConvertUtil;
 
   // Declare member data here.
-
 };
 
-
 sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
-  : EDProducer{p}  //
-  ,fEnergyUnitsScale (p.get<std::string>("EnergyUnitsScale","MeV"))
-  ,fCRTConvertUtil(fEnergyUnitsScale)
-  // More initializers here.
-  {
+  : EDProducer{p} //
+  , fEnergyUnitsScale(p.get<std::string>("EnergyUnitsScale", "MeV"))
+  , fCRTConvertUtil(fEnergyUnitsScale)
+// More initializers here.
+{
 
-    produces< std::vector<sim::AuxDetSimChannel> >();
-  }
+  produces<std::vector<sim::AuxDetSimChannel>>();
+}
 
 void sim::GenericCRT::produce(art::Event& e)
 {
@@ -74,7 +69,7 @@ void sim::GenericCRT::produce(art::Event& e)
   //std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
 
-  auto const &auxdethitcollection = e.getMany< std::vector<sim::AuxDetHit>> ();
+  auto const& auxdethitcollection = e.getMany<std::vector<sim::AuxDetHit>>();
 
   for (size_t ii = 0; ii < auxdethitcollection.size(); ii++) {
     for (auto ch : fCRTConvertUtil.GetAuxDetSimChannels(*(auxdethitcollection.at(ii))))
@@ -82,7 +77,6 @@ void sim::GenericCRT::produce(art::Event& e)
   }
 
   e.put(std::move(adCol));
-
 }
 
 DEFINE_ART_MODULE(sim::GenericCRT)

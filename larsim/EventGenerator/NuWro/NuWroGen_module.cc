@@ -7,46 +7,44 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <sys/stat.h>
 #include <cstdlib>
-#include <string>
-#include <iostream>
-#include <iomanip>
-#include <memory>
-#include <unistd.h>
-#include <stdio.h>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <memory>
+#include <stdio.h>
+#include <string>
+#include <sys/stat.h>
+#include <unistd.h>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // ROOT includes
+#include "TBranch.h"
+#include "TChain.h"
+#include "TDatabasePDG.h"
+#include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "TDatabasePDG.h"
-#include "TSystem.h"
 #include "TROOT.h"
-#include "TBranch.h"
-#include "TTree.h"
-#include "TFile.h"
-#include "TChain.h"
 #include "TStopwatch.h"
-
+#include "TSystem.h"
+#include "TTree.h"
 
 // LArSoft includes
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // #include "NWtree.h"
 
@@ -57,15 +55,16 @@ class TH2F;
 // the definition for the NuWro event class
 //#include "event1dict.h"
 
-namespace simb { class MCTruth; }
+namespace simb {
+  class MCTruth;
+}
 
 namespace evgen {
-
 
   /// A module to check the results from the Monte Carlo generator
   class NuWroGen : public art::EDProducer {
   public:
-    explicit NuWroGen(fhicl::ParameterSet const &pset);
+    explicit NuWroGen(fhicl::ParameterSet const& pset);
     virtual ~NuWroGen();
 
     void produce(art::Event& evt);
@@ -75,70 +74,67 @@ namespace evgen {
     void endJob();
 
   private:
+    std::string ParticleStatus(int StatusCode);
+    std::string ReactionChannel(int ccnc, int mode);
 
-        std::string ParticleStatus(int StatusCode);
-        std::string ReactionChannel(int ccnc,int mode);
+    void FillHistograms(const simb::MCTruth& mc);
 
-        void FillHistograms(const simb::MCTruth &mc);
+    std::string fFileName;
+    std::string fTreeName;
+    std::ifstream* fEventFile;
 
-	std::string         fFileName;
-	std::string         fTreeName;
-	std::ifstream      *fEventFile;
+    TStopwatch fStopwatch; ///keep track of how long it takes to run the job
 
-	TStopwatch          fStopwatch;      ///keep track of how long it takes to run the job
+    std::string fNuWroModuleLabel;
+    int fEventNumberOffset;
 
-	std::string fNuWroModuleLabel;
-	int fEventNumberOffset;
+    std::vector<double> fxsecFluxWtd;
+    double fxsecTotal;
 
-	std::vector<double> fxsecFluxWtd;
-	double fxsecTotal;
+    TH1F* fGenerated[6]; ///< Spectra as generated
 
-	TH1F* fGenerated[6];  ///< Spectra as generated
+    TH1F* fVertexX; ///< vertex location of generated events in x
+    TH1F* fVertexY; ///< vertex location of generated events in y
+    TH1F* fVertexZ; ///< vertex location of generated events in z
 
-	TH1F* fVertexX;    ///< vertex location of generated events in x
-	TH1F* fVertexY;    ///< vertex location of generated events in y
-	TH1F* fVertexZ;    ///< vertex location of generated events in z
+    TH2F* fVertexXY; ///< vertex location in xy
+    TH2F* fVertexXZ; ///< vertex location in xz
+    TH2F* fVertexYZ; ///< vertex location in yz
 
-	TH2F* fVertexXY;   ///< vertex location in xy
-	TH2F* fVertexXZ;   ///< vertex location in xz
-	TH2F* fVertexYZ;   ///< vertex location in yz
+    TH1F* fDCosX; ///< direction cosine in x
+    TH1F* fDCosY; ///< direction cosine in y
+    TH1F* fDCosZ; ///< direction cosine in z
 
-	TH1F* fDCosX;      ///< direction cosine in x
-	TH1F* fDCosY;      ///< direction cosine in y
-	TH1F* fDCosZ;      ///< direction cosine in z
+    TH1F* fMuMomentum; ///< momentum of outgoing muons
+    TH1F* fMuDCosX;    ///< direction cosine of outgoing mu in x
+    TH1F* fMuDCosY;    ///< direction cosine of outgoing mu in y
+    TH1F* fMuDCosZ;    ///< direction cosine of outgoing mu in z
 
-	TH1F* fMuMomentum; ///< momentum of outgoing muons
-	TH1F* fMuDCosX;    ///< direction cosine of outgoing mu in x
-	TH1F* fMuDCosY;    ///< direction cosine of outgoing mu in y
-	TH1F* fMuDCosZ;    ///< direction cosine of outgoing mu in z
+    TH1F* fEMomentum; ///< momentum of outgoing electrons
+    TH1F* fEDCosX;    ///< direction cosine of outgoing e in x
+    TH1F* fEDCosY;    ///< direction cosine of outgoing e in y
+    TH1F* fEDCosZ;    ///< direction cosine of outgoing e in z
 
-	TH1F* fEMomentum;  ///< momentum of outgoing electrons
-	TH1F* fEDCosX;     ///< direction cosine of outgoing e in x
-	TH1F* fEDCosY;     ///< direction cosine of outgoing e in y
-	TH1F* fEDCosZ;     ///< direction cosine of outgoing e in z
+    TH1F* fCCMode;   ///< CC interaction mode
+    TH1F* fNCMode;   ///< CC interaction mode
+    TH1F* fDyn;      ///< mode in detail
+    TH1F* fWeight;   ///< NuWro Wt
+    TH1F* fWeightNW; ///< NuWro Wt
+    TH1F* fDynNew;
+    TH1F* fDynNewThresh;
+    TH2F* f2DynNew;
+    TH2F* f2DynNewThresh;
 
-	TH1F* fCCMode;      ///< CC interaction mode
-	TH1F* fNCMode;      ///< CC interaction mode
-	TH1F* fDyn;         ///< mode in detail
-	TH1F* fWeight;         ///< NuWro Wt
-	TH1F* fWeightNW;         ///< NuWro Wt
-	TH1F* fDynNew;
-	TH1F* fDynNewThresh;
-	TH2F* f2DynNew;
-	TH2F* f2DynNewThresh;
+    // for c2: fDeltaE is no longer used
+    //TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
+    TH1F* fECons; ///< histogram to determine if energy is conserved in the event
 
-        // for c2: fDeltaE is no longer used
-	//TH1F* fDeltaE;     ///< difference in neutrino energy from MCTruth::Enu() vs TParticle
-	TH1F* fECons;      ///< histogram to determine if energy is conserved in the event
+    unsigned int countFile;
+    event* NuWroTTree;
+    TChain* ch;
 
-
-
-	  unsigned int countFile;
-	  event     *NuWroTTree;
-	  TChain          *ch;
-
-	  // here come all the NuWro variables...
-	  /*
+    // here come all the NuWro variables...
+    /*
 	  TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 	  Int_t           fCurrent; //!current Tree number in a TChain
 
@@ -1241,70 +1237,64 @@ namespace evgen {
 
 	  TBranch        *b_e_nr;   //!
 	  */
-
   };
 }
 
-
-namespace evgen{
+namespace evgen {
 
   //____________________________________________________________________________
-  NuWroGen::NuWroGen(fhicl::ParameterSet const& pset)
-    : EDProducer{pset}
+  NuWroGen::NuWroGen(fhicl::ParameterSet const& pset) : EDProducer{pset}
   {
 
-    fEventNumberOffset = pset.get< int >("EventNumberOffset",0);
+    fEventNumberOffset = pset.get<int>("EventNumberOffset", 0);
 
     this->reconfigure(pset);
     fStopwatch.Start();
 
-    produces< std::vector<simb::MCTruth> >();
-    produces< sumdata::RunData, art::InRun >();
-
-   }
+    produces<std::vector<simb::MCTruth>>();
+    produces<sumdata::RunData, art::InRun>();
+  }
 
   //____________________________________________________________________________
 
-  NuWroGen::~NuWroGen()
-  {
-    fStopwatch.Stop();
-  }
+  NuWroGen::~NuWroGen() { fStopwatch.Stop(); }
 
   //____________________________________________________________________________
   void NuWroGen::reconfigure(fhicl::ParameterSet const& p)
   {
-    fFileName       = p.get< std::string         >("NuWroFile","output.root");
-    fTreeName       = p.get< std::string   	  >("TreeName","treeout");
+    fFileName = p.get<std::string>("NuWroFile", "output.root");
+    fTreeName = p.get<std::string>("TreeName", "treeout");
 
     return;
   }
-//___________________________________________________________________________
+  //___________________________________________________________________________
 
-  void NuWroGen::beginJob(){
+  void NuWroGen::beginJob()
+  {
 
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService const> tfs;
 
-    fGenerated[0] = tfs->make<TH1F>("fGenerated_necc","",  100, 0.0, 20.0);
-    fGenerated[1] = tfs->make<TH1F>("fGenerated_nebcc","", 100, 0.0, 20.0);
-    fGenerated[2] = tfs->make<TH1F>("fGenerated_nmcc","",  100, 0.0, 20.0);
-    fGenerated[3] = tfs->make<TH1F>("fGenerated_nmbcc","", 100, 0.0, 20.0);
-    fGenerated[4] = tfs->make<TH1F>("fGenerated_nnc","",   100, 0.0, 20.0);
-    fGenerated[5] = tfs->make<TH1F>("fGenerated_nbnc","",  100, 0.0, 20.0);
+    fGenerated[0] = tfs->make<TH1F>("fGenerated_necc", "", 100, 0.0, 20.0);
+    fGenerated[1] = tfs->make<TH1F>("fGenerated_nebcc", "", 100, 0.0, 20.0);
+    fGenerated[2] = tfs->make<TH1F>("fGenerated_nmcc", "", 100, 0.0, 20.0);
+    fGenerated[3] = tfs->make<TH1F>("fGenerated_nmbcc", "", 100, 0.0, 20.0);
+    fGenerated[4] = tfs->make<TH1F>("fGenerated_nnc", "", 100, 0.0, 20.0);
+    fGenerated[5] = tfs->make<TH1F>("fGenerated_nbnc", "", 100, 0.0, 20.0);
 
     fDCosX = tfs->make<TH1F>("fDCosX", ";dx/ds", 200, -1., 1.);
     fDCosY = tfs->make<TH1F>("fDCosY", ";dy/ds", 200, -1., 1.);
     fDCosZ = tfs->make<TH1F>("fDCosZ", ";dz/ds", 200, -1., 1.);
 
     fMuMomentum = tfs->make<TH1F>("fMuMomentum", ";p_{#mu} (GeV/c)", 500, 0., 50.);
-    fMuDCosX    = tfs->make<TH1F>("fMuDCosX", ";dx/ds;", 200, -1., 1.);
-    fMuDCosY    = tfs->make<TH1F>("fMuDCosY", ";dy/ds;", 200, -1., 1.);
-    fMuDCosZ    = tfs->make<TH1F>("fMuDCosZ", ";dz/ds;", 200, -1., 1.);
+    fMuDCosX = tfs->make<TH1F>("fMuDCosX", ";dx/ds;", 200, -1., 1.);
+    fMuDCosY = tfs->make<TH1F>("fMuDCosY", ";dy/ds;", 200, -1., 1.);
+    fMuDCosZ = tfs->make<TH1F>("fMuDCosZ", ";dz/ds;", 200, -1., 1.);
 
-    fEMomentum  = tfs->make<TH1F>("fEMomentum", ";p_{e} (GeV/c)", 500, 0., 50.);
-    fEDCosX     = tfs->make<TH1F>("fEDCosX", ";dx/ds;", 200, -1., 1.);
-    fEDCosY     = tfs->make<TH1F>("fEDCosY", ";dy/ds;", 200, -1., 1.);
-    fEDCosZ     = tfs->make<TH1F>("fEDCosZ", ";dz/ds;", 200, -1., 1.);
+    fEMomentum = tfs->make<TH1F>("fEMomentum", ";p_{e} (GeV/c)", 500, 0., 50.);
+    fEDCosX = tfs->make<TH1F>("fEDCosX", ";dx/ds;", 200, -1., 1.);
+    fEDCosY = tfs->make<TH1F>("fEDCosY", ";dy/ds;", 200, -1., 1.);
+    fEDCosZ = tfs->make<TH1F>("fEDCosZ", ";dz/ds;", 200, -1., 1.);
 
     fCCMode = tfs->make<TH1F>("fCCMode", ";CC Interaction Mode;", 5, 0., 5.);
     fCCMode->GetXaxis()->SetBinLabel(1, "QE");
@@ -1354,7 +1344,8 @@ namespace evgen{
     fDynNew->GetXaxis()->SetBinLabel(10, "Other");
     fDynNew->GetXaxis()->CenterLabels();
 
-    fDynNewThresh = tfs->make<TH1F>("fDynNewThresh", ";New Style Accounting Mode (Tp>50MeV);", 10, 0., 10.);
+    fDynNewThresh =
+      tfs->make<TH1F>("fDynNewThresh", ";New Style Accounting Mode (Tp>50MeV);", 10, 0., 10.);
     fDynNewThresh->GetXaxis()->SetBinLabel(1, "1mu0p0pi");
     fDynNewThresh->GetXaxis()->SetBinLabel(2, "1mu1p0pi");
     fDynNewThresh->GetXaxis()->SetBinLabel(3, "1muge2p0pi");
@@ -1367,7 +1358,8 @@ namespace evgen{
     fDynNewThresh->GetXaxis()->SetBinLabel(10, "Other");
     fDynNewThresh->GetXaxis()->CenterLabels();
 
-    f2DynNew = tfs->make<TH2F>("f2DynNew", ";Old vs New Style Accounting Mode;", 13, 0.,13., 10,0.,10.);
+    f2DynNew =
+      tfs->make<TH2F>("f2DynNew", ";Old vs New Style Accounting Mode;", 13, 0., 13., 10, 0., 10.);
 
     f2DynNew->GetXaxis()->SetBinLabel(1, "CCQE");
     f2DynNew->GetXaxis()->SetBinLabel(2, "NCelastic");
@@ -1395,7 +1387,8 @@ namespace evgen{
     f2DynNew->GetYaxis()->SetBinLabel(10, "Other");
     f2DynNew->GetYaxis()->CenterLabels();
 
-    f2DynNewThresh = tfs->make<TH2F>("f2DynNewThresh", ";Old vs New Style Accounting Mode;", 13, 0.,13., 10, 0.,10.);
+    f2DynNewThresh = tfs->make<TH2F>(
+      "f2DynNewThresh", ";Old vs New Style Accounting Mode;", 13, 0., 13., 10, 0., 10.);
 
     f2DynNewThresh->GetXaxis()->SetBinLabel(1, "CCQE");
     f2DynNewThresh->GetXaxis()->SetBinLabel(2, "NCelastic");
@@ -1424,68 +1417,67 @@ namespace evgen{
     f2DynNewThresh->GetYaxis()->CenterLabels();
 
     //fDeltaE = tfs->make<TH1F>("fDeltaE", ";#Delta E_{#nu} (GeV);", 200, -1., 1.);
-    fECons  = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
+    fECons = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
     art::ServiceHandle<geo::Geometry const> geo;
-    double x = 2.1*geo->DetHalfWidth();
-    double y = 2.1*geo->DetHalfHeight();
-    double z = 2.*geo->DetLength();
-    int xdiv = TMath::Nint(2*x/5.);
-    int ydiv = TMath::Nint(2*y/5.);
-    int zdiv = TMath::Nint(2*z/5.);
+    double x = 2.1 * geo->DetHalfWidth();
+    double y = 2.1 * geo->DetHalfHeight();
+    double z = 2. * geo->DetLength();
+    int xdiv = TMath::Nint(2 * x / 5.);
+    int ydiv = TMath::Nint(2 * y / 5.);
+    int zdiv = TMath::Nint(2 * z / 5.);
 
-    fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv,  -x, x);
-    fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv,  -y, y);
-    fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.2*z, z);
+    fVertexX = tfs->make<TH1F>("fVertexX", ";x (cm)", xdiv, -x, x);
+    fVertexY = tfs->make<TH1F>("fVertexY", ";y (cm)", ydiv, -y, y);
+    fVertexZ = tfs->make<TH1F>("fVertexZ", ";z (cm)", zdiv, -0.2 * z, z);
 
-    fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv,     -x, x, ydiv, -y, y);
-    fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2*z, z, xdiv, -x, x);
-    fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2*z, z, ydiv, -y, y);
-
+    fVertexXY = tfs->make<TH2F>("fVertexXY", ";x (cm);y (cm)", xdiv, -x, x, ydiv, -y, y);
+    fVertexXZ = tfs->make<TH2F>("fVertexXZ", ";z (cm);x (cm)", zdiv, -0.2 * z, z, xdiv, -x, x);
+    fVertexYZ = tfs->make<TH2F>("fVertexYZ", ";z (cm);y (cm)", zdiv, -0.2 * z, z, ydiv, -y, y);
 
     TClass::GetClass("line")->GetStreamerInfo(1);
     ch = new TChain(fTreeName.c_str());
     ch->Add(fFileName.c_str());
 
-
     std::cout << " Num entries in TTree is " << ch->GetEntries() << std::endl;
 
     NuWroTTree = new event();
-    ch->SetBranchAddress ("e", &NuWroTTree);
+    ch->SetBranchAddress("e", &NuWroTTree);
 
     // initiate flux-wtd XSections.
     std::cout << "NuWroGen: Here's the output of the .txt file" << std::endl;
-    std::ifstream xsecTxtFile((fFileName+".txt").c_str());
+    std::ifstream xsecTxtFile((fFileName + ".txt").c_str());
     unsigned int cntline(0);
     std::string line;
-    if (xsecTxtFile.is_open())
-      {
-	while ( xsecTxtFile.good() )
-	  {
-	    getline (xsecTxtFile,line);
-	    cout << line << endl;
-	    if (cntline==0) { cntline++; continue;} // first line is header.
-	    stringstream ss(line); // Insert the string into a stream
-	    vector<std::string> tokens; // Create vector to hold our words
-	    string buf;
-	    while (ss >> buf)
-	      {
-		tokens.push_back(buf);
-	      }
-	    // want last element in line. That's the xsec.
-	    if (tokens.size() && line.length())
-	      fxsecFluxWtd.push_back(atof(tokens.back().c_str()));
-	    else  xsecTxtFile.close();
-	    tokens.clear();
-	  }
+    if (xsecTxtFile.is_open()) {
+      while (xsecTxtFile.good()) {
+        getline(xsecTxtFile, line);
+        cout << line << endl;
+        if (cntline == 0) {
+          cntline++;
+          continue;
+        }                           // first line is header.
+        stringstream ss(line);      // Insert the string into a stream
+        vector<std::string> tokens; // Create vector to hold our words
+        string buf;
+        while (ss >> buf) {
+          tokens.push_back(buf);
+        }
+        // want last element in line. That's the xsec.
+        if (tokens.size() && line.length())
+          fxsecFluxWtd.push_back(atof(tokens.back().c_str()));
+        else
+          xsecTxtFile.close();
+        tokens.clear();
       }
-    else std::cout << "Unable to open file";
+    }
+    else
+      std::cout << "Unable to open file";
 
-    fxsecTotal=0.0;
-    for (unsigned int ii=0;ii<fxsecFluxWtd.size();ii++)
-      {
-	fxsecTotal+=fxsecFluxWtd.at(ii);
-      }
+    fxsecTotal = 0.0;
+    for (unsigned int ii = 0; ii < fxsecFluxWtd.size(); ii++) {
+      fxsecTotal += fxsecFluxWtd.at(ii);
+    }
 
     countFile = fEventNumberOffset;
     std::cout << " Start this job on event " << countFile << std::endl;
@@ -1510,11 +1502,12 @@ namespace evgen{
   {
 
     std::cout << std::endl;
-    std::cout<<"------------------------------------------------------------------------------"<<std::endl;
-//  std::cout << "run    : " << evt.Header().Run() << std::endl;
-//  std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
-//  std::cout << "event  : " << evt.Header().Event() << std::endl;
-//  std::cout << "event  : " << evt.id().event() << std::endl;
+    std::cout << "------------------------------------------------------------------------------"
+              << std::endl;
+    //  std::cout << "run    : " << evt.Header().Run() << std::endl;
+    //  std::cout << "subrun : " << evt.Header().Subrun() << std::endl;
+    //  std::cout << "event  : " << evt.Header().Event() << std::endl;
+    //  std::cout << "event  : " << evt.id().event() << std::endl;
 
     std::string name, k, dollar;
     int partnumber = 0;
@@ -1524,7 +1517,6 @@ namespace evgen{
     int FirstMother = -1;
 
     int Status = -9999;
-
 
     int ccnc = -9999;
     int mode = -9999;
@@ -1538,14 +1530,13 @@ namespace evgen{
     TLorentzVector Hadron4mom;
     double Q2 = -9999;
 
-    int Tpdg = 0;  // for target
+    int Tpdg = 0; // for target
     double Tmass = 0;
     int Tstatus = 11;
     double Tcosx, Tcosy, Tcosz, Tenergy;
     TLorentzVector Tpos;
 
-
-    std::unique_ptr< std::vector<simb::MCTruth> > truthcol(new std::vector<simb::MCTruth>);
+    std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
 
     /*
@@ -1560,221 +1551,218 @@ namespace evgen{
     //get the nuwro channel number
 
     //set the interaction type; CC or NC
-    if (NuWroTTree->flag.cc) ccnc = simb::kCC;
-    else if (NuWroTTree->flag.nc) ccnc = simb::kNC;
+    if (NuWroTTree->flag.cc)
+      ccnc = simb::kCC;
+    else if (NuWroTTree->flag.nc)
+      ccnc = simb::kNC;
 
     //set the interaction mode; QE, Res, DIS, Coh, kNuElectronElastic, kInverseMuDecay
-    if ( NuWroTTree->flag.qel )
+    if (NuWroTTree->flag.qel)
       mode = simb::kQE;
-    else if ( NuWroTTree->flag.res )
+    else if (NuWroTTree->flag.res)
       mode = simb::kRes;
-    else if ( NuWroTTree->flag.dis )
+    else if (NuWroTTree->flag.dis)
       mode = simb::kDIS;
-    else if ( NuWroTTree->flag.coh )
+    else if (NuWroTTree->flag.coh)
       mode = simb::kCoh;
-    if(partnumber == -1)
+    if (partnumber == -1)
       Status = 0;
     else
       Status = 1;
 
-
     art::ServiceHandle<geo::Geometry const> geo;
     double X0 = NuWroTTree->par.geo_o[0] + geo->DetHalfWidth();
     double Y0 = NuWroTTree->par.geo_o[1];
-    double Z0 = NuWroTTree->par.geo_o[2] + 0.25*geo->DetLength();
+    double Z0 = NuWroTTree->par.geo_o[2] + 0.25 * geo->DetLength();
     TLorentzVector pos(X0, Y0, Z0, 0);
     Tpos = pos; // for target
 
-
-    simb::MCParticle mcpartNu(trackid,
-			    NuWroTTree->in[0].pdg,
-			    primary,
-			    FirstMother,
-			    NuWroTTree->in[0].m()/1000.,
-			    Status
-			    );
-    TLorentzVector mom(NuWroTTree->in[0].x/1000.,
-		       NuWroTTree->in[0].y/1000.,
-		       NuWroTTree->in[0].z/1000.,
-		       NuWroTTree->in[0].t/1000.);
-    mcpartNu.AddTrajectoryPoint(pos,mom);
+    simb::MCParticle mcpartNu(
+      trackid, NuWroTTree->in[0].pdg, primary, FirstMother, NuWroTTree->in[0].m() / 1000., Status);
+    TLorentzVector mom(NuWroTTree->in[0].x / 1000.,
+                       NuWroTTree->in[0].y / 1000.,
+                       NuWroTTree->in[0].z / 1000.,
+                       NuWroTTree->in[0].t / 1000.);
+    mcpartNu.AddTrajectoryPoint(pos, mom);
     truth.Add(mcpartNu);
 
-
     unsigned int ii(0);
-    while(ii<NuWroTTree->post.size())
-      {
-	// loop over particles in an event
+    while (ii < NuWroTTree->post.size()) {
+      // loop over particles in an event
 
-	simb::MCParticle mcpart(trackid,
-				NuWroTTree->post[ii].pdg,
-				primary,
-				FirstMother,
-				NuWroTTree->post[ii].m()/1000.,
-				Status
-				);
-	TLorentzVector mom(NuWroTTree->post[ii].x/1000.,
-			   NuWroTTree->post[ii].y/1000.,
-			   NuWroTTree->post[ii].z/1000.,
-			   NuWroTTree->post[ii].t/1000.);
-	mcpart.AddTrajectoryPoint(pos,mom);
-	truth.Add(mcpart);
+      simb::MCParticle mcpart(trackid,
+                              NuWroTTree->post[ii].pdg,
+                              primary,
+                              FirstMother,
+                              NuWroTTree->post[ii].m() / 1000.,
+                              Status);
+      TLorentzVector mom(NuWroTTree->post[ii].x / 1000.,
+                         NuWroTTree->post[ii].y / 1000.,
+                         NuWroTTree->post[ii].z / 1000.,
+                         NuWroTTree->post[ii].t / 1000.);
+      mcpart.AddTrajectoryPoint(pos, mom);
+      truth.Add(mcpart);
 
-
-	ii++;
-      }// loop over particles in an event
+      ii++;
+    } // loop over particles in an event
     // Incoming Neutrino is 0th element of in. Outgoing lepton is 0th of out.
-    Neutrino.SetPxPyPzE(NuWroTTree->in[0].x/1000., NuWroTTree->in[0].y/1000., NuWroTTree->in[0].z/1000., NuWroTTree->in[0].t/1000. );
-    Lepton.SetPxPyPzE(NuWroTTree->out[0].x/1000., NuWroTTree->out[0].y/1000., NuWroTTree->out[0].z/1000., NuWroTTree->out[0].t/1000. );
+    Neutrino.SetPxPyPzE(NuWroTTree->in[0].x / 1000.,
+                        NuWroTTree->in[0].y / 1000.,
+                        NuWroTTree->in[0].z / 1000.,
+                        NuWroTTree->in[0].t / 1000.);
+    Lepton.SetPxPyPzE(NuWroTTree->out[0].x / 1000.,
+                      NuWroTTree->out[0].y / 1000.,
+                      NuWroTTree->out[0].z / 1000.,
+                      NuWroTTree->out[0].t / 1000.);
 
     /////////////////////////////////
 
-      Tmass = NuWroTTree->par.nucleus_p + NuWroTTree->par.nucleus_n; // GeV
+    Tmass = NuWroTTree->par.nucleus_p + NuWroTTree->par.nucleus_n; // GeV
 
+    Tenergy = NuWroTTree->in.back().t;
+    Tcosx = NuWroTTree->in.back().x;
+    Tcosy = NuWroTTree->in.back().y;
+    Tcosz = NuWroTTree->in.back().z;
+    Tmass = std::sqrt(std::abs(Tenergy * Tenergy - Tcosx * Tcosx - Tcosy * Tcosy - Tcosz * Tcosz)) /
+            1000.;
 
-      Tenergy = NuWroTTree->in.back().t;
-      Tcosx   = NuWroTTree->in.back().x;
-      Tcosy   = NuWroTTree->in.back().y;
-      Tcosz   = NuWroTTree->in.back().z;
-      Tmass = std::sqrt(std::abs(Tenergy*Tenergy - Tcosx*Tcosx
-		       - Tcosy*Tcosy - Tcosz*Tcosz))/1000.;
+    Tenergy = Tmass - 0.1; // force this negative, cuz kinetic energy>eps
+    // seems to make G4 hang.
+    Tcosx = 0.;
+    Tcosy = 0.;
+    Tcosz = 0.;
 
-      Tenergy = Tmass-0.1; // force this negative, cuz kinetic energy>eps
-      // seems to make G4 hang.
-      Tcosx =0.; Tcosy = 0.; Tcosz = 0.;
+    simb::MCParticle mcpartT(trackid, Tpdg, primary, FirstMother, Tmass, Tstatus);
 
+    //     Target = Hadron4mom - (Neutrino - Lepton); // commenting this out as target momentum no more is calculated by 4-momentum conservation
 
-      simb::MCParticle mcpartT(trackid,
-			      Tpdg,
-			      primary,
-			      FirstMother,
-			      Tmass,
-			      Tstatus
-			      );
+    TLorentzVector Tmom;
+    Tmom.SetPxPyPzE(
+      Tcosx / 1000.,
+      Tcosy / 1000.,
+      Tcosz / 1000.,
+      Tenergy); // this makes literally |P| = 0 or 1 GeV/c for target, this affects only the Kinematic variables; X and Y
+    // target |p| = 0 GeV/c if interaction is
+    // DIS, Coh, nu-e Elastic Scattering, nu-e inverse mu decay (this comes from Nuwro),
+    // else target |P| = 1 GeV/c
+    Target = Tmom;
 
+    mcpartT.AddTrajectoryPoint(Tpos, Tmom);
+    // for now, do(n't) target onto stack. EC, 20-Jul-2012.
+    truth.Add(mcpartT);
 
-      //     Target = Hadron4mom - (Neutrino - Lepton); // commenting this out as target momentum no more is calculated by 4-momentum conservation
+    q = Neutrino - Lepton;
+    Q2 = -(q * q);
+    //    double W2 = Hadron4mom * Hadron4mom;
+    //    double InvariantMass = std::sqrt(W2);
 
-      TLorentzVector Tmom;
-      Tmom.SetPxPyPzE(Tcosx/1000., Tcosy/1000., Tcosz/1000., Tenergy); // this makes literally |P| = 0 or 1 GeV/c for target, this affects only the Kinematic variables; X and Y
-      // target |p| = 0 GeV/c if interaction is
-      // DIS, Coh, nu-e Elastic Scattering, nu-e inverse mu decay (this comes from Nuwro),
-      // else target |P| = 1 GeV/c
-      Target = Tmom;
+    double x = Q2 / ((2 * Target * q));
+    double y = (Target * q) / (Neutrino * Target);
 
+    truth.SetOrigin(simb::kBeamNeutrino);
+    int channel(-999);
+    targetnucleusPdg = NuWroTTree->in[NuWroTTree->in.size() - 1].pdg;
+    truth.SetNeutrino(ccnc,
+                      mode,
+                      channel,
+                      targetnucleusPdg,
+                      Tpdg,
+                      hitquarkPdg,
+                      //InvariantMass, x, y, Q2
+                      0,
+                      x,
+                      y,
+                      Q2);
 
-      mcpartT.AddTrajectoryPoint(Tpos,Tmom);
-      // for now, do(n't) target onto stack. EC, 20-Jul-2012.
-      truth.Add(mcpartT);
+    std::cout << truth.GetNeutrino() << std::endl;
 
-      q = Neutrino - Lepton;
-      Q2 = -(q * q);
-      //    double W2 = Hadron4mom * Hadron4mom;
-      //    double InvariantMass = std::sqrt(W2);
+    FillHistograms(truth);
 
-      double x = Q2/((2*Target*q));
-      double y = (Target*q)/(Neutrino*Target);
-
-      truth.SetOrigin(simb::kBeamNeutrino);
-      int channel(-999);
-      targetnucleusPdg = NuWroTTree->in[NuWroTTree->in.size()-1].pdg;
-      truth.SetNeutrino(ccnc, mode, channel,
-			targetnucleusPdg,
-			Tpdg,
-			hitquarkPdg,
-			//InvariantMass, x, y, Q2
-			0, x, y, Q2
-			);
-
-      std::cout << truth.GetNeutrino() << std::endl;
-
-      FillHistograms(truth);
-
-      truthcol->push_back(truth);
-      evt.put(std::move(truthcol));
+    truthcol->push_back(truth);
+    evt.put(std::move(truthcol));
 
     return;
   }
 
-//   //......................................................................
+  //   //......................................................................
   std::string NuWroGen::ParticleStatus(int StatusCode)
   {
     int code = StatusCode;
     std::string ParticleStatusName;
 
-    switch(code)
-      {
-      case 0:
-	ParticleStatusName = "kIStInitialState";
-	break;
-      case 1:
-	ParticleStatusName = "kIStFinalState";
-	break;
-      case 11:
-	ParticleStatusName = "kIStNucleonTarget";
-	break;
-      default:
-	ParticleStatusName = "Status Unknown";
-      }
+    switch (code) {
+    case 0: ParticleStatusName = "kIStInitialState"; break;
+    case 1: ParticleStatusName = "kIStFinalState"; break;
+    case 11: ParticleStatusName = "kIStNucleonTarget"; break;
+    default: ParticleStatusName = "Status Unknown";
+    }
     return ParticleStatusName;
   }
 
-
-//   //......................................................................
-  std::string NuWroGen::ReactionChannel(int ccnc,int mode)
+  //   //......................................................................
+  std::string NuWroGen::ReactionChannel(int ccnc, int mode)
   {
-    std::string ReactionChannelName=" ";
+    std::string ReactionChannelName = " ";
 
-    if(ccnc==0)
+    if (ccnc == 0)
       ReactionChannelName = "kCC";
-    else if(ccnc==1)
+    else if (ccnc == 1)
       ReactionChannelName = "kNC";
-    else std::cout<<"Current mode unknown!! "<<std::endl;
+    else
+      std::cout << "Current mode unknown!! " << std::endl;
 
-    if(mode==0)
+    if (mode == 0)
       ReactionChannelName += "_kQE";
-    else if(mode==1)
+    else if (mode == 1)
       ReactionChannelName += "_kRes";
-    else if(mode==2)
+    else if (mode == 2)
       ReactionChannelName += "_kDIS";
-    else if(mode==3)
+    else if (mode == 3)
       ReactionChannelName += "_kCoh";
-    else if(mode==4)
+    else if (mode == 4)
       ReactionChannelName += "_kNuElectronElastic";
-    else if(mode==5)
+    else if (mode == 5)
       ReactionChannelName += "_kInverseMuDecay";
-    else std::cout<<"interaction mode unknown!! "<<std::endl;
+    else
+      std::cout << "interaction mode unknown!! " << std::endl;
 
     return ReactionChannelName;
   }
 
-//   //......................................................................
-  void NuWroGen::FillHistograms(const simb::MCTruth &mc)
+  //   //......................................................................
+  void NuWroGen::FillHistograms(const simb::MCTruth& mc)
   {
     // Decide which histograms to put the spectrum in
     int id = -1;
-    if (mc.GetNeutrino().CCNC()==simb::kCC) {
+    if (mc.GetNeutrino().CCNC() == simb::kCC) {
       fCCMode->Fill(mc.GetNeutrino().Mode());
-      if      (mc.GetNeutrino().Nu().PdgCode() ==  12) id = 0;
-      else if (mc.GetNeutrino().Nu().PdgCode() == -12) id = 1;
-      else if (mc.GetNeutrino().Nu().PdgCode() ==  14) id = 2;
-      else if (mc.GetNeutrino().Nu().PdgCode() == -14) id = 3;
-      else return;
+      if (mc.GetNeutrino().Nu().PdgCode() == 12)
+        id = 0;
+      else if (mc.GetNeutrino().Nu().PdgCode() == -12)
+        id = 1;
+      else if (mc.GetNeutrino().Nu().PdgCode() == 14)
+        id = 2;
+      else if (mc.GetNeutrino().Nu().PdgCode() == -14)
+        id = 3;
+      else
+        return;
     }
     else {
       fNCMode->Fill(mc.GetNeutrino().Mode());
-      if (mc.GetNeutrino().Nu().PdgCode() > 0) id = 4;
-      else                                     id = 5;
+      if (mc.GetNeutrino().Nu().PdgCode() > 0)
+        id = 4;
+      else
+        id = 5;
     }
-    if (id==-1) abort();
+    if (id == -1) abort();
 
     // Fill the specta histograms
-    fGenerated[id]->Fill(mc.GetNeutrino().Nu().E() );
+    fGenerated[id]->Fill(mc.GetNeutrino().Nu().E());
 
     //< fill the vertex histograms from the neutrino - that is always
     //< particle 0 in the list
-    simb::MCNeutrino       mcnu = mc.GetNeutrino();
-    const simb::MCParticle nu   = mcnu.Nu();
+    simb::MCNeutrino mcnu = mc.GetNeutrino();
+    const simb::MCParticle nu = mcnu.Nu();
 
     fVertexX->Fill(nu.Vx());
     fVertexY->Fill(nu.Vy());
@@ -1785,200 +1773,227 @@ namespace evgen{
     fVertexYZ->Fill(nu.Vz(), nu.Vy());
 
     double mom = nu.P();
-    if(std::abs(mom) > 0.){
-      fDCosX->Fill(nu.Px()/mom);
-      fDCosY->Fill(nu.Py()/mom);
-      fDCosZ->Fill(nu.Pz()/mom);
+    if (std::abs(mom) > 0.) {
+      fDCosX->Fill(nu.Px() / mom);
+      fDCosY->Fill(nu.Py() / mom);
+      fDCosZ->Fill(nu.Pz() / mom);
     }
 
+    //     MF_LOG_DEBUG("GENIEInteractionInformation")
+    //       << std::endl
+    //       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode())
+    //       << std::endl
+    //       << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl
+    //       << std::setiosflags(std::ios::left)
+    //       << std::setw(20) << "PARTICLE"
+    //       << std::setiosflags(std::ios::left)
+    //       << std::setw(32) << "STATUS"
+    //       << std::setw(18) << "E (GeV)"
+    //       << std::setw(18) << "m (GeV/c2)"
+    //       << std::setw(18) << "Ek (GeV)"
+    //       << std::endl << std::endl;
 
-//     MF_LOG_DEBUG("GENIEInteractionInformation")
-//       << std::endl
-//       << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode())
-//       << std::endl
-//       << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl
-//       << std::setiosflags(std::ios::left)
-//       << std::setw(20) << "PARTICLE"
-//       << std::setiosflags(std::ios::left)
-//       << std::setw(32) << "STATUS"
-//       << std::setw(18) << "E (GeV)"
-//       << std::setw(18) << "m (GeV/c2)"
-//       << std::setw(18) << "Ek (GeV)"
-//       << std::endl << std::endl;
+    //     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
 
-//     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
+    //     // Loop over the particle stack for this event
+    //     for(int i = 0; i < mc.NParticles(); ++i){
+    //       simb::MCParticle part(mc.GetParticle(i));
+    //       std::string name = databasePDG->GetParticle(part.PdgCode())->GetName();
+    //       int code = part.StatusCode();
+    //       std::string status = ParticleStatus(code);
+    //       double mass = part.Mass();
+    //       double energy = part.E();
+    //       double Ek = (energy-mass); // Kinetic Energy (GeV)
+    //       if(status=="kIStFinalStB4Interactions")
+    // 	MF_LOG_DEBUG("GENIEFinalState")
+    // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
+    // 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
+    // 	  << std::setw(18)<< energy
+    // 	  << std::setw(18)<< mass
+    // 	  << std::setw(18)<< Ek <<std::endl;
+    //       else
+    // 	MF_LOG_DEBUG("GENIEFinalState")
+    // 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
+    // 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
+    // 	  << std::setw(18) << energy
+    // 	  << std::setw(18) << mass <<std::endl;
 
-//     // Loop over the particle stack for this event
-//     for(int i = 0; i < mc.NParticles(); ++i){
-//       simb::MCParticle part(mc.GetParticle(i));
-//       std::string name = databasePDG->GetParticle(part.PdgCode())->GetName();
-//       int code = part.StatusCode();
-//       std::string status = ParticleStatus(code);
-//       double mass = part.Mass();
-//       double energy = part.E();
-//       double Ek = (energy-mass); // Kinetic Energy (GeV)
-//       if(status=="kIStFinalStB4Interactions")
-// 	MF_LOG_DEBUG("GENIEFinalState")
-// 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
-// 	  << std::setiosflags(std::ios::left) << std::setw(32) <<status
-// 	  << std::setw(18)<< energy
-// 	  << std::setw(18)<< mass
-// 	  << std::setw(18)<< Ek <<std::endl;
-//       else
-// 	MF_LOG_DEBUG("GENIEFinalState")
-// 	  << std::setiosflags(std::ios::left) << std::setw(20) << name
-// 	  << std::setiosflags(std::ios::left) << std::setw(32) << status
-// 	  << std::setw(18) << energy
-// 	  << std::setw(18) << mass <<std::endl;
-
-    std::cout << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(),mc.GetNeutrino().Mode()) << std::endl;
+    std::cout << "REACTION:  " << ReactionChannel(mc.GetNeutrino().CCNC(), mc.GetNeutrino().Mode())
+              << std::endl;
     std::cout << "-----------> Particles in the Stack = " << mc.NParticles() << std::endl;
-    std::cout << std::setiosflags(std::ios::left)
-	      << std::setw(20) << "PARTICLE"
-	      << std::setiosflags(std::ios::left)
-	      << std::setw(32) << "STATUS"
-	      << std::setw(18) << "E (GeV)"
-	      << std::setw(18) << "m (GeV/c2)"
-	      << std::setw(18) << "Ek (GeV)"
-	      << std::endl << std::endl;
+    std::cout << std::setiosflags(std::ios::left) << std::setw(20) << "PARTICLE"
+              << std::setiosflags(std::ios::left) << std::setw(32) << "STATUS" << std::setw(18)
+              << "E (GeV)" << std::setw(18) << "m (GeV/c2)" << std::setw(18) << "Ek (GeV)"
+              << std::endl
+              << std::endl;
 
     const TDatabasePDG* databasePDG = TDatabasePDG::Instance();
 
     // Loop over the particle stack for this event
-    for(int i = 0; i < mc.NParticles(); ++i){
+    for (int i = 0; i < mc.NParticles(); ++i) {
       simb::MCParticle part(mc.GetParticle(i));
       std::string name;
       if (part.PdgCode() == 18040)
-	name = "Ar40 18040";
-      else if (part.PdgCode() != -99999 )
-	{
-	  name = databasePDG->GetParticle(part.PdgCode())->GetName();
-	}
+        name = "Ar40 18040";
+      else if (part.PdgCode() != -99999) {
+        name = databasePDG->GetParticle(part.PdgCode())->GetName();
+      }
 
       int code = part.StatusCode();
       std::string status = ParticleStatus(code);
       double mass = part.Mass();
       double energy = part.E();
-      double Ek = (energy-mass); // Kinetic Energy (GeV)
+      double Ek = (energy - mass); // Kinetic Energy (GeV)
 
       std::cout << std::setiosflags(std::ios::left) << std::setw(20) << name
-		<< std::setiosflags(std::ios::left) << std::setw(32) <<status
-		<< std::setw(18)<< energy
-		<< std::setw(18)<< mass
-		<< std::setw(18)<< Ek <<std::endl;
+                << std::setiosflags(std::ios::left) << std::setw(32) << status << std::setw(18)
+                << energy << std::setw(18) << mass << std::setw(18) << Ek << std::endl;
     }
 
-    if(mc.GetNeutrino().CCNC() == simb::kCC){
+    if (mc.GetNeutrino().CCNC() == simb::kCC) {
 
       ///look for the outgoing lepton in the particle stack
       ///just interested in the first one
-      for(int i = 0; i < mc.NParticles(); ++i){
-	simb::MCParticle part(mc.GetParticle(i));
-	if(std::abs(part.PdgCode()) == 11){
-	  fEMomentum->Fill(part.P());
-	  fEDCosX->Fill(part.Px()/part.P());
-	  fEDCosY->Fill(part.Py()/part.P());
-	  fEDCosZ->Fill(part.Pz()/part.P());
-	  fECons->Fill(nu.E() - part.E());
-	  break;
-	}
-	else if(std::abs(part.PdgCode()) == 13){
-	  fMuMomentum->Fill(part.P());
-	  fMuDCosX->Fill(part.Px()/part.P());
-	  fMuDCosY->Fill(part.Py()/part.P());
-	  fMuDCosZ->Fill(part.Pz()/part.P());
-	  fECons->Fill(nu.E() - part.E());
-	  break;
-	}
-      }// end loop over particles
-    }//end if CC interaction
+      for (int i = 0; i < mc.NParticles(); ++i) {
+        simb::MCParticle part(mc.GetParticle(i));
+        if (std::abs(part.PdgCode()) == 11) {
+          fEMomentum->Fill(part.P());
+          fEDCosX->Fill(part.Px() / part.P());
+          fEDCosY->Fill(part.Py() / part.P());
+          fEDCosZ->Fill(part.Pz() / part.P());
+          fECons->Fill(nu.E() - part.E());
+          break;
+        }
+        else if (std::abs(part.PdgCode()) == 13) {
+          fMuMomentum->Fill(part.P());
+          fMuDCosX->Fill(part.Px() / part.P());
+          fMuDCosY->Fill(part.Py() / part.P());
+          fMuDCosZ->Fill(part.Pz() / part.P());
+          fECons->Fill(nu.E() - part.E());
+          break;
+        }
+      } // end loop over particles
+    }   //end if CC interaction
 
     // fill fDyn
     double bin(0.0);
     double binNew(0.0);
     double binNewThresh(0.0);
-    if      (NuWroTTree->flag.qel && NuWroTTree->flag.cc) bin = 1.;
-    else if (NuWroTTree->flag.qel && NuWroTTree->flag.nc) bin = 2.;
-    else if (NuWroTTree->flag.dis && NuWroTTree->flag.cc) bin = 10.;
-    else if (NuWroTTree->flag.dis && NuWroTTree->flag.nc) bin = 11.;
-    else if (NuWroTTree->flag.coh && NuWroTTree->flag.cc) bin = 12.;
-    else if (NuWroTTree->flag.coh && NuWroTTree->flag.nc) bin = 13.;
-    else if (NuWroTTree->flag.res)
-      {
-	unsigned int ii(0);
-	unsigned int p(0), n(0), pip(0), pim(0), pi0(0);
-	while(ii<NuWroTTree->post.size())
-	  {
-	    if  (NuWroTTree->out[ii].pdg==211) pip++;
-	    if  (NuWroTTree->out[ii].pdg==-211) pim++;
-	    if  (NuWroTTree->out[ii].pdg==111) pi0++;
-	    if  (NuWroTTree->out[ii].pdg==2112) n++;
-	    if  (NuWroTTree->out[ii].pdg==2212) p++;
-	      ii++;
-	  }
-	if      (NuWroTTree->flag.cc &&  pip &&  p) bin = 3.;
-	else if (NuWroTTree->flag.cc &&  pi0 &&  p) bin = 4.;
-	else if (NuWroTTree->flag.cc &&  pip &&  n) bin = 5.;
-	else if (NuWroTTree->flag.nc &&  pi0 &&  p) bin = 6.;
-	else if (NuWroTTree->flag.nc &&  pip &&  n) bin = 7.;
-	else if (NuWroTTree->flag.nc &&  pi0 &&  n) bin = 8.;
-	else if (NuWroTTree->flag.nc &&  pim &&  p) bin = 9.;
-	else
-	  std::cout << "NuWroGen: bin=0 events, cc?" << NuWroTTree->flag.cc << " nc?: " << NuWroTTree->flag.nc << " Num protons: " << p << " Num pi+s: " << pip << " Num pi-s: " << pim << " Num pi0s: " << pi0 << " Num neutrons: " << n  << std::endl;
+    if (NuWroTTree->flag.qel && NuWroTTree->flag.cc)
+      bin = 1.;
+    else if (NuWroTTree->flag.qel && NuWroTTree->flag.nc)
+      bin = 2.;
+    else if (NuWroTTree->flag.dis && NuWroTTree->flag.cc)
+      bin = 10.;
+    else if (NuWroTTree->flag.dis && NuWroTTree->flag.nc)
+      bin = 11.;
+    else if (NuWroTTree->flag.coh && NuWroTTree->flag.cc)
+      bin = 12.;
+    else if (NuWroTTree->flag.coh && NuWroTTree->flag.nc)
+      bin = 13.;
+    else if (NuWroTTree->flag.res) {
+      unsigned int ii(0);
+      unsigned int p(0), n(0), pip(0), pim(0), pi0(0);
+      while (ii < NuWroTTree->post.size()) {
+        if (NuWroTTree->out[ii].pdg == 211) pip++;
+        if (NuWroTTree->out[ii].pdg == -211) pim++;
+        if (NuWroTTree->out[ii].pdg == 111) pi0++;
+        if (NuWroTTree->out[ii].pdg == 2112) n++;
+        if (NuWroTTree->out[ii].pdg == 2212) p++;
+        ii++;
       }
+      if (NuWroTTree->flag.cc && pip && p)
+        bin = 3.;
+      else if (NuWroTTree->flag.cc && pi0 && p)
+        bin = 4.;
+      else if (NuWroTTree->flag.cc && pip && n)
+        bin = 5.;
+      else if (NuWroTTree->flag.nc && pi0 && p)
+        bin = 6.;
+      else if (NuWroTTree->flag.nc && pip && n)
+        bin = 7.;
+      else if (NuWroTTree->flag.nc && pi0 && n)
+        bin = 8.;
+      else if (NuWroTTree->flag.nc && pim && p)
+        bin = 9.;
+      else
+        std::cout << "NuWroGen: bin=0 events, cc?" << NuWroTTree->flag.cc
+                  << " nc?: " << NuWroTTree->flag.nc << " Num protons: " << p
+                  << " Num pi+s: " << pip << " Num pi-s: " << pim << " Num pi0s: " << pi0
+                  << " Num neutrons: " << n << std::endl;
+    }
 
     unsigned int ii(0);
     unsigned int p(0), n(0), pip(0), pim(0), pi0(0), pThresh(0.);
-    while(ii<NuWroTTree->post.size())
-      {
-	if  (NuWroTTree->out[ii].pdg==211) pip++;
-	if  (NuWroTTree->out[ii].pdg==-211) pim++;
-	if  (NuWroTTree->out[ii].pdg==111) pi0++;
-	if  (NuWroTTree->out[ii].pdg==2112) n++;
-	if  (NuWroTTree->out[ii].pdg==2212) p++;
-	if  (NuWroTTree->out[ii].pdg==2212 &&
-	     (NuWroTTree->out[ii].t/1000.-0.939)>0.050) pThresh++;
-	ii++;
-      }
+    while (ii < NuWroTTree->post.size()) {
+      if (NuWroTTree->out[ii].pdg == 211) pip++;
+      if (NuWroTTree->out[ii].pdg == -211) pim++;
+      if (NuWroTTree->out[ii].pdg == 111) pi0++;
+      if (NuWroTTree->out[ii].pdg == 2112) n++;
+      if (NuWroTTree->out[ii].pdg == 2212) p++;
+      if (NuWroTTree->out[ii].pdg == 2212 && (NuWroTTree->out[ii].t / 1000. - 0.939) > 0.050)
+        pThresh++;
+      ii++;
+    }
 
-    if      (NuWroTTree->flag.cc && p==0 && (pip+pim)==0) binNew = 1;
-    else if (NuWroTTree->flag.cc && p==1 && (pip+pim)==0) binNew = 2;
-    else if (NuWroTTree->flag.cc && p>=2 && (pip+pim)==0) binNew = 3;
-    else if (NuWroTTree->flag.cc && p==0 && (pip+pim)==1) binNew = 4;
-    else if (NuWroTTree->flag.cc && p==1 && (pip+pim)==1) binNew = 5;
-    else if (NuWroTTree->flag.cc && p>=2 && (pip+pim)==1) binNew = 6;
-    else if (NuWroTTree->flag.cc && p==0 && (pip+pim)>=2) binNew = 7;
-    else if (NuWroTTree->flag.cc && p>=1 && (pip+pim)>=2) binNew = 8;
-    else if (NuWroTTree->flag.nc)                         binNew = 9;
-    else binNew = 10;
+    if (NuWroTTree->flag.cc && p == 0 && (pip + pim) == 0)
+      binNew = 1;
+    else if (NuWroTTree->flag.cc && p == 1 && (pip + pim) == 0)
+      binNew = 2;
+    else if (NuWroTTree->flag.cc && p >= 2 && (pip + pim) == 0)
+      binNew = 3;
+    else if (NuWroTTree->flag.cc && p == 0 && (pip + pim) == 1)
+      binNew = 4;
+    else if (NuWroTTree->flag.cc && p == 1 && (pip + pim) == 1)
+      binNew = 5;
+    else if (NuWroTTree->flag.cc && p >= 2 && (pip + pim) == 1)
+      binNew = 6;
+    else if (NuWroTTree->flag.cc && p == 0 && (pip + pim) >= 2)
+      binNew = 7;
+    else if (NuWroTTree->flag.cc && p >= 1 && (pip + pim) >= 2)
+      binNew = 8;
+    else if (NuWroTTree->flag.nc)
+      binNew = 9;
+    else
+      binNew = 10;
 
-    if      (NuWroTTree->flag.cc && pThresh==0 && (pip+pim)==0) binNewThresh = 1;
-    else if (NuWroTTree->flag.cc && pThresh==1 && (pip+pim)==0) binNewThresh = 2;
-    else if (NuWroTTree->flag.cc && pThresh>=2 && (pip+pim)==0) binNewThresh = 3;
-    else if (NuWroTTree->flag.cc && pThresh==0 && (pip+pim)==1) binNewThresh = 4;
-    else if (NuWroTTree->flag.cc && pThresh==1 && (pip+pim)==1) binNewThresh = 5;
-    else if (NuWroTTree->flag.cc && pThresh>=2 && (pip+pim)==1) binNewThresh = 6;
-    else if (NuWroTTree->flag.cc && pThresh==0 && (pip+pim)>=2) binNewThresh = 7;
-    else if (NuWroTTree->flag.cc && pThresh>=1 && (pip+pim)>=2) binNewThresh = 8;
-    else if (NuWroTTree->flag.nc                            ) binNewThresh = 9;
-    else binNewThresh = 10;
+    if (NuWroTTree->flag.cc && pThresh == 0 && (pip + pim) == 0)
+      binNewThresh = 1;
+    else if (NuWroTTree->flag.cc && pThresh == 1 && (pip + pim) == 0)
+      binNewThresh = 2;
+    else if (NuWroTTree->flag.cc && pThresh >= 2 && (pip + pim) == 0)
+      binNewThresh = 3;
+    else if (NuWroTTree->flag.cc && pThresh == 0 && (pip + pim) == 1)
+      binNewThresh = 4;
+    else if (NuWroTTree->flag.cc && pThresh == 1 && (pip + pim) == 1)
+      binNewThresh = 5;
+    else if (NuWroTTree->flag.cc && pThresh >= 2 && (pip + pim) == 1)
+      binNewThresh = 6;
+    else if (NuWroTTree->flag.cc && pThresh == 0 && (pip + pim) >= 2)
+      binNewThresh = 7;
+    else if (NuWroTTree->flag.cc && pThresh >= 1 && (pip + pim) >= 2)
+      binNewThresh = 8;
+    else if (NuWroTTree->flag.nc)
+      binNewThresh = 9;
+    else
+      binNewThresh = 10;
 
     // Needs to be normalized to 70 tonnes, 6e20pot
-    double N_ArAtoms(70.*1000*1000/40*6.022e23);
+    double N_ArAtoms(70. * 1000 * 1000 / 40 * 6.022e23);
     // arXiv:pdf/0806.1449v2.pdf adjusted to uBooNE distance
-    double FluxNorm(5.19e-10 * (540./460.)*(540./460.));
-    double nucleiPerAtom((double)(NuWroTTree->par.nucleus_p+NuWroTTree->par.nucleus_n));
+    double FluxNorm(5.19e-10 * (540. / 460.) * (540. / 460.));
+    double nucleiPerAtom((double)(NuWroTTree->par.nucleus_p + NuWroTTree->par.nucleus_n));
     double NumEvtsRunThisJob(10000.);
     // The weight coming out of NuWro is proportional to the xsection for that process. Instead use the flux-wtd avg's for each dyn mechanism as given in the ouutput.root.txt file.
     //    double wt = NuWroTTree->weight * N_ArAtoms * nucleiPerAtom * 6.e20 * FluxNorm / NumEvtsRunThisJob;
 
     //    double wt = fxsecFluxWtd.at(NuWroTTree->dyn) * N_ArAtoms * nucleiPerAtom * 6.e20 * FluxNorm / NumEvtsRunThisJob;
     double wt = fxsecTotal * N_ArAtoms * nucleiPerAtom * 6.e20 * FluxNorm / NumEvtsRunThisJob;
-    fDyn->Fill(bin-0.5,wt);
-    fDynNew->Fill(binNew-0.5,wt);
-    fDynNewThresh->Fill(binNewThresh-0.5,wt);
-    f2DynNew->Fill(bin-0.5,binNew-0.5,wt);
-    f2DynNewThresh->Fill(bin-0.5,binNewThresh-0.5,wt);
+    fDyn->Fill(bin - 0.5, wt);
+    fDynNew->Fill(binNew - 0.5, wt);
+    fDynNewThresh->Fill(binNewThresh - 0.5, wt);
+    f2DynNew->Fill(bin - 0.5, binNew - 0.5, wt);
+    f2DynNewThresh->Fill(bin - 0.5, binNewThresh - 0.5, wt);
 
     fWeight->Fill(wt);
     fWeightNW->Fill(NuWroTTree->weight);
@@ -1987,8 +2002,7 @@ namespace evgen{
 
 }
 
-
-namespace evgen{
+namespace evgen {
 
   DEFINE_ART_MODULE(NuWroGen)
 

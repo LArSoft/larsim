@@ -31,17 +31,16 @@ namespace larg4 {
   static IonizationAndScintillation* gInstance = 0;
 
   //......................................................................
-  IonizationAndScintillation*
-  IonizationAndScintillation::CreateInstance(detinfo::DetectorPropertiesData const& detProp,
-                                             CLHEP::HepRandomEngine& engine)
+  IonizationAndScintillation* IonizationAndScintillation::CreateInstance(
+    detinfo::DetectorPropertiesData const& detProp,
+    CLHEP::HepRandomEngine& engine)
   {
     if (!gInstance) gInstance = new IonizationAndScintillation(detProp, engine);
     return gInstance;
   }
 
   //......................................................................
-  IonizationAndScintillation*
-  IonizationAndScintillation::Instance()
+  IonizationAndScintillation* IonizationAndScintillation::Instance()
   {
     // the instance must have been created already by CreateInstance()
     assert(gInstance);
@@ -94,8 +93,7 @@ namespace larg4 {
   }
 
   //......................................................................
-  void
-  IonizationAndScintillation::Reset(const G4Step* step)
+  void IonizationAndScintillation::Reset(const G4Step* step)
   {
 
     if (fStepNumber == step->GetTrack()->GetCurrentStepNumber() &&

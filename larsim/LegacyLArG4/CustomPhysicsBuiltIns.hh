@@ -29,61 +29,53 @@
 
 namespace larg4 {
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4EmStandardPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4EmStandardPhysics>::Build() const
   {
     return new G4EmStandardPhysics(0);
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4EmExtraPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4EmExtraPhysics>::Build() const
   {
     return new G4EmExtraPhysics("extra EM");
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4ChargeExchangePhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4ChargeExchangePhysics>::Build() const
   {
     return new G4ChargeExchangePhysics(2);
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4DecayPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4DecayPhysics>::Build() const
   {
     return new G4DecayPhysics("Decay", 0);
   }
 
   //hadron elastic
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4HadronElasticPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4HadronElasticPhysics>::Build() const
   {
     return new G4HadronElasticPhysics(0);
   }
 
   //hadron elastic, neutron HP
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4HadronElasticPhysicsHP>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4HadronElasticPhysicsHP>::Build() const
   {
     return new G4HadronElasticPhysicsHP(0);
   }
 
   //hadron elastic, particle HP
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4HadronElasticPhysicsPHP>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4HadronElasticPhysicsPHP>::Build() const
   {
     return new G4HadronElasticPhysicsPHP(0);
   }
 
   //hadron inelastic
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT>::Build() const
   {
     constexpr G4bool quasiElastic{true};
     return new G4HadronPhysicsQGSP_BERT("hadron", quasiElastic);
@@ -91,29 +83,25 @@ namespace larg4 {
 
   //hadron inelastic, neutron HP
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4HadronPhysicsQGSP_BERT_HP>::Build() const
   {
     return new G4HadronPhysicsQGSP_BERT_HP("hadronHP", true);
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4StoppingPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4StoppingPhysics>::Build() const
   {
     return new G4StoppingPhysics("stopping");
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4IonPhysics>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4IonPhysics>::Build() const
   {
     return new G4IonPhysics("ion");
   }
 
   template <>
-  G4VPhysicsConstructor*
-  CustomPhysicsFactory<G4NeutronTrackingCut>::Build() const
+  G4VPhysicsConstructor* CustomPhysicsFactory<G4NeutronTrackingCut>::Build() const
   {
     return new G4NeutronTrackingCut("Neutron tracking cut", 0);
   }

@@ -164,8 +164,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  DriftElectronstoPlane::beginJob()
+  void DriftElectronstoPlane::beginJob()
   {
     // Define the physical constants we'll use.
 
@@ -202,8 +201,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  DriftElectronstoPlane::produce(art::Event& event)
+  void DriftElectronstoPlane::produce(art::Event& event)
   {
     // Fetch the SimEnergyDeposit objects for this event.
     typedef art::Handle<std::vector<sim::SimEnergyDeposit>> energyDepositHandle_t;
@@ -298,7 +296,7 @@ namespace detsim {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets(mp);
-	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) continue;
+        if (larsim::Utils::SCE::out_of_bounds(posOffsets)) continue;
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
         posOffsetxyz[2] = posOffsets.Z();

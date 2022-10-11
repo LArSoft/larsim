@@ -88,8 +88,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------
-  void
-  FastOpticalPhysics::ConstructParticle()
+  void FastOpticalPhysics::ConstructParticle()
   {
     MF_LOG_DEBUG("FastOpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
     // optical photon
@@ -123,8 +122,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------
-  void
-  FastOpticalPhysics::ConstructProcess()
+  void FastOpticalPhysics::ConstructProcess()
   {
     // Add standard EM Processes
     MF_LOG_DEBUG("FastOpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";

@@ -15,11 +15,7 @@ namespace larg4 {
   template <>
   class CustomPhysicsFactory<OpticalPhysics> : public CustomPhysicsFactoryBase {
   public:
-    G4VPhysicsConstructor*
-    Build() const override
-    {
-      return new OpticalPhysics{fDetProp};
-    }
+    G4VPhysicsConstructor* Build() const override { return new OpticalPhysics{fDetProp}; }
     CustomPhysicsFactory(detinfo::DetectorPropertiesData const& detProp)
       : CustomPhysicsFactoryBase{"Optical"}, fDetProp{detProp}
     {

@@ -94,8 +94,7 @@ namespace sim {
 
     /// Returns a vector describing the full span in x, y an z [cm]
     template <typename Vector = DefaultVector, typename Point = DefaultPoint>
-    Vector
-    GetVolumeSize() const
+    Vector GetVolumeSize() const
     {
       return GetRegionUpperCorner<Point>() - GetRegionLowerCorner<Point>();
     }
@@ -135,18 +134,10 @@ namespace sim {
     std::array<int, 3U> GetVoxelCoords(int ID) const;
 
     /// Returns whether point `p` is inside the region (upper border excluded).
-    bool
-    isInside(geo::Point_t const& p) const
-    {
-      return isInsideImpl(p);
-    }
+    bool isInside(geo::Point_t const& p) const { return isInsideImpl(p); }
 
     bool operator==(const PhotonVoxelDef& rhs) const;
-    bool
-    operator!=(const PhotonVoxelDef& rhs) const
-    {
-      return !((*this) == rhs);
-    }
+    bool operator!=(const PhotonVoxelDef& rhs) const { return !((*this) == rhs); }
 
   private:
     int GetVoxelIDImpl(geo::Point_t const& p) const;
@@ -157,8 +148,7 @@ namespace sim {
     std::array<double, 3U> GetVoxelStepCoordsUnchecked(geo::Point_t const& p) const;
 
     /// Returns whether the specified point is within the volume.
-    bool
-    isInsideImpl(geo::Point_t const& point) const
+    bool isInsideImpl(geo::Point_t const& point) const
     {
       return isInsideVolume(point, fLowerCorner, fUpperCorner);
     }
@@ -181,22 +171,19 @@ namespace sim {
 //--- sim::PhotonVoxel
 //------------------------------------------------------------------------------
 template <typename Point /* = DefaultPoint */>
-decltype(auto)
-sim::PhotonVoxel::GetLowerCorner() const
+decltype(auto) sim::PhotonVoxel::GetLowerCorner() const
 {
   return geo::vect::convertTo<Point>(fVoxelMin);
 }
 
 template <typename Point /* = DefaultPoint */>
-decltype(auto)
-sim::PhotonVoxel::GetUpperCorner() const
+decltype(auto) sim::PhotonVoxel::GetUpperCorner() const
 {
   return geo::vect::convertTo<Point>(fVoxelMax);
 }
 
 template <typename Point /* = DefaultPoint */>
-Point
-sim::PhotonVoxel::GetCenter() const
+Point sim::PhotonVoxel::GetCenter() const
 {
   return geo::vect::convertTo<Point>(geo::vect::middlePoint({fVoxelMin, fVoxelMax}));
 }
@@ -205,23 +192,20 @@ sim::PhotonVoxel::GetCenter() const
 //--- sim::PhotonVoxelDef
 //------------------------------------------------------------------------------
 template <typename Point /* = DefaultPoint */>
-decltype(auto)
-sim::PhotonVoxelDef::GetRegionLowerCorner() const
+decltype(auto) sim::PhotonVoxelDef::GetRegionLowerCorner() const
 {
   return geo::vect::convertTo<Point>(fLowerCorner);
 }
 
 template <typename Point /* = DefaultPoint */>
-decltype(auto)
-sim::PhotonVoxelDef::GetRegionUpperCorner() const
+decltype(auto) sim::PhotonVoxelDef::GetRegionUpperCorner() const
 {
   return geo::vect::convertTo<Point>(fUpperCorner);
 }
 
 //------------------------------------------------------------------------------
 template <typename Vector /* = DefaultVector */>
-Vector
-sim::PhotonVoxelDef::GetVoxelSize() const
+Vector sim::PhotonVoxelDef::GetVoxelSize() const
 {
   return {(fUpperCorner.X() - fLowerCorner.X()) / fxSteps,
           (fUpperCorner.Y() - fLowerCorner.Y()) / fySteps,
@@ -230,8 +214,7 @@ sim::PhotonVoxelDef::GetVoxelSize() const
 
 //------------------------------------------------------------------------------
 template <typename Point>
-int
-sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
+int sim::PhotonVoxelDef::GetVoxelID(Point const& p) const
 {
   return GetVoxelIDImpl(geo::vect::toPoint(p));
 }

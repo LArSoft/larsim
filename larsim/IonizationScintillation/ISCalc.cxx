@@ -5,7 +5,6 @@
 //2022
 ////////////////////////////////////////////////////////////////////////
 
-
 #include "larsim/IonizationScintillation/ISCalc.h"
 
 #include "larcore/CoreUtils/ServiceUtil.h"
@@ -16,14 +15,10 @@
 namespace larg4 {
 
   //----------------------------------------------------------------------------
-  ISCalc::ISCalc()
-    : fLArProp{lar::providerFrom<detinfo::LArPropertiesService>()}
-  {
-  }
+  ISCalc::ISCalc() : fLArProp{lar::providerFrom<detinfo::LArPropertiesService>()} {}
 
   //----------------------------------------------------------------------------
-  double
-  ISCalc::GetScintYield(sim::SimEnergyDeposit const& edep, bool prescale)
+  double ISCalc::GetScintYield(sim::SimEnergyDeposit const& edep, bool prescale)
   {
     if (!fLArProp->ScintByParticleType()) return fLArProp->ScintYield(true);
     switch (edep.PdgCode()) {
@@ -43,8 +38,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalc::GetScintYieldRatio(sim::SimEnergyDeposit const& edep)
+  double ISCalc::GetScintYieldRatio(sim::SimEnergyDeposit const& edep)
   {
     // ScintByParticleType option only controls the scintillation
     // yield ratio, which is the ratio of fast light (singlet

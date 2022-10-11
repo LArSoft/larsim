@@ -15,23 +15,24 @@
 
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 
-#include "larsim/Simulation/LArG4Parameters.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "CLHEP/Random/RandBinomial.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <iostream>
 
 namespace larg4 {
   //----------------------------------------------------------------------------
-  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp, CLHEP::HepRandomEngine& Engine)
+  ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp,
+                                     CLHEP::HepRandomEngine& Engine)
     : fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
     , fBinomialGen{CLHEP::RandBinomial(Engine)}
@@ -51,14 +52,14 @@ namespace larg4 {
     fModBoxA = LArG4PropHandle->ModBoxA();
     fModBoxB = LArG4PropHandle->ModBoxB() / detProp.Density(detProp.Temperature());
     fUseModBoxRecomb = (bool)LArG4PropHandle->UseModBoxRecomb();
-    fUseModLarqlRecomb  = (bool)LArG4PropHandle->UseModLarqlRecomb();
-    fUseBinomialFlucts  = (bool)LArG4PropHandle->UseBinomialFlucts();
+    fUseModLarqlRecomb = (bool)LArG4PropHandle->UseModLarqlRecomb();
+    fUseBinomialFlucts = (bool)LArG4PropHandle->UseBinomialFlucts();
     fLarqlChi0A = LArG4PropHandle->LarqlChi0A();
     fLarqlChi0B = LArG4PropHandle->LarqlChi0B();
     fLarqlChi0C = LArG4PropHandle->LarqlChi0C();
     fLarqlChi0D = LArG4PropHandle->LarqlChi0D();
     fLarqlAlpha = LArG4PropHandle->LarqlAlpha();
-    fLarqlBeta  = LArG4PropHandle->LarqlBeta();
+    fLarqlBeta = LArG4PropHandle->LarqlBeta();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
     // ionization work function
@@ -69,9 +70,8 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  ISCalcData
-  ISCalcCorrelated::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
-                                    sim::SimEnergyDeposit const& edep)
+  ISCalcData ISCalcCorrelated::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                               sim::SimEnergyDeposit const& edep)
   {
 
     double const energy_deposit = edep.Energy();
@@ -87,7 +87,7 @@ namespace larg4 {
     double recomb = 0.;
 
     //calculate recombination survival fraction value inside, otherwise zero
-    if(EFieldStep > 0.) {
+    if (EFieldStep > 0.) {
       // calculate recombination survival fraction
       // ...using Modified Box model
       if (fUseModBoxRecomb) {
@@ -100,46 +100,42 @@ namespace larg4 {
       }
     }
 
-    if(fUseModLarqlRecomb){ //Use corrections from LArQL model
-      recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
+    if (fUseModLarqlRecomb) { //Use corrections from LArQL model
+      recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
     // Guard against unphysical recombination values
-    if (recomb < 0.){
+    if (recomb < 0.) {
       mf::LogWarning("ISCalcCorrelated")
-        << "Recombination survival fraction is lower than 0.: " << recomb
-        << ", fixing it to 0.";
+        << "Recombination survival fraction is lower than 0.: " << recomb << ", fixing it to 0.";
       recomb = 0.;
     }
-    else if (recomb > 1.){
+    else if (recomb > 1.) {
       mf::LogWarning("ISCalcCorrelated")
-        << "Recombination survival fraction is higher than 1.: " << recomb
-        << ", fixing it to 1.";
+        << "Recombination survival fraction is higher than 1.: " << recomb << ", fixing it to 1.";
       recomb = 1.;
     }
 
     // using this recombination, calculate number of ionization electrons
-    double num_electrons = (fUseBinomialFlucts) ?
-      fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
+    double num_electrons =
+      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
-      << "and a recombination of " << recomb << ", \nthere are "
-      << num_electrons << " electrons, and " << num_photons   <<  " photons.";
+      << "and a recombination of " << recomb << ", \nthere are " << num_electrons
+      << " electrons, and " << num_photons << " photons.";
 
     return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalcCorrelated::EFieldAtStep(double efield,
-                                 sim::SimEnergyDeposit const& edep)
+  double ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     // electric field outside active volume set to zero
-    if(!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
+    if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
     // electric field inside active volume
     if (!fSCE->EnableSimEfieldSCE()) return efield;
@@ -148,21 +144,18 @@ namespace larg4 {
     return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
   }
 
-
   //----------------------------------------------------------------------------
   // LArQL chi0 function = fraction of escaping electrons
-  double
-  ISCalcCorrelated::EscapingEFraction(double const dEdx) const
+  double ISCalcCorrelated::EscapingEFraction(double const dEdx) const
   {
-    return fLarqlChi0A/(fLarqlChi0B+std::exp(fLarqlChi0C+fLarqlChi0D*dEdx));
+    return fLarqlChi0A / (fLarqlChi0B + std::exp(fLarqlChi0C + fLarqlChi0D * dEdx));
   }
 
   //----------------------------------------------------------------------------
   // LArQL f_corr function = correction factor for electric field dependence
-  double ISCalcCorrelated::FieldCorrection(double const EF,
-                                           double const dEdx) const
+  double ISCalcCorrelated::FieldCorrection(double const EF, double const dEdx) const
   {
-    return std::exp(-EF/(fLarqlAlpha*std::log(dEdx)+fLarqlBeta));
+    return std::exp(-EF / (fLarqlAlpha * std::log(dEdx) + fLarqlBeta));
   }
 
 } // namespace larg4

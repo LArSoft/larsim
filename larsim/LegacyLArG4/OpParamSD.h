@@ -45,49 +45,41 @@ namespace larg4 {
 
   class OpParamAction;
 
-  class OpParamSD : public G4VSensitiveDetector
-  {
-
+  class OpParamSD : public G4VSensitiveDetector {
 
   public:
-    OpParamSD(G4String name, std::string ModelName, int Orientation, std::vector<std::vector<double> > Parameters);
-    virtual ~OpParamSD(){}
-
+    OpParamSD(G4String name,
+              std::string ModelName,
+              int Orientation,
+              std::vector<std::vector<double>> Parameters);
+    virtual ~OpParamSD() {}
 
     // Beginning and end of event
     virtual void Initialize(G4HCofThisEvent*);
-    virtual void EndOfEvent(G4HCofThisEvent*){}
+    virtual void EndOfEvent(G4HCofThisEvent*) {}
 
     // Tidy up event in abort
-    virtual void clear(){}
+    virtual void clear() {}
 
     // Run per step in sensitive volume
-    virtual G4bool ProcessHits( G4Step*, G4TouchableHistory*);
-
+    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
 
     // Required but empty
-    virtual void DrawAll(){}
-    virtual void PrintAll(){}
-
+    virtual void DrawAll() {}
+    virtual void PrintAll() {}
 
   private:
     G4bool G4BooleanRand(const G4double prob) const;
 
-    OpParamAction *        fOpa;
-    std::map<G4int, bool>  fPhotonAlreadyCrossed;
-
+    OpParamAction* fOpa;
+    std::map<G4int, bool> fPhotonAlreadyCrossed;
   };
 
-
-
-  inline
-    G4bool OpParamSD::G4BooleanRand(const G4double prob) const
-    {
-      /* Returns a random boolean variable with the specified probability */
-      return (G4UniformRand() < prob);
-    }
-
-
+  inline G4bool OpParamSD::G4BooleanRand(const G4double prob) const
+  {
+    /* Returns a random boolean variable with the specified probability */
+    return (G4UniformRand() < prob);
+  }
 
 }
 

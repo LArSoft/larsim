@@ -26,11 +26,10 @@
 namespace larg4 {
 
   //----------------------------------------------
-  void
-  MaterialPropertyLoader::SetMaterialProperty(std::string Material,
-                                              std::string Property,
-                                              std::map<double, double> PropertyVector,
-                                              double Unit)
+  void MaterialPropertyLoader::SetMaterialProperty(std::string Material,
+                                                   std::string Property,
+                                                   std::map<double, double> PropertyVector,
+                                                   double Unit)
   {
     std::map<double, double> PropVectorWithUnit;
     for (std::map<double, double>::const_iterator it = PropertyVector.begin();
@@ -44,11 +43,10 @@ namespace larg4 {
   }
 
   //----------------------------------------------
-  void
-  MaterialPropertyLoader::SetMaterialConstProperty(std::string Material,
-                                                   std::string Property,
-                                                   double PropertyValue,
-                                                   double Unit)
+  void MaterialPropertyLoader::SetMaterialConstProperty(std::string Material,
+                                                        std::string Property,
+                                                        double PropertyValue,
+                                                        double Unit)
   {
     fConstPropertyList[Material][Property] = PropertyValue * Unit;
     // replace with MF_LOGDEBUG()
@@ -57,8 +55,9 @@ namespace larg4 {
   }
 
   //----------------------------------------------
-  void
-  MaterialPropertyLoader::SetBirksConstant(std::string Material, double PropertyValue, double Unit)
+  void MaterialPropertyLoader::SetBirksConstant(std::string Material,
+                                                double PropertyValue,
+                                                double Unit)
   {
     fBirksConstants[Material] = PropertyValue * Unit;
     // replace with MF_LOGDEBUG()
@@ -66,8 +65,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------
-  void
-  MaterialPropertyLoader::UpdateGeometry(G4LogicalVolumeStore* lvs)
+  void MaterialPropertyLoader::UpdateGeometry(G4LogicalVolumeStore* lvs)
   {
     std::map<std::string, G4MaterialPropertiesTable*> MaterialTables;
     std::map<std::string, bool> MaterialsSet;
@@ -256,8 +254,7 @@ namespace larg4 {
     }
   }
 
-  void
-  MaterialPropertyLoader::SetReflectances(
+  void MaterialPropertyLoader::SetReflectances(
     std::string /*Material*/,
     std::map<std::string, std::map<double, double>> Reflectances,
     std::map<std::string, std::map<double, double>> DiffuseFractions)
@@ -294,8 +291,7 @@ namespace larg4 {
     }
   }
 
-  void
-  MaterialPropertyLoader::SetReflectances(
+  void MaterialPropertyLoader::SetReflectances(
     std::map<std::string, std::map<double, double>> Reflectances)
   {
     std::map<double, double> ReflectanceToStore;
@@ -314,8 +310,8 @@ namespace larg4 {
     }
   }
 
-  void
-  MaterialPropertyLoader::GetPropertiesFromServices(detinfo::DetectorPropertiesData const& detProp)
+  void MaterialPropertyLoader::GetPropertiesFromServices(
+    detinfo::DetectorPropertiesData const& detProp)
   {
     const detinfo::LArProperties* LarProp = lar::providerFrom<detinfo::LArPropertiesService>();
 

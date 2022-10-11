@@ -10,7 +10,6 @@
 //
 // Ben Jones, MIT, March 2010
 
-
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 

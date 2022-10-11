@@ -15,8 +15,7 @@ namespace cheat {
                           // BackTrackerService is designed to impliment these
                           // methods as cleanly as possible within the art
                           // framework. This is intended for gallery users.
-  void
-  BackTracker::PrepEvent(const Evt& evt)
+  void BackTracker::PrepEvent(const Evt& evt)
   {
     if (!(this->CanRun(evt))) {
       throw cet::exception("BackTracker") << "BackTracker cannot function. "
@@ -29,8 +28,7 @@ namespace cheat {
 
   //--------------------------------------------------------------------
   template <typename Evt>
-  void
-  BackTracker::PrepSimChannels(const Evt& evt)
+  void BackTracker::PrepSimChannels(const Evt& evt)
   {
     if (this->SimChannelsReady()) { return; }
     // The SimChannels list needs to be built.
@@ -57,8 +55,9 @@ namespace cheat {
       */
   //--------------------------------------------------------------------
   template <typename Evt>
-  std::vector<art::Ptr<recob::Hit>>
-  BackTracker::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const& spt, const Evt& evt) const
+  std::vector<art::Ptr<recob::Hit>> BackTracker::SpacePointToHits_Ps(
+    art::Ptr<recob::SpacePoint> const& spt,
+    const Evt& evt) const
   {
     std::vector<art::Ptr<recob::SpacePoint>>
       spv; // This method needs to be rethought. For now I am directly
@@ -71,10 +70,9 @@ namespace cheat {
 
   //--------------------------------------------------------------------
   template <typename Evt>
-  std::vector<double>
-  BackTracker::SpacePointToXYZ(detinfo::DetectorClocksData const& clockData,
-                               art::Ptr<recob::SpacePoint> const& spt,
-                               const Evt& evt) const
+  std::vector<double> BackTracker::SpacePointToXYZ(detinfo::DetectorClocksData const& clockData,
+                                                   art::Ptr<recob::SpacePoint> const& spt,
+                                                   const Evt& evt) const
   {
     std::vector<art::Ptr<recob::Hit>> hits = this->SpacePointToHits_Ps(spt, evt);
     return this->SpacePointHitsToWeightedXYZ(clockData, hits);

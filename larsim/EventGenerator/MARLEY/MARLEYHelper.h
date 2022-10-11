@@ -16,10 +16,14 @@
 #include <vector>
 
 // framework includes
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 // art extensions
-namespace rndm { class NuRandomService; }
+namespace rndm {
+  class NuRandomService;
+}
 
 // LArSoft includes
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -40,48 +44,46 @@ namespace evgen {
 
   class MARLEYHelper {
 
-    public:
+  public:
+    MARLEYHelper(const fhicl::ParameterSet& pset,
+                 rndm::NuRandomService& rand_service,
+                 const std::string& generator_name);
 
-      MARLEYHelper( const fhicl::ParameterSet& pset,
-        rndm::NuRandomService& rand_service,
-        const std::string& generator_name );
+    void reconfigure(const fhicl::ParameterSet& pset);
 
-      void reconfigure( const fhicl::ParameterSet& pset );
+    // If a non-null marley::Event* is supplied, the marley::Event
+    // object corresponding to the generated MCTruth object is loaded
+    // into the target of the pointer.
+    simb::MCTruth create_MCTruth(const TLorentzVector& vtx_pos,
+                                 marley::Event* marley_event = nullptr);
 
-      // If a non-null marley::Event* is supplied, the marley::Event
-      // object corresponding to the generated MCTruth object is loaded
-      // into the target of the pointer.
-      simb::MCTruth create_MCTruth( const TLorentzVector& vtx_pos,
-        marley::Event* marley_event = nullptr );
+    marley::Generator& get_generator() { return *fMarleyGenerator; }
+    const marley::Generator& get_generator() const { return *fMarleyGenerator; }
 
-      marley::Generator& get_generator() { return *fMarleyGenerator; }
-      const marley::Generator& get_generator() const
-        { return *fMarleyGenerator; }
+    std::string find_file(const std::string& fileName, const std::string& fileType);
 
-      std::string find_file( const std::string& fileName,
-        const std::string& fileType );
+  protected:
+    void add_marley_particles(simb::MCTruth& truth,
+                              const std::vector<marley::Particle*>& particles,
+                              const TLorentzVector& vtx_pos,
+                              bool track);
 
-    protected:
+    void load_full_paths_into_json(marley::JSON& json,
+                                   const std::string& array_name,
+                                   bool missing_ok = false);
 
-      void add_marley_particles( simb::MCTruth& truth,
-        const std::vector<marley::Particle*>& particles,
-        const TLorentzVector& vtx_pos, bool track );
+    std::unique_ptr<marley::Generator> fMarleyGenerator;
 
-      void load_full_paths_into_json( marley::JSON& json,
-        const std::string& array_name, bool missing_ok = false );
+    // name to use for this instance of MARLEYHelper
+    std::string fHelperName;
 
-      std::unique_ptr< marley::Generator > fMarleyGenerator;
+    // string stream used to capture logger output from MARLEY
+    // and redirect it to the LArSoft logger
+    std::stringstream fMarleyLogStream;
 
-      // name to use for this instance of MARLEYHelper
-      std::string fHelperName;
-
-      // string stream used to capture logger output from MARLEY
-      // and redirect it to the LArSoft logger
-      std::stringstream fMarleyLogStream;
-
-      // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
-      // This allows a module to write the generated events to a TTree.
-      void load_marley_dictionaries();
+    // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
+    // This allows a module to write the generated events to a TTree.
+    void load_marley_dictionaries();
 
   }; // class evgen::MARLEYHelper
 

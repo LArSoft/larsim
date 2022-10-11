@@ -11,16 +11,15 @@
 #define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_IPHOTONMAPPINGTRANSFORMATIONS_H
 
 // LArSoft libraries
-#include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
-#include "larcorealg/CoreUtils/ContainerMeta.h" // util::collection_value_t<>
+#include "larcorealg/CoreUtils/ContainerMeta.h"             // util::collection_value_t<>
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+#include "larsim/PhotonPropagation/LibraryMappingTools/OpDetVisibilityData.h"
 
 // C++ standard libraries
-#include <vector>
-#include <utility> // std::forward()
 #include <functional> // std::cref()
-#include <stdexcept> // std::out_of_range, std::domain_error
-
+#include <stdexcept>  // std::out_of_range, std::domain_error
+#include <utility>    // std::forward()
+#include <vector>
 
 namespace phot {
 
@@ -115,8 +114,7 @@ namespace phot {
    */
   class IPhotonMappingTransformations {
 
-      public:
-
+  public:
     virtual ~IPhotonMappingTransformations() = default;
 
     // --- BEGIN Data types ----------------------------------------------------
@@ -167,31 +165,26 @@ namespace phot {
      * detector.
      */
     template <typename LibDataColl>
-    using MappedOpDetData_t = phot::OpDetVisibilityData
-      <
-        util::collection_reference_t<LibDataColl>,
-        util::collection_reference_t<OpDetToLibraryIndexMap const>
-      >;
+    using MappedOpDetData_t =
+      phot::OpDetVisibilityData<util::collection_reference_t<LibDataColl>,
+                                util::collection_reference_t<OpDetToLibraryIndexMap const>>;
 
     // --- END Data types ------------------------------------------------------
-
 
     /**
      * @brief Value used to identify an invalid optical detector.
      *
      * It may be used as value of the library-to-detector mapping.
      */
-    static constexpr OpDetID_t InvalidOpDetID
-      = std::numeric_limits<OpDetID_t>::max();
+    static constexpr OpDetID_t InvalidOpDetID = std::numeric_limits<OpDetID_t>::max();
 
     /**
      * @brief Value used for an invalid library index.
      *
      * It may be used as value of the detector-to-library mapping.
      */
-    static constexpr LibraryIndex_t InvalidLibraryIndex
-      = std::numeric_limits<LibraryIndex_t>::max();
-
+    static constexpr LibraryIndex_t InvalidLibraryIndex =
+      std::numeric_limits<LibraryIndex_t>::max();
 
     // --- BEGIN Geometry mapping interface ------------------------------------
     /// @name Geometry mapping interface
@@ -219,12 +212,10 @@ namespace phot {
      * beside propagating it to the library: caller simply is not explained
      * the meaning of that translated location.
      */
-    virtual geo::Point_t detectorToLibrary
-      (geo::Point_t const& location) const = 0;
+    virtual geo::Point_t detectorToLibrary(geo::Point_t const& location) const = 0;
 
     /// @}
     // --- END Geometry mapping interface --------------------------------------
-
 
     // --- BEGIN Optical detector mapping interface ----------------------------
     /**
@@ -258,8 +249,8 @@ namespace phot {
      * The specified `location` is used to inform the conversion, and it is
      * usually pointing to the source of scintillation.
      */
-    virtual LibraryIndex_t opDetToLibraryIndex
-      (geo::Point_t const& location, OpDetID_t opDetID) const = 0;
+    virtual LibraryIndex_t opDetToLibraryIndex(geo::Point_t const& location,
+                                               OpDetID_t opDetID) const = 0;
 
     /**
      * @brief Returns the optical detector ID for the specified library index.
@@ -277,9 +268,8 @@ namespace phot {
      * The specified `location` is used to inform the conversion, and it is
      * usually pointing to the source of scintillation.
      */
-    virtual OpDetID_t libraryIndexToOpDet
-      (geo::Point_t const& location, LibraryIndex_t libIndex) const = 0;
-
+    virtual OpDetID_t libraryIndexToOpDet(geo::Point_t const& location,
+                                          LibraryIndex_t libIndex) const = 0;
 
     /**
      * @brief Returns a map of library indices as function of optical detectors.
@@ -296,8 +286,8 @@ namespace phot {
      * The specified `location` is used to inform the conversion, and it is
      * usually pointing to the source of scintillation. It may be left unused.
      */
-    virtual OpDetToLibraryIndexMap const& opDetsToLibraryIndices
-      (geo::Point_t const& location) const = 0;
+    virtual OpDetToLibraryIndexMap const& opDetsToLibraryIndices(
+      geo::Point_t const& location) const = 0;
 
     /**
      * @brief Expected number of mappings of optical detector into library
@@ -327,8 +317,8 @@ namespace phot {
      * fashion as `detectorToLibrary()` does. It can be used to choose the
      * correct mapping among the available ones.
      */
-    virtual LibraryIndexToOpDetMap const& libraryIndicesToOpDets
-      (geo::Point_t const& location) const = 0;
+    virtual LibraryIndexToOpDetMap const& libraryIndicesToOpDets(
+      geo::Point_t const& location) const = 0;
 
     /**
      * @brief Expected size of the mapping from library to optical detectors.
@@ -344,12 +334,10 @@ namespace phot {
      * an implementation exploiting the modularity of a detector with _N_
      * channels and made of _M_ modules, this value might be _N / M_.
      */
-    virtual std::size_t libraryMappingSize
-      (geo::Point_t const& location) const = 0;
+    virtual std::size_t libraryMappingSize(geo::Point_t const& location) const = 0;
 
     /// @}
     // --- END Optical detector mapping interface ------------------------------
-
 
     // --- BEGIN Utility methods -----------------------------------------------
     /// @name Utility methods
@@ -381,9 +369,9 @@ namespace phot {
      */
     template <typename Coll>
     MappedOpDetData_t<Coll> applyOpDetMapping(
-      OpDetToLibraryIndexMap const& opDetToLibraryMap, Coll&& source,
-      util::collection_value_t<Coll> defaultValue = {}
-      ) const;
+      OpDetToLibraryIndexMap const& opDetToLibraryMap,
+      Coll&& source,
+      util::collection_value_t<Coll> defaultValue = {}) const;
 
     /**
      * @brief Remaps a collection indexed by library index into one indexed by
@@ -400,37 +388,30 @@ namespace phot {
      * that is obtained via `libraryIndicesToOpDets()`.
      */
     template <typename Coll>
-    auto applyOpDetMapping(
-      geo::Point_t const& location, Coll&& source,
-      util::collection_value_t<Coll> defaultValue = {}
-      ) const
-      {
-        return applyOpDetMapping(
-          opDetsToLibraryIndices(location), std::forward<Coll>(source),
-          defaultValue
-          );
-      }
+    auto applyOpDetMapping(geo::Point_t const& location,
+                           Coll&& source,
+                           util::collection_value_t<Coll> defaultValue = {}) const
+    {
+      return applyOpDetMapping(
+        opDetsToLibraryIndices(location), std::forward<Coll>(source), defaultValue);
+    }
 
     /// @}
     // --- END Utility methods -------------------------------------------------
 
-
   }; // class IPhotonMappingTransformations
 
-
 } // namespace phot
-
-
 
 //------------------------------------------------------------------------------
 //---  Template implementation
 //------------------------------------------------------------------------------
 template <typename Coll>
 auto phot::IPhotonMappingTransformations::applyOpDetMapping(
-  OpDetToLibraryIndexMap const& opDetToLibraryMap, Coll&& source,
+  OpDetToLibraryIndexMap const& opDetToLibraryMap,
+  Coll&& source,
   util::collection_value_t<Coll> defaultValue /* = {} */
-) const
-  -> MappedOpDetData_t<Coll>
+  ) const -> MappedOpDetData_t<Coll>
 {
 
   using std::size;
@@ -438,15 +419,14 @@ auto phot::IPhotonMappingTransformations::applyOpDetMapping(
   // number of available destination slots (i.e. how many optical detectors)
   auto const n = size(opDetToLibraryMap);
 
-  return MappedOpDetData_t<Coll>{
-      util::make_collection_reference(std::forward<Coll>(source))
-    , std::cref(opDetToLibraryMap) // mapping is referenced
-    , n                            // size
-    , defaultValue
-    };
+  return MappedOpDetData_t<Coll>{util::make_collection_reference(std::forward<Coll>(source)),
+                                 std::cref(opDetToLibraryMap) // mapping is referenced
+                                 ,
+                                 n // size
+                                 ,
+                                 defaultValue};
 
 } // phot::IPhotonMappingTransformations::applyOpDetMapping()
-
 
 //------------------------------------------------------------------------------
 

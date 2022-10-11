@@ -15,10 +15,9 @@
 #include "lardataalg/Utilities/MappedContainer.h"
 
 // C++ standard libraries
-#include <iterator> // std::size()
-#include <utility> // std::forward()
+#include <iterator>    // std::size()
 #include <type_traits> // std::enable_if_t<>
-
+#include <utility>     // std::forward()
 
 namespace phot {
 
@@ -59,7 +58,6 @@ namespace phot {
   template <typename Cont, typename Enable = void>
   struct LibraryDataValidatorStruct;
 
-
   /**
    * @brief Returns the validity of content of library data in the container.
    * @tparam Cont type of the container being tested
@@ -72,7 +70,6 @@ namespace phot {
    */
   template <typename Cont>
   bool isValidLibraryData(Cont&& cont);
-
 
   /**
    * @brief A container for photon visibility mapping data.
@@ -117,32 +114,24 @@ namespace phot {
    *
    */
   template <typename Cont, typename Mapping>
-  class OpDetVisibilityData
-    : public util::MappedContainer<Cont, Mapping>
-  {
+  class OpDetVisibilityData : public util::MappedContainer<Cont, Mapping> {
     using ContainerBase_t = util::MappedContainer<Cont, Mapping>;
 
-      public:
-
+  public:
     // import types from base class
     using typename ContainerBase_t::DataContainer_t;
     using typename ContainerBase_t::Mapping_t;
     using typename ContainerBase_t::size_type;
     using typename ContainerBase_t::value_type;
 
-      private:
+  private:
+    /// Determines whether the current content should be considered valid.
+    static size_type effectiveSize(DataContainer_t const& cont, size_type allegedSize);
 
     /// Determines whether the current content should be considered valid.
-    static size_type effectiveSize
-      (DataContainer_t const& cont, size_type allegedSize);
+    static size_type effectiveSize(DataContainer_t const& cont, Mapping_t const& mapping);
 
-    /// Determines whether the current content should be considered valid.
-    static size_type effectiveSize
-      (DataContainer_t const& cont, Mapping_t const& mapping);
-
-      public:
-
-
+  public:
     // --- BEGIN Constructors --------------------------------------------------
 
     /// @name Validity information
@@ -162,14 +151,12 @@ namespace phot {
      * that if the data in `cont` is deemed invalid the size is overridden to
      * zero.
      */
-    OpDetVisibilityData(
-      DataContainer_t const& cont,
-      Mapping_t const& mapping,
-      size_type size,
-      value_type defValue
-      )
+    OpDetVisibilityData(DataContainer_t const& cont,
+                        Mapping_t const& mapping,
+                        size_type size,
+                        value_type defValue)
       : ContainerBase_t(cont, mapping, effectiveSize(cont, size), defValue)
-      {}
+    {}
 
     /**
      * @brief Constructor: acquires data and mapping.
@@ -182,10 +169,9 @@ namespace phot {
      * that if the data in `cont` is deemed invalid the size is overridden to
      * zero.
      */
-    OpDetVisibilityData
-      (DataContainer_t const& cont, Mapping_t const& mapping, size_type size)
+    OpDetVisibilityData(DataContainer_t const& cont, Mapping_t const& mapping, size_type size)
       : ContainerBase_t(cont, mapping, effectiveSize(cont, size))
-      {}
+    {}
 
     /**
      * @brief Constructor: acquires data and mapping.
@@ -202,11 +188,9 @@ namespace phot {
      */
     OpDetVisibilityData(DataContainer_t const& cont, Mapping_t const& mapping)
       : ContainerBase_t(cont, mapping, effectiveSize(cont, mapping))
-      {}
-
+    {}
 
     // --- END Constructors ----------------------------------------------------
-
 
     // --- BEGIN Validity information ------------------------------------------
     /// @name Validity information
@@ -224,12 +208,9 @@ namespace phot {
     /// @}
     // --- END Validity information --------------------------------------------
 
-
   }; // OpDetVisibilityData
 
-
 } // namespace phot
-
 
 //------------------------------------------------------------------------------
 //--- template implementation
@@ -242,8 +223,10 @@ namespace phot {
     //--------------------------------------------------------------------------
     template <typename Cont>
     auto generic_size(Cont&& cont)
-      { using std::size; return size(std::forward<Cont>(cont)); }
-
+    {
+      using std::size;
+      return size(std::forward<Cont>(cont));
+    }
 
     //--------------------------------------------------------------------------
     // layered implementation of `LibraryDataValidatorStructStandardImpl`:
@@ -255,80 +238,59 @@ namespace phot {
     struct LibraryDataValidatorStructStandardImpl_size;
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_size
-      <Cont, std::enable_if_t<util::always_true_v<decltype(
-        generic_size(std::declval<Cont>())
-      )>>
-      >
-    {
+    struct LibraryDataValidatorStructStandardImpl_size<
+      Cont,
+      std::enable_if_t<util::always_true_v<decltype(generic_size(std::declval<Cont>()))>>> {
       static bool isValid(Cont const& cont) { return generic_size(cont) > 0U; }
     }; // struct LibraryDataValidatorStructStandardImpl_size
-
 
     // - Cont::empty()
     template <typename Cont, typename = void>
     struct LibraryDataValidatorStructStandardImpl_empty
-      : LibraryDataValidatorStructStandardImpl_size<Cont>
-      {};
+      : LibraryDataValidatorStructStandardImpl_size<Cont> {};
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_empty
-      <Cont, std::enable_if_t<util::always_true_v<decltype(
-        std::declval<Cont const>().empty()
-      )>>
-      >
-    {
+    struct LibraryDataValidatorStructStandardImpl_empty<
+      Cont,
+      std::enable_if_t<util::always_true_v<decltype(std::declval<Cont const>().empty())>>> {
       static bool isValid(Cont const& cont) { return !cont.empty(); }
     }; // struct LibraryDataValidatorStructStandardImpl_empty
-
 
     // - Cont::is_valid()
     template <typename Cont, typename = void>
     struct LibraryDataValidatorStructStandardImpl_is_valid
-      : LibraryDataValidatorStructStandardImpl_empty<Cont>
-      {};
+      : LibraryDataValidatorStructStandardImpl_empty<Cont> {};
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_is_valid
-      <Cont, std::enable_if_t<util::always_true_v<decltype(
-        std::declval<Cont const>().is_valid()
-      )>>
-      >
-    {
+    struct LibraryDataValidatorStructStandardImpl_is_valid<
+      Cont,
+      std::enable_if_t<util::always_true_v<decltype(std::declval<Cont const>().is_valid())>>> {
       static bool isValid(Cont const& cont) { return cont.is_valid(); }
     }; // struct LibraryDataValidatorStructStandardImpl_is_valid
-
 
     // - Cont::isValid()
     template <typename Cont, typename = void>
     struct LibraryDataValidatorStructStandardImpl_isValid
-      : LibraryDataValidatorStructStandardImpl_is_valid<Cont>
-      {};
+      : LibraryDataValidatorStructStandardImpl_is_valid<Cont> {};
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_isValid
-      <Cont, std::enable_if_t<util::always_true_v<decltype(
-        std::declval<Cont const>().isValid()
-      )>>
-      >
-    {
+    struct LibraryDataValidatorStructStandardImpl_isValid<
+      Cont,
+      std::enable_if_t<util::always_true_v<decltype(std::declval<Cont const>().isValid())>>> {
       static bool isValid(Cont const& cont) { return cont.isValid(); }
     }; // struct LibraryDataValidatorStructStandardImpl_isValid
-
 
     // - std::unique_ptr<> (using `enable_if` to catch all qualifiers)
     template <typename Cont, typename = void>
     struct LibraryDataValidatorStructStandardImpl_unique_ptr
-      : LibraryDataValidatorStructStandardImpl_isValid<Cont>
-      {};
+      : LibraryDataValidatorStructStandardImpl_isValid<Cont> {};
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_unique_ptr
-      <Cont, std::enable_if_t<util::is_unique_ptr_v<Cont>>>
-    {
+    struct LibraryDataValidatorStructStandardImpl_unique_ptr<
+      Cont,
+      std::enable_if_t<util::is_unique_ptr_v<Cont>>> {
       static bool isValid(Cont const& cont) { return bool(cont); }
     }; // struct LibraryDataValidatorStructStandardImpl_unique_ptr
-
 
     // C pointer types:
     template <typename T>
@@ -336,8 +298,9 @@ namespace phot {
 
     // - T*
     template <typename T>
-    struct LibraryDataValidatorStructStandardImpl_pointer_branch<T*>
-      { static bool isValid(T* ptr) { return bool(ptr); } };
+    struct LibraryDataValidatorStructStandardImpl_pointer_branch<T*> {
+      static bool isValid(T* ptr) { return bool(ptr); }
+    };
 
     // - T[]
     template <typename T>
@@ -346,73 +309,60 @@ namespace phot {
 
     // - T[N]
     template <typename T, std::size_t N>
-    struct LibraryDataValidatorStructStandardImpl_pointer_branch<T[N]>
-      { static bool isValid(T (&) [N]) { return N > 0U; } };
+    struct LibraryDataValidatorStructStandardImpl_pointer_branch<T[N]> {
+      static bool isValid(T (&)[N]) { return N > 0U; }
+    };
 
     // - entry point
     template <typename Cont, typename = void>
     struct LibraryDataValidatorStructStandardImpl_pointer
-      : public LibraryDataValidatorStructStandardImpl_unique_ptr<Cont>
-    {};
+      : public LibraryDataValidatorStructStandardImpl_unique_ptr<Cont> {};
 
     template <typename Cont>
-    struct LibraryDataValidatorStructStandardImpl_pointer
-      <Cont, std::enable_if_t<std::is_pointer_v<std::decay_t<Cont>>>>
-      : LibraryDataValidatorStructStandardImpl_pointer_branch
-        <std::decay_t<Cont>>
-    {};
-
+    struct LibraryDataValidatorStructStandardImpl_pointer<
+      Cont,
+      std::enable_if_t<std::is_pointer_v<std::decay_t<Cont>>>>
+      : LibraryDataValidatorStructStandardImpl_pointer_branch<std::decay_t<Cont>> {};
 
     // - entry point
     template <typename Cont>
     struct LibraryDataValidatorStructStandardImpl
-      : public LibraryDataValidatorStructStandardImpl_pointer<Cont>
-    {};
-
+      : public LibraryDataValidatorStructStandardImpl_pointer<Cont> {};
 
     //--------------------------------------------------------------------------
 
   } // namespace details
 
-
   //----------------------------------------------------------------------------
   // we pick a standard implementation of our own, and let users add here
   template <typename Cont, typename /* = void */>
   struct LibraryDataValidatorStruct
-    : public details::LibraryDataValidatorStructStandardImpl
-     <std::remove_reference_t<Cont>>
-  {};
-
+    : public details::LibraryDataValidatorStructStandardImpl<std::remove_reference_t<Cont>> {};
 
   //----------------------------------------------------------------------------
   template <typename Cont>
-  bool isValidLibraryData(Cont&& cont) {
-    return
-      LibraryDataValidatorStruct<std::remove_reference_t<Cont>>::isValid(cont);
+  bool isValidLibraryData(Cont&& cont)
+  {
+    return LibraryDataValidatorStruct<std::remove_reference_t<Cont>>::isValid(cont);
   } // isValidLibraryData()
-
 
   //----------------------------------------------------------------------------
   template <typename Cont, typename Mapping>
-  auto OpDetVisibilityData<Cont, Mapping>::effectiveSize
-    (DataContainer_t const& cont, size_type allegedSize) -> size_type
-    { return isValidLibraryData(cont)? allegedSize: 0U; }
-
+  auto OpDetVisibilityData<Cont, Mapping>::effectiveSize(DataContainer_t const& cont,
+                                                         size_type allegedSize) -> size_type
+  {
+    return isValidLibraryData(cont) ? allegedSize : 0U;
+  }
 
   template <typename Cont, typename Mapping>
-  auto OpDetVisibilityData<Cont, Mapping>::effectiveSize
-    (DataContainer_t const& cont, Mapping_t const& mapping) -> size_type
+  auto OpDetVisibilityData<Cont, Mapping>::effectiveSize(DataContainer_t const& cont,
+                                                         Mapping_t const& mapping) -> size_type
   {
-    return isValidLibraryData(cont)
-      ? ContainerBase_t::minimal_size(cont, mapping)
-      : 0U
-      ;
+    return isValidLibraryData(cont) ? ContainerBase_t::minimal_size(cont, mapping) : 0U;
   } // OpDetVisibilityData::effectiveSize(DataContainer_t, Mapping_t)
-
 
   //----------------------------------------------------------------------------
 
 } // namespace phot
-
 
 #endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_OPDETVISIBILITYDATA_H

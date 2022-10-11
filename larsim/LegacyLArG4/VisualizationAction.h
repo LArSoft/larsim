@@ -24,8 +24,8 @@
 #ifndef LArG4_VisualizationAction_H
 #define LArG4_VisualizationAction_H
 
-#include "nug4/G4Base/UserAction.h"
 #include "Geant4/G4Types.hh"
+#include "nug4/G4Base/UserAction.h"
 
 // Forward declarations of G4 classes that are arguments to
 // UserAction methods.
@@ -34,8 +34,7 @@ class G4Event;
 
 namespace larg4 {
 
-  class VisualizationAction : public g4b::UserAction
-  {
+  class VisualizationAction : public g4b::UserAction {
   public:
     VisualizationAction();
     virtual ~VisualizationAction();
@@ -46,8 +45,8 @@ namespace larg4 {
     virtual void EndOfEventAction(const G4Event*);
 
     /// Acessors, if we need them:
-    G4double GetTrackEnergyCutoff() const {return m_energyCutoff;}
-    void SetTrackEnergyCutoff(const G4double e) {m_energyCutoff = e;}
+    G4double GetTrackEnergyCutoff() const { return m_energyCutoff; }
+    void SetTrackEnergyCutoff(const G4double e) { m_energyCutoff = e; }
 
   private:
     /// Don't draw particles with energies less than this cut.

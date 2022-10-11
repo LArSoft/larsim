@@ -8,16 +8,13 @@
  *
  */
 
-
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingXMirrorTransformations.h"
 
 // framework libraries
 #include "art/Utilities/ToolMacros.h"
 
-
 // -----------------------------------------------------------------------------
 DEFINE_ART_CLASS_TOOL(phot::PhotonMappingXMirrorTransformations)
-
 
 // -----------------------------------------------------------------------------

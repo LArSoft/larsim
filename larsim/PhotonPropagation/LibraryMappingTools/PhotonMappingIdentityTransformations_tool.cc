@@ -17,17 +17,13 @@
  *
  */
 
-
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h"
 
 // framework libraries
 #include "art/Utilities/ToolMacros.h"
 
-
 //------------------------------------------------------------------------------
 DEFINE_ART_CLASS_TOOL(phot::PhotonMappingIdentityTransformations)
 
-
 //------------------------------------------------------------------------------
-

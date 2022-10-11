@@ -19,26 +19,10 @@ namespace larg4 {
     virtual void CalculateIonizationAndScintillation(const G4Step* step) = 0;
     virtual double StepSizeLimit() const = 0;
 
-    double
-    EnergyDeposit() const
-    {
-      return fEnergyDeposit;
-    }
-    double
-    NumberIonizationElectrons() const
-    {
-      return fNumIonElectrons;
-    }
-    double
-    NumberScintillationPhotons() const
-    {
-      return fNumScintPhotons;
-    }
-    double
-    VisibleEnergyDeposit() const
-    {
-      return fVisibleEnergyDeposition;
-    }
+    double EnergyDeposit() const { return fEnergyDeposit; }
+    double NumberIonizationElectrons() const { return fNumIonElectrons; }
+    double NumberScintillationPhotons() const { return fNumScintPhotons; }
+    double VisibleEnergyDeposit() const { return fVisibleEnergyDeposition; }
 
     //Method to get electric field
     double EFieldAtStep(double fEfield, const G4Step* step)

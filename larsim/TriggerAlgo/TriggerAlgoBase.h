@@ -11,8 +11,12 @@
 #define TRIGGERALGOBASE_H
 
 // ART includes
-namespace art { class Event; }
-namespace fhicl { class ParameterSet; }
+namespace art {
+  class Event;
+}
+namespace fhicl {
+  class ParameterSet;
+}
 
 // From this package
 #include "TriggerTypes.hh"
@@ -21,8 +25,7 @@ namespace fhicl { class ParameterSet; }
 #include <map>
 #include <set>
 
-namespace trigger
-{
+namespace trigger {
   /**
      Simple read-out trigger logic base class.
      This class applies a logic of data readout trigger.
@@ -66,40 +69,45 @@ namespace trigger
   class TriggerAlgoBase {
 
   public:
-
     TriggerAlgoBase(fhicl::ParameterSet const& pset);
     virtual ~TriggerAlgoBase() = default;
 
     /// Function to run trigger simulation ... children class may be override
-    virtual void RunTriggerSim(const art::Event& event){
+    virtual void RunTriggerSim(const art::Event& event)
+    {
       FillData(event);
       SimTrigger();
     };
 
     /// Function to clear simulated trigger information
-    virtual void ClearTriggerInfo(){
-      _sim_done=false;
+    virtual void ClearTriggerInfo()
+    {
+      _sim_done = false;
       _timestamps.clear();
       _time_windows.clear();
     };
 
     /// Getter for a boolean which "true" value indicates trigger simulation is run already
-    bool HasRunTriggerSim() const { return _sim_done;};
+    bool HasRunTriggerSim() const { return _sim_done; };
 
     /// Function to check if "time" (input arg.) is within any of valid readout windows or not
     bool IsTriggered(trigdata::TrigTimeSlice_t time) const;
 
     /// Getter to a const pointer of _time_windows std::map variable
-    const std::map<trigdata::TrigTimeSlice_t,trigdata::TrigTimeSlice_t>* GetTimeWindows() const {return &_time_windows;};
+    const std::map<trigdata::TrigTimeSlice_t, trigdata::TrigTimeSlice_t>* GetTimeWindows() const
+    {
+      return &_time_windows;
+    };
 
     /// Getter to a const pointer of _timestamps std::set variable
-    const std::set<trigdata::TrigTimeSlice_t>* GetTriggerTimeStamps() const {return &_timestamps;};
-
+    const std::set<trigdata::TrigTimeSlice_t>* GetTriggerTimeStamps() const
+    {
+      return &_timestamps;
+    };
 
   protected:
-
     /// Function to fill _timestamps std::set variable ... TO BE IMPLEMENTED in children
-    virtual void FillData(const art::Event& event)=0;
+    virtual void FillData(const art::Event& event) = 0;
 
     /// Function to analyze _timestamps and store valid readout windows in _time_windows
     virtual void SimTrigger();
@@ -111,7 +119,7 @@ namespace trigger
     std::set<trigdata::TrigTimeSlice_t> _timestamps;
 
     /// stores VALID readout trigger time windows
-    std::map<trigdata::TrigTimeSlice_t,trigdata::TrigTimeSlice_t> _time_windows;
+    std::map<trigdata::TrigTimeSlice_t, trigdata::TrigTimeSlice_t> _time_windows;
 
     /// preceeding readout-window from trigger time stamp
     trigdata::TrigTimeSlice_t _preceeding_slices;

@@ -13,16 +13,12 @@
 //LArSoft
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
-namespace larsim
-{
-  namespace Utils
-  {
-    namespace SCE
-    {
-      bool out_of_bounds(geo::Vector_t const &offset);
+namespace larsim {
+  namespace Utils {
+    namespace SCE {
+      bool out_of_bounds(geo::Vector_t const& offset);
     }
   }
 }
 
-#endif  // #ifndef LARSIMSCEOFFSETBOUNDS_H_SEEN
-
+#endif // #ifndef LARSIMSCEOFFSETBOUNDS_H_SEEN

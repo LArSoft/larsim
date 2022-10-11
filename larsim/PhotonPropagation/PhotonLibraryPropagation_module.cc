@@ -20,8 +20,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -33,14 +33,9 @@ using namespace std;
 
 namespace {
 
-  double
-  single_exp(double t, double tau2)
-  {
-    return exp((-1.0 * t) / tau2) / tau2;
-  }
+  double single_exp(double t, double tau2) { return exp((-1.0 * t) / tau2) / tau2; }
 
-  double
-  bi_exp(double t, double tau1, double tau2)
+  double bi_exp(double t, double tau1, double tau2)
   {
     return (((exp((-1.0 * t) / tau2) * (1.0 - exp((-1.0 * t) / tau1))) / tau2) / tau2) *
            (tau1 + tau2);
@@ -50,8 +45,7 @@ namespace {
   // Scintillation light has an exponential decay which here is given by the decay time, tau2,
   // and an exponential increase, which here is given by the rise time, tau1.
   // randflatscinttime is passed to use the saved seed from the RandomNumberSaver in order to be able to reproduce the same results.
-  double
-  GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
+  double GetScintTime(double tau1, double tau2, CLHEP::RandFlat& randflatscinttime)
   {
     // tau1: rise time (originally defaulted to -1) and tau2: decay time
     //ran1, ran2 = random numbers for the algorithm
@@ -66,8 +60,7 @@ namespace {
     }
   }
 
-  double
-  GetScintYield(sim::SimEnergyDeposit const& edep, detinfo::LArProperties const& larp)
+  double GetScintYield(sim::SimEnergyDeposit const& edep, detinfo::LArProperties const& larp)
   {
     if (!larp.ScintByParticleType()) { return larp.ScintYieldRatio(); }
     switch (edep.PdgCode()) {
@@ -181,8 +174,7 @@ namespace phot {
     }
   }
 
-  void
-  PhotonLibraryPropagation::produce(art::Event& e)
+  void PhotonLibraryPropagation::produce(art::Event& e)
   {
     art::ServiceHandle<PhotonVisibilityService const> pvs;
     art::ServiceHandle<sim::LArG4Parameters const> lgp;

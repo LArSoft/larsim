@@ -22,11 +22,7 @@ namespace larg4 {
     ISCalculationSeparate();
     void Reset() override;
     void CalculateIonizationAndScintillation(const G4Step* step) override;
-    double
-    StepSizeLimit() const override
-    {
-      return fStepSize;
-    }
+    double StepSizeLimit() const override { return fStepSize; }
 
   private:
     double fStepSize;              ///< maximum step to take

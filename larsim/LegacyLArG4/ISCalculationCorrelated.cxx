@@ -65,7 +65,7 @@ namespace larg4 {
     fLarqlChi0C = lgpHandle->LarqlChi0C();
     fLarqlChi0D = lgpHandle->LarqlChi0D();
     fLarqlAlpha = lgpHandle->LarqlAlpha();
-    fLarqlBeta  = lgpHandle->LarqlBeta();
+    fLarqlBeta = lgpHandle->LarqlBeta();
     fUseModBoxRecomb = lgpHandle->UseModBoxRecomb();
     fUseModLarqlRecomb = lgpHandle->UseModLarqlRecomb();
 
@@ -79,8 +79,7 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void
-  ISCalculationCorrelated::Reset()
+  void ISCalculationCorrelated::Reset()
   {
     fEnergyDeposit = 0.;
     fNumScintPhotons = 0.;
@@ -91,8 +90,7 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void
-  ISCalculationCorrelated::CalculateIonizationAndScintillation(const G4Step* step)
+  void ISCalculationCorrelated::CalculateIonizationAndScintillation(const G4Step* step)
   {
     fEnergyDeposit = step->GetTotalEnergyDeposit() / CLHEP::MeV;
 
@@ -133,8 +131,8 @@ namespace larg4 {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
 
-    if(fUseModLarqlRecomb){ //Use corrections from LArQL model
-      recomb += EscapingEFraction(dEdx)*FieldCorrection(EFieldStep, dEdx); //Correction for low EF
+    if (fUseModLarqlRecomb) { //Use corrections from LArQL model
+      recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
     // using this recombination, calculate number of ionization electrons
@@ -155,12 +153,14 @@ namespace larg4 {
     return;
   }
 
-  double ISCalculationCorrelated::EscapingEFraction(double const dEdx){ //LArQL chi0 function = fraction of escaping electrons
-    return fLarqlChi0A/(fLarqlChi0B+exp(fLarqlChi0C+fLarqlChi0D*dEdx));
+  double ISCalculationCorrelated::EscapingEFraction(double const dEdx)
+  { //LArQL chi0 function = fraction of escaping electrons
+    return fLarqlChi0A / (fLarqlChi0B + exp(fLarqlChi0C + fLarqlChi0D * dEdx));
   }
 
-  double ISCalculationCorrelated::FieldCorrection(double const EF, double const dEdx){ //LArQL f_corr function = correction factor for electric field dependence
-    return exp(-EF/(fLarqlAlpha*log(dEdx)+fLarqlBeta));
+  double ISCalculationCorrelated::FieldCorrection(double const EF, double const dEdx)
+  { //LArQL f_corr function = correction factor for electric field dependence
+    return exp(-EF / (fLarqlAlpha * log(dEdx) + fLarqlBeta));
   }
 
 } // namespace

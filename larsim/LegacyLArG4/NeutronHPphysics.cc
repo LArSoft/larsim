@@ -37,8 +37,7 @@ NeutronHPphysics::NeutronHPphysics(const G4String& name)
   : G4VPhysicsConstructor(name), fThermal(true)
 {}
 
-void
-NeutronHPphysics::ConstructProcess()
+void NeutronHPphysics::ConstructProcess()
 {
   G4ParticleDefinition* neutron = G4Neutron::Neutron();
   G4ProcessManager* pManager = neutron->GetProcessManager();

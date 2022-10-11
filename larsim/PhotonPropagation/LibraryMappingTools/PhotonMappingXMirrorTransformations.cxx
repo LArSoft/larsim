@@ -8,7 +8,6 @@
  *
  */
 
-
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingXMirrorTransformations.h"
 

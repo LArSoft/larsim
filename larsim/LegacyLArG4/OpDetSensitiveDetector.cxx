@@ -39,8 +39,7 @@ namespace larg4 {
 
   //--------------------------------------------------------
 
-  void
-  OpDetSensitiveDetector::AddLitePhoton(G4Step const* aStep, int OpDet)
+  void OpDetSensitiveDetector::AddLitePhoton(G4Step const* aStep, int OpDet)
   {
 
     double const time = aStep->GetTrack()->GetGlobalTime();
@@ -56,8 +55,7 @@ namespace larg4 {
 
   //--------------------------------------------------------
 
-  void
-  OpDetSensitiveDetector::AddPhoton(G4Step const* aStep, int OpDet)
+  void OpDetSensitiveDetector::AddPhoton(G4Step const* aStep, int OpDet)
   {
     sim::OnePhoton ThePhoton;
 
@@ -92,8 +90,7 @@ namespace larg4 {
 
   //--------------------------------------------------------
 
-  G4bool
-  OpDetSensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
+  G4bool OpDetSensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     // Lookup which OpDet we are in
     int const OpDet = fTheOpDetLookup->GetOpDet(aStep->GetPreStepPoint()->GetPhysicalVolume());
@@ -112,17 +109,14 @@ namespace larg4 {
 
   //--------------------------------------------------------
 
-  void
-  OpDetSensitiveDetector::Initialize(G4HCofThisEvent*)
-  {}
+  void OpDetSensitiveDetector::Initialize(G4HCofThisEvent*) {}
 
 }
 
 //--------------------------------------------------------
 namespace {
 
-  constexpr double
-  Wavelength(double energy)
+  constexpr double Wavelength(double energy)
   {
 
     // SI 2019 (eV nm):

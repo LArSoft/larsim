@@ -8,17 +8,14 @@
  *
  */
 
-
 // LArSoft libraries
 #include "larsim/PhotonPropagation/LibraryMappingTools/PhotonMappingIdentityTransformations.h"
 
 #include <numeric> // std::iota()
 
-
 //------------------------------------------------------------------------------
 phot::IPhotonMappingTransformations::LibraryIndexToOpDetMap
-phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap
-  () const
+phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap() const
 {
 
   auto const nOpDets = fGeom->NOpDets();
@@ -29,11 +26,9 @@ phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap
   return map;
 } // phot::PhotonMappingIdentityTransformations::makeLibraryIndicesToOpDetsMap()
 
-
 //------------------------------------------------------------------------------
 phot::IPhotonMappingTransformations::OpDetToLibraryIndexMap
-phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap
-  () const
+phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap() const
 {
 
   auto const nOpDets = fGeom->NOpDets();
@@ -44,6 +39,4 @@ phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap
   return map;
 } // phot::PhotonMappingIdentityTransformations::makeOpDetsToLibraryIndicesMap()
 
-
 //------------------------------------------------------------------------------
-

@@ -18,30 +18,27 @@
 #define LArG4_G4BADIDEAACTION_H
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "nug4/G4Base/UserAction.h"
 #include "larcore/Geometry/Geometry.h"
+#include "nug4/G4Base/UserAction.h"
 
 // Forward declarations.
 class G4Step;
 
 namespace larg4 {
 
-  class G4BadIdeaAction : public g4b::UserAction
-  {
+  class G4BadIdeaAction : public g4b::UserAction {
   public:
     // Standard constructors and destructors;
-    G4BadIdeaAction(int );
+    G4BadIdeaAction(int);
     virtual ~G4BadIdeaAction();
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's steps
-    virtual void SteppingAction    (const G4Step*);
+    virtual void SteppingAction(const G4Step*);
 
   private:
-
-    art::ServiceHandle<geo::Geometry const> fGeo;  //< handle to geometry service
+    art::ServiceHandle<geo::Geometry const> fGeo; //< handle to geometry service
     int fNoIncomingMuons;
-
   };
 
 } // namespace LArG4

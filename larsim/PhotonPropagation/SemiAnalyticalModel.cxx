@@ -5,8 +5,8 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/OpDetGeo.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 // support libraries
@@ -15,16 +15,18 @@
 
 #include "TMath.h"
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
 
 // constructor
-SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::ParameterSet VISHits, bool doReflectedLight, bool includeAnodeReflections)
-  :
-  fVUVHitsParams(VUVHits)
+SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits,
+                                         fhicl::ParameterSet VISHits,
+                                         bool doReflectedLight,
+                                         bool includeAnodeReflections)
+  : fVUVHitsParams(VUVHits)
   , fVISHitsParams(VISHits)
   , fISTPC{*(lar::providerFrom<geo::Geometry>())}
   , fGeom{*(lar::providerFrom<geo::Geometry>())}
@@ -50,15 +52,18 @@ SemiAnalyticalModel::SemiAnalyticalModel(fhicl::ParameterSet VUVHits, fhicl::Par
 void SemiAnalyticalModel::Initialization()
 {
   // get PDS information
-  fOpDetType.reserve(nOpDets); fOpDetOrientation.reserve(nOpDets);
-  fOpDetCenter.reserve(nOpDets); fOpDetLength.reserve(nOpDets); fOpDetHeight.reserve(nOpDets);
+  fOpDetType.reserve(nOpDets);
+  fOpDetOrientation.reserve(nOpDets);
+  fOpDetCenter.reserve(nOpDets);
+  fOpDetLength.reserve(nOpDets);
+  fOpDetHeight.reserve(nOpDets);
   for (size_t const i : util::counter(nOpDets)) {
 
     geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
     fOpDetCenter.push_back(opDet.GetCenter());
 
-    if (opDet.isSphere()) {  // dome PMTs
-      fOpDetType.push_back(1); // dome
+    if (opDet.isSphere()) {           // dome PMTs
+      fOpDetType.push_back(1);        // dome
       fOpDetOrientation.push_back(0); // anode/cathode (default)
       fOpDetLength.push_back(-1);
       fOpDetHeight.push_back(-1);
@@ -71,13 +76,13 @@ void SemiAnalyticalModel::Initialization()
         fOpDetOrientation.push_back(1);
         fOpDetHeight.push_back(opDet.Width());
       }
-      else {  // anode/cathode (default), X dimension smallest
+      else { // anode/cathode (default), X dimension smallest
         fOpDetOrientation.push_back(0);
         fOpDetHeight.push_back(opDet.Height());
       }
     }
     else {
-      fOpDetType.push_back(2); // disk PMTs
+      fOpDetType.push_back(2);        // disk PMTs
       fOpDetOrientation.push_back(0); // anode/cathode (default)
       fOpDetLength.push_back(-1);
       fOpDetHeight.push_back(-1);
@@ -87,34 +92,38 @@ void SemiAnalyticalModel::Initialization()
   // Load Gaisser-Hillas corrections for VUV semi-analytic hits
   mf::LogInfo("SemiAnalyticalModel") << "Using VUV visibility parameterization";
 
-  fIsFlatPDCorr     = fVUVHitsParams.get<bool>("FlatPDCorr", false);
-  fIsFlatPDCorrLat  = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
-  fIsDomePDCorr     = fVUVHitsParams.get<bool>("DomePDCorr", false);
+  fIsFlatPDCorr = fVUVHitsParams.get<bool>("FlatPDCorr", false);
+  fIsFlatPDCorrLat = fVUVHitsParams.get<bool>("FlatPDCorrLat", false);
+  fIsDomePDCorr = fVUVHitsParams.get<bool>("DomePDCorr", false);
   fdelta_angulo_vuv = fVUVHitsParams.get<double>("delta_angulo_vuv", 10);
-  fradius           = fVUVHitsParams.get<double>("PMT_radius", 10.16);
+  fradius = fVUVHitsParams.get<double>("PMT_radius", 10.16);
   fApplyFieldCageTransparency = fVUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
   fFieldCageTransparencyLateral = fVUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
   fFieldCageTransparencyCathode = fVUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);
 
   if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
     throw cet::exception("SemiAnalyticalModel")
-      << "Both isFlatPDCorr/isFlatPDCorrLat and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+      << "Both isFlatPDCorr/isFlatPDCorrLat and isDomePDCorr parameters are false, at least one "
+         "type of parameterisation is required for the semi-analytic light simulation."
+      << "\n";
   }
   if (fIsFlatPDCorr) {
-    fGHvuvpars_flat          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+    fGHvuvpars_flat = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat");
     fborder_corr_angulo_flat = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat");
-    fborder_corr_flat        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
+    fborder_corr_flat = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat");
   }
   if (fIsFlatPDCorrLat) {
-    fGHvuvpars_flat_lateral          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat_lateral");
-    fborder_corr_angulo_flat_lateral = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat_lateral");
-    fborder_corr_flat_lateral        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat_lateral");
-
+    fGHvuvpars_flat_lateral =
+      fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_flat_lateral");
+    fborder_corr_angulo_flat_lateral =
+      fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_flat_lateral");
+    fborder_corr_flat_lateral =
+      fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_flat_lateral");
   }
   if (fIsDomePDCorr) {
-    fGHvuvpars_dome          = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
+    fGHvuvpars_dome = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_PARS_dome");
     fborder_corr_angulo_dome = fVUVHitsParams.get<std::vector<double>>("GH_border_angulo_dome");
-    fborder_corr_dome        = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_dome");
+    fborder_corr_dome = fVUVHitsParams.get<std::vector<std::vector<double>>>("GH_border_dome");
   }
 
   // Load corrections for VIS semi-analytic hits
@@ -125,12 +134,14 @@ void SemiAnalyticalModel::Initialization()
     if (fIsFlatPDCorr) {
       fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
       fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
-      fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+      fvispars_flat =
+        fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
     }
     if (fIsDomePDCorr) {
       fvis_distances_x_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_dome");
       fvis_distances_r_dome = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_dome");
-      fvispars_dome         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
+      fvispars_dome =
+        fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
     }
 
     // set cathode plane struct for solid angle function
@@ -148,13 +159,17 @@ void SemiAnalyticalModel::Initialization()
     if (fIsFlatPDCorr) {
       fvis_distances_x_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat");
       fvis_distances_r_flat = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat");
-      fvispars_flat         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+      fvispars_flat =
+        fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
     }
 
     if (fIsFlatPDCorrLat) {
-      fvis_distances_x_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat_lateral");
-      fvis_distances_r_flat_lateral = fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat_lateral");
-      fvispars_flat_lateral         = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat_lateral");
+      fvis_distances_x_flat_lateral =
+        fVISHitsParams.get<std::vector<double>>("VIS_distances_x_flat_lateral");
+      fvis_distances_r_flat_lateral =
+        fVISHitsParams.get<std::vector<double>>("VIS_distances_r_flat_lateral");
+      fvispars_flat_lateral = fVISHitsParams.get<std::vector<std::vector<std::vector<double>>>>(
+        "VIS_correction_flat_lateral");
     }
 
     // set anode plane struct for solid angle function
@@ -162,21 +177,21 @@ void SemiAnalyticalModel::Initialization()
     fanode_plane.w = fActiveVolumes[0].SizeZ();
     fanode_plane_depth = fanode_centre[0];
   }
-
 }
 
-int
-SemiAnalyticalModel::VUVAbsorptionLength() const
+int SemiAnalyticalModel::VUVAbsorptionLength() const
 {
   // determine LAr absorption length in cm
-  std::map<double, double> abs_length_spectrum = lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+  std::map<double, double> abs_length_spectrum =
+    lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
   std::vector<double> x_v, y_v;
   for (auto elem : abs_length_spectrum) {
     x_v.push_back(elem.first);
     y_v.push_back(elem.second);
   }
-  int vuv_absorption_length = std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum   // TO DO UNHARDCODE FOR XENON
-  if (vuv_absorption_length <= 0){
+  int vuv_absorption_length = std::round(interpolate(
+    x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum   // TO DO UNHARDCODE FOR XENON
+  if (vuv_absorption_length <= 0) {
     throw cet::exception("SemiAnalyticalModel")
       << "Error: VUV Absorption Length is 0 or negative.\n";
   }
@@ -185,9 +200,8 @@ SemiAnalyticalModel::VUVAbsorptionLength() const
 
 //......................................................................
 // VUV semi-analytical model visibility calculation
-void
-SemiAnalyticalModel::detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
-                                                geo::Point_t const& ScintPoint) const
+void SemiAnalyticalModel::detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
+                                                     geo::Point_t const& ScintPoint) const
 {
   DetectedVisibilities.resize(nOpDets);
   for (size_t const OpDet : util::counter(nOpDets)) {
@@ -197,30 +211,36 @@ SemiAnalyticalModel::detectedDirectVisibilities(std::vector<double>& DetectedVis
     }
 
     // set detector struct for solid angle function
-    const SemiAnalyticalModel::OpticalDetector op{
-      fOpDetHeight[OpDet], fOpDetLength[OpDet],
-      fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
+    const SemiAnalyticalModel::OpticalDetector op{fOpDetHeight[OpDet],
+                                                  fOpDetLength[OpDet],
+                                                  fOpDetCenter[OpDet],
+                                                  fOpDetType[OpDet],
+                                                  fOpDetOrientation[OpDet]};
 
-    DetectedVisibilities[OpDet] = VUVVisibility(ScintPoint, op);;
+    DetectedVisibilities[OpDet] = VUVVisibility(ScintPoint, op);
+    ;
   }
 }
 
-double
-SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet) const
+double SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint,
+                                          OpticalDetector const& opDet) const
 {
   // distance and angle between ScintPoint and OpDetPoint
   geo::Vector_t const relative = ScintPoint - opDet.OpDetPoint;
   const double distance = relative.R();
   double cosine;
-  if (opDet.orientation == 1) cosine = std::abs(relative.Y()) / distance;
-  else cosine = std::abs(relative.X()) / distance;
+  if (opDet.orientation == 1)
+    cosine = std::abs(relative.Y()) / distance;
+  else
+    cosine = std::abs(relative.X()) / distance;
   const double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
   double solid_angle = 0.;
   // ARAPUCAS/Bars (rectangle)
   if (opDet.type == 0) {
     // get scintillation point coordinates relative to arapuca window centre
-    geo::Vector_t const abs_relative{std::abs(relative.X()), std::abs(relative.Y()), std::abs(relative.Z())};
+    geo::Vector_t const abs_relative{
+      std::abs(relative.X()), std::abs(relative.Y()), std::abs(relative.Z())};
     solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative, opDet.orientation);
   }
   // PMTs (dome)
@@ -235,12 +255,15 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
   }
   else {
     throw cet::exception("SemiAnalyticalModel")
-      << "Error: Invalid optical detector shape requested - configuration error in semi-analytical model, only rectangular, dome or disk optical detectors are supported." << "\n";
+      << "Error: Invalid optical detector shape requested - configuration error in semi-analytical "
+         "model, only rectangular, dome or disk optical detectors are supported."
+      << "\n";
   }
 
   // calculate visibility by geometric acceptance
   // accounting for solid angle and LAr absorbtion length
-  double visibility_geo = std::exp(-1. * distance / fvuv_absorption_length) * (solid_angle / (4 * CLHEP::pi));
+  double visibility_geo =
+    std::exp(-1. * distance / fvuv_absorption_length) * (solid_angle / (4 * CLHEP::pi));
 
   // apply Gaisser-Hillas correction for Rayleigh scattering distance
   // and angular dependence offset angle bin
@@ -251,31 +274,34 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
   double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
 
   double pars_ini[4] = {0, 0, 0, 0};
-  double s1 = 0; double s2 = 0; double s3 = 0;
+  double s1 = 0;
+  double s2 = 0;
+  double s3 = 0;
   // flat PDs
-  if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)){
+  if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
     if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals
       pars_ini[0] = fGHvuvpars_flat_lateral[0][j];
       pars_ini[1] = fGHvuvpars_flat_lateral[1][j];
       pars_ini[2] = fGHvuvpars_flat_lateral[2][j];
       pars_ini[3] = fGHvuvpars_flat_lateral[3][j];
-      s1 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[0], theta, true);
-      s2 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[1], theta, true);
-      s3 = interpolate( fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[2], theta, true);
-
+      s1 = interpolate(fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[0], theta, true);
+      s2 = interpolate(fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[1], theta, true);
+      s3 = interpolate(fborder_corr_angulo_flat_lateral, fborder_corr_flat_lateral[2], theta, true);
     }
     else if (opDet.orientation == 0 && fIsFlatPDCorr) { // cathode/anode
       pars_ini[0] = fGHvuvpars_flat[0][j];
       pars_ini[1] = fGHvuvpars_flat[1][j];
       pars_ini[2] = fGHvuvpars_flat[2][j];
       pars_ini[3] = fGHvuvpars_flat[3][j];
-      s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
-      s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
-      s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
+      s1 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
+      s2 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
+      s3 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
     }
     else {
       throw cet::exception("SemiAnalyticalModel")
-        << "Error: flat optical detectors are found, but parameters are missing - configuration error in semi-analytical model." << "\n";
+        << "Error: flat optical detectors are found, but parameters are missing - configuration "
+           "error in semi-analytical model."
+        << "\n";
     }
   }
   // dome PDs
@@ -284,13 +310,15 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
     pars_ini[1] = fGHvuvpars_dome[1][j];
     pars_ini[2] = fGHvuvpars_dome[2][j];
     pars_ini[3] = fGHvuvpars_dome[3][j];
-    s1 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[0], theta, true);
-    s2 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[1], theta, true);
-    s3 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[2], theta, true);
+    s1 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[0], theta, true);
+    s2 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[1], theta, true);
+    s3 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[2], theta, true);
   }
   else {
     throw cet::exception("SemiAnalyticalModel")
-      << "Error: Invalid optical detector shape requested or corrections are missing - configuration error in semi-analytical model." << "\n";
+      << "Error: Invalid optical detector shape requested or corrections are missing - "
+         "configuration error in semi-analytical model."
+      << "\n";
   }
 
   // add border correction to parameters
@@ -304,8 +332,10 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
   // apply field cage transparency factor
   if (fApplyFieldCageTransparency) {
-    if (opDet.orientation == 1) GH_correction = GH_correction * fFieldCageTransparencyLateral;
-    else if (opDet.orientation == 0) GH_correction = GH_correction * fFieldCageTransparencyCathode;
+    if (opDet.orientation == 1)
+      GH_correction = GH_correction * fFieldCageTransparencyLateral;
+    else if (opDet.orientation == 0)
+      GH_correction = GH_correction * fFieldCageTransparencyCathode;
   }
 
   // determine corrected visibility of photo-detector
@@ -314,10 +344,10 @@ SemiAnalyticalModel::VUVVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
 //......................................................................
 // VIS semi-analytical model visibility calculation
-void
-SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDetectedVisibilities,
-                                                   geo::Point_t const& ScintPoint,
-                                                   bool AnodeMode) const
+void SemiAnalyticalModel::detectedReflectedVisibilities(
+  std::vector<double>& ReflDetectedVisibilities,
+  geo::Point_t const& ScintPoint,
+  bool AnodeMode) const
 {
   // 1). calculate visibility of VUV photons on
   // reflective foils via solid angle + Gaisser-Hillas
@@ -330,12 +360,16 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDete
   if (AnodeMode) {
     plane_dimensions = fanode_plane;
     plane_depth = fanode_plane_depth;
-    ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - fanode_plane_depth), std::abs(ScintPoint.Y() - fanode_centre[1]), std::abs(ScintPoint.Z() - fanode_centre[2]));
+    ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - fanode_plane_depth),
+                                       std::abs(ScintPoint.Y() - fanode_centre[1]),
+                                       std::abs(ScintPoint.Z() - fanode_centre[2]));
   }
   else {
     plane_dimensions = fcathode_plane;
     plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
-    ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - plane_depth), std::abs(ScintPoint.Y() - fcathode_centre[1]), std::abs(ScintPoint.Z() - fcathode_centre[2]));
+    ScintPoint_relative.SetCoordinates(std::abs(ScintPoint.X() - plane_depth),
+                                       std::abs(ScintPoint.Y() - fcathode_centre[1]),
+                                       std::abs(ScintPoint.Z() - fcathode_centre[2]));
   }
 
   // calculate solid angle of anode/cathode from the scintillation point, orientation always = 0 (anode/cathode)
@@ -346,25 +380,30 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDete
   // therefore consider attenuation for this distance and on axis GH instead of for the centre coordinate
   double distance_cathode = std::abs(plane_depth - ScintPoint.X());
   // calculate hits on cathode plane via geometric acceptance
-  double cathode_visibility_geo = std::exp(-1. * distance_cathode / fvuv_absorption_length) * (solid_angle_cathode / (4. * CLHEP::pi));
+  double cathode_visibility_geo = std::exp(-1. * distance_cathode / fvuv_absorption_length) *
+                                  (solid_angle_cathode / (4. * CLHEP::pi));
 
   // determine Gaisser-Hillas correction including border effects
   // use flat correction
   double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
   double pars_ini[4] = {0, 0, 0, 0};
-  double s1 = 0; double s2 = 0; double s3 = 0;
-  if(fIsFlatPDCorr) {
+  double s1 = 0;
+  double s2 = 0;
+  double s3 = 0;
+  if (fIsFlatPDCorr) {
     pars_ini[0] = fGHvuvpars_flat[0][0];
     pars_ini[1] = fGHvuvpars_flat[1][0];
     pars_ini[2] = fGHvuvpars_flat[2][0];
     pars_ini[3] = fGHvuvpars_flat[3][0];
-    s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], 0, true);
-    s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], 0, true);
-    s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
+    s1 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[0], 0, true);
+    s2 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[1], 0, true);
+    s3 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
   }
   else {
     throw cet::exception("SemiAnalyticalModel")
-      << "Error: flat optical detector VUV correction required for reflected semi-analytic hits. - configuration error in semi-analytical model." << "\n";
+      << "Error: flat optical detector VUV correction required for reflected semi-analytic hits. - "
+         "configuration error in semi-analytical model."
+      << "\n";
   }
 
   // add border correction
@@ -387,23 +426,29 @@ SemiAnalyticalModel::detectedReflectedVisibilities(std::vector<double>& ReflDete
     }
 
     // set detector struct for solid angle function
-    const  OpticalDetector op{
-      fOpDetHeight[OpDet], fOpDetLength[OpDet],
-      fOpDetCenter[OpDet], fOpDetType[OpDet], fOpDetOrientation[OpDet]};
+    const OpticalDetector op{fOpDetHeight[OpDet],
+                             fOpDetLength[OpDet],
+                             fOpDetCenter[OpDet],
+                             fOpDetType[OpDet],
+                             fOpDetOrientation[OpDet]};
 
-    ReflDetectedVisibilities[OpDet] = VISVisibility(ScintPoint, op, cathode_visibility_rec, hotspot, AnodeMode);
+    ReflDetectedVisibilities[OpDet] =
+      VISVisibility(ScintPoint, op, cathode_visibility_rec, hotspot, AnodeMode);
   }
 }
 
-double
-SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetector const& opDet,
-                                   const double cathode_visibility, geo::Point_t const& hotspot,
-                                   bool AnodeMode) const
+double SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint,
+                                          OpticalDetector const& opDet,
+                                          const double cathode_visibility,
+                                          geo::Point_t const& hotspot,
+                                          bool AnodeMode) const
 {
   // set correct plane_depth
   double plane_depth;
-  if (AnodeMode) plane_depth = fanode_plane_depth;
-  else plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
+  if (AnodeMode)
+    plane_depth = fanode_plane_depth;
+  else
+    plane_depth = ScintPoint.X() < 0. ? -fplane_depth : fplane_depth;
 
   // calculate visibility of the optical
   // detector from the hotspot using solid angle:
@@ -431,7 +476,8 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
     geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
                                               std::abs(emission_relative.Y()),
                                               std::abs(emission_relative.Z())};
-    solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative, opDet.orientation);
+    solid_angle_detector =
+      Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative, opDet.orientation);
   }
   // PMTS (dome)
   else if (opDet.type == 1) {
@@ -446,34 +492,50 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
   }
   else {
     throw cet::exception("SemiAnalyticalModel")
-      << "Error: Invalid optical detector shape requested - configuration error in semi-analytical model, only rectangular, dome or disk optical detectors are supported." << "\n";
+      << "Error: Invalid optical detector shape requested - configuration error in semi-analytical "
+         "model, only rectangular, dome or disk optical detectors are supported."
+      << "\n";
   }
 
   // calculate number of hits via geometeric acceptance
   double visibility_geo = (solid_angle_detector / (2. * CLHEP::pi)) *
-    cathode_visibility; // 2*pi due to presence of reflective foils
+                          cathode_visibility; // 2*pi due to presence of reflective foils
 
   // determine correction factor, depending on PD type
-  const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
+  const size_t k = (theta_vis / fdelta_angulo_vis); // off-set angle bin
   double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
-  double d_c = std::abs(ScintPoint.X() - plane_depth);       // distance to cathode
+  double d_c = std::abs(ScintPoint.X() - plane_depth); // distance to cathode
   double border_correction = 0;
   // flat PDs
   if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
     // cathode/anode case
-    if (opDet.orientation == 0 && fIsFlatPDCorr) border_correction = interpolate2(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat, d_c, r, k);
+    if (opDet.orientation == 0 && fIsFlatPDCorr)
+      border_correction =
+        interpolate2(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat, d_c, r, k);
     // laterals case
-    else if (opDet.orientation == 1 && fIsFlatPDCorrLat) border_correction = interpolate2(fvis_distances_x_flat_lateral, fvis_distances_r_flat_lateral, fvispars_flat_lateral, d_c, r, k);
+    else if (opDet.orientation == 1 && fIsFlatPDCorrLat)
+      border_correction = interpolate2(fvis_distances_x_flat_lateral,
+                                       fvis_distances_r_flat_lateral,
+                                       fvispars_flat_lateral,
+                                       d_c,
+                                       r,
+                                       k);
     else {
       throw cet::exception("SemiAnalyticalModel")
-        << "Error: Invalid optical detector shape requested or corrections are missing - configuration error in semi-analytical model." << "\n";
+        << "Error: Invalid optical detector shape requested or corrections are missing - "
+           "configuration error in semi-analytical model."
+        << "\n";
     }
   }
   // dome PDs
-  else if (opDet.type == 1 && fIsDomePDCorr) border_correction = interpolate2(fvis_distances_x_dome, fvis_distances_r_dome, fvispars_dome, d_c, r, k);
+  else if (opDet.type == 1 && fIsDomePDCorr)
+    border_correction =
+      interpolate2(fvis_distances_x_dome, fvis_distances_r_dome, fvispars_dome, d_c, r, k);
   else {
     throw cet::exception("SemiAnalyticalModel")
-      << "Error: Invalid optical detector shape requested or corrections are missing - configuration error in semi-analytical model." << "\n";
+      << "Error: Invalid optical detector shape requested or corrections are missing - "
+         "configuration error in semi-analytical model."
+      << "\n";
   }
 
   // apply anode reflectivity factor
@@ -481,8 +543,10 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
   // apply field cage transparency factor
   if (fApplyFieldCageTransparency) {
-    if (opDet.orientation == 1) border_correction = border_correction * fFieldCageTransparencyLateral;
-    else if (opDet.orientation == 0) border_correction = border_correction * fFieldCageTransparencyCathode;
+    if (opDet.orientation == 1)
+      border_correction = border_correction * fFieldCageTransparencyLateral;
+    else if (opDet.orientation == 0)
+      border_correction = border_correction * fFieldCageTransparencyCathode;
   }
 
   return border_correction * visibility_geo / cosine_vis;
@@ -490,8 +554,7 @@ SemiAnalyticalModel::VISVisibility(geo::Point_t const& ScintPoint, OpticalDetect
 
 //......................................................................
 // Gaisser-Hillas function definition
-double
-SemiAnalyticalModel::Gaisser_Hillas(const double x, const double* par) const
+double SemiAnalyticalModel::Gaisser_Hillas(const double x, const double* par) const
 {
   double X_mu_0 = par[3];
   double Normalization = par[0];
@@ -504,8 +567,7 @@ SemiAnalyticalModel::Gaisser_Hillas(const double x, const double* par) const
 
 //......................................................................
 // solid angle of circular aperture
-double
-SemiAnalyticalModel::Disk_SolidAngle(const double d, const double h, const double b) const
+double SemiAnalyticalModel::Disk_SolidAngle(const double d, const double h, const double b) const
 {
   if (b <= 0. || d < 0. || h <= 0.) return 0.;
   const double leg2 = (b + d) * (b + d);
@@ -571,8 +633,9 @@ SemiAnalyticalModel::Disk_SolidAngle(const double d, const double h, const doubl
 
 //......................................................................
 // solid angle of rectangular aperture
-double
-SemiAnalyticalModel::Rectangle_SolidAngle(const double a, const double b, const double d) const
+double SemiAnalyticalModel::Rectangle_SolidAngle(const double a,
+                                                 const double b,
+                                                 const double d) const
 {
   double aa = a / (2. * d);
   double bb = b / (2. * d);
@@ -580,8 +643,9 @@ SemiAnalyticalModel::Rectangle_SolidAngle(const double a, const double b, const 
   return 4. * fast_acos(std::sqrt(aux));
 }
 
-double
-SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v, double OpDetOrientation) const
+double SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o,
+                                                 geo::Vector_t const& v,
+                                                 double OpDetOrientation) const
 {
   // v is the position of the track segment with respect to
   // the center position of the arapuca window
@@ -610,7 +674,7 @@ SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v,
                         Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
                         Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) +
                         Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
-                        .25;
+                       .25;
     return to_return;
   }
   if ((d1 <= o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
@@ -620,7 +684,7 @@ SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v,
                         Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                         Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
                         Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
-                        .25;
+                       .25;
     return to_return;
   }
   if (isDefinitelyGreaterThan(d1, o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
@@ -630,7 +694,7 @@ SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v,
                         Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                         Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) -
                         Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
-                        .25;
+                       .25;
     return to_return;
   }
   if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
@@ -640,7 +704,7 @@ SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v,
                         Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
                         Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
                         Rectangle_SolidAngle(2. * A, 2. * B, d2)) *
-                        .25;
+                       .25;
     return to_return;
   }
 
@@ -649,8 +713,7 @@ SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v,
 
 //......................................................................
 // solid angle of dome aperture
-double
-SemiAnalyticalModel::Omega_Dome_Model(const double distance, const double theta) const
+double SemiAnalyticalModel::Omega_Dome_Model(const double distance, const double theta) const
 {
   // this function calculates the solid angle of a semi-sphere of radius b,
   // as a correction to the analytic formula of the on-axix solid angle,
@@ -664,43 +727,41 @@ SemiAnalyticalModel::Omega_Dome_Model(const double distance, const double theta)
   double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
   double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
   const double delta_theta = 10.; // TODO: should this be fdelta_angulo_vuv?
-  int j = int(theta/delta_theta);
+  int j = int(theta / delta_theta);
   // PMT radius
   const double b = fradius; // cm
   // distance form which the model parameters break (empirical value)
-  const double d_break = 5*b; //par2
+  const double d_break = 5 * b; //par2
 
-  if(distance >= d_break) {
+  if (distance >= d_break) {
     double R_apparent_far = b - par1[j];
-    double ratio_square = (R_apparent_far*R_apparent_far)/(distance*distance);
-    return  (2*CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
+    double ratio_square = (R_apparent_far * R_apparent_far) / (distance * distance);
+    return (2 * CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
   }
   else {
     double R_apparent_close = b - par0[j];
-    double ratio_square = (R_apparent_close*R_apparent_close)/(distance*distance);
-    return (2*CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
+    double ratio_square = (R_apparent_close * R_apparent_close) / (distance * distance);
+    return (2 * CLHEP::pi * (1 - std::sqrt(1 - ratio_square)));
   }
 }
 
 //......................................................................
 // checks photo-detector is in same TPC/argon volume as scintillation
-bool
-SemiAnalyticalModel::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                      geo::Point_t const& OpDetPoint) const
+bool SemiAnalyticalModel::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
+                                           geo::Point_t const& OpDetPoint) const
 {
   // method working for SBND, uBooNE, DUNE-HD 1x2x6 and DUNE-VD 1x8x6
   // will need to be replaced to work in full DUNE geometry, ICARUS geometry
   // check x coordinate has same sign or is close to zero, otherwise return false
-  if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-      std::abs(OpDetPoint.X()) > 10. && fNTPC == 2) { // TODO: replace with geometry service
+  if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10. &&
+      fNTPC == 2) { // TODO: replace with geometry service
     return false;
   }
   return true;
 }
 
 //......................................................................
-double
-SemiAnalyticalModel::fast_acos(double x) const
+double SemiAnalyticalModel::fast_acos(double x) const
 {
   double negate = double(x < 0);
   x = std::abs(x);
@@ -722,12 +783,11 @@ SemiAnalyticalModel::fast_acos(double x) const
 // Assumes that xData has at least two elements, is sorted and is strictly
 // monotonic increasing boolean argument extrapolate determines behaviour
 // beyond ends of array (if needed)
-double
-SemiAnalyticalModel::interpolate(const std::vector<double>& xData,
-                                 const std::vector<double>& yData,
-                                 double x,
-                                 bool extrapolate,
-                                 size_t i) const
+double SemiAnalyticalModel::interpolate(const std::vector<double>& xData,
+                                        const std::vector<double>& yData,
+                                        double x,
+                                        bool extrapolate,
+                                        size_t i) const
 {
   if (i == 0) {
     size_t size = xData.size();
@@ -751,13 +811,13 @@ SemiAnalyticalModel::interpolate(const std::vector<double>& xData,
   return yL + dydx * (x - xL);               // linear interpolation
 }
 
-double
-SemiAnalyticalModel::interpolate2(const std::vector<double>& xDistances,
-                                  const std::vector<double>& rDistances,
-                                  const std::vector<std::vector<std::vector<double>>>& parameters,
-                                  const double x,
-                                  const double r,
-                                  const size_t k) const
+double SemiAnalyticalModel::interpolate2(
+  const std::vector<double>& xDistances,
+  const std::vector<double>& rDistances,
+  const std::vector<std::vector<std::vector<double>>>& parameters,
+  const double x,
+  const double r,
+  const size_t k) const
 {
   // interpolate in x for each r bin, for angle bin k
   const size_t nbins_r = parameters[k].size();
@@ -772,11 +832,7 @@ SemiAnalyticalModel::interpolate2(const std::vector<double>& xDistances,
         idx++;
     }
     for (size_t i = 0; i < nbins_r; ++i) {
-      interp_vals[i] = interpolate(xDistances,
-                                   parameters[k][i],
-                                   x,
-                                   false,
-                                   idx);
+      interp_vals[i] = interpolate(xDistances, parameters[k][i], x, false, idx);
     }
   }
   // interpolate in r

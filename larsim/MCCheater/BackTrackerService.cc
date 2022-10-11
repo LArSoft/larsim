@@ -10,7 +10,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "larsim/MCCheater/BackTrackerService.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
@@ -18,8 +17,8 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace cheat {
 
@@ -52,15 +51,13 @@ namespace cheat {
   ////////////////////////////////////////////////
 
   //-----Temp rebuild function.
-  void
-  BackTrackerService::Rebuild(const art::Event& evt)
+  void BackTrackerService::Rebuild(const art::Event& evt)
   {
     this->priv_PrepEvent(evt, art::ScheduleContext::invalid());
   }
 
   //---------------------------------------------------------------------
-  void
-  BackTrackerService::priv_PrepEvent(const art::Event& evt, art::ScheduleContext)
+  void BackTrackerService::priv_PrepEvent(const art::Event& evt, art::ScheduleContext)
   {
     fEvt = &evt;
     BackTracker::ClearEvent();
@@ -71,15 +68,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  bool
-  BackTrackerService::priv_CanRun(const art::Event& evt)
-  {
-    return BackTracker::CanRun(evt);
-  }
+  bool BackTrackerService::priv_CanRun(const art::Event& evt) { return BackTracker::CanRun(evt); }
 
   //---------------------------------------------------------------------
-  void
-  BackTrackerService::priv_PrepFailed()
+  void BackTrackerService::priv_PrepFailed()
   {
     throw cet::exception("BackTrackerService")
       << "The called Prep Function failed. This is most likely due "
@@ -87,8 +79,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  void
-  BackTrackerService::priv_PrepSimChannels(const art::Event& evt)
+  void BackTrackerService::priv_PrepSimChannels(const art::Event& evt)
   {
     if (!this->priv_CanRun(evt)) { this->priv_PrepFailed(); }
     if (this->priv_SimChannelsReady()) { return; }
@@ -121,8 +112,7 @@ namespace cheat {
   ///////////////////////////////////////////////
 
   //---------------------------------------------------------------------
-  const std::vector<art::Ptr<sim::SimChannel>>&
-  BackTrackerService::SimChannels() const
+  const std::vector<art::Ptr<sim::SimChannel>>& BackTrackerService::SimChannels() const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -130,8 +120,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<const sim::IDE*>
-  BackTrackerService::TrackIdToSimIDEs_Ps(int const& id) const
+  std::vector<const sim::IDE*> BackTrackerService::TrackIdToSimIDEs_Ps(int const& id) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -139,8 +128,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<const sim::IDE*>
-  BackTrackerService::TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const
+  std::vector<const sim::IDE*> BackTrackerService::TrackIdToSimIDEs_Ps(int const& id,
+                                                                       const geo::View_t view) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -148,8 +137,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  art::Ptr<sim::SimChannel>
-  BackTrackerService::FindSimChannel(raw::ChannelID_t channel) const
+  art::Ptr<sim::SimChannel> BackTrackerService::FindSimChannel(raw::ChannelID_t channel) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -157,11 +145,11 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::TrackIDE>
-  BackTrackerService::ChannelToTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                                         raw::ChannelID_t channel,
-                                         const double hit_start_time,
-                                         const double hit_end_time) const
+  std::vector<sim::TrackIDE> BackTrackerService::ChannelToTrackIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    raw::ChannelID_t channel,
+    const double hit_start_time,
+    const double hit_end_time) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -169,9 +157,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::TrackIDE>
-  BackTrackerService::HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                                     recob::Hit const& hit) const
+  std::vector<sim::TrackIDE> BackTrackerService::HitToTrackIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    recob::Hit const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -179,9 +167,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::TrackIDE>
-  BackTrackerService::HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                                     art::Ptr<recob::Hit> const& hit) const
+  std::vector<sim::TrackIDE> BackTrackerService::HitToTrackIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    art::Ptr<recob::Hit> const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -189,9 +177,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<int>
-  BackTrackerService::HitToTrackIds(detinfo::DetectorClocksData const& clockData,
-                                    recob::Hit const& hit) const
+  std::vector<int> BackTrackerService::HitToTrackIds(detinfo::DetectorClocksData const& clockData,
+                                                     recob::Hit const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -199,9 +186,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::TrackIDE>
-  BackTrackerService::HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                                        recob::Hit const& hit) const
+  std::vector<sim::TrackIDE> BackTrackerService::HitToEveTrackIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    recob::Hit const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -209,9 +196,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::TrackIDE>
-  BackTrackerService::HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                                        art::Ptr<recob::Hit> const& hit) const
+  std::vector<sim::TrackIDE> BackTrackerService::HitToEveTrackIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    art::Ptr<recob::Hit> const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -219,10 +206,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<art::Ptr<recob::Hit>>
-  BackTrackerService::TrackIdToHits_Ps(detinfo::DetectorClocksData const& clockData,
-                                       const int tkId,
-                                       std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
+  std::vector<art::Ptr<recob::Hit>> BackTrackerService::TrackIdToHits_Ps(
+    detinfo::DetectorClocksData const& clockData,
+    const int tkId,
+    std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -239,10 +226,10 @@ namespace cheat {
   }*/ //I can't support this functino and caching all the hits without lazy implimentation
 
   //---------------------------------------------------------------------
-  std::vector<std::vector<art::Ptr<recob::Hit>>>
-  BackTrackerService::TrackIdsToHits_Ps(detinfo::DetectorClocksData const& clockData,
-                                        std::vector<int> const& tkIds,
-                                        std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
+  std::vector<std::vector<art::Ptr<recob::Hit>>> BackTrackerService::TrackIdsToHits_Ps(
+    detinfo::DetectorClocksData const& clockData,
+    std::vector<int> const& tkIds,
+    std::vector<art::Ptr<recob::Hit>> const& hitsIn) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -250,9 +237,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::IDE>
-  BackTrackerService::HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
-                                      recob::Hit const& hit) const
+  std::vector<sim::IDE> BackTrackerService::HitToAvgSimIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    recob::Hit const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -260,9 +247,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<sim::IDE>
-  BackTrackerService::HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
-                                      art::Ptr<recob::Hit> hit) const
+  std::vector<sim::IDE> BackTrackerService::HitToAvgSimIDEs(
+    detinfo::DetectorClocksData const& clockData,
+    art::Ptr<recob::Hit> hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -270,9 +257,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<const sim::IDE*>
-  BackTrackerService::HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
-                                      recob::Hit const& hit) const
+  std::vector<const sim::IDE*> BackTrackerService::HitToSimIDEs_Ps(
+    detinfo::DetectorClocksData const& clockData,
+    recob::Hit const& hit) const
   {
     //Removed until Lazy Rebuild works
     //if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -280,9 +267,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<const sim::IDE*>
-  BackTrackerService::HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
-                                      art::Ptr<recob::Hit> const& hit) const
+  std::vector<const sim::IDE*> BackTrackerService::HitToSimIDEs_Ps(
+    detinfo::DetectorClocksData const& clockData,
+    art::Ptr<recob::Hit> const& hit) const
   {
     //Removed until Lazy Rebuild works
     //if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -290,8 +277,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::SimIDEsToXYZ(std::vector<sim::IDE> const& ides) const
+  std::vector<double> BackTrackerService::SimIDEsToXYZ(std::vector<sim::IDE> const& ides) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -299,8 +285,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::SimIDEsToXYZ(std::vector<const sim::IDE*> const& ide_Ps) const
+  std::vector<double> BackTrackerService::SimIDEsToXYZ(
+    std::vector<const sim::IDE*> const& ide_Ps) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -308,9 +294,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::HitToXYZ(detinfo::DetectorClocksData const& clockData,
-                               const recob::Hit& hit) const
+  std::vector<double> BackTrackerService::HitToXYZ(detinfo::DetectorClocksData const& clockData,
+                                                   const recob::Hit& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -318,9 +303,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::HitToXYZ(detinfo::DetectorClocksData const& clockData,
-                               art::Ptr<recob::Hit> const& hit) const
+  std::vector<double> BackTrackerService::HitToXYZ(detinfo::DetectorClocksData const& clockData,
+                                                   art::Ptr<recob::Hit> const& hit) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -328,10 +312,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  double
-  BackTrackerService::HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
-                                          std::set<int> const& trackIds,
-                                          std::vector<art::Ptr<recob::Hit>> const& hits) const
+  double BackTrackerService::HitCollectionPurity(
+    detinfo::DetectorClocksData const& clockData,
+    std::set<int> const& trackIds,
+    std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -339,10 +323,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  double
-  BackTrackerService::HitChargeCollectionPurity(detinfo::DetectorClocksData const& clockData,
-                                                std::set<int> const& trackIds,
-                                                std::vector<art::Ptr<recob::Hit>> const& hits) const
+  double BackTrackerService::HitChargeCollectionPurity(
+    detinfo::DetectorClocksData const& clockData,
+    std::set<int> const& trackIds,
+    std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -350,12 +334,12 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  double
-  BackTrackerService::HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
-                                              std::set<int> const& trackIds,
-                                              std::vector<art::Ptr<recob::Hit>> const& hits,
-                                              std::vector<art::Ptr<recob::Hit>> const& allhits,
-                                              geo::View_t const& view) const
+  double BackTrackerService::HitCollectionEfficiency(
+    detinfo::DetectorClocksData const& clockData,
+    std::set<int> const& trackIds,
+    std::vector<art::Ptr<recob::Hit>> const& hits,
+    std::vector<art::Ptr<recob::Hit>> const& allhits,
+    geo::View_t const& view) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -363,8 +347,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  double
-  BackTrackerService::HitChargeCollectionEfficiency(
+  double BackTrackerService::HitChargeCollectionEfficiency(
     detinfo::DetectorClocksData const& clockData,
     std::set<int> const& trackIds,
     std::vector<art::Ptr<recob::Hit>> const& hits,
@@ -377,8 +360,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::set<int>
-  BackTrackerService::GetSetOfTrackIds() const
+  std::set<int> BackTrackerService::GetSetOfTrackIds() const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -386,8 +368,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::set<int>
-  BackTrackerService::GetSetOfEveIds() const
+  std::set<int> BackTrackerService::GetSetOfEveIds() const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -395,9 +376,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::set<int>
-  BackTrackerService::GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
-                                       std::vector<art::Ptr<recob::Hit>> const& hits) const
+  std::set<int> BackTrackerService::GetSetOfTrackIds(
+    detinfo::DetectorClocksData const& clockData,
+    std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -405,9 +386,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::set<int>
-  BackTrackerService::GetSetOfEveIds(detinfo::DetectorClocksData const& clockData,
-                                     std::vector<art::Ptr<recob::Hit>> const& hits) const
+  std::set<int> BackTrackerService::GetSetOfEveIds(
+    detinfo::DetectorClocksData const& clockData,
+    std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
     // Removed until Lazy Rebuild works
     // if(!this->priv_SimChannelsReady()){this->priv_PrepSimChannels();}
@@ -415,8 +396,7 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::SpacePointHitsToWeightedXYZ(
+  std::vector<double> BackTrackerService::SpacePointHitsToWeightedXYZ(
     detinfo::DetectorClocksData const& clockData,
     std::vector<art::Ptr<recob::Hit>> const& hits) const
   {
@@ -425,8 +405,8 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<art::Ptr<recob::Hit>>
-  BackTrackerService::SpacePointToHits_Ps(art::Ptr<recob::SpacePoint> const& spt) const
+  std::vector<art::Ptr<recob::Hit>> BackTrackerService::SpacePointToHits_Ps(
+    art::Ptr<recob::SpacePoint> const& spt) const
   {
     // Note, this function is goofy in that it doesn't use the hits prepared by
     // the module. That should likely be changed to make things more uniform.
@@ -440,9 +420,9 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::vector<double>
-  BackTrackerService::SpacePointToXYZ(detinfo::DetectorClocksData const& clockData,
-                                      art::Ptr<recob::SpacePoint> const& spt) const
+  std::vector<double> BackTrackerService::SpacePointToXYZ(
+    detinfo::DetectorClocksData const& clockData,
+    art::Ptr<recob::SpacePoint> const& spt) const
   {
     // if( !this->priv_CanRun(*fEvt)) { this->priv_PrepFailed(); }
     if (!fEvt) {

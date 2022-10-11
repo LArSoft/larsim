@@ -10,39 +10,29 @@
 // Ben Jones, MIT, 06/04/2010
 //
 
-
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "Geant4/G4VPhysicalVolume.hh"
 
-#include "larsim/LegacyLArG4/OpDetLookup.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
-
+#include "larsim/LegacyLArG4/OpDetLookup.h"
 
 namespace larg4 {
-  OpDetLookup * TheOpDetLookup;
+  OpDetLookup* TheOpDetLookup;
 
   //--------------------------------------------------
-  OpDetLookup::OpDetLookup()
-  {
-    fTheTopOpDet=0;
-  }
+  OpDetLookup::OpDetLookup() { fTheTopOpDet = 0; }
 
   //--------------------------------------------------
-  OpDetLookup * OpDetLookup::Instance()
+  OpDetLookup* OpDetLookup::Instance()
   {
-    if(!TheOpDetLookup){
-      TheOpDetLookup = new OpDetLookup;
-    }
+    if (!TheOpDetLookup) { TheOpDetLookup = new OpDetLookup; }
     return TheOpDetLookup;
   }
 
   //--------------------------------------------------
-  int OpDetLookup::GetOpDet(std::string TheName)
-  {
-    return fTheOpDetMap[TheName];
-  }
+  int OpDetLookup::GetOpDet(std::string TheName) { return fTheOpDetMap[TheName]; }
 
   //--------------------------------------------------
   int OpDetLookup::GetOpDet(G4VPhysicalVolume* TheVolume)
@@ -51,55 +41,51 @@ namespace larg4 {
     return GetOpDet(TheName);
   }
 
-
   //--------------------------------------------------
 
   int OpDetLookup::FindClosestOpDet(G4VPhysicalVolume* vol, double& distance)
   {
     art::ServiceHandle<geo::Geometry const> geom;
-    int    OpDetCount = 0;
+    int OpDetCount = 0;
 
     double MinDistance = UINT_MAX;
-    int    ClosestOpDet   = -1;
+    int ClosestOpDet = -1;
 
-    for(size_t o=0; o!=geom->NOpDets(); o++) {
+    for (size_t o = 0; o != geom->NOpDets(); o++) {
       double xyz[3];
       geom->OpDetGeoFromOpDet(o).GetCenter(xyz);
 
-      CLHEP::Hep3Vector DetPos(xyz[0],xyz[1],xyz[2]);
+      CLHEP::Hep3Vector DetPos(xyz[0], xyz[1], xyz[2]);
       CLHEP::Hep3Vector ThisVolPos = vol->GetTranslation();
 
-      ThisVolPos/=CLHEP::cm;
+      ThisVolPos /= CLHEP::cm;
 
       //	    std::cout<<"Det: " << xyz[0]<< " " <<xyz[1]<< " " << xyz[2]<<std::endl;
       //    std::cout<<"Vol: " << ThisVolPos.x()<< " " <<ThisVolPos.y() << " " <<ThisVolPos.z()<<std::endl;
 
-      double Distance = (DetPos-ThisVolPos).mag();
-      if(Distance < MinDistance)
-      {
+      double Distance = (DetPos - ThisVolPos).mag();
+      if (Distance < MinDistance) {
         MinDistance = Distance;
-        ClosestOpDet  =  o;
+        ClosestOpDet = o;
       }
       OpDetCount++;
     }
-    if(ClosestOpDet<0)
-      {
-	throw cet::exception("OpDetLookup Error") << "No nearby OpDet found!\n";
-      }
+    if (ClosestOpDet < 0) {
+      throw cet::exception("OpDetLookup Error") << "No nearby OpDet found!\n";
+    }
 
     distance = MinDistance;
     return ClosestOpDet;
   }
 
-
   //--------------------------------------------------
-  void OpDetLookup::AddPhysicalVolume(G4VPhysicalVolume * volume)
+  void OpDetLookup::AddPhysicalVolume(G4VPhysicalVolume* volume)
   {
 
     // mf::LogInfo("Optical") <<"G4 placing sensitive opdet"<<std::endl;
 
     std::stringstream VolName("");
-    double Distance     = 0;
+    double Distance = 0;
 
     int NearestOpDet = FindClosestOpDet(volume, Distance);
 
@@ -110,14 +96,9 @@ namespace larg4 {
     fTheOpDetMap[VolName.str()] = NearestOpDet;
 
     // mf::LogInfo("Optical") << "Found closest volume: " << VolName.str().c_str() << " OpDet : " << fTheOpDetMap[VolName.str()]<<"  distance : " <<Distance<<std::endl;
-
   }
-
 
   //--------------------------------------------------
-  int OpDetLookup::GetN()
-  {
-    return fTheTopOpDet;
-  }
+  int OpDetLookup::GetN() { return fTheTopOpDet; }
 
 }

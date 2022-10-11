@@ -11,7 +11,9 @@
 #define TRUTHMATCHUTILS_H_SEEN
 
 // LArSoft
-namespace recob { class Hit; }
+namespace recob {
+  class Hit;
+}
 
 // art
 #include "canvas/Persistency/Common/Ptr.h"

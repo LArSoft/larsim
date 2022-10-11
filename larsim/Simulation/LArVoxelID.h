@@ -45,14 +45,13 @@
 #include <TLorentzVector.h>
 #include <TVector3.h>
 
-#include <vector>
 #include <functional> // so we can redefine less<> below
 #include <iosfwd>
+#include <vector>
 
 namespace sim {
 
-  class LArVoxelID
-  {
+  class LArVoxelID {
   public:
     // What is an appropriate storage class for an element of the bin
     // ID?  Probably a regular integer is the only thing we can use; a
@@ -64,10 +63,7 @@ namespace sim {
     // one is provided for completeness, but it's not the one I
     // anticipate the clients will use.  Note that it's also serves
     // as the no-argument constructor that ROOT requires for I/O.
-    LArVoxelID( const int x = 0,
-		const int y = 0,
-		const int z = 0,
-		const int t = 0 );
+    LArVoxelID(const int x = 0, const int y = 0, const int z = 0, const int t = 0);
 
     // The constructors that I expect most clients to use: Given the
     // (x,y,z,t) in units of (distance,time) of a particle, compute
@@ -75,11 +71,8 @@ namespace sim {
     // have to be consistent between those used by LArVoxelCalculator
     // and the Monte Carlo, but this class does not enforce that
     // consistency.
-    explicit LArVoxelID( const TLorentzVector& v );
-    LArVoxelID( const double x,
-		const double y,
-		const double z,
-		const double t );
+    explicit LArVoxelID(const TLorentzVector& v);
+    LArVoxelID(const double x, const double y, const double z, const double t);
 
     // Destructor.
     virtual ~LArVoxelID();
@@ -108,7 +101,7 @@ namespace sim {
     // Alternative accessor: Pretend the LArVoxelID is a vector that
     // takes subscripts, and returns the bin centers of the axis in
     // the square brackets (x=0, y=1, z=2, t=3).
-    double operator[]( const int ) const;
+    double operator[](const int) const;
 
     // Conversion function from LArVoxelID to a TLorentzVector.  This
     // lets you do something like:
@@ -123,21 +116,32 @@ namespace sim {
 
     // The comparison operator.  This a key function, since it
     // establishes the sort order of the voxels in a list.
-    bool operator<( const LArVoxelID& ) const;
+    bool operator<(const LArVoxelID&) const;
 
     // Test for equality.  Handy, but not usually necessary.
-    bool operator==( const LArVoxelID& ) const;
+    bool operator==(const LArVoxelID&) const;
 
-    friend std::ostream& operator<< ( std::ostream& output, const LArVoxelID& );
-
+    friend std::ostream& operator<<(std::ostream& output, const LArVoxelID&);
   };
 
 } // sim
 
-inline int sim::LArVoxelID::XBin() const { return fbins[0]; }
-inline int sim::LArVoxelID::YBin() const { return fbins[1]; }
-inline int sim::LArVoxelID::ZBin() const { return fbins[2]; }
-inline int sim::LArVoxelID::TBin() const { return fbins[3]; }
+inline int sim::LArVoxelID::XBin() const
+{
+  return fbins[0];
+}
+inline int sim::LArVoxelID::YBin() const
+{
+  return fbins[1];
+}
+inline int sim::LArVoxelID::ZBin() const
+{
+  return fbins[2];
+}
+inline int sim::LArVoxelID::TBin() const
+{
+  return fbins[3];
+}
 
 // A potentially handy definition: At this stage, I'm not sure
 // whether I'm going to be keeping a list based on LArVoxelID or on
@@ -153,10 +157,9 @@ inline int sim::LArVoxelID::TBin() const { return fbins[3]; }
 
 namespace std {
   template <>
-  class less<sim::LArVoxelID*>
-  {
+  class less<sim::LArVoxelID*> {
   public:
-    bool operator()( const sim::LArVoxelID* lhs, const sim::LArVoxelID* rhs )
+    bool operator()(const sim::LArVoxelID* lhs, const sim::LArVoxelID* rhs)
     {
       return (*lhs) < (*rhs);
     }

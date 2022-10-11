@@ -175,8 +175,7 @@ cheat::RecoCheckAna::RecoCheckAna(fhicl::ParameterSet const& p)
 {}
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::analyze(art::Event const& e)
+void cheat::RecoCheckAna::analyze(art::Event const& e)
 {
   // check that this is MC, stop if it isn't
   if (e.isRealData()) {
@@ -229,8 +228,7 @@ cheat::RecoCheckAna::analyze(art::Event const& e)
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::beginRun(art::Run const& /*r*/)
+void cheat::RecoCheckAna::beginRun(art::Run const& /*r*/)
 {
   art::ServiceHandle<art::TFileService const> tfs;
 
@@ -297,8 +295,7 @@ cheat::RecoCheckAna::beginRun(art::Run const& /*r*/)
 //-------------------------------------------------------------------
 // colID is the ID of the RecoBase object and colHits are the recob::Hits
 // associated with it
-void
-cheat::RecoCheckAna::CheckReco(
+void cheat::RecoCheckAna::CheckReco(
   detinfo::DetectorClocksData const& clockData,
   int const& colID,
   std::vector<art::Ptr<recob::Hit>> const& allhits,
@@ -339,11 +336,10 @@ cheat::RecoCheckAna::CheckReco(
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
-                                       std::string const& label,
-                                       art::Handle<std::vector<recob::Cluster>> const& clscol,
-                                       std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
+                                            std::string const& label,
+                                            art::Handle<std::vector<recob::Cluster>> const& clscol,
+                                            std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(clscol, evt, label);
@@ -361,11 +357,10 @@ cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
-                                     std::string const& label,
-                                     art::Handle<std::vector<recob::Track>> const& tcol,
-                                     std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
+                                          std::string const& label,
+                                          art::Handle<std::vector<recob::Track>> const& tcol,
+                                          std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(tcol, evt, label);
@@ -383,11 +378,10 @@ cheat::RecoCheckAna::CheckRecoTracks(art::Event const& evt,
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
-                                      std::string const& label,
-                                      art::Handle<std::vector<recob::Shower>> const& scol,
-                                      std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
+                                           std::string const& label,
+                                           art::Handle<std::vector<recob::Shower>> const& scol,
+                                           std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
   art::FindManyP<recob::Hit> fmh(scol, evt, label);
@@ -407,11 +401,10 @@ cheat::RecoCheckAna::CheckRecoShowers(art::Event const& evt,
 //-------------------------------------------------------------------
 //a true vertex will either consist of primary particles originating from
 //the interaction vertex, or a primary particle decaying to make daughters
-void
-cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
-                                       std::string const& label,
-                                       art::Handle<std::vector<recob::Vertex>> const& vtxcol,
-                                       std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
+                                            std::string const& label,
+                                            art::Handle<std::vector<recob::Vertex>> const& vtxcol,
+                                            std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   const sim::ParticleList& plist = fPI->ParticleList();
 
@@ -469,11 +462,10 @@ cheat::RecoCheckAna::CheckRecoVertices(art::Event const& evt,
 // in this method one should loop over the primary particles from a given
 // MCTruth collection
 /// \todo need to divy it up in the case where there is more than 1 true interaction in a spill
-void
-cheat::RecoCheckAna::CheckRecoEvents(art::Event const& evt,
-                                     std::string const& label,
-                                     art::Handle<std::vector<recob::Event>> const& evtcol,
-                                     std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::CheckRecoEvents(art::Event const& evt,
+                                          std::string const& label,
+                                          art::Handle<std::vector<recob::Event>> const& evtcol,
+                                          std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   const sim::ParticleList& plist = fPI->ParticleList();
 
@@ -512,8 +504,7 @@ cheat::RecoCheckAna::CheckRecoEvents(art::Event const& evt,
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::FlattenMap(
+void cheat::RecoCheckAna::FlattenMap(
   std::map<std::pair<int, int>, std::pair<double, double>> const& g4RecoBaseIDToPurityEfficiency,
   std::map<int, std::vector<std::pair<int, std::pair<double, double>>>>&
     g4IDToRecoBasePurityEfficiency,
@@ -572,9 +563,8 @@ cheat::RecoCheckAna::FlattenMap(
 }
 
 //-------------------------------------------------------------------
-void
-cheat::RecoCheckAna::FillResults(detinfo::DetectorClocksData const& clockData,
-                                 std::vector<art::Ptr<recob::Hit>> const& allhits)
+void cheat::RecoCheckAna::FillResults(detinfo::DetectorClocksData const& clockData,
+                                      std::vector<art::Ptr<recob::Hit>> const& allhits)
 {
   // map the g4 track id to energy deposited in a hit
   std::map<int, double> g4IDToHitEnergy;

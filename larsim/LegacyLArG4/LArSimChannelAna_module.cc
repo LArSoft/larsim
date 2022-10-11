@@ -93,8 +93,7 @@ namespace larg {
   {}
 
   //-------------------------------------------------
-  void
-  LArSimChannelAna::ensureHists(unsigned int const nTimeSamples)
+  void LArSimChannelAna::ensureHists(unsigned int const nTimeSamples)
   {
     if (initDone) return; // Bail if we've already done this.
     initDone = true;      // Insure that we bail later on
@@ -133,8 +132,7 @@ namespace larg {
   }
 
   //-------------------------------------------------
-  void
-  LArSimChannelAna::analyze(const art::Event& evt)
+  void LArSimChannelAna::analyze(const art::Event& evt)
   {
     if (evt.isRealData()) {
       throw cet::exception("LArSimChannelAna") << "Not for use on Data yet...\n";

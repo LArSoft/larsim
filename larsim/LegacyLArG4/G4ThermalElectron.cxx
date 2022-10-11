@@ -46,52 +46,60 @@ G4ThermalElectron* G4ThermalElectron::theInstance = 0;
 
 G4ThermalElectron* G4ThermalElectron::Definition()
 {
-  if (theInstance !=0) return theInstance;
+  if (theInstance != 0) return theInstance;
   const G4String name = "thermalelectron";
   // search in particle table]
   G4ParticleTable* pTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* anInstance = pTable->FindParticle(name);
-  if (anInstance ==0)
-  {
-  // create particle
-  //
-  //    Arguments for constructor are as follows
-  //               name             mass          width         charge
-  //             2*spin           parity  C-conjugation
-  //          2*Isospin       2*Isospin3       G-parity
-  //               type    lepton number  baryon number   PDG encoding
-  //             stable         lifetime    decay table
-  //             shortlived      subType    anti_encoding
+  if (anInstance == 0) {
+    // create particle
+    //
+    //    Arguments for constructor are as follows
+    //               name             mass          width         charge
+    //             2*spin           parity  C-conjugation
+    //          2*Isospin       2*Isospin3       G-parity
+    //               type    lepton number  baryon number   PDG encoding
+    //             stable         lifetime    decay table
+    //             shortlived      subType    anti_encoding
 
-  // use constants in CLHEP
-  //  static const double CLHEP::electron_mass_c2 = 0.51099906 * MeV;
+    // use constants in CLHEP
+    //  static const double CLHEP::electron_mass_c2 = 0.51099906 * MeV;
 
-    anInstance = new G4ParticleDefinition(
-                 name,  CLHEP::electron_mass_c2,       0.0*CLHEP::MeV,    -1.*CLHEP::eplus,
-		    1,                 0,             0,
-		    0,                 0,             0,
-	     "lepton",                 1,             0,          11,
-		 true,              -1.0,          NULL,
-             false,                  "e"
-              );
+    anInstance = new G4ParticleDefinition(name,
+                                          CLHEP::electron_mass_c2,
+                                          0.0 * CLHEP::MeV,
+                                          -1. * CLHEP::eplus,
+                                          1,
+                                          0,
+                                          0,
+                                          0,
+                                          0,
+                                          0,
+                                          "lepton",
+                                          1,
+                                          0,
+                                          11,
+                                          true,
+                                          -1.0,
+                                          NULL,
+                                          false,
+                                          "e");
     // Bohr Magnetron
-   G4double muB =  -0.5*CLHEP::eplus*CLHEP::hbar_Planck/(CLHEP::electron_mass_c2/CLHEP::c_squared) ;
+    G4double muB =
+      -0.5 * CLHEP::eplus * CLHEP::hbar_Planck / (CLHEP::electron_mass_c2 / CLHEP::c_squared);
 
-   anInstance->SetPDGMagneticMoment( muB * 2.* 1.0011596521859 );
-
+    anInstance->SetPDGMagneticMoment(muB * 2. * 1.0011596521859);
   }
   theInstance = reinterpret_cast<G4ThermalElectron*>(anInstance);
   return theInstance;
 }
 
-G4ThermalElectron*  G4ThermalElectron::ThermalElectronDefinition()
+G4ThermalElectron* G4ThermalElectron::ThermalElectronDefinition()
 {
   return Definition();
 }
 
-G4ThermalElectron*  G4ThermalElectron::ThermalElectron()
+G4ThermalElectron* G4ThermalElectron::ThermalElectron()
 {
   return Definition();
 }
-
-

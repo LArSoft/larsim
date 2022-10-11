@@ -8,12 +8,10 @@ namespace evwgh {
   class WeightCalc;
   class WeightCalcCreator;
 
-  class WeightCalcFactory
-  {
+  class WeightCalcFactory {
   public:
     static WeightCalc* Create(const std::string& classname);
-    static void Register(const std::string& wghcalcname,
-			 WeightCalcCreator* creator);
+    static void Register(const std::string& wghcalcname, WeightCalcCreator* creator);
 
   private:
     static std::map<std::string, WeightCalcCreator*>& GetTable();

@@ -10,9 +10,9 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -23,8 +23,8 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 // LArSoft includes
-#include "larcoreobj/SummaryData/RunData.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "larsim/EventGenerator/NueAr40CCGenerator.h"
 
 // C++ includes
@@ -34,12 +34,12 @@ namespace evgen {
   /// Module producing electrons and gammas from supernova neutrino
   /// interactions with liquid argon (based on SingleGen)
   class SNNueAr40CCGen : public art::EDProducer {
-    public:
-      explicit SNNueAr40CCGen(fhicl::ParameterSet const& pset);
+  public:
+    explicit SNNueAr40CCGen(fhicl::ParameterSet const& pset);
 
   private:
-      void beginRun(art::Run& run) override;
-      void produce(art::Event& event) override;
+    void beginRun(art::Run& run) override;
+    void produce(art::Event& event) override;
 
     CLHEP::HepRandomEngine& fEngine;
     evgen::NueAr40CCGenerator fGenerator;
@@ -47,14 +47,13 @@ namespace evgen {
 
   //____________________________________________________________________________
   SNNueAr40CCGen::SNNueAr40CCGen(fhicl::ParameterSet const& pset)
-    : EDProducer{pset}
-    // Create a default random engine: obtain the random seed
+    : EDProducer{pset} // Create a default random engine: obtain the random seed
     // freom NuRandomService, unless overriden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
-    , fGenerator{pset.get< fhicl::ParameterSet >("GeneratorAlg")}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fGenerator{pset.get<fhicl::ParameterSet>("GeneratorAlg")}
   {
-    produces< std::vector< simb::MCTruth > >();
-    produces< sumdata::RunData, art::InRun >();
+    produces<std::vector<simb::MCTruth>>();
+    produces<sumdata::RunData, art::InRun>();
   }
 
   //____________________________________________________________________________

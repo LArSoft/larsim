@@ -39,8 +39,7 @@ namespace larg4 {
 
   OpDetReadoutGeometry::~OpDetReadoutGeometry() {}
 
-  void
-  OpDetReadoutGeometry::Construct()
+  void OpDetReadoutGeometry::Construct()
   {
     mf::LogInfo("OpDetReadoutGeometry")
       << "constructing parallel world, looking for " << fOpDetSensitiveName;
@@ -168,12 +167,11 @@ namespace larg4 {
     }
   }
 
-  void
-  OpDetReadoutGeometry::FindVolumes(G4VPhysicalVolume* PhysicalVolume,
-                                    G4String OpDetName,
-                                    std::vector<G4Transform3D> TransformSoFar,
-                                    std::vector<G4LogicalVolume*>& OpDetVolumes,
-                                    std::vector<G4Transform3D>& OpDetTransformations)
+  void OpDetReadoutGeometry::FindVolumes(G4VPhysicalVolume* PhysicalVolume,
+                                         G4String OpDetName,
+                                         std::vector<G4Transform3D> TransformSoFar,
+                                         std::vector<G4LogicalVolume*>& OpDetVolumes,
+                                         std::vector<G4Transform3D>& OpDetTransformations)
   {
 
     // Add the next layer of transformation to the vector

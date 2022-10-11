@@ -1,22 +1,15 @@
 #include "WeightManager.h"
 
-
 namespace evwgh {
 
-  WeightManager::WeightManager(const std::string name)
-    : _name(name)
-  {
-    _configured = false;
-  }
+  WeightManager::WeightManager(const std::string name) : _name(name) { _configured = false; }
 
-  const std::string& WeightManager::Name() const
-  { return _name; }
-
+  const std::string& WeightManager::Name() const { return _name; }
 
   //
   // CORE FUNCTION
   //
-  MCEventWeight WeightManager::Run(art::Event & e, const int inu)
+  MCEventWeight WeightManager::Run(art::Event& e, const int inu)
   {
 
     if (!_configured)
@@ -26,19 +19,18 @@ namespace evwgh {
     // Loop over all functions ang calculate weights
     //
     MCEventWeight mcwgh;
-    for (auto it = fWeightCalcMap.begin() ;it != fWeightCalcMap.end(); it++) {
+    for (auto it = fWeightCalcMap.begin(); it != fWeightCalcMap.end(); it++) {
 
-      auto const & weights = it->second->GetWeight(e);
+      auto const& weights = it->second->GetWeight(e);
 
-      if(weights.size() == 0){
+      if (weights.size() == 0) {
         std::vector<double> empty;
-        std::pair<std::string, std::vector <double> > p("empty",empty);
+        std::pair<std::string, std::vector<double>> p("empty", empty);
         mcwgh.fWeight.insert(p);
       }
-      else{
-        std::pair<std::string, std::vector<double> >
-          p(it->first+"_"+it->second->fWeightCalcType,
-            weights[inu]);
+      else {
+        std::pair<std::string, std::vector<double>> p(it->first + "_" + it->second->fWeightCalcType,
+                                                      weights[inu]);
         mcwgh.fWeight.insert(p);
       }
     }
@@ -46,11 +38,6 @@ namespace evwgh {
     return mcwgh;
   }
 
-
-
-  void WeightManager::PrintConfig() {
-
-    return;
-  }
+  void WeightManager::PrintConfig() { return; }
 
 }

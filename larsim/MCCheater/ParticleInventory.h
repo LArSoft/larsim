@@ -160,120 +160,137 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
-namespace simb { class MCParticle; }
-#include "nusimdata/SimulationBase/MCTruth.h"
+namespace simb {
+  class MCParticle;
+}
 #include "nug4/ParticleNavigation/ParticleList.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
-namespace cheat{
-  class ParticleInventory
-  {
-    public:
-      struct ParticleInventoryConfig{
-        fhicl::Atom<art::InputTag> G4ModuleLabel{
-          fhicl::Name("G4ModuleLabel"),
-            fhicl::Comment("The label of the LArG4 module used to produce the art file we will be examining"),
-            "largeant"};
-        fhicl::Atom<std::string> EveIdCalculator{
-          fhicl::Name("EveIdCalculator"),
-            fhicl::Comment("For selecting which EveID caclulator to use at initialization."),
-            "EmEveIdCalculator"};
-        fhicl::Atom<bool> OverrideRealData{
-          fhicl::Name("OverrideRealData"),
-            fhicl::Comment("Option when overlaying simulation on real data, to tell the backtracker to continue even if event looks like data."),
-            false};
-      };
+namespace cheat {
+  class ParticleInventory {
+  public:
+    struct ParticleInventoryConfig {
+      fhicl::Atom<art::InputTag> G4ModuleLabel{
+        fhicl::Name("G4ModuleLabel"),
+        fhicl::Comment(
+          "The label of the LArG4 module used to produce the art file we will be examining"),
+        "largeant"};
+      fhicl::Atom<std::string> EveIdCalculator{
+        fhicl::Name("EveIdCalculator"),
+        fhicl::Comment("For selecting which EveID caclulator to use at initialization."),
+        "EmEveIdCalculator"};
+      fhicl::Atom<bool> OverrideRealData{
+        fhicl::Name("OverrideRealData"),
+        fhicl::Comment("Option when overlaying simulation on real data, to tell the backtracker to "
+                       "continue even if event looks like data."),
+        false};
+    };
 
-      //using provider_type = ParticleInventory;
-      //cheat::ParticleInventory const* provider() const
-      //{ return static_cast<cheat::ParticleInventory const*>(this); }
+    //using provider_type = ParticleInventory;
+    //cheat::ParticleInventory const* provider() const
+    //{ return static_cast<cheat::ParticleInventory const*>(this); }
 
-      ///////////Constructor///////////////
-      ParticleInventory(const ParticleInventoryConfig& config );
-      ParticleInventory(const fhicl::ParameterSet& pSet );
-      ParticleInventory(ParticleInventory const&) = delete;
+    ///////////Constructor///////////////
+    ParticleInventory(const ParticleInventoryConfig& config);
+    ParticleInventory(const fhicl::ParameterSet& pSet);
+    ParticleInventory(ParticleInventory const&) = delete;
 
-      template<typename Evt> //Template must be decalred and defined outside of the .cpp file.
-        void PrepEvent        ( const Evt& evt );
+    template <typename Evt> //Template must be decalred and defined outside of the .cpp file.
+    void PrepEvent(const Evt& evt);
 
-      bool ParticleListReady()     const { return !( fParticleList.empty() ); }
-      bool MCTruthListReady()      const { return !( (fMCTObj.fMCTruthList).empty()  ); }
-      bool TrackIdToMCTruthReady() const { return !(fMCTObj.fTrackIdToMCTruthIndex.empty());}
+    bool ParticleListReady() const { return !(fParticleList.empty()); }
+    bool MCTruthListReady() const { return !((fMCTObj.fMCTruthList).empty()); }
+    bool TrackIdToMCTruthReady() const { return !(fMCTObj.fTrackIdToMCTruthIndex.empty()); }
 
-      template<typename Evt>
-        void PrepParticleList         (const Evt& evt ) const;
-      template<typename Evt>
-        void PrepTrackIdToMCTruthIndex(const Evt& evt ) const;
-      template<typename Evt>
-        void PrepMCTruthList          (const Evt& evt ) const;
-      template<typename Evt>
-        void PrepMCTruthListAndTrackIdToMCTruthIndex(const Evt& evt ) const ;
-      template<typename Evt>
-        bool CanRun(const Evt& evt) const;
+    template <typename Evt>
+    void PrepParticleList(const Evt& evt) const;
+    template <typename Evt>
+    void PrepTrackIdToMCTruthIndex(const Evt& evt) const;
+    template <typename Evt>
+    void PrepMCTruthList(const Evt& evt) const;
+    template <typename Evt>
+    void PrepMCTruthListAndTrackIdToMCTruthIndex(const Evt& evt) const;
+    template <typename Evt>
+    bool CanRun(const Evt& evt) const;
 
-      const sim::ParticleList& ParticleList() const { return fParticleList; }
-      void SetEveIdCalculator(sim::EveIdCalculator *ec) { fParticleList.AdoptEveIdCalculator(ec); }
+    const sim::ParticleList& ParticleList() const { return fParticleList; }
+    void SetEveIdCalculator(sim::EveIdCalculator* ec) { fParticleList.AdoptEveIdCalculator(ec); }
 
-      const std::vector< art::Ptr<simb::MCTruth> >& MCTruthList() const { return fMCTObj.fMCTruthList;}
+    const std::vector<art::Ptr<simb::MCTruth>>& MCTruthList() const { return fMCTObj.fMCTruthList; }
 
-      const std::map< int,  int >& TrackIdToMCTruthIndex() const {return fMCTObj.fTrackIdToMCTruthIndex;}
+    const std::map<int, int>& TrackIdToMCTruthIndex() const
+    {
+      return fMCTObj.fTrackIdToMCTruthIndex;
+    }
 
-      void ClearEvent();
+    void ClearEvent();
 
-      const simb::MCParticle* TrackIdToParticle_P(int const& id) const;
-      simb::MCParticle        TrackIdToParticle(int const& id) const
-      { return *(this->TrackIdToParticle_P(id)); }//Users are encouraged to use TrackIdToParticleP
+    const simb::MCParticle* TrackIdToParticle_P(int const& id) const;
+    simb::MCParticle TrackIdToParticle(int const& id) const
+    {
+      return *(this->TrackIdToParticle_P(id));
+    } //Users are encouraged to use TrackIdToParticleP
 
-      const simb::MCParticle* TrackIdToMotherParticle_P(int const& id) const;
-      simb::MCParticle        TrackIdToMotherParticle(int const& id) const//Users are encouraged to use TrackIdToMotherParticleP
-      { return *(this->TrackIdToMotherParticle_P(id)); }
+    const simb::MCParticle* TrackIdToMotherParticle_P(int const& id) const;
+    simb::MCParticle TrackIdToMotherParticle(
+      int const& id) const //Users are encouraged to use TrackIdToMotherParticleP
+    {
+      return *(this->TrackIdToMotherParticle_P(id));
+    }
 
-      const art::Ptr<simb::MCTruth>& TrackIdToMCTruth_P(int const& id) const;
-      simb::MCTruth                  TrackIdToMCTruth (int const& id) const//Users are encouraged to use TrackIdToMCTruthP
-      { return *(this->TrackIdToMCTruth_P(id)); }
+    const art::Ptr<simb::MCTruth>& TrackIdToMCTruth_P(int const& id) const;
+    simb::MCTruth TrackIdToMCTruth(
+      int const& id) const //Users are encouraged to use TrackIdToMCTruthP
+    {
+      return *(this->TrackIdToMCTruth_P(id));
+    }
 
-      //New Functions go here.
-      //TrackIdToEveId.
-      int TrackIdToEveTrackId(const int& tid) const { return fParticleList.EveId(tid);}
+    //New Functions go here.
+    //TrackIdToEveId.
+    int TrackIdToEveTrackId(const int& tid) const { return fParticleList.EveId(tid); }
 
-      const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(const simb::MCParticle* p) const; //Users are encouraged to use ParticleToMCTruthP
-      simb::MCTruth                  ParticleToMCTruth (const simb::MCParticle* p) const
-      { return *(this->ParticleToMCTruth_P(p)); }
+    const art::Ptr<simb::MCTruth>& ParticleToMCTruth_P(
+      const simb::MCParticle* p) const; //Users are encouraged to use ParticleToMCTruthP
+    simb::MCTruth ParticleToMCTruth(const simb::MCParticle* p) const
+    {
+      return *(this->ParticleToMCTruth_P(p));
+    }
 
-      const std::vector< art::Ptr<simb::MCTruth> >& MCTruthVector_Ps() const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
+    const std::vector<art::Ptr<simb::MCTruth>>& MCTruthVector_Ps()
+      const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
 
-      std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct) const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
+    std::vector<const simb::MCParticle*> MCTruthToParticles_Ps(art::Ptr<simb::MCTruth> const& mct)
+      const; //I don't want this to be able to return a vector of copies. Too much chance of significant memory usage.
 
-      std::set<int> GetSetOfTrackIds() const;
-      std::set<int> GetSetOfEveIds() const;
+    std::set<int> GetSetOfTrackIds() const;
+    std::set<int> GetSetOfEveIds() const;
 
+  private:
+    mutable sim::ParticleList fParticleList;
+    struct MCTObjects {
+      std::vector<art::Ptr<simb::MCTruth>>
+        fMCTruthList; //there is some optimization that can be done here.
+      std::map<int, int> fTrackIdToMCTruthIndex;
+    };
+    mutable MCTObjects fMCTObj;
+    //For fhicl validation, makea config struct
+    art::InputTag fG4ModuleLabel;
+    //std::string fEveIdCalculatorName;
+    //enum EveIdCalculator
+    //{
+    //  EmEveIdCalculator,
+    //  EveIdCalculator
+    //}
+    std::string fEveIdCalculator;
+    bool fOverrideRealData;
 
-    private:
-      mutable sim::ParticleList                       fParticleList;
-      struct MCTObjects{
-        std::vector< art::Ptr<simb::MCTruth> >  fMCTruthList;   //there is some optimization that can be done here.
-        std::map< int,  int > fTrackIdToMCTruthIndex;
-      };
-      mutable MCTObjects fMCTObj;
-      //For fhicl validation, makea config struct
-      art::InputTag fG4ModuleLabel;
-      //std::string fEveIdCalculatorName;
-      //enum EveIdCalculator
-      //{
-      //  EmEveIdCalculator,
-      //  EveIdCalculator
-      //}
-      std::string fEveIdCalculator;
-      bool fOverrideRealData;
+  }; //class ParticleInventory
 
-
-
-
-
-  };//class ParticleInventory
-
-}//namespace
+} //namespace
 
 #include "ParticleInventory.tcc"
 

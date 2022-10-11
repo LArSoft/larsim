@@ -2,7 +2,9 @@
 #define MCSHOWERRECOPART_H
 
 // ART includes
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 #include "cetlib_except/exception.h"
 
 // LArSoft
@@ -14,8 +16,7 @@ namespace sim {
 #include <map>
 #include <vector>
 
-namespace sim
-{
+namespace sim {
 
   class MCShowerRecoPart {
 
@@ -24,7 +25,6 @@ namespace sim
     static const int kINVALID_INT;
 
   public:
-
     /// Default constructor with fhicl parameters
     explicit MCShowerRecoPart(fhicl::ParameterSet const& pset);
     //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
@@ -38,7 +38,8 @@ namespace sim
      */
     const std::vector<unsigned int>& ShowerDaughters(const unsigned int shower_id) const
     {
-      if(shower_id >= _shower_daughters.size()) throw cet::exception(__FUNCTION__) << "Invalid shower index!";
+      if (shower_id >= _shower_daughters.size())
+        throw cet::exception(__FUNCTION__) << "Invalid shower index!";
       return _shower_daughters.at(shower_id);
     }
 
@@ -47,9 +48,10 @@ namespace sim
     */
     const std::vector<unsigned int> ShowerMothers() const
     {
-      std::vector<unsigned int> mothers(_shower_index.size(),0);
-      for(auto mother_iter = _shower_index.begin(); mother_iter!=_shower_index.end(); ++mother_iter)
-	mothers.at((*mother_iter).second) = (*mother_iter).first;
+      std::vector<unsigned int> mothers(_shower_index.size(), 0);
+      for (auto mother_iter = _shower_index.begin(); mother_iter != _shower_index.end();
+           ++mother_iter)
+        mothers.at((*mother_iter).second) = (*mother_iter).first;
       return mothers;
     }
 
@@ -61,12 +63,11 @@ namespace sim
     */
     int ShowerIndex(const unsigned int part_index) const
     {
-      if(_shower_id.size() <= part_index) return kINVALID_INT;
+      if (_shower_id.size() <= part_index) return kINVALID_INT;
       return _shower_id.at(part_index);
     }
 
   protected:
-
     /// lots of stdout stream
     bool _debug_mode;
 
@@ -80,7 +81,7 @@ namespace sim
     std::map<unsigned int, unsigned int> _shower_index;
 
     /// Shower time-ordered daughters
-    std::vector<std::vector<unsigned int> > _shower_daughters;
+    std::vector<std::vector<unsigned int>> _shower_daughters;
 
   }; // class MCShowerRecoPart
 

@@ -79,8 +79,8 @@ namespace larg4 {
   //Action to take after making each step of an optical photon - described in file header.
 
   // PostStepDoIt
-  G4VParticleChange*
-  OpBoundaryProcessSimple::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+  G4VParticleChange* OpBoundaryProcessSimple::PostStepDoIt(const G4Track& aTrack,
+                                                           const G4Step& aStep)
   {
 
     // Note - these have to be loaded here, since this object
@@ -231,8 +231,9 @@ namespace larg4 {
   // Compulsary method for G4DiscreteProcesses.  Serves no actual function here.
 
   // GetMeanFreePath
-  G4double
-  OpBoundaryProcessSimple::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition)
+  G4double OpBoundaryProcessSimple::GetMeanFreePath(const G4Track&,
+                                                    G4double,
+                                                    G4ForceCondition* condition)
   {
     *condition = Forced;
 

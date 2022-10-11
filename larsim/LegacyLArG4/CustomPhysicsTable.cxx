@@ -27,8 +27,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------------
-  std::vector<std::string>
-  CustomPhysicsTable::GetAvailablePhysicsList()
+  std::vector<std::string> CustomPhysicsTable::GetAvailablePhysicsList()
   {
     std::vector<std::string> ReturnVector;
     for (std::map<std::string, CustomPhysicsFactoryBase*>::const_iterator i =
@@ -41,8 +40,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------------
-  bool
-  CustomPhysicsTable::IsPhysicsAvailable(std::string const& PhysicsName)
+  bool CustomPhysicsTable::IsPhysicsAvailable(std::string const& PhysicsName)
   {
     if (!TheCustomPhysicsTable->theTable[PhysicsName])
       return false;
@@ -51,8 +49,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------------
-  G4VPhysicsConstructor*
-  CustomPhysicsTable::GetPhysicsConstructor(std::string const& PhysicsName)
+  G4VPhysicsConstructor* CustomPhysicsTable::GetPhysicsConstructor(std::string const& PhysicsName)
   {
     if (IsPhysicsAvailable(PhysicsName)) {
       return TheCustomPhysicsTable->theTable[PhysicsName]->Build();
@@ -62,8 +59,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------------
-  void
-  CustomPhysicsTable::AddPhysics(CustomPhysicsFactoryBase* Factory)
+  void CustomPhysicsTable::AddPhysics(CustomPhysicsFactoryBase* Factory)
   {
 
     if (IsPhysicsAvailable(Factory->GetName()))

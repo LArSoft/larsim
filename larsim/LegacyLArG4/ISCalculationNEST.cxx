@@ -28,8 +28,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  void
-  ISCalculationNEST::Reset()
+  void ISCalculationNEST::Reset()
   {
     fEnergyDeposit = 0.;
     fNumIonElectrons = 0.;
@@ -38,8 +37,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  void
-  ISCalculationNEST::CalculateIonizationAndScintillation(const G4Step* step)
+  void ISCalculationNEST::CalculateIonizationAndScintillation(const G4Step* step)
   {
     // get a const representation of the track for this step
     const G4Track track(*(step->GetTrack()));

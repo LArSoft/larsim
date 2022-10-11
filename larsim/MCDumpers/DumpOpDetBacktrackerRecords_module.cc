@@ -6,7 +6,6 @@
  *
  */
 
-
 // lardataobj libraries
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 
@@ -20,7 +19,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-
 namespace sim {
   class DumpOpDetBacktrackerRecords;
 } // namespace sim
@@ -33,25 +31,22 @@ namespace {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
-    fhicl::Atom<art::InputTag> InputOpDetBacktrackerRecord {
+    fhicl::Atom<art::InputTag> InputOpDetBacktrackerRecord{
       Name("InputOpDetBacktrackerRecord"),
-      Comment("data product with the OpDetBacktrackerRecord to be dumped")
-      };
+      Comment("data product with the OpDetBacktrackerRecord to be dumped")};
 
-    fhicl::Atom<std::string> OutputCategory {
+    fhicl::Atom<std::string> OutputCategory{
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpOpDetBacktrackerRecords" /* default value */
-      };
+    };
 
   }; // struct Config
 
-
 } // local namespace
 
-
-class sim::DumpOpDetBacktrackerRecords: public art::EDAnalyzer {
-    public:
+class sim::DumpOpDetBacktrackerRecords : public art::EDAnalyzer {
+public:
   // type to enable module parameters description by art
   using Parameters = art::EDAnalyzer::Table<Config>;
 
@@ -60,14 +55,12 @@ class sim::DumpOpDetBacktrackerRecords: public art::EDAnalyzer {
 
   // Plugins should not be copied or assigned.
   DumpOpDetBacktrackerRecords(DumpOpDetBacktrackerRecords const&) = delete;
-  DumpOpDetBacktrackerRecords(DumpOpDetBacktrackerRecords &&) = delete;
-  DumpOpDetBacktrackerRecords& operator = (DumpOpDetBacktrackerRecords const&) = delete;
-  DumpOpDetBacktrackerRecords& operator = (DumpOpDetBacktrackerRecords &&) = delete;
-
+  DumpOpDetBacktrackerRecords(DumpOpDetBacktrackerRecords&&) = delete;
+  DumpOpDetBacktrackerRecords& operator=(DumpOpDetBacktrackerRecords const&) = delete;
+  DumpOpDetBacktrackerRecords& operator=(DumpOpDetBacktrackerRecords&&) = delete;
 
   // Operates on the event
   void analyze(art::Event const& event) override;
-
 
   /**
    * @brief Dumps the content of the specified OpDetBacktrackerRecord in the output stream
@@ -83,19 +76,16 @@ class sim::DumpOpDetBacktrackerRecords: public art::EDAnalyzer {
    * The output starts on the current line, and the last line is NOT broken.
    */
   template <typename Stream>
-  void DumpOpDetBacktrackerRecord(
-    Stream&& out, sim::OpDetBacktrackerRecord const& simchannel,
-    std::string indent = "", bool bIndentFirst = true
-    ) const;
+  void DumpOpDetBacktrackerRecord(Stream&& out,
+                                  sim::OpDetBacktrackerRecord const& simchannel,
+                                  std::string indent = "",
+                                  bool bIndentFirst = true) const;
 
-
-    private:
-
+private:
   art::InputTag fInputChannels; ///< name of OpDetBacktrackerRecord's data product
-  std::string fOutputCategory; ///< name of the stream for output
+  std::string fOutputCategory;  ///< name of the stream for output
 
 }; // class sim::DumpOpDetBacktrackerRecords
-
 
 //------------------------------------------------------------------------------
 //---  module implementation
@@ -107,31 +97,33 @@ sim::DumpOpDetBacktrackerRecords::DumpOpDetBacktrackerRecords(Parameters const& 
   , fOutputCategory(config().OutputCategory())
 {}
 
-
 //------------------------------------------------------------------------------
 template <typename Stream>
 void sim::DumpOpDetBacktrackerRecords::DumpOpDetBacktrackerRecord(
-  Stream&& out, sim::OpDetBacktrackerRecord const& channel,
-  std::string indent /* = "" */, bool bIndentFirst /* = true */
-) const {
+  Stream&& out,
+  sim::OpDetBacktrackerRecord const& channel,
+  std::string indent /* = "" */,
+  bool bIndentFirst /* = true */
+  ) const
+{
   if (bIndentFirst) out << indent;
   channel.Dump(out, indent);
 } // sim::DumpOpDetBacktrackerRecords::DumpOpDetBacktrackerRecords()
 
-
 //------------------------------------------------------------------------------
-void sim::DumpOpDetBacktrackerRecords::analyze(art::Event const& event) {
+void sim::DumpOpDetBacktrackerRecords::analyze(art::Event const& event)
+{
 
   // get the particles from the event
-  auto const& OpDetBacktrackerRecord
-    = *(event.getValidHandle<std::vector<sim::OpDetBacktrackerRecord>>(fInputChannels));
+  auto const& OpDetBacktrackerRecord =
+    *(event.getValidHandle<std::vector<sim::OpDetBacktrackerRecord>>(fInputChannels));
 
-  mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
-    << " : data product '" << fInputChannels.encode() << "' contains "
+  mf::LogVerbatim(fOutputCategory)
+    << "Event " << event.id() << " : data product '" << fInputChannels.encode() << "' contains "
     << OpDetBacktrackerRecord.size() << " OpDetBacktrackerRecord";
 
   unsigned int iOpDetBacktrackerRecord = 0;
-  for (sim::OpDetBacktrackerRecord const& simChannel: OpDetBacktrackerRecord) {
+  for (sim::OpDetBacktrackerRecord const& simChannel : OpDetBacktrackerRecord) {
 
     // a bit of a header
     mf::LogVerbatim log(fOutputCategory);
@@ -142,7 +134,6 @@ void sim::DumpOpDetBacktrackerRecords::analyze(art::Event const& event) {
   mf::LogVerbatim(fOutputCategory) << "\n";
 
 } // sim::DumpOpDetBacktrackerRecords::analyze()
-
 
 //------------------------------------------------------------------------------
 DEFINE_ART_MODULE(sim::DumpOpDetBacktrackerRecords)

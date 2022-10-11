@@ -55,9 +55,8 @@ namespace detsim {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  double
-  ISCalculationSeparate::CalculateIonization(detinfo::DetectorPropertiesData const& detProp,
-                                             sim::SimEnergyDeposit const& edep) const
+  double ISCalculationSeparate::CalculateIonization(detinfo::DetectorPropertiesData const& detProp,
+                                                    sim::SimEnergyDeposit const& edep) const
   {
     float e = edep.Energy();
     float ds = edep.StepLength();
@@ -94,8 +93,7 @@ namespace detsim {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep) const
+  double ISCalculationSeparate::CalculateScintillation(sim::SimEnergyDeposit const& edep) const
   {
     float const e = edep.Energy();
     int const pdg = edep.PdgCode();
@@ -126,25 +124,23 @@ namespace detsim {
     return scint_yield_factor * scintYield * e;
   }
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::Data
-  ISCalculationSeparate::CalculateIonizationAndScintillation(
+  ISCalculationSeparate::Data ISCalculationSeparate::CalculateIonizationAndScintillation(
     detinfo::DetectorPropertiesData const& detProp,
     sim::SimEnergyDeposit const& edep) const
   {
     return {edep.Energy(), CalculateIonization(detProp, edep), CalculateScintillation(edep)};
   }
 
-  double
-  ISCalculationSeparate::EFieldAtStep(double const efield, sim::SimEnergyDeposit const& edep) const
+  double ISCalculationSeparate::EFieldAtStep(double const efield,
+                                             sim::SimEnergyDeposit const& edep) const
   {
     return EFieldAtStep(efield, edep.MidPointX(), edep.MidPointY(), edep.MidPointZ());
   }
 
-  double
-  ISCalculationSeparate::EFieldAtStep(double const efield,
-                                      float const x,
-                                      float const y,
-                                      float const z) const
+  double ISCalculationSeparate::EFieldAtStep(double const efield,
+                                             float const x,
+                                             float const y,
+                                             float const z) const
   {
     if (not fSCE->EnableSimEfieldSCE()) { return efield; }
 

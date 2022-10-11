@@ -2,7 +2,9 @@
 #define MCSHOWERRECOALG_H
 
 // ART includes
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 // LArSoft
 #include "MCShowerRecoPart.h"
@@ -17,22 +19,19 @@ namespace sim {
 #include <utility>
 #include <vector>
 
-namespace sim
-{
+namespace sim {
 
   class MCShowerRecoAlg {
 
   public:
-
     /// Default constructor with fhicl parameters
     explicit MCShowerRecoAlg(fhicl::ParameterSet const& pset);
 
-    std::unique_ptr<std::vector<sim::MCShower>> Reconstruct(MCRecoPart& part_v,MCRecoEdep& edep_v);
+    std::unique_ptr<std::vector<sim::MCShower>> Reconstruct(MCRecoPart& part_v, MCRecoEdep& edep_v);
 
   protected:
-
     MCShowerRecoPart fPartAlg;
-    bool             fDebugMode;
+    bool fDebugMode;
     double fMinShowerEnergy;
     unsigned int fMinNumDaughters;
 

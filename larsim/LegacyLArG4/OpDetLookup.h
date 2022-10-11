@@ -41,28 +41,25 @@
 class G4VPhysicalVolume;
 
 namespace larg4 {
-  class OpDetLookup
-    {
-    public:
-      ~OpDetLookup(){}
-      static OpDetLookup * Instance();
+  class OpDetLookup {
+  public:
+    ~OpDetLookup() {}
+    static OpDetLookup* Instance();
 
-      void AddPhysicalVolume(G4VPhysicalVolume *);
-      int GetOpDet(G4VPhysicalVolume *);
-      int GetOpDet(std::string);
-      int GetN();
-      int FindClosestOpDet(G4VPhysicalVolume* vol,  double& Distance);
+    void AddPhysicalVolume(G4VPhysicalVolume*);
+    int GetOpDet(G4VPhysicalVolume*);
+    int GetOpDet(std::string);
+    int GetN();
+    int FindClosestOpDet(G4VPhysicalVolume* vol, double& Distance);
 
-    protected:
-      OpDetLookup();
+  protected:
+    OpDetLookup();
 
-    private:
-      std::map<std::string, int> fTheOpDetMap;
-      int fTheTopOpDet;
-
-    };
+  private:
+    std::map<std::string, int> fTheOpDetMap;
+    int fTheTopOpDet;
+  };
 
 }
-
 
 #endif

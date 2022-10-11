@@ -8,79 +8,79 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-namespace trigger{
+namespace trigger {
 
   //****************************************************************************
-  TriggerAlgoBase::TriggerAlgoBase(fhicl::ParameterSet const& pset) {
-  //****************************************************************************
+  TriggerAlgoBase::TriggerAlgoBase(fhicl::ParameterSet const& pset)
+  {
+    //****************************************************************************
 
     ClearTriggerInfo();
 
     Config(pset);
-
   }
 
   //****************************************************************************
-  void TriggerAlgoBase::Config(fhicl::ParameterSet const& pset) {
-  //****************************************************************************
+  void TriggerAlgoBase::Config(fhicl::ParameterSet const& pset)
+  {
+    //****************************************************************************
 
-    _preceeding_slices = pset.get< int >("PreceedingWindow");
+    _preceeding_slices = pset.get<int>("PreceedingWindow");
 
-    _proceeding_slices = pset.get< int >("ProceedingWindow");
+    _proceeding_slices = pset.get<int>("ProceedingWindow");
 
-    _deadtime          = pset.get< int >("DeadTime");
-
+    _deadtime = pset.get<int>("DeadTime");
   }
 
-
   //****************************************************************************
-  void TriggerAlgoBase::SimTrigger() {
-  //****************************************************************************
+  void TriggerAlgoBase::SimTrigger()
+  {
+    //****************************************************************************
 
-    if(_sim_done) return;
+    if (_sim_done) return;
 
     _time_windows.clear();
 
-    trigdata::TrigTimeSlice_t last_timestamp=0;
+    trigdata::TrigTimeSlice_t last_timestamp = 0;
 
-    trigdata::TrigTimeSlice_t window_begin=0;
+    trigdata::TrigTimeSlice_t window_begin = 0;
 
-    trigdata::TrigTimeSlice_t window_end=0;
+    trigdata::TrigTimeSlice_t window_end = 0;
 
-    for(std::set<trigdata::TrigTimeSlice_t>::const_iterator iter(_timestamps.begin());
-	iter != _timestamps.end();
-	++iter){
+    for (std::set<trigdata::TrigTimeSlice_t>::const_iterator iter(_timestamps.begin());
+         iter != _timestamps.end();
+         ++iter) {
 
-      if(!(last_timestamp) || (*iter) > (last_timestamp + _deadtime)) {
+      if (!(last_timestamp) || (*iter) > (last_timestamp + _deadtime)) {
 
-	window_begin = ((*iter) > _preceeding_slices) ? ((*iter) - _preceeding_slices) : 0;
+        window_begin = ((*iter) > _preceeding_slices) ? ((*iter) - _preceeding_slices) : 0;
 
-	window_end   = (*iter) + _proceeding_slices;
+        window_end = (*iter) + _proceeding_slices;
 
-	_time_windows.insert(std::make_pair(window_end,window_begin));
+        _time_windows.insert(std::make_pair(window_end, window_begin));
 
-	last_timestamp=(*iter);
-
+        last_timestamp = (*iter);
       }
-
     }
 
     _sim_done = true;
-
   }
 
   //****************************************************************************
-  bool TriggerAlgoBase::IsTriggered(trigdata::TrigTimeSlice_t time) const {
-  //****************************************************************************
+  bool TriggerAlgoBase::IsTriggered(trigdata::TrigTimeSlice_t time) const
+  {
+    //****************************************************************************
 
-    if(!_time_windows.size()) return false;
+    if (!_time_windows.size()) return false;
 
-    std::map<trigdata::TrigTimeSlice_t,trigdata::TrigTimeSlice_t>::const_iterator start_time(_time_windows.lower_bound(time));
+    std::map<trigdata::TrigTimeSlice_t, trigdata::TrigTimeSlice_t>::const_iterator start_time(
+      _time_windows.lower_bound(time));
 
-    if(start_time==_time_windows.end()) return false;
+    if (start_time == _time_windows.end())
+      return false;
 
-    else return ((*start_time).second < time);
-
+    else
+      return ((*start_time).second < time);
   }
 
 } // namespace trigger

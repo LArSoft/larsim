@@ -21,11 +21,7 @@ namespace larg4 {
     }
     virtual ~CustomPhysicsFactoryBase() = default;
 
-    std::string const&
-    GetName() const noexcept
-    {
-      return fName;
-    }
+    std::string const& GetName() const noexcept { return fName; }
 
     virtual G4VPhysicsConstructor* Build() const = 0;
 
@@ -38,11 +34,7 @@ namespace larg4 {
   public:
     explicit CustomPhysicsFactory(std::string const& name);
 
-    G4VPhysicsConstructor*
-    Build() const
-    {
-      return new T{};
-    }
+    G4VPhysicsConstructor* Build() const { return new T{}; }
   };
 
   template <class T>

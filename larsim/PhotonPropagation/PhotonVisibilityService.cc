@@ -32,13 +32,13 @@
 #include "larsim/Simulation/PhotonVoxels.h"
 
 // framework libraries
-#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Utilities/Exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "cetlib/search_path.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // ROOT libraries
 #include "TF1.h"
@@ -144,8 +144,7 @@ namespace phot {
   }
 
   //--------------------------------------------------------------------
-  void
-  PhotonVisibilityService::LoadLibrary() const
+  void PhotonVisibilityService::LoadLibrary() const
   {
     // Don't do anything if the library has already been loaded.
 
@@ -235,8 +234,7 @@ namespace phot {
   }
 
   //--------------------------------------------------------------------
-  void
-  PhotonVisibilityService::StoreLibrary()
+  void PhotonVisibilityService::StoreLibrary()
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -253,8 +251,7 @@ namespace phot {
   }
 
   //--------------------------------------------------------------------
-  void
-  PhotonVisibilityService::reconfigure(fhicl::ParameterSet const& p)
+  void PhotonVisibilityService::reconfigure(fhicl::ParameterSet const& p)
   {
 
     art::ServiceHandle<geo::Geometry const> geom;
@@ -351,12 +348,12 @@ namespace phot {
       fIsFlatPDCorr = p.get<bool>("FlatPDCorr", false);
       fIsDomePDCorr = p.get<bool>("DomePDCorr", false);
       fdelta_angulo_vuv = p.get<double>("delta_angulo_vuv");
-      if(fIsFlatPDCorr) {
+      if (fIsFlatPDCorr) {
         fGHvuvpars_flat = p.get<std::vector<std::vector<double>>>("GH_PARS_flat");
         fborder_corr_angulo_flat = p.get<std::vector<double>>("GH_border_angulo_flat");
         fborder_corr_flat = p.get<std::vector<std::vector<double>>>("GH_border_flat");
       }
-      if(fIsDomePDCorr) {
+      if (fIsDomePDCorr) {
         fGHvuvpars_dome = p.get<std::vector<std::vector<double>>>("GH_PARS_dome");
         fborder_corr_angulo_dome = p.get<std::vector<double>>("GH_border_angulo_dome");
         fborder_corr_dome = p.get<std::vector<std::vector<double>>>("GH_border_dome");
@@ -364,15 +361,17 @@ namespace phot {
 
       if (fStoreReflected) {
         fdelta_angulo_vis = p.get<double>("delta_angulo_vis");
-        if(fIsFlatPDCorr) {
+        if (fIsFlatPDCorr) {
           fvis_distances_x_flat = p.get<std::vector<double>>("VIS_distances_x_flat");
           fvis_distances_r_flat = p.get<std::vector<double>>("VIS_distances_r_flat");
-          fvispars_flat = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
+          fvispars_flat =
+            p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_flat");
         }
-        if(fIsDomePDCorr) {
+        if (fIsDomePDCorr) {
           fvis_distances_x_dome = p.get<std::vector<double>>("VIS_distances_x_dome");
           fvis_distances_r_dome = p.get<std::vector<double>>("VIS_distances_r_dome");
-          fvispars_dome = p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
+          fvispars_dome =
+            p.get<std::vector<std::vector<std::vector<double>>>>("VIS_correction_dome");
         }
       }
       // optical detector information
@@ -385,8 +384,7 @@ namespace phot {
   //------------------------------------------------------
 
   // Eventually we will calculate the light quenching factor here
-  double
-  PhotonVisibilityService::GetQuenchingFactor(double /* dQdx */) const
+  double PhotonVisibilityService::GetQuenchingFactor(double /* dQdx */) const
   {
     // for now, no quenching
     return 1.0;
@@ -397,9 +395,8 @@ namespace phot {
   // Get a vector of the relative visibilities of each OpDet
   //  in the event to a point p
 
-  auto
-  PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p, bool wantReflected) const
-    -> MappedCounts_t
+  auto PhotonVisibilityService::doGetAllVisibilities(geo::Point_t const& p,
+                                                     bool wantReflected) const -> MappedCounts_t
   {
     phot::IPhotonLibrary::Counts_t data{};
 
@@ -425,8 +422,7 @@ namespace phot {
   //------------------------------------------------------
 
   // Get distance to optical detector OpDet
-  double
-  PhotonVisibilityService::DistanceToOpDetImpl(geo::Point_t const& p, unsigned int OpDet)
+  double PhotonVisibilityService::DistanceToOpDetImpl(geo::Point_t const& p, unsigned int OpDet)
   {
     art::ServiceHandle<geo::Geometry const> geom;
     return geom->OpDetGeoFromOpDet(OpDet).DistanceToPoint(p);
@@ -435,8 +431,7 @@ namespace phot {
   //------------------------------------------------------
 
   // Get the solid angle reduction factor for planar optical detector OpDet
-  double
-  PhotonVisibilityService::SolidAngleFactorImpl(geo::Point_t const& p, unsigned int OpDet)
+  double PhotonVisibilityService::SolidAngleFactorImpl(geo::Point_t const& p, unsigned int OpDet)
   {
     art::ServiceHandle<geo::Geometry const> geom;
     return geom->OpDetGeoFromOpDet(OpDet).CosThetaFromNormal(p);
@@ -444,10 +439,9 @@ namespace phot {
 
   //------------------------------------------------------
 
-  float
-  PhotonVisibilityService::doGetVisibilityOfOpLib(geo::Point_t const& p,
-                                                  LibraryIndex_t libIndex,
-                                                  bool wantReflected /* = false */) const
+  float PhotonVisibilityService::doGetVisibilityOfOpLib(geo::Point_t const& p,
+                                                        LibraryIndex_t libIndex,
+                                                        bool wantReflected /* = false */) const
   {
     if (!fInterpolate) { return GetLibraryEntry(VoxelAt(p), libIndex, wantReflected); }
 
@@ -466,19 +460,17 @@ namespace phot {
 
   //------------------------------------------------------
 
-  bool
-  PhotonVisibilityService::doHasVisibility(geo::Point_t const& p,
-                                           bool wantReflected /* = false */) const
+  bool PhotonVisibilityService::doHasVisibility(geo::Point_t const& p,
+                                                bool wantReflected /* = false */) const
   {
     return HasLibraryEntries(VoxelAt(p), wantReflected);
   }
 
   //------------------------------------------------------
 
-  float
-  PhotonVisibilityService::doGetVisibility(geo::Point_t const& p,
-                                           unsigned int OpChannel,
-                                           bool wantReflected) const
+  float PhotonVisibilityService::doGetVisibility(geo::Point_t const& p,
+                                                 unsigned int OpChannel,
+                                                 bool wantReflected) const
   {
     // here we quietly confuse op. det. channel (interface) and op. det. (library)
     LibraryIndex_t const libIndex = fMapping->opDetToLibraryIndex(p, OpChannel);
@@ -487,8 +479,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::StoreLightProd(int VoxID, double N)
+  void PhotonVisibilityService::StoreLightProd(int VoxID, double N)
   {
     fCurrentVoxel = VoxID;
     fCurrentValue = N;
@@ -498,8 +489,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::RetrieveLightProd(int& VoxID, double& N) const
+  void PhotonVisibilityService::RetrieveLightProd(int& VoxID, double& N) const
   {
     N = fCurrentValue;
     VoxID = fCurrentVoxel;
@@ -507,8 +497,10 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::SetLibraryEntry(int VoxID, int OpChannel, float N, bool wantReflected)
+  void PhotonVisibilityService::SetLibraryEntry(int VoxID,
+                                                int OpChannel,
+                                                float N,
+                                                bool wantReflected)
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -527,8 +519,9 @@ namespace phot {
 
   //------------------------------------------------------
 
-  phot::IPhotonLibrary::Counts_t
-  PhotonVisibilityService::GetLibraryEntries(int VoxID, bool wantReflected) const
+  phot::IPhotonLibrary::Counts_t PhotonVisibilityService::GetLibraryEntries(
+    int VoxID,
+    bool wantReflected) const
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -540,9 +533,8 @@ namespace phot {
 
   //------------------------------------------------------
 
-  bool
-  PhotonVisibilityService::HasLibraryEntries(int VoxID,
-                                             bool /* wantReflected */ /* = false */) const
+  bool PhotonVisibilityService::HasLibraryEntries(int VoxID,
+                                                  bool /* wantReflected */ /* = false */) const
   {
     if (!fTheLibrary) LoadLibrary();
     return fTheLibrary->isVoxelValid(VoxID);
@@ -550,10 +542,9 @@ namespace phot {
 
   //------------------------------------------------------
 
-  float
-  PhotonVisibilityService::GetLibraryEntry(int VoxID,
-                                           OpDetID_t libOpChannel,
-                                           bool wantReflected) const
+  float PhotonVisibilityService::GetLibraryEntry(int VoxID,
+                                                 OpDetID_t libOpChannel,
+                                                 bool wantReflected) const
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -568,8 +559,7 @@ namespace phot {
   // Get a vector of the refl <tfirst> of each OpDet
   //  in the event to a point p
 
-  auto
-  PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const -> MappedT0s_t
+  auto PhotonVisibilityService::doGetReflT0s(geo::Point_t const& p) const -> MappedT0s_t
   {
     // both the input and the output go through mapping to apply needed symmetries.
     int const VoxID = VoxelAt(p);
@@ -579,8 +569,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  phot::IPhotonLibrary::Counts_t
-  PhotonVisibilityService::GetLibraryReflT0Entries(int VoxID) const
+  phot::IPhotonLibrary::Counts_t PhotonVisibilityService::GetLibraryReflT0Entries(int VoxID) const
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -589,8 +578,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::SetLibraryReflT0Entry(int VoxID, int OpChannel, float T0)
+  void PhotonVisibilityService::SetLibraryReflT0Entry(int VoxID, int OpChannel, float T0)
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -603,8 +591,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  float
-  PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, OpDetID_t libOpChannel) const
+  float PhotonVisibilityService::GetLibraryReflT0Entry(int VoxID, OpDetID_t libOpChannel) const
   {
     if (fTheLibrary == 0) LoadLibrary();
 
@@ -615,16 +602,14 @@ namespace phot {
 
   /////////////****////////////
 
-  auto
-  PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const -> MappedParams_t
+  auto PhotonVisibilityService::doGetTimingPar(geo::Point_t const& p) const -> MappedParams_t
   {
     int const VoxID = VoxelAt(p);
     phot::IPhotonLibrary::Params_t const& params = GetLibraryTimingParEntries(VoxID);
     return fMapping->applyOpDetMapping(p, params);
   }
 
-  auto
-  PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const -> MappedFunctions_t
+  auto PhotonVisibilityService::doGetTimingTF1(geo::Point_t const& p) const -> MappedFunctions_t
   {
     int const VoxID = VoxelAt(p);
     phot::IPhotonLibrary::Functions_t const& functions = GetLibraryTimingTF1Entries(VoxID);
@@ -633,8 +618,8 @@ namespace phot {
 
   //------------------------------------------------------
 
-  phot::IPhotonLibrary::Params_t
-  PhotonVisibilityService::GetLibraryTimingParEntries(int VoxID) const
+  phot::IPhotonLibrary::Params_t PhotonVisibilityService::GetLibraryTimingParEntries(
+    int VoxID) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -644,8 +629,8 @@ namespace phot {
 
   //------------------------------------------------------
 
-  phot::IPhotonLibrary::Functions_t
-  PhotonVisibilityService::GetLibraryTimingTF1Entries(int VoxID) const
+  phot::IPhotonLibrary::Functions_t PhotonVisibilityService::GetLibraryTimingTF1Entries(
+    int VoxID) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -655,11 +640,10 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::SetLibraryTimingParEntry(int VoxID,
-                                                    int OpChannel,
-                                                    float par,
-                                                    size_t parnum)
+  void PhotonVisibilityService::SetLibraryTimingParEntry(int VoxID,
+                                                         int OpChannel,
+                                                         float par,
+                                                         size_t parnum)
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -672,8 +656,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  void
-  PhotonVisibilityService::SetLibraryTimingTF1Entry(int VoxID, int OpChannel, TF1 const& func)
+  void PhotonVisibilityService::SetLibraryTimingTF1Entry(int VoxID, int OpChannel, TF1 const& func)
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -686,10 +669,9 @@ namespace phot {
 
   //------------------------------------------------------
 
-  float
-  PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID,
-                                                    OpDetID_t libOpChannel,
-                                                    size_t npar) const
+  float PhotonVisibilityService::GetLibraryTimingParEntry(int VoxID,
+                                                          OpDetID_t libOpChannel,
+                                                          size_t npar) const
   {
     PhotonLibrary* lib = dynamic_cast<PhotonLibrary*>(fTheLibrary);
     if (fTheLibrary == 0) LoadLibrary();
@@ -699,8 +681,7 @@ namespace phot {
 
   //------------------------------------------------------
 
-  size_t
-  PhotonVisibilityService::NOpChannels() const
+  size_t PhotonVisibilityService::NOpChannels() const
   {
     // the last word about the number of channels belongs to the mapping;
     // this should be also the same answer as `geo::GeometryCore::NOpDets()`.
@@ -708,11 +689,10 @@ namespace phot {
   }
 
   //------------------------------------------------------
-  void
-  PhotonVisibilityService::SetDirectLightPropFunctions(TF1 const* functions[8],
-                                                       double& d_break,
-                                                       double& d_max,
-                                                       double& tf1_sampling_factor) const
+  void PhotonVisibilityService::SetDirectLightPropFunctions(TF1 const* functions[8],
+                                                            double& d_break,
+                                                            double& d_max,
+                                                            double& tf1_sampling_factor) const
   {
     functions[0] = fparslogNorm;
     functions[1] = fparsMPV;
@@ -729,10 +709,9 @@ namespace phot {
   }
 
   //------------------------------------------------------
-  void
-  PhotonVisibilityService::SetReflectedCOLightPropFunctions(TF1 const* functions[5],
-                                                            double& t0_max,
-                                                            double& t0_break_point) const
+  void PhotonVisibilityService::SetReflectedCOLightPropFunctions(TF1 const* functions[5],
+                                                                 double& t0_max,
+                                                                 double& t0_break_point) const
   {
     functions[0] = fparslogNorm_refl;
     functions[1] = fparsMPV_refl;
@@ -745,15 +724,14 @@ namespace phot {
   }
 
   //------------------------------------------------------
-  void
-  PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<std::vector<double>> (&v)[7],
-                                                double& step_size,
-                                                double& max_d,
-                                                double& min_d,
-                                                double& vuv_vgroup_mean,
-                                                double& vuv_vgroup_max,
-                                                double& inflexion_point_distance,
-                                                double& angle_bin_timing_vuv) const
+  void PhotonVisibilityService::LoadTimingsForVUVPar(std::vector<std::vector<double>> (&v)[7],
+                                                     double& step_size,
+                                                     double& max_d,
+                                                     double& min_d,
+                                                     double& vuv_vgroup_mean,
+                                                     double& vuv_vgroup_max,
+                                                     double& inflexion_point_distance,
+                                                     double& angle_bin_timing_vuv) const
   {
     v[0] = std::vector(1, fDistances_landau);
     v[1] = fNorm_over_entries;
@@ -772,13 +750,13 @@ namespace phot {
     angle_bin_timing_vuv = fangle_bin_timing_vuv;
   }
 
-  void
-  PhotonVisibilityService::LoadTimingsForVISPar(std::vector<double>& distances,
-                                                std::vector<double>& radial_distances,
-                                                std::vector<std::vector<std::vector<double>>>& cut_off,
-                                                std::vector<std::vector<std::vector<double>>>& tau,
-                                                double& vis_vmean,
-                                                double& angle_bin_timing_vis) const
+  void PhotonVisibilityService::LoadTimingsForVISPar(
+    std::vector<double>& distances,
+    std::vector<double>& radial_distances,
+    std::vector<std::vector<std::vector<double>>>& cut_off,
+    std::vector<std::vector<std::vector<double>>>& tau,
+    double& vis_vmean,
+    double& angle_bin_timing_vis) const
   {
     distances = fDistances_refl;
     radial_distances = fDistances_radial_refl;
@@ -789,52 +767,54 @@ namespace phot {
     angle_bin_timing_vis = fangle_bin_timing_vis;
   }
 
-  void PhotonVisibilityService::LoadVUVSemiAnalyticProperties ( bool &isFlatPDCorr,
-                                         bool &isDomePDCorr,
-                                         double &delta_angulo_vuv,
-                                         double &radius) const
+  void PhotonVisibilityService::LoadVUVSemiAnalyticProperties(bool& isFlatPDCorr,
+                                                              bool& isDomePDCorr,
+                                                              double& delta_angulo_vuv,
+                                                              double& radius) const
   {
     isFlatPDCorr = fIsFlatPDCorr;
     isDomePDCorr = fIsDomePDCorr;
     delta_angulo_vuv = fdelta_angulo_vuv;
     radius = fradius;
   }
-  void PhotonVisibilityService::LoadGHFlat( std::vector<std::vector<double>>  &GHvuvpars_flat,
-                   std::vector<double> &border_corr_angulo_flat,
-                   std::vector<std::vector<double>> &border_corr_flat) const
+  void PhotonVisibilityService::LoadGHFlat(std::vector<std::vector<double>>& GHvuvpars_flat,
+                                           std::vector<double>& border_corr_angulo_flat,
+                                           std::vector<std::vector<double>>& border_corr_flat) const
   {
     if (!fIsFlatPDCorr) return;
     GHvuvpars_flat = fGHvuvpars_flat;
     border_corr_angulo_flat = fborder_corr_angulo_flat;
     border_corr_flat = fborder_corr_flat;
   }
-  void PhotonVisibilityService::LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
-                   std::vector<double> &border_corr_angulo_dome,
-                   std::vector<std::vector<double>> &border_corr_dome) const
+  void PhotonVisibilityService::LoadGHDome(std::vector<std::vector<double>>& GHvuvpars_dome,
+                                           std::vector<double>& border_corr_angulo_dome,
+                                           std::vector<std::vector<double>>& border_corr_dome) const
   {
     if (!fIsDomePDCorr) return;
     GHvuvpars_dome = fGHvuvpars_dome;
     border_corr_angulo_dome = fborder_corr_angulo_dome;
     border_corr_dome = fborder_corr_dome;
   }
-  void PhotonVisibilityService::LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
-                                       double &radius) const
+  void PhotonVisibilityService::LoadVisSemiAnalyticProperties(double& delta_angulo_vis,
+                                                              double& radius) const
   {
     delta_angulo_vis = fdelta_angulo_vis;
     radius = fradius;
   }
-  void PhotonVisibilityService::LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
-                       std::vector<double> &vis_distances_r_flat,
-                       std::vector<std::vector<std::vector<double>>> &vispars_flat) const
+  void PhotonVisibilityService::LoadVisParsFlat(
+    std::vector<double>& vis_distances_x_flat,
+    std::vector<double>& vis_distances_r_flat,
+    std::vector<std::vector<std::vector<double>>>& vispars_flat) const
   {
     if (!fIsFlatPDCorr) return;
     vis_distances_x_flat = fvis_distances_x_flat;
     vis_distances_r_flat = fvis_distances_r_flat;
     vispars_flat = fvispars_flat;
   }
-  void PhotonVisibilityService::LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
-                       std::vector<double> &vis_distances_r_dome,
-                       std::vector<std::vector<std::vector<double>>> &vispars_dome) const
+  void PhotonVisibilityService::LoadVisParsDome(
+    std::vector<double>& vis_distances_x_dome,
+    std::vector<double>& vis_distances_r_dome,
+    std::vector<std::vector<std::vector<double>>>& vispars_dome) const
   {
     if (!fIsDomePDCorr) return;
     vis_distances_x_dome = fvis_distances_x_dome;
@@ -847,8 +827,7 @@ namespace phot {
    * Preform any necessary transformations on the coordinates before trying to access
    * a voxel ID.
    **/
-  geo::Point_t
-  PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
+  geo::Point_t PhotonVisibilityService::LibLocation(geo::Point_t const& p) const
   {
     return fMapping->detectorToLibrary(p);
   }

@@ -28,8 +28,7 @@ namespace {
   constexpr G4ID kInvalidG4ID =
     std::numeric_limits<G4ID>::lowest(); ///< The value used when no G4 ID has been found
 
-  IDToEDepositMap::const_iterator
-  MaxEDepElementInMap(const IDToEDepositMap& idToEDepMap)
+  IDToEDepositMap::const_iterator MaxEDepElementInMap(const IDToEDepositMap& idToEDepMap)
   {
     IDToEDepositMap::const_iterator highestContribIt(std::max_element(
       idToEDepMap.begin(),
@@ -56,18 +55,16 @@ namespace {
 //------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-bool
-TruthMatchUtils::Valid(const G4ID g4ID) noexcept
+bool TruthMatchUtils::Valid(const G4ID g4ID) noexcept
 {
   return kInvalidG4ID != g4ID;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-TruthMatchUtils::G4ID
-TruthMatchUtils::TrueParticleID(detinfo::DetectorClocksData const& clockData,
-                                const art::Ptr<recob::Hit>& pHit,
-                                const bool rollupUnsavedIDs)
+TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleID(detinfo::DetectorClocksData const& clockData,
+                                                      const art::Ptr<recob::Hit>& pHit,
+                                                      const bool rollupUnsavedIDs)
 {
   IDToEDepositMap idToEDepMap;
   TruthMatchUtils::FillG4IDToEnergyDepositMap(idToEDepMap, clockData, pHit, rollupUnsavedIDs);
@@ -78,10 +75,10 @@ TruthMatchUtils::TrueParticleID(detinfo::DetectorClocksData const& clockData,
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-TruthMatchUtils::G4ID
-TruthMatchUtils::TrueParticleIDFromTotalTrueEnergy(detinfo::DetectorClocksData const& clockData,
-                                                   const std::vector<art::Ptr<recob::Hit>>& pHits,
-                                                   const bool rollupUnsavedIDs)
+TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalTrueEnergy(
+  detinfo::DetectorClocksData const& clockData,
+  const std::vector<art::Ptr<recob::Hit>>& pHits,
+  const bool rollupUnsavedIDs)
 {
   IDToEDepositMap idToEDepMap;
   for (const art::Ptr<recob::Hit>& pHit : pHits)
@@ -94,10 +91,10 @@ TruthMatchUtils::TrueParticleIDFromTotalTrueEnergy(detinfo::DetectorClocksData c
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-TruthMatchUtils::G4ID
-TruthMatchUtils::TrueParticleIDFromTotalRecoCharge(detinfo::DetectorClocksData const& clockData,
-                                                   const std::vector<art::Ptr<recob::Hit>>& pHits,
-                                                   const bool rollupUnsavedIDs)
+TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoCharge(
+  detinfo::DetectorClocksData const& clockData,
+  const std::vector<art::Ptr<recob::Hit>>& pHits,
+  const bool rollupUnsavedIDs)
 {
   IDToEDepositMap idToChargeDepMap;
   for (const art::Ptr<recob::Hit>& pHit : pHits) {
@@ -114,10 +111,10 @@ TruthMatchUtils::TrueParticleIDFromTotalRecoCharge(detinfo::DetectorClocksData c
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-TruthMatchUtils::G4ID
-TruthMatchUtils::TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData const& clockData,
-                                                 const std::vector<art::Ptr<recob::Hit>>& pHits,
-                                                 const bool rollupUnsavedIDs)
+TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleIDFromTotalRecoHits(
+  detinfo::DetectorClocksData const& clockData,
+  const std::vector<art::Ptr<recob::Hit>>& pHits,
+  const bool rollupUnsavedIDs)
 {
   std::map<G4ID, unsigned int> idToHitCountMap;
   for (const art::Ptr<recob::Hit>& pHit : pHits) {
@@ -167,11 +164,10 @@ TruthMatchUtils::TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData con
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-void
-TruthMatchUtils::FillG4IDToEnergyDepositMap(IDToEDepositMap& idToEDepMap,
-                                            detinfo::DetectorClocksData const& clockData,
-                                            const art::Ptr<recob::Hit>& pHit,
-                                            const bool rollupUnsavedIDs)
+void TruthMatchUtils::FillG4IDToEnergyDepositMap(IDToEDepositMap& idToEDepMap,
+                                                 detinfo::DetectorClocksData const& clockData,
+                                                 const art::Ptr<recob::Hit>& pHit,
+                                                 const bool rollupUnsavedIDs)
 {
   const art::ServiceHandle<cheat::BackTrackerService> btServ;
   const std::vector<sim::TrackIDE> trackIDEs(btServ->HitToTrackIDEs(clockData, pHit));

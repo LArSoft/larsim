@@ -113,8 +113,7 @@ namespace larg4 {
   {}
 
   template <class T>
-  void
-  TConfigurablePhysicsList<T>::SetCuts()
+  void TConfigurablePhysicsList<T>::SetCuts()
   {
 
     art::ServiceHandle<sim::LArG4Parameters> lg4p;
@@ -133,8 +132,7 @@ namespace larg4 {
   }
 
   template <class T>
-  std::vector<std::string>
-  TConfigurablePhysicsList<T>::GetDefaultSettings()
+  std::vector<std::string> TConfigurablePhysicsList<T>::GetDefaultSettings()
   {
     // Set default enabled physics processes (equivalent to QGSP_BERT physics list)
     std::vector<std::string> TheVector;

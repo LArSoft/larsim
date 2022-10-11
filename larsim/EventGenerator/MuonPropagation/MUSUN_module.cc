@@ -357,8 +357,7 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Job
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::beginJob()
+  void MUSUN::beginJob()
   {
     // Make the Histograms....
     art::ServiceHandle<art::TFileService const> tfs;
@@ -411,8 +410,7 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  Begin Run
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::beginRun(art::Run& run)
+  void MUSUN::beginRun(art::Run& run)
   {
     // Check fcl parameters were set correctly
     if (fThetamax > 90.5)
@@ -497,8 +495,7 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  End Run
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::endRun(art::Run& run)
+  void MUSUN::endRun(art::Run& run)
   {
     std::cout << "\n\nNumber of muons = " << NEvents << std::endl;
     std::cout << "Mean muon energy = " << se / NEvents << " GeV" << std::endl;
@@ -509,8 +506,7 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  Produce
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::produce(art::Event& evt)
+  void MUSUN::produce(art::Event& evt)
   {
     ///unique_ptr allows ownership to be transferred to the art::Event after the put statement
     std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
@@ -533,8 +529,7 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   // Draw the type, momentum and position of a single particle from the
   // FCIHL description
-  void
-  MUSUN::SampleOne(unsigned int i, simb::MCTruth& mct, CLHEP::HepRandomEngine& engine)
+  void MUSUN::SampleOne(unsigned int i, simb::MCTruth& mct, CLHEP::HepRandomEngine& engine)
   {
     CLHEP::RandFlat flat(engine);
     CLHEP::RandGaussQ gauss(engine);
@@ -678,16 +673,15 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  initialization
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::initialization(double theta1,
-                        double theta2,
-                        double phi1,
-                        double phi2,
-                        int figflag,
-                        double s_hor,
-                        double s_ver1,
-                        double s_ver2,
-                        double& FI)
+  void MUSUN::initialization(double theta1,
+                             double theta2,
+                             double phi1,
+                             double phi2,
+                             int figflag,
+                             double s_hor,
+                             double s_ver1,
+                             double s_ver2,
+                             double& FI)
   {
     //
     //  Read in the data files
@@ -897,12 +891,11 @@ namespace evgen {
   ////////////////////////////////////////////////////////////////////////////////
   //  sampling
   ////////////////////////////////////////////////////////////////////////////////
-  void
-  MUSUN::sampling(double& E,
-                  double& theta,
-                  double& phi,
-                  double& dep,
-                  CLHEP::HepRandomEngine& engine)
+  void MUSUN::sampling(double& E,
+                       double& theta,
+                       double& phi,
+                       double& dep,
+                       CLHEP::HepRandomEngine& engine)
   {
     CLHEP::RandFlat flat(engine);
     CLHEP::RandGaussQ gauss(engine);

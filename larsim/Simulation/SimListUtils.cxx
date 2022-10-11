@@ -21,8 +21,7 @@ namespace sim {
   //----------------------------------------------------------------------
   // moduleLabel is the label of the module that created the voxels you
   // are putting into the list
-  sim::LArVoxelList
-  SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
+  sim::LArVoxelList SimListUtils::GetLArVoxelList(const art::Event& evt, std::string moduleLabel)
   {
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     auto const clocks = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
@@ -67,8 +66,8 @@ namespace sim {
   //----------------------------------------------------------------------
   // moduleLabel is the label of the module that created the pmthits you
   // are putting into the list
-  sim::SimPhotonsCollection
-  SimListUtils::GetSimPhotonsCollection(const art::Event& evt, std::string moduleLabel)
+  sim::SimPhotonsCollection SimListUtils::GetSimPhotonsCollection(const art::Event& evt,
+                                                                  std::string moduleLabel)
   {
     /// get the voxels from the event handle
     art::Handle<std::vector<sim::SimPhotons>> pmtHandle;

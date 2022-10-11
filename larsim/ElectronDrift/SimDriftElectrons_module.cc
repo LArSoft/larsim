@@ -53,8 +53,8 @@
  */
 
 // LArSoft includes
-#include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "larcore/Geometry/Geometry.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -84,8 +84,8 @@
 // C++ includes
 #include <algorithm> // std::find
 #include <cmath>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -172,8 +172,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  SimDriftElectrons::beginJob()
+  void SimDriftElectrons::beginJob()
   {
     // Define the physical constants we'll use.
 
@@ -219,8 +218,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  SimDriftElectrons::produce(art::Event& event)
+  void SimDriftElectrons::produce(art::Event& event)
   {
     // Fetch the SimEnergyDeposit objects for this event.
     typedef art::Handle<std::vector<sim::SimEnergyDeposit>> energyDepositHandle_t;
@@ -353,9 +351,7 @@ namespace detsim {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets(mp);
-	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) {
-          continue;
-	}
+        if (larsim::Utils::SCE::out_of_bounds(posOffsets)) { continue; }
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
         posOffsetxyz[2] = posOffsets.Z();
@@ -468,7 +464,7 @@ namespace detsim {
           // drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
             TDiff +=
-              tpcGeo.PlanePitch(ip+1, ip) *
+              tpcGeo.PlanePitch(ip + 1, ip) *
               fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 

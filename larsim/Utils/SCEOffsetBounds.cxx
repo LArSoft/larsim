@@ -11,10 +11,9 @@
 // LArSoft
 #include "larsim/Utils/SCEOffsetBounds.h"
 
-bool larsim::Utils::SCE::out_of_bounds(geo::Vector_t const &offset)
+bool larsim::Utils::SCE::out_of_bounds(geo::Vector_t const& offset)
 {
   constexpr double limit{1.e9};
-  return (std::abs(offset.X()) > limit ||
-          std::abs(offset.Y()) > limit ||
+  return (std::abs(offset.X()) > limit || std::abs(offset.Y()) > limit ||
           std::abs(offset.Z()) > limit);
 }

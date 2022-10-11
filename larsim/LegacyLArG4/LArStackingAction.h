@@ -27,8 +27,8 @@
 #ifndef LArStackingAction_H
 #define LArStackingAction_H
 
-#include "Geant4/G4UserStackingAction.hh"
 #include "Geant4/G4Types.hh"
+#include "Geant4/G4UserStackingAction.hh"
 
 #include <string>
 
@@ -38,45 +38,42 @@ class G4Track;
 //#include "ExN04MuonHit.hh"
 class LArStackingActionMessenger;
 
-class LArStackingAction : public G4UserStackingAction
-{
-  public:
-    LArStackingAction(int );
-    virtual ~LArStackingAction();
+class LArStackingAction : public G4UserStackingAction {
+public:
+  LArStackingAction(int);
+  virtual ~LArStackingAction();
 
-  public:
-    // These 3 methods must be implemented by us. EC, 16-Feb-2011.
-    virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
-    virtual void NewStage();
-    virtual void PrepareNewEvent();
-    G4int fStack;
+public:
+  // These 3 methods must be implemented by us. EC, 16-Feb-2011.
+  virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack);
+  virtual void NewStage();
+  virtual void PrepareNewEvent();
+  G4int fStack;
 
-  private:
-    //G4bool InsideRoI(const G4Track * aTrack,G4double ang);
-    std::string InsideTPC(const G4Track * aTrack);
-    //G4VHitsCollection* GetCollection(G4String colName);
+private:
+  //G4bool InsideRoI(const G4Track * aTrack,G4double ang);
+  std::string InsideTPC(const G4Track* aTrack);
+  //G4VHitsCollection* GetCollection(G4String colName);
 
-    //ExN04TrackerHitsCollection* trkHits;
-    //ExN04MuonHitsCollection* muonHits;
-    //LArStackingActionMessenger* theMessenger;
+  //ExN04TrackerHitsCollection* trkHits;
+  //ExN04MuonHitsCollection* muonHits;
+  //LArStackingActionMessenger* theMessenger;
 
-    G4int fstage;
-    G4int freqMuon;
-    G4int freqIsoMuon;
-    G4int freqIso;
-    G4double fangRoI;
+  G4int fstage;
+  G4int freqMuon;
+  G4int freqIsoMuon;
+  G4int freqIso;
+  G4double fangRoI;
 
-
-
-  public:
-    inline void     SetNRequestMuon(G4int val)          { freqMuon = val;     }
-    inline G4int    GetNRequestMuon()             const { return freqMuon;    }
-    inline void     SetNRequestIsoMuon(G4int val)       { freqIsoMuon = val;  }
-    inline G4int    GetNRequestIsoMuon()          const { return freqIsoMuon; }
-    inline void     SetNIsolation(G4int val)            { freqIso = val;      }
-    inline G4int    GetNIsolation()               const { return freqIso;     }
-    inline void     SetRoIAngle(G4double val)           { fangRoI = val;      }
-    inline G4double GetRoIAngle()                 const { return fangRoI;     }
+public:
+  inline void SetNRequestMuon(G4int val) { freqMuon = val; }
+  inline G4int GetNRequestMuon() const { return freqMuon; }
+  inline void SetNRequestIsoMuon(G4int val) { freqIsoMuon = val; }
+  inline G4int GetNRequestIsoMuon() const { return freqIsoMuon; }
+  inline void SetNIsolation(G4int val) { freqIso = val; }
+  inline G4int GetNIsolation() const { return freqIso; }
+  inline void SetRoIAngle(G4double val) { fangRoI = val; }
+  inline G4double GetRoIAngle() const { return fangRoI; }
 };
 
 #endif

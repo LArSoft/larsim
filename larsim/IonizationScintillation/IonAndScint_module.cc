@@ -21,9 +21,9 @@
 
 // LArSoft includes
 
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
@@ -39,10 +39,10 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 
@@ -63,7 +63,6 @@ namespace larg4 {
     void endJob() override;
 
   private:
-
     std::vector<art::Handle<SimEnergyDepositCollection>> inputCollections(art::Event const&) const;
 
     // name of calculator: Separate, Correlated, or NEST
@@ -120,8 +119,7 @@ namespace larg4 {
   }
 
   //......................................................................
-  void
-  IonAndScint::beginJob()
+  void IonAndScint::beginJob()
   {
     std::cout << "IonAndScint beginJob." << std::endl;
     std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
@@ -139,15 +137,11 @@ namespace larg4 {
   }
 
   //......................................................................
-  void
-  IonAndScint::endJob()
-  {
-    std::cout << "IonAndScint endJob." << std::endl;
-  }
+  void IonAndScint::endJob() { std::cout << "IonAndScint endJob." << std::endl; }
 
   //......................................................................
-  std::vector<art::Handle<SimEnergyDepositCollection>>
-  IonAndScint::inputCollections(art::Event const& e) const
+  std::vector<art::Handle<SimEnergyDepositCollection>> IonAndScint::inputCollections(
+    art::Event const& e) const
   {
     if (empty(fInputModuleLabels)) {
       mf::LogDebug("IonAndScint") << "Retrieving all products" << std::endl;
@@ -156,17 +150,17 @@ namespace larg4 {
 
     std::vector<art::Handle<SimEnergyDepositCollection>> result;
 
-    for (auto const & module : fInputModuleLabels) {
+    for (auto const& module : fInputModuleLabels) {
 
-      mf::LogDebug("IonAndScint") << "Retrieving products with module label "
-                                  << module << std::endl;
+      mf::LogDebug("IonAndScint") << "Retrieving products with module label " << module
+                                  << std::endl;
 
       auto handels = e.getMany<SimEnergyDepositCollection>(art::ModuleLabelSelector(module));
 
       if (empty(handels)) {
         throw art::Exception(art::errors::ProductNotFound)
-          << "IonAndScint module cannot find any SimEnergyDeposits with module label "
-          << module << " as requested in InputModuleLabels. \n";
+          << "IonAndScint module cannot find any SimEnergyDeposits with module label " << module
+          << " as requested in InputModuleLabels. \n";
       }
 
       result.insert(result.end(), handels.begin(), handels.end());
@@ -176,8 +170,7 @@ namespace larg4 {
   }
 
   //......................................................................
-  void
-  IonAndScint::produce(art::Event& event)
+  void IonAndScint::produce(art::Event& event)
   {
     std::cout << "IonAndScint Module Producer" << std::endl;
 
@@ -252,18 +245,17 @@ namespace larg4 {
                               pdgCode_tmp);
 
         if (fSavePriorSCE) {
-            simedep1->emplace_back(ph_num,
-                                  ion_num,
-                                  scintyield,
-                                  edepi.Energy(),
-                                  edepi.Start(),
-                                  edepi.End(),
-                                  edepi.StartT(),
-                                  edepi.EndT(),
-                                  edepi.TrackID(),
-                                  edepi.PdgCode());
+          simedep1->emplace_back(ph_num,
+                                 ion_num,
+                                 scintyield,
+                                 edepi.Energy(),
+                                 edepi.Start(),
+                                 edepi.End(),
+                                 edepi.StartT(),
+                                 edepi.EndT(),
+                                 edepi.TrackID(),
+                                 edepi.PdgCode());
         }
-
       }
     }
     event.put(std::move(simedep));

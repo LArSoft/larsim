@@ -13,32 +13,30 @@ namespace sim {
 
   //----------------------------------------------------------------------------
   // Constructor; take care of any initializations.
-  LArVoxelData::LArVoxelData()
-    : fenergy(0)
-  {}
+  LArVoxelData::LArVoxelData() : fenergy(0) {}
 
   //----------------------------------------------------------------------------
   // Destructor.
   LArVoxelData::~LArVoxelData() {}
 
   //----------------------------------------------------------------------------
-  const LArVoxelData::key_type& LArVoxelData::TrackID( const size_type index ) const
+  const LArVoxelData::key_type& LArVoxelData::TrackID(const size_type index) const
   {
     const_iterator i = ftrackEnergy.begin();
-    std::advance(i,index);
+    std::advance(i, index);
     return (*i).first;
   }
 
   //----------------------------------------------------------------------------
-  const LArVoxelData::mapped_type& LArVoxelData::Energy( const size_type index ) const
+  const LArVoxelData::mapped_type& LArVoxelData::Energy(const size_type index) const
   {
     const_iterator i = ftrackEnergy.begin();
-    std::advance(i,index);
+    std::advance(i, index);
     return (*i).second;
   }
 
   //----------------------------------------------------------------------------
-  void LArVoxelData::Add( const LArVoxelData& other )
+  void LArVoxelData::Add(const LArVoxelData& other)
   {
     // When we add one voxel's data to another, it becomes impossible
     // to keep the particle<->energy assignments anymore; the most
@@ -53,13 +51,12 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  LArVoxelData& LArVoxelData::operator*=( const double& value )
+  LArVoxelData& LArVoxelData::operator*=(const double& value)
   {
     // Multiply all energies by the value.
-    for ( iterator i = ftrackEnergy.begin(), end = ftrackEnergy.end(); i != end; ++i )
-      {
-	(*i).second *= value;
-      }
+    for (iterator i = ftrackEnergy.begin(), end = ftrackEnergy.end(); i != end; ++i) {
+      (*i).second *= value;
+    }
     fenergy *= value;
 
     return (*this);
@@ -74,7 +71,7 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  std::ostream& operator<< ( std::ostream& output, const LArVoxelData& data )
+  std::ostream& operator<<(std::ostream& output, const LArVoxelData& data)
   {
     output << "Voxel: " << data.VoxelID() << std::endl;
 
@@ -82,14 +79,12 @@ namespace sim {
     // Display the total energy then the breakdown of
     // the sum.
     output << data.Energy() << " = <ID,E>=";
-    for ( LArVoxelData::const_iterator i = data.begin(); i != data.end(); ++i){
-      if ( i != data.begin() )
-	output << ",";
+    for (LArVoxelData::const_iterator i = data.begin(); i != data.end(); ++i) {
+      if (i != data.begin()) output << ",";
 
       output << "<" << (*i).first << "," << (*i).second << ">";
     }
-    if( unassigned > 0 )
-      output << ",<*," << unassigned << ">";
+    if (unassigned > 0) output << ",<*," << unassigned << ">";
 
     return output;
   }

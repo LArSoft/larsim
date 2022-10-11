@@ -39,31 +39,11 @@ namespace larg4 {
     // This method should be called at the start of any G4Step
     void Reset(const G4Step* step);
 
-    double
-    EnergyDeposit() const
-    {
-      return fISCalc->EnergyDeposit();
-    }
-    double
-    VisibleEnergyDeposit() const
-    {
-      return fISCalc->VisibleEnergyDeposit();
-    }
-    double
-    NumberIonizationElectrons() const
-    {
-      return fISCalc->NumberIonizationElectrons();
-    }
-    double
-    NumberScintillationPhotons() const
-    {
-      return fISCalc->NumberScintillationPhotons();
-    }
-    double
-    StepSizeLimit() const
-    {
-      return fISCalc->StepSizeLimit();
-    }
+    double EnergyDeposit() const { return fISCalc->EnergyDeposit(); }
+    double VisibleEnergyDeposit() const { return fISCalc->VisibleEnergyDeposit(); }
+    double NumberIonizationElectrons() const { return fISCalc->NumberIonizationElectrons(); }
+    double NumberScintillationPhotons() const { return fISCalc->NumberScintillationPhotons(); }
+    double StepSizeLimit() const { return fISCalc->StepSizeLimit(); }
 
   private:
     IonizationAndScintillation(detinfo::DetectorPropertiesData const& detProp,

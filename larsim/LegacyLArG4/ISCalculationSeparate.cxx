@@ -61,8 +61,7 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void
-  ISCalculationSeparate::Reset()
+  void ISCalculationSeparate::Reset()
   {
     fEnergyDeposit = 0.;
     fNumScintPhotons = 0.;
@@ -71,8 +70,7 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void
-  ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
+  void ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
   {
     fEnergyDeposit = step->GetTotalEnergyDeposit() / CLHEP::MeV;
 

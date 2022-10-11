@@ -6,30 +6,28 @@
 ////////////////////////////////////////////////////////////////////////
 
 /// Framework includes
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 // Framework includes
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft Includes
+#include "larcore/Geometry/Geometry.h"
+#include "lardataobj/Simulation/sim.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
-#include "lardataobj/Simulation/sim.h"
-#include "larcore/Geometry/Geometry.h"
 
 ///Geant4 interface
 namespace simfilter {
 
-  class FilterPrimaryPDG : public art::EDFilter
-  {
+  class FilterPrimaryPDG : public art::EDFilter {
   public:
+    explicit FilterPrimaryPDG(fhicl::ParameterSet const& pset);
 
-    explicit FilterPrimaryPDG(fhicl::ParameterSet const &pset);
-
-    private:
+  private:
     bool filter(art::Event&) override;
 
     std::string fG4ModuleLabel;
@@ -43,7 +41,7 @@ namespace simfilter {
   //-----------------------------------------------------------------------
   // Constructor
   FilterPrimaryPDG::FilterPrimaryPDG(fhicl::ParameterSet const& pset)
-    : EDFilter{pset}, fPrimaryVec{pset.get<std::vector<int> >("PrimaryParticles")}
+    : EDFilter{pset}, fPrimaryVec{pset.get<std::vector<int>>("PrimaryParticles")}
   {}
 
   //-----------------------------------------------------------------------
@@ -58,32 +56,27 @@ namespace simfilter {
     const sim::ParticleList& Particles = pi_serv->ParticleList();
     std::vector<const simb::MCParticle*> pvec;
     pvec.reserve(Particles.size());
-    for (const auto& PartPair: Particles) {
+    for (const auto& PartPair : Particles) {
       pvec.push_back(PartPair.second);
       // fPDGCodes->Fill(PartPair.second->PdgCode());
     }
 
     bool pdgDesired(false);
-    for(unsigned int i = 0; i < pvec.size(); ++i)
-      {
-        for (int pdg : fPrimaryVec)
-          {
-            const std::string sprim("primary");
-            if(pvec[i]->PdgCode() == pdg)
-              {
-                Char_t tProcess[50];
-                for(unsigned int s = 0; s < pvec[i]->Process().length(); ++s)
-                  *(tProcess+s) = pvec[i]->Process()[s];
-                std::string sProcess(tProcess);
-                if (!sProcess.compare(sprim))
-                  {
-                    mf::LogInfo("FilterPrimaryPDG") << " Found a primary " << pdg << " in event.";
-                    pdgDesired = true;
-                  }
-              }
+    for (unsigned int i = 0; i < pvec.size(); ++i) {
+      for (int pdg : fPrimaryVec) {
+        const std::string sprim("primary");
+        if (pvec[i]->PdgCode() == pdg) {
+          Char_t tProcess[50];
+          for (unsigned int s = 0; s < pvec[i]->Process().length(); ++s)
+            *(tProcess + s) = pvec[i]->Process()[s];
+          std::string sProcess(tProcess);
+          if (!sProcess.compare(sprim)) {
+            mf::LogInfo("FilterPrimaryPDG") << " Found a primary " << pdg << " in event.";
+            pdgDesired = true;
           }
-
+        }
       }
+    }
 
     return pdgDesired;
   }

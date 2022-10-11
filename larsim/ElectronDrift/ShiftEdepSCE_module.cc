@@ -66,8 +66,7 @@ spacecharge::ShiftEdepSCE::ShiftEdepSCE(fhicl::ParameterSet const& p)
   produces<std::vector<sim::SimEnergyDeposit>>();
 }
 
-void
-spacecharge::ShiftEdepSCE::beginJob()
+void spacecharge::ShiftEdepSCE::beginJob()
 {
   if (fMakeAnaTree) {
     art::ServiceHandle<art::TFileService const> tfs;
@@ -78,8 +77,7 @@ spacecharge::ShiftEdepSCE::beginJob()
   }
 }
 
-void
-spacecharge::ShiftEdepSCE::produce(art::Event& e)
+void spacecharge::ShiftEdepSCE::produce(art::Event& e)
 {
   auto sce = lar::providerFrom<spacecharge::SpaceChargeService>();
   auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(e);
@@ -97,9 +95,9 @@ spacecharge::ShiftEdepSCE::produce(art::Event& e)
       posOffsetsStart = sce->GetPosOffsets({edep.StartX(), edep.StartY(), edep.StartZ()});
       posOffsetsEnd = sce->GetPosOffsets({edep.EndX(), edep.EndY(), edep.EndZ()});
       if (larsim::Utils::SCE::out_of_bounds(posOffsetsStart) ||
-          larsim::Utils::SCE::out_of_bounds(posOffsetsEnd) ) { 
-          continue; 
-        }
+          larsim::Utils::SCE::out_of_bounds(posOffsetsEnd)) {
+        continue;
+      }
     }
     auto const isData = fISAlg.CalcIonAndScint(detProp, edep);
     outEdepVec.emplace_back(

@@ -22,8 +22,7 @@ namespace simfilter {
 
   class FilterNoMCParticles : public art::SharedFilter {
   public:
-    explicit FilterNoMCParticles(fhicl::ParameterSet const& pset,
-                                 art::ProcessingFrame const&);
+    explicit FilterNoMCParticles(fhicl::ParameterSet const& pset, art::ProcessingFrame const&);
 
   private:
     bool filter(art::Event&, art::ProcessingFrame const&) override;
@@ -38,18 +37,15 @@ namespace simfilter {
   // Constructor
   FilterNoMCParticles::FilterNoMCParticles(fhicl::ParameterSet const& pset,
                                            art::ProcessingFrame const&)
-    : SharedFilter{pset}
-    , fLArG4ModuleLabel{pset.get<std::string>("LArG4ModuleLabel", "NoLabel")}
+    : SharedFilter{pset}, fLArG4ModuleLabel{pset.get<std::string>("LArG4ModuleLabel", "NoLabel")}
   {
     async<art::InEvent>();
   }
 
   //-----------------------------------------------------------------------
-  bool
-  FilterNoMCParticles::filter(art::Event& evt, art::ProcessingFrame const&)
+  bool FilterNoMCParticles::filter(art::Event& evt, art::ProcessingFrame const&)
   {
-    auto const& mcps =
-      *evt.getValidHandle<std::vector<simb::MCParticle>>(fLArG4ModuleLabel);
+    auto const& mcps = *evt.getValidHandle<std::vector<simb::MCParticle>>(fLArG4ModuleLabel);
     return not mcps.empty();
   }
 

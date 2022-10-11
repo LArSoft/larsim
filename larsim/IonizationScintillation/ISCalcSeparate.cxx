@@ -12,12 +12,12 @@
 
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
 
-#include "larsim/Simulation/LArG4Parameters.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+#include "larsim/Simulation/LArG4Parameters.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -45,9 +45,8 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  double
-  ISCalcSeparate::CalcIon(detinfo::DetectorPropertiesData const& detProp,
-                          sim::SimEnergyDeposit const& edep)
+  double ISCalcSeparate::CalcIon(detinfo::DetectorPropertiesData const& detProp,
+                                 sim::SimEnergyDeposit const& edep)
   {
     float e = edep.Energy();
     float ds = edep.StepLength();
@@ -84,25 +83,22 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  std::pair<double, double>
-  ISCalcSeparate::CalcScint(sim::SimEnergyDeposit const& edep)
+  std::pair<double, double> ISCalcSeparate::CalcScint(sim::SimEnergyDeposit const& edep)
   {
     double numScintPhotons = GetScintYield(edep, true) * edep.Energy();
     return {numScintPhotons, GetScintYieldRatio(edep)};
   }
 
   //----------------------------------------------------------------------------
-  ISCalcData
-  ISCalcSeparate::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
-                                  sim::SimEnergyDeposit const& edep)
+  ISCalcData ISCalcSeparate::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                             sim::SimEnergyDeposit const& edep)
   {
     auto const numElectrons = CalcIon(detProp, edep);
     auto const [numPhotons, scintYieldRatio] = CalcScint(edep);
     return {edep.Energy(), numElectrons, numPhotons, scintYieldRatio};
   }
   //----------------------------------------------------------------------------
-  double
-  ISCalcSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  double ISCalcSeparate::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     if (not fSCE->EnableSimEfieldSCE()) { return efield; }
 

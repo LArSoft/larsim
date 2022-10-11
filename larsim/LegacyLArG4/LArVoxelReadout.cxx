@@ -71,16 +71,14 @@ namespace larg4 {
   }
 
   //---------------------------------------------------------------------------------------
-  void
-  LArVoxelReadout::Setup(Setup_t const& setupData)
+  void LArVoxelReadout::Setup(Setup_t const& setupData)
   {
     SetOffPlaneChargeRecoveryMargin(setupData.offPlaneMargin);
     SetRandomEngines(setupData.propGen);
   }
 
   //---------------------------------------------------------------------------------------
-  void
-  LArVoxelReadout::SetSingleTPC(unsigned int cryostat, unsigned int tpc)
+  void LArVoxelReadout::SetSingleTPC(unsigned int cryostat, unsigned int tpc)
   {
     bSingleTPC = true;
     fCstat = cryostat;
@@ -88,8 +86,7 @@ namespace larg4 {
     MF_LOG_DEBUG("LArVoxelReadout") << GetName() << "covers C=" << fCstat << " T=" << fTPC;
   }
 
-  void
-  LArVoxelReadout::SetDiscoverTPC()
+  void LArVoxelReadout::SetDiscoverTPC()
   {
     bSingleTPC = false;
     fCstat = 0;
@@ -99,8 +96,7 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
-  void
-  LArVoxelReadout::Initialize(G4HCofThisEvent*)
+  void LArVoxelReadout::Initialize(G4HCofThisEvent*)
   {
     assert(fClockData != nullptr &&
            "You must use set the clock data pointer at the beginning "
@@ -135,20 +131,16 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
-  void
-  LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
+  void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
   {
     MF_LOG_DEBUG("LArVoxelReadout") << "Total number of steps was " << fNSteps << std::endl;
   }
 
   //---------------------------------------------------------------------------------------
-  void
-  LArVoxelReadout::clear()
-  {}
+  void LArVoxelReadout::clear() {}
 
   //--------------------------------------------------------------------------------------
-  void
-  LArVoxelReadout::ClearSimChannels()
+  void LArVoxelReadout::ClearSimChannels()
   {
     fChannelMaps.resize(fGeoHandle->Ncryostats());
     size_t cryo = 0;
@@ -159,41 +151,38 @@ namespace larg4 {
     }                        // for cryostats
   }                          // LArVoxelReadout::ClearSimChannels()
 
-  const LArVoxelReadout::ChannelMap_t&
-  LArVoxelReadout::GetSimChannelMap() const
+  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() const
   {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
   }
 
-  LArVoxelReadout::ChannelMap_t&
-  LArVoxelReadout::GetSimChannelMap()
+  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap()
   {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
   }
 
-  const LArVoxelReadout::ChannelMap_t&
-  LArVoxelReadout::GetSimChannelMap(unsigned short cryo, unsigned short tpc) const
+  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap(unsigned short cryo,
+                                                                         unsigned short tpc) const
   {
     return fChannelMaps.at(cryo).at(tpc);
   }
 
-  LArVoxelReadout::ChannelMap_t&
-  LArVoxelReadout::GetSimChannelMap(unsigned short cryo, unsigned short tpc)
+  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap(unsigned short cryo,
+                                                                   unsigned short tpc)
   {
     return fChannelMaps.at(cryo).at(tpc);
   }
 
-  std::vector<sim::SimChannel>
-  LArVoxelReadout::GetSimChannels() const
+  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels() const
   {
     if (bSingleTPC) return GetSimChannels(fCstat, fTPC);
     throw cet::exception("LArVoxelReadout") << "TPC not specified";
   }
 
-  std::vector<sim::SimChannel>
-  LArVoxelReadout::GetSimChannels(unsigned short cryo, unsigned short tpc) const
+  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels(unsigned short cryo,
+                                                               unsigned short tpc) const
   {
     std::vector<sim::SimChannel> channels;
     const ChannelMap_t& chmap = fChannelMaps.at(cryo).at(tpc);
@@ -205,8 +194,7 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Called for each step.
-  G4bool
-  LArVoxelReadout::ProcessHits(G4Step* step, G4TouchableHistory* pHistory)
+  G4bool LArVoxelReadout::ProcessHits(G4Step* step, G4TouchableHistory* pHistory)
   {
     // All work done for the "parallel world" "box of voxels" in
     // LArVoxelReadoutGeometry makes this a fairly simple routine.
@@ -283,7 +271,8 @@ namespace larg4 {
         // Note that if there is no particle ID for this energy deposit, the
         // trackID will be sim::NoParticleId.
 
-        DriftIonizationElectrons(*fClockData, midPoint, g4time, trackID, cryostat, tpc, origTrackID);
+        DriftIonizationElectrons(
+          *fClockData, midPoint, g4time, trackID, cryostat, tpc, origTrackID);
       } // end we are drifting
     }   // end there is non-zero energy deposition
 
@@ -291,16 +280,15 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  void
-  LArVoxelReadout::SetRandomEngines(CLHEP::HepRandomEngine* pPropGen)
+  void LArVoxelReadout::SetRandomEngines(CLHEP::HepRandomEngine* pPropGen)
   {
     assert(pPropGen); // random engine must be present
     fPropGen = pPropGen;
   }
 
   //----------------------------------------------------------------------------
-  geo::Point_t
-  LArVoxelReadout::RecoverOffPlaneDeposit(geo::Point_t const& pos, geo::PlaneGeo const& plane) const
+  geo::Point_t LArVoxelReadout::RecoverOffPlaneDeposit(geo::Point_t const& pos,
+                                                       geo::PlaneGeo const& plane) const
   {
     //
     // translate the landing position on the two frame coordinates
@@ -336,14 +324,13 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
-  void
-  LArVoxelReadout::DriftIonizationElectrons(detinfo::DetectorClocksData const& clockData,
-                                            G4ThreeVector stepMidPoint,
-                                            const double simTime,
-                                            int trackID,
-                                            unsigned short int cryostat,
-                                            unsigned short int tpc,
-                                            int origTrackID)
+  void LArVoxelReadout::DriftIonizationElectrons(detinfo::DetectorClocksData const& clockData,
+                                                 G4ThreeVector stepMidPoint,
+                                                 const double simTime,
+                                                 int trackID,
+                                                 unsigned short int cryostat,
+                                                 unsigned short int tpc,
+                                                 int origTrackID)
   {
     auto const tpcClock = clockData.TPCClock();
 
@@ -366,8 +353,7 @@ namespace larg4 {
       double energy = 0.;
       double electrons = 0.;
 
-      void
-      add(double more_energy, double more_electrons)
+      void add(double more_energy, double more_electrons)
       {
         energy += more_energy;
         electrons += more_electrons;
@@ -405,9 +391,7 @@ namespace larg4 {
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
         posOffsets = SCE->GetPosOffsets({xyz[0], xyz[1], xyz[2]});
-	if (larsim::Utils::SCE::out_of_bounds(posOffsets)) {
-          return;
-        }
+        if (larsim::Utils::SCE::out_of_bounds(posOffsets)) { return; }
       }
       posOffsets.SetX(-posOffsets.X());
 
@@ -591,11 +575,7 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Never used but still have to be defined for G4
-  void
-  LArVoxelReadout::DrawAll()
-  {}
-  void
-  LArVoxelReadout::PrintAll()
-  {}
+  void LArVoxelReadout::DrawAll() {}
+  void LArVoxelReadout::PrintAll() {}
 
 } // namespace larg4

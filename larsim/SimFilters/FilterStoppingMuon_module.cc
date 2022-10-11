@@ -27,16 +27,14 @@ namespace {
     double maxBound;
   };
 
-  inline bool
-  within(bounds const& bnds, double const value)
+  inline bool within(bounds const& bnds, double const value)
   {
     return bnds.minBound < value and value < bnds.maxBound;
   }
 
   class FilterStoppingMuon : public art::SharedFilter {
   public:
-    explicit FilterStoppingMuon(fhicl::ParameterSet const& pset,
-                                art::ProcessingFrame const&);
+    explicit FilterStoppingMuon(fhicl::ParameterSet const& pset, art::ProcessingFrame const&);
 
   private:
     void beginRun(art::Run&, art::ProcessingFrame const&) override;
@@ -51,14 +49,12 @@ namespace {
   // Constructor
   FilterStoppingMuon::FilterStoppingMuon(fhicl::ParameterSet const& pset,
                                          art::ProcessingFrame const&)
-    : SharedFilter{pset}
-    , fLArG4ModuleLabel{pset.get<std::string>("LArG4ModuleLabel", "largeant")}
+    : SharedFilter{pset}, fLArG4ModuleLabel{pset.get<std::string>("LArG4ModuleLabel", "largeant")}
   {
     async<art::InEvent>();
   }
 
-  void
-  FilterStoppingMuon::beginRun(art::Run&, art::ProcessingFrame const& frame)
+  void FilterStoppingMuon::beginRun(art::Run&, art::ProcessingFrame const& frame)
   {
     // Detector geometries are allowed to change on run boundaries.
     auto const geom = frame.serviceHandle<geo::Geometry const>();
@@ -68,18 +64,14 @@ namespace {
   }
 
   //-----------------------------------------------------------------------
-  bool
-  FilterStoppingMuon::filter(art::Event& evt, art::ProcessingFrame const&)
+  bool FilterStoppingMuon::filter(art::Event& evt, art::ProcessingFrame const&)
   {
     // get the particles produced by largeant
-    auto const& mcps =
-      *evt.getValidHandle<std::vector<simb::MCParticle>>(fLArG4ModuleLabel);
+    auto const& mcps = *evt.getValidHandle<std::vector<simb::MCParticle>>(fLArG4ModuleLabel);
 
     for (auto const& part : mcps) {
       // skip anything that isn't a muon
-      if (std::abs(part.PdgCode()) != 13) {
-        continue;
-      }
+      if (std::abs(part.PdgCode()) != 13) { continue; }
 
       // make sure the end position is inside the TPC
       if (within(fXBounds, part.EndX()) and within(fYBounds, part.EndY()) and

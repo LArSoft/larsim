@@ -12,16 +12,10 @@ class NeutronHPphysics : public G4VPhysicsConstructor {
 public:
   NeutronHPphysics(const G4String& name = "neutron");
 
-  void
-  ConstructParticle() override
-  {}
+  void ConstructParticle() override {}
   void ConstructProcess() override;
 
-  void
-  SetThermalPhysics(G4bool flag)
-  {
-    fThermal = flag;
-  };
+  void SetThermalPhysics(G4bool flag) { fThermal = flag; };
 
 private:
   G4bool fThermal;

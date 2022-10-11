@@ -83,8 +83,7 @@ namespace larg4 {
   /// Simple structure holding a TPC and cryostat number
   struct TPCID_t {
     unsigned short int Cryostat, TPC;
-    bool
-    operator<(const TPCID_t& than) const
+    bool operator<(const TPCID_t& than) const
     {
       return (Cryostat < than.Cryostat) || ((Cryostat == than.Cryostat) && (TPC < than.TPC));
     } // operator< ()
@@ -247,14 +246,12 @@ namespace larg4 {
     // avoided for the users of larg4.
     friend class LArVoxelReadoutGeometry;
 
-    void
-    SetClockData(detinfo::DetectorClocksData const* const clockData) noexcept
+    void SetClockData(detinfo::DetectorClocksData const* const clockData) noexcept
     {
       fClockData = clockData;
     }
 
-    void
-    SetPropertiesData(detinfo::DetectorPropertiesData const* const detProp) noexcept
+    void SetPropertiesData(detinfo::DetectorPropertiesData const* const detProp) noexcept
     {
       fDetProp = detProp;
     }
@@ -268,11 +265,7 @@ namespace larg4 {
      *
      * This method is used by `LArVoxelReadout::Setup()`.
      */
-    void
-    SetOffPlaneChargeRecoveryMargin(double margin)
-    {
-      fOffPlaneMargin = std::max(margin, 0.0);
-    }
+    void SetOffPlaneChargeRecoveryMargin(double margin) { fOffPlaneMargin = std::max(margin, 0.0); }
 
     /// Sets the random generators to be used.
     void SetRandomEngines(CLHEP::HepRandomEngine* pPropGen);
@@ -325,8 +318,7 @@ namespace larg4 {
                                   unsigned short int tpc,
                                   int origTrackID);
 
-    bool
-    Has(std::vector<unsigned short int> v, unsigned short int tpc) const
+    bool Has(std::vector<unsigned short int> v, unsigned short int tpc) const
     {
       for (auto c : v)
         if (c == tpc) return true;

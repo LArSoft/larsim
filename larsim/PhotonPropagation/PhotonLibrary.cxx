@@ -26,8 +26,7 @@ namespace {
     TDirectory& srcDir;
     std::vector<std::string>& missingKeys;
 
-    std::optional<T>
-    operator()(std::string const& key)
+    std::optional<T> operator()(std::string const& key)
     {
       RooT const* value = srcDir.Get<RooT>(key.c_str());
       if (value) return std::make_optional<T>(*value);
@@ -47,11 +46,10 @@ namespace phot {
 
   //------------------------------------------------------------
 
-  void
-  PhotonLibrary::StoreLibraryToFile(std::string,
-                                    bool storeReflected,
-                                    bool storeReflT0,
-                                    size_t storeTiming) const
+  void PhotonLibrary::StoreLibraryToFile(std::string,
+                                         bool storeReflected,
+                                         bool storeReflT0,
+                                         size_t storeTiming) const
   {
     mf::LogInfo("PhotonLibrary") << "Writing photon library to file";
 
@@ -130,12 +128,11 @@ namespace phot {
 
   //------------------------------------------------------------
 
-  void
-  PhotonLibrary::CreateEmptyLibrary(size_t NVoxels,
-                                    size_t NOpChannels,
-                                    bool storeReflected /* = false */,
-                                    bool storeReflT0 /* = false */,
-                                    size_t storeTiming /* = false */
+  void PhotonLibrary::CreateEmptyLibrary(size_t NVoxels,
+                                         size_t NOpChannels,
+                                         bool storeReflected /* = false */,
+                                         bool storeReflT0 /* = false */,
+                                         size_t storeTiming /* = false */
   )
   {
     fLookupTable.clear();
@@ -161,13 +158,12 @@ namespace phot {
 
   //------------------------------------------------------------
 
-  void
-  PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile,
-                                     size_t NVoxels,
-                                     bool getReflected,
-                                     bool getReflT0,
-                                     size_t getTiming,
-                                     int fTimingMaxRange)
+  void PhotonLibrary::LoadLibraryFromFile(std::string LibraryFile,
+                                          size_t NVoxels,
+                                          bool getReflected,
+                                          bool getReflT0,
+                                          size_t getTiming,
+                                          int fTimingMaxRange)
   {
     fLookupTable.clear();
     fReflLookupTable.clear();
@@ -306,8 +302,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  float
-  PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) const
+  float PhotonLibrary::GetCount(size_t Voxel, size_t OpChannel) const
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       return 0;
@@ -316,8 +311,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  float
-  PhotonLibrary::GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const
+  float PhotonLibrary::GetTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       return 0;
@@ -325,8 +319,7 @@ namespace phot {
       return uncheckedAccessTimingPar(Voxel, OpChannel, parnum);
   } //----------------------------------------------------
 
-  float
-  PhotonLibrary::GetReflCount(size_t Voxel, size_t OpChannel) const
+  float PhotonLibrary::GetReflCount(size_t Voxel, size_t OpChannel) const
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       return 0;
@@ -335,8 +328,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  float
-  PhotonLibrary::GetReflT0(size_t Voxel, size_t OpChannel) const
+  float PhotonLibrary::GetReflT0(size_t Voxel, size_t OpChannel) const
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       return 0;
@@ -346,8 +338,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  void
-  PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count)
+  void PhotonLibrary::SetCount(size_t Voxel, size_t OpChannel, float Count)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary")
@@ -357,8 +348,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  void
-  PhotonLibrary::SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum)
+  void PhotonLibrary::SetTimingPar(size_t Voxel, size_t OpChannel, float Count, size_t parnum)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary") << "Error - attempting to set timing t0 count in voxel "
@@ -368,8 +358,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  void
-  PhotonLibrary::SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func)
+  void PhotonLibrary::SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary") << "Error - attempting to set a propagation function in voxel "
@@ -379,8 +368,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  void
-  PhotonLibrary::SetReflCount(size_t Voxel, size_t OpChannel, float Count)
+  void PhotonLibrary::SetReflCount(size_t Voxel, size_t OpChannel, float Count)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary")
@@ -390,8 +378,7 @@ namespace phot {
   }
   //----------------------------------------------------
 
-  void
-  PhotonLibrary::SetReflT0(size_t Voxel, size_t OpChannel, float Count)
+  void PhotonLibrary::SetReflT0(size_t Voxel, size_t OpChannel, float Count)
   {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary")
@@ -402,8 +389,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  float const*
-  PhotonLibrary::GetCounts(size_t Voxel) const
+  float const* PhotonLibrary::GetCounts(size_t Voxel) const
   {
     if (Voxel >= fNVoxels)
       return nullptr;
@@ -413,8 +399,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  const std::vector<float>*
-  PhotonLibrary::GetTimingPars(size_t Voxel) const
+  const std::vector<float>* PhotonLibrary::GetTimingPars(size_t Voxel) const
   {
     if (Voxel >= fNVoxels)
       return nullptr;
@@ -424,8 +409,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  TF1*
-  PhotonLibrary::GetTimingTF1s(size_t Voxel) const
+  TF1* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
   {
     if (Voxel >= fNVoxels) return nullptr;
     /*
@@ -453,8 +437,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  float const*
-  PhotonLibrary::GetReflCounts(size_t Voxel) const
+  float const* PhotonLibrary::GetReflCounts(size_t Voxel) const
   {
     if (Voxel >= fNVoxels)
       return nullptr;
@@ -464,8 +447,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  float const*
-  PhotonLibrary::GetReflT0s(size_t Voxel) const
+  float const* PhotonLibrary::GetReflT0s(size_t Voxel) const
   {
     if (Voxel >= fNVoxels)
       return nullptr;
@@ -474,8 +456,7 @@ namespace phot {
   }
 
   //------------------------------------------------------------
-  void
-  PhotonLibrary::LoadMetadata(TDirectory& srcDir)
+  void PhotonLibrary::LoadMetadata(TDirectory& srcDir)
   {
 
     constexpr std::size_t NExpectedKeys = 9U;
@@ -523,8 +504,7 @@ namespace phot {
   } // PhotonLibrary::LoadMetadata()
 
   //------------------------------------------------------------
-  void
-  PhotonLibrary::StoreMetadata() const
+  void PhotonLibrary::StoreMetadata() const
   {
 
     assert(fDir);
@@ -573,8 +553,7 @@ namespace phot {
 
   //----------------------------------------------------
 
-  size_t
-  PhotonLibrary::ExtractNOpChannels(TTree* tree)
+  size_t PhotonLibrary::ExtractNOpChannels(TTree* tree)
   {
     TBranch* channelBranch = tree->GetBranch(OpChannelBranchName.c_str());
     if (!channelBranch) {

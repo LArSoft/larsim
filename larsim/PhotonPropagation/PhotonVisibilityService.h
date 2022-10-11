@@ -48,35 +48,30 @@ namespace phot {
     double GetQuenchingFactor(double dQdx) const;
 
     template <typename Point>
-    static double
-    DistanceToOpDet(Point const& p, unsigned int OpDet)
+    static double DistanceToOpDet(Point const& p, unsigned int OpDet)
     {
       return DistanceToOpDetImpl(geo::vect::toPoint(p), OpDet);
     }
     template <typename Point>
-    static double
-    SolidAngleFactor(Point const& p, unsigned int OpDet)
+    static double SolidAngleFactor(Point const& p, unsigned int OpDet)
     {
       return SolidAngleFactorImpl(geo::vect::toPoint(p), OpDet);
     }
 
     template <typename Point>
-    bool
-    HasVisibility(Point const& p, bool wantReflected = false) const
+    bool HasVisibility(Point const& p, bool wantReflected = false) const
     {
       return doHasVisibility(geo::vect::toPoint(p), wantReflected);
     }
 
     template <typename Point>
-    float
-    GetVisibility(Point const& p, unsigned int OpChannel, bool wantReflected = false) const
+    float GetVisibility(Point const& p, unsigned int OpChannel, bool wantReflected = false) const
     {
       return doGetVisibility(geo::vect::toPoint(p), OpChannel, wantReflected);
     }
 
     template <typename Point>
-    MappedCounts_t
-    GetAllVisibilities(Point const& p, bool wantReflected = false) const
+    MappedCounts_t GetAllVisibilities(Point const& p, bool wantReflected = false) const
     {
       return doGetAllVisibilities(geo::vect::toPoint(p), wantReflected);
     }
@@ -93,8 +88,7 @@ namespace phot {
     phot::IPhotonLibrary::Counts_t GetLibraryEntries(int VoxID, bool wantReflected = false) const;
 
     template <typename Point>
-    MappedT0s_t
-    GetReflT0s(Point const& p) const
+    MappedT0s_t GetReflT0s(Point const& p) const
     {
       return doGetReflT0s(geo::vect::toPoint(p));
     }
@@ -103,8 +97,7 @@ namespace phot {
     float GetLibraryReflT0Entry(int VoxID, OpDetID_t libOpChannel) const;
 
     template <typename Point>
-    MappedParams_t
-    GetTimingPar(Point const& p) const
+    MappedParams_t GetTimingPar(Point const& p) const
     {
       return doGetTimingPar(geo::vect::toPoint(p));
     }
@@ -113,8 +106,7 @@ namespace phot {
     float GetLibraryTimingParEntry(int VoxID, OpDetID_t libOpChannel, size_t npar) const;
 
     template <typename Point>
-    MappedFunctions_t
-    GetTimingTF1(Point const& p) const
+    MappedFunctions_t GetTimingTF1(Point const& p) const
     {
       return doGetTimingTF1(geo::vect::toPoint(p));
     }
@@ -142,87 +134,38 @@ namespace phot {
                               std::vector<std::vector<std::vector<double>>>& tau,
                               double& vis_vmean,
                               double& angle_bin_timing_vis) const;
-    void LoadVUVSemiAnalyticProperties ( bool &isFlatPDCorr,
-                                         bool &isDomePDCorr,
-                                         double &delta_angulo_vuv,
-                                         double &radius) const;
-    void LoadGHFlat( std::vector<std::vector<double>>  &GHvuvpars_flat,
-                     std::vector<double> &border_corr_angulo_flat,
-                     std::vector<std::vector<double>> &border_corr_flat) const;
-    void LoadGHDome( std::vector<std::vector<double>>  &GHvuvpars_dome,
-                     std::vector<double> &border_corr_angulo_dome,
-                     std::vector<std::vector<double>> &border_corr_dome) const;
-    void LoadVisSemiAnalyticProperties ( double &delta_angulo_vis,
-                                         double &radius) const;
-    void LoadVisParsFlat(std::vector<double> &vis_distances_x_flat,
-                         std::vector<double> &vis_distances_r_flat,
-                         std::vector<std::vector<std::vector<double>>> &vispars_flat) const;
-    void LoadVisParsDome(std::vector<double> &vis_distances_x_dome,
-                         std::vector<double> &vis_distances_r_dome,
-                         std::vector<std::vector<std::vector<double>>> &vispars_dome) const;
+    void LoadVUVSemiAnalyticProperties(bool& isFlatPDCorr,
+                                       bool& isDomePDCorr,
+                                       double& delta_angulo_vuv,
+                                       double& radius) const;
+    void LoadGHFlat(std::vector<std::vector<double>>& GHvuvpars_flat,
+                    std::vector<double>& border_corr_angulo_flat,
+                    std::vector<std::vector<double>>& border_corr_flat) const;
+    void LoadGHDome(std::vector<std::vector<double>>& GHvuvpars_dome,
+                    std::vector<double>& border_corr_angulo_dome,
+                    std::vector<std::vector<double>>& border_corr_dome) const;
+    void LoadVisSemiAnalyticProperties(double& delta_angulo_vis, double& radius) const;
+    void LoadVisParsFlat(std::vector<double>& vis_distances_x_flat,
+                         std::vector<double>& vis_distances_r_flat,
+                         std::vector<std::vector<std::vector<double>>>& vispars_flat) const;
+    void LoadVisParsDome(std::vector<double>& vis_distances_x_dome,
+                         std::vector<double>& vis_distances_r_dome,
+                         std::vector<std::vector<std::vector<double>>>& vispars_dome) const;
 
-    bool
-    IsBuildJob() const
-    {
-      return fLibraryBuildJob;
-    }
-    bool
-    UseParameterization() const
-    {
-      return fParameterization;
-    }
-    bool
-    StoreReflected() const
-    {
-      return fStoreReflected;
-    }
-    bool
-    StoreReflT0() const
-    {
-      return fStoreReflT0;
-    }
-    bool
-    IncludeParPropTime() const
-    {
-      return fParPropTime;
-    }
-    size_t
-    ParPropTimeNpar() const
-    {
-      return fParPropTime_npar;
-    }
-    std::string
-    ParPropTimeFormula() const
-    {
-      return fParPropTime_formula;
-    }
+    bool IsBuildJob() const { return fLibraryBuildJob; }
+    bool UseParameterization() const { return fParameterization; }
+    bool StoreReflected() const { return fStoreReflected; }
+    bool StoreReflT0() const { return fStoreReflT0; }
+    bool IncludeParPropTime() const { return fParPropTime; }
+    size_t ParPropTimeNpar() const { return fParPropTime_npar; }
+    std::string ParPropTimeFormula() const { return fParPropTime_formula; }
 
-    bool
-    IncludePropTime() const
-    {
-      return fIncludePropTime;
-    }
-    bool
-    UseNhitsModel() const
-    {
-      return fUseNhitsModel;
-    }
-    bool
-    ApplyVISBorderCorrection() const
-    {
-      return fApplyVISBorderCorrection;
-    }
-    std::string
-    VISBorderCorrectionType() const
-    {
-      return fVISBorderCorrectionType;
-    }
+    bool IncludePropTime() const { return fIncludePropTime; }
+    bool UseNhitsModel() const { return fUseNhitsModel; }
+    bool ApplyVISBorderCorrection() const { return fApplyVISBorderCorrection; }
+    std::string VISBorderCorrectionType() const { return fVISBorderCorrectionType; }
 
-    const sim::PhotonVoxelDef&
-    GetVoxelDef() const
-    {
-      return fVoxelDef;
-    }
+    const sim::PhotonVoxelDef& GetVoxelDef() const { return fVoxelDef; }
     size_t NOpChannels() const;
 
   private:
@@ -280,7 +223,8 @@ namespace phot {
     std::vector<double> fDistances_exp;
     std::vector<std::vector<double>> fSlope;
     std::vector<std::vector<double>> fExpo_over_Landau_norm;
-    double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
+    double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance,
+      fangle_bin_timing_vuv;
     // for vis time parameterisation (exists for SBND, DUNE-SP)
     std::vector<double> fDistances_refl;
     std::vector<double> fDistances_radial_refl;
@@ -324,11 +268,7 @@ namespace phot {
 
     geo::Point_t LibLocation(geo::Point_t const& p) const;
 
-    int
-    VoxelAt(geo::Point_t const& p) const
-    {
-      return fVoxelDef.GetVoxelID(LibLocation(p));
-    }
+    int VoxelAt(geo::Point_t const& p) const { return fVoxelDef.GetVoxelID(LibLocation(p)); }
 
     // same as `doGetVisibility()` but the channel number refers to the library
     // ID rather than to the actual optical detector ID.

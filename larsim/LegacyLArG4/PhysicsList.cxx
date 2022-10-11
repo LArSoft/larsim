@@ -27,15 +27,14 @@
 ///#include "nug4/G4Base/G4PhysListFactorySingleton.hh"
 ///PHYSLISTREG3(larg4, PhysicsList, larg4::PhysicsList)
 #include "Geant4/G4PhysListStamper.hh"
-G4_DECLARE_PHYSLIST_FACTORY_NS(larg4::PhysicsList,larg4,PhysicsList);
+G4_DECLARE_PHYSLIST_FACTORY_NS(larg4::PhysicsList, larg4, PhysicsList);
 
 #define G4MT_physicsVector ((G4VMPLsubInstanceManager.offset[g4vmplInstanceID]).physicsVector)
 
 namespace larg4 {
 
   // This is the method we have to modify to use the Geant4 parallel geometries.
-  void
-  ModularPhysicsList::ConstructProcess()
+  void ModularPhysicsList::ConstructProcess()
   {
     // We don't need to modify G4VModularPhysicsList's
     // AddTransportation method.  Just invoke it directly.

@@ -64,8 +64,7 @@ namespace larg4 {
     std::cout << "ISCalcAna constructor." << std::endl;
   }
 
-  void
-  ISCalcAna::beginJob()
+  void ISCalcAna::beginJob()
   {
     std::cout << "ISCalcAna beginJob." << std::endl;
     std::cout << "Using " << calcTag.label() << " algorithm to calculate IS." << std::endl;
@@ -87,14 +86,9 @@ namespace larg4 {
       "EDep IS Calc Ntuple",
       "run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon:scintyield");
   }
-  void
-  ISCalcAna::endJob()
-  {
-    std::cout << "ISCalcAna endJob." << std::endl;
-  }
+  void ISCalcAna::endJob() { std::cout << "ISCalcAna endJob." << std::endl; }
 
-  void
-  ISCalcAna::analyze(art::Event const& event)
+  void ISCalcAna::analyze(art::Event const& event)
   {
     art::Handle<std::vector<sim::SimEnergyDeposit>> edep_handle;
     if (!event.getByLabel(fEDepTag, edep_handle)) {

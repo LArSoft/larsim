@@ -45,17 +45,16 @@
 // ###                    THERMAL (DRIFT) ELECTRON                    ###
 // ######################################################################
 
-class G4ThermalElectron : public G4ParticleDefinition
-{
- private:
-   static G4ThermalElectron* theInstance;
-   G4ThermalElectron(){}
-   ~G4ThermalElectron(){}
+class G4ThermalElectron : public G4ParticleDefinition {
+private:
+  static G4ThermalElectron* theInstance;
+  G4ThermalElectron() {}
+  ~G4ThermalElectron() {}
 
- public:
-   static G4ThermalElectron* Definition();
-   static G4ThermalElectron* ThermalElectronDefinition();
-   static G4ThermalElectron* ThermalElectron();
+public:
+  static G4ThermalElectron* Definition();
+  static G4ThermalElectron* ThermalElectronDefinition();
+  static G4ThermalElectron* ThermalElectron();
 };
 
 #endif

@@ -52,8 +52,7 @@ namespace cheat {
   {}
 
   //--------------------------------------------------------------------
-  void
-  CheckBackTracking::analyze(art::Event const& evt)
+  void CheckBackTracking::analyze(art::Event const& evt)
   {
 
     // grab the hits that have been reconstructed

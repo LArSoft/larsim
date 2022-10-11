@@ -13,15 +13,11 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   // Constructor.
-  IonizationAndScintillationAction::IonizationAndScintillationAction()
-  {
-  }
+  IonizationAndScintillationAction::IonizationAndScintillationAction() {}
 
   //----------------------------------------------------------------------------
   // Destructor.
-  IonizationAndScintillationAction::~IonizationAndScintillationAction()
-  {
-  }
+  IonizationAndScintillationAction::~IonizationAndScintillationAction() {}
 
   //----------------------------------------------------------------------------
   // With every step, calculate the number of ionization electrons and

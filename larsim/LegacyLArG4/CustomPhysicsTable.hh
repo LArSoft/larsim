@@ -39,11 +39,7 @@ namespace larg4 {
     std::vector<std::string> GetAvailablePhysicsList();
     bool IsPhysicsAvailable(std::string const&);
     G4VPhysicsConstructor* GetPhysicsConstructor(std::string const& physicsName);
-    std::map<std::string, CustomPhysicsFactoryBase*> const&
-    GetFullTable()
-    {
-      return theTable;
-    }
+    std::map<std::string, CustomPhysicsFactoryBase*> const& GetFullTable() { return theTable; }
     void AddPhysics(CustomPhysicsFactoryBase*);
 
   private:

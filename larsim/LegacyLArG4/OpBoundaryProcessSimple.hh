@@ -129,21 +129,18 @@ namespace larg4 {
     int fVerbosity;
   };
 
-  inline G4bool
-  OpBoundaryProcessSimple::G4BooleanRand(const G4double prob) const
+  inline G4bool OpBoundaryProcessSimple::G4BooleanRand(const G4double prob) const
   {
     /* Returns a random boolean variable with the specified probability */
     return (G4UniformRand() < prob);
   }
 
-  inline G4bool
-  OpBoundaryProcessSimple::IsApplicable(const G4ParticleDefinition& aParticleType)
+  inline G4bool OpBoundaryProcessSimple::IsApplicable(const G4ParticleDefinition& aParticleType)
   {
     return (&aParticleType == G4OpticalPhoton::OpticalPhoton());
   }
 
-  inline OpBoundaryProcessSimpleStatus
-  OpBoundaryProcessSimple::GetStatus() const
+  inline OpBoundaryProcessSimpleStatus OpBoundaryProcessSimple::GetStatus() const
   {
     return fTheStatus;
   }

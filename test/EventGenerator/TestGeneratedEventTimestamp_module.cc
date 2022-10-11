@@ -11,47 +11,45 @@
 #include "CLHEP/Random/RandomEngine.h"
 
 // framework libraries
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "canvas/Persistency/Provenance/Timestamp.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-namespace fhicl { class ParameterSet; }
+#include "canvas/Persistency/Provenance/Timestamp.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+namespace fhicl {
+  class ParameterSet;
+}
 
 // artextensions libraries
 #include "nurandom/RandomUtils/NuRandomService.h"
 
-class TestGeneratedEventTimestamp: public art::EDAnalyzer {
-    public:
+class TestGeneratedEventTimestamp : public art::EDAnalyzer {
+public:
   explicit TestGeneratedEventTimestamp(fhicl::ParameterSet const& pset);
 
 private:
-  void analyze(art::Event const & e) override;
+  void analyze(art::Event const& e) override;
   CLHEP::HepRandomEngine& fEngine;
   CLHEP::HepRandomEngine& fAuxEngine;
 }; // class TestGeneratedEventTimestamp
 
-
 //------------------------------------------------------------------------------
-TestGeneratedEventTimestamp::TestGeneratedEventTimestamp
-  (fhicl::ParameterSet const& pset)
+TestGeneratedEventTimestamp::TestGeneratedEventTimestamp(fhicl::ParameterSet const& pset)
   : EDAnalyzer(pset)
   // create two random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
-  , fEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, pset, "Seed"))
-  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed"))
+  , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService> {}
+                 ->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed"))
 {}
-
 
 //------------------------------------------------------------------------------
 void TestGeneratedEventTimestamp::analyze(art::Event const& event)
 {
   mf::LogInfo("TestGeneratedEventTimestamp")
-    <<   "Event time stamp: " << event.time().value()
-    << "\nRandom seeds: " << fEngine.getSeed() << " (main), "
-    << fAuxEngine.getSeed() << " (aux)";
-  }
-
+    << "Event time stamp: " << event.time().value() << "\nRandom seeds: " << fEngine.getSeed()
+    << " (main), " << fAuxEngine.getSeed() << " (aux)";
+}
 
 DEFINE_ART_MODULE(TestGeneratedEventTimestamp)

@@ -13,14 +13,14 @@
 
 // nusimdata includes
 #include "nusimdata/SimulationBase/MCNeutrino.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // ROOT includes
-#include "TMath.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TLorentzVector.h"
+#include "TMath.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
@@ -34,39 +34,27 @@ namespace evgen {
 
   //----------------------------------------------------------------------------
   // Constructor
-  NueAr40CCGenerator::NueAr40CCGenerator(fhicl::ParameterSet
-                                                           const& parameterSet)
-              : fNumberOfLevels        ( 73                )
-              , fNumberOfStartLevels   ( 21                )
-              , fBranchingRatios       (fNumberOfLevels    )
-              , fDecayTo               (fNumberOfLevels    )
-              , fMonoenergeticNeutrinos
-                         (parameterSet.get< bool   >("MonoenergeticNeutrinos"))
-              , fNeutrinoEnergy
-                         (parameterSet.get< double >("NeutrinoEnergy"        ))
-              , fEnergySpectrumFileName
-                    (parameterSet.get< std::string >("EnergySpectrumFileName"))
-              , fUsePoissonDistribution
-                         (parameterSet.get< bool   >("UsePoissonDistribution"))
-              , fAllowZeroNeutrinos
-                         (parameterSet.get< bool   >("AllowZeroNeutrinos"    ))
-              , fNumberOfNeutrinos
-                         (parameterSet.get< int    >("NumberOfNeutrinos"     ))
-              , fNeutrinoTimeBegin
-                         (parameterSet.get< double >("NeutrinoTimeBegin"     ))
-              , fNeutrinoTimeEnd
-                         (parameterSet.get< double >("NeutrinoTimeEnd"       ))
+  NueAr40CCGenerator::NueAr40CCGenerator(fhicl::ParameterSet const& parameterSet)
+    : fNumberOfLevels(73)
+    , fNumberOfStartLevels(21)
+    , fBranchingRatios(fNumberOfLevels)
+    , fDecayTo(fNumberOfLevels)
+    , fMonoenergeticNeutrinos(parameterSet.get<bool>("MonoenergeticNeutrinos"))
+    , fNeutrinoEnergy(parameterSet.get<double>("NeutrinoEnergy"))
+    , fEnergySpectrumFileName(parameterSet.get<std::string>("EnergySpectrumFileName"))
+    , fUsePoissonDistribution(parameterSet.get<bool>("UsePoissonDistribution"))
+    , fAllowZeroNeutrinos(parameterSet.get<bool>("AllowZeroNeutrinos"))
+    , fNumberOfNeutrinos(parameterSet.get<int>("NumberOfNeutrinos"))
+    , fNeutrinoTimeBegin(parameterSet.get<double>("NeutrinoTimeBegin"))
+    , fNeutrinoTimeEnd(parameterSet.get<double>("NeutrinoTimeEnd"))
   {
 
-    fActiveVolume.push_back
-      (parameterSet.get< std::vector< double > >("ActiveVolume0"));
-    fActiveVolume.push_back
-      (parameterSet.get< std::vector< double > >("ActiveVolume1"));
+    fActiveVolume.push_back(parameterSet.get<std::vector<double>>("ActiveVolume0"));
+    fActiveVolume.push_back(parameterSet.get<std::vector<double>>("ActiveVolume1"));
 
     if (!fMonoenergeticNeutrinos) ReadNeutrinoSpectrum();
 
     InitializeVectors();
-
   }
 
   //----------------------------------------------------------------------------
@@ -77,103 +65,89 @@ namespace evgen {
     std::vector<simb::MCTruth> truths;
 
     int NumberOfNu = this->GetNumberOfNeutrinos(engine);
-    for(int i = 0; i < NumberOfNu; ++i) {
+    for (int i = 0; i < NumberOfNu; ++i) {
 
       simb::MCTruth truth;
       truth.SetOrigin(simb::kSuperNovaNeutrino);
 
       // Loop until at least one neutrino is simulated
       while (!truth.NParticles()) {
-	CreateKinematicsVector(truth, engine);
+        CreateKinematicsVector(truth, engine);
       }
 
       truths.push_back(truth);
-
     }
 
     return truths;
-
   }
 
   //----------------------------------------------------------------------------
   // Return normalized direction cosines of isotropic vector
-  std::vector< double > NueAr40CCGenerator::GetIsotropicDirection
-                                         (CLHEP::HepRandomEngine& engine) const
+  std::vector<double> NueAr40CCGenerator::GetIsotropicDirection(
+    CLHEP::HepRandomEngine& engine) const
   {
 
     CLHEP::RandFlat randFlat(engine);
 
-    std::vector< double > isotropicDirection;
+    std::vector<double> isotropicDirection;
 
-    double phi      = 2*TMath::Pi()*randFlat.fire();
-    double cosTheta = 2*randFlat.fire() - 1;
-    double theta    = TMath::ACos(cosTheta);
+    double phi = 2 * TMath::Pi() * randFlat.fire();
+    double cosTheta = 2 * randFlat.fire() - 1;
+    double theta = TMath::ACos(cosTheta);
 
     // x, y, z
-    isotropicDirection.push_back(cos(phi)*sin(theta));
-    isotropicDirection.push_back(sin(phi)*sin(theta));
+    isotropicDirection.push_back(cos(phi) * sin(theta));
+    isotropicDirection.push_back(sin(phi) * sin(theta));
     isotropicDirection.push_back(cosTheta);
 
     return isotropicDirection;
-
   }
 
   //----------------------------------------------------------------------------
   // Return a random vector with 3D coordinates inside the active LAr volume
-  std::vector< double > NueAr40CCGenerator::GetUniformPosition
-                                        (CLHEP::HepRandomEngine& engine) const
+  std::vector<double> NueAr40CCGenerator::GetUniformPosition(CLHEP::HepRandomEngine& engine) const
   {
 
     CLHEP::RandFlat randFlat(engine);
 
-    std::vector< double > position;
+    std::vector<double> position;
 
-    position.push_back(randFlat.
-      fire(fActiveVolume.at(0).at(0), fActiveVolume.at(1).at(0)));
-    position.push_back(randFlat.
-      fire(fActiveVolume.at(0).at(1), fActiveVolume.at(1).at(1)));
-    position.push_back(randFlat.
-      fire(fActiveVolume.at(0).at(2), fActiveVolume.at(1).at(2)));
+    position.push_back(randFlat.fire(fActiveVolume.at(0).at(0), fActiveVolume.at(1).at(0)));
+    position.push_back(randFlat.fire(fActiveVolume.at(0).at(1), fActiveVolume.at(1).at(1)));
+    position.push_back(randFlat.fire(fActiveVolume.at(0).at(2), fActiveVolume.at(1).at(2)));
 
     return position;
-
   }
 
   //----------------------------------------------------------------------------
   // Get number of neutrinos to generate
-  int NueAr40CCGenerator::GetNumberOfNeutrinos
-                                         (CLHEP::HepRandomEngine& engine) const
+  int NueAr40CCGenerator::GetNumberOfNeutrinos(CLHEP::HepRandomEngine& engine) const
   {
 
-    if (fUsePoissonDistribution)
-    {
+    if (fUsePoissonDistribution) {
       CLHEP::RandPoisson randPoisson(engine);
       int N = randPoisson.fire(fNumberOfNeutrinos);
-      if(N == 0 && !fAllowZeroNeutrinos) N = 1;
+      if (N == 0 && !fAllowZeroNeutrinos) N = 1;
       return N;
     }
 
     return fNumberOfNeutrinos;
-
   }
 
   //----------------------------------------------------------------------------
   // Sample uniform distribution to get a neutrino interaction time
-  double NueAr40CCGenerator::GetNeutrinoTime
-                                         (CLHEP::HepRandomEngine& engine) const
+  double NueAr40CCGenerator::GetNeutrinoTime(CLHEP::HepRandomEngine& engine) const
   {
 
     CLHEP::RandFlat randFlat(engine);
 
     return randFlat.fire(fNeutrinoTimeBegin, fNeutrinoTimeEnd);
-
   }
 
   //----------------------------------------------------------------------------
   // Sample energy spectrum from fEnergyProbabilityMap
   // or return a constant value
-  double NueAr40CCGenerator::GetNeutrinoEnergy
-                                         (CLHEP::HepRandomEngine& engine) const
+  double NueAr40CCGenerator::GetNeutrinoEnergy(CLHEP::HepRandomEngine& engine) const
   {
 
     if (fMonoenergeticNeutrinos) return fNeutrinoEnergy;
@@ -182,27 +156,23 @@ namespace evgen {
 
     double neutrinoEnergy = 0.0;
 
-    double randomNumber   = randFlat.fire();
+    double randomNumber = randFlat.fire();
 
     // We need this to get a previous entry in the map
-    std::pair< double, double > previousPair;
+    std::pair<double, double> previousPair;
 
-    for (std::map< double, double >::const_iterator energyProbability =
-          fEnergyProbabilityMap.begin(); energyProbability !=
-          fEnergyProbabilityMap.end(); ++energyProbability)
-    {
-      if (randomNumber < energyProbability->second)
-      {
-        if (energyProbability != fEnergyProbabilityMap.begin())
-        {
-          neutrinoEnergy = energyProbability->first -
-            (energyProbability->second - randomNumber)*
-            (energyProbability->first - previousPair.first)/
-            (energyProbability->second - previousPair.second);
+    for (std::map<double, double>::const_iterator energyProbability = fEnergyProbabilityMap.begin();
+         energyProbability != fEnergyProbabilityMap.end();
+         ++energyProbability) {
+      if (randomNumber < energyProbability->second) {
+        if (energyProbability != fEnergyProbabilityMap.begin()) {
+          neutrinoEnergy =
+            energyProbability->first - (energyProbability->second - randomNumber) *
+                                         (energyProbability->first - previousPair.first) /
+                                         (energyProbability->second - previousPair.second);
           break;
         }
-        else
-        {
+        else {
           neutrinoEnergy = energyProbability->first;
           break;
         }
@@ -211,7 +181,6 @@ namespace evgen {
     }
 
     return neutrinoEnergy;
-
   }
 
   //----------------------------------------------------------------------------
@@ -220,39 +189,33 @@ namespace evgen {
   {
 
     cet::search_path searchPath("FW_SEARCH_PATH");
-    std::string directoryName = "SupernovaNeutrinos/" +
-                                                      fEnergySpectrumFileName;
+    std::string directoryName = "SupernovaNeutrinos/" + fEnergySpectrumFileName;
 
     std::string fullName;
     searchPath.find_file(directoryName, fullName);
 
     if (fullName.empty())
       throw cet::exception("NueAr40CCGenerator")
-        << "Cannot find file with neutrino energy spectrum "
-        << fullName << '\n';
+        << "Cannot find file with neutrino energy spectrum " << fullName << '\n';
 
     TFile energySpectrumFile(fullName.c_str(), "READ");
 
     std::string energySpectrumGraphName = "NueSpectrum";
-    TGraph *energySpectrumGraph =
-      dynamic_cast< TGraph* >(energySpectrumFile.Get
-                                     (energySpectrumGraphName.c_str()));
+    TGraph* energySpectrumGraph =
+      dynamic_cast<TGraph*>(energySpectrumFile.Get(energySpectrumGraphName.c_str()));
 
-    double  integral       = 0.0;
-    int     numberOfPoints = energySpectrumGraph->GetN();
-    double *energyValues   = energySpectrumGraph->GetX();
-    double *fluxValues     = energySpectrumGraph->GetY();
+    double integral = 0.0;
+    int numberOfPoints = energySpectrumGraph->GetN();
+    double* energyValues = energySpectrumGraph->GetX();
+    double* fluxValues = energySpectrumGraph->GetY();
     for (int point = 0; point < numberOfPoints; ++point)
       integral += fluxValues[point];
 
-    double  probability    = 0.0;
-    for (int point = 0; point < numberOfPoints; ++point)
-    {
-      probability += fluxValues[point]/integral;
-      fEnergyProbabilityMap.insert(std::make_pair(energyValues[point],
-                                                          probability));
+    double probability = 0.0;
+    for (int point = 0; point < numberOfPoints; ++point) {
+      probability += fluxValues[point] / integral;
+      fEnergyProbabilityMap.insert(std::make_pair(energyValues[point], probability));
     }
-
   }
 
   //----------------------------------------------------------------------------
@@ -801,96 +764,85 @@ namespace evgen {
 
     // Info from table VII (http://prc.aps.org/pdf/PRC/v58/i6/p3677_1)
     // in MeV
-    double startEnergyLevels[] = {              2.281, 2.752, 2.937,
-      3.143, 3.334, 3.569, 3.652, 3.786, 3.861, 4.067, 4.111, 4.267,
-      4.364, 4.522, 4.655, 4.825, 5.017, 5.080, 5.223, 5.696, 6.006 };
+    double startEnergyLevels[] = {2.281, 2.752, 2.937, 3.143, 3.334, 3.569, 3.652,
+                                  3.786, 3.861, 4.067, 4.111, 4.267, 4.364, 4.522,
+                                  4.655, 4.825, 5.017, 5.080, 5.223, 5.696, 6.006};
 
-    fStartEnergyLevels.insert(fStartEnergyLevels.end(), &startEnergyLevels[0],
-                                     &startEnergyLevels[fNumberOfStartLevels]);
+    fStartEnergyLevels.insert(
+      fStartEnergyLevels.end(), &startEnergyLevels[0], &startEnergyLevels[fNumberOfStartLevels]);
 
-    double b[] = { 0.9,  1.5,  0.11, 0.06, 0.04, 0.01,
-                   0.16, 0.26, 0.01, 0.05, 0.11, 0.29,
-                   3.84, 0.31, 0.38, 0.47, 0.36, 0.23,
-                                     0.03, 0.11, 0.13 };
+    double b[] = {0.9,  1.5,  0.11, 0.06, 0.04, 0.01, 0.16, 0.26, 0.01, 0.05, 0.11,
+                  0.29, 3.84, 0.31, 0.38, 0.47, 0.36, 0.23, 0.03, 0.11, 0.13};
 
     fB.insert(fB.end(), &b[0], &b[fNumberOfStartLevels]);
 
-    double energyLevels[] = {       7.4724,    6.2270,    5.06347,
-      4.99294,  4.8756,   4.87255,  4.78865,   4.744093,  4.53706,
-      4.47299,  4.41936,  4.39588,  4.3840,    4.3656,    4.28052,
-      4.25362,  4.21307,  4.18003,  4.14901,   4.11084,   4.10446,
-      4.02035,  3.92390,  3.88792,  3.86866,   3.840228,  3.82143,
-      3.79757,  3.76779,  3.73848,  3.663739,  3.62995,   3.59924,
-      3.55697,  3.48621,  3.439144, 3.41434,   3.39363,   3.36803,
-      3.22867,  3.15381,  3.14644,  3.12836,   3.109721,  3.1002,
-      3.02795,  2.98587,  2.9508,   2.87901,   2.80788,   2.7874,
-      2.786644, 2.75672,  2.74691,  2.730372,  2.625990,  2.57593,
-      2.558,    2.54277,  2.419171, 2.397165,  2.290493,  2.289871,
-      2.26040,  2.103668, 2.069809, 2.047354,  1.959068,  1.643639,
-                          0.891398, 0.8001427, 0.0298299, 0.0      };
+    double energyLevels[] = {
+      7.4724,   6.2270,   5.06347,  4.99294,  4.8756,   4.87255,  4.78865,  4.744093,  4.53706,
+      4.47299,  4.41936,  4.39588,  4.3840,   4.3656,   4.28052,  4.25362,  4.21307,   4.18003,
+      4.14901,  4.11084,  4.10446,  4.02035,  3.92390,  3.88792,  3.86866,  3.840228,  3.82143,
+      3.79757,  3.76779,  3.73848,  3.663739, 3.62995,  3.59924,  3.55697,  3.48621,   3.439144,
+      3.41434,  3.39363,  3.36803,  3.22867,  3.15381,  3.14644,  3.12836,  3.109721,  3.1002,
+      3.02795,  2.98587,  2.9508,   2.87901,  2.80788,  2.7874,   2.786644, 2.75672,   2.74691,
+      2.730372, 2.625990, 2.57593,  2.558,    2.54277,  2.419171, 2.397165, 2.290493,  2.289871,
+      2.26040,  2.103668, 2.069809, 2.047354, 1.959068, 1.643639, 0.891398, 0.8001427, 0.0298299,
+      0.0};
 
-    fEnergyLevels.insert(fEnergyLevels.end(), &energyLevels[0],
-                                &energyLevels[fNumberOfLevels]);
+    fEnergyLevels.insert(fEnergyLevels.end(), &energyLevels[0], &energyLevels[fNumberOfLevels]);
 
     // I have to put checks that the arrays really
     // have as many elements as they should
-
   }
 
   //----------------------------------------------------------------------------
   // Simulate particles and fill truth
   void NueAr40CCGenerator::CreateKinematicsVector(simb::MCTruth& truth,
-                                        CLHEP::HepRandomEngine& engine) const
+                                                  CLHEP::HepRandomEngine& engine) const
   {
 
     bool success = false;
     while (!success) {
       double neutrinoEnergy = GetNeutrinoEnergy(engine);
-      double neutrinoTime   = GetNeutrinoTime  (engine);
+      double neutrinoTime = GetNeutrinoTime(engine);
       success = ProcessOneNeutrino(truth, neutrinoEnergy, neutrinoTime, engine);
     }
-
   }
 
   //----------------------------------------------------------------------------
   // Simulate particles and fill truth
   // Return true if one neutrino is processed, false otherwise
   bool NueAr40CCGenerator::ProcessOneNeutrino(simb::MCTruth& truth,
-                        double neutrinoEnergy, double neutrinoTime,
-                                    CLHEP::HepRandomEngine& engine) const
+                                              double neutrinoEnergy,
+                                              double neutrinoTime,
+                                              CLHEP::HepRandomEngine& engine) const
   {
 
     CLHEP::RandFlat randFlat(engine);
 
     int highestLevel = 0;
-    std::vector< double > levelCrossSections =
-                           CalculateCrossSections(neutrinoEnergy, highestLevel);
+    std::vector<double> levelCrossSections = CalculateCrossSections(neutrinoEnergy, highestLevel);
 
     double totalCrossSection = 0;
     // Calculating total cross section
-    for (std::vector< double >::iterator crossSection =
-                                                     levelCrossSections.begin();
-                       crossSection != levelCrossSections.end(); ++crossSection)
+    for (std::vector<double>::iterator crossSection = levelCrossSections.begin();
+         crossSection != levelCrossSections.end();
+         ++crossSection)
       totalCrossSection += *crossSection;
 
-    if (totalCrossSection == 0)
-      return false;
+    if (totalCrossSection == 0) return false;
 
-    std::vector< double > startLevelProbabilities;
+    std::vector<double> startLevelProbabilities;
     // Calculating each level's probability
-    for (std::vector< double >::iterator crossSection =
-                                                     levelCrossSections.begin();
-                       crossSection != levelCrossSections.end(); ++crossSection)
-      startLevelProbabilities.push_back((*crossSection)/totalCrossSection);
+    for (std::vector<double>::iterator crossSection = levelCrossSections.begin();
+         crossSection != levelCrossSections.end();
+         ++crossSection)
+      startLevelProbabilities.push_back((*crossSection) / totalCrossSection);
 
-    double randomNumber     = randFlat.fire();
-    double tprob            =  0;
-    int    chosenStartLevel = -1;
+    double randomNumber = randFlat.fire();
+    double tprob = 0;
+    int chosenStartLevel = -1;
     // Picking a starting level
-    for (int level = 0; level < highestLevel; ++level)
-    {
-      if (randomNumber < (startLevelProbabilities.at(level) + tprob))
-      {
+    for (int level = 0; level < highestLevel; ++level) {
+      if (randomNumber < (startLevelProbabilities.at(level) + tprob)) {
         chosenStartLevel = level;
         break;
       }
@@ -898,62 +850,52 @@ namespace evgen {
     }
 
     int lastLevel = -1;
-    int level     = -1;
+    int level = -1;
 
     // Time delays
     // Seems like this is not implemented yet
-    std::vector< double > levelDelay;
-    for (int n = 0; n < fNumberOfLevels; ++n) levelDelay.push_back(0.0);
+    std::vector<double> levelDelay;
+    for (int n = 0; n < fNumberOfLevels; ++n)
+      levelDelay.push_back(0.0);
 
     // The highest n for which fStartEnergyLevels.at(chosenStartLevel)
     // is higher than fEnergyLevels.at(n)
     int highestHigher = 0;
     // The lowest n for which fStartEnergyLevels.at(chosenStartLevel)
     // is lower than fEnergyLevels.at(n)
-    int lowestLower   = 0;
+    int lowestLower = 0;
 
     // Finding lowestLower and highestHigher
-    for (int n = 0; n < fNumberOfLevels; ++n)
-    {
-      if (fStartEnergyLevels.at(chosenStartLevel) < fEnergyLevels.at(n))
-        lowestLower = n;
-      if (fStartEnergyLevels.at(chosenStartLevel) > fEnergyLevels.at(n))
-      {
+    for (int n = 0; n < fNumberOfLevels; ++n) {
+      if (fStartEnergyLevels.at(chosenStartLevel) < fEnergyLevels.at(n)) lowestLower = n;
+      if (fStartEnergyLevels.at(chosenStartLevel) > fEnergyLevels.at(n)) {
         highestHigher = n;
         break;
       }
     }
 
-    if (std::abs(fStartEnergyLevels.at(chosenStartLevel) -
-                                           fEnergyLevels.at(lowestLower))
-          < std::abs(fStartEnergyLevels.at(chosenStartLevel)
-                                       - fEnergyLevels.at(highestHigher)))
-    {
+    if (std::abs(fStartEnergyLevels.at(chosenStartLevel) - fEnergyLevels.at(lowestLower)) <
+        std::abs(fStartEnergyLevels.at(chosenStartLevel) - fEnergyLevels.at(highestHigher))) {
       lastLevel = lowestLower;
-      level     = lowestLower;
+      level = lowestLower;
     }
     // If the chosen start level energy is closest to the lowest level energy
     // that it's lower than than the highest level energy
     // that it's higher than, it starts at the level of
     // the lowest level energy that it's lower than
 
-    if (std::abs(fStartEnergyLevels.at(chosenStartLevel)
-                                     - fEnergyLevels.at(highestHigher))
-          < std::abs(fStartEnergyLevels.at(chosenStartLevel)
-                                       - fEnergyLevels.at(lowestLower)))
-    {
+    if (std::abs(fStartEnergyLevels.at(chosenStartLevel) - fEnergyLevels.at(highestHigher)) <
+        std::abs(fStartEnergyLevels.at(chosenStartLevel) - fEnergyLevels.at(lowestLower))) {
       lastLevel = highestHigher;
-      level     = highestHigher;
+      level = highestHigher;
     }
     // If the chosen start level energy is closest to the highest level energy
     // that it's higher than than the lowest level energy that it's lower than,
     // it starts at the level of the highest level energy that it's higher than
 
-    std::vector< double > vertex = GetUniformPosition(engine);
+    std::vector<double> vertex = GetUniformPosition(engine);
 
-    std::vector< double > neutrinoDirection = GetIsotropicDirection(engine);
-
-
+    std::vector<double> neutrinoDirection = GetIsotropicDirection(engine);
 
     //
     // Add the first particle (the neutrino) to the truth list...
@@ -962,16 +904,14 @@ namespace evgen {
     // NOTE: all of the values below calculated for the neutrino should be checked!
 
     // Primary particles have negative IDs
-    int neutrinoTrackID = -1*(truth.NParticles() + 1);
+    int neutrinoTrackID = -1 * (truth.NParticles() + 1);
     std::string primary("primary");
 
-    int    nuePDG     = 12;
-    double neutrinoP  = neutrinoEnergy/1000.0; // use GeV...
-    double neutrinoPx = neutrinoDirection.at(0)*neutrinoP;
-    double neutrinoPy = neutrinoDirection.at(1)*neutrinoP;
-    double neutrinoPz = neutrinoDirection.at(2)*neutrinoP;
-
-
+    int nuePDG = 12;
+    double neutrinoP = neutrinoEnergy / 1000.0; // use GeV...
+    double neutrinoPx = neutrinoDirection.at(0) * neutrinoP;
+    double neutrinoPy = neutrinoDirection.at(1) * neutrinoP;
+    double neutrinoPz = neutrinoDirection.at(2) * neutrinoP;
 
     // Create the neutrino:
     //   * set the mother to -1 since it is primary
@@ -979,55 +919,46 @@ namespace evgen {
     //   * set the status bit to 0 so that geant doesn't waste any CPU tracking the neutrino
     simb::MCParticle neutrino(neutrinoTrackID, nuePDG, primary, -1, -1, 0);
 
-    TLorentzVector neutrinoPosition(vertex.at(0), vertex.at(1),
-                                    vertex.at(2), neutrinoTime);
-    TLorentzVector neutrinoMomentum(neutrinoPx, neutrinoPy,
-                                    neutrinoPz, neutrinoEnergy/1000.0);
+    TLorentzVector neutrinoPosition(vertex.at(0), vertex.at(1), vertex.at(2), neutrinoTime);
+    TLorentzVector neutrinoMomentum(neutrinoPx, neutrinoPy, neutrinoPz, neutrinoEnergy / 1000.0);
     neutrino.AddTrajectoryPoint(neutrinoPosition, neutrinoMomentum);
 
     truth.Add(neutrino);
-
-
 
     //
     // Adding the electron to truth
     //
 
     // In MeV
-    double electronEnergy    = neutrinoEnergy -
-                               (fEnergyLevels.at(lastLevel) + 1.5);
-    double electronEnergyGeV = electronEnergy/1000.0;
+    double electronEnergy = neutrinoEnergy - (fEnergyLevels.at(lastLevel) + 1.5);
+    double electronEnergyGeV = electronEnergy / 1000.0;
 
-    double electronM  = 0.000511;
-    double electronP  = std::sqrt(std::pow(electronEnergyGeV,2)
-                                         - std::pow(electronM,2));
+    double electronM = 0.000511;
+    double electronP = std::sqrt(std::pow(electronEnergyGeV, 2) - std::pow(electronM, 2));
 
     // For the moment, choose an isotropic direction for the electron.
-    std::vector< double > electronDirection = GetIsotropicDirection(engine);
-    double electronPx = electronDirection.at(0)*electronP;
-    double electronPy = electronDirection.at(1)*electronP;
-    double electronPz = electronDirection.at(2)*electronP;
+    std::vector<double> electronDirection = GetIsotropicDirection(engine);
+    double electronPx = electronDirection.at(0) * electronP;
+    double electronPy = electronDirection.at(1) * electronP;
+    double electronPz = electronDirection.at(2) * electronP;
 
     // Primary particles have negative IDs
-    int trackID = -1*(truth.NParticles() + 1);
+    int trackID = -1 * (truth.NParticles() + 1);
     int electronPDG = 11;
     simb::MCParticle electron(trackID, electronPDG, primary);
 
-    TLorentzVector electronPosition(vertex.at(0), vertex.at(1),
-                                    vertex.at(2), neutrinoTime);
-    TLorentzVector electronMomentum(electronPx, electronPy,
-                                    electronPz, electronEnergyGeV);
+    TLorentzVector electronPosition(vertex.at(0), vertex.at(1), vertex.at(2), neutrinoTime);
+    TLorentzVector electronMomentum(electronPx, electronPy, electronPz, electronEnergyGeV);
     electron.AddTrajectoryPoint(electronPosition, electronMomentum);
 
     truth.Add(electron);
 
-    double ttime       = neutrinoTime;
-    int    noMoreDecay = 0;
+    double ttime = neutrinoTime;
+    int noMoreDecay = 0;
 
     // Level loop
     int groundLevel = fNumberOfLevels - 1;
-    while (level != groundLevel)
-    {
+    while (level != groundLevel) {
 
       double rl = randFlat.fire();
 
@@ -1036,52 +967,45 @@ namespace evgen {
       tprob = 0; // Used this variable above for cross section
 
       // Decay loop
-      for (unsigned int iLevel = 0;
-             iLevel < fBranchingRatios.at(level).size(); ++iLevel)
-      {
+      for (unsigned int iLevel = 0; iLevel < fBranchingRatios.at(level).size(); ++iLevel) {
 
-        if (rl < (fBranchingRatios.at(level).at(iLevel) + tprob))
-        {
+        if (rl < (fBranchingRatios.at(level).at(iLevel) + tprob)) {
 
           // We have a decay
 
           level = fDecayTo.at(level).at(decayNum);
 
           // Really should be using a map
-          double gammaEnergy    = fEnergyLevels.at(lastLevel) -
-                                                 fEnergyLevels.at(level);
-          double gammaEnergyGeV = gammaEnergy/1000;
+          double gammaEnergy = fEnergyLevels.at(lastLevel) - fEnergyLevels.at(level);
+          double gammaEnergyGeV = gammaEnergy / 1000;
 
-          std::vector< double > gammaDirection = GetIsotropicDirection(engine);
-          double gammaPx = gammaDirection.at(0)*gammaEnergyGeV;
-          double gammaPy = gammaDirection.at(1)*gammaEnergyGeV;
-          double gammaPz = gammaDirection.at(2)*gammaEnergyGeV;
+          std::vector<double> gammaDirection = GetIsotropicDirection(engine);
+          double gammaPx = gammaDirection.at(0) * gammaEnergyGeV;
+          double gammaPy = gammaDirection.at(1) * gammaEnergyGeV;
+          double gammaPz = gammaDirection.at(2) * gammaEnergyGeV;
 
           //double gammaM  = 0.0; // unused
 
-          double gammaTime = (-TMath::Log(randFlat.fire())/
-                              (1/(levelDelay.at(lastLevel)))) + ttime;
+          double gammaTime =
+            (-TMath::Log(randFlat.fire()) / (1 / (levelDelay.at(lastLevel)))) + ttime;
 
           // Adding the gamma to truth
 
           // Primary particles have negative IDs
-          trackID = -1*(truth.NParticles() + 1);
+          trackID = -1 * (truth.NParticles() + 1);
           int gammaPDG = 22;
           simb::MCParticle gamma(trackID, gammaPDG, primary); // NOTE: should the gammas be primary?
 
-          TLorentzVector gammaPosition(vertex.at(0), vertex.at(1),
-                                       vertex.at(2), neutrinoTime);
-          TLorentzVector gammaMomentum(gammaPx, gammaPy,
-                                       gammaPz, gammaEnergyGeV);
+          TLorentzVector gammaPosition(vertex.at(0), vertex.at(1), vertex.at(2), neutrinoTime);
+          TLorentzVector gammaMomentum(gammaPx, gammaPy, gammaPz, gammaEnergyGeV);
           gamma.AddTrajectoryPoint(gammaPosition, gammaMomentum);
 
           truth.Add(gamma);
 
           lastLevel = level;
-          ttime     = gammaTime;
+          ttime = gammaTime;
 
           break;
-
         }
 
         if ((tprob + fBranchingRatios.at(level).at(iLevel)) > 1) {
@@ -1099,27 +1023,26 @@ namespace evgen {
 
     } // End of level loop
 
-    if (level != 72)
-    {
+    if (level != 72) {
       std::cout << "level != 72" << std::endl;
-      std::cout << "level  = "   << level << std::endl;
+      std::cout << "level  = " << level << std::endl;
     }
 
     // Set the neutrino for the MCTruth object:
     // NOTE: currently these parameters are all pretty much a guess...
-    truth.SetNeutrino(simb::kCC,
-		      simb::kQE, // not sure what the mode should be here, assumed that these are all QE???
-		      simb::kCCQE, // not sure what the int_type should be either...
-		      0, // target is AR40? not sure how to specify that...
-		      0, // nucleon pdg ???
-		      0, // quark pdg ???
-		      -1.0,  // W ??? - not sure how to calculate this from the above
-		      -1.0,  // X ??? - not sure how to calculate this from the above
-		      -1.0,  // Y ??? - not sure how to calculate this from the above
-		      -1.0); // Qsqr ??? - not sure how to calculate this from the above
+    truth.SetNeutrino(
+      simb::kCC,
+      simb::kQE,   // not sure what the mode should be here, assumed that these are all QE???
+      simb::kCCQE, // not sure what the int_type should be either...
+      0,           // target is AR40? not sure how to specify that...
+      0,           // nucleon pdg ???
+      0,           // quark pdg ???
+      -1.0,        // W ??? - not sure how to calculate this from the above
+      -1.0,        // X ??? - not sure how to calculate this from the above
+      -1.0,        // Y ??? - not sure how to calculate this from the above
+      -1.0);       // Qsqr ??? - not sure how to calculate this from the above
 
     return true;
-
   }
 
   //----------------------------------------------------------------------------
@@ -1127,41 +1050,37 @@ namespace evgen {
   // the final nucleus with highestLevel being the highest possible level.
   // highestLevel is output, so, whatever integer was used as the argument,
   // it may have a different value after this function is executed
-  std::vector< double > NueAr40CCGenerator::CalculateCrossSections
-                               (double neutrinoEnergy, int& highestLevel) const
+  std::vector<double> NueAr40CCGenerator::CalculateCrossSections(double neutrinoEnergy,
+                                                                 int& highestLevel) const
   {
 
     highestLevel = 0;
-    std::vector< double > levelCrossSections;
+    std::vector<double> levelCrossSections;
 
     // Loop through energy levels, if neutrino has enough energy,
     // calculate cross section
-    for (int level = 0; level < fNumberOfStartLevels; ++level)
-    {
+    for (int level = 0; level < fNumberOfStartLevels; ++level) {
       // Electron energy in keV
-      double w = (neutrinoEnergy - (fStartEnergyLevels.at(level) + 1.5))*1000;
+      double w = (neutrinoEnergy - (fStartEnergyLevels.at(level) + 1.5)) * 1000;
 
       double sigma = 0.0;
-      if (neutrinoEnergy > (fStartEnergyLevels.at(level) + 1.5) && w >= 511.)
-      {
+      if (neutrinoEnergy > (fStartEnergyLevels.at(level) + 1.5) && w >= 511.) {
         ++highestLevel;
-        for (int n = 0; n <= level; ++n)
-        {
+        for (int n = 0; n <= level; ++n) {
           // Electron energy for level n to use in cross section
-          w = (neutrinoEnergy - (fStartEnergyLevels.at(n) + 1.5))*1000;
+          w = (neutrinoEnergy - (fStartEnergyLevels.at(n) + 1.5)) * 1000;
           // Electron momentum in keV/c
           double p = std::sqrt(pow(w, 2) - pow(511.0, 2));
           // Fermi function approximation
-          double f = std::sqrt(3.0634 + (0.6814/(w - 1)));
+          double f = std::sqrt(3.0634 + (0.6814 / (w - 1)));
           // In cm^2*10^-42
-          sigma += 1.6e-8*(p*w*f*fB.at(n));
+          sigma += 1.6e-8 * (p * w * f * fB.at(n));
         }
       }
       levelCrossSections.push_back(sigma);
     }
 
     return levelCrossSections;
-
   }
 
 }

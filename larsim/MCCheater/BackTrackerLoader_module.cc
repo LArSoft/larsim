@@ -39,8 +39,7 @@ cheat::BackTrackerLoader::BackTrackerLoader(fhicl::ParameterSet const& p) : EDPr
 // modules have run in the job, and only in jobs that create the simulation and
 // then make use of the BackTracker in either cheating reconstruction modules
 // or analyzers
-void
-cheat::BackTrackerLoader::produce(art::Event& e)
+void cheat::BackTrackerLoader::produce(art::Event& e)
 {
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;

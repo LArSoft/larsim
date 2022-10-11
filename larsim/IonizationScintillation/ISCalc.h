@@ -37,8 +37,9 @@ namespace larg4 {
     virtual ~ISCalc() = default;
     virtual ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
                                        sim::SimEnergyDeposit const& edep) = 0;
-    virtual double EFieldAtStep(double efield,
-                                sim::SimEnergyDeposit const& edep) = 0; //value of field with any corrections for this step
+    virtual double EFieldAtStep(
+      double efield,
+      sim::SimEnergyDeposit const& edep) = 0; //value of field with any corrections for this step
     double GetScintYield(sim::SimEnergyDeposit const& edep, bool prescale);
     double GetScintYieldRatio(sim::SimEnergyDeposit const& edep);
   };

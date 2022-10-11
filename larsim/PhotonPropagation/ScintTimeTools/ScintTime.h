@@ -12,20 +12,18 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-namespace phot
-{
-  class ScintTime
-  {
+namespace phot {
+  class ScintTime {
   public:
     virtual ~ScintTime() = default;
 
-    virtual void GenScintTime(bool is_fast, CLHEP::HepRandomEngine& engine)      = 0;
-    double GetScintTime() const        {return timing;}
+    virtual void GenScintTime(bool is_fast, CLHEP::HepRandomEngine& engine) = 0;
+    double GetScintTime() const { return timing; }
 
   protected:
     // FIXME: This should be private, with a protected setter.
     //        2022-04-10 CHG
-    double timing { 0.0 };
+    double timing{0.0};
   };
 }
 

@@ -53,25 +53,13 @@ namespace phot {
     virtual float const* GetReflT0s(size_t Voxel) const override;
 
     ///Returns whether the current library deals with time propagation distributions.
-    bool
-    hasTiming() const
-    {
-      return fHasTiming;
-    }
+    bool hasTiming() const { return fHasTiming; }
 
     /// Returns whether the current library deals with reflected light count.
-    virtual bool
-    hasReflected() const override
-    {
-      return fHasReflected;
-    }
+    virtual bool hasReflected() const override { return fHasReflected; }
 
     /// Returns whether the current library deals with reflected light timing.
-    virtual bool
-    hasReflectedT0() const override
-    {
-      return fHasReflectedT0;
-    }
+    virtual bool hasReflectedT0() const override { return fHasReflectedT0; }
 
     void StoreLibraryToFile(std::string LibraryFile,
                             bool storeReflected = false,
@@ -94,16 +82,11 @@ namespace phot {
     /// @{
 
     /// Returns whether voxel metadata is available.
-    bool
-    hasVoxelDef() const
-    {
-      return fVoxelDef.has_value();
-    }
+    bool hasVoxelDef() const { return fVoxelDef.has_value(); }
 
     /// Returns the current voxel metadata (undefined behaviour if none).
     /// @see `hasVoxelDef()`
-    sim::PhotonVoxelDef const&
-    GetVoxelDef() const
+    sim::PhotonVoxelDef const& GetVoxelDef() const
     {
       assert(fVoxelDef);
       return *fVoxelDef;
@@ -111,32 +94,16 @@ namespace phot {
 
     /// Copies the specified voxel definition into our own
     /// (overwrites the existing metadata if any).
-    void
-    SetVoxelDef(sim::PhotonVoxelDef const& voxelDef)
-    {
-      fVoxelDef = voxelDef;
-    }
+    void SetVoxelDef(sim::PhotonVoxelDef const& voxelDef) { fVoxelDef = voxelDef; }
 
     /// @}
     // --- END --- Metadata: voxel information ---------------------------------
 
   private:
-    virtual int
-    NOpChannels() const override
-    {
-      return fNOpChannels;
-    }
-    virtual int
-    NVoxels() const override
-    {
-      return fNVoxels;
-    }
+    virtual int NOpChannels() const override { return fNOpChannels; }
+    virtual int NVoxels() const override { return fNVoxels; }
 
-    virtual bool
-    isVoxelValid(size_t Voxel) const override
-    {
-      return isVoxelValidImpl(Voxel);
-    }
+    virtual bool isVoxelValid(size_t Voxel) const override { return isVoxelValidImpl(Voxel); }
 
     bool fHasReflected = false; ///< Whether the current library deals with reflected light counts.
     bool fHasReflectedT0 =
@@ -164,85 +131,70 @@ namespace phot {
     /// ROOT directory where to write data.
     art::TFileDirectory* fDir = nullptr;
 
-    bool
-    isVoxelValidImpl(size_t Voxel) const
-    {
-      return Voxel < fNVoxels;
-    }
+    bool isVoxelValidImpl(size_t Voxel) const { return Voxel < fNVoxels; }
 
     /// Returns the index of visibility of specified voxel and cell
-    size_t
-    uncheckedIndex(size_t Voxel, size_t OpChannel) const
+    size_t uncheckedIndex(size_t Voxel, size_t OpChannel) const
     {
       return Voxel * fNOpChannels + OpChannel;
     }
 
     /// Unchecked access to a visibility datum
-    float
-    uncheckedAccess(size_t Voxel, size_t OpChannel) const
+    float uncheckedAccess(size_t Voxel, size_t OpChannel) const
     {
       return fLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a visibility datum
-    float&
-    uncheckedAccess(size_t Voxel, size_t OpChannel)
+    float& uncheckedAccess(size_t Voxel, size_t OpChannel)
     {
       return fLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected visibility datum
-    float
-    uncheckedAccessRefl(size_t Voxel, size_t OpChannel) const
+    float uncheckedAccessRefl(size_t Voxel, size_t OpChannel) const
     {
       return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected visibility datum
-    float&
-    uncheckedAccessRefl(size_t Voxel, size_t OpChannel)
+    float& uncheckedAccessRefl(size_t Voxel, size_t OpChannel)
     {
       return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected T0 visibility datum
-    float
-    uncheckedAccessReflT(size_t Voxel, size_t OpChannel) const
+    float uncheckedAccessReflT(size_t Voxel, size_t OpChannel) const
     {
       return fReflTLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected T0 visibility datum
-    float&
-    uncheckedAccessReflT(size_t Voxel, size_t OpChannel)
+    float& uncheckedAccessReflT(size_t Voxel, size_t OpChannel)
     {
       return fReflTLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a parameter the time distribution
-    float
-    uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const
+    float uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum) const
     {
       return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum];
     }
 
     /// Unchecked access to a parameter of the time distribution
-    float&
-    uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
+    float& uncheckedAccessTimingPar(size_t Voxel, size_t OpChannel, size_t parnum)
     {
       return fTimingParLookupTable[uncheckedIndex(Voxel, OpChannel)][parnum];
     }
 
     /// Unchecked access to a parameter of the time distribution
-    TF1&
-    uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel)
+    TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel)
     {
       return fTimingParTF1LookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a parameter of the time distribution
-    const TF1&
-    uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel) const
+    const TF1& uncheckedAccessTimingTF1(size_t Voxel, size_t OpChannel) const
     {
       // note that this will produce a segmentation fault if the formula is not there
       return *(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, OpChannel)));
@@ -261,8 +213,7 @@ namespace phot {
     static size_t ExtractNOpChannels(TTree* tree);
 
     /// Converts size_t into integer
-    static int
-    size_t2int(size_t val)
+    static int size_t2int(size_t val)
     {
       constexpr size_t int_max_as_size_t{std::numeric_limits<int>::max()};
       return val <= int_max_as_size_t ? static_cast<int>(val) : -1;

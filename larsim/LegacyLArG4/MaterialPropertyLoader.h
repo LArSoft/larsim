@@ -51,29 +51,26 @@ namespace larg4 {
   public:
     // TODO turn arguments into constant references
     //Accessors
-    std::map<double, double>
-    GetMaterialProperty(std::string Material, std::string Property)
+    std::map<double, double> GetMaterialProperty(std::string Material, std::string Property)
     {
       return fPropertyList[Material][Property];
     }
 
     // TODO turn arguments into constant references
-    double
-    GetMaterialConstProperty(std::string Material, std::string Property)
+    double GetMaterialConstProperty(std::string Material, std::string Property)
     {
       return fConstPropertyList[Material][Property];
     }
 
     // TODO turn argument into constant reference
-    std::map<std::string, double> const&
-    GetMaterialConstProperties(std::string Material)
+    std::map<std::string, double> const& GetMaterialConstProperties(std::string Material)
     {
       return fConstPropertyList[Material];
     }
 
     // TODO turn argument into constant reference
-    std::map<std::string, std::map<double, double>> const&
-    GetMaterialProperties(std::string Material)
+    std::map<std::string, std::map<double, double>> const& GetMaterialProperties(
+      std::string Material)
     {
       return fPropertyList[Material];
     }

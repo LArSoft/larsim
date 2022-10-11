@@ -55,9 +55,9 @@
  *  The use of `TLorentzVector` below does not imply space and time have the same units
  *   (do not use `TLorentzVector::Boost()`).
  */
-#include <string>
 #include <fstream>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "art/Framework/Core/EDProducer.h"
@@ -65,16 +65,16 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TLorentzVector.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 namespace evgen {
   class TextFileGen;
@@ -82,38 +82,36 @@ namespace evgen {
 
 class evgen::TextFileGen : public art::EDProducer {
 public:
-  explicit TextFileGen(fhicl::ParameterSet const & p);
+  explicit TextFileGen(fhicl::ParameterSet const& p);
 
-  void produce(art::Event & e)                    override;
-  void beginJob()               		  override;
-  void beginRun(art::Run & run) 		  override;
+  void produce(art::Event& e) override;
+  void beginJob() override;
+  void beginRun(art::Run& run) override;
 
 private:
-
   std::pair<unsigned, unsigned> readEventInfo(std::istream& is);
-  simb::MCTruth  readNextHepEvt();
+  simb::MCTruth readNextHepEvt();
   unsigned long int fOffset;
   std::ifstream* fInputFile;
-  std::string    fInputFileName; ///< Name of text file containing events to simulate
-  double fMoveY; ///< Project particles to a new y plane.
+  std::string fInputFileName; ///< Name of text file containing events to simulate
+  double fMoveY;              ///< Project particles to a new y plane.
 };
 
 //------------------------------------------------------------------------------
-evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const & p)
+evgen::TextFileGen::TextFileGen(fhicl::ParameterSet const& p)
   : EDProducer{p}
   , fOffset{p.get<unsigned long int>("Offset")}
   , fInputFile(0)
   , fInputFileName{p.get<std::string>("InputFileName")}
   , fMoveY{p.get<double>("MoveY", -1e9)}
 {
-  if (fMoveY>-1e8){
-    mf::LogWarning("TextFileGen")<<"Particles will be moved to a new plane y = "<<fMoveY<<" cm.\n";
+  if (fMoveY > -1e8) {
+    mf::LogWarning("TextFileGen") << "Particles will be moved to a new plane y = " << fMoveY
+                                  << " cm.\n";
   }
 
-  produces< std::vector<simb::MCTruth>   >();
-  produces< sumdata::RunData, art::InRun >();
-
-
+  produces<std::vector<simb::MCTruth>>();
+  produces<sumdata::RunData, art::InRun>();
 }
 
 //------------------------------------------------------------------------------
@@ -122,82 +120,65 @@ void evgen::TextFileGen::beginJob()
   fInputFile = new std::ifstream(fInputFileName.c_str());
 
   // check that the file is a good one
-  if( !fInputFile->good() )
-    throw cet::exception("TextFileGen") << "input text file "
-					<< fInputFileName
-					<< " cannot be read.\n";
-
+  if (!fInputFile->good())
+    throw cet::exception("TextFileGen")
+      << "input text file " << fInputFileName << " cannot be read.\n";
 
   for (unsigned i = 0; i != fOffset; ++i) {
     auto const [eventNo, nparticles] = readEventInfo(*fInputFile);
     for (unsigned p = 0; p != nparticles; ++p) {
-       constexpr auto all_chars_until = std::numeric_limits<unsigned>::max();
-       fInputFile->ignore(all_chars_until, '\n');
+      constexpr auto all_chars_until = std::numeric_limits<unsigned>::max();
+      fInputFile->ignore(all_chars_until, '\n');
     }
   }
-
-
 }
 
 //------------------------------------------------------------------------------
 void evgen::TextFileGen::beginRun(art::Run& run)
 {
-    art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
-  }
+  art::ServiceHandle<geo::Geometry const> geo;
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+}
 
 //------------------------------------------------------------------------------
-void evgen::TextFileGen::produce(art::Event & e)
+void evgen::TextFileGen::produce(art::Event& e)
 {
   // check that the file is still good
-  if( !fInputFile->good() )
-    throw cet::exception("TextFileGen") << "input text file "
-					<< fInputFileName
-					<< " cannot be read in produce().\n";
+  if (!fInputFile->good())
+    throw cet::exception("TextFileGen")
+      << "input text file " << fInputFileName << " cannot be read in produce().\n";
 
+  //Now, read the Event to be used.
 
-
-
-//Now, read the Event to be used.
-
-
-
-// check that the file is still good
-  if( !fInputFile->good() )
-    throw cet::exception("TextFileGen") << "input text file "
-					<< fInputFileName
-					<< " cannot be read in produce().\n";
-   auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
-   truthcol->push_back(readNextHepEvt());
-
+  // check that the file is still good
+  if (!fInputFile->good())
+    throw cet::exception("TextFileGen")
+      << "input text file " << fInputFileName << " cannot be read in produce().\n";
+  auto truthcol = std::make_unique<std::vector<simb::MCTruth>>();
+  truthcol->push_back(readNextHepEvt());
 
   e.put(std::move(truthcol));
 }
-
-
-
 
 simb::MCTruth evgen::TextFileGen::readNextHepEvt()
 {
 
   // declare the variables for reading in the event record
-  int            status         = 0;
-  int 	 	 pdg            = 0;
-  int 	 	 firstMother    = 0;
-  int 	 	 secondMother   = 0;
-  int 	 	 firstDaughter  = 0;
-  int 	 	 secondDaughter = 0;
-  double 	 xMomentum      = 0.;
-  double 	 yMomentum   	= 0.;
-  double 	 zMomentum   	= 0.;
-  double 	 energy      	= 0.;
-  double 	 mass        	= 0.;
-  double 	 xPosition   	= 0.;
-  double 	 yPosition   	= 0.;
-  double 	 zPosition   	= 0.;
-  double 	 time        	= 0.;
-
-
+  int status = 0;
+  int pdg = 0;
+  int firstMother = 0;
+  int secondMother = 0;
+  int firstDaughter = 0;
+  int secondDaughter = 0;
+  double xMomentum = 0.;
+  double yMomentum = 0.;
+  double zMomentum = 0.;
+  double energy = 0.;
+  double mass = 0.;
+  double xPosition = 0.;
+  double yPosition = 0.;
+  double zPosition = 0.;
+  double time = 0.;
 
   // read in line to get event number and number of particles
   std::string oneLine;
@@ -205,34 +186,29 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt()
   simb::MCTruth nextEvent;
   auto const [eventNo, nParticles] = readEventInfo(*fInputFile);
 
-
-
   // now read in all the lines for the particles
   // in this interaction. only particles with
   // status = 1 get tracked in Geant4.
-  for(unsigned short i = 0; i < nParticles; ++i){
+  for (unsigned short i = 0; i < nParticles; ++i) {
     std::getline(*fInputFile, oneLine);
     inputLine.clear();
     inputLine.str(oneLine);
 
-    inputLine >> status      >> pdg
-	      >> firstMother >> secondMother >> firstDaughter >> secondDaughter
-	      >> xMomentum   >> yMomentum    >> zMomentum     >> energy >> mass
-	      >> xPosition   >> yPosition    >> zPosition     >> time;
-
-
+    inputLine >> status >> pdg >> firstMother >> secondMother >> firstDaughter >> secondDaughter >>
+      xMomentum >> yMomentum >> zMomentum >> energy >> mass >> xPosition >> yPosition >>
+      zPosition >> time;
 
     //Project the particle to a new y plane
-    if (fMoveY>-1e8){
-      double totmom = sqrt(pow(xMomentum,2)+pow(yMomentum,2)+pow(zMomentum,2));
-      double kx = xMomentum/totmom;
-      double ky = yMomentum/totmom;
-      double kz = zMomentum/totmom;
-      if (ky){
-	double l = (fMoveY-yPosition)/ky;
-	xPosition += kx*l;
-	yPosition += ky*l;
-	zPosition += kz*l;
+    if (fMoveY > -1e8) {
+      double totmom = sqrt(pow(xMomentum, 2) + pow(yMomentum, 2) + pow(zMomentum, 2));
+      double kx = xMomentum / totmom;
+      double ky = yMomentum / totmom;
+      double kz = zMomentum / totmom;
+      if (ky) {
+        double l = (fMoveY - yPosition) / ky;
+        xPosition += kx * l;
+        yPosition += ky * l;
+        zPosition += kz * l;
       }
     }
 
@@ -244,12 +220,10 @@ simb::MCTruth evgen::TextFileGen::readNextHepEvt()
 
     nextEvent.Add(part);
 
-  }  //  end loop on particles.
+  } //  end loop on particles.
 
-return nextEvent;
+  return nextEvent;
 }
-
-
 
 std::pair<unsigned, unsigned> evgen::TextFileGen::readEventInfo(std::istream& iss)
 {
@@ -262,12 +236,5 @@ std::pair<unsigned, unsigned> evgen::TextFileGen::readEventInfo(std::istream& is
   buffer >> event >> nparticles;
   return {event, nparticles};
 }
-
-
-
-
-
-
-
 
 DEFINE_ART_MODULE(evgen::TextFileGen)

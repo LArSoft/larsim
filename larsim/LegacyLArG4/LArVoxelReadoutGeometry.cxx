@@ -41,15 +41,13 @@ constexpr bool DisableVoxelCaching = false;
 
 namespace {
   template <typename T>
-  std::string
-  demangle_cxx_symbol(const T& obj)
+  std::string demangle_cxx_symbol(const T& obj)
   {
     return cet::demangle_symbol(typeid(obj).name());
   }
 
   template <class STREAM>
-  int
-  DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
+  int DumpPhysicalVolume(STREAM& out, const G4VPhysicalVolume& PV, std::string indentstr = "")
   {
     const G4ThreeVector& pos = PV.GetTranslation();
     const G4LogicalVolume* LV = PV.GetLogicalVolume();
@@ -113,8 +111,7 @@ namespace larg4 {
   }
 
   ////////////////////////////////////////////////////////////////////
-  void
-  LArVoxelReadoutGeometry::Construct()
+  void LArVoxelReadoutGeometry::Construct()
   {
     // With a "parallel geometry", Geant4 has already created a clone
     // of the world physical and logical volumes.  We want to place
@@ -147,8 +144,7 @@ namespace larg4 {
       unsigned int nw, nh, nd; ///< divisions in each volume
 
       /// have some sorting...
-      bool
-      operator<(const VoxelSpecs_t& vs) const
+      bool operator<(const VoxelSpecs_t& vs) const
       {
         if (w < vs.w) return true;
         if (w > vs.w) return false;
@@ -438,12 +434,11 @@ namespace larg4 {
   // Make use of that knowledge to efficiently get the desired volumes and
   // their total transforms.
   // the daughterTransform is the total transform to the world coordinate system
-  G4VPhysicalVolume*
-  LArVoxelReadoutGeometry::FindNestedVolume(G4VPhysicalVolume* mother,
-                                            G4Transform3D& motherTransform,
-                                            G4Transform3D& daughterTransform,
-                                            std::string& daughterName,
-                                            unsigned int expectedNum)
+  G4VPhysicalVolume* LArVoxelReadoutGeometry::FindNestedVolume(G4VPhysicalVolume* mother,
+                                                               G4Transform3D& motherTransform,
+                                                               G4Transform3D& daughterTransform,
+                                                               std::string& daughterName,
+                                                               unsigned int expectedNum)
   {
     G4LogicalVolume* logicalVolume = mother->GetLogicalVolume();
     G4int numberDaughters = logicalVolume->GetNoDaughters();

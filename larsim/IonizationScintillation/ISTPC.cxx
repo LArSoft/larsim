@@ -6,22 +6,18 @@
 //UGR, 2021
 ////////////////////////////////////////////////////////////////////////
 
-
-
+#include "larsim/IonizationScintillation/ISTPC.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/GeometryCore.h"
-#include "larsim/IonizationScintillation/ISTPC.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-
 namespace larg4 {
   //----------------------------------------------------------------------------
-  ISTPC::ISTPC(geo::GeometryCore const& geom)
-    : fActiveVolumes{extractActiveLArVolume(geom)}
+  ISTPC::ISTPC(geo::GeometryCore const& geom) : fActiveVolumes{extractActiveLArVolume(geom)}
   {
     mf::LogTrace("IonAndScint") << "IonizationAndScintillation/ISTPC Initialize.\n"
                                 << "Initializing the geometry of the detector.";
@@ -35,38 +31,33 @@ namespace larg4 {
     } // local scope
   }
 
-
   //----------------------------------------------------------------------------
 
-
- bool
- ISTPC::isScintInActiveVolume(geo::Point_t const& ScintPoint)
- {
-   return fActiveVolumes[0].ContainsPosition(ScintPoint);
- }
+  bool ISTPC::isScintInActiveVolume(geo::Point_t const& ScintPoint)
+  {
+    return fActiveVolumes[0].ContainsPosition(ScintPoint);
+  }
   //----------------------------------------------------------------------------
 
+  std::vector<geo::BoxBoundedGeo> ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
+  {
+    std::vector<geo::BoxBoundedGeo> activeVolumes;
+    activeVolumes.reserve(geom.Ncryostats());
 
-std::vector<geo::BoxBoundedGeo>
-ISTPC::extractActiveLArVolume(geo::GeometryCore const& geom)
-{
-  std::vector<geo::BoxBoundedGeo> activeVolumes;
-  activeVolumes.reserve(geom.Ncryostats());
+    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
 
-  for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+      // can't use it default-constructed since it would always include origin
 
-    // can't use it default-constructed since it would always include origin
+      geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
 
-    geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
+      for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
+        box.ExtendToInclude(TPC.ActiveBoundingBox());
 
-    for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
-      box.ExtendToInclude(TPC.ActiveBoundingBox());
+      activeVolumes.push_back(std::move(box));
 
-    activeVolumes.push_back(std::move(box));
+    } // for cryostats
 
-  } // for cryostats
-
- return activeVolumes;
-}
+    return activeVolumes;
+  }
 
 }

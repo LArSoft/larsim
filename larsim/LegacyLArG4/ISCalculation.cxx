@@ -15,8 +15,7 @@
 namespace larg4 {
 
   //......................................................................
-  double
-  ISCalculation::EFieldAtStep(double efield, const G4Step* step) const
+  double ISCalculation::EFieldAtStep(double efield, const G4Step* step) const
   {
     auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
     if (!SCE->EnableSimEfieldSCE()) return efield;

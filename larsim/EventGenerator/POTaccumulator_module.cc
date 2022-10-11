@@ -107,9 +107,7 @@ public:
   POTaccumulator& operator=(POTaccumulator&&) = delete;
 
   // Nothing to be done at event level.
-  virtual void
-  analyze(art::Event const& event) override
-  {}
+  virtual void analyze(art::Event const& event) override {}
 
   /// Collects information from each subrun.
   virtual void endSubRun(art::SubRun const& subRun) override;
@@ -165,8 +163,7 @@ sim::POTaccumulator::POTaccumulator(Parameters const& config)
 {}
 
 //------------------------------------------------------------------------------
-void
-sim::POTaccumulator::endSubRun(art::SubRun const& subRun)
+void sim::POTaccumulator::endSubRun(art::SubRun const& subRun)
 {
 
   auto const& ID = subRun.id();
@@ -197,8 +194,7 @@ sim::POTaccumulator::endSubRun(art::SubRun const& subRun)
 } // sim::POTaccumulator::endSubRun()
 
 //------------------------------------------------------------------------------
-void
-sim::POTaccumulator::endJob()
+void sim::POTaccumulator::endJob()
 {
 
   //
@@ -228,8 +224,7 @@ sim::POTaccumulator::endJob()
 } // sim::POTaccumulator::endJob()
 
 //------------------------------------------------------------------------------
-void
-sim::POTaccumulator::printMissingSubrunList() const
+void sim::POTaccumulator::printMissingSubrunList() const
 {
 
   //
@@ -254,8 +249,7 @@ sim::POTaccumulator::printMissingSubrunList() const
 } // sim::POTaccumulator::printMissingSubrunList()
 
 //------------------------------------------------------------------------------
-void
-sim::POTaccumulator::printRunSummary() const
+void sim::POTaccumulator::printRunSummary() const
 {
 
   // count subruns in run
@@ -273,8 +267,7 @@ sim::POTaccumulator::printRunSummary() const
 } // sim::POTaccumulator::printRunSummary()
 
 //------------------------------------------------------------------------------
-void
-sim::POTaccumulator::printSummary(sumdata::POTSummary const& totalPOT) const
+void sim::POTaccumulator::printSummary(sumdata::POTSummary const& totalPOT) const
 {
 
   // aggregate all run summaries
@@ -285,8 +278,7 @@ sim::POTaccumulator::printSummary(sumdata::POTSummary const& totalPOT) const
 } // sim::POTaccumulator::printSummary()
 
 //------------------------------------------------------------------------------
-std::string
-sim::POTaccumulator::to_string(sumdata::POTSummary const& POT)
+std::string sim::POTaccumulator::to_string(sumdata::POTSummary const& POT)
 {
   using namespace std::string_literals;
   return std::to_string(POT.totgoodpot) + " good POT ( "s + std::to_string(POT.goodspills) +

@@ -51,11 +51,7 @@ namespace cheat {
     };
 
     using provider_type = BackTracker;
-    const provider_type*
-    provider() const
-    {
-      return static_cast<provider_type const*>(this);
-    }
+    const provider_type* provider() const { return static_cast<provider_type const*>(this); }
 
     BackTrackerService(const fhicl::ParameterSet& pSet, art::ActivityRegistry& reg);
     BackTrackerService(const fhiclConfig& config, art::ActivityRegistry& reg);
@@ -164,11 +160,7 @@ namespace cheat {
 
     bool priv_CanRun(const art::Event& evt);
 
-    bool
-    priv_SimChannelsReady()
-    {
-      return BackTracker::SimChannelsReady();
-    }
+    bool priv_SimChannelsReady() { return BackTracker::SimChannelsReady(); }
     //      bool priv_AllHitListReady() { return
     //      BackTracker::AllHitListReady();}
 

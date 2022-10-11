@@ -90,8 +90,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------
-  void
-  OpticalPhysics::ConstructParticle()
+  void OpticalPhysics::ConstructParticle()
   {
     MF_LOG_DEBUG("OpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     // optical photon
@@ -125,8 +124,7 @@ namespace larg4 {
   }
 
   //-----------------------------------------------------------
-  void
-  OpticalPhysics::ConstructProcess()
+  void OpticalPhysics::ConstructProcess()
   {
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
 

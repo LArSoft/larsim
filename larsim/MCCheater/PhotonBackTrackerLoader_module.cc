@@ -10,8 +10,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "larsim/MCCheater/PhotonBackTrackerService.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
+#include "larsim/MCCheater/PhotonBackTrackerService.h"
 
 namespace cheat {
   class PhotonBackTrackerLoader;
@@ -19,19 +19,16 @@ namespace cheat {
 
 class cheat::PhotonBackTrackerLoader : public art::EDProducer {
 public:
-  explicit PhotonBackTrackerLoader(fhicl::ParameterSet  const& p);
+  explicit PhotonBackTrackerLoader(fhicl::ParameterSet const& p);
 
-  virtual void produce(art::Event & e);
-
+  virtual void produce(art::Event& e);
 
 private:
-
   // Declare member data here.
-
 };
 
 //------------------------------------------------------------------------------
-cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  const& p)
+cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet const& p)
   : EDProducer{p}
 {
   // Call appropriate Produces<>() functions here.
@@ -43,13 +40,12 @@ cheat::PhotonBackTrackerLoader::PhotonBackTrackerLoader(fhicl::ParameterSet  con
 // modules have run in the job, and only in jobs that create the simulation and
 // then make use of the PhotonBackTracker in either cheating reconstruction modules
 // or analyzers
-void cheat::PhotonBackTrackerLoader::produce(art::Event & e)
+void cheat::PhotonBackTrackerLoader::produce(art::Event& e)
 {
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   art::ServiceHandle<cheat::PhotonBackTrackerService> pbt_serv;
   pi_serv->Rebuild(e);
   pbt_serv->Rebuild(e);
 }
-
 
 DEFINE_ART_MODULE(cheat::PhotonBackTrackerLoader)

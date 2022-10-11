@@ -27,20 +27,19 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "larcore/Geometry/Geometry.h"
-#include "Geant4/G4VUserParallelWorld.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"
+#include "Geant4/G4VUserParallelWorld.hh"
+#include "larcore/Geometry/Geometry.h"
 
 class G4VPhysicalVolume;
 
 namespace larg4 {
 
-  class AuxDetReadoutGeometry : public G4VUserParallelWorld
-  {
+  class AuxDetReadoutGeometry : public G4VUserParallelWorld {
   public:
     /// Constructor and destructor.
-    AuxDetReadoutGeometry( const G4String name = "AuxDetReadoutGeometry" );
+    AuxDetReadoutGeometry(const G4String name = "AuxDetReadoutGeometry");
     virtual ~AuxDetReadoutGeometry();
 
     /// The key method in this class; creates a parallel world view of
@@ -49,18 +48,16 @@ namespace larg4 {
     virtual void Construct();
 
   private:
-
     void FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
-			   unsigned int depth,
-			   G4Transform3D DepthToWorld);
+                           unsigned int depth,
+                           G4Transform3D DepthToWorld);
 
     void FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
-				    unsigned int depth,
-				    G4Transform3D DepthToWorld);
+                                    unsigned int depth,
+                                    G4Transform3D DepthToWorld);
 
-    art::ServiceHandle<geo::Geometry const> fGeo;             ///< Handle to the geometry
-    uint32_t                          fNumSensitiveVol; ///< number of sensitive volumes
-
+    art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry
+    uint32_t fNumSensitiveVol;                    ///< number of sensitive volumes
   };
 
 } // namespace larg4

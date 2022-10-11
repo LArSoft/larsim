@@ -26,87 +26,81 @@
 #ifndef OPPARAMACTION_H
 #define OPPARAMACTION_H
 
-#include "TVector3.h"
 #include "Geant4/G4ThreeVector.hh"
+#include "TVector3.h"
 
 #include <vector>
 
-namespace larg4
-{
-
-
+namespace larg4 {
 
   //---------------------------------------------------
   // Abstract base class
   //---------------------------------------------------
 
-  class OpParamAction
-  {
+  class OpParamAction {
   public:
     OpParamAction();
     virtual ~OpParamAction();
-    virtual double GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition);
+    virtual double GetAttenuationFraction(G4ThreeVector PhotonDirection,
+                                          G4ThreeVector PhotonPosition);
 
   private:
-
   };
-
 
   //---------------------------------------------------
   // TransparentPlaneAction class
   //---------------------------------------------------
 
-  class TransparentPlaneAction: public OpParamAction
-  {
+  class TransparentPlaneAction : public OpParamAction {
   public:
-    TransparentPlaneAction() {};
-    ~TransparentPlaneAction() {};
-    double GetAttenuationFraction(G4ThreeVector /*PhotonDirection*/, G4ThreeVector /*PhotonPosition*/) {return 1;}
+    TransparentPlaneAction(){};
+    ~TransparentPlaneAction(){};
+    double GetAttenuationFraction(G4ThreeVector /*PhotonDirection*/,
+                                  G4ThreeVector /*PhotonPosition*/)
+    {
+      return 1;
+    }
 
   private:
-
   };
-
 
   //---------------------------------------------------
   // SimpleWireplaneAction class
   //---------------------------------------------------
 
-  class SimpleWireplaneAction: public OpParamAction
-  {
+  class SimpleWireplaneAction : public OpParamAction {
   public:
-    SimpleWireplaneAction(TVector3 WireDirection, TVector3 PlaneNormal, double WirePitch, double WireDiameter)  ;
-    SimpleWireplaneAction(std::vector<std::vector<double> >, int);
-    ~SimpleWireplaneAction() ;
+    SimpleWireplaneAction(TVector3 WireDirection,
+                          TVector3 PlaneNormal,
+                          double WirePitch,
+                          double WireDiameter);
+    SimpleWireplaneAction(std::vector<std::vector<double>>, int);
+    ~SimpleWireplaneAction();
 
     double GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition);
 
   private:
     G4ThreeVector fWireDirection;
     G4ThreeVector fPlaneNormal;
-    double   fDPRatio;
+    double fDPRatio;
   };
-
 
   //---------------------------------------------------
   // OverlaidWireplanesAction class
   //---------------------------------------------------
 
-  class OverlaidWireplanesAction: public OpParamAction
-  {
+  class OverlaidWireplanesAction : public OpParamAction {
   public:
-    OverlaidWireplanesAction(std::vector<std::vector<double> >, int);
-    ~OverlaidWireplanesAction() ;
+    OverlaidWireplanesAction(std::vector<std::vector<double>>, int);
+    ~OverlaidWireplanesAction();
 
     double GetAttenuationFraction(G4ThreeVector PhotonDirection, G4ThreeVector PhotonPosition);
 
   private:
-
     G4ThreeVector fPlaneNormal;
     std::vector<G4ThreeVector> fWireDirections;
     std::vector<double> fDPRatios;
   };
-
 
 }
 

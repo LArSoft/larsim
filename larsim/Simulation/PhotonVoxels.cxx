@@ -36,8 +36,7 @@ namespace sim {
   {}
 
   //----------------------------------------------------------------------------
-  std::array<unsigned int, 3U>
-  PhotonVoxelDef::GetSteps() const
+  std::array<unsigned int, 3U> PhotonVoxelDef::GetSteps() const
   {
     // BUG the double brace syntax is required to work around clang bug 21629
     // (https://bugs.llvm.org/show_bug.cgi?id=21629)
@@ -45,8 +44,7 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  bool
-  PhotonVoxelDef::operator==(const PhotonVoxelDef& right) const
+  bool PhotonVoxelDef::operator==(const PhotonVoxelDef& right) const
   {
     return ((GetRegionUpperCorner() == right.GetRegionUpperCorner()) &&
             (GetRegionLowerCorner() == right.GetRegionLowerCorner()) &&
@@ -54,15 +52,10 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  unsigned int
-  PhotonVoxelDef::GetNVoxels() const
-  {
-    return fxSteps * fySteps * fzSteps;
-  }
+  unsigned int PhotonVoxelDef::GetNVoxels() const { return fxSteps * fySteps * fzSteps; }
 
   //----------------------------------------------------------------------------
-  int
-  PhotonVoxelDef::GetVoxelID(double const* Position) const
+  int PhotonVoxelDef::GetVoxelID(double const* Position) const
   {
     return GetVoxelIDImpl(geo::vect::makeFromCoords<geo::Point_t>(Position));
   }
@@ -135,8 +128,7 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  PhotonVoxel
-  PhotonVoxelDef::GetPhotonVoxel(int ID) const
+  PhotonVoxel PhotonVoxelDef::GetPhotonVoxel(int ID) const
   {
     //    float TempID = (float) ID;
 
@@ -158,14 +150,12 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  bool
-  PhotonVoxelDef::IsLegalVoxelID(int ID) const
+  bool PhotonVoxelDef::IsLegalVoxelID(int ID) const
   {
     return ((ID >= 0) && (static_cast<unsigned int>(ID) < GetNVoxels()));
   }
 
-  std::array<int, 3U>
-  PhotonVoxelDef::GetVoxelCoords(int ID) const
+  std::array<int, 3U> PhotonVoxelDef::GetVoxelCoords(int ID) const
   {
     std::array<int, 3U> ReturnVector;
     ReturnVector[0] = ID % fxSteps;
@@ -176,8 +166,7 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  std::array<double, 3U>
-  PhotonVoxelDef::GetVoxelStepCoordsUnchecked(geo::Point_t const& p) const
+  std::array<double, 3U> PhotonVoxelDef::GetVoxelStepCoordsUnchecked(geo::Point_t const& p) const
   {
 
     auto const span = fUpperCorner - fLowerCorner;
@@ -191,8 +180,7 @@ namespace sim {
   } // PhotonVoxelDef::GetVoxelStepCoordsUnchecked()
 
   //----------------------------------------------------------------------------
-  int
-  PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const
+  int PhotonVoxelDef::GetVoxelIDImpl(geo::Point_t const& p) const
   {
     if (!isInside(p)) return -1;
 
@@ -209,18 +197,16 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  bool
-  PhotonVoxelDef::isInsideVolume(geo::Point_t const& point,
-                                 geo::Point_t const& lower,
-                                 geo::Point_t const& upper)
+  bool PhotonVoxelDef::isInsideVolume(geo::Point_t const& point,
+                                      geo::Point_t const& lower,
+                                      geo::Point_t const& upper)
   {
     return isInsideRange(point.X(), lower.X(), upper.X()) &&
            isInsideRange(point.Y(), lower.Y(), upper.Y()) &&
            isInsideRange(point.Z(), lower.Z(), upper.Z());
   }
 
-  bool
-  PhotonVoxelDef::isInsideRange(double value, double lower, double upper)
+  bool PhotonVoxelDef::isInsideRange(double value, double lower, double upper)
   {
 
     return (value >= lower) && (value < upper);
@@ -229,8 +215,7 @@ namespace sim {
 
   //----------------------------------------------------------------------------
 
-  std::ostream&
-  operator<<(std::ostream& out, sim::PhotonVoxelDef const& voxelDef)
+  std::ostream& operator<<(std::ostream& out, sim::PhotonVoxelDef const& voxelDef)
   {
 
     auto const& lower = voxelDef.GetRegionLowerCorner();

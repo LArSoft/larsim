@@ -10,9 +10,9 @@
 // Nov 2021 by P. Green
 
 // LArSoft libraries
-#include "larsim/IonizationScintillation/ISTPC.h"
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+#include "larsim/IonizationScintillation/ISTPC.h"
 
 // fhicl
 #include "fhiclcpp/ParameterSet.h"
@@ -24,17 +24,15 @@ namespace CLHEP {
 }
 
 // other
-#include "TVector3.h"
 #include "TF1.h"
+#include "TVector3.h"
 
 #include <array>
 #include <vector>
 
-
 class PropagationTimeModel {
 
 public:
-
   // constructor
   PropagationTimeModel(fhicl::ParameterSet VUVTimingParams,
                        fhicl::ParameterSet VISTimingParams,
@@ -44,12 +42,11 @@ public:
 
   // propagation time
   void propagationTime(std::vector<double>& arrival_time_dist,
-                         geo::Point_t const& x0,
-                         const size_t OpChannel,
-                         bool Reflected = false);
+                       geo::Point_t const& x0,
+                       const size_t OpChannel,
+                       bool Reflected = false);
 
 private:
-
   // parameter and geometry initialization
   void Initialization();
 
@@ -58,16 +55,14 @@ private:
                    const double distance_in_cm,
                    const size_t angle_bin);
 
-  void getVUVTimesGeo(std::vector<double>& arrivalTimes,
-                      const double distance_in_cm);
+  void getVUVTimesGeo(std::vector<double>& arrivalTimes, const double distance_in_cm);
 
-  void generateParam(const size_t index,
-                     const size_t angle_bin);
+  void generateParam(const size_t index, const size_t angle_bin);
 
   // reflected / visible light
   void getVISTimes(std::vector<double>& arrivalTimes,
-                 const TVector3 &ScintPoint,
-                 const TVector3 &OpDetPoint);
+                   const TVector3& ScintPoint,
+                   const TVector3& OpDetPoint);
 
   // utility functions
   double fast_acos(double x) const;
@@ -118,7 +113,8 @@ private:
   std::vector<int> fOpDetOrientation;
 
   // For VUV propagation time parametrization
-  double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
+  double fstep_size, fmax_d, fmin_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance,
+    fangle_bin_timing_vuv;
   std::vector<std::vector<double>> fparameters[7];
   // vector containing generated VUV timing parameterisations
   std::vector<std::vector<TF1>> fVUV_timing;
@@ -132,7 +128,6 @@ private:
   std::vector<double> fradial_distances_refl;
   std::vector<std::vector<std::vector<double>>> fcut_off_pars;
   std::vector<std::vector<std::vector<double>>> ftau_pars;
-
 };
 
 #endif

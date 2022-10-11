@@ -148,11 +148,7 @@ namespace evgen {
       // @{
       /// Returns whether the specified `point` can be accepted.
       bool accept(geo::Point_t const& point);
-      bool
-      operator()(geo::Point_t const& point)
-      {
-        return accept(point);
-      }
+      bool operator()(geo::Point_t const& point) { return accept(point); }
       // @}
 
     private:
@@ -174,7 +170,6 @@ namespace evgen {
 
     /// Throws an exception if any of the configured materials is not present.
     void checkMaterials() const;
-
 
     /// Reads from `fInputFile` all other parameters in one line.
     /// @return whether all reading were successful (`ifstream::good()`).
@@ -256,8 +251,7 @@ namespace {
 
   /// Returns a STL set with copies of all the elements from `v`.
   template <typename Coll>
-  std::set<typename Coll::value_type>
-  makeSet(Coll const& coll)
+  std::set<typename Coll::value_type> makeSet(Coll const& coll)
   {
     return {begin(coll), end(coll)};
   }
@@ -374,8 +368,7 @@ namespace evgen {
   }
 
   //____________________________________________________________________________
-  void
-  LightSource::beginRun(art::Run& run)
+  void LightSource::beginRun(art::Run& run)
   {
     run.put(std::make_unique<sumdata::RunData>(fGeom.DetectorName()));
 
@@ -383,14 +376,13 @@ namespace evgen {
   }
 
   //----------------------------------------------------------------
-  void
-  LightSource::produce(art::Event& evt)
+  void LightSource::produce(art::Event& evt)
   {
-    if(fSourceMode==kFILE) {
+    if (fSourceMode == kFILE) {
       //  Each event, read coordinates of gun and number of photons to shoot from file
 
       // read in one line
-      if(!readParametersFromInputFile()){
+      if (!readParametersFromInputFile()) {
         // Loop file if required
         mf::LogWarning("LightSource") << "EVGEN Light Source : Warning, reached end of file,"
                                       << " looping back to beginning";
@@ -398,11 +390,10 @@ namespace evgen {
         fInputFile.seekg(0, std::ios::beg);
         fInputFile.getline(fDummyString, 256);
 
-        if(!readParametersFromInputFile()) {
-          throw cet::exception("LightSource") << "EVGEN Light Source : File error in "
-                                              << fFileName << "\n";
+        if (!readParametersFromInputFile()) {
+          throw cet::exception("LightSource")
+            << "EVGEN Light Source : File error in " << fFileName << "\n";
         }
-
       }
 
       fThePhotonVoxelDef = sim::PhotonVoxelDef(fCenter.X() - fSigmaX,
@@ -415,7 +406,7 @@ namespace evgen {
                                                fCenter.Z() + fSigmaZ,
                                                1);
 
-      fCurrentVoxel=0;
+      fCurrentVoxel = 0;
     }
     else if (fSourceMode == kSCAN) {
       //  Step through detector using a number of steps provided in the config file
@@ -457,8 +448,7 @@ namespace evgen {
     }
   }
 
-  simb::MCTruth
-  LightSource::Sample()
+  simb::MCTruth LightSource::Sample()
   {
     mf::LogVerbatim("LightSource") << "Light source debug : Shooting at " << fCenter;
 
@@ -546,8 +536,7 @@ namespace evgen {
   } // LightSource::Sample()
 
   // ---------------------------------------------------------------------------
-  void
-  LightSource::checkMaterials() const
+  void LightSource::checkMaterials() const
   {
 
     TGeoManager const& manager = *(fGeom.ROOTGeoManager());
@@ -598,16 +587,14 @@ namespace evgen {
   } // LightSource::MaterialPointFilter::~MaterialPointFilter()
 
   // ---------------------------------------------------------------------------
-  TGeoMaterial const*
-  LightSource::MaterialPointFilter::materialAt(geo::Point_t const& point)
+  TGeoMaterial const* LightSource::MaterialPointFilter::materialAt(geo::Point_t const& point)
   {
     TGeoNode const* node = fNavigator->FindNode(point.X(), point.Y(), point.Z());
     return node ? node->GetVolume()->GetMaterial() : nullptr;
   } // LightSource::MaterialPointFilter::materialAt()
 
   // ---------------------------------------------------------------------------
-  bool
-  LightSource::MaterialPointFilter::accept(geo::Point_t const& point)
+  bool LightSource::MaterialPointFilter::accept(geo::Point_t const& point)
   {
     if (fMaterials.empty()) return true;
     TGeoMaterial const* material = materialAt(point);
@@ -616,21 +603,19 @@ namespace evgen {
     return material ? (fMaterials.count(material->GetName()) > 0) : false;
   } // LightSource::MaterialPointFilter::accept()
 
-
   //----------------------------------------------------------------------------
-  bool LightSource::readParametersFromInputFile() {
+  bool LightSource::readParametersFromInputFile()
+  {
     double x, y, z;
-    fInputFile >> x >> y >> z >> fT
-      >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT
-      >> fP >> fSigmaP >> fN;
-    fCenter = { x, y, z };
+    fInputFile >> x >> y >> z >> fT >> fSigmaX >> fSigmaY >> fSigmaZ >> fSigmaT >> fP >> fSigmaP >>
+      fN;
+    fCenter = {x, y, z};
     if (!fInputFile.good()) return false;
 
     std::string dummy;
     std::getline(fInputFile, dummy); // this can fail for what I care
     return true;
   } // LightSource::readParametersFromInputFile()
-
 
   // ---------------------------------------------------------------------------
 

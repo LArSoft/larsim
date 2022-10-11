@@ -67,18 +67,12 @@ namespace larg4 {
 
     // Non-virtual methods in G4VModularPhysicsList.  Just call the
     // method with the same name in G4VModularPhysicsList.
-    void
-    RegisterPhysics(G4VPhysicsConstructor* g)
-    {
-      G4VModularPhysicsList::RegisterPhysics(g);
-    }
-    const G4VPhysicsConstructor*
-    GetPhysics(G4int index) const
+    void RegisterPhysics(G4VPhysicsConstructor* g) { G4VModularPhysicsList::RegisterPhysics(g); }
+    const G4VPhysicsConstructor* GetPhysics(G4int index) const
     {
       return G4VModularPhysicsList::GetPhysics(index);
     }
-    const G4VPhysicsConstructor*
-    GetPhysics(const G4String& name) const
+    const G4VPhysicsConstructor* GetPhysics(const G4String& name) const
     {
       return G4VModularPhysicsList::GetPhysics(name);
     }

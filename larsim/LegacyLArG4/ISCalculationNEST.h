@@ -25,11 +25,7 @@ namespace larg4 {
 
     void Reset();
     void CalculateIonizationAndScintillation(const G4Step* step);
-    double
-    StepSizeLimit() const
-    {
-      return fStepSize;
-    }
+    double StepSizeLimit() const { return fStepSize; }
 
   private:
     NestAlg fNest;    ///< the fast optical simulation process

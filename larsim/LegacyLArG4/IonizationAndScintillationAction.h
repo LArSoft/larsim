@@ -18,8 +18,7 @@ class G4Step;
 
 namespace larg4 {
 
-  class IonizationAndScintillationAction : public g4b::UserAction
-  {
+  class IonizationAndScintillationAction : public g4b::UserAction {
   public:
     // Standard constructors and destructors;
     IonizationAndScintillationAction();
@@ -27,10 +26,9 @@ namespace larg4 {
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's steps
-    virtual void SteppingAction    (const G4Step*);
+    virtual void SteppingAction(const G4Step*);
 
   private:
-
   };
 
 } // namespace LArG4

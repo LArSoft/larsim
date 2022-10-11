@@ -65,11 +65,10 @@ namespace cheat {
         fhicl::Comment("Option when overlaying simulation on real data, to tell the "
                        "backtracker to continue even if event looks like data."),
         false};
-      fhicl::Atom<double> HitTimeRMS{
-        fhicl::Name("HitTimeRMS"),
-        fhicl::Comment("The number of RMS units to move away"
-                       "from a Hit peak time for searching IDE."),
-        1.0};
+      fhicl::Atom<double> HitTimeRMS{fhicl::Name("HitTimeRMS"),
+                                     fhicl::Comment("The number of RMS units to move away"
+                                                    "from a Hit peak time for searching IDE."),
+                                     1.0};
     };
 
     BackTracker(const fhiclConfig& config,
@@ -90,8 +89,7 @@ namespace cheat {
 
     //-----------------------------------------------------
     template <typename Evt>
-    bool
-    CanRun(const Evt& evt)
+    bool CanRun(const Evt& evt)
     {
       return !evt.isRealData() || fOverrideRealData;
     }
@@ -110,17 +108,9 @@ namespace cheat {
     //-----------------------------------------------------
     void ClearEvent();
 
-    bool
-    SimChannelsReady() const
-    {
-      return !fSimChannels.empty();
-    }
+    bool SimChannelsReady() const { return !fSimChannels.empty(); }
 
-    const std::vector<art::Ptr<sim::SimChannel>>&
-    SimChannels() const
-    {
-      return fSimChannels;
-    }
+    const std::vector<art::Ptr<sim::SimChannel>>& SimChannels() const { return fSimChannels; }
     // All Hit List would go here. We explicitly choose not to include it, as
     // the user should not be using backtracker to access Hits. This could
     // change in a concievable future use case where we also allow the user to
@@ -137,7 +127,7 @@ namespace cheat {
      * @see FindSimChannel()
      */
     art::Ptr<sim::SimChannel> FindSimChannelPtr(raw::ChannelID_t channel) const;
-    
+
     /**
      * @brief Returns the cached `sim::SimChannel` on the specified `channel`.
      * @param channel ID of the TPC channel to find
@@ -157,9 +147,8 @@ namespace cheat {
     // product, and we will not be storing them.
     std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                               recob::Hit const& hit) const;
-    std::vector<sim::TrackIDE>
-    HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                   art::Ptr<recob::Hit> const& hit) const
+    std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                              art::Ptr<recob::Hit> const& hit) const
     {
       return this->HitToTrackIDEs(clockData, *hit);
     }
@@ -171,9 +160,8 @@ namespace cheat {
 
     std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                                  recob::Hit const& hit) const;
-    std::vector<sim::TrackIDE>
-    HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
-                      art::Ptr<recob::Hit> const& hit) const
+    std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
+                                                 art::Ptr<recob::Hit> const& hit) const
     {
       return this->HitToEveTrackIDEs(clockData, *hit);
     }
@@ -192,18 +180,16 @@ namespace cheat {
 
     std::vector<sim::IDE> HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
                                           recob::Hit const& hit) const;
-    std::vector<sim::IDE>
-    HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
-                    art::Ptr<recob::Hit> const& hit) const
+    std::vector<sim::IDE> HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
+                                          art::Ptr<recob::Hit> const& hit) const
     {
       return this->HitToAvgSimIDEs(clockData, *hit);
     }
 
     std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
                                                  recob::Hit const& hit) const;
-    std::vector<const sim::IDE*>
-    HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
-                    art::Ptr<recob::Hit> const& hit) const
+    std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
+                                                 art::Ptr<recob::Hit> const& hit) const
     {
       return this->HitToSimIDEs_Ps(clockData, *hit);
     }
@@ -213,8 +199,8 @@ namespace cheat {
 
     std::vector<double> HitToXYZ(detinfo::DetectorClocksData const& clockData,
                                  const recob::Hit& hit) const;
-    std::vector<double>
-    HitToXYZ(detinfo::DetectorClocksData const& clockData, art::Ptr<recob::Hit> const& hit) const
+    std::vector<double> HitToXYZ(detinfo::DetectorClocksData const& clockData,
+                                 art::Ptr<recob::Hit> const& hit) const
     {
       return this->HitToXYZ(clockData, *hit);
     }
@@ -238,16 +224,8 @@ namespace cheat {
                                          std::vector<art::Ptr<recob::Hit>> const& allhits,
                                          geo::View_t const& view) const;
 
-    std::set<int>
-    GetSetOfTrackIds() const
-    {
-      return fPartInv->GetSetOfTrackIds();
-    }
-    std::set<int>
-    GetSetOfEveIds() const
-    {
-      return fPartInv->GetSetOfEveIds();
-    }
+    std::set<int> GetSetOfTrackIds() const { return fPartInv->GetSetOfTrackIds(); }
+    std::set<int> GetSetOfEveIds() const { return fPartInv->GetSetOfEveIds(); }
 
     std::set<int> GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
                                    std::vector<art::Ptr<recob::Hit>> const& hits) const;

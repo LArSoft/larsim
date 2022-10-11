@@ -51,6 +51,7 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
+#include "lardataobj/MCBase/MCParticleLite.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
@@ -73,7 +74,6 @@
 #include "nug4/G4Base/UserActionManager.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "lardataobj/MCBase/MCParticleLite.h"
 
 // G4 Includes
 #include "Geant4/G4LogicalVolumeStore.hh"
@@ -333,9 +333,10 @@ namespace larg4 {
                                  ///< executed before main MC processing.
     bool fCheckOverlaps;         ///< Whether to use the G4 overlap checker
     bool fMakeMCParticles;       ///< Whether to keep a `sim::MCParticle` list
-    bool fStoreDroppedMCParticles;///< Whether to keep a `sim::MCParticleLite` list of dropped particles
-    bool fdumpParticleList;      ///< Whether each event's sim::ParticleList will be displayed.
-    bool fdumpSimChannels;       ///< Whether each event's sim::Channel will be displayed.
+    bool
+      fStoreDroppedMCParticles; ///< Whether to keep a `sim::MCParticleLite` list of dropped particles
+    bool fdumpParticleList;     ///< Whether each event's sim::ParticleList will be displayed.
+    bool fdumpSimChannels;      ///< Whether each event's sim::Channel will be displayed.
     bool fUseLitePhotons;
     bool fStoreReflected{false};
     int fSmartStacking;          ///< Whether to instantiate and use class to
@@ -384,8 +385,7 @@ namespace {
    *
    */
   template <typename T>
-  std::vector<T>&
-  append(std::vector<T>& dest, std::vector<T>&& source)
+  std::vector<T>& append(std::vector<T>& dest, std::vector<T>&& source)
   {
     if (empty(dest))
       dest = std::move(source);
@@ -491,9 +491,7 @@ namespace larg4 {
       produces<std::vector<simb::MCParticle>>();
       produces<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
     }
-    if (fStoreDroppedMCParticles) {
-      produces<std::vector<sim::MCParticleLite>>();
-    }
+    if (fStoreDroppedMCParticles) { produces<std::vector<sim::MCParticleLite>>(); }
     if (!lgp->NoElectronPropagation()) produces<std::vector<sim::SimChannel>>();
     produces<std::vector<sim::AuxDetSimChannel>>();
 
@@ -508,8 +506,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------
-  void
-  LArG4::beginJob()
+  void LArG4::beginJob()
   {
     fG4Help = std::make_unique<g4b::G4Helper>(fG4MacroPath, fG4PhysListName);
 
@@ -580,8 +577,7 @@ namespace larg4 {
     }
   }
 
-  void
-  LArG4::beginRun(art::Run& run)
+  void LArG4::beginRun(art::Run& run)
   {
     // prepare the filter object (null if no filtering)
     std::set<std::string> volnameset(fKeepParticlesInVolumes.begin(),
@@ -589,8 +585,8 @@ namespace larg4 {
     fparticleListAction->ParticleFilter(CreateParticleVolumeFilter(volnameset));
   }
 
-  std::unique_ptr<util::PositionInVolumeFilter>
-  LArG4::CreateParticleVolumeFilter(std::set<std::string> const& vol_names) const
+  std::unique_ptr<util::PositionInVolumeFilter> LArG4::CreateParticleVolumeFilter(
+    std::set<std::string> const& vol_names) const
   {
     // if we don't have favourite volumes, don't even bother creating a filter
     if (empty(vol_names)) return {};
@@ -633,8 +629,7 @@ namespace larg4 {
     return std::make_unique<util::PositionInVolumeFilter>(std::move(GeoVolumePairs));
   } // CreateParticleVolumeFilter()
 
-  void
-  LArG4::produce(art::Event& evt)
+  void LArG4::produce(art::Event& evt)
   {
     MF_LOG_DEBUG("LArG4") << "produce()";
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
@@ -646,18 +641,13 @@ namespace larg4 {
     // collections
     auto scCol = std::make_unique<std::vector<sim::SimChannel>>();
     auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
-    auto tpassn =
-      fMakeMCParticles ?
-      std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>() :
-      nullptr;
-    auto partCol =
-      fMakeMCParticles ?
-      std::make_unique<std::vector<simb::MCParticle>>() :
-      nullptr;
+    auto tpassn = fMakeMCParticles ?
+                    std::make_unique<
+                      art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>() :
+                    nullptr;
+    auto partCol = fMakeMCParticles ? std::make_unique<std::vector<simb::MCParticle>>() : nullptr;
     auto droppedPartCol =
-      fStoreDroppedMCParticles ?
-      std::make_unique<std::vector<sim::MCParticleLite>>() :
-      nullptr;
+      fStoreDroppedMCParticles ? std::make_unique<std::vector<sim::MCParticleLite>>() : nullptr;
     auto PhotonCol = std::make_unique<std::vector<sim::SimPhotons>>();
     auto PhotonColRefl = std::make_unique<std::vector<sim::SimPhotons>>();
     auto LitePhotonCol = std::make_unique<std::vector<sim::SimPhotonsLite>>();
@@ -760,7 +750,7 @@ namespace larg4 {
             if (p.StatusCode() != 1) continue;
 
             sim::MCParticleLite mini_mcp(p);
-            mini_mcp.Origin( mct->Origin() );
+            mini_mcp.Origin(mct->Origin());
 
             droppedPartCol->push_back(std::move(mini_mcp));
           } // for(droppedParticleList)
@@ -916,8 +906,12 @@ namespace larg4 {
                 for (auto const& tdcide : tdcideMap) {
                   for (auto const& ide : tdcide.second) {
                     double xyz[3] = {ide.x, ide.y, ide.z};
-                    scCol->at(idtest).AddIonizationElectrons(
-                      ide.trackID, tdcide.first, ide.numElectrons, xyz, ide.energy, ide.origTrackID);
+                    scCol->at(idtest).AddIonizationElectrons(ide.trackID,
+                                                             tdcide.first,
+                                                             ide.numElectrons,
+                                                             xyz,
+                                                             ide.energy,
+                                                             ide.origTrackID);
                   } // end loop to add ionization electrons to  scCol->at(idtest)
                 }   // end loop over tdc to vector<sim::IDE> map
               }     // end if check to see if we've put SimChannels in for ichan yet or not
@@ -971,8 +965,8 @@ namespace larg4 {
     } // Loop over AuxDets
 
     if (partCol) {
-      mf::LogInfo("LArG4") << "Geant4 simulated " << nGeneratedParticles << " MC particles, we keep "
-                           << partCol->size() << " .";
+      mf::LogInfo("LArG4") << "Geant4 simulated " << nGeneratedParticles
+                           << " MC particles, we keep " << partCol->size() << " .";
     }
 
     if (fdumpSimChannels) {

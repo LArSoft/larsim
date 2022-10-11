@@ -11,15 +11,17 @@
 #define LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H
 
 // LArSoft libraries
-#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
-#include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h" // lar::providerFrom()
+#include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
 
 // framework libraries
 #include "art/Utilities/ToolConfigTable.h"
 
-namespace geo { class GeometryCore; }
+namespace geo {
+  class GeometryCore;
+}
 
 namespace phot {
 
@@ -37,15 +39,13 @@ namespace phot {
    *       For information about how to _use it_, see the documentation of that
    *       interface.
    */
-  class PhotonMappingIdentityTransformations
-    : public phot::IPhotonMappingTransformations
-  {
+  class PhotonMappingIdentityTransformations : public phot::IPhotonMappingTransformations {
 
-      public:
+  public:
     struct Config {
 
-    //   using Name = fhicl::Name;
-    //   using Comment = fhicl::Comment;
+      //   using Name = fhicl::Name;
+      //   using Comment = fhicl::Comment;
 
       // no configuration required
 
@@ -53,19 +53,17 @@ namespace phot {
 
     using Parameters = art::ToolConfigTable<Config>;
 
-
     /// Constructor: ignores the configuration.
     PhotonMappingIdentityTransformations(Config const&)
       : fGeom(lar::providerFrom<geo::Geometry>())
       , fOpDetsToLibraryIndicesMap(makeOpDetsToLibraryIndicesMap())
       , fLibraryIndicesToOpDetsMap(makeLibraryIndicesToOpDetsMap())
-      {}
+    {}
 
     /// Constructor: ignores the configuration.
     PhotonMappingIdentityTransformations(Parameters const& config)
       : PhotonMappingIdentityTransformations(config())
-      {}
-
+    {}
 
     // --- BEGIN Geometry mapping interface ------------------------------------
     /// @name Geometry mapping interface
@@ -81,13 +79,10 @@ namespace phot {
      *
      * No exception is ever thrown.
      */
-    geo::Point_t detectorToLibrary
-    (geo::Point_t const& location) const override
-      { return location; }
+    geo::Point_t detectorToLibrary(geo::Point_t const& location) const override { return location; }
 
     /// @}
     // --- END Geometry mapping interface --------------------------------------
-
 
     // --- BEGIN Optical detector mapping interface ----------------------------
     /// @name Optical detector mapping interface
@@ -104,9 +99,11 @@ namespace phot {
      * The mapping is trivial: each library index has the same value as the
      * ID of the optical detector it corresponds to.
      */
-    LibraryIndex_t opDetToLibraryIndex
-      (geo::Point_t const& location, OpDetID_t opDetID) const override
-      { return LibraryIndex_t{ opDetID }; }
+    LibraryIndex_t opDetToLibraryIndex(geo::Point_t const& location,
+                                       OpDetID_t opDetID) const override
+    {
+      return LibraryIndex_t{opDetID};
+    }
 
     /**
      * @brief Maps a library index with an optical detector.
@@ -119,10 +116,11 @@ namespace phot {
      * The mapping is trivial: each library index has the same value as the
      * ID of the optical detector it corresponds to.
      */
-    OpDetID_t libraryIndexToOpDet
-      (geo::Point_t const& location, LibraryIndex_t libIndex) const override
-      { return OpDetID_t{ libIndex }; }
-
+    OpDetID_t libraryIndexToOpDet(geo::Point_t const& location,
+                                  LibraryIndex_t libIndex) const override
+    {
+      return OpDetID_t{libIndex};
+    }
 
     /**
      * @brief Returns a map of library indices as function of optical detectors.
@@ -134,9 +132,11 @@ namespace phot {
      * ID of the optical detector it corresponds to.
      * This mapping is global and does not depend on any location.
      */
-    OpDetToLibraryIndexMap const& opDetsToLibraryIndices
-      (geo::Point_t const& location) const override
-      { return fOpDetsToLibraryIndicesMap; }
+    OpDetToLibraryIndexMap const& opDetsToLibraryIndices(
+      geo::Point_t const& location) const override
+    {
+      return fOpDetsToLibraryIndicesMap;
+    }
 
     /**
      * @brief Expected number of mappings of optical detector into library
@@ -147,9 +147,7 @@ namespace phot {
      * This is effectively the number of available optical detectors, as well
      * as the size of the mapping as returned by `opDetsToLibraryIndices()`.
      */
-    std::size_t opDetMappingSize() const override
-      { return fOpDetsToLibraryIndicesMap.size(); }
-
+    std::size_t opDetMappingSize() const override { return fOpDetsToLibraryIndicesMap.size(); }
 
     /**
      * @brief Returns a map of optical detectors identifiers, one for each
@@ -162,9 +160,11 @@ namespace phot {
      * ID of the optical detector it corresponds to.
      * This mapping is global and does not depend on any location.
      */
-    LibraryIndexToOpDetMap const& libraryIndicesToOpDets
-      (geo::Point_t const& location) const override
-      { return fLibraryIndicesToOpDetsMap; }
+    LibraryIndexToOpDetMap const& libraryIndicesToOpDets(
+      geo::Point_t const& location) const override
+    {
+      return fLibraryIndicesToOpDetsMap;
+    }
 
     /**
      * @brief Size of the mapping of library optical detectors.
@@ -174,17 +174,15 @@ namespace phot {
      *
      * This is also the number of optical detectors.
      */
-    std::size_t libraryMappingSize
-      (geo::Point_t const& location) const override
-      { return fLibraryIndicesToOpDetsMap.size(); }
-
+    std::size_t libraryMappingSize(geo::Point_t const& location) const override
+    {
+      return fLibraryIndicesToOpDetsMap.size();
+    }
 
     /// @}
     // --- END Optical detector identifier mapping interface -------------------
 
-
-      protected:
-
+  protected:
     /// Detector geometry service provider.
     geo::GeometryCore const* fGeom = nullptr;
 
@@ -194,7 +192,6 @@ namespace phot {
     /// Complete optical detector identifier mapping library-to-world.
     LibraryIndexToOpDetMap fLibraryIndicesToOpDetsMap;
 
-
     /// Return a trivial global optical detector identifier mapping.
     LibraryIndexToOpDetMap makeLibraryIndicesToOpDetsMap() const;
 
@@ -203,8 +200,6 @@ namespace phot {
 
   }; // class PhotonMappingIdentityTransformations
 
-
 } // namespace phot
-
 
 #endif // LARSIM_PHOTONPROPAGATION_LIBRARYMAPPINGTOOLS_PHOTONMAPPINGIDENTITYTRANSFORMATIONS_H

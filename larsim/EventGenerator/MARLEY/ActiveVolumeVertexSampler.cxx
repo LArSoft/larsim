@@ -21,10 +21,10 @@ namespace {
 //------------------------------------------------------------------------------
 evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
   const fhicl::Table<evgen::ActiveVolumeVertexSampler::Config>& conf,
-  rndm::NuRandomService& rand_service, const geo::Geometry& geom,
+  rndm::NuRandomService& rand_service,
+  const geo::Geometry& geom,
   const std::string& generator_name)
-  : fVertexType(vertex_type_t::kSampled), fGeneratorName(generator_name),
-  fTPCDist(nullptr)
+  : fVertexType(vertex_type_t::kSampled), fGeneratorName(generator_name), fTPCDist(nullptr)
 {
   // Configure the algorithm using the FHiCL parameters
   this->reconfigure(conf, geom);
@@ -34,8 +34,7 @@ evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
   // generator_name as the instance name.
   rndm::NuRandomService::seed_t tpc_seed = rand_service.registerEngine(
     [this](rndm::NuRandomService::EngineId const& /* unused */,
-      rndm::NuRandomService::seed_t lar_seed) -> void
-    {
+           rndm::NuRandomService::seed_t lar_seed) -> void {
       auto seed = static_cast<uint_fast64_t>(lar_seed);
       // Use the obtained seed to prepare the random number engine.  This is
       // an attempt to do a decent job, but optimally accomplishing this can
@@ -44,8 +43,9 @@ evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
       std::seed_seq seed_sequence{seed};
       fTPCEngine.seed(seed_sequence);
     },
-    fGeneratorName, conf.get_PSet(), { "seed" }
-  );
+    fGeneratorName,
+    conf.get_PSet(),
+    {"seed"});
 
   // TODO: resolve the other workaround mentioned in the MARLEYHelper
   // class, then fix this as well
@@ -55,8 +55,7 @@ evgen::ActiveVolumeVertexSampler::ActiveVolumeVertexSampler(
 }
 
 //------------------------------------------------------------------------------
-TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
-  const geo::Geometry& geom)
+TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(const geo::Geometry& geom)
 {
   // sample a new position if needed
   if (fVertexType == vertex_type_t::kSampled) {
@@ -82,8 +81,8 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
     double y = uniform_dist(fTPCEngine, y_range);
     double z = uniform_dist(fTPCEngine, z_range);
     MF_LOG_INFO("ActiveVolumeVertexSampler " + fGeneratorName)
-      << "Sampled primary vertex in TPC #" << tpc_index << ", x = " << x
-      << ", y = " << y << ", z = " << z;
+      << "Sampled primary vertex in TPC #" << tpc_index << ", x = " << x << ", y = " << y
+      << ", z = " << z;
 
     // Update the vertex position 4-vector
     fVertexPosition.SetXYZT(x, y, z, 0.); // TODO: add time sampling
@@ -104,7 +103,7 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
     double x = 0.;
     double y = 0.;
     double z = 0.;
-    while ( !ok && num_iterations < MAX_BOX_ITERATIONS ) {
+    while (!ok && num_iterations < MAX_BOX_ITERATIONS) {
       x = uniform_dist(fTPCEngine, x_range);
       y = uniform_dist(fTPCEngine, y_range);
       z = uniform_dist(fTPCEngine, z_range);
@@ -112,7 +111,7 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
       // If we've been asked to check whether the vertex is within the
       // active volume of a TPC, verify that. Otherwise just accept the
       // first vertex position that was sampled unconditionally.
-      if ( fCheckActive ) {
+      if (fCheckActive) {
         size_t num_tpcs = geom.NTPC();
         for (size_t iTPC = 0; iTPC < num_tpcs; ++iTPC) {
           const auto& tpc = geom.TPC(iTPC);
@@ -122,22 +121,23 @@ TLorentzVector evgen::ActiveVolumeVertexSampler::sample_vertex_pos(
           double maxY = tpc.MaxY();
           double minZ = tpc.MinZ();
           double maxZ = tpc.MaxZ();
-          if ( x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ ) {
+          if (x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ) {
             ok = true;
             break;
           }
         }
       }
-      else ok = true;
+      else
+        ok = true;
     }
 
-    if ( !ok ) throw cet::exception("ActiveVolumeVertexSampler " + fGeneratorName)
-      << "Failed to sample a vertex within a TPC active volume after " << MAX_BOX_ITERATIONS
-      << " iterations";
+    if (!ok)
+      throw cet::exception("ActiveVolumeVertexSampler " + fGeneratorName)
+        << "Failed to sample a vertex within a TPC active volume after " << MAX_BOX_ITERATIONS
+        << " iterations";
 
     MF_LOG_INFO("ActiveVolumeVertexSampler " + fGeneratorName)
-      << "Sampled primary vertex at x = " << x << ", y = " << y
-      << ", z = " << z;
+      << "Sampled primary vertex at x = " << x << ", y = " << y << ", z = " << z;
 
     // Update the vertex position 4-vector
     fVertexPosition.SetXYZT(x, y, z, 0.); // TODO: add time sampling
@@ -169,8 +169,7 @@ void evgen::ActiveVolumeVertexSampler::reconfigure(
 
     // Load the discrete distribution used to sample TPCs with the up-to-date
     // set of weights
-    fTPCDist.reset(new std::discrete_distribution<size_t>(tpc_masses.begin(),
-      tpc_masses.end()));
+    fTPCDist.reset(new std::discrete_distribution<size_t>(tpc_masses.begin(), tpc_masses.end()));
   }
   else if (type == "fixed") {
 
@@ -200,10 +199,11 @@ void evgen::ActiveVolumeVertexSampler::reconfigure(
     // By default, don't check whether each point is in a TPC active volume
     fCheckActive = false;
     // If the user specified this optional parameter, use that instead
-    conf().check_active_( fCheckActive );
+    conf().check_active_(fCheckActive);
   }
 
-  else throw cet::exception("ActiveVolumeVertexSampler " + fGeneratorName)
-    << "Invalid vertex type '" << type << "' requested. Allowed values are"
-    << " 'sampled' and 'fixed'";
+  else
+    throw cet::exception("ActiveVolumeVertexSampler " + fGeneratorName)
+      << "Invalid vertex type '" << type << "' requested. Allowed values are"
+      << " 'sampled' and 'fixed'";
 }

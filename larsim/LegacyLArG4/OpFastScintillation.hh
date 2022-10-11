@@ -212,36 +212,20 @@ namespace larg4 {
     G4PhysicsTable* GetSlowIntegralTable() const;
     // Returns the address of the slow scintillation integral table.
 
-    void
-    AddSaturation(G4EmSaturation* sat)
-    {
-      emSaturation = sat;
-    }
+    void AddSaturation(G4EmSaturation* sat) { emSaturation = sat; }
     // Adds Birks Saturation to the process.
 
-    void
-    RemoveSaturation()
-    {
-      emSaturation = NULL;
-    }
+    void RemoveSaturation() { emSaturation = NULL; }
     // Removes the Birks Saturation from the process.
 
-    G4EmSaturation*
-    GetSaturation() const
-    {
-      return emSaturation;
-    }
+    G4EmSaturation* GetSaturation() const { return emSaturation; }
     // Returns the Birks Saturation.
 
     void SetScintillationByParticleType(const G4bool);
     // Called by the user to set the scintillation yield as a function
     // of energy deposited by particle type
 
-    G4bool
-    GetScintillationByParticleType() const
-    {
-      return scintillationByParticleType;
-    }
+    G4bool GetScintillationByParticleType() const { return scintillationByParticleType; }
     // Return the boolean that determines the method of scintillation
     // production
 
@@ -252,11 +236,15 @@ namespace larg4 {
       std::vector<double> GetVisibleTimeOnlyCathode(double, int);*/
     // old timings -- to be deleted
 
-    void getVUVTimes(std::vector<double>& arrivalTimes, const double distance_in_cm, const size_t angle_bin);
+    void getVUVTimes(std::vector<double>& arrivalTimes,
+                     const double distance_in_cm,
+                     const size_t angle_bin);
     void generateParam(const size_t index, const size_t angle_bin);
     // Functions for vuv component Landau + Exponential timing parameterisation, updated method
 
-    void getVISTimes(std::vector<double>& arrivalTimes, const TVector3 &ScintPoint, const TVector3 &OpDetPoint);
+    void getVISTimes(std::vector<double>& arrivalTimes,
+                     const TVector3& ScintPoint,
+                     const TVector3& OpDetPoint);
     // Visible component timing parameterisation
 
     void detectedDirectHits(std::map<size_t, int>& DetectedNum,
@@ -292,7 +280,6 @@ namespace larg4 {
     G4bool scintillationByParticleType;
 
   private:
-
     struct OpticalDetector {
       double h; // height
       double w; // width
@@ -348,7 +335,8 @@ namespace larg4 {
      double ft0_max, ft0_break_point;*/
 
     //For new VUV time parametrization
-    double fstep_size, fmin_d, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance, fangle_bin_timing_vuv;
+    double fstep_size, fmin_d, fmax_d, fvuv_vgroup_mean, fvuv_vgroup_max, finflexion_point_distance,
+      fangle_bin_timing_vuv;
     std::vector<std::vector<double>> fparameters[7];
     // vector containing generated VUV timing parameterisations
     std::vector<std::vector<TF1>> VUV_timing;
@@ -369,7 +357,7 @@ namespace larg4 {
 
     // solid angle of rectangular aperture calculation functions
     double Rectangle_SolidAngle(const double a, const double b, const double d) const;
-    double Rectangle_SolidAngle(Dims const&  o, const std::array<double, 3> v) const;
+    double Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v) const;
     // solid angle of circular aperture calculation functions
     double Disk_SolidAngle(const double d, const double h, const double b) const;
     // solid angle of a dome aperture calculation functions
@@ -407,7 +395,6 @@ namespace larg4 {
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
     TVector3 fcathode_centre;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
-
 
     // Optical detector properties for semi-analytic hits
     // int foptical_detector_type;  // unused
@@ -468,8 +455,7 @@ namespace larg4 {
   ////////////////////
   // Inline methods
   ////////////////////
-  inline G4bool
-  OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
+  inline G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
   {
     if (aParticleType.GetParticleName() == "opticalphoton") return false;
     if (aParticleType.IsShortLived()) return false;
@@ -477,68 +463,51 @@ namespace larg4 {
     return true;
   }
 
-  inline void
-  OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
+  inline void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state)
   {
     fTrackSecondariesFirst = state;
   }
 
-  inline void
-  OpFastScintillation::SetFiniteRiseTime(const G4bool state)
+  inline void OpFastScintillation::SetFiniteRiseTime(const G4bool state)
   {
     fFiniteRiseTime = state;
   }
 
-  inline G4bool
-  OpFastScintillation::GetTrackSecondariesFirst() const
+  inline G4bool OpFastScintillation::GetTrackSecondariesFirst() const
   {
     return fTrackSecondariesFirst;
   }
 
-  inline G4bool
-  OpFastScintillation::GetFiniteRiseTime() const
-  {
-    return fFiniteRiseTime;
-  }
+  inline G4bool OpFastScintillation::GetFiniteRiseTime() const { return fFiniteRiseTime; }
 
-  inline void
-  OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
+  inline void OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
   {
     YieldFactor = yieldfactor;
   }
 
-  inline G4double
-  OpFastScintillation::GetScintillationYieldFactor() const
-  {
-    return YieldFactor;
-  }
+  inline G4double OpFastScintillation::GetScintillationYieldFactor() const { return YieldFactor; }
 
-  inline void
-  OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
+  inline void OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
   {
     ExcitationRatio = excitationratio;
   }
 
-  inline G4double
-  OpFastScintillation::GetScintillationExcitationRatio() const
+  inline G4double OpFastScintillation::GetScintillationExcitationRatio() const
   {
     return ExcitationRatio;
   }
 
-  inline G4PhysicsTable*
-  OpFastScintillation::GetSlowIntegralTable() const
+  inline G4PhysicsTable* OpFastScintillation::GetSlowIntegralTable() const
   {
     return theSlowIntegralTable.get();
   }
 
-  inline G4PhysicsTable*
-  OpFastScintillation::GetFastIntegralTable() const
+  inline G4PhysicsTable* OpFastScintillation::GetFastIntegralTable() const
   {
     return theFastIntegralTable.get();
   }
 
-  inline void
-  OpFastScintillation::DumpPhysicsTable() const
+  inline void OpFastScintillation::DumpPhysicsTable() const
   {
     if (theFastIntegralTable) {
       G4int PhysicsTableSize = theFastIntegralTable->entries();
@@ -559,8 +528,7 @@ namespace larg4 {
   }
 
   template <typename TReal>
-  inline constexpr double
-  dist(const TReal* x, const TReal* y, const unsigned int dimension)
+  inline constexpr double dist(const TReal* x, const TReal* y, const unsigned int dimension)
   {
     double d = 0.;
     for (unsigned int p = 0; p < dimension; ++p) {
@@ -570,8 +538,10 @@ namespace larg4 {
   }
 
   template <typename TVector3>
-  inline constexpr double
-  dist(const std::array<double, 3> x, const TVector3 y, const unsigned int dimension, const unsigned int start)
+  inline constexpr double dist(const std::array<double, 3> x,
+                               const TVector3 y,
+                               const unsigned int dimension,
+                               const unsigned int start)
   {
     double d = 0.;
     for (unsigned int p = start; p < dimension; ++p) {
@@ -595,8 +565,9 @@ namespace larg4 {
   // supply tolerance that is meaningful in your context
   // for example, default tolerance may not work if you are comparing double with float
   template <typename TReal>
-  inline constexpr static bool
-  isApproximatelyZero(TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+  inline constexpr static bool isApproximatelyZero(
+    TReal a,
+    TReal tolerance = std::numeric_limits<TReal>::epsilon())
   {
     if (std::fabs(a) <= tolerance) return true;
     return false;

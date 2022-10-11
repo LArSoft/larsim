@@ -58,31 +58,30 @@
 #ifndef LARVOXELLIST_H
 #define LARVOXELLIST_H
 
-#include "larsim/Simulation/LArVoxelID.h"
 #include "larsim/Simulation/LArVoxelData.h"
+#include "larsim/Simulation/LArVoxelID.h"
 
 #include <map>
 
 namespace sim {
 
-  class LArVoxelList
-  {
+  class LArVoxelList {
   public:
     /// Some type definitions to make life easier, and to help "hide"
     /// the implementation details.  (If you're not familiar with STL,
     /// you can ignore these definitions.)
-    typedef std::map<LArVoxelID, LArVoxelData>  list_type;
-    typedef list_type::key_type                 key_type;
-    typedef list_type::mapped_type              mapped_type;
-    typedef list_type::value_type               value_type;
-    typedef list_type::iterator                 iterator;
-    typedef list_type::const_iterator           const_iterator;
-    typedef list_type::reverse_iterator         reverse_iterator;
-    typedef list_type::const_reverse_iterator   const_reverse_iterator;
-    typedef list_type::size_type                size_type;
-    typedef list_type::difference_type          difference_type;
-    typedef list_type::key_compare              key_compare;
-    typedef list_type::allocator_type           allocator_type;
+    typedef std::map<LArVoxelID, LArVoxelData> list_type;
+    typedef list_type::key_type key_type;
+    typedef list_type::mapped_type mapped_type;
+    typedef list_type::value_type value_type;
+    typedef list_type::iterator iterator;
+    typedef list_type::const_iterator const_iterator;
+    typedef list_type::reverse_iterator reverse_iterator;
+    typedef list_type::const_reverse_iterator const_reverse_iterator;
+    typedef list_type::size_type size_type;
+    typedef list_type::difference_type difference_type;
+    typedef list_type::key_compare key_compare;
+    typedef list_type::allocator_type allocator_type;
 
     // Standard constructor and destructor.
     LArVoxelList();
@@ -91,13 +90,16 @@ namespace sim {
     // Add the energy to the entry with the key; if the key doesn't
     // exist, create it.  Allow the addition both with and without a
     // particle's track ID for LArVoxelData.
-    void Add( const key_type& key, const double& energy )                { m_voxelList[key].Add(energy); }
-    void Add( const key_type& key, const double& energy, const int& id ) { m_voxelList[key].Add(energy,id); }
+    void Add(const key_type& key, const double& energy) { m_voxelList[key].Add(energy); }
+    void Add(const key_type& key, const double& energy, const int& id)
+    {
+      m_voxelList[key].Add(energy, id);
+    }
 
     // The arithmetic methods "advertised" in the class description
     // above.
-    void Add( const LArVoxelList& );
-    LArVoxelList& operator+=( const LArVoxelList& other )
+    void Add(const LArVoxelList&);
+    LArVoxelList& operator+=(const LArVoxelList& other)
     {
       this->Add(other);
       return *this;
@@ -107,51 +109,48 @@ namespace sim {
       return LArVoxelList(*this) += other;
     }
 
-    LArVoxelList&      operator*=( const double& value );
-    const LArVoxelList operator* (const double& value) const
-    {
-      return LArVoxelList(*this) *= value;
-    }
+    LArVoxelList& operator*=(const double& value);
+    const LArVoxelList operator*(const double& value) const { return LArVoxelList(*this) *= value; }
     // Just in case: define the result of "scalar * LArVoxelList" to be
     // the same as "LArVoxelList * scalar".
     friend const LArVoxelList operator*(const double& value, const LArVoxelList& list);
 
     // Apply a threshold cut to the voxels in the list, removing all
     // those that fall below the cut.
-    void Cut( const double& );
+    void Cut(const double&);
 
-    const key_type& ID( const size_type ) const;
-    double Energy( const size_type ) const;
+    const key_type& ID(const size_type) const;
+    double Energy(const size_type) const;
 
-    friend std::ostream& operator<< ( std::ostream& output, const LArVoxelList& );
+    friend std::ostream& operator<<(std::ostream& output, const LArVoxelList&);
 
     // Standard STL methods, to make this class look like an STL map.
     // Again, if you don't know STL, you can just ignore these
     // methods.
-    iterator               begin()        { return m_voxelList.begin(); }
-    const_iterator         begin()  const { return m_voxelList.begin(); }
-    iterator               end()          { return m_voxelList.end(); }
-    const_iterator         end()    const { return m_voxelList.end(); }
-    reverse_iterator       rbegin()       { return m_voxelList.rbegin(); }
+    iterator begin() { return m_voxelList.begin(); }
+    const_iterator begin() const { return m_voxelList.begin(); }
+    iterator end() { return m_voxelList.end(); }
+    const_iterator end() const { return m_voxelList.end(); }
+    reverse_iterator rbegin() { return m_voxelList.rbegin(); }
     const_reverse_iterator rbegin() const { return m_voxelList.rbegin(); }
-    reverse_iterator       rend()         { return m_voxelList.rend(); }
-    const_reverse_iterator rend()   const { return m_voxelList.rend(); }
+    reverse_iterator rend() { return m_voxelList.rend(); }
+    const_reverse_iterator rend() const { return m_voxelList.rend(); }
 
-    size_type size()                const { return m_voxelList.size(); }
-    bool      empty()               const { return m_voxelList.empty(); }
-    void      swap( LArVoxelList& other ) { m_voxelList.swap( other.m_voxelList ); }
-    void      clear()                     { m_voxelList.clear(); }
+    size_type size() const { return m_voxelList.size(); }
+    bool empty() const { return m_voxelList.empty(); }
+    void swap(LArVoxelList& other) { m_voxelList.swap(other.m_voxelList); }
+    void clear() { m_voxelList.clear(); }
 
-    iterator       find(const key_type& key)              { return m_voxelList.find(key); }
-    const_iterator find(const key_type& key)        const { return m_voxelList.find(key); }
-    iterator       upper_bound(const key_type& key)       { return m_voxelList.upper_bound(key); }
+    iterator find(const key_type& key) { return m_voxelList.find(key); }
+    const_iterator find(const key_type& key) const { return m_voxelList.find(key); }
+    iterator upper_bound(const key_type& key) { return m_voxelList.upper_bound(key); }
     const_iterator upper_bound(const key_type& key) const { return m_voxelList.upper_bound(key); }
-    iterator       lower_bound(const key_type& key)       { return m_voxelList.lower_bound(key); }
+    iterator lower_bound(const key_type& key) { return m_voxelList.lower_bound(key); }
     const_iterator lower_bound(const key_type& key) const { return m_voxelList.lower_bound(key); }
 
     mapped_type& operator[](const key_type& key) { return m_voxelList[key]; }
     // My own little addition: operator[] in a const context.
-    const mapped_type& operator[]( const key_type& key ) const { return m_voxelList.at(key); }
+    const mapped_type& operator[](const key_type& key) const { return m_voxelList.at(key); }
     mapped_type& at(const key_type& key) { return m_voxelList.at(key); }
     const mapped_type& at(const key_type& key) const { return m_voxelList.at(key); }
 
@@ -159,16 +158,14 @@ namespace sim {
     // anyone who wants to include a LArVoxelID / LArVoxelData pair
     // directly.  Note that, as with operator[], there's no check
     // against overwriting an existing item.
-    void insert( const key_type& key, const mapped_type& value ) { m_voxelList[key] = value; }
+    void insert(const key_type& key, const mapped_type& value) { m_voxelList[key] = value; }
 
-    size_type erase( const key_type& key ) { return m_voxelList.erase(key); }
+    size_type erase(const key_type& key) { return m_voxelList.erase(key); }
 
   private:
     list_type m_voxelList; ///< A sorted list of <LArVoxelID,double> pairs = (voxel ID, energy)
-
   };
 
 } // namespace sim
 
 #endif // LARVOXELLIST_H
-

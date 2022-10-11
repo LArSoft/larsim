@@ -41,12 +41,10 @@ namespace simfilter {
 namespace simfilter {
 
   FilterCryostatNus::FilterCryostatNus(fhicl::ParameterSet const& pset)
-    : EDFilter{pset}
-    , fKeepNusInCryostat{pset.get<bool>("KeepNusInCryostat", false)}
+    : EDFilter{pset}, fKeepNusInCryostat{pset.get<bool>("KeepNusInCryostat", false)}
   {}
 
-  bool
-  FilterCryostatNus::filter(art::Event& evt)
+  bool FilterCryostatNus::filter(art::Event& evt)
   {
     // get the list of particles from this event
     auto const& geom = *(lar::providerFrom<geo::Geometry>());
@@ -65,8 +63,7 @@ namespace simfilter {
           auto const absPDGID = std::abs(part.PdgCode());
           if (absPDGID == 12 || absPDGID == 14 || absPDGID == 16) {
             const TLorentzVector& end4 = part.EndPosition();
-            if (geom.PositionToCryostatPtr({end4.X(), end4.Y(), end4.Z()}) !=
-                nullptr) {
+            if (geom.PositionToCryostatPtr({end4.X(), end4.Y(), end4.Z()}) != nullptr) {
               inCryostatNu = true;
             }
           } // if neutrino

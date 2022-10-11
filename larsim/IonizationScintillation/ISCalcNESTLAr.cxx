@@ -7,11 +7,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
@@ -31,16 +31,14 @@ namespace larg4 {
 
   //----------------------------------------------------------------------------
   ISCalcNESTLAr::ISCalcNESTLAr(CLHEP::HepRandomEngine& Engine)
-    : fEngine(Engine)
-    , fSCE{lar::providerFrom<spacecharge::SpaceChargeService>()}
+    : fEngine(Engine), fSCE{lar::providerFrom<spacecharge::SpaceChargeService>()}
   {
     std::cout << "ISCalcNESTLAr Initialize." << std::endl;
   }
 
   //----------------------------------------------------------------------------
-  ISCalcData
-  ISCalcNESTLAr::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
-                                 sim::SimEnergyDeposit const& edep)
+  ISCalcData ISCalcNESTLAr::CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
+                                            sim::SimEnergyDeposit const& edep)
   {
     CLHEP::RandGauss GaussGen(fEngine);
     CLHEP::RandFlat UniformGen(fEngine);
@@ -173,8 +171,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  int
-  ISCalcNESTLAr::BinomFluct(int N0, double prob)
+  int ISCalcNESTLAr::BinomFluct(int N0, double prob)
   {
     CLHEP::RandGauss GaussGen(fEngine);
     CLHEP::RandFlat UniformGen(fEngine);
@@ -199,8 +196,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalcNESTLAr::CalcElectronLET(double E)
+  double ISCalcNESTLAr::CalcElectronLET(double E)
   {
     double LET;
 
@@ -219,8 +215,7 @@ namespace larg4 {
   }
 
   //----------------------------------------------------------------------------
-  double
-  ISCalcNESTLAr::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  double ISCalcNESTLAr::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     geo::Point_t pos = edep.MidPoint();
     double EField = efield;

@@ -69,8 +69,7 @@ namespace detsim {
   {}
 
   //-------------------------------------------------
-  void
-  WienerFilterAna::beginJob()
+  void WienerFilterAna::beginJob()
   {
     // get access to the TFile service
     art::ServiceHandle<art::TFileService const> tfs;
@@ -134,8 +133,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  WienerFilterAna::endJob()
+  void WienerFilterAna::endJob()
   {
 
     art::ServiceHandle<geo::Geometry const> geom;
@@ -176,8 +174,7 @@ namespace detsim {
   }
 
   //-------------------------------------------------
-  void
-  WienerFilterAna::analyze(const art::Event& evt)
+  void WienerFilterAna::analyze(const art::Event& evt)
   {
 
     // loop over the raw digits and get the adc vector for each, then compress it and uncompress it

@@ -6,10 +6,9 @@
  *
  */
 
-
 // lar libraries
-#include "lardataobj/Simulation/SimPhotons.h"
 #include "larcorealg/CoreUtils/SortByPointers.h" // util::makePointerVector()
+#include "lardataobj/Simulation/SimPhotons.h"
 
 // framework libraries
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -19,8 +18,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-
 
 namespace sim {
   class DumpSimPhotons;
@@ -34,19 +31,17 @@ namespace {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
 
-    fhicl::Atom<art::InputTag> InputPhotons {
+    fhicl::Atom<art::InputTag> InputPhotons{
       Name("InputPhotons"),
-      Comment("data product with the SimPhotons to be dumped")
-      };
+      Comment("data product with the SimPhotons to be dumped")};
 
-    fhicl::Atom<std::string> OutputCategory {
+    fhicl::Atom<std::string> OutputCategory{
       Name("OutputCategory"),
       Comment("name of the output stream (managed by the message facility)"),
       "DumpSimPhotons" /* default value */
-      };
+    };
 
   }; // struct Config
-
 
   /**
    * @brief Sorts `sim::OnePhoton` objects.
@@ -64,56 +59,58 @@ namespace {
   struct OnePhotonSorter {
 
     /// Direct comparison of `sim::OnePhoton` objects.
-    bool operator() (sim::OnePhoton const& a, sim::OnePhoton const& b) const
-      {
-        auto res = cmp(a.Time, b.Time);
-        if (res < 0) return true;
-        if (res > 0) return false;
+    bool operator()(sim::OnePhoton const& a, sim::OnePhoton const& b) const
+    {
+      auto res = cmp(a.Time, b.Time);
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        res = cmp(a.MotherTrackID, b.MotherTrackID);
-        if (res < 0) return true;
-        if (res > 0) return false;
+      res = cmp(a.MotherTrackID, b.MotherTrackID);
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        res = cmp(a.Energy, b.Energy);
-        if (res < 0) return true;
-        if (res > 0) return false;
+      res = cmp(a.Energy, b.Energy);
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        res = cmp(a.InitialPosition.Z(), b.InitialPosition.Z());
-        if (res < 0) return true;
-        if (res > 0) return false;
+      res = cmp(a.InitialPosition.Z(), b.InitialPosition.Z());
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        res = cmp(a.InitialPosition.Y(), b.InitialPosition.Y());
-        if (res < 0) return true;
-        if (res > 0) return false;
+      res = cmp(a.InitialPosition.Y(), b.InitialPosition.Y());
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        res = cmp(a.InitialPosition.X(), b.InitialPosition.X());
-        if (res < 0) return true;
-        if (res > 0) return false;
+      res = cmp(a.InitialPosition.X(), b.InitialPosition.X());
+      if (res < 0) return true;
+      if (res > 0) return false;
 
-        return false; //
-      } // operator()
+      return false; //
+    }               // operator()
 
     /// Comparison of `sim::OnePhoton` via their pointers.
-    bool operator() (sim::OnePhoton const* a, sim::OnePhoton const* b) const
-      { return operator() (*a, *b); }
-
+    bool operator()(sim::OnePhoton const* a, sim::OnePhoton const* b) const
+    {
+      return operator()(*a, *b);
+    }
 
     // TODO when C++20 is supported, this becomes `return a <=> b;`
     template <typename T, typename U>
     static int cmp(T const& a, U const& b)
-      {
-        if (a < b)  return -1;
-        if (a == b) return  0;
-        else        return +1;
-      }
+    {
+      if (a < b) return -1;
+      if (a == b)
+        return 0;
+      else
+        return +1;
+    }
 
   }; // struct OnePhotonSorter
 
 } // local namespace
 
-
-class sim::DumpSimPhotons: public art::EDAnalyzer {
-    public:
+class sim::DumpSimPhotons : public art::EDAnalyzer {
+public:
   // type to enable module parameters description by art
   using Parameters = art::EDAnalyzer::Table<Config>;
 
@@ -122,14 +119,12 @@ class sim::DumpSimPhotons: public art::EDAnalyzer {
 
   // Plugins should not be copied or assigned.
   DumpSimPhotons(DumpSimPhotons const&) = delete;
-  DumpSimPhotons(DumpSimPhotons &&) = delete;
-  DumpSimPhotons& operator = (DumpSimPhotons const&) = delete;
-  DumpSimPhotons& operator = (DumpSimPhotons &&) = delete;
-
+  DumpSimPhotons(DumpSimPhotons&&) = delete;
+  DumpSimPhotons& operator=(DumpSimPhotons const&) = delete;
+  DumpSimPhotons& operator=(DumpSimPhotons&&) = delete;
 
   // Operates on the event
   void analyze(art::Event const& event) override;
-
 
   /**
    * @brief Dumps the content of the specified SimPhotons in the output stream
@@ -145,23 +140,20 @@ class sim::DumpSimPhotons: public art::EDAnalyzer {
    * The output starts on the current line, and the last line is NOT broken.
    */
   template <typename Stream>
-  void DumpElement(
-    Stream&& out, sim::SimPhotons const& simphotons,
-    std::string indent = "", bool bIndentFirst = true
-    ) const;
+  void DumpElement(Stream&& out,
+                   sim::SimPhotons const& simphotons,
+                   std::string indent = "",
+                   bool bIndentFirst = true) const;
 
   /// Dumps a sim::OnePhoton on a single line
   template <typename Stream>
   void DumpOnePhoton(Stream&& out, sim::OnePhoton const& photon) const;
 
-
-    private:
-
+private:
   art::InputTag fInputPhotons; ///< name of SimPhotons's data product
   std::string fOutputCategory; ///< name of the stream for output
 
 }; // class sim::DumpSimPhotons
-
 
 //------------------------------------------------------------------------------
 //---  module implementation
@@ -175,70 +167,63 @@ sim::DumpSimPhotons::DumpSimPhotons(Parameters const& config)
 
 //------------------------------------------------------------------------------
 template <typename Stream>
-void sim::DumpSimPhotons::DumpOnePhoton
-  (Stream&& out, sim::OnePhoton const& onephoton) const
+void sim::DumpSimPhotons::DumpOnePhoton(Stream&& out, sim::OnePhoton const& onephoton) const
 {
-  out << "E=" << onephoton.Energy << " t=" << onephoton.Time
-    << " from " << onephoton.InitialPosition << " cm"
-    << " to " << onephoton.FinalLocalPosition << " cm"
-    ;
+  out << "E=" << onephoton.Energy << " t=" << onephoton.Time << " from "
+      << onephoton.InitialPosition << " cm"
+      << " to " << onephoton.FinalLocalPosition << " cm";
   if (onephoton.SetInSD) out << " [in SD]"; // in sensitive detector?
   out << " from track ID=" << onephoton.MotherTrackID;
 } // sim::DumpSimPhotons::DumpOnePhoton()
 
-
 //------------------------------------------------------------------------------
 template <typename Stream>
-void sim::DumpSimPhotons::DumpElement(
-  Stream&& out, sim::SimPhotons const& simphotons,
-  std::string indent /* = "" */, bool bIndentFirst /* = true */
-) const {
+void sim::DumpSimPhotons::DumpElement(Stream&& out,
+                                      sim::SimPhotons const& simphotons,
+                                      std::string indent /* = "" */,
+                                      bool bIndentFirst /* = true */
+                                      ) const
+{
   if (bIndentFirst) out << indent;
   out << "channel=" << simphotons.OpChannel() << " has ";
-  if (simphotons.empty()) {
-    out << simphotons.size() << " no photons";
-  }
+  if (simphotons.empty()) { out << simphotons.size() << " no photons"; }
   else {
     out << simphotons.size() << " photons:";
 
     auto sortedPhotonPtrs = util::makePointerVector(simphotons);
-    std::sort
-      (sortedPhotonPtrs.begin(), sortedPhotonPtrs.end(), OnePhotonSorter());
+    std::sort(sortedPhotonPtrs.begin(), sortedPhotonPtrs.end(), OnePhotonSorter());
 
-    for (auto const* onephoton: sortedPhotonPtrs) {
+    for (auto const* onephoton : sortedPhotonPtrs) {
       out << "\n" << indent << "  ";
       DumpOnePhoton(out, *onephoton);
     } // for
-
   }
 
 } // sim::DumpSimPhotons::DumpSimPhotons()
 
-
 //------------------------------------------------------------------------------
-void sim::DumpSimPhotons::analyze(art::Event const& event) {
+void sim::DumpSimPhotons::analyze(art::Event const& event)
+{
 
   // get the particles from the event
-  auto const& SimPhotons
-    = *(event.getValidHandle<std::vector<sim::SimPhotons>>(fInputPhotons));
+  auto const& SimPhotons = *(event.getValidHandle<std::vector<sim::SimPhotons>>(fInputPhotons));
 
-  mf::LogVerbatim(fOutputCategory) << "Event " << event.id()
-    << " : data product '" << fInputPhotons.encode() << "' contains "
+  mf::LogVerbatim(fOutputCategory)
+    << "Event " << event.id() << " : data product '" << fInputPhotons.encode() << "' contains "
     << SimPhotons.size() << " SimPhotons";
 
   unsigned int iPhoton = 0;
-  for (sim::SimPhotons const& photons: SimPhotons) {
+  for (sim::SimPhotons const& photons : SimPhotons) {
 
     mf::LogVerbatim log(fOutputCategory);
     // a bit of a header
     log << "[#" << (iPhoton++) << "] ";
     DumpElement(log, photons, "  ", false);
 
-  } // for
+  }                                         // for
   mf::LogVerbatim(fOutputCategory) << "\n"; // just an empty line
 
 } // sim::DumpSimPhotons::analyze()
-
 
 //------------------------------------------------------------------------------
 DEFINE_ART_MODULE(sim::DumpSimPhotons)

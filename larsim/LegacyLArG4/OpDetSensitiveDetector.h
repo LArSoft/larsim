@@ -41,25 +41,17 @@ namespace larg4 {
 
     // Beginning and end of event
     virtual void Initialize(G4HCofThisEvent*);
-    virtual void
-    EndOfEvent(G4HCofThisEvent*)
-    {}
+    virtual void EndOfEvent(G4HCofThisEvent*) {}
 
     // Tidy up event in abort
-    virtual void
-    clear()
-    {}
+    virtual void clear() {}
 
     // Run per step in sensitive volume
     virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
 
     // Required but empty
-    virtual void
-    DrawAll()
-    {}
-    virtual void
-    PrintAll()
-    {}
+    virtual void DrawAll() {}
+    virtual void PrintAll() {}
 
   private:
     /// Fill simplified lite photons instead of full information photons.

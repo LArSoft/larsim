@@ -50,13 +50,13 @@ namespace larg4 {
 
       cet::exempt_ptr<simb::MCParticle> particle; ///< Object representing particle.
       bool keep = false;                          ///< if there was decision to keep
-      bool drop = false;                          ///< For EM shower daughters, whether to drop them (independently of `keep`)
+      bool drop =
+        false; ///< For EM shower daughters, whether to drop them (independently of `keep`)
       /// Index of the particle in the original generator truth record.
       GeneratedParticleIndex_t truthIndex = simb::NoGeneratedParticleIndex;
 
       /// Resets the information (does not release memory it does not own)
-      void
-      clear()
+      void clear()
       {
         particle = nullptr;
         keep = false;
@@ -65,32 +65,16 @@ namespace larg4 {
       }
 
       /// Returns whether there is a particle
-      bool
-      hasParticle() const
-      {
-        return !particle.empty();
-      }
+      bool hasParticle() const { return !particle.empty(); }
 
       /// Returns whether there is a particle
-      bool
-      isPrimary() const
-      {
-        return simb::isGeneratedParticleIndex(truthIndex);
-      }
+      bool isPrimary() const { return simb::isGeneratedParticleIndex(truthIndex); }
 
       /// Returns whether there is a particle known to be kept
-      bool
-      keepParticle() const
-      {
-        return hasParticle() && keep;
-      }
+      bool keepParticle() const { return hasParticle() && keep; }
 
       /// Returns the index of the particle in the generator truth record.
-      GeneratedParticleIndex_t
-      truthInfoIndex() const
-      {
-        return truthIndex;
-      }
+      GeneratedParticleIndex_t truthInfoIndex() const { return truthIndex; }
 
     }; // ParticleInfo_t
 
@@ -110,52 +94,30 @@ namespace larg4 {
     virtual void SteppingAction(const G4Step*);
 
     /// Grabs a particle filter
-    void
-    ParticleFilter(std::unique_ptr<util::PositionInVolumeFilter>&& filter)
+    void ParticleFilter(std::unique_ptr<util::PositionInVolumeFilter>&& filter)
     {
       fFilter = std::move(filter);
     }
 
     // TrackID of the current particle, EveID if the particle is from an EM shower
-    static int
-    GetCurrentTrackID()
-    {
-      return fCurrentTrackID;
-    }
-    static int
-    GetCurrentOrigTrackID()
-    {
-      return fCurrentOrigTrackID;
-    }
-    static int
-    GetCurrentPdgCode()
-    {
-      return fCurrentPdgCode;
-    }
+    static int GetCurrentTrackID() { return fCurrentTrackID; }
+    static int GetCurrentOrigTrackID() { return fCurrentOrigTrackID; }
+    static int GetCurrentPdgCode() { return fCurrentPdgCode; }
 
-    void
-    ResetTrackIDOffset()
-    {
-      fTrackIDOffset = 0;
-    }
+    void ResetTrackIDOffset() { fTrackIDOffset = 0; }
 
     // Returns the ParticleList accumulated during the current event.
     const sim::ParticleList* GetList() const;
 
     /// Returns a map of truth record information index for each of the primary
     /// particles (by track ID).
-    std::map<int, GeneratedParticleIndex_t> const&
-    GetPrimaryTruthMap() const
+    std::map<int, GeneratedParticleIndex_t> const& GetPrimaryTruthMap() const
     {
       return fPrimaryTruthMap;
     }
 
     /// Returns whether a particle list is being kept.
-    bool
-    hasList() const
-    {
-      return static_cast<bool>(fparticleList);
-    }
+    bool hasList() const { return static_cast<bool>(fparticleList); }
 
     /// Returns the index of primary truth (`sim::NoGeneratorIndex` if none).
     GeneratedParticleIndex_t GetPrimaryTruthIndex(int trackId) const;
@@ -180,19 +142,22 @@ namespace larg4 {
                                      ///< for a single particle.
     std::unique_ptr<sim::ParticleList> fparticleList; ///< The accumulated particle information for
                                                       ///< all particles in the event.
-    std::unique_ptr<sim::ParticleList> fdroppedParticleList; ///< The accumulated particle information for
-                                                             ///< all dropped particles in the event.
+    std::unique_ptr<sim::ParticleList>
+      fdroppedParticleList;          ///< The accumulated particle information for
+                                     ///< all dropped particles in the event.
     G4bool fstoreTrajectories;       ///< Whether to store particle trajectories with each particle.
     std::map<int, int> fParentIDMap; ///< key is current track ID, value is parent ID
-    std::map<int, int> fParentIDMap_OrigTrackID; ///< key is current track ID, value is parent ID -- for real G4 track ID tracking only
-    static int fCurrentTrackID;      ///< track ID of the current particle, set to eve ID
-                                     ///< for EM shower particles
-    static int fCurrentOrigTrackID;    ///< g4 real track ID of the current particle (including for EM shower daughters)
-                                     ///< except for EM shower particles where it always shows the original track ID
-    static int fCurrentPdgCode;      ///< pdg code of current particle
-    static int fTrackIDOffset;       ///< offset added to track ids when running over
-                                     ///< multiple MCTruth objects.
-    bool fKeepEMShowerDaughters;     ///< whether to keep EM shower secondaries, tertiaries, etc
+    std::map<int, int>
+      fParentIDMap_OrigTrackID; ///< key is current track ID, value is parent ID -- for real G4 track ID tracking only
+    static int fCurrentTrackID; ///< track ID of the current particle, set to eve ID
+                                ///< for EM shower particles
+    static int
+      fCurrentOrigTrackID; ///< g4 real track ID of the current particle (including for EM shower daughters)
+      ///< except for EM shower particles where it always shows the original track ID
+    static int fCurrentPdgCode;  ///< pdg code of current particle
+    static int fTrackIDOffset;   ///< offset added to track ids when running over
+                                 ///< multiple MCTruth objects.
+    bool fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc
 
     std::unique_ptr<util::PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
 

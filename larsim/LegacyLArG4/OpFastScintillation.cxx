@@ -121,9 +121,14 @@
 #include "Geant4/Randomize.hh"
 #include "Geant4/globals.hh"
 
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
+#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/LegacyLArG4/IonizationAndScintillation.h"
@@ -132,19 +137,14 @@
 #include "larsim/LegacyLArG4/ParticleListAction.h"
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
-#include "larcorealg/Geometry/geo_vectors_utils_TVector.h" // geo::vect::toTVector3()
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 // support libraries
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "TGeoSphere.h"
 #include "TMath.h"
 #include "TRandom3.h"
-#include "TGeoSphere.h"
 
 #include <cassert>
 #include <cmath>
@@ -252,8 +252,8 @@ namespace larg4 {
         geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
         fOpDetCenter.push_back(opDet.GetCenter());
 
-        if (dynamic_cast<TGeoSphere const*>(opDet.Shape()) != nullptr) {  // sphere/dome
-          fOpDetType.push_back(1); // Dome PMTs
+        if (dynamic_cast<TGeoSphere const*>(opDet.Shape()) != nullptr) { // sphere/dome
+          fOpDetType.push_back(1);                                       // Dome PMTs
           fOpDetLength.push_back(-1);
           fOpDetHeight.push_back(-1);
         }
@@ -262,7 +262,7 @@ namespace larg4 {
           fOpDetLength.push_back(opDet.Length());
           fOpDetHeight.push_back(opDet.Height());
         }
-        else {  // disk
+        else {                     // disk
           fOpDetType.push_back(2); // Disk PMTs
           //    std::cout<<"Radio: "<<geom.OpDetGeoFromOpDet(i).RMax()<<std::endl;
           fOpDetLength.push_back(-1);
@@ -287,8 +287,10 @@ namespace larg4 {
 
         // create vector of empty TF1s that will be replaces with the parameterisations that are generated as they are required
         // default TF1() constructor gives function with 0 dimensions, can then check numDim to qucikly see if a parameterisation has been generated
-        const size_t num_params = (fmax_d - fmin_d) / fstep_size; // for d < fmin_d, no parameterisaton, a delta function is used instead
-        size_t num_angles = std::round(90/fangle_bin_timing_vuv);
+        const size_t num_params =
+          (fmax_d - fmin_d) /
+          fstep_size; // for d < fmin_d, no parameterisaton, a delta function is used instead
+        size_t num_angles = std::round(90 / fangle_bin_timing_vuv);
         VUV_timing = std::vector(num_angles, std::vector(num_params, TF1()));
 
         // initialise vectors to contain range parameterisations sampled to in each case
@@ -299,12 +301,12 @@ namespace larg4 {
         // VIS time parameterisation
         if (fPVS->StoreReflected()) {
           // load parameters
-          fPVS->LoadTimingsForVISPar( fdistances_refl,
-                                      fradial_distances_refl,
-                                      fcut_off_pars,
-                                      ftau_pars,
-                                      fvis_vmean,
-                                      fangle_bin_timing_vis);
+          fPVS->LoadTimingsForVISPar(fdistances_refl,
+                                     fradial_distances_refl,
+                                     fcut_off_pars,
+                                     ftau_pars,
+                                     fvis_vmean,
+                                     fangle_bin_timing_vis);
         }
       }
       if (usesSemiAnalyticModel()) {
@@ -324,51 +326,36 @@ namespace larg4 {
 
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
-        fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr,
-                                            fIsDomePDCorr,
-                                            fdelta_angulo_vuv,
-                                            fradius
-                                          );
+        fPVS->LoadVUVSemiAnalyticProperties(
+          fIsFlatPDCorr, fIsDomePDCorr, fdelta_angulo_vuv, fradius);
         if (!fIsFlatPDCorr && !fIsDomePDCorr) {
           throw cet::exception("OpFastScintillation")
-              << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of parameterisation is required for the semi-analytic light simulation." << "\n";
+            << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of "
+               "parameterisation is required for the semi-analytic light simulation."
+            << "\n";
         }
         if (fIsFlatPDCorr) {
-          fPVS->LoadGHFlat(fGHvuvpars_flat,
-                           fborder_corr_angulo_flat,
-                           fborder_corr_flat
-                          );
+          fPVS->LoadGHFlat(fGHvuvpars_flat, fborder_corr_angulo_flat, fborder_corr_flat);
         }
         if (fIsDomePDCorr) {
-          fPVS->LoadGHDome(fGHvuvpars_dome,
-                           fborder_corr_angulo_dome,
-                           fborder_corr_dome
-                          );
+          fPVS->LoadGHDome(fGHvuvpars_dome, fborder_corr_angulo_dome, fborder_corr_dome);
         }
         // cathode center coordinates required for corrections
         fcathode_centre = geom.TPC(0, 0).GetCathodeCenter();
         fcathode_centre[1] = fActiveVolumes[0].CenterY();
-        fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
-
+        fcathode_centre[2] =
+          fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
 
         if (fPVS->StoreReflected()) {
           fStoreReflected = true;
           // Load corrections for VIS semi-anlytic hits
           std::cout << "Loading visible light corrections" << std::endl;
-          fPVS->LoadVisSemiAnalyticProperties(fdelta_angulo_vis,
-                                              fradius
-                                             );
+          fPVS->LoadVisSemiAnalyticProperties(fdelta_angulo_vis, fradius);
           if (fIsFlatPDCorr) {
-            fPVS->LoadVisParsFlat(fvis_distances_x_flat,
-                                  fvis_distances_r_flat,
-                                  fvispars_flat
-                                );
+            fPVS->LoadVisParsFlat(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat);
           }
           if (fIsDomePDCorr) {
-            fPVS->LoadVisParsDome(fvis_distances_x_dome,
-                                  fvis_distances_r_dome,
-                                  fvispars_dome
-                                );
+            fPVS->LoadVisParsDome(fvis_distances_x_dome, fvis_distances_r_dome, fvispars_dome);
           }
 
           // cathode dimensions
@@ -390,8 +377,7 @@ namespace larg4 {
     for (auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
       parent.push_back(iter->second);
     }
-    fTPBEm = std::make_unique<CLHEP::RandGeneral>
-      (parent.data(), parent.size());
+    fTPBEm = std::make_unique<CLHEP::RandGeneral>(parent.data(), parent.size());
   }
 
   ////////////////
@@ -410,8 +396,7 @@ namespace larg4 {
   // AtRestDoIt
   // ----------
   //
-  G4VParticleChange*
-  OpFastScintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
+  G4VParticleChange* OpFastScintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
   // This routine simply calls the equivalent PostStepDoIt since all the
   // necessary information resides in aStep.GetTotalEnergyDeposit()
   {
@@ -421,8 +406,7 @@ namespace larg4 {
   // PostStepDoIt
   // -------------
   //
-  G4VParticleChange*
-  OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+  G4VParticleChange* OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   // This routine is called for each tracking step of a charged particle
   // in a scintillator. A Poisson/Gauss-distributed number of photons is
   // generated according to the scintillation yield formula, distributed
@@ -518,8 +502,7 @@ namespace larg4 {
     return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
   }
 
-  void
-  OpFastScintillation::ProcessStep(const G4Step& step)
+  void OpFastScintillation::ProcessStep(const G4Step& step)
   {
     if (step.GetTotalEnergyDeposit() <= 0) return;
 
@@ -867,8 +850,7 @@ namespace larg4 {
   // BuildThePhysicsTable for the scintillation process
   // --------------------------------------------------
   //
-  void
-  OpFastScintillation::BuildThePhysicsTable()
+  void OpFastScintillation::BuildThePhysicsTable()
   {
     if (theFastIntegralTable && theSlowIntegralTable) return;
 
@@ -981,8 +963,7 @@ namespace larg4 {
 
   // Called by the user to set the scintillation yield as a function
   // of energy deposited by particle type
-  void
-  OpFastScintillation::SetScintillationByParticleType(const G4bool scintType)
+  void OpFastScintillation::SetScintillationByParticleType(const G4bool scintType)
   {
     if (emSaturation) {
       G4Exception("OpFastScintillation::SetScintillationByParticleType",
@@ -994,24 +975,23 @@ namespace larg4 {
     scintillationByParticleType = scintType;
   }
 
-  G4double
-  OpFastScintillation::GetMeanFreePath(const G4Track&, G4double, G4ForceCondition* condition)
+  G4double OpFastScintillation::GetMeanFreePath(const G4Track&,
+                                                G4double,
+                                                G4ForceCondition* condition)
   {
     *condition = StronglyForced;
     return DBL_MAX;
   }
 
-  G4double
-  OpFastScintillation::GetMeanLifeTime(const G4Track&, G4ForceCondition* condition)
+  G4double OpFastScintillation::GetMeanLifeTime(const G4Track&, G4ForceCondition* condition)
   {
     *condition = Forced;
     return DBL_MAX;
   }
 
-  G4double
-  OpFastScintillation::scint_time(const G4Step& aStep,
-                                  G4double ScintillationTime,
-                                  G4double ScintillationRiseTime) const
+  G4double OpFastScintillation::scint_time(const G4Step& aStep,
+                                           G4double ScintillationTime,
+                                           G4double ScintillationRiseTime) const
   {
     G4StepPoint const* pPreStepPoint = aStep.GetPreStepPoint();
     G4StepPoint const* pPostStepPoint = aStep.GetPostStepPoint();
@@ -1059,10 +1039,10 @@ namespace larg4 {
         const G4ThreeVector OpDetPoint(
           opDetCenter.X() * CLHEP::cm, opDetCenter.Y() * CLHEP::cm, opDetCenter.Z() * CLHEP::cm);
         double distance_in_cm = (x0 - OpDetPoint).mag() / CLHEP::cm; // this must be in CENTIMETERS!
-        double cosine = std::abs(x0[0]*CLHEP::cm - OpDetPoint[0]*CLHEP::cm) / distance_in_cm;
-        double theta = fast_acos(cosine)*180./CLHEP::pi;
-        int angle_bin = theta/fangle_bin_timing_vuv;
-        getVUVTimes(arrival_time_dist, distance_in_cm, angle_bin);              // in ns
+        double cosine = std::abs(x0[0] * CLHEP::cm - OpDetPoint[0] * CLHEP::cm) / distance_in_cm;
+        double theta = fast_acos(cosine) * 180. / CLHEP::pi;
+        int angle_bin = theta / fangle_bin_timing_vuv;
+        getVUVTimes(arrival_time_dist, distance_in_cm, angle_bin); // in ns
       }
       else {
         TVector3 const ScintPoint(x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm); // in cm
@@ -1071,8 +1051,7 @@ namespace larg4 {
     }
   }
 
-  G4double
-  OpFastScintillation::sample_time(const G4double tau1, const G4double tau2) const
+  G4double OpFastScintillation::sample_time(const G4double tau1, const G4double tau2) const
   {
     // tau1: rise time and tau2: decay time
     while (1) {
@@ -1092,15 +1071,13 @@ namespace larg4 {
     return -1.0;
   }
 
-  double
-  OpFastScintillation::reemission_energy() const
+  double OpFastScintillation::reemission_energy() const
   {
     return fTPBEm->fire() * ((*(--tpbemission.end())).first - (*tpbemission.begin()).first) +
            (*tpbemission.begin()).first;
   }
 
-  void
-  OpFastScintillation::average_position(G4Step const& aStep, double* xyzPos) const
+  void OpFastScintillation::average_position(G4Step const& aStep, double* xyzPos) const
   {
     CLHEP::Hep3Vector prePoint = (aStep.GetPreStepPoint())->GetPosition();
     CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
@@ -1249,8 +1226,7 @@ namespace larg4 {
 
   // New Parametrization code
   // parameterisation generation function
-  void
-  OpFastScintillation::generateParam(const size_t index, const size_t angle_bin)
+  void OpFastScintillation::generateParam(const size_t index, const size_t angle_bin)
   {
     // get distance
     double distance_in_cm = (index * fstep_size) + fmin_d;
@@ -1289,8 +1265,10 @@ namespace larg4 {
       // Exponential parameters
       double pars_expo[2];
       // Getting the exponential parameters from the time parametrization
-      pars_expo[1] = interpolate(fparameters[4][0], fparameters[5][angle_bin], distance_in_cm, true);
-      pars_expo[0] = interpolate(fparameters[4][0], fparameters[6][angle_bin], distance_in_cm, true);
+      pars_expo[1] =
+        interpolate(fparameters[4][0], fparameters[5][angle_bin], distance_in_cm, true);
+      pars_expo[0] =
+        interpolate(fparameters[4][0], fparameters[6][angle_bin], distance_in_cm, true);
       pars_expo[0] *= pars_landau[2];
       pars_expo[0] = std::log(pars_expo[0]);
       // this is to find the intersection point between the two functions:
@@ -1348,8 +1326,9 @@ namespace larg4 {
   }
 
   // VUV arrival times calculation function
-  void
-  OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes, const double distance, const size_t angle_bin)
+  void OpFastScintillation::getVUVTimes(std::vector<double>& arrivalTimes,
+                                        const double distance,
+                                        const size_t angle_bin)
   {
     if (distance < fmin_d) {
       // times are fixed shift i.e. direct path only
@@ -1365,16 +1344,16 @@ namespace larg4 {
       if (VUV_timing[angle_bin][index].GetNdim() == 0) { generateParam(index, angle_bin); }
       // randomly sample parameterisation for each photon
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
-        arrivalTimes[i] = VUV_timing[angle_bin][index].GetRandom(VUV_min[angle_bin][index], VUV_max[angle_bin][index]);
+        arrivalTimes[i] = VUV_timing[angle_bin][index].GetRandom(VUV_min[angle_bin][index],
+                                                                 VUV_max[angle_bin][index]);
       }
     }
   }
 
   // VIS arrival times calculation functions
-  void
-  OpFastScintillation::getVISTimes(std::vector<double>& arrivalTimes,
-                                   const TVector3 &ScintPoint,
-                                   const TVector3 &OpDetPoint)
+  void OpFastScintillation::getVISTimes(std::vector<double>& arrivalTimes,
+                                        const TVector3& ScintPoint,
+                                        const TVector3& OpDetPoint)
   {
     // *************************************************************************************************
     //     Calculation of earliest arrival times and corresponding unsmeared distribution
@@ -1388,7 +1367,7 @@ namespace larg4 {
     }
 
     // calculate point of reflection for shortest path
-    TVector3 bounce_point(plane_depth,ScintPoint[1],ScintPoint[2]);
+    TVector3 bounce_point(plane_depth, ScintPoint[1], ScintPoint[2]);
 
     // calculate distance travelled by VUV light and by vis light
     double VUVdist = (bounce_point - ScintPoint).Mag();
@@ -1411,9 +1390,7 @@ namespace larg4 {
     double vis_time = Visdist / fvis_vmean;
     // vuv part
     double vuv_time;
-    if (VUVdist < fmin_d) {
-      vuv_time = VUVdist / fvuv_vgroup_max;
-    }
+    if (VUVdist < fmin_d) { vuv_time = VUVdist / fvuv_vgroup_max; }
     else {
       // find index of required parameterisation
       const size_t index = std::round((VUVdist - fmin_d) / fstep_size);
@@ -1435,14 +1412,16 @@ namespace larg4 {
     // angular bin
     size_t theta_bin = theta / fangle_bin_timing_vis;
     // radial distance from centre of TPC (y,z plane)
-    double r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) + std::pow(ScintPoint[2] - fcathode_centre[2], 2));
+    double r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) +
+                         std::pow(ScintPoint[2] - fcathode_centre[2], 2));
 
     // cut-off and tau
     // cut-off
     // interpolate in d_c for each r bin
     std::vector<double> interp_vals(fcut_off_pars[theta_bin].size(), 0.0);
-    for (size_t i = 0; i < fcut_off_pars[theta_bin].size(); i++){
-        interp_vals[i] = interpolate(fdistances_refl, fcut_off_pars[theta_bin][i], distance_cathode_plane, true);
+    for (size_t i = 0; i < fcut_off_pars[theta_bin].size(); i++) {
+      interp_vals[i] =
+        interpolate(fdistances_refl, fcut_off_pars[theta_bin][i], distance_cathode_plane, true);
     }
     // interpolate in r
     double cutoff = interpolate(fradial_distances_refl, interp_vals, r, true);
@@ -1450,8 +1429,9 @@ namespace larg4 {
     // tau
     // interpolate in x for each r bin
     std::vector<double> interp_vals_tau(ftau_pars[theta_bin].size(), 0.0);
-    for (size_t i = 0; i < ftau_pars[theta_bin].size(); i++){
-        interp_vals_tau[i] = interpolate(fdistances_refl, ftau_pars[theta_bin][i], distance_cathode_plane, true);
+    for (size_t i = 0; i < ftau_pars[theta_bin].size(); i++) {
+      interp_vals_tau[i] =
+        interpolate(fdistances_refl, ftau_pars[theta_bin][i], distance_cathode_plane, true);
     }
     // interpolate in r
     double tau = interpolate(fradial_distances_refl, interp_vals_tau, r, true);
@@ -1489,25 +1469,24 @@ namespace larg4 {
   }
 
   // ---------------------------------------------------------------------------
-  bool
-  OpFastScintillation::usesSemiAnalyticModel() const
+  bool OpFastScintillation::usesSemiAnalyticModel() const
   {
     return fUseNhitsModel;
   } // OpFastScintillation::usesSemiAnalyticModel()
 
   // ---------------------------------------------------------------------------
-  void
-  OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
-                                          const double Num,
-                                          geo::Point_t const& ScintPoint) const
+  void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                                               const double Num,
+                                               geo::Point_t const& ScintPoint) const
   {
     for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // set detector struct for solid angle function
-      const OpFastScintillation::OpticalDetector op{
-        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
-        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+      const OpFastScintillation::OpticalDetector op{fOpDetHeight.at(OpDet),
+                                                    fOpDetLength.at(OpDet),
+                                                    fOpDetCenter.at(OpDet),
+                                                    fOpDetType.at(OpDet)};
       const int DetThis = VUVHits(Num, ScintPoint, op);
       if (DetThis > 0) {
         DetectedNum[OpDet] = DetThis;
@@ -1518,10 +1497,9 @@ namespace larg4 {
     }
   }
 
-  void
-  OpFastScintillation::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
-                                          const double Num,
-                                          geo::Point_t const& ScintPoint) const
+  void OpFastScintillation::detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                                               const double Num,
+                                               geo::Point_t const& ScintPoint) const
   {
     // 1). calculate total number of hits of VUV photons on
     // reflective foils via solid angle + Gaisser-Hillas
@@ -1550,26 +1528,31 @@ namespace larg4 {
                               (solid_angle_cathode / (4. * CLHEP::pi)) * Num;
     // determine Gaisser-Hillas correction including border effects
     // use flat correction
-    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) + std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
+    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) +
+                         std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
     double pars_ini[4] = {0, 0, 0, 0};
-    double s1 = 0; double s2 = 0; double s3 = 0;
-    if(fIsFlatPDCorr) {
+    double s1 = 0;
+    double s2 = 0;
+    double s3 = 0;
+    if (fIsFlatPDCorr) {
       pars_ini[0] = fGHvuvpars_flat[0][0];
       pars_ini[1] = fGHvuvpars_flat[1][0];
       pars_ini[2] = fGHvuvpars_flat[2][0];
       pars_ini[3] = fGHvuvpars_flat[3][0];
-      s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], 0, true);
-      s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], 0, true);
-      s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
+      s1 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[0], 0, true);
+      s2 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[1], 0, true);
+      s3 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[2], 0, true);
     }
-    else std::cout << "Error: flat optical detector VUV correction required for reflected semi-analytic hits." << std::endl;
+    else
+      std::cout
+        << "Error: flat optical detector VUV correction required for reflected semi-analytic hits."
+        << std::endl;
 
     // add border correction
     pars_ini[0] = pars_ini[0] + s1 * r;
     pars_ini[1] = pars_ini[1] + s2 * r;
     pars_ini[2] = pars_ini[2] + s3 * r;
     pars_ini[3] = pars_ini[3];
-
 
     // calculate corrected number of hits
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
@@ -1581,21 +1564,20 @@ namespace larg4 {
       if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // set detector struct for solid angle function
-      const  OpFastScintillation::OpticalDetector op{
-        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
-        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+      const OpFastScintillation::OpticalDetector op{fOpDetHeight.at(OpDet),
+                                                    fOpDetLength.at(OpDet),
+                                                    fOpDetCenter.at(OpDet),
+                                                    fOpDetType.at(OpDet)};
 
-      int const ReflDetThis =
-        VISHits(ScintPoint, op, cathode_hits_rec, hotspot);
+      int const ReflDetThis = VISHits(ScintPoint, op, cathode_hits_rec, hotspot);
       if (ReflDetThis > 0) { ReflDetectedNum[OpDet] = ReflDetThis; }
     }
   }
 
   // VUV semi-analytic hits calculation
-  int
-  OpFastScintillation::VUVHits(const double Nphotons_created,
-                               geo::Point_t const& ScintPoint_v,
-                               OpticalDetector const& opDet) const
+  int OpFastScintillation::VUVHits(const double Nphotons_created,
+                                   geo::Point_t const& ScintPoint_v,
+                                   OpticalDetector const& opDet) const
   {
     // the interface has been converted into geo::Point_t, the implementation not yet
     std::array<double, 3U> ScintPoint;
@@ -1634,11 +1616,13 @@ namespace larg4 {
       solid_angle = Disk_SolidAngle(d, h, fradius);
     }
     else {
-      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk" << std::endl;
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk"
+                << std::endl;
     }
 
     // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
-    double hits_geo = std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
+    double hits_geo =
+      std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
 
     // apply Gaisser-Hillas correction for Rayleigh scattering distance
     // and angular dependence offset angle bin
@@ -1648,16 +1632,18 @@ namespace larg4 {
     // radial distance from centre of detector (Y-Z)
     double r = dist(ScintPoint, fcathode_centre, 2, 1);
     double pars_ini[4] = {0, 0, 0, 0};
-    double s1 = 0; double s2 = 0; double s3 = 0;
+    double s1 = 0;
+    double s2 = 0;
+    double s3 = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
+    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr) {
       pars_ini[0] = fGHvuvpars_flat[0][j];
       pars_ini[1] = fGHvuvpars_flat[1][j];
       pars_ini[2] = fGHvuvpars_flat[2][j];
       pars_ini[3] = fGHvuvpars_flat[3][j];
-      s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
-      s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
-      s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
+      s1 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
+      s2 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
+      s3 = interpolate(fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
     }
     // dome PDs
     else if (opDet.type == 1 && fIsDomePDCorr) {
@@ -1665,11 +1651,14 @@ namespace larg4 {
       pars_ini[1] = fGHvuvpars_dome[1][j];
       pars_ini[2] = fGHvuvpars_dome[2][j];
       pars_ini[3] = fGHvuvpars_dome[3][j];
-      s1 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[0], theta, true);
-      s2 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[1], theta, true);
-      s3 = interpolate( fborder_corr_angulo_dome, fborder_corr_dome[2], theta, true);
+      s1 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[0], theta, true);
+      s2 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[1], theta, true);
+      s3 = interpolate(fborder_corr_angulo_dome, fborder_corr_dome[2], theta, true);
     }
-    else std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
+    else
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or "
+                   "corrections for chosen optical detector type missing."
+                << std::endl;
 
     // add border correction
     pars_ini[0] = pars_ini[0] + s1 * r;
@@ -1688,17 +1677,16 @@ namespace larg4 {
   }
 
   // VIS hits semi-analytic model calculation
-  int
-  OpFastScintillation::VISHits(geo::Point_t const& ScintPoint_v,
-                               OpticalDetector const& opDet,
-                               const double cathode_hits_rec,
-                               const std::array<double, 3> hotspot) const
+  int OpFastScintillation::VISHits(geo::Point_t const& ScintPoint_v,
+                                   OpticalDetector const& opDet,
+                                   const double cathode_hits_rec,
+                                   const std::array<double, 3> hotspot) const
   {
     // 1). calculate total number of hits of VUV photons on reflective
     // foils via solid angle + Gaisser-Hillas corrections.
     // Done outside as it doesn't depend on OpDetPoint
 
-     // set plane_depth for correct TPC:
+    // set plane_depth for correct TPC:
     double plane_depth;
     if (ScintPoint_v.X() < 0.) { plane_depth = -fplane_depth; }
     else {
@@ -1747,19 +1735,22 @@ namespace larg4 {
       solid_angle_detector = Disk_SolidAngle(d, h, fradius);
     }
     else {
-      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk" << std::endl;
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk"
+                << std::endl;
     }
 
     // calculate number of hits via geometeric acceptance
-    double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) * cathode_hits_rec; // 2*pi due to presence of reflective foils
+    double hits_geo = (solid_angle_detector / (2. * CLHEP::pi)) *
+                      cathode_hits_rec; // 2*pi due to presence of reflective foils
 
     // determine correction factor, depending on PD type
-    const size_t k = (theta_vis / fdelta_angulo_vis);         // off-set angle bin
-    double r = dist(ScintPoint, fcathode_centre, 2, 1);      // radial distance from centre of detector (Y-Z)
-    double d_c = std::abs(ScintPoint[0] - plane_depth);      // distance to cathode
+    const size_t k = (theta_vis / fdelta_angulo_vis); // off-set angle bin
+    double r =
+      dist(ScintPoint, fcathode_centre, 2, 1); // radial distance from centre of detector (Y-Z)
+    double d_c = std::abs(ScintPoint[0] - plane_depth); // distance to cathode
     double border_correction = 0;
     // flat PDs
-    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr){
+    if ((opDet.type == 0 || opDet.type == 2) && fIsFlatPDCorr) {
       // interpolate in d_c for each r bin
       const size_t nbins_r = fvispars_flat[k].size();
       std::vector<double> interp_vals(nbins_r, 0.0);
@@ -1773,11 +1764,7 @@ namespace larg4 {
             idx++;
         }
         for (size_t i = 0; i < nbins_r; ++i) {
-          interp_vals[i] = interpolate(fvis_distances_x_flat,
-                                       fvispars_flat[k][i],
-                                       d_c,
-                                       false,
-                                       idx);
+          interp_vals[i] = interpolate(fvis_distances_x_flat, fvispars_flat[k][i], d_c, false, idx);
         }
       }
       // interpolate in r
@@ -1798,18 +1785,16 @@ namespace larg4 {
             idx++;
         }
         for (size_t i = 0; i < nbins_r; ++i) {
-          interp_vals[i] = interpolate(fvis_distances_x_dome,
-                                       fvispars_dome[k][i],
-                                       d_c,
-                                       false,
-                                       idx);
+          interp_vals[i] = interpolate(fvis_distances_x_dome, fvispars_dome[k][i], d_c, false, idx);
         }
       }
       // interpolate in r
       border_correction = interpolate(fvis_distances_r_dome, interp_vals, r, false);
     }
     else {
-     std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
+      std::cout << "Error: Invalid optical detector type. 0 = rectangular, 1 = dome, 2 = disk. Or "
+                   "corrections for chosen optical detector type missing."
+                << std::endl;
     }
 
     // apply correction factor
@@ -1819,9 +1804,8 @@ namespace larg4 {
     return hits_vis;
   }
 
-  bool
-  OpFastScintillation::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                        geo::Point_t const& OpDetPoint) const
+  bool OpFastScintillation::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
+                                             geo::Point_t const& OpDetPoint) const
   {
     // check optical channel is in same TPC as scintillation light, if not return 0 hits
     // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
@@ -1833,28 +1817,26 @@ namespace larg4 {
     return true;
   }
 
-  bool
-  OpFastScintillation::isScintInActiveVolume(geo::Point_t const& ScintPoint)
+  bool OpFastScintillation::isScintInActiveVolume(geo::Point_t const& ScintPoint)
   {
     //semi-analytic approach only works in the active volume
     return fActiveVolumes[0].ContainsPosition(ScintPoint);
   }
 
-  G4double
-  OpFastScintillation::single_exp(const G4double t, const G4double tau2) const
+  G4double OpFastScintillation::single_exp(const G4double t, const G4double tau2) const
   {
     return std::exp(-1.0 * t / tau2) / tau2;
   }
 
-  G4double
-  OpFastScintillation::bi_exp(const G4double t, const G4double tau1, const G4double tau2) const
+  G4double OpFastScintillation::bi_exp(const G4double t,
+                                       const G4double tau1,
+                                       const G4double tau2) const
   { // TODO: what's up with this? ... / tau2 / tau2 ...
     return std::exp(-1.0 * t / tau2) * (1 - std::exp(-1.0 * t / tau1)) / tau2 / tau2 *
            (tau1 + tau2);
   }
 
-  G4double
-  OpFastScintillation::Gaisser_Hillas(const double x, const double* par) const
+  G4double OpFastScintillation::Gaisser_Hillas(const double x, const double* par) const
   {
     double X_mu_0 = par[3];
     double Normalization = par[0];
@@ -1864,16 +1846,14 @@ namespace larg4 {
     return (Normalization * Term * Exponential);
   }
 
-  double
-  finter_d(double* x, double* par)
+  double finter_d(double* x, double* par)
   {
     double y1 = par[2] * TMath::Landau(x[0], par[0], par[1]);
     double y2 = TMath::Exp(par[3] + x[0] * par[4]);
     return TMath::Abs(y1 - y2);
   }
 
-  double
-  LandauPlusExpoFinal(double* x, double* par)
+  double LandauPlusExpoFinal(double* x, double* par)
   {
     // par0 = joining point
     // par1 = Landau MPV
@@ -1888,16 +1868,14 @@ namespace larg4 {
     return (y1 + y2);
   }
 
-  double
-  finter_r(double* x, double* par)
+  double finter_r(double* x, double* par)
   {
     double y1 = par[2] * TMath::Landau(x[0], par[0], par[1]);
     double y2 = par[5] * TMath::Landau(x[0], par[3], par[4]);
     return TMath::Abs(y1 - y2);
   }
 
-  double
-  model_close(double* x, double* par)
+  double model_close(double* x, double* par)
   {
     // par0 = joining point
     // par1 = Landau MPV
@@ -1913,8 +1891,7 @@ namespace larg4 {
     return (y1 + y2);
   }
 
-  double
-  model_far(double* x, double* par)
+  double model_far(double* x, double* par)
   {
     // par1 = Landau MPV
     // par2 = Landau width
@@ -1929,12 +1906,11 @@ namespace larg4 {
   //   Returns interpolated value at x from parallel arrays ( xData, yData )
   //   Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
   //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
-  double
-  OpFastScintillation::interpolate(const std::vector<double>& xData,
-                                   const std::vector<double>& yData,
-                                   double x,
-                                   bool extrapolate,
-                                   size_t i) const
+  double OpFastScintillation::interpolate(const std::vector<double>& xData,
+                                          const std::vector<double>& yData,
+                                          double x,
+                                          bool extrapolate,
+                                          size_t i) const
   {
     if (i == 0) {
       size_t size = xData.size();
@@ -1958,14 +1934,13 @@ namespace larg4 {
     return yL + dydx * (x - xL);               // linear interpolation
   }
 
-  void
-  OpFastScintillation::interpolate3(std::array<double, 3>& inter,
-                                    const std::vector<double>& xData,
-                                    const std::vector<double>& yData1,
-                                    const std::vector<double>& yData2,
-                                    const std::vector<double>& yData3,
-                                    double x,
-                                    bool extrapolate) const
+  void OpFastScintillation::interpolate3(std::array<double, 3>& inter,
+                                         const std::vector<double>& xData,
+                                         const std::vector<double>& yData1,
+                                         const std::vector<double>& yData2,
+                                         const std::vector<double>& yData3,
+                                         double x,
+                                         bool extrapolate) const
   {
     size_t size = xData.size();
     size_t i = 0;               // find left end of interval for interpolation
@@ -2010,8 +1985,7 @@ namespace larg4 {
   // std::numeric_limits<double>::epsilon(): 2.22045e-16
   // that's an unrealistic small number, better setting
   // constexpr double tolerance = 0.0000001; // 1 nm
-  double
-  OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b) const
+  double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b) const
   {
     if (b <= 0. || d < 0. || h <= 0.) return 0.;
     const double leg2 = (b + d) * (b + d);
@@ -2072,8 +2046,9 @@ namespace larg4 {
   }
 
   // solid angle of rectangular aperture
-  double
-  OpFastScintillation::Rectangle_SolidAngle(const double a, const double b, const double d) const
+  double OpFastScintillation::Rectangle_SolidAngle(const double a,
+                                                   const double b,
+                                                   const double d) const
   {
     double aa = a / (2. * d);
     double bb = b / (2. * d);
@@ -2083,8 +2058,8 @@ namespace larg4 {
   }
 
   // TODO: allow greater tolerance in comparisons, see note above on Disk_SolidAngle()
-  double
-  OpFastScintillation::Rectangle_SolidAngle(Dims const& o, const std::array<double, 3> v) const
+  double OpFastScintillation::Rectangle_SolidAngle(Dims const& o,
+                                                   const std::array<double, 3> v) const
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
@@ -2138,39 +2113,39 @@ namespace larg4 {
     return 0.;
   }
 
-  double OpFastScintillation::Omega_Dome_Model(const double distance, const double theta) const {
-  // this function calculates the solid angle of a semi-sphere of radius b,
-  // as a correction to the analytic formula of the on-axix solid angle,
-  // as we move off-axis an angle theta. We have used 9-angular bins
-  // with delta_theta width.
+  double OpFastScintillation::Omega_Dome_Model(const double distance, const double theta) const
+  {
+    // this function calculates the solid angle of a semi-sphere of radius b,
+    // as a correction to the analytic formula of the on-axix solid angle,
+    // as we move off-axis an angle theta. We have used 9-angular bins
+    // with delta_theta width.
 
-  // par0 = Radius correction close
-  // par1 = Radius correction far
-  // par2 = breaking distance betwween "close" and "far"
+    // par0 = Radius correction close
+    // par1 = Radius correction far
+    // par2 = breaking distance betwween "close" and "far"
 
-  double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
-  double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
-  const double delta_theta = 10.;
-  int j = int(theta/delta_theta);
-  // PMT radius
-  const double b = fradius; // cm
-  // distance form which the model parameters break (empirical value)
-  const double d_break = 5*b; //par2
+    double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
+    double par1[9] = {0, 0, 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
+    const double delta_theta = 10.;
+    int j = int(theta / delta_theta);
+    // PMT radius
+    const double b = fradius; // cm
+    // distance form which the model parameters break (empirical value)
+    const double d_break = 5 * b; //par2
 
-  if(distance >= d_break) {
-    double R_apparent_far = b - par1[j];
-    return  (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_far/distance,2))));
-
+    if (distance >= d_break) {
+      double R_apparent_far = b - par1[j];
+      return (2 * CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_far / distance, 2))));
+    }
+    else {
+      double R_apparent_close = b - par0[j];
+      return (2 * CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_close / distance, 2))));
+    }
   }
-  else {
-    double R_apparent_close = b - par0[j];
-    return (2*CLHEP::pi * (1 - std::sqrt(1 - std::pow(R_apparent_close/distance,2))));
-  }
-}
 
   // ---------------------------------------------------------------------------
-  std::vector<geo::BoxBoundedGeo>
-  OpFastScintillation::extractActiveVolumes(geo::GeometryCore const& geom)
+  std::vector<geo::BoxBoundedGeo> OpFastScintillation::extractActiveVolumes(
+    geo::GeometryCore const& geom)
   {
     std::vector<geo::BoxBoundedGeo> activeVolumes;
     activeVolumes.reserve(geom.Ncryostats());
@@ -2192,8 +2167,7 @@ namespace larg4 {
 
   // ---------------------------------------------------------------------------
 
-  double
-  fast_acos(double x)
+  double fast_acos(double x)
   {
     double negate = double(x < 0);
     x = std::abs(x);
