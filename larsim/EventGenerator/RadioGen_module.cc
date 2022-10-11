@@ -107,7 +107,7 @@ namespace evgen {
   /**
    * @brief Module to generate particles created by radiological decay,
    *        patterned off of `SingleGen`.
-   * 
+   *
    * The module generates the products of radioactive decay of some known
    * nuclides.
    * Each nuclide decay producing a single particle (with exceptions, as for
@@ -116,28 +116,28 @@ namespace evgen {
    * neutron. In case multiple decay channels are possible, each decay is
    * stochastically chosen weighting the channels according to the integral of
    * their spectrum. The normalization of the spectrum is otherwise ignored.
-   * 
+   *
    * Nuclides can be added by making the proper distributions available in
    * a file called after the name used for it in the `Nuclide` configuration
    * parameter (e.g `14C.root` if the nuclide key is `14C`): check the existing
    * nuclide files for examples.
-   * 
+   *
    * A special treatment is encoded for argon(A=42) and radon(A=222) (and,
    * "temporary", for nichel(A=59) ).
-   * 
+   *
    * Decays happen only in volumes specified in the configuration, and with a
    * rate also specified in the configuration. Volumes are always box-shaped,
    * and can be specified by coordinates or by name. In addition, within each
    * volume decays will be generated only in the subvolumes matching the
    * specified materials.
-   * 
-   * 
+   *
+   *
    * @note All beta decays emit positrons.
-   * 
-   * 
+   *
+   *
    * Configuration parameters
    * -------------------------
-   * 
+   *
    * * `X0`, `Y0`, `Z0`, `X1`, `Y1`, `Z1` (lists of real numbers, optional):
    *     if specified, they describe the box volumes where to generate decays;
    *     all lists must have the same size, and each entry `i` defines the box
@@ -185,7 +185,7 @@ namespace evgen {
    *     ticks after the trigger time equivalent to the full simulated TPC
    *     waveform (`detinfo::DetectorPropertiesData::NumberTimeSamples()`);
    *     this makes it a quite poor default, so you may want to avoid it.
-   * 
+   *
    */
   class RadioGen : public art::EDProducer {
   public:
