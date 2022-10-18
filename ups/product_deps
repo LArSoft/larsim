@@ -255,7 +255,7 @@ marley		v1_2_0g		-
 nugen		v1_15_10	-
 nurandom	v1_08_01	-
 nutools		v3_12_03	-
-cetmodules	v3_13_02	-	only_for_build
+cetmodules	v3_20_00	-	only_for_build
 end_product_list
 ####################################
 
