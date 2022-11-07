@@ -153,7 +153,7 @@ namespace cheat{
       for(size_t e = 0; e < simSDPs.size(); ++e){
         if(simSDPs[e].trackID == sim::NoParticleId) continue;
         sim::TrackSDP info;
-        info.trackID = std::abs(simSDPs[e].trackID);
+        info.trackID = simSDPs[e].trackID;
         info.energyFrac = simSDPs[e].energy/totalE;
         info.energy = simSDPs[e].energy;
         tSDPs.push_back(info);
