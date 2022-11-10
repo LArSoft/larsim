@@ -161,7 +161,7 @@ namespace sim {
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
       try {
-        geom->PositionToCryostatID(mp).Cryostat;
+        geom->PositionToCryostatID(mp);
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
@@ -171,7 +171,7 @@ namespace sim {
       }
       unsigned int tpc = 0;
       try {
-        geom->PositionToTPCID(mp).TPC;
+        geom->PositionToTPCID(mp);
       }
       catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
