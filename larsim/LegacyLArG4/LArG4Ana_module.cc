@@ -267,14 +267,18 @@ namespace larg4 {
 
       TVector3 dum = pvec[i]->Position().Vect();
 
-      for (unsigned int s = 0; s < geom->MaterialName(pvec[i]->Position().Vect()).length(); ++s)
-        *(fTMaterial + s) = geom->MaterialName(pvec[i]->Position().Vect())[s];
+      using geo::vect::toPoint;
+      auto const material_at_pos = geom->MaterialName(toPoint(pvec[i]->Position().Vect()));
+      for (unsigned int s = 0; s < material_at_pos.length(); ++s)
+        *(fTMaterial + s) = material_at_pos[s];
 
-      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->Position().Vect()).length(); ++s)
-        *(fTVolume + s) = geom->VolumeName(pvec[i]->Position().Vect())[s];
+      auto const volume_at_pos = geom->VolumeName(toPoint(pvec[i]->Position().Vect()));
+      for (unsigned int s = 0; s < volume_at_pos.length(); ++s)
+        *(fTVolume + s) = volume_at_pos[s];
 
-      for (unsigned int s = 0; s < geom->VolumeName(pvec[i]->EndPosition().Vect()).length(); ++s)
-        *(fTTVolume + s) = geom->VolumeName(pvec[i]->EndPosition().Vect())[s];
+      auto const volume_at_end = geom->VolumeName(toPoint(pvec[i]->EndPosition().Vect()));
+      for (unsigned int s = 0; s < volume_at_end.length(); ++s)
+        *(fTTVolume + s) = volume_at_end[s];
 
       fTEvt = evt.id().event();
       fTSub = evt.subRun();

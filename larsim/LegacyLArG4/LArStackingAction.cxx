@@ -162,16 +162,13 @@ G4ClassificationOfNewTrack LArStackingAction::ClassifyNewTrack(const G4Track* aT
 
 std::string LArStackingAction::InsideTPC(const G4Track* aTrack)
 {
-
   art::ServiceHandle<geo::Geometry const> geom;
   const G4ThreeVector tr4Pos = aTrack->GetPosition();
 
   // G4 returns positions in mm, have to convert to cm for LArSoft coordinate systems
-  const TVector3 trPos(tr4Pos.x() / CLHEP::cm, tr4Pos.y() / CLHEP::cm, tr4Pos.z() / CLHEP::cm);
+  const geo::Point_t trPos(tr4Pos.x() / CLHEP::cm, tr4Pos.y() / CLHEP::cm, tr4Pos.z() / CLHEP::cm);
 
-  const std::string volName(geom->VolumeName(trPos));
-
-  return volName;
+  return geom->VolumeName(trPos);
 }
 
 void LArStackingAction::NewStage()

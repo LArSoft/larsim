@@ -319,7 +319,7 @@ namespace larg4 {
     // now we need the full thing
     auto const distance = plane.DistanceFromPlane(pos);
 
-    return plane.ComposePoint<geo::Point_t>(distance, landingPos + offPlane);
+    return plane.ComposePoint(distance, landingPos + offPlane);
   } // LArVoxelReadout::RecoverOffPlaneDeposit()
 
   //----------------------------------------------------------------------------
@@ -363,7 +363,7 @@ namespace larg4 {
     // Map of electrons to store - catalogued by map[channel][tdc]
     std::map<raw::ChannelID_t, std::map<unsigned int, Deposit_t>> DepositsToStore;
 
-    double xyz1[3] = {0.};
+    geo::Point_t xyz1;
 
     double const xyz[3] = {
       stepMidPoint.x() / CLHEP::cm, stepMidPoint.y() / CLHEP::cm, stepMidPoint.z() / CLHEP::cm};
@@ -378,12 +378,12 @@ namespace larg4 {
 
       /// \todo think about effects of drift between planes
       auto const& plane_center = tpcg.Plane(0).GetCenter();
-      double XDrift = std::abs(stepMidPoint.x() / CLHEP::cm - plane_center[0]);
+      double XDrift = std::abs(stepMidPoint.x() / CLHEP::cm - plane_center.X());
       //std::cout<<tpcg.DriftDirection()<<std::endl;
       if (tpcg.DriftDirection() == geo::kNegX)
-        XDrift = stepMidPoint.x() / CLHEP::cm - plane_center[0];
+        XDrift = stepMidPoint.x() / CLHEP::cm - plane_center.X();
       else if (tpcg.DriftDirection() == geo::kPosX)
-        XDrift = plane_center[0] - stepMidPoint.x() / CLHEP::cm;
+        XDrift = plane_center.X() - stepMidPoint.x() / CLHEP::cm;
 
       if (XDrift < 0.) return;
 
@@ -457,8 +457,8 @@ namespace larg4 {
           nEnDiff[xx] = 0.;
       }
 
-      double const avegageYtransversePos = (stepMidPoint.y() / CLHEP::cm) + posOffsets.Y();
-      double const avegageZtransversePos = (stepMidPoint.z() / CLHEP::cm) + posOffsets.Z();
+      double const averageYtransversePos = (stepMidPoint.y() / CLHEP::cm) + posOffsets.Y();
+      double const averageZtransversePos = (stepMidPoint.z() / CLHEP::cm) + posOffsets.Z();
 
       // Smear drift times by x position and drift time
       if (LDiffSig > 0.0)
@@ -468,12 +468,12 @@ namespace larg4 {
 
       if (TDiffSig > 0.0) {
         // Smear the Y,Z position by the transverse diffusion
-        PropRand.fireArray(nClus, &YDiff[0], avegageYtransversePos, TDiffSig);
-        PropRand.fireArray(nClus, &ZDiff[0], avegageZtransversePos, TDiffSig);
+        PropRand.fireArray(nClus, &YDiff[0], averageYtransversePos, TDiffSig);
+        PropRand.fireArray(nClus, &ZDiff[0], averageZtransversePos, TDiffSig);
       }
       else {
-        YDiff.assign(nClus, avegageYtransversePos);
-        ZDiff.assign(nClus, avegageZtransversePos);
+        YDiff.assign(nClus, averageYtransversePos);
+        ZDiff.assign(nClus, averageZtransversePos);
       }
 
       // make a collection of electrons for each plane
@@ -484,7 +484,7 @@ namespace larg4 {
         double Plane0Pitch = tpcg.Plane0Pitch(p);
 
         // "-" sign is because Plane0Pitch output is positive. Andrzej
-        xyz1[0] = tpcg.Plane(0).GetCenter()[0] - Plane0Pitch;
+        xyz1.SetX(tpcg.Plane(0).GetCenter().X() - Plane0Pitch);
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
@@ -496,8 +496,8 @@ namespace larg4 {
             TDiff +=
               tpcg.PlanePitch(ip, ip + 1) * RecipDriftVel[tpcg.Nplanes() == 3 ? ip + 1 : ip + 2];
           }
-          xyz1[1] = YDiff[k];
-          xyz1[2] = ZDiff[k];
+          xyz1.SetY(YDiff[k]);
+          xyz1.SetZ(ZDiff[k]);
 
           /// \todo think about effects of drift between planes
 
@@ -511,11 +511,7 @@ namespace larg4 {
               // Currently, if that is the case the code will proceed, find the
               // point is off plane, emit a warning and skip the deposition.
               //
-              auto const landingPos = RecoverOffPlaneDeposit({xyz1[0], xyz1[1], xyz1[2]}, plane);
-              xyz1[0] = landingPos.X();
-              xyz1[1] = landingPos.Y();
-              xyz1[2] = landingPos.Z();
-
+              xyz1 = RecoverOffPlaneDeposit(xyz1, plane);
             } // if charge lands off plane
             uint32_t channel = fGeoHandle->NearestChannel(xyz1, plane.ID());
 

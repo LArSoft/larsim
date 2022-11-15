@@ -276,15 +276,14 @@ namespace detsim {
         driftsign = -1;
 
       //Check for charge deposits behind charge readout planes
-      if (driftsign == 1 && tpcGeo.Plane(0).GetCenter()[driftcoordinate] < xyz[driftcoordinate])
-        continue;
-      if (driftsign == -1 && tpcGeo.Plane(0).GetCenter()[driftcoordinate] > xyz[driftcoordinate])
-        continue;
+      auto const plane_center = tpcGeo.Plane(0).GetCenter();
+      auto const plane_center_coord = geo::vect::coord(plane_center, driftcoordinate);
+      if (driftsign == 1 && plane_center_coord < xyz[driftcoordinate]) continue;
+      if (driftsign == -1 && plane_center_coord > xyz[driftcoordinate]) continue;
 
       /// \todo think about effects of drift between planes.
       // Center of plane is also returned in cm units
-      double DriftDistance =
-        std::abs(xyz[driftcoordinate] - tpcGeo.Plane(0).GetCenter()[driftcoordinate]);
+      double DriftDistance = std::abs(xyz[driftcoordinate] - plane_center_coord);
 
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
@@ -395,8 +394,8 @@ namespace detsim {
 
       // make a collection of electrons for each plane
       for (size_t p = 0; p < tpcGeo.Nplanes(); ++p) {
-
-        fDriftClusterPos[driftcoordinate] = tpcGeo.Plane(p).GetCenter()[driftcoordinate];
+        auto const plane_center = tpcGeo.Plane(p).GetCenter();
+        fDriftClusterPos[driftcoordinate] = geo::vect::coord(plane_center, driftcoordinate);
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
@@ -407,9 +406,11 @@ namespace detsim {
           // Take into account different Efields between planes
           // Also take into account special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
           for (size_t ip = 0; ip < p; ++ip) {
+            auto const plane_center = tpcGeo.Plane(ip).GetCenter();
+            auto const next_plane_center = tpcGeo.Plane(ip + 1).GetCenter();
             TDiff +=
-              (tpcGeo.Plane(ip + 1).GetCenter()[driftcoordinate] -
-               tpcGeo.Plane(ip).GetCenter()[driftcoordinate]) *
+              (geo::vect::coord(next_plane_center, driftcoordinate) -
+               geo::vect::coord(plane_center, driftcoordinate)) *
               fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 

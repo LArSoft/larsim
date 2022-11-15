@@ -238,16 +238,14 @@ namespace evgen {
     double maxy = -1e9;
     double minz = 1e9;
     double maxz = -1e9;
-    double const local[3] = {0., 0., 0.};
     for (auto const& tpc : geo->Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
-      double world[3] = {0., 0., 0.};
-      tpc.LocalToWorld(local, world);
-      if (minx > world[0] - tpc.HalfWidth()) minx = world[0] - tpc.HalfWidth();
-      if (maxx < world[0] + tpc.HalfWidth()) maxx = world[0] + tpc.HalfWidth();
-      if (miny > world[1] - tpc.HalfHeight()) miny = world[1] - tpc.HalfHeight();
-      if (maxy < world[1] + tpc.HalfHeight()) maxy = world[1] + tpc.HalfHeight();
-      if (minz > world[2] - tpc.Length() / 2.) minz = world[2] - tpc.Length() / 2.;
-      if (maxz < world[2] + tpc.Length() / 2.) maxz = world[2] + tpc.Length() / 2.;
+      auto const world = tpc.GetCenter();
+      if (minx > world.X() - tpc.HalfWidth()) minx = world.X() - tpc.HalfWidth();
+      if (maxx < world.X() + tpc.HalfWidth()) maxx = world.X() + tpc.HalfWidth();
+      if (miny > world.Y() - tpc.HalfHeight()) miny = world.Y() - tpc.HalfHeight();
+      if (maxy < world.Y() + tpc.HalfHeight()) maxy = world.Y() + tpc.HalfHeight();
+      if (minz > world.Z() - tpc.Length() / 2.) minz = world.Z() - tpc.Length() / 2.;
+      if (maxz < world.Z() + tpc.Length() / 2.) maxz = world.Z() + tpc.Length() / 2.;
     }
 
     // Assign vertice position

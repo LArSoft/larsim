@@ -335,12 +335,13 @@ namespace detsim {
 
       // Check for charge deposits behind charge readout planes
       auto const& plane_location = tpcGeo.Plane(0).GetCenter();
-      if (driftsign == 1 && plane_location[driftcoordinate] < xyz[driftcoordinate]) continue;
-      if (driftsign == -1 && plane_location[driftcoordinate] > xyz[driftcoordinate]) continue;
+      auto const plane_location_coord = geo::vect::coord(plane_location, driftcoordinate);
+      if (driftsign == 1 && plane_location_coord < xyz[driftcoordinate]) continue;
+      if (driftsign == -1 && plane_location_coord > xyz[driftcoordinate]) continue;
 
       /// \todo think about effects of drift between planes.
       // Center of plane is also returned in cm units
-      double DriftDistance = std::abs(xyz[driftcoordinate] - plane_location[driftcoordinate]);
+      double DriftDistance = std::abs(xyz[driftcoordinate] - plane_location_coord);
 
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
@@ -449,8 +450,10 @@ namespace detsim {
 
       // make a collection of electrons for each plane
       for (unsigned int p = 0; p < tpcGeo.Nplanes(); ++p) {
-
-        fDriftClusterPos[driftcoordinate] = plane_location[driftcoordinate];
+        // FIXME (KJK): Shouldn't this be the location for each plane
+        // we're iterating through?  Right now it uses whatever value
+        // of plane_location_coord was set above.
+        fDriftClusterPos[driftcoordinate] = plane_location_coord;
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
@@ -474,8 +477,8 @@ namespace detsim {
 
           // grab the nearest channel to the fDriftClusterPos position
           try {
-            raw::ChannelID_t channel =
-              fGeometry->NearestChannel(fDriftClusterPos, geo::PlaneID{tpcid, p});
+            raw::ChannelID_t channel = fGeometry->NearestChannel(
+              geo::vect::toPoint(fDriftClusterPos), geo::PlaneID{tpcid, p});
 
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks

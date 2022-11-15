@@ -342,9 +342,9 @@ namespace larg4 {
         }
         // cathode center coordinates required for corrections
         fcathode_centre = geom.TPC().GetCathodeCenter();
-        fcathode_centre[1] = fActiveVolumes[0].CenterY();
-        fcathode_centre[2] =
-          fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
+        fcathode_centre.SetY(fActiveVolumes[0].CenterY());
+        fcathode_centre.SetZ(
+          fActiveVolumes[0].CenterZ()); // to get full cathode dimension rather than just single tpc
 
         if (fPVS->StoreReflected()) {
           fStoreReflected = true;
@@ -365,7 +365,7 @@ namespace larg4 {
           // set cathode plane struct for solid angle function
           fcathode_plane.h = fcathode_ydimension;
           fcathode_plane.w = fcathode_zdimension;
-          fplane_depth = std::abs(fcathode_centre[0]);
+          fplane_depth = std::abs(fcathode_centre.X());
         }
         else
           fStoreReflected = false;
@@ -1412,8 +1412,8 @@ namespace larg4 {
     // angular bin
     size_t theta_bin = theta / fangle_bin_timing_vis;
     // radial distance from centre of TPC (y,z plane)
-    double r = std::sqrt(std::pow(ScintPoint[1] - fcathode_centre[1], 2) +
-                         std::pow(ScintPoint[2] - fcathode_centre[2], 2));
+    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre.Z(), 2) +
+                         std::pow(ScintPoint.Y() - fcathode_centre.Z(), 2));
 
     // cut-off and tau
     // cut-off
@@ -1514,8 +1514,8 @@ namespace larg4 {
 
     // get scintpoint coords relative to centre of cathode plane
     std::array<double, 3> ScintPoint_relative = {std::abs(ScintPoint.X() - plane_depth),
-                                                 std::abs(ScintPoint.Y() - fcathode_centre[1]),
-                                                 std::abs(ScintPoint.Z() - fcathode_centre[2])};
+                                                 std::abs(ScintPoint.Y() - fcathode_centre.Y()),
+                                                 std::abs(ScintPoint.Z() - fcathode_centre.Z())};
     // calculate solid angle of cathode from the scintillation point
     double solid_angle_cathode = Rectangle_SolidAngle(fcathode_plane, ScintPoint_relative);
 
@@ -1528,8 +1528,8 @@ namespace larg4 {
                               (solid_angle_cathode / (4. * CLHEP::pi)) * Num;
     // determine Gaisser-Hillas correction including border effects
     // use flat correction
-    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre[1], 2) +
-                         std::pow(ScintPoint.Z() - fcathode_centre[2], 2));
+    double r = std::sqrt(std::pow(ScintPoint.Y() - fcathode_centre.Y(), 2) +
+                         std::pow(ScintPoint.Z() - fcathode_centre.Z(), 2));
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;
     double s2 = 0;
@@ -1630,7 +1630,8 @@ namespace larg4 {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z)
-    double r = dist(ScintPoint, fcathode_centre, 2, 1);
+    // FIXME (KJK): Original implementation only accounts for the Y component
+    double r = std::abs(ScintPoint[1] - fcathode_centre.Y());
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;
     double s2 = 0;
@@ -1745,8 +1746,9 @@ namespace larg4 {
 
     // determine correction factor, depending on PD type
     const size_t k = (theta_vis / fdelta_angulo_vis); // off-set angle bin
-    double r =
-      dist(ScintPoint, fcathode_centre, 2, 1); // radial distance from centre of detector (Y-Z)
+    // radial distance from centre of detector (Y-Z)
+    // FIXME (KJK): Original implementation only accounts for the Y component
+    double r = std::abs(ScintPoint[1] - fcathode_centre.Y());
     double d_c = std::abs(ScintPoint[0] - plane_depth); // distance to cathode
     double border_correction = 0;
     // flat PDs

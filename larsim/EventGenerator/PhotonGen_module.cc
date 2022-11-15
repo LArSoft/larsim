@@ -141,12 +141,9 @@ namespace evgen {
   void PhotonGen::beginRun(art::Run& run)
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    std::cout << "Number of optical detector: " << int(geo->Cryostat(0).NOpDet()) << std::endl;
+    std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
 
-    //Boundary of Cryogenic
-    //double CryoBounds[6];
-    //geo->CryostatBoundaries(CryoBounds);
-    auto const CryoBounds = geo->Cryostat(0).Boundaries();
+    auto const CryoBounds = geo->Cryostat().Boundaries();
     fXmin = CryoBounds.MinX();
     fXmax = CryoBounds.MaxX();
     fYmin = CryoBounds.MinY();
@@ -157,8 +154,6 @@ namespace evgen {
     std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
               << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
-
-    return;
   }
 
   //----------------------------------------------------------------
@@ -191,7 +186,6 @@ namespace evgen {
 
     truthcol->push_back(truth);
     evt.put(std::move(truthcol));
-    return;
   }
 
   void PhotonGen::Sample(simb::MCTruth& mct)
@@ -241,8 +235,6 @@ namespace evgen {
 
       mct.Add(particle);
     }
-
-    return;
   }
 }
 

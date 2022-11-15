@@ -32,13 +32,12 @@ namespace larg4 {
   }
 
   //--------------------------------------------------
-  int OpDetLookup::GetOpDet(std::string TheName) { return fTheOpDetMap[TheName]; }
+  int OpDetLookup::GetOpDet(std::string const& TheName) { return fTheOpDetMap[TheName]; }
 
   //--------------------------------------------------
-  int OpDetLookup::GetOpDet(G4VPhysicalVolume* TheVolume)
+  int OpDetLookup::GetOpDet(G4VPhysicalVolume const* TheVolume)
   {
-    std::string TheName = TheVolume->GetName();
-    return GetOpDet(TheName);
+    return GetOpDet(TheVolume->GetName());
   }
 
   //--------------------------------------------------
@@ -52,16 +51,12 @@ namespace larg4 {
     int ClosestOpDet = -1;
 
     for (size_t o = 0; o != geom->NOpDets(); o++) {
-      double xyz[3];
-      geom->OpDetGeoFromOpDet(o).GetCenter(xyz);
+      auto const xyz = geom->OpDetGeoFromOpDet(o).GetCenter();
 
-      CLHEP::Hep3Vector DetPos(xyz[0], xyz[1], xyz[2]);
+      CLHEP::Hep3Vector DetPos(xyz.X(), xyz.Y(), xyz.Z());
       CLHEP::Hep3Vector ThisVolPos = vol->GetTranslation();
 
       ThisVolPos /= CLHEP::cm;
-
-      //	    std::cout<<"Det: " << xyz[0]<< " " <<xyz[1]<< " " << xyz[2]<<std::endl;
-      //    std::cout<<"Vol: " << ThisVolPos.x()<< " " <<ThisVolPos.y() << " " <<ThisVolPos.z()<<std::endl;
 
       double Distance = (DetPos - ThisVolPos).mag();
       if (Distance < MinDistance) {
@@ -81,9 +76,6 @@ namespace larg4 {
   //--------------------------------------------------
   void OpDetLookup::AddPhysicalVolume(G4VPhysicalVolume* volume)
   {
-
-    // mf::LogInfo("Optical") <<"G4 placing sensitive opdet"<<std::endl;
-
     std::stringstream VolName("");
     double Distance = 0;
 
@@ -94,11 +86,9 @@ namespace larg4 {
     volume->SetName(VolName.str().c_str());
 
     fTheOpDetMap[VolName.str()] = NearestOpDet;
-
-    // mf::LogInfo("Optical") << "Found closest volume: " << VolName.str().c_str() << " OpDet : " << fTheOpDetMap[VolName.str()]<<"  distance : " <<Distance<<std::endl;
   }
 
   //--------------------------------------------------
-  int OpDetLookup::GetN() { return fTheTopOpDet; }
+  int OpDetLookup::GetN() const { return fTheTopOpDet; }
 
 }

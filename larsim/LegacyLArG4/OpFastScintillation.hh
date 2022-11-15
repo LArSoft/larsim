@@ -393,7 +393,7 @@ namespace larg4 {
 
     // geometry properties
     double fplane_depth, fcathode_zdimension, fcathode_ydimension;
-    TVector3 fcathode_centre;
+    geo::Point_t fcathode_centre;
     std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
 
     // Optical detector properties for semi-analytic hits
