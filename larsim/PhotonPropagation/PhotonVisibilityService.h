@@ -11,13 +11,27 @@
 #define PHOTONVISIBILITYSERVICE_H
 
 
+#include "larcorealg/Geometry/geo_vectors_utils.h"          // geo::vect namespace
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+#include "larsim/PhotonPropagation/IPhotonLibrary.h"
+//#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
+//#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h"
+#include "larsim/Simulation/PhotonVoxels.h"
+
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "larsim/PhotonPropagation/IPhotonLibrary.h"
-#include "larsim/Simulation/PhotonVoxels.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
 
 class TF1;
+
+// C/C++ standard libraries
+#include <memory> // std::unique_ptr<>
+#include <string>
+#include <vector>
 
 ///General LArSoft Utilities
 namespace phot{
@@ -63,9 +77,17 @@ namespace phot{
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
-   void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
+    void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     
+    void LoadVUVSemiAnalyticProperties(bool& isFlatPDCorr,
+                                       double& delta_angulo_vuv,
+                                       double& radius) const;
+    void LoadGHFlat(std::vector<std::vector<double>>& GHvuvpars_flat,
+                    std::vector<double>& border_corr_angulo_flat,
+                    std::vector<std::vector<double>>& border_corr_flat) const;
+    void LoadVisSemiAnalyticProperties(double& delta_angulo_vis, double& radius) const;
+
     bool IsBuildJob() const { return fLibraryBuildJob; }
     bool UseParameterization() const {return fParameterization;}
     bool StoreReflected() const { return fStoreReflected; }
@@ -75,6 +97,7 @@ namespace phot{
     std::string ParPropTimeFormula() const { return fParPropTime_formula; }
 
     bool IncludePropTime() const { return fIncludePropTime; }
+    bool UseNhitsModel() const { return fUseNhitsModel; }
 
     const sim::PhotonVoxelDef& GetVoxelDef() const {return fVoxelDef; }
     size_t NOpChannels() const;
@@ -102,6 +125,7 @@ namespace phot{
     bool                 fStoreReflected;
     bool                 fStoreReflT0;
     bool                 fIncludePropTime;
+    bool                 fUseNhitsModel;
 
     bool                 fParPropTime;
     size_t               fParPropTime_npar;
@@ -129,7 +153,26 @@ namespace phot{
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
-    
+
+    //for the semi-analytic vuv/direct light signal (number of hits) correction
+    bool fIsFlatPDCorr;
+
+    double fdelta_angulo_vuv;
+    // flat PDs
+    std::vector<std::vector<double>> fGHvuvpars_flat;
+    std::vector<double> fborder_corr_angulo_flat;
+    std::vector<std::vector<double>> fborder_corr_flat;
+
+    // optical detector information, rest using geometry service
+    double fradius;
+
+    // --- BEGIN Implementation functions --------------------------------------
+    /// @name Implementation functions
+    /// @{
+
+    static double DistanceToOpDetImpl(geo::Point_t const& p, unsigned int OpDet);
+
+    static double SolidAngleFactorImpl(geo::Point_t const& p, unsigned int OpDet);
     
   }; // class PhotonVisibilityService
 } //namespace phot

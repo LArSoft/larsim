@@ -61,7 +61,11 @@
 // Version:     1.0
 // Created:     1998-11-07
 // Author:      Peter Gumplinger
-// Updated:     2010-10-20 Allow the scintillation yield to be a function
+// Updated:     
+//              2022-11-11 By Jiaoyang Li <jiaoyang.li@ed.ac.uk>
+//              > Implemented the semi-analytical model to optical fast
+//              simulation. https://doi.org/10.1140/epjc/s10052-021-09119-3
+//              2010-10-20 Allow the scintillation yield to be a function
 //              of energy deposited by particle type
 //              Thanks to Zach Hartwig (Department of Nuclear
 //              Science and Engineeering - MIT)
@@ -91,7 +95,7 @@
 //              2003-06-03, V.Ivanchenko fix compilation warnings
 //
 // mail:        gum@triumf.ca
-//
+// 
 ////////////////////////////////////////////////////////////////////////
 
 //#include "Geant4/g4ios.hh"
@@ -108,15 +112,17 @@
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
-#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+// #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+#include "larcorealg/Geometry/geo_vectors_utils.h"         // geo::vect::fillCoords()
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -125,11 +131,22 @@
 
 // support libraries
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h" // To-do: not sure whether is applicable in that stage. 
 
 #include "TRandom3.h"
 #include "TMath.h"
 #include "boost/algorithm/string.hpp"
 
+#include <cassert>
+
+#include "boost/math/special_functions/ellint_1.hpp"
+#include "boost/math/special_functions/ellint_3.hpp"
+
+// Define a new policy *not* internally promoting RealType to double:
+typedef boost::math::policies::policy<
+  // boost::math::policies::digits10<8>,
+  boost::math::policies::promote_double<false>>
+  noLDoublePromote;
 namespace larg4{
 
 /////////////////////////
@@ -150,15 +167,17 @@ namespace larg4{
   
   OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
     : G4VRestDiscreteProcess(processName, type)
+    , fActiveVolumes{extractActiveVolumes(*(lar::providerFrom<geo::Geometry>()))}
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters>()->NoPhotonPropagation()))
+    , fPVS(bPropagate ? art::ServiceHandle<phot::PhotonVisibilityService const>().get() : nullptr)
+    , fUseNhitsModel(fPVS && fPVS->UseNhitsModel())
+    , fOnlyActiveVolume(usesSemiAnalyticModel())
   {
     G4cout<<"BEA1 timing distribution"<<G4endl;
-    SetProcessSubType(25);
-
+    
+    SetProcessSubType(25);  // TODO: unhardcode
     fTrackSecondariesFirst = false;
     fFiniteRiseTime = false;
-
-
     YieldFactor=1.0;
     ExcitationRatio = 1.0;
         
@@ -169,37 +188,114 @@ namespace larg4{
     theFastIntegralTable = NULL;
     theSlowIntegralTable = NULL;
 
-    if (verboseLevel>0) {
-      G4cout << GetProcessName() << " is created " << G4endl;
-    }
+    if (verboseLevel>0) { G4cout << GetProcessName() << " is created " << G4endl;}
 
     BuildThePhysicsTable();
-
     emSaturation = NULL;
 
     if (bPropagate) {
-      art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-      if(pvs->IncludePropTime()) {
-        pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-        pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+      //art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+      assert(fPVS);
+
+      // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
+      geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+      
+      {
+        auto log = mf::LogTrace("OpFastScintillation")
+                   << "OpFastScintillation: active volume boundaries from " << fActiveVolumes.size()
+                   << " volumes:";
+        for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
+          log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+        } // for
+        log << "\n  (scintillation photons are propagated "
+            << (fOnlyActiveVolume ? "only from active volumes" : "from anywhere") << ")";
+      } // local scope
+
+      if (usesSemiAnalyticModel()) {
+        if (fOnlyOneCryostat) {
+          mf::LogWarning("OpFastScintillation")
+            << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
+            << " cryostats is configured"
+            << " , and semi-analytic model is requested for scintillation photon propagation."
+            << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
+            << " (e.g. scintillation may be detected only in cryostat #0)."
+            << "\nThis would be normally a fatal error, but it has been forcibly overridden."
+            << "\n"
+            << std::string(80, '=');
+        }
+        else {
+          throw art::Exception(art::errors::Configuration)
+            << "Photon propagation via semi-analytic model is not supported yet"
+            << " on detectors with more than one cryostat.";
+        }
+      } // if
+
+      geo::Point_t const Cathode_centre{geom.TPC(0, 0).GetCathodeCenter().X(),
+                                        fActiveVolumes[0].CenterY(),
+                                        fActiveVolumes[0].CenterZ()};
+      mf::LogTrace("OpFastScintillation") << "Cathode_centre: " << Cathode_centre << " cm";
+
+      for (size_t const i : util::counter(fPVS->NOpChannels())) {
+        geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
+        fOpDetCenter.push_back(opDet.GetCenter());
+          
+        fOpDetType.push_back(2); // Disk PMTs
+        //std::cout<<"Radio: "<<geom.OpDetGeoFromOpDet(i).RMax()<<std::endl;
+        fOpDetLength.push_back(-1);
+        fOpDetHeight.push_back(-1);
+
+      }
+
+      if(fPVS->IncludePropTime()) {
+        fPVS->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+        fPVS->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+      }
+
+      if (usesSemiAnalyticModel()) {
+        mf::LogVerbatim("OpFastScintillation")
+          << "OpFastScintillation: using semi-analytic model for number of hits";
+
+        // LAr absorption length in cm
+        std::map<double, double> abs_length_spectrum =
+          lar::providerFrom<detinfo::LArPropertiesService>()->AbsLengthSpectrum();
+        std::vector<double> x_v, y_v;
+        for (auto elem : abs_length_spectrum) {
+          x_v.push_back(elem.first);
+          y_v.push_back(elem.second);
+        }
+        fL_abs_vuv =
+          std::round(interpolate(x_v, y_v, 9.7, false)); // 9.7 eV: peak of VUV emission spectrum
+
+        // Load Gaisser-Hillas corrections for VUV semi-analytic hits
+        std::cout << "Loading the GH corrections" << std::endl;
+        fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr, fdelta_angulo_vuv, fradius);
+        if (fIsFlatPDCorr) {
+          fPVS->LoadGHFlat(fGHvuvpars_flat, fborder_corr_angulo_flat, fborder_corr_flat);
+        }else {
+            throw cet::exception("OpFastScintillation")
+            << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of "
+               "parameterisation is required for the semi-analytic light simulation."
+            << "\n";
+        }
+
+        // cathode center coordinates required for corrections
+        fcathode_centre = geom.TPC(0, 0).GetCathodeCenter();
+        fcathode_centre[1] = fActiveVolumes[0].CenterY();
+        fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
       }
     }
-
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    const int nbins=tpbemission.size();
-    double * parent=new double[nbins];
-    int ii=0;
-    for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter)
-    {
-      parent[ii++]=(*iter).second;
+    std::vector<double> parent;
+    parent.reserve(tpbemission.size());
+    for (auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
+      parent.push_back(iter->second);
     }
-    rgen0 = new CLHEP::RandGeneral(parent,nbins);
-    
+    rgen0 = std::make_unique<CLHEP::RandGeneral>(parent.data(), parent.size());
   }
 
   
 
-  OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
+  /*OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
     :  G4VRestDiscreteProcess(rhs.GetProcessName(), rhs.GetProcessType())
   {
     theSlowIntegralTable        = rhs.GetSlowIntegralTable();
@@ -213,7 +309,7 @@ namespace larg4{
     emSaturation                = rhs.GetSaturation();
 
     BuildThePhysicsTable();
-  }
+  }*/
 
 
   ////////////////
@@ -230,16 +326,15 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
-
   }
 
   ////////////
   // Methods
   ////////////
 
-// AtRestDoIt
-// ----------
-//
+  // AtRestDoIt
+  // ----------
+  //
   G4VParticleChange*
   OpFastScintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
 
@@ -393,8 +488,7 @@ namespace larg4{
   {
     // make sure that whatever happens afterwards, the energy deposition is stored
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-    if(lgp->FillSimEnergyDeposits())
-      ProcessStep(aStep);
+    if(lgp->FillSimEnergyDeposits()) ProcessStep(aStep);
   
   
     // Get the pointer to the fast scintillation table
@@ -432,8 +526,8 @@ namespace larg4{
       return 0;
 
     // Get the visibility vector for this point
-    art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-    size_t const NOpChannels = pvs->NOpChannels();
+    assert(fPVS);
+    //size_t const NOpChannels = fPVS->NOpChannels();
 
 
     G4int nscnt = 1;
@@ -514,27 +608,21 @@ namespace larg4{
         {
         
           YieldRatio = aMaterialPropertiesTable->
-            GetConstProperty("ELECTRONYIELDRATIO");
+          GetConstProperty("ELECTRONYIELDRATIO");
         
         }
       }
     }
 
+    geo::Point_t const ScintPoint = {x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm};
+    if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) return 0;
+
     double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
-    float const* Visibilities = pvs->GetAllVisibilities(xyz);
-
-    float const* ReflVisibilities = nullptr;
-
-    
+    float const* Visibilities = fPVS->GetAllVisibilities(xyz);
     // Store timing information in the object for use in propagation_time method
-    if(pvs->StoreReflected()) {
-      ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
-      if(pvs->StoreReflT0())
-        ReflT0s = pvs->GetReflT0s(xyz); 
-    }
-    if(pvs->IncludeParPropTime())
+    if(fPVS->IncludeParPropTime())
     {
-      ParPropTimeTF1 = pvs->GetTimingTF1(xyz);
+      ParPropTimeTF1 = fPVS->GetTimingTF1(xyz);
     }
     
     /*
@@ -645,14 +733,30 @@ namespace larg4{
       //    << "Photon library does not cover point ( " << xyz[0] << ", "
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
-    
-      if(!Visibilities){
+
+      if (!Visibilities && !usesSemiAnalyticModel()) continue;
+
+      // detected photons from direct light
+      std::map<size_t, int> DetectedNum;
+      if (Visibilities && !usesSemiAnalyticModel()) {
+        for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
+          if (fOpaqueCathode) continue;
+          int const DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
+          if (DetThis > 0) DetectedNum[OpDet] = DetThis;
+        }
+      }
+      else {
+        detectedDirectHits(DetectedNum, Num, ScintPoint);
+      }
+      
+      // old configuration. 
+      /*if(!Visibilities){
       }else{
         std::map<int, int> DetectedNum;
 
         std::map<int, int> ReflDetectedNum;
 
-        for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+        for(size_t OpDet=0; OpDet!=fPVS->NOpChannels(); OpDet++)
         {
           G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 
@@ -672,27 +776,25 @@ namespace larg4{
             }
           }
 
-        }
+        }*/
 
-        
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
           // Only do the reflected loop if we have reflected visibilities
-          if (Reflected && !pvs->StoreReflected())
-            continue;
+          if (Reflected && !fPVS->StoreReflected()) continue;
           
-          std::map<int,int>::const_iterator itstart;
-          std::map<int,int>::const_iterator itend;
-          if (Reflected) {
+          std::map<size_t,int>::const_iterator itstart;
+          std::map<size_t,int>::const_iterator itend;
+          /*if (Reflected) {
             itstart = ReflDetectedNum.begin();
             itend   = ReflDetectedNum.end();
-          }
-          else{
+          }*/
+          if (!Reflected){
             itstart = DetectedNum.begin();
             itend   = DetectedNum.end();
           }
           
-          for(std::map<int,int>::const_iterator itdetphot=itstart; itdetphot!=itend; ++itdetphot)
+          for(auto itdetphot=itstart; itdetphot!=itend; ++itdetphot)
           {
             int OpChannel = itdetphot->first;
             int NPhotons  = itdetphot->second;
@@ -744,7 +846,7 @@ namespace larg4{
             fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
         }
-      }
+      //}
     }
 
     //std::cout<<gen_photon_ctr<<","<<det_photon_ctr<<std::endl; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
@@ -971,24 +1073,25 @@ namespace larg4{
   std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) const
   {
     static art::ServiceHandle<geo::Geometry> geo;
-    static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    assert(fPVS);
+    //static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
 
     // Initialize vector of the right length with all 0's
     std::vector<double> arrival_time_dist(NPhotons, 0);
 
 
-    if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
+    if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
       throw cet::exception("OpFastScintillation") << "Cannot have both propagation time models simultaneously.";
     }
 
-    else if (pvs->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
+    else if (fPVS->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
     {
       //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or it is the default one.
       //This will fix a segfault when using timing and interpolation.
       G4cout << "WARNING: Requested parameterized timing, but no function found. Not applying propagation time." << G4endl;
     }
     
-    else if (pvs->IncludeParPropTime()) {
+    else if (fPVS->IncludeParPropTime()) {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
         
@@ -997,7 +1100,7 @@ namespace larg4{
       }
     }
 
-    else if (pvs->IncludePropTime()) {
+    else if (fPVS->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization 
       double OpDetCenter[3];
       geo->OpDetGeoFromOpDet(OpChannel).GetCenter(OpDetCenter);
@@ -1020,7 +1123,7 @@ namespace larg4{
   
   G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2) const
   {
-// tau1: rise time and tau2: decay time
+    // tau1: rise time and tau2: decay time
 
     while(1) {
       // two random numbers
@@ -1197,6 +1300,125 @@ namespace larg4{
     return arrival_time_distrb;
   }
 
+  // ---------------------------------------------------------------------------
+  bool
+  OpFastScintillation::usesSemiAnalyticModel() const
+  {
+    return fUseNhitsModel;
+  } // OpFastScintillation::usesSemiAnalyticModel()
+
+  // ---------------------------------------------------------------------------
+  void
+  OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                                          const double Num,
+                                          geo::Point_t const& ScintPoint) const
+  {
+    for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
+      //if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
+
+      // set detector struct for solid angle function
+      const OpFastScintillation::OpticalDetector op{
+        fOpDetHeight.at(OpDet), fOpDetLength.at(OpDet),
+        fOpDetCenter.at(OpDet), fOpDetType.at(OpDet)};
+      const int DetThis = VUVHits(Num, ScintPoint, op);
+      if (DetThis > 0) {
+        DetectedNum[OpDet] = DetThis;
+        //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+        //   //   it->second<<" " << Num << " " << DetThisPMT;
+        //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+      }
+    }
+  }
+  // VUV semi-analytic hits calculation
+  int
+  OpFastScintillation::VUVHits(const double Nphotons_created,
+                               geo::Point_t const& ScintPoint_v,
+                               OpticalDetector const& opDet) const
+  {
+    // the interface has been converted into geo::Point_t, the implementation not yet
+    std::array<double, 3U> ScintPoint;
+    std::array<double, 3U> OpDetPoint;
+    geo::vect::fillCoords(ScintPoint, ScintPoint_v);
+    geo::vect::fillCoords(OpDetPoint, opDet.OpDetPoint);
+
+    // distance and angle between ScintPoint and OpDetPoint
+    double distance = dist(&ScintPoint[0], &OpDetPoint[0], 3);
+    double cosine = std::abs(ScintPoint[0] - OpDetPoint[0]) / distance;
+    // double theta = std::acos(cosine) * 180. / CLHEP::pi;
+    double theta = fast_acos(cosine) * 180. / CLHEP::pi;
+
+    // calculate solid angle:
+    double solid_angle = 0;
+    // Arapucas/Bars (rectangle)
+    if (opDet.type == 2) {
+      // offset in z-y plane
+      double d = dist(&ScintPoint[1], &OpDetPoint[1], 2);
+      // drift distance (in x)
+      double h = std::abs(ScintPoint[0] - OpDetPoint[0]);
+      // Solid angle of a disk
+      solid_angle = Disk_SolidAngle(d, h, fradius);
+    }else {
+      std::cout << "Error: Invalid optical detector type. 2 = disk" << std::endl;
+    }
+
+    // calculate number of photons hits by geometric acceptance: accounting for solid angle and LAr absorbtion length
+    double hits_geo = std::exp(-1. * distance / fL_abs_vuv) * (solid_angle / (4 * CLHEP::pi)) * Nphotons_created;
+
+    // apply Gaisser-Hillas correction for Rayleigh scattering distance
+    // and angular dependence offset angle bin
+    const size_t j = (theta / fdelta_angulo_vuv);
+
+    // determine GH parameters, accounting for border effects
+    // radial distance from centre of detector (Y-Z)
+    double r = dist(ScintPoint, fcathode_centre, 2, 1);
+    double pars_ini[4] = {0, 0, 0, 0};
+    double s1 = 0; double s2 = 0; double s3 = 0;
+    // flat PDs
+    if (opDet.type == 2 && fIsFlatPDCorr){
+      pars_ini[0] = fGHvuvpars_flat[0][j];
+      pars_ini[1] = fGHvuvpars_flat[1][j];
+      pars_ini[2] = fGHvuvpars_flat[2][j];
+      pars_ini[3] = fGHvuvpars_flat[3][j];
+      s1 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[0], theta, true);
+      s2 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[1], theta, true);
+      s3 = interpolate( fborder_corr_angulo_flat, fborder_corr_flat[2], theta, true);
+    }
+    else std::cout << "Error: Invalid optical detector type. 2 = disk. Or corrections for chosen optical detector type missing." << std::endl;
+
+    // add border correction
+    pars_ini[0] = pars_ini[0] + s1 * r;
+    pars_ini[1] = pars_ini[1] + s2 * r;
+    pars_ini[2] = pars_ini[2] + s3 * r;
+    pars_ini[3] = pars_ini[3];
+
+    // calculate correction
+    double GH_correction = Gaisser_Hillas(distance, pars_ini);
+
+    // calculate number photons
+    double hits_rec = GH_correction * hits_geo / cosine;
+    int hits_vuv = std::round(G4Poisson(hits_rec));
+
+    return hits_vuv;
+  }
+
+  bool
+  OpFastScintillation::isScintInActiveVolume(geo::Point_t const& ScintPoint)
+  {
+    //semi-analytic approach only works in the active volume
+    return fActiveVolumes[0].ContainsPosition(ScintPoint);
+  }
+
+  G4double
+  OpFastScintillation::Gaisser_Hillas(const double x, const double* par) const
+  {
+    double X_mu_0 = par[3];
+    double Normalization = par[0];
+    double Diff = par[1] - X_mu_0;
+    double Term = std::pow((x - X_mu_0) / Diff, Diff / par[2]);
+    double Exponential = std::exp((par[1] - x) / par[2]);
+    return (Normalization * Term * Exponential);
+  }
+
   double finter_d(double *x, double *par) {
 
     double y1 = par[2]*TMath::Landau(x[0],par[0],par[1]);
@@ -1204,6 +1426,7 @@ namespace larg4{
 
     return TMath::Abs(y1 - y2);
   }
+
   double LandauPlusExpoFinal(double *x, double *par)
   {
     // par0 = joining point
@@ -1229,6 +1452,187 @@ namespace larg4{
     return TMath::Abs(y1 - y2);
   }
 
+  //======================================================================
+  //   Returns interpolated value at x from parallel arrays ( xData, yData )
+  //   Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
+  //   boolean argument extrapolate determines behaviour beyond ends of array (if needed)
+  double
+  OpFastScintillation::interpolate(const std::vector<double>& xData,
+                                   const std::vector<double>& yData,
+                                   double x,
+                                   bool extrapolate,
+                                   size_t i) const
+  {
+    if (i == 0) {
+      size_t size = xData.size();
+      if (x >= xData[size - 2]) { // special case: beyond right end
+        i = size - 2;
+      }
+      else {
+        while (x > xData[i + 1])
+          i++;
+      }
+    }
+    double xL = xData[i];
+    double xR = xData[i + 1];
+    double yL = yData[i];
+    double yR = yData[i + 1]; // points on either side (unless beyond ends)
+    if (!extrapolate) {       // if beyond ends of array and not extrapolating
+      if (x < xL) return yL;
+      if (x > xR) return yL;
+    }
+    const double dydx = (yR - yL) / (xR - xL); // gradient
+    return yL + dydx * (x - xL);               // linear interpolation
+  }
+  void
+  OpFastScintillation::interpolate3(std::array<double, 3>& inter,
+                                    const std::vector<double>& xData,
+                                    const std::vector<double>& yData1,
+                                    const std::vector<double>& yData2,
+                                    const std::vector<double>& yData3,
+                                    double x,
+                                    bool extrapolate) const
+  {
+    size_t size = xData.size();
+    size_t i = 0;               // find left end of interval for interpolation
+    if (x >= xData[size - 2]) { // special case: beyond right end
+      i = size - 2;
+    }
+    else {
+      while (x > xData[i + 1])
+        i++;
+    }
+    double xL = xData[i];
+    double xR = xData[i + 1]; // points on either side (unless beyond ends)
+    double yL1 = yData1[i];
+    double yR1 = yData1[i + 1];
+    double yL2 = yData2[i];
+    double yR2 = yData2[i + 1];
+    double yL3 = yData3[i];
+    double yR3 = yData3[i + 1];
 
+    if (!extrapolate) { // if beyond ends of array and not extrapolating
+      if (x < xL) {
+        inter[0] = yL1;
+        inter[1] = yL2;
+        inter[2] = yL3;
+        return;
+      }
+      if (x > xR) {
+        inter[0] = yL1;
+        inter[1] = yL2;
+        inter[2] = yL3;
+        return;
+      }
+    }
+    const double m = (x - xL) / (xR - xL);
+    inter[0] = m * (yR1 - yL1) + yL1;
+    inter[1] = m * (yR2 - yL2) + yL2;
+    inter[2] = m * (yR3 - yL3) + yL3;
+  }
 
+  //......................................................................
+  // solid angle of circular aperture
+  double OpFastScintillation::Disk_SolidAngle(const double d, const double h, const double b) const
+  {
+    if (b <= 0. || d < 0. || h <= 0.) return 0.;
+    const double leg2 = (b + d) * (b + d);
+    const double aa = std::sqrt(h * h / (h * h + leg2));
+    if (isApproximatelyZero(d)) { return 2. * CLHEP::pi * (1. - aa); }
+    double bb = 2. * std::sqrt(b * d / (h * h + leg2));
+    double cc = 4. * b * d / leg2;
+
+    if (isDefinitelyGreaterThan(d, b)) {
+      try {
+        return 2. * aa *
+               (std::sqrt(1. - cc) * boost::math::ellint_3(bb, cc, noLDoublePromote()) -
+                boost::math::ellint_1(bb, noLDoublePromote()));
+      }
+      catch (std::domain_error& e) {
+        if (isApproximatelyEqual(d, b, 1e-9)) {
+          mf::LogWarning("SemiAnalyticalModel")
+            << "Elliptic Integral in Disk_SolidAngle() given parameters "
+               "outside domain."
+            << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
+            << "\nRelax condition and carry on.";
+          return CLHEP::pi - 2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
+        }
+        else {
+          mf::LogError("SemiAnalyticalModel")
+            << "Elliptic Integral inside Disk_SolidAngle() given parameters "
+               "outside domain.\n"
+            << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
+          return 0.;
+        }
+      }
+    }
+    if (isDefinitelyLessThan(d, b)) {
+      try {
+        return 2. * CLHEP::pi -
+               2. * aa *
+                 (boost::math::ellint_1(bb, noLDoublePromote()) +
+                  std::sqrt(1. - cc) * boost::math::ellint_3(bb, cc, noLDoublePromote()));
+      }
+      catch (std::domain_error& e) {
+        if (isApproximatelyEqual(d, b, 1e-9)) {
+          mf::LogWarning("SemiAnalyticalModel")
+            << "Elliptic Integral in Disk_SolidAngle() given parameters "
+               "outside domain."
+            << "\nbb: " << bb << "\ncc: " << cc << "\nException message: " << e.what()
+            << "\nRelax condition and carry on.";
+          return CLHEP::pi - 2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
+        }
+        else {
+          mf::LogError("SemiAnalyticalModel")
+            << "Elliptic Integral inside Disk_SolidAngle() given parameters "
+               "outside domain.\n"
+            << "\nbb: " << bb << "\ncc: " << cc << "Exception message: " << e.what();
+          return 0.;
+        }
+      }
+    }
+    if (isApproximatelyEqual(d, b)) {
+      return CLHEP::pi - 2. * aa * boost::math::ellint_1(bb, noLDoublePromote());
+    }
+    return 0.;
+  }
+
+  // ---------------------------------------------------------------------------
+  std::vector<geo::BoxBoundedGeo>
+  OpFastScintillation::extractActiveVolumes(geo::GeometryCore const& geom)
+  {
+    std::vector<geo::BoxBoundedGeo> activeVolumes;
+    activeVolumes.reserve(geom.Ncryostats());
+
+    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+
+      // can't use it default-constructed since it would always include origin
+      geo::BoxBoundedGeo box{cryo.TPC(0).ActiveBoundingBox()};
+
+      //for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
+      box.ExtendToInclude(cryo.TPC(0).ActiveBoundingBox());
+
+      activeVolumes.push_back(std::move(box));
+
+    } // for cryostats
+
+    return activeVolumes;
+  } // OpFastScintillation::extractActiveVolumes()
+  // ---------------------------------------------------------------------------
+  double fast_acos(double x)
+  {
+    double negate = double(x < 0);
+    x = std::abs(x);
+    x -= double(x > 1.0) * (x - 1.0); // <- equivalent to min(1.0,x), but faster
+    double ret = -0.0187293;
+    ret = ret * x;
+    ret = ret + 0.0742610;
+    ret = ret * x;
+    ret = ret - 0.2121144;
+    ret = ret * x;
+    ret = ret + 1.5707288;
+    ret = ret * std::sqrt(1.0 - x);
+    ret = ret - 2. * negate * ret;
+    return negate * 3.14159265358979 + ret;
+  }
 }

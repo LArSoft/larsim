@@ -82,7 +82,7 @@ namespace sim {
     double                   fTransverseDiffusion;   ///< Amount of diffusion in the transverse direction, cm^2/ns
     double                   fElectronClusterSize;   ///< Number of ionization electrons in a given cluster 
                                                      ///< to be simulated in the readout simulation
-    int 		     fMinNumberOfElCluster;   ///< Minimum number of electron clusters
+    int 		                 fMinNumberOfElCluster;   ///< Minimum number of electron clusters
     std::vector<std::string> fEnabledPhysics;        ///< List of enabled physics processes if using Custom physics
     int                      fK0Bias;                ///< Turns on secondary particle bias for K0, Lambda, 
                                                      ///< neutrons in MuNuclear
@@ -112,7 +112,7 @@ namespace sim {
                                                                              ///< parameters for optically 
                                                                              ///< paramaterized volumes
  
-    bool fLitePhotons;
+    bool   fLitePhotons;
 
     bool   fFillSimEnergyDeposits;          ///< handle to fill SimEdeps or not
     //size_t fInitialSimEnergyDepositSize;    ///< reserve size for the edep collection in LArG4

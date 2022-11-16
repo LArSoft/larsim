@@ -25,15 +25,17 @@
 
 // LArSoft includes
 #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
-#include "larsim/PhotonPropagation/PhotonLibrary.h"
-#include "larsim/Simulation/PhotonVoxels.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
+
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
-
+#include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "larsim/PhotonPropagation/PhotonLibraryHybrid.h"
+#include "larsim/Simulation/PhotonVoxels.h"
+
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+
 
 #include "TF1.h"
 
@@ -81,6 +83,7 @@ namespace phot{
     fStoreReflected(false),
     fStoreReflT0(false),
     fIncludePropTime(false),
+    fUseNhitsModel(false),
     fParPropTime(false),
     fParPropTime_npar(0),
     fParPropTime_formula(),
@@ -121,8 +124,8 @@ namespace phot{
     if(fTheLibrary == 0) {
 
       if((!fLibraryBuildJob)&&(!fDoNotLoadLibrary)) {
-	std::string LibraryFileWithPath;
-	cet::search_path sp("FW_SEARCH_PATH");
+      	std::string LibraryFileWithPath;
+      	cet::search_path sp("FW_SEARCH_PATH");
 
 	if( !sp.find_file(fLibraryFile, LibraryFileWithPath) )
 	  throw cet::exception("PhotonVisibilityService") << "Unable to find photon library in "  << sp.to_string() << "\n";
@@ -203,6 +206,7 @@ namespace phot{
     fStoreReflected       = p.get< bool        >("StoreReflected", false);
     fStoreReflT0          = p.get< bool        >("StoreReflT0",  false);
     fIncludePropTime      = p.get< bool        >("IncludePropTime", false);
+    fUseNhitsModel        = p.get< bool        >("UseNhitsModel", false);
     // Voxel parameters
     fUseCryoBoundary      = p.get< bool        >("UseCryoBoundary"     );
     fInterpolate          = p.get< bool        >("Interpolate", false);
@@ -218,120 +222,132 @@ namespace phot{
       fParPropTime_npar=0;
     }
 
-    if(fUseCryoBoundary)
+    // Library mode.
+    if (!fUseNhitsModel) {
+      if(fUseCryoBoundary)
       {
-	double CryoBounds[6];
-	geom->CryostatBoundaries(CryoBounds);
-	fXmin = CryoBounds[0];
-	fXmax = CryoBounds[1];
-	fYmin = CryoBounds[2];
-	fYmax = CryoBounds[3];
-	fZmin = CryoBounds[4];
-	fZmax = CryoBounds[5];
+      	double CryoBounds[6];
+      	geom->CryostatBoundaries(CryoBounds);
+      	fXmin = CryoBounds[0];
+      	fXmax = CryoBounds[1];
+      	fYmin = CryoBounds[2];
+      	fYmax = CryoBounds[3];
+      	fZmin = CryoBounds[4];
+      	fZmax = CryoBounds[5];
       }
-    else
+      else
       {
-	fXmin      = p.get< double       >("XMin"     );
-	fXmax      = p.get< double       >("XMax"     );
-	fYmin      = p.get< double       >("YMin"     );
-	fYmax      = p.get< double       >("YMax"     );
-	fZmin      = p.get< double       >("ZMin"     );
-	fZmax      = p.get< double       >("ZMax"     );
+      	fXmin      = p.get< double       >("XMin"     );
+      	fXmax      = p.get< double       >("XMax"     );
+      	fYmin      = p.get< double       >("YMin"     );
+      	fYmax      = p.get< double       >("YMax"     );
+      	fZmin      = p.get< double       >("ZMin"     );
+      	fZmax      = p.get< double       >("ZMax"     );
       }
 
-    fNx        = p.get< int          >("NX"       );
-    fNy        = p.get< int          >("NY"       );
-    fNz        = p.get< int          >("NZ"       );
-    
-    fVoxelDef = sim::PhotonVoxelDef(fXmin, fXmax, fNx, fYmin, fYmax, fNy, fZmin, fZmax, fNz);
-
+      fNx        = p.get< int          >("NX"       );
+      fNy        = p.get< int          >("NY"       );
+      fNz        = p.get< int          >("NZ"       );
+      
+      fVoxelDef = sim::PhotonVoxelDef(fXmin, fXmax, fNx, fYmin, fYmax, fNy, fZmin, fZmax, fNz);
+    }
     if(fIncludePropTime)
-      {
-	// Construct parameterized model parameter functions.         
-	std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
-	std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
-	//range of distances where the parametrization is valid                                            
-	fD_break = p.get<double>("D_break");
-	fD_max = p.get<double>("D_max");
+    {
+    	// Construct parameterized model parameter functions.         
+    	std::cout<< "Getting direct light parameters from .fcl file"<<std::endl;
+    	std::vector<std::string> direct_functions = p.get<std::vector<std::string> >("Direct_functions");
+    	//range of distances where the parametrization is valid                                            
+    	fD_break = p.get<double>("D_break");
+    	fD_max = p.get<double>("D_max");
 
-	fTF1_sampling_factor = p.get<double>("TF1_sampling_factor");	
+    	fTF1_sampling_factor = p.get<double>("TF1_sampling_factor");	
 
-	std::vector<double> direct_landauNormpars = p.get<std::vector<double> >("Direct_landauNormpars");
-	fparslogNorm = new TF1("fparslogNorm", direct_functions[0].c_str(), 0., fD_break);
-	for(unsigned int i=0; i<direct_landauNormpars.size(); ++i)
-	  fparslogNorm->SetParameter(i, direct_landauNormpars[i]);
-	
-	std::vector<double> direct_landauMPVpars = p.get<std::vector<double> >("Direct_landauMPVpars");
-	fparsMPV = new TF1("fparsMPV", direct_functions[1].c_str(), 0., fD_break);
-	for(unsigned int i=0; i<direct_landauMPVpars.size(); ++i)       
-	  fparsMPV->SetParameter(i, direct_landauMPVpars[i]);
+    	std::vector<double> direct_landauNormpars = p.get<std::vector<double> >("Direct_landauNormpars");
+    	fparslogNorm = new TF1("fparslogNorm", direct_functions[0].c_str(), 0., fD_break);
+    	for(unsigned int i=0; i<direct_landauNormpars.size(); ++i)
+    	  fparslogNorm->SetParameter(i, direct_landauNormpars[i]);
+    	
+    	std::vector<double> direct_landauMPVpars = p.get<std::vector<double> >("Direct_landauMPVpars");
+    	fparsMPV = new TF1("fparsMPV", direct_functions[1].c_str(), 0., fD_break);
+    	for(unsigned int i=0; i<direct_landauMPVpars.size(); ++i)       
+    	  fparsMPV->SetParameter(i, direct_landauMPVpars[i]);
 
-	std::vector<double> direct_landauWidthpars = p.get<std::vector<double> >("Direct_landauWidthpars");
-	fparsWidth = new TF1("fparsWidth", direct_functions[2].c_str(), 0., fD_break);
-	for(unsigned int i=0; i<direct_landauWidthpars.size(); ++i)                
-	  fparsWidth->SetParameter(i, direct_landauWidthpars[i]);
+    	std::vector<double> direct_landauWidthpars = p.get<std::vector<double> >("Direct_landauWidthpars");
+    	fparsWidth = new TF1("fparsWidth", direct_functions[2].c_str(), 0., fD_break);
+    	for(unsigned int i=0; i<direct_landauWidthpars.size(); ++i)                
+    	  fparsWidth->SetParameter(i, direct_landauWidthpars[i]);
 
-	std::vector<double> direct_expoCtepars = p.get<std::vector<double> >("Direct_expoCtepars");
-	fparsCte = new TF1("fparsCte", direct_functions[3].c_str(), 0., fD_break);
-	for(unsigned int i=0; i<direct_expoCtepars.size(); ++i)  
-	  fparsCte->SetParameter(i, direct_expoCtepars[i]);
+    	std::vector<double> direct_expoCtepars = p.get<std::vector<double> >("Direct_expoCtepars");
+    	fparsCte = new TF1("fparsCte", direct_functions[3].c_str(), 0., fD_break);
+    	for(unsigned int i=0; i<direct_expoCtepars.size(); ++i)  
+    	  fparsCte->SetParameter(i, direct_expoCtepars[i]);
 
-	std::vector<double> direct_expoSlopepars = p.get<std::vector<double> >("Direct_expoSlopepars");
-	fparsSlope = new TF1("fparsSlope", direct_functions[4].c_str(), 0., fD_break);
-	for(unsigned int i=0; i<direct_expoSlopepars.size(); ++i)
-	  fparsSlope->SetParameter(i, direct_expoSlopepars[i]);
+    	std::vector<double> direct_expoSlopepars = p.get<std::vector<double> >("Direct_expoSlopepars");
+    	fparsSlope = new TF1("fparsSlope", direct_functions[4].c_str(), 0., fD_break);
+    	for(unsigned int i=0; i<direct_expoSlopepars.size(); ++i)
+    	  fparsSlope->SetParameter(i, direct_expoSlopepars[i]);
 
-	std::vector<double> direct_landauNormpars_far = p.get<std::vector<double> >("Direct_landauNormpars_far");
-        fparslogNorm_far = new TF1("fparslogNorm_far", direct_functions[5].c_str(), fD_break, fD_max);
-        for(unsigned int i=0; i<direct_landauNormpars_far.size(); ++i)
-          fparslogNorm_far->SetParameter(i, direct_landauNormpars_far[i]);
+    	std::vector<double> direct_landauNormpars_far = p.get<std::vector<double> >("Direct_landauNormpars_far");
+            fparslogNorm_far = new TF1("fparslogNorm_far", direct_functions[5].c_str(), fD_break, fD_max);
+            for(unsigned int i=0; i<direct_landauNormpars_far.size(); ++i)
+              fparslogNorm_far->SetParameter(i, direct_landauNormpars_far[i]);
 
-	std::vector<double> direct_landauMPVpars_far = p.get<std::vector<double> >("Direct_landauMPVpars_far");
-        fparsMPV_far = new TF1("fparsMPV_far", direct_functions[6].c_str(), fD_break, fD_max);
-        for(unsigned int i=0; i<direct_landauMPVpars_far.size(); ++i)
-          fparsMPV_far->SetParameter(i, direct_landauMPVpars_far[i]);
+    	std::vector<double> direct_landauMPVpars_far = p.get<std::vector<double> >("Direct_landauMPVpars_far");
+            fparsMPV_far = new TF1("fparsMPV_far", direct_functions[6].c_str(), fD_break, fD_max);
+            for(unsigned int i=0; i<direct_landauMPVpars_far.size(); ++i)
+              fparsMPV_far->SetParameter(i, direct_landauMPVpars_far[i]);
 
-	std::vector<double> direct_expoCtepars_far = p.get<std::vector<double> >("Direct_expoCtepars_far");
-	fparsCte_far = new TF1("fparsCte_far", direct_functions[7].c_str(), fD_break - 50., fD_max);
-	for(unsigned int i=0; i<direct_expoCtepars_far.size(); ++i)
+    	std::vector<double> direct_expoCtepars_far = p.get<std::vector<double> >("Direct_expoCtepars_far");
+    	fparsCte_far = new TF1("fparsCte_far", direct_functions[7].c_str(), fD_break - 50., fD_max);
+	    for(unsigned int i=0; i<direct_expoCtepars_far.size(); ++i)
           fparsCte_far->SetParameter(i, direct_expoCtepars_far[i]);
 
-	std::vector<std::string> reflected_functions = p.get<std::vector<std::string> >("Reflected_functions");
-        //times where the parametrizations are valid or change
-	fT0_max = p.get<double>("T0_max");
-	fT0_break_point = p.get<double>("T0_break_point");
+    	std::vector<std::string> reflected_functions = p.get<std::vector<std::string> >("Reflected_functions");
+            //times where the parametrizations are valid or change
+    	fT0_max = p.get<double>("T0_max");
+    	fT0_break_point = p.get<double>("T0_break_point");
 
-	std::vector<double> reflected_landauNormpars = p.get<std::vector<double> >("Reflected_landauNormpars");
-	fparslogNorm_refl = new TF1("fparslogNorm_refl", reflected_functions[0].c_str(), 0., fT0_max);
-	for(unsigned int i=0; i<reflected_landauNormpars.size(); ++i)
-	  fparslogNorm_refl->SetParameter(i, reflected_landauNormpars[i]);
+    	std::vector<double> reflected_landauNormpars = p.get<std::vector<double> >("Reflected_landauNormpars");
+    	fparslogNorm_refl = new TF1("fparslogNorm_refl", reflected_functions[0].c_str(), 0., fT0_max);
+    	for(unsigned int i=0; i<reflected_landauNormpars.size(); ++i)
+    	  fparslogNorm_refl->SetParameter(i, reflected_landauNormpars[i]);
 
-	std::vector<double> reflected_landauMPVpars = p.get<std::vector<double> >("Reflected_landauMPVpars");
-	fparsMPV_refl = new TF1("fparsMPV_refl", reflected_functions[1].c_str(), 0., fT0_max);
-	for(unsigned int i=0; i<reflected_landauMPVpars.size(); ++i)
-	  fparsMPV_refl->SetParameter(i, reflected_landauMPVpars[i]);
+    	std::vector<double> reflected_landauMPVpars = p.get<std::vector<double> >("Reflected_landauMPVpars");
+    	fparsMPV_refl = new TF1("fparsMPV_refl", reflected_functions[1].c_str(), 0., fT0_max);
+    	for(unsigned int i=0; i<reflected_landauMPVpars.size(); ++i)
+    	  fparsMPV_refl->SetParameter(i, reflected_landauMPVpars[i]);
 
-	std::vector<double> reflected_landauWidthpars = p.get<std::vector<double> >("Reflected_landauWidthpars");
-	fparsWidth_refl = new TF1("fparsWidth_refl", reflected_functions[2].c_str(), 0., fT0_max);
-	for(unsigned int i=0; i<reflected_landauWidthpars.size(); ++i)
-	  fparsWidth_refl->SetParameter(i, reflected_landauWidthpars[i]);
+    	std::vector<double> reflected_landauWidthpars = p.get<std::vector<double> >("Reflected_landauWidthpars");
+    	fparsWidth_refl = new TF1("fparsWidth_refl", reflected_functions[2].c_str(), 0., fT0_max);
+    	for(unsigned int i=0; i<reflected_landauWidthpars.size(); ++i)
+    	  fparsWidth_refl->SetParameter(i, reflected_landauWidthpars[i]);
 
-	std::vector<double> reflected_expoCtepars = p.get<std::vector<double> >("Reflected_expoCtepars");
-	fparsCte_refl = new TF1("fparsCte_refl", reflected_functions[3].c_str(), 0., fT0_max);
-	for(unsigned int i=0; i<reflected_expoCtepars.size(); ++i)
-	  fparsCte_refl->SetParameter(i, reflected_expoCtepars[i]);
+    	std::vector<double> reflected_expoCtepars = p.get<std::vector<double> >("Reflected_expoCtepars");
+    	fparsCte_refl = new TF1("fparsCte_refl", reflected_functions[3].c_str(), 0., fT0_max);
+    	for(unsigned int i=0; i<reflected_expoCtepars.size(); ++i)
+    	  fparsCte_refl->SetParameter(i, reflected_expoCtepars[i]);
 
-	std::vector<double> reflected_expoSlopepars = p.get<std::vector<double> >("Reflected_expoSlopepars");
-	fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
-	for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
-	  fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
+    	std::vector<double> reflected_expoSlopepars = p.get<std::vector<double> >("Reflected_expoSlopepars");
+    	fparsSlope_refl = new TF1("fparsSlope_refl", reflected_functions[4].c_str(), 0., fT0_max);
+    	for(unsigned int i=0; i<reflected_expoSlopepars.size(); ++i)
+    	  fparsSlope_refl->SetParameter(i, reflected_expoSlopepars[i]);
+    }
 
-
+    if (fUseNhitsModel) {
+      std::cout << "Loading semi-analytic mode models" << std::endl;
+      // VUV
+      fIsFlatPDCorr = p.get<bool>("FlatPDCorr", false);
+      fdelta_angulo_vuv = p.get<double>("delta_angulo_vuv");
+      if (fIsFlatPDCorr) {
+        fGHvuvpars_flat = p.get<std::vector<std::vector<double>>>("GH_PARS_flat");
+        fborder_corr_angulo_flat = p.get<std::vector<double>>("GH_border_angulo_flat");
+        fborder_corr_flat = p.get<std::vector<std::vector<double>>>("GH_border_flat");
       }
 
-
+      // optical detector information
+      fradius = p.get<double>("PMT_radius", 10.16);
+    }
     return;
-	
   }
 
 
@@ -642,7 +658,23 @@ namespace phot{
     t0_break_point = fT0_break_point;
   }
 
-
+  void PhotonVisibilityService::LoadVUVSemiAnalyticProperties(bool& isFlatPDCorr,
+                                                              double& delta_angulo_vuv,
+                                                              double& radius) const
+  {
+    isFlatPDCorr = fIsFlatPDCorr;
+    delta_angulo_vuv = fdelta_angulo_vuv;
+    radius = fradius;
+  }
+  void PhotonVisibilityService::LoadGHFlat(std::vector<std::vector<double>>& GHvuvpars_flat,
+                                           std::vector<double>& border_corr_angulo_flat,
+                                           std::vector<std::vector<double>>& border_corr_flat) const
+  {
+    if (!fIsFlatPDCorr) return;
+    GHvuvpars_flat = fGHvuvpars_flat;
+    border_corr_angulo_flat = fborder_corr_angulo_flat;
+    border_corr_flat = fborder_corr_flat;
+  }
   //------------------------------------------------------
   /***
    * Preform any necessary transformations on the coordinates before trying to access
@@ -657,7 +689,9 @@ namespace phot{
       location.SetX( fabs(location.x() ) );
     }
     return location;
+    //return fMapping->detectorToLibrary(p);
   }
+
 
 } // namespace
 

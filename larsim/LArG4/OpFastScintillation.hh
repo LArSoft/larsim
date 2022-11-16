@@ -83,6 +83,11 @@
 // Includes
 /////////////
 
+// LArSoft include. 
+#include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h" // phot::PhotonVisibilityService
+
 #include "Geant4/globals.hh"
 #include "Geant4/templates.hh"
 #include "Geant4/G4ThreeVector.hh"
@@ -100,6 +105,22 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "TF1.h"
 
+#include <memory> // std::unique_ptr
+
+class G4EmSaturation;
+class G4Step;
+class G4Track;
+class G4VParticleChange;
+namespace CLHEP {
+  class RandGeneral;
+}
+namespace geo {
+  class GeometryCore;
+}
+namespace phot {
+  class PhotonVisibilityService;
+}
+
 // Class Description:
 // RestDiscrete Process - Generation of Scintillation Photons.
 // Class inherits publicly from G4VRestDiscreteProcess.
@@ -116,11 +137,11 @@ class OpFastScintillation : public G4VRestDiscreteProcess
 
 private:
 
-        //////////////
-        // Operators
-        //////////////
-  
-        // OpFastScintillation& operator=(const OpFastScintillation &right);
+    //////////////
+    // Operators
+    //////////////
+
+    // OpFastScintillation& operator=(const OpFastScintillation &right);
   
 public: // Without description
   
@@ -128,14 +149,14 @@ public: // Without description
 	// Constructors and Destructor
 	////////////////////////////////
 
-        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
-        OpFastScintillation(const OpFastScintillation &right);
+    OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
+    //OpFastScintillation(const OpFastScintillation &right); // To-do Not sure: whether to move it or not. 
 
 	~OpFastScintillation();	
 
-        ////////////
-        // Methods
-        ////////////
+    ////////////
+    // Methods
+    ////////////
 
 public: // With description
 
@@ -147,8 +168,8 @@ public: // With description
         // Returns true -> 'is applicable', for any particle type except
         // for an 'opticalphoton' and for short-lived particles
 
-	G4double GetMeanFreePath(const G4Track& aTrack,
-				       G4double ,
+	    G4double GetMeanFreePath(const G4Track& aTrack,
+				                       G4double ,
                                        G4ForceCondition* );
         // Returns infinity; i. e. the process does not limit the step,
         // but sets the 'StronglyForced' condition for the DoIt to be 
@@ -161,14 +182,14 @@ public: // With description
         // but sets the 'StronglyForced' condition for the DoIt to be
         // invoked at every step.
 
-	virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, 
-			                const G4Step&  aStep);
+	    virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, 
+			                                   const G4Step&  aStep);
         virtual G4VParticleChange* AtRestDoIt (const G4Track& aTrack,
-                                       const G4Step& aStep);
+                                               const G4Step& aStep);
 
         // These are the methods implementing the scintillation process.
 
-	void SetTrackSecondariesFirst(const G4bool state);
+	    void SetTrackSecondariesFirst(const G4bool state);
         // If set, the primary particle tracking is interrupted and any
         // produced scintillation photons are tracked next. When all 
         // have been tracked, the tracking of the primary resumes.
@@ -229,9 +250,18 @@ public: // With description
 
         std::vector<double> GetVUVTime(double, int) const;
         std::vector<double> GetVisibleTimeOnlyCathode(double, int) const;
-       // Update configuration parameters.
+        // Update configuration parameters.
 
-       //void reconfigure(const fhicl::ParameterSet& pset);
+        //void reconfigure(const fhicl::ParameterSet& pset);
+
+        // semi-analytical model. 
+        void detectedDirectHits(std::map<size_t, int>& DetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint) const;
+        void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+                            const double Num,
+                            geo::Point_t const& ScintPoint) const;
+
 
 protected:
 
@@ -263,6 +293,22 @@ protected:
 
 private:
 
+        struct OpticalDetector {
+                double h; // height
+                double w; // width
+                geo::Point_t OpDetPoint;
+                int type;
+        };
+
+        /// Returns whether the semi-analytic visibility parametrization is being used.
+        bool usesSemiAnalyticModel() const;
+
+        int VUVHits(const double Nphotons_created,
+                    geo::Point_t const& ScintPoint,
+                    OpticalDetector const& opDet) const;
+        // Calculates semi-analytic model number of hits for vuv component
+    
+
         G4double single_exp(G4double t, G4double tau2) const;
         G4double bi_exp(G4double t, G4double tau1, G4double tau2) const;
 
@@ -277,7 +323,9 @@ private:
         // Facility for TPB emission energies
         double reemission_energy() const;
         std::map<double,double> tpbemission;
-        CLHEP::RandGeneral *rgen0;
+
+        //CLHEP::RandGeneral *rgen0; // To-do, double-check: .cxx related to the variable, as the new release defined as std::unique_ptr<CLHEP::RandGeneral> fTPBEm;
+        std::unique_ptr<CLHEP::RandGeneral> rgen0;
 
         void average_position(G4Step const& aStep, double *xzyPos) const;
   
@@ -293,15 +341,76 @@ private:
         double ftf1_sampling_factor;
         double ft0_max, ft0_break_point; 
         //double fGlobalTimeOffset;  
+        struct Dims {
+            double h, w; // height, width
+        };
+        // semi-analytical model. 
+        // solid angle of circular aperture calculation functions
+        double Disk_SolidAngle(const double d, const double h, const double b) const;
+        // For VUV semi-analytic hits
+        // Gaisser-Hillas correction parameters for VUV Nhits estimation
+        G4double Gaisser_Hillas(const double x, const double* par) const;
+        double fdelta_angulo_vuv;
+        // flat PDs 
+        bool fIsFlatPDCorr;
+        std::vector<std::vector<double>> fGHvuvpars_flat;
+        std::vector<double> fborder_corr_angulo_flat;
+        std::vector<std::vector<double>> fborder_corr_flat;
+        // geometry properties
+        TVector3 fcathode_centre;
+        std::vector<geo::BoxBoundedGeo> const fActiveVolumes;
+
+        // Optical detector properties for semi-analytic hits
+        // int foptical_detector_type;  // unused
+        double fradius;
+        Dims fcathode_plane;
+        int fL_abs_vuv;
+        std::vector<geo::Point_t> fOpDetCenter;
+        std::vector<int> fOpDetType;
+        std::vector<double> fOpDetLength;
+        std::vector<double> fOpDetHeight;
+        //double fGlobalTimeOffset;
 
         void ProcessStep( const G4Step& step);
         
         bool bPropagate; ///< Whether propagation of photons is enabled.
 
+        // Photon visibility service instance.
+        phot::PhotonVisibilityService const* const fPVS;
+        
+        /// Whether the semi-analytic model is being used for photon visibility.
+        bool const fUseNhitsModel = false;
+        /// Whether photon propagation is performed only from active volumes
+        bool const fOnlyActiveVolume = false;
+        /// Allows running even if light on cryostats `C:1` and higher is not supported.
+        /// Currently hard coded "yes"
+        bool const fOnlyOneCryostat = true;
+        /// Whether the cathodes are fully opaque; currently hard coded "no".
+        bool const fOpaqueCathode = false;
+
+        bool isScintInActiveVolume(geo::Point_t const& ScintPoint);
+        double interpolate(const std::vector<double>& xData,
+                       const std::vector<double>& yData,
+                       double x,
+                       bool extrapolate,
+                       size_t i = 0) const;
+        void interpolate3(std::array<double, 3>& inter,
+                      const std::vector<double>& xData,
+                      const std::vector<double>& yData1,
+                      const std::vector<double>& yData2,
+                      const std::vector<double>& yData3,
+                      double x,
+                      bool extrapolate) const;
+
+        static std::vector<geo::BoxBoundedGeo> extractActiveVolumes(geo::GeometryCore const& geom);        
 };
 
-  double finter_d(double*, double*);
-  double LandauPlusExpoFinal(double*, double*);
+double finter_d(double*, double*);
+double LandauPlusExpoFinal(double*, double*);
+
+static const size_t acos_bins = 2000000;
+constexpr double acos_table(const double x);
+double fast_acos(const double x);
 
 ////////////////////
 // Inline methods
@@ -400,6 +509,74 @@ void OpFastScintillation::DumpPhysicsTable() const
                 v->DumpValues();
            }
          }
+}
+
+
+template <typename TReal>
+inline constexpr double dist(const TReal* x, const TReal* y, const unsigned int dimension)
+{
+        double d = 0.;
+        for (unsigned int p = 0; p < dimension; ++p) {
+        d += (*(x + p) - *(y + p)) * (*(x + p) - *(y + p));
+}
+return std::sqrt(d);
+}
+
+template <typename TVector3>
+inline constexpr double dist(const std::array<double, 3> x,
+                       const TVector3 y,
+                       const unsigned int dimension,
+                       const unsigned int start)
+{
+        double d = 0.;
+        for (unsigned int p = start; p < dimension; ++p) {
+        d += (x[p] - y[p]) * (x[p] - y[p]);
+}
+        return std::sqrt(d);
+}
+
+// implements relative method - do not use for comparing with zero
+// use this most of the time, tolerance needs to be meaningful in your context
+template <typename TReal>
+inline constexpr static bool
+isApproximatelyEqual(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+{
+        TReal diff = std::fabs(a - b);
+        if (diff <= tolerance) return true;
+        if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
+        return false;
+}
+
+// supply tolerance that is meaningful in your context
+// for example, default tolerance may not work if you are comparing double with float
+template <typename TReal>
+inline constexpr static bool isApproximatelyZero(
+TReal a, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+{
+        if (std::fabs(a) <= tolerance) return true;
+        return false;
+}
+
+// use this when you want to be on safe side
+// for example, don't start rover unless signal is above 1
+template <typename TReal>
+inline constexpr static bool
+isDefinitelyLessThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+{
+        TReal diff = a - b;
+        if (diff < tolerance) return true;
+        if (diff < std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
+        return false;
+}
+
+template <typename TReal>
+inline constexpr static bool
+isDefinitelyGreaterThan(TReal a, TReal b, TReal tolerance = std::numeric_limits<TReal>::epsilon())
+{
+        TReal diff = a - b;
+        if (diff > tolerance) return true;
+        if (diff > std::fmax(std::fabs(a), std::fabs(b)) * tolerance) return true;
+        return false;
 }
 
 inline
