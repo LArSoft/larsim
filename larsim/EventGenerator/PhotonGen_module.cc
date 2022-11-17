@@ -153,8 +153,7 @@ namespace evgen {
     fZmin = CryoBounds[4];
     fZmax = CryoBounds[5];
     std::cout << "Cryo Boundaries:" << std::endl;
-    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
+    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
     /*
         //Boundary of active volume
         fXmin =  1e9;
@@ -252,7 +251,7 @@ namespace evgen {
 
   void PhotonGen::Sample(simb::MCTruth& mct)
   {
-    std::cout << "Photons Shooting at " << fX << " " << fY << " " << fZ << std::endl;
+    std::cout << "Photons Shooting at the Position: " << fX << " " << fY << " " << fZ << std::endl;
 
     CLHEP::RandFlat flat(fEngine);
     CLHEP::RandGaussQ gauss(fEngine);
