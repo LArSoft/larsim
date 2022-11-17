@@ -162,8 +162,7 @@ namespace evgen {
         fYmax = -1e9;
         fZmin =  1e9;
         fZmax = -1e9;
-        for (size_t i = 0; i < geo->NTPC(); ++ i)
-        {
+        for (size_t i = 0; i < geo->NTPC(); ++ i) {
             const geo::TPCGeo &tpc = geo->TPC(i);
             if (fXmin > tpc.MinX()) fXmin = tpc.MinX();
             if (fXmax < tpc.MaxX()) fXmax = tpc.MaxX();
@@ -198,31 +197,26 @@ namespace evgen {
     if (fScan) {
       /*
             int co_index = rand()%3;
-            switch(co_index)
-            { 
-                case 0:
-                {
+            switch(co_index) { 
+                case 0: {
                     fX = distX(rng);
                     fY = fPy + width(rng);
                     fZ = fPz + width(rng);
                     break;
                 }
-                case 1:
-                {
+                case 1: {
                     fX = fPx + width(rng);
                     fY = distY(rng);
                     fZ = fPz + width(rng);
                     break;
                 }
-                case 2:
-                {
+                case 2: {
                     fX = fPx + width(rng);
                     fY = fPy + width(rng);
                     fZ = distZ(rng);
                     break;                    
                 }
-                default:
-                {
+                default: {
                     std::cout << "Index Error!" << std::endl;
                     
                     fX = distX(rng);
