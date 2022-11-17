@@ -154,26 +154,6 @@ namespace evgen {
     fZmax = CryoBounds[5];
     std::cout << "Cryo Boundaries:" << std::endl;
     std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
-    /*
-        //Boundary of active volume
-        fXmin =  1e9;
-        fXmax = -1e9;
-        fYmin =  1e9;
-        fYmax = -1e9;
-        fZmin =  1e9;
-        fZmax = -1e9;
-        for (size_t i = 0; i < geo->NTPC(); ++ i) {
-            const geo::TPCGeo &tpc = geo->TPC(i);
-            if (fXmin > tpc.MinX()) fXmin = tpc.MinX();
-            if (fXmax < tpc.MaxX()) fXmax = tpc.MaxX();
-            if (fYmin > tpc.MinY()) fYmin = tpc.MinY();
-            if (fYmax < tpc.MaxY()) fYmax = tpc.MaxY();
-            if (fZmin > tpc.MinZ()) fZmin = tpc.MinZ();
-            if (fZmax < tpc.MaxZ()) fZmax = tpc.MaxZ();
-        }
-        std::cout << "Active Volume Boundaries:" << std::endl;
-        std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax <<" Ymin: " << fYmin << " Ymax: " << fYmax <<" Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
-*/
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 
     return;
@@ -195,36 +175,6 @@ namespace evgen {
     truth.SetOrigin(simb::kSingleParticle);
 
     if (fScan) {
-      /*
-            int co_index = rand()%3;
-            switch(co_index) { 
-                case 0: {
-                    fX = distX(rng);
-                    fY = fPy + width(rng);
-                    fZ = fPz + width(rng);
-                    break;
-                }
-                case 1: {
-                    fX = fPx + width(rng);
-                    fY = distY(rng);
-                    fZ = fPz + width(rng);
-                    break;
-                }
-                case 2: {
-                    fX = fPx + width(rng);
-                    fY = fPy + width(rng);
-                    fZ = distZ(rng);
-                    break;                    
-                }
-                default: {
-                    std::cout << "Index Error!" << std::endl;
-                    
-                    fX = distX(rng);
-                    fY = distY(rng);
-                    fZ = distZ(rng);
-                }
-            }
-        */
       fX = distX(rng);
       fY = fPy + width(rng);
       fZ = fPz + width(rng);
