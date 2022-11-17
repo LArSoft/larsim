@@ -153,7 +153,8 @@ namespace evgen {
     fZmin = CryoBounds[4];
     fZmax = CryoBounds[5];
     std::cout << "Cryo Boundaries:" << std::endl;
-    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
+    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
+              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
 
     return;
