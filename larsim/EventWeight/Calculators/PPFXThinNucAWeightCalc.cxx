@@ -51,12 +51,14 @@ namespace evwgh {
     fMode        = pset.get<std::string>("mode");  
     fHorn        = pset.get<std::string>("horn_curr");
     fTarget      = pset.get<std::string>("target_config");
+    fSeed        = pset.get<int>("random_seed", -1);
 
     gSystem->Setenv("MODE", fPPFXMode.c_str());
 
     fPPFXrw = NeutrinoFluxReweight::MakeReweight::getInstance();
     std::cout<<"PPFX instance "<<fPPFXrw<<std::endl;
     std::string inputOptions  =std::string(getenv("PPFX_DIR"))+"/xml/inputs_"+fPPFXMode+".xml";
+    if (fSeed != -1) fPPFXrw->setBaseSeed(fSeed); // Set the random seed
     std::cout << "is PPFX setup : " << fPPFXrw->AlreadyInitialized() << std::endl;  
     std::cout << "Setting PPFX, inputs: " << inputOptions << std::endl;
     std::cout << "Setting Horn Current Configuration to: " << fHorn << std::endl;
