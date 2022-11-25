@@ -238,12 +238,12 @@ namespace fluxr {
     // error handling 
     // Veto the neutrons and unphysical muon decay
     // Returns default mcflux with nu id = -999
-    if(fDk2Nu->decay.ptype == 2112) return true;
-    if ( (fDk2Nu->decay.ptype == 13 || fDk2Nu->decay.ptype == -13) && (fDk2Nu->decay.ntype == 14 || fDk2Nu->decay.ntype == -14 )){
-      // Calculate xnu
-    	double xnu = (2 * fDk2Nu->decay.necm)/0.105658389; // 
-        if (xnu > 1) return true;
-    }
+    //if(fDk2Nu->decay.ptype == 2112) return true;
+    //if ( (fDk2Nu->decay.ptype == 13 || fDk2Nu->decay.ptype == -13) && (fDk2Nu->decay.ntype == 14 || fDk2Nu->decay.ntype == -14 )){
+    //  // Calculate xnu
+    //	double xnu = (2 * fDk2Nu->decay.necm)/0.105658389; // 
+    //    if (xnu > 1) return true;
+    //}
 
     // bypass flux window method in favor of random point in detector
     //TLorentzVector x4beam=fFluxWindowBase+fRnd.Uniform()*fFluxWindowDir1+fRnd.Uniform()*fFluxWindowDir2;

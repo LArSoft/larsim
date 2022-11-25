@@ -1,0 +1,68 @@
+#include "services_microboone.fcl"
+#include "seedservice_microboone.fcl"
+
+process_name: PPFXFluxReader
+
+services: {
+	TFileService: { fileName: "flux_hist.root" }
+	RandomNumberGenerator: {}
+	NuRandomService: @local::microboone_seedservice
+	TimeTracker: {}
+	FileCatalogMetadata: @local::art_file_catalog_mc
+}
+
+source: {
+	fileNames: []
+	module_type: PPFXFluxReader
+	skipEvents: 0
+	maxEvents: -1
+	inputType: "dk2nu"
+	nBins: 200
+	Elow: 0
+	Ehigh: 50
+	dk2nuConfig: "dk2nu_numi_at_uboone"
+
+  	dk2nu_numi_at_uboone: {
+    
+		// Origin of the detector in detector coordinate system, dir of the target to detector in beam coordinates(in cm)
+		// can also give userbeam:[x,y,z] where x,y,z is the beam dir in detector coords
+		userbeam:   [0, 0, 0, 5502, 7259, 67270 ]
+
+		// Rotation matrix from beam coordinate system to detector coordinate system
+		rotmatrix:	[	0.92103853804025682,		0.0227135048039241207,		0.38880857519374290,
+						0.0000462540012621546684,	0.99829162468141475,		-0.0584279894529063024,
+						-0.38947144863934974,		0.0538324139386641073,		0.91946400794392302 ]
+
+		// Flux window in detector coordinate system (in cm)
+		//windowBase: [ 500, -500, -3500 ]
+		//window1:    [-500,  200, -3500 ]
+		//window2:    [ 500, -500,  2000 ]
+
+		// 3 dimensional detector active volume (in cm) 
+		x_detAV: [ 0 , 256.35 ] 
+		y_detAV: [ -116.5 , 116.5 ] 
+		z_detAV: [ 0 , 1036.8 ] 		 
+
+	}
+}
+
+outputs: {
+	out1: {
+		module_type: RootOutput
+		fileName: "%ifb_FluxRead_%tc.root"
+		compressionLevel: 1
+		dataTier: "simulated"
+	}
+}
+
+physics: {
+	producers: {
+		rns: { module_type: "RandomNumberSaver" }
+	}
+	analyzers: {}
+	ana: []
+	simulate: [ rns ]
+	stream1: [ out1 ]
+	end_paths: [ stream1 ]
+}
+
