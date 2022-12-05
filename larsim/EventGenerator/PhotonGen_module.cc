@@ -144,14 +144,15 @@ namespace evgen {
     std::cout << "Number of optical detector: " << int(geo->Cryostat(0).NOpDet()) << std::endl;
 
     //Boundary of Cryogenic
-    double CryoBounds[6];
-    geo->CryostatBoundaries(CryoBounds);
-    fXmin = CryoBounds[0];
-    fXmax = CryoBounds[1];
-    fYmin = CryoBounds[2];
-    fYmax = CryoBounds[3];
-    fZmin = CryoBounds[4];
-    fZmax = CryoBounds[5];
+    //double CryoBounds[6];
+    //geo->CryostatBoundaries(CryoBounds);
+    auto const CryoBounds = geo->Cryostat(0).Boundaries();
+    fXmin = CryoBounds.MinX();
+    fXmax = CryoBounds.MaxX();
+    fYmin = CryoBounds.MinY();
+    fYmax = CryoBounds.MaxY();
+    fZmin = CryoBounds.MinZ();
+    fZmax = CryoBounds.MaxZ();
     std::cout << "Cryo Boundaries:" << std::endl;
     std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
               << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
@@ -169,7 +170,6 @@ namespace evgen {
     std::uniform_real_distribution<double> distY(fYmin, fYmax);
     std::uniform_real_distribution<double> distZ(fZmin, fZmax);
     std::uniform_real_distribution<double> width(-2.0, 2.0);
-    srand((unsigned)time(NULL));
 
     std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
@@ -224,7 +224,7 @@ namespace evgen {
 
       //angles
       double costh = 2 * flat.fire() - 1;
-      double sinth = pow(1 - pow(costh, 2), 0.5);
+      double sinth = std::sqrt(1 - costh * costh);
       double phi = 2 * M_PI * flat.fire();
 
       //momentum 4-vector
@@ -233,9 +233,7 @@ namespace evgen {
       int trackid =
         -1 * (j + 1); // set track id to -i as these are all primary particles and have id <= 0
       int PDG = 0;    //optical photons have PDG 0
-      std::string primary("primary");
-
-      simb::MCParticle particle(trackid, PDG, primary);
+      simb::MCParticle particle(trackid, PDG, "primary");
       particle.AddTrajectoryPoint(fShotPos, fShotMom);
 
       if (fFillTree) { fPhotonGen->Fill(); }

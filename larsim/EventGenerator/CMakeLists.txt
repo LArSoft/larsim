@@ -160,6 +160,32 @@ cet_build_plugin(TextFileGen art::EDProducer
   ROOT::Physics
 )
 
+cet_build_plugin(PhotonGen art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::PhotonPropagation_PhotonVisibilityService_service
+  larsim::Simulation
+  larcore::Geometry_Geometry_service
+  larcore::ServiceUtil
+  larcorealg::Geometry
+  larcoreobj::geo_vectors
+  larcoreobj::SummaryData
+  nusimdata::SimulationBase
+  nurandom::RandomUtils_NuRandomService_service
+  art_root_io::TFileService_service
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  canvas::canvas
+  messagefacility::MF_MessageLogger
+  fhiclcpp::fhiclcpp
+  cetlib::cetlib
+  cetlib_except::cetlib_except
+  ROOT::Core
+  ROOT::Geom
+  ROOT::Physics
+  ROOT::Tree
+  CLHEP::Random
+)
+
 install_headers()
 install_fhicl()
 install_source()
