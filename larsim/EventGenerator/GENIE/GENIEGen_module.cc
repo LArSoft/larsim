@@ -199,10 +199,21 @@ namespace evgen {
       GENIEconfig.put("RandomSeed", seed);
     } // if no RandomSeed present
 
-    fGENIEHelp = new evgb::GENIEHelper(GENIEconfig,
-                                       geo->ROOTGeoManager(),
-                                       geo->ROOTFile(),
-                                       geo->TotalMass(pset.get<std::string>("TopVolume").c_str()));
+    double detectorMass = 0;
+    // detectorMass is _only_ needed by GENIEHelper in the case of
+    // histogram flux and non-fixed # of event/spill (ie. POTPerSpill non-zero)
+    if (pset.get<std::string>("FluxType").find("histogram") == 0 &&
+        pset.get<double>("EventsPerSpill") == 0.0 && pset.get<double>("POTPerSpill") > 0.0) {
+      TStopwatch timer;
+      timer.Start();
+      detectorMass = geo->TotalMass(pset.get<std::string>("TopVolume").c_str());
+      timer.Stop();
+      mf::LogInfo("GENIEProductionTime")
+        << "real time to calculate TotalMass: " << timer.RealTime() << " sec";
+    }
+
+    fGENIEHelp =
+      new evgb::GENIEHelper(GENIEconfig, geo->ROOTGeoManager(), geo->ROOTFile(), detectorMass);
   }
 
   //____________________________________________________________________________
