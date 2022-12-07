@@ -30,7 +30,7 @@
 #include "Geant4/G4String.hh"
 #include "Geant4/G4Transform3D.hh"
 #include "Geant4/G4VUserParallelWorld.hh"
-#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/fwd.h"
 
 class G4VPhysicalVolume;
 
@@ -38,14 +38,13 @@ namespace larg4 {
 
   class AuxDetReadoutGeometry : public G4VUserParallelWorld {
   public:
-    /// Constructor and destructor.
-    AuxDetReadoutGeometry(const G4String name = "AuxDetReadoutGeometry");
-    virtual ~AuxDetReadoutGeometry();
+    AuxDetReadoutGeometry(geo::AuxDetGeometryCore const* auxDetGeom,
+                          G4String name = "AuxDetReadoutGeometry");
 
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the auxiliary detector readout.
     /// Required of  any class that inherits from G4VUserParallelWorld
-    virtual void Construct();
+    void Construct() override;
 
   private:
     void FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
@@ -56,8 +55,8 @@ namespace larg4 {
                                     unsigned int depth,
                                     G4Transform3D DepthToWorld);
 
-    art::ServiceHandle<geo::Geometry const> fGeo; ///< Handle to the geometry
-    uint32_t fNumSensitiveVol;                    ///< number of sensitive volumes
+    geo::AuxDetGeometryCore const* fAuxDetGeom; ///< Handle to the geometry
+    uint32_t fNumSensitiveVol;                  ///< number of sensitive volumes
   };
 
 } // namespace larg4

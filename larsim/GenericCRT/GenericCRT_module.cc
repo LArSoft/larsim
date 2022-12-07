@@ -7,6 +7,7 @@
 // from cetlib version v3_10_00.
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 
@@ -14,11 +15,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "GenericCRT.h"
 
@@ -34,39 +31,22 @@ namespace sim {
 class sim::GenericCRT : public art::EDProducer {
 public:
   explicit GenericCRT(fhicl::ParameterSet const& p);
-  // The compiler-generated destructor is fine for non-base
-  // classes without bare pointers or other resource use.
-
-  // Plugins should not be copied or assigned.
-  GenericCRT(GenericCRT const&) = delete;
-  GenericCRT(GenericCRT&&) = delete;
-  GenericCRT& operator=(GenericCRT const&) = delete;
-  GenericCRT& operator=(GenericCRT&&) = delete;
-
-  // Required functions.
-  void produce(art::Event& e) override;
 
 private:
-  std::string fEnergyUnitsScale;
+  void produce(art::Event& e) override;
   sim::GenericCRTUtility fCRTConvertUtil;
-
-  // Declare member data here.
 };
 
 sim::GenericCRT::GenericCRT(fhicl::ParameterSet const& p)
-  : EDProducer{p} //
-  , fEnergyUnitsScale(p.get<std::string>("EnergyUnitsScale", "MeV"))
-  , fCRTConvertUtil(fEnergyUnitsScale)
-// More initializers here.
+  : EDProducer{p}
+  , fCRTConvertUtil(p.get<std::string>("EnergyUnitsScale", "MeV"),
+                    art::ServiceHandle<geo::AuxDetGeometry const>()->GetProvider())
 {
-
   produces<std::vector<sim::AuxDetSimChannel>>();
 }
 
 void sim::GenericCRT::produce(art::Event& e)
 {
-  // Implementation of required member function here.
-  //std::unique_ptr< std::vector< sim::AuxDetSimChannel > > adCol (new  std::vector<sim::AuxDetSimChannel> );
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
 
   auto const& auxdethitcollection = e.getMany<std::vector<sim::AuxDetHit>>();

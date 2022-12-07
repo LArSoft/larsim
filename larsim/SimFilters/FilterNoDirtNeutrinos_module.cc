@@ -61,6 +61,7 @@ namespace simfilter {
     bool interactionDesired(false);
     //get the list of particles from this event
     art::ServiceHandle<geo::Geometry const> geom;
+    auto const& [cryostat, tpc] = std::make_tuple(geom->Cryostat(), geom->TPC());
 
     // * MC truth information
     art::Handle<std::vector<simb::MCTruth>> mctruthListHandle;
@@ -70,8 +71,6 @@ namespace simfilter {
     if (evt.getByLabel(fGenModuleLabel, mctruthListHandle))
       art::fill_ptr_vector(mclist, mctruthListHandle);
     evt.getByLabel(fLArG4ModuleLabel, mcpHandle);
-
-    //    std::cout << "FilterNoDirtNeutrinos: mclist.size() is " << mclist.size()<< std::endl ;
 
     std::set<art::Ptr<simb::MCTruth>> mctSetGENIE;
     for (size_t i = 0; i < mctruthListHandle->size(); ++i) {
@@ -91,24 +90,23 @@ namespace simfilter {
 
     if (fKeepCryostatNeutrinos) {
       // Get cryostat (box) volume boundary.
-      xmin = geom->DetHalfWidth() - geom->CryostatHalfWidth();
-      xmax = geom->DetHalfWidth() + geom->CryostatHalfWidth();
-      ymin = -geom->CryostatHalfHeight();
-      ymax = geom->CryostatHalfHeight();
-      zmin = geom->DetLength() / 2. - geom->DetLength() / 2.;
-      zmax = geom->DetLength() / 2. + geom->DetLength() / 2.;
+      xmin = tpc.HalfWidth() - cryostat.HalfWidth();
+      xmax = tpc.HalfWidth() + cryostat.HalfWidth();
+      ymin = -cryostat.HalfHeight();
+      ymax = cryostat.HalfHeight();
+      zmin = tpc.Length() / 2. - tpc.Length() / 2.;
+      zmax = tpc.Length() / 2. + tpc.Length() / 2.;
     }
     else {
       // Get fiducial volume boundary.
       xmin = 0.;
-      xmax = 2. * geom->DetHalfWidth();
-      ymin = -geom->DetHalfHeight();
-      ymax = geom->DetHalfHeight();
+      xmax = 2. * tpc.HalfWidth();
+      ymin = -tpc.HalfHeight();
+      ymax = tpc.HalfHeight();
       zmin = 0.;
-      zmax = geom->DetLength();
+      zmax = tpc.Length();
     }
 
-    //  std::cout << "FilterNoDirtNeutrinos: mcpHandle->size() is " << mcpHandle->size()<< std::endl ;
     // Now let's loop over G4 MCParticle list and track back MCTruth
     bool inTPC(false);
     for (size_t i = 0; i < mcpHandle->size() && !inTPC; ++i) {
@@ -122,21 +120,15 @@ namespace simfilter {
         // This is genie
 
         const simb::MCParticle* part(&mcpHandle->at(i));
-        // for c2: pdg and trackID no longer used
-        //int pdg = part->PdgCode();
-        //int trackID = part->TrackId();
 
-        //	std::cout << "FilterNoDirtNeutrinos: i is " << i << std::endl ;
         // Now walk through trajectory and see if it enters the TPC
         int n = part->NumberTrajectoryPoints();
         for (int j = 0; j < n && !inTPC; ++j) {
-          //	    std::cout << "FilterNoDirtNeutrinos: Loop  counter on NumTrajPt j is " << j << std::endl ;
 
           TVector3 pos = part->Position(j).Vect();
           if (pos.X() >= xmin && pos.X() <= xmax && pos.Y() >= ymin && pos.Y() <= ymax &&
               pos.Z() >= zmin && pos.Z() <= zmax) {
             interactionDesired = true;
-            //		  std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle " << i << " , TrackID/pdg " << trackID << "/ " << pdg << " is discovered." << std::endl ;
             std::cout << "FilterNoDirtNeutrinos: Genie daughter found in TPC. G4Particle "
                       << std::endl;
             inTPC = true;
@@ -151,8 +143,4 @@ namespace simfilter {
 
 } // namespace simfilter
 
-namespace simfilter {
-
-  DEFINE_ART_MODULE(FilterNoDirtNeutrinos)
-
-} // namespace simfilter
+DEFINE_ART_MODULE(simfilter::FilterNoDirtNeutrinos)

@@ -86,7 +86,6 @@ namespace phot {
 
       const geo::OpDetGeo& opdet = geom->OpDetGeoFromOpDet(opdetIdx);
       auto const opdetCenter = opdet.GetCenter();
-      //std::cout << "OpDet position " << opdetIdx << ": " << opdetCenter << std::endl;
 
       struct Visibility {
         Visibility(int vx, int t, float d, float v, float p, float th, float xp)
@@ -101,9 +100,7 @@ namespace phot {
         float xpos;
       };
       TCanvas* c1 = new TCanvas("c1", "c1");
-      //c1->SetCanvasSize(1500, 1500);
       c1->SetWindowSize(600, 600);
-      //c1->Divide(1,2);
       TGraph g;
       TGraph g2;
 
@@ -189,11 +186,8 @@ namespace phot {
         const double pred =
           fit->Eval(v.dist) / (v.dist * v.dist) / 2e-5; //calculated with parameterization
 
-        //DP const double obs = v.vis / 1e-7; //magic scaling factor for DP library created in LightSim
         //Minimal amount of detected photons is 50, bc of Landau dustribution
         //Those voxels with detected photons < 50 were set to 0
-        //DP const double pred = fit->Eval(v.dist) / (v.dist*v.dist) / 1e-7; //calculated with parametrisation
-        //std::cout << "observed = "<<obs<<" predicted (by parametrization) = "<<pred <<std::endl;
 
         // Log-likelihood ratio for poisson statistics
         double chisq = 2 * (pred - obs);
@@ -205,7 +199,6 @@ namespace phot {
         psi = v.psi;
         theta = v.theta;
         xpos = v.xpos;
-        //DP vis = pred *1e-7;
 
         if (v.taken == 1) { h.Fill(chisq); }
 
@@ -214,7 +207,6 @@ namespace phot {
           9) { //equivalent to more than 9 chisquare = 3 sigma    //maybe play around with this cutoff
           g2.SetPoint(g2.GetN(), v.dist, v.vis * v.dist * v.dist);
           vis = obs * 2e-5;
-          //DP vis = obs *1e-7;
           tr_fit->Fill();
         }
       }

@@ -9,6 +9,7 @@
 
 #include "GenericCRT.h"
 
+#include "larcorealg/Geometry/AuxDetGeometryCore.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Evaluator/Evaluator.h"
@@ -16,7 +17,9 @@
 #include <algorithm> // std::find()
 #include <utility>   // std::move()
 
-sim::GenericCRTUtility::GenericCRTUtility(const std::string energyUnitsScale)
+sim::GenericCRTUtility::GenericCRTUtility(std::string const& energyUnitsScale,
+                                          geo::AuxDetGeometryCore const& auxDetGeom)
+  : fAuxDetGeom{&auxDetGeom}
 {
   HepTool::Evaluator eval;
   eval.setStdMath();
@@ -28,35 +31,34 @@ sim::GenericCRTUtility::GenericCRTUtility(const std::string energyUnitsScale)
   if (eval.status() != 0) fEnergyUnitsScale = 1.;
 }
 
-sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(const sim::AuxDetHit& InputHit) const
+sim::AuxDetIDE sim::GenericCRTUtility::toAuxDetIDE(sim::AuxDetHit const& adhit) const
 {
   sim::AuxDetIDE outputIDE;
 
-  outputIDE.trackID = InputHit.GetTrackID();
-  outputIDE.energyDeposited = InputHit.GetEnergyDeposited() * fEnergyUnitsScale;
-  outputIDE.entryX = InputHit.GetEntryX();
-  outputIDE.entryY = InputHit.GetEntryY();
-  outputIDE.entryZ = InputHit.GetEntryZ();
-  outputIDE.entryT = InputHit.GetEntryT();
-  outputIDE.exitX = InputHit.GetExitX();
-  outputIDE.exitY = InputHit.GetExitY();
-  outputIDE.exitZ = InputHit.GetExitZ();
-  outputIDE.exitT = InputHit.GetExitT();
-  outputIDE.exitMomentumX = InputHit.GetExitMomentumX();
-  outputIDE.exitMomentumY = InputHit.GetExitMomentumY();
-  outputIDE.exitMomentumZ = InputHit.GetExitMomentumZ();
+  outputIDE.trackID = adhit.GetTrackID();
+  outputIDE.energyDeposited = adhit.GetEnergyDeposited() * fEnergyUnitsScale;
+  outputIDE.entryX = adhit.GetEntryX();
+  outputIDE.entryY = adhit.GetEntryY();
+  outputIDE.entryZ = adhit.GetEntryZ();
+  outputIDE.entryT = adhit.GetEntryT();
+  outputIDE.exitX = adhit.GetExitX();
+  outputIDE.exitY = adhit.GetExitY();
+  outputIDE.exitZ = adhit.GetExitZ();
+  outputIDE.exitT = adhit.GetExitT();
+  outputIDE.exitMomentumX = adhit.GetExitMomentumX();
+  outputIDE.exitMomentumY = adhit.GetExitMomentumY();
+  outputIDE.exitMomentumZ = adhit.GetExitMomentumZ();
 
   return outputIDE;
 }
 
 std::vector<unsigned int> sim::GenericCRTUtility::GetAuxDetChannels(
-  const std::vector<sim::AuxDetHit>& InputHitVector) const
+  std::vector<sim::AuxDetHit> const& adhits) const
 {
-
   std::vector<unsigned int> AuxDetChanNumber;
-  AuxDetChanNumber.reserve(size(InputHitVector));
+  AuxDetChanNumber.reserve(size(adhits));
 
-  for (auto const& hit : InputHitVector) {
+  for (auto const& hit : adhits) {
 
     std::vector<unsigned int>::iterator Chanitr =
       std::find(AuxDetChanNumber.begin(), AuxDetChanNumber.end(), hit.GetID());
@@ -64,23 +66,24 @@ std::vector<unsigned int> sim::GenericCRTUtility::GetAuxDetChannels(
     if (Chanitr == AuxDetChanNumber.end()) { //If trackID is already in the map, update it
       //if channel ID is not in the set yet, add it
       AuxDetChanNumber.push_back(hit.GetID());
-    } //
+    }
   }
 
   return AuxDetChanNumber;
 }
 
 sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
-  const std::vector<sim::AuxDetHit>& InputHitVector,
+  std::vector<sim::AuxDetHit> const& adhits,
   unsigned int inputchannel) const
 {
-  std::vector<sim::AuxDetIDE> IDEvector;
+
   //loop over sim::AuxDetHits and assign them to AuxDetSimChannels.
+  std::vector<sim::AuxDetIDE> IDEvector;
 
   size_t ad_id_no = 9999;
   size_t ad_sen_id_no = 9999;
 
-  for (auto const& auxDetHit : InputHitVector) {
+  for (auto const& auxDetHit : adhits) {
 
     double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX()) / 2.0;
     double ycoordinate = (auxDetHit.GetEntryY() + auxDetHit.GetExitY()) / 2.0;
@@ -90,7 +93,7 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
     if (auxDetHit.GetID() == inputchannel) // this is the channel we want.
     {
       // Find the IDs given the hit position
-      fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
+      fAuxDetGeom->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
 
       mf::LogDebug("GenericCRTUtility")
         << "Found an AuxDetHit with ID " << auxDetHit.GetID() << " for AuxDet ID " << ad_id_no
@@ -102,7 +105,8 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
         std::find(IDEvector.begin(), IDEvector.end(), tempIDE);
 
       if (IDEitr != IDEvector.end()) { //If trackID is already in the map, update it
-        //Andrzej's note - following logic from AuxDetReadout in Legacy, but why are the other paremeters getting overwritten like that?
+        // Andrzej's note - following logic from AuxDetReadout in Legacy, but why are the
+        // other paremeters getting overwritten like that?
         IDEitr->energyDeposited += tempIDE.energyDeposited;
         IDEitr->exitX = tempIDE.exitX;
         IDEitr->exitY = tempIDE.exitY;
@@ -131,14 +135,14 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
 }
 
 std::vector<sim::AuxDetSimChannel> sim::GenericCRTUtility::GetAuxDetSimChannels(
-  const std::vector<sim::AuxDetHit>& InputHitVector) const
+  std::vector<sim::AuxDetHit> const& adhits) const
 {
-  auto const auxDetChannels = GetAuxDetChannels(InputHitVector);
+  auto const auxDetChannels = GetAuxDetChannels(adhits);
   std::vector<sim::AuxDetSimChannel> auxDetVector;
   auxDetVector.reserve(size(auxDetChannels));
 
   for (auto const channelNum : auxDetChannels) {
-    auxDetVector.push_back(GetAuxDetSimChannelByNumber(InputHitVector, channelNum));
+    auxDetVector.push_back(GetAuxDetSimChannelByNumber(adhits, channelNum));
   }
 
   return auxDetVector;

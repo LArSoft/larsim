@@ -25,6 +25,8 @@
 
 // LArSoft code
 #include "larcore/CoreUtils/ServiceUtil.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/WireReadoutGeom.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
@@ -44,28 +46,36 @@
 namespace larg4 {
 
   //---------------------------------------------------------------------------------------
-  // Constructor.  Note that we force the name of this sensitive
-  // detector to be the value expected by LArVoxelListAction.
-  LArVoxelReadout::LArVoxelReadout(std::string const& name) : G4VSensitiveDetector(name)
+  // Constructor.  Note that we force the name of this sensitive detector to be the value
+  // expected by LArVoxelListAction.
+  LArVoxelReadout::LArVoxelReadout(std::string const& name,
+                                   geo::GeometryCore const* geom,
+                                   geo::WireReadoutGeom const* wireReadoutGeom,
+                                   sim::LArG4Parameters const* lgp)
+    : G4VSensitiveDetector(name), fGeo{geom}, fWireReadoutGeom{wireReadoutGeom}, fLgp{lgp}
   {
     // Initialize values for the electron-cluster calculation.
     ClearSimChannels();
 
-    // the standard name contains cryostat and TPC;
-    // if we don't find it, we will detect the TPC at each Geant hit
+    // the standard name contains cryostat and TPC; if we don't find it, we will detect
+    // the TPC at each Geant hit
     unsigned int cryostat, tpc;
     if (std::sscanf(name.c_str(), "%*19s%1u%*4s%u", &cryostat, &tpc) == 2)
       SetSingleTPC(cryostat, tpc);
     else
       SetDiscoverTPC();
-
-  } // LArVoxelReadout::LArVoxelReadout()
+  }
 
   //---------------------------------------------------------------------------------------
-  // Constructor.  Note that we force the name of this sensitive
-  // detector to be the value expected by LArVoxelListAction.
-  LArVoxelReadout::LArVoxelReadout(std::string const& name, unsigned int cryostat, unsigned int tpc)
-    : LArVoxelReadout(name)
+  // Constructor.  Note that we force the name of this sensitive detector to be the value
+  // expected by LArVoxelListAction.
+  LArVoxelReadout::LArVoxelReadout(std::string const& name,
+                                   geo::GeometryCore const* geom,
+                                   geo::WireReadoutGeom const* wireReadoutGeom,
+                                   sim::LArG4Parameters const* lgp,
+                                   unsigned int cryostat,
+                                   unsigned int tpc)
+    : LArVoxelReadout(name, geom, wireReadoutGeom, lgp)
   {
     SetSingleTPC(cryostat, tpc);
   }
@@ -112,19 +122,19 @@ namespace larg4 {
       fDriftVelocity[i] =
         fDetProp->DriftVelocity(fDetProp->Efield(i), fDetProp->Temperature()) / 1000.;
 
-    fElectronClusterSize = fLgpHandle->ElectronClusterSize();
-    fMinNumberOfElCluster = fLgpHandle->MinNumberOfElCluster();
-    fLongitudinalDiffusion = fLgpHandle->LongitudinalDiffusion();
-    fTransverseDiffusion = fLgpHandle->TransverseDiffusion();
-    fDontDriftThem = fLgpHandle->DisableWireplanes();
-    fSkipWireSignalInTPCs = fLgpHandle->SkipWireSignalInTPCs();
+    fElectronClusterSize = fLgp->ElectronClusterSize();
+    fMinNumberOfElCluster = fLgp->MinNumberOfElCluster();
+    fLongitudinalDiffusion = fLgp->LongitudinalDiffusion();
+    fTransverseDiffusion = fLgp->TransverseDiffusion();
+    fDontDriftThem = fLgp->DisableWireplanes();
+    fSkipWireSignalInTPCs = fLgp->SkipWireSignalInTPCs();
 
     MF_LOG_DEBUG("LArVoxelReadout")
       << " e lifetime: " << fElectronLifetime << "\n Temperature: " << fDetProp->Temperature()
       << "\n Drift velocity: " << fDriftVelocity[0] << " " << fDriftVelocity[1] << " "
       << fDriftVelocity[2];
 
-    fDontDriftThem = (fDontDriftThem || fLgpHandle->NoElectronPropagation());
+    fDontDriftThem = (fDontDriftThem || fLgp->NoElectronPropagation());
 
     fNSteps = 0;
   }
@@ -142,14 +152,14 @@ namespace larg4 {
   //--------------------------------------------------------------------------------------
   void LArVoxelReadout::ClearSimChannels()
   {
-    fChannelMaps.resize(fGeoHandle->Ncryostats());
+    fChannelMaps.resize(fGeo->Ncryostats());
     size_t cryo = 0;
     for (auto& cryoData : fChannelMaps) { // each, a vector of maps
-      cryoData.resize(fGeoHandle->NTPC(geo::CryostatID(cryo++)));
+      cryoData.resize(fGeo->NTPC(geo::CryostatID(cryo++)));
       for (auto& channelsMap : cryoData)
         channelsMap.clear(); // each, a map
     }                        // for cryostats
-  }                          // LArVoxelReadout::ClearSimChannels()
+  }
 
   const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() const
   {
@@ -196,24 +206,21 @@ namespace larg4 {
   // Called for each step.
   G4bool LArVoxelReadout::ProcessHits(G4Step* step, G4TouchableHistory* pHistory)
   {
-    // All work done for the "parallel world" "box of voxels" in
-    // LArVoxelReadoutGeometry makes this a fairly simple routine.
-    // First, the usual check for non-zero energy:
+    // All work done for the "parallel world" "box of voxels" in LArVoxelReadoutGeometry
+    // makes this a fairly simple routine.  First, the usual check for non-zero energy:
 
-    // Only process the hit if the step is inside the active volume and
-    // it has deposited energy.  The hit being inside the active volume
-    // is virtually sure to happen because the LArVoxelReadoutGeometry
-    // that this class makes use of only has voxels for inside the TPC.
+    // Only process the hit if the step is inside the active volume and it has deposited
+    // energy.  The hit being inside the active volume is virtually sure to happen because
+    // the LArVoxelReadoutGeometry that this class makes use of only has voxels for inside
+    // the TPC.
 
-    // The step can be no bigger than the size of the voxel,
-    // because of the geometry set up in LArVoxelGeometry and the
-    // transportation set up in PhysicsList.  Find the mid-point
-    // of the step.
+    // The step can be no bigger than the size of the voxel, because of the geometry set
+    // up in LArVoxelGeometry and the transportation set up in PhysicsList.  Find the
+    // mid-point of the step.
 
     if (step->GetTotalEnergyDeposit() > 0) {
 
-      // Make sure we have the IonizationAndScintillation singleton
-      // reset to this step
+      // Make sure we have the IonizationAndScintillation singleton reset to this step
       larg4::IonizationAndScintillation::Instance()->Reset(step);
       fNSteps++;
       if (!fDontDriftThem) {
@@ -223,17 +230,16 @@ namespace larg4 {
         double g4time = step->GetPreStepPoint()->GetGlobalTime();
 
         // Find the Geant4 track ID for the particle responsible for depositing the
-        // energy.  if we are only storing primary EM shower particles, and this energy
-        // is from a secondary etc EM shower particle, the ID returned is the primary
+        // energy.  If we are only storing primary EM shower particles, and this energy is
+        // from a secondary etc EM shower particle, the ID returned is the primary
         const int trackID = ParticleListAction::GetCurrentTrackID();
         // For all particles but shower daughters, origTrackID is the same as trackID.
-        // For shower daughters it contains their original trackID instead of the
-        // shower primary's trackID.
+        // For shower daughters it contains their original trackID instead of the shower
+        // primary's trackID.
         const int origTrackID = ParticleListAction::GetCurrentOrigTrackID();
 
-        // Find out which TPC we are in.
-        // If this readout object covers just one, we already know it.
-        // Otherwise, we have to ask Geant where we are.
+        // Find out which TPC we are in.  If this readout object covers just one, we
+        // already know it.  Otherwise, we have to ask Geant where we are.
         unsigned short int cryostat = 0, tpc = 0;
         if (bSingleTPC) {
           cryostat = fCstat;
@@ -246,10 +252,10 @@ namespace larg4 {
             throw cet::exception("LArG4") << "Untouchable step in LArVoxelReadout::ProcessHits()";
           }
 
-          // one of the ancestors of the touched volume is supposed to be
-          // actually a G4PVPlacementInTPC that knows which TPC it covers;
-          // currently, it's the 4th in the ladder:
-          // [0] voxel [1] voxel tower [2] voxel plane [3] the full box;
+          // one of the ancestors of the touched volume is supposed to be actually a
+          // G4PVPlacementInTPC that knows which TPC it covers; currently, it's the 4th in
+          // the ladder:
+          //  [0] voxel [1] voxel tower [2] voxel plane [3] the full box;
           G4int depth = 0;
           while (depth < pTouchable->GetHistoryDepth()) {
             const G4PVPlacementInTPC* pPVinTPC =
@@ -261,15 +267,15 @@ namespace larg4 {
             break;
           } // while
           if (depth < pTouchable->GetHistoryDepth()) {
-            // this is a fundamental error where the step does not happen in
-            // any TPC; this should not happen in the readout geometry!
+            // this is a fundamental error where the step does not happen in any TPC; this
+            // should not happen in the readout geometry!
             throw cet::exception("LArG4") << "No TPC ID found in LArVoxelReadout::ProcessHits()";
           } // if
           MF_LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
         } // if more than one TPC
 
-        // Note that if there is no particle ID for this energy deposit, the
-        // trackID will be sim::NoParticleId.
+        // Note that if there is no particle ID for this energy deposit, the trackID will
+        // be sim::NoParticleId.
 
         DriftIonizationElectrons(
           *fClockData, midPoint, g4time, trackID, cryostat, tpc, origTrackID);
@@ -290,23 +296,14 @@ namespace larg4 {
   geo::Point_t LArVoxelReadout::RecoverOffPlaneDeposit(geo::Point_t const& pos,
                                                        geo::PlaneGeo const& plane) const
   {
-    //
-    // translate the landing position on the two frame coordinates
-    // ("width" and "depth")
-    //
+    // translate the landing position on the two frame coordinates ("width" and "depth")
     auto const landingPos = plane.PointWidthDepthProjection(pos);
 
-    //
-    // compute the distance of the landing position on the two frame
-    // coordinates ("width" and "depth");
-    // keep the point within 10 micrometers (0.001 cm) from the border
-    //
+    // compute the distance of the landing position on the two frame coordinates ("width"
+    // and "depth"); keep the point within 10 micrometers (0.001 cm) from the border
     auto const offPlane = plane.DeltaFromActivePlane(landingPos, 0.001);
 
-    //
-    // if both the distances are below the margin, move the point to
-    // the border
-    //
+    // if both the distances are below the margin, move the point to the border
 
     // nothing to recover: landing is inside
     if ((offPlane.X() == 0.0) && (offPlane.Y() == 0.0)) return pos;
@@ -315,12 +312,12 @@ namespace larg4 {
     if ((std::abs(offPlane.X()) > fOffPlaneMargin) || (std::abs(offPlane.Y()) > fOffPlaneMargin))
       return pos;
 
-    // we didn't fully decompose because it might be unnecessary;
-    // now we need the full thing
+    // we didn't fully decompose because it might be unnecessary; now we need the full
+    // thing
     auto const distance = plane.DistanceFromPlane(pos);
 
     return plane.ComposePoint(distance, landingPos + offPlane);
-  } // LArVoxelReadout::RecoverOffPlaneDeposit()
+  }
 
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
@@ -339,9 +336,8 @@ namespace larg4 {
 
     CLHEP::RandGauss PropRand(*fPropGen);
 
-    // This routine gets called frequently, once per every particle
-    // traveling through every voxel. Use whatever tricks we can to
-    // increase its execution speed.
+    // This routine gets called frequently, once per every particle traveling through
+    // every voxel. Use whatever tricks we can to increase its execution speed.
 
     static double LifetimeCorr_const = -1000. * fElectronLifetime;
     static double LDiff_const = std::sqrt(2. * fLongitudinalDiffusion);
@@ -371,18 +367,19 @@ namespace larg4 {
     // Already know which TPC we're in because we have been told
 
     try {
-      const geo::TPCGeo& tpcg = fGeoHandle->TPC(geo::TPCID{cryostat, tpc});
+      geo::TPCID const tpcid{cryostat, tpc};
+      geo::TPCGeo const& tpcg = fGeo->TPC(tpcid);
 
-      // X drift distance - the drift direction can be either in
-      // the positive or negative direction, so use std::abs
+      // X drift distance - the drift direction can be either in the positive or negative
+      // direction, so use std::abs
 
       /// \todo think about effects of drift between planes
-      auto const& plane_center = tpcg.Plane(0).GetCenter();
+      auto const& plane_center = fWireReadoutGeom->FirstPlane(tpcid).GetCenter();
       double XDrift = std::abs(stepMidPoint.x() / CLHEP::cm - plane_center.X());
-      //std::cout<<tpcg.DriftDirection()<<std::endl;
-      if (tpcg.DriftDirection() == geo::kNegX)
+      auto const [_, driftSign] = tpcg.DriftAxisWithSign();
+      if (driftSign == geo::DriftSign::Negative)
         XDrift = stepMidPoint.x() / CLHEP::cm - plane_center.X();
-      else if (tpcg.DriftDirection() == geo::kPosX)
+      else if (driftSign == geo::DriftSign::Positive)
         XDrift = plane_center.X() - stepMidPoint.x() / CLHEP::cm;
 
       if (XDrift < 0.) return;
@@ -400,16 +397,17 @@ namespace larg4 {
       double TDrift;
       XDrift += posOffsets.X();
 
-      // Space charge distortion could push the energy deposit beyond the wire
-      // plane (see issue #15131). Given that we don't have any subtlety in the
-      // simulation of this region, bringing the deposit exactly on the plane
-      // should be enough for the time being.
+      // Space charge distortion could push the energy deposit beyond the wire plane (see
+      // issue #15131). Given that we don't have any subtlety in the simulation of this
+      // region, bringing the deposit exactly on the plane should be enough for the time
+      // being.
       if (XDrift < 0.) XDrift = 0.;
 
       TDrift = XDrift * RecipDriftVel[0];
-      if (tpcg.Nplanes() == 2) { // special case for ArgoNeuT (plane 0 is the second wire plane)
-        TDrift = ((XDrift - tpcg.PlanePitch(0, 1)) * RecipDriftVel[0] +
-                  tpcg.PlanePitch(0, 1) * RecipDriftVel[1]);
+      unsigned int const nplanes = fWireReadoutGeom->Nplanes(tpcid);
+      if (nplanes == 2) { // special case for ArgoNeuT (plane 0 is the second wire plane)
+        double const pitch = fWireReadoutGeom->PlanePitch(tpcid);
+        TDrift = ((XDrift - pitch) * RecipDriftVel[0] + pitch * RecipDriftVel[1]);
       }
 
       const double lifetimecorrection = TMath::Exp(TDrift / LifetimeCorr_const);
@@ -417,8 +415,8 @@ namespace larg4 {
         larg4::IonizationAndScintillation::Instance()->NumberIonizationElectrons();
       const double energy = larg4::IonizationAndScintillation::Instance()->EnergyDeposit();
 
-      // if we have no electrons (too small energy or too large recombination)
-      // we are done already here
+      // if we have no electrons (too small energy or too large recombination) we are done
+      // already here
       if (nIonizedElectrons <= 0) {
         MF_LOG_DEBUG("LArVoxelReadout")
           << "No electrons drifted to readout, " << energy << " MeV lost.";
@@ -477,24 +475,23 @@ namespace larg4 {
       }
 
       // make a collection of electrons for each plane
-      for (size_t p = 0; p < tpcg.Nplanes(); ++p) {
+      double const plane_0_center_x = fWireReadoutGeom->FirstPlane(tpcid).GetCenter().X();
+      for (auto const& plane : fWireReadoutGeom->Iterate<geo::PlaneGeo>(tpcid)) {
 
-        geo::PlaneGeo const& plane = tpcg.Plane(p);
-
-        double Plane0Pitch = tpcg.Plane0Pitch(p);
+        double Plane0Pitch = fWireReadoutGeom->Plane0Pitch(tpcid, plane.ID().Plane);
 
         // "-" sign is because Plane0Pitch output is positive. Andrzej
-        xyz1.SetX(tpcg.Plane(0).GetCenter().X() - Plane0Pitch);
+        xyz1.SetX(plane_0_center_x - Plane0Pitch);
 
         // Drift nClus electron clusters to the induction plane
         for (int k = 0; k < nClus; ++k) {
           // Correct drift time for longitudinal diffusion and plane
           double TDiff = TDrift + XDiff[k] * RecipDriftVel[0];
-          // Take into account different Efields between planes
-          // Also take into account special case for ArgoNeuT where Nplanes = 2.
-          for (size_t ip = 0; ip < p; ++ip) {
-            TDiff +=
-              tpcg.PlanePitch(ip, ip + 1) * RecipDriftVel[tpcg.Nplanes() == 3 ? ip + 1 : ip + 2];
+          // Take into account different Efields between planes.  Also take into account
+          // special case for ArgoNeuT where Nplanes = 2.
+          for (unsigned int ip = 0; ip < plane.ID().Plane; ++ip) {
+            TDiff += fWireReadoutGeom->PlanePitch(tpcid, ip, ip + 1) *
+                     RecipDriftVel[nplanes == 3 ? ip + 1 : ip + 2];
           }
           xyz1.SetY(YDiff[k]);
           xyz1.SetZ(ZDiff[k]);
@@ -506,14 +503,13 @@ namespace larg4 {
             if (fOffPlaneMargin != 0) {
               // get the effective position where to consider the charge landed;
               //
-              // Some optimisations are possible; in particular, this method
-              // could be extended to inform us if the point was too far.
-              // Currently, if that is the case the code will proceed, find the
-              // point is off plane, emit a warning and skip the deposition.
-              //
+              // Some optimisations are possible; in particular, this method could be
+              // extended to inform us if the point was too far.  Currently, if that is
+              // the case the code will proceed, find the point is off plane, emit a
+              // warning and skip the deposition.
               xyz1 = RecoverOffPlaneDeposit(xyz1, plane);
             } // if charge lands off plane
-            uint32_t channel = fGeoHandle->NearestChannel(xyz1, plane.ID());
+            uint32_t channel = fWireReadoutGeom->NearestChannel(xyz1, plane.ID());
 
             /// \todo check on what happens if we allow the tdc value to be
             /// \todo beyond the end of the expected number of ticks
@@ -542,10 +538,10 @@ namespace larg4 {
         // find whether we already have this channel
         auto iChannelData = ChannelDataMap.find(channel);
 
-        // channelData is the SimChannel these deposits are going to be added to
-        // If there is such a channel already, use it (first beanch).
-        // If it's a new channel, the inner assignment creates a new SimChannel
-        // in the map, and we save its reference in channelData
+        // channelData is the SimChannel these deposits are going to be added to.  If
+        // there is such a channel already, use it (first beanch).  If it's a new channel,
+        // the inner assignment creates a new SimChannel in the map, and we save its
+        // reference in channelData
         sim::SimChannel& channelData = (iChannelData == ChannelDataMap.end()) ?
                                          (ChannelDataMap[channel] = sim::SimChannel(channel)) :
                                          iChannelData->second;

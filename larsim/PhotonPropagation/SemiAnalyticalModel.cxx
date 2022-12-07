@@ -4,6 +4,7 @@
 // LArSoft Libraries
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/GeometryCore.h"
@@ -12,6 +13,7 @@
 
 // support libraries
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TMath.h"
@@ -31,13 +33,14 @@ namespace phot {
                                            const bool includeAnodeReflections,
                                            const bool useXeAbsorption)
     : fGeom{*(lar::providerFrom<geo::Geometry>())}
+    , fChannelMap(art::ServiceHandle<geo::WireReadout>()->Get())
     , fISTPC{fGeom}
     , fNTPC(fGeom.NTPC())
     , fActiveVolumes(fISTPC.extractActiveLArVolume(fGeom))
     , fcathode_centre{fGeom.TPC().GetCathodeCenter().X(),
                       fActiveVolumes[0].CenterY(),
                       fActiveVolumes[0].CenterZ()}
-    , fanode_centre{fGeom.TPC().FirstPlane().GetCenter().X(),
+    , fanode_centre{fChannelMap.Plane({0, 0, 0}).GetCenter().X(),
                     fActiveVolumes[0].CenterY(),
                     fActiveVolumes[0].CenterZ()}
     , fNOpDets(fGeom.NOpDets())

@@ -18,6 +18,7 @@ cet_build_plugin(MergeSimSources art::EDProducer
   canvas::canvas
   fhiclcpp::types
   fhiclcpp::fhiclcpp
+  range-v3::range-v3
 )
 
 install_headers()

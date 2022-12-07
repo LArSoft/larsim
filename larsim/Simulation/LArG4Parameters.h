@@ -16,11 +16,8 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
-namespace fhicl {
-  class ParameterSet;
-}
-
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "fhiclcpp/fwd.h"
 
 #include <string>
 #include <vector>
@@ -155,4 +152,5 @@ namespace sim {
 }
 
 DECLARE_ART_SERVICE(sim::LArG4Parameters, SHARED)
+
 #endif

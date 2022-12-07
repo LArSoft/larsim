@@ -18,6 +18,7 @@ cet_make_library(SOURCE
   messagefacility::MF_MessageLogger
   CLHEP::Random
   CLHEP::Vector
+  range-v3::range-v3
 )
 
 cet_build_plugin(IonAndScint art::EDProducer

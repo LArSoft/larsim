@@ -24,6 +24,8 @@
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 
+#include "range/v3/view/zip.hpp"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -33,7 +35,6 @@
 #include "MergeSimSources.h"
 #include "larcorealg/CoreUtils/counter.h"
 #include "larcorealg/CoreUtils/enumerate.h"
-#include "larcorealg/CoreUtils/zip.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "lardataobj/Simulation/GeneratedParticleInfo.h"
 #include "lardataobj/Simulation/SimChannel.h"
@@ -294,7 +295,7 @@ void sim::MergeSimSources::produce(art::Event& e)
 
   MergeSimSourcesUtility MergeUtility{fTrackIDOffsets};
 
-  for (auto const& [i_source, input_label] : util::enumerate(fInputSourcesLabels)) {
+  for (auto const& [i_source, input_label] : fInputSourcesLabels | ranges::views::enumerate) {
 
     if (fFillMCParticles) {
       art::PtrMaker<simb::MCParticle> const makePartPtr{e};
@@ -348,7 +349,8 @@ void sim::MergeSimSources::produce(art::Event& e)
     }
 
     if (fFillSimEnergyDeposits) {
-      for (auto const& [edep_inst, edepCol] : util::zip(fEnergyDepositionInstances, edepCols)) {
+      for (auto const& [edep_inst, edepCol] :
+           ranges::views::zip(fEnergyDepositionInstances, edepCols)) {
         art::InputTag const edep_tag{input_label.label(), edep_inst};
         MergeUtility.MergeSimEnergyDeposits(edepCol, e.getProduct<edeps_t>(edep_tag), i_source);
       } // for edep
@@ -356,7 +358,7 @@ void sim::MergeSimSources::produce(art::Event& e)
 
     if (fFillAuxDetHits) {
       for (auto const& [auxdethit_inst, auxdethitCol] :
-           util::zip(fAuxDetHitsInstanceLabels, auxdethitCols)) {
+           ranges::views::zip(fAuxDetHitsInstanceLabels, auxdethitCols)) {
         art::InputTag const auxdethit_tag{input_label.label(), auxdethit_inst};
         MergeUtility.MergeAuxDetHits(
           auxdethitCol, e.getProduct<aux_det_hits_t>(auxdethit_tag), i_source);
@@ -389,14 +391,14 @@ void sim::MergeSimSources::produce(art::Event& e)
   }
 
   if (fFillSimEnergyDeposits) {
-    for (auto&& [edep_inst, edepCol] : util::zip(fEnergyDepositionInstances, edepCols)) {
+    for (auto&& [edep_inst, edepCol] : ranges::views::zip(fEnergyDepositionInstances, edepCols)) {
       e.put(std::make_unique<edeps_t>(move(edepCol)), edep_inst);
     } // for
   }   // if fill energy deposits
 
   if (fFillAuxDetHits) {
     for (auto&& [auxdethit_inst, auxdethitCol] :
-         util::zip(fAuxDetHitsInstanceLabels, auxdethitCols)) {
+         ranges::views::zip(fAuxDetHitsInstanceLabels, auxdethitCols)) {
       e.put(std::make_unique<aux_det_hits_t>(move(auxdethitCol)), auxdethit_inst);
     }
   }

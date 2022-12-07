@@ -1,53 +1,44 @@
-////////////////////////////////////////////////////////////////////////
+/// =====================================================================================
 /// \file  LArVoxelReadout.h
 /// \brief A Geant4 sensitive detector that accumulates voxel information.
 ///
 /// \author  seligman@nevis.columbia.edu
-////////////////////////////////////////////////////////////////////////
+/// =====================================================================================
 ///
-/// One way to implement voxels in Geant4 is to create a parallel
-/// "read-out" geometry along with the real, physical geometry.  The
-/// read-out geometry is implemented in LArVoxelReadoutGeometry; this
-/// class is the sensitive detector for that geometry.  That is,
-/// Geant4 will call this routine every time there is a step within a
-/// volume of the read-out geometry; this routine then accumulates
-/// information from that step.
+/// One way to implement voxels in Geant4 is to create a parallel "read-out" geometry
+/// along with the real, physical geometry.  The read-out geometry is implemented in
+/// LArVoxelReadoutGeometry; this class is the sensitive detector for that geometry.  That
+/// is, Geant4 will call this routine every time there is a step within a volume of the
+/// read-out geometry; this routine then accumulates information from that step.
 ///
-/// In general, Geant4 expects to have per-event user information
-/// attached to the G4Event in some way; their G4VSensitiveDetector
-/// class supports this by allowing user-defined hit collections to
-/// added to a G4HCOfThisEvent object (a collection of hit
-/// collections; yes, it makes my head ache too!) that's part of each
-/// G4Event.
+/// In general, Geant4 expects to have per-event user information attached to the G4Event
+/// in some way; their G4VSensitiveDetector class supports this by allowing user-defined
+/// hit collections to added to a G4HCOfThisEvent object (a collection of hit collections;
+/// yes, it makes my head ache too!) that's part of each G4Event.
 ///
-/// This class works differently, by accumulating the information in
-/// its internal sim::LArVoxelList.  See LArVoxelListAction for how
-/// this information is made available to the main LArG4 module.
+/// This class works differently, by accumulating the information in its internal
+/// sim::LArVoxelList.  See LArVoxelListAction for how this information is made available
+/// to the main LArG4 module.
 ///
 /// Why define a parallel geometry?  Here are some reasons:
 ///
-/// - The regular LAr TPC is one large volume of liquid argon.  When
-///   Geant4 does its physics modeling, it can be unconstrained in
-///   step size by the voxels.  Only for readout would the steps be
-///   sub-divided.
+/// - The regular LAr TPC is one large volume of liquid argon.  When Geant4 does its
+///   physics modeling, it can be unconstrained in step size by the voxels.  Only for
+///   readout would the steps be sub-divided.
 ///
-/// - There may be more than one kind of readout, depending on a
-///   detector's instrumentation (e.g., OpDets in addition to the wire
-///   planes).  It's possible that the voxelization appropriate for
-///   the wire planes may not be an appropriate readout for the other
-///   readouts.  Geant4 allows the construction of multiple parallel
-///   readouts, so this mechanism is relatively easy to extend for
-///   each type of readout.
+/// - There may be more than one kind of readout, depending on a detector's
+///   instrumentation (e.g., OpDets in addition to the wire planes).  It's possible that
+///   the voxelization appropriate for the wire planes may not be an appropriate readout
+///   for the other readouts.  Geant4 allows the construction of multiple parallel
+///   readouts, so this mechanism is relatively easy to extend for each type of readout.
 ///
-/// =================================================================
-/// N.B. At the beginning of each event, the clock data pointer must
-///      be set to the event currently being processed.  This is a
-///      thread-safety problem which should be reconciled for the
-///      larg4 package if it has not already been.  The way that is
-///      done for the LArG4_module is for the LArVoxelReadoutGeometry
-///      object to update the state of the LArVoxelReadout object
-///      through a sentry object.
-/// =================================================================
+/// =====================================================================================
+/// N.B. At the beginning of each event, the clock data pointer must be set to the event
+///      currently being processed.  This is a thread-safety problem which should be
+///      reconciled for the larg4 package if it has not already been.  The way that is
+///      done for the LArG4_module is for the LArVoxelReadoutGeometry object to update the
+///      state of the LArVoxelReadout object through a sentry object.
+/// =====================================================================================
 
 #ifndef LArG4_LArVoxelReadout_h
 #define LArG4_LArVoxelReadout_h
@@ -60,7 +51,7 @@
 #include "Geant4/G4VSensitiveDetector.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "larcore/Geometry/Geometry.h"
+#include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/Simulation/LArG4Parameters.h"
@@ -141,16 +132,16 @@ namespace larg4 {
    * 4. charge is split in small electron clusters
    * 5. each cluster is subject to longitudinal and transverse diffusion
    * 6. each cluster is assigned to one TPC channel for each wire plane
-   * 7. optionally, charge is forced to stay on the planes; otherwise charge
-   *    drifting outside the plane is lost
+   * 7. optionally, charge is forced to stay on the planes; otherwise charge drifting
+   *    outside the plane is lost
    *
-   * For each energy deposition, entries on the appropriate `sim::SimChannel`
-   * are added, with the information of the position where the energy deposit
-   * happened (in global coordinates, centimeters), the ID of the Geant4
-   * track which produced the deposition, and the quantized time of arrival to
-   * the channel (in global TDC tick units).
-   * At most one entry is added for each electron cluster, but entries from the
-   * same energy deposit can be compacted if falling on the same TDC tick.
+   * For each energy deposition, entries on the appropriate `sim::SimChannel` are added,
+   * with the information of the position where the energy deposit happened (in global
+   * coordinates, centimeters), the ID of the Geant4 track which produced the deposition,
+   * and the quantized time of arrival to the channel (in global TDC tick units).
+   *
+   * At most one entry is added for each electron cluster, but entries from the same
+   * energy deposit can be compacted if falling on the same TDC tick.
    *
    * The main entry point of this class is the method `ProcessHits()`.
    *
@@ -159,11 +150,10 @@ namespace larg4 {
    *
    * A few optional behaviours are supported:
    *
-   * * lead off-plane charge to the planes: regulated by
-   *   `RecoverOffPlaneDeposit()`, if charge which reaches a wire plane
-   *   is actually off it by less than the chosen margin, it's accounted for by
-   *   that plane; by default the margin is 0 and all the charge off the plane
-   *   is lost (with a warning)
+   * * lead off-plane charge to the planes: regulated by `RecoverOffPlaneDeposit()`, if
+   *   charge which reaches a wire plane is actually off it by less than the chosen
+   *   margin, it's accounted for by that plane; by default the margin is 0 and all the
+   *   charge off the plane is lost (with a warning)
    *
    */
   class LArVoxelReadout : public G4VSensitiveDetector {
@@ -182,10 +172,18 @@ namespace larg4 {
     }; // struct Setup_t
 
     /// Constructor. Can detect which TPC to cover by the name
-    LArVoxelReadout(std::string const& name);
+    LArVoxelReadout(std::string const& name,
+                    geo::GeometryCore const* geom,
+                    geo::WireReadoutGeom const* wireReadoutGeom,
+                    sim::LArG4Parameters const* lgp);
 
     /// Constructor. Sets which TPC to work on
-    LArVoxelReadout(std::string const& name, unsigned int cryostat, unsigned int tpc);
+    LArVoxelReadout(std::string const& name,
+                    geo::GeometryCore const* geom,
+                    geo::WireReadoutGeom const* wireReadoutGeom,
+                    sim::LArG4Parameters const* lgp,
+                    unsigned int cryostat,
+                    unsigned int tpc);
 
     /// Reads all the configuration elements from `setupData`
     void Setup(Setup_t const& setupData);
@@ -340,9 +338,9 @@ namespace larg4 {
     double fOffPlaneMargin = 0.0;
 
     std::vector<std::vector<ChannelMap_t>> fChannelMaps; ///< Maps of cryostat, tpc to channel data
-    art::ServiceHandle<geo::Geometry const> fGeoHandle;  ///< Handle to the Geometry service
-    art::ServiceHandle<sim::LArG4Parameters const>
-      fLgpHandle;        ///< Handle to the LArG4 parameters service
+    geo::GeometryCore const* fGeo;
+    geo::WireReadoutGeom const* fWireReadoutGeom;
+    sim::LArG4Parameters const* fLgp;
     unsigned int fTPC;   ///< which TPC this LArVoxelReadout corresponds to
     unsigned int fCstat; ///< and in which cryostat (if bSingleTPC is true)
     bool bSingleTPC;     ///< true if this readout is associated with a single TPC

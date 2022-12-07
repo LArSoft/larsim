@@ -6,12 +6,12 @@
 ///
 /// \author  echurch@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-// C++ includes.
+
+// C++ includes
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <stdio.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,6 +22,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -29,10 +30,11 @@
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
-// lar includes
+// LArSoft includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/RunData.h"
 
+// ROOT includves
 #include "TDatabasePDG.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -42,17 +44,15 @@ namespace evgen {
 
   /// module to produce single or multiple specified particles in the detector
   class FileMuons : public art::EDProducer {
-
   public:
     explicit FileMuons(fhicl::ParameterSet const& pset);
 
-    // This is called for each event.
-    void produce(art::Event& evt);
-    void beginJob();
-    void beginRun(art::Run& run);
-    void endJob();
-
   private:
+    void produce(art::Event& evt) override;
+    void beginJob() override;
+    void beginRun(art::Run& run) override;
+    void endJob() override;
+
     void ReadEvents(simb::MCTruth& mct);
 
     int fEventNumberOffset; // Where in file to start.
@@ -196,26 +196,20 @@ namespace evgen {
     truth.SetOrigin(simb::kSingleParticle);
     ReadEvents(truth);
 
-    //     std::cout << "put mctruth into the vector" << std::endl;
     truthcol->push_back(truth);
 
-    //     std::cout << "add vector to the event " << truthcol->size() << std::endl;
     evt.put(std::move(truthcol));
-
-    return;
   }
 
   //____________________________________________________________________________
   void FileMuons::ReadEvents(simb::MCTruth& mct)
   {
-
-    //     std::cout << "size of particle vector is " << fPDG.size() << std::endl;
-
-    ///every event will have one of each particle species in the fPDG array
+    /// every event will have one of each particle species in the fPDG array
+    auto const& cryostat = art::ServiceHandle<geo::Geometry const> {}
+    ->Cryostat();
     for (unsigned int i = 0; i < fPDG.size(); ++i) {
 
       // Choose momentum
-      //double p = 0.0;
       double m(0.108);
 
       TVector3 x;
@@ -228,12 +222,9 @@ namespace evgen {
         std::string line;
         getline(*fMuonFile, line);
         if (!fMuonFile->good()) {
-          std::cout << "FileMuons: Problem reading muon file line ...." << countFile
-                    << ". Perhaps you've exhausted the events in " << fFileName << std::endl;
-          exit(0);
-        }
-        else {
-          //	  std::cout << "FileMuons: getline() gives "<< line << " for event " << countFile << std::endl;
+          throw art::Exception{art::errors::FileOpenError}
+            << "FileMuons: Problem reading muon file line ...." << countFile
+            << ". Perhaps you've exhausted the events in " << fFileName << std::endl;
         }
         countFile++;
 
@@ -249,12 +240,10 @@ namespace evgen {
         unsigned int posIndex = 0;
         unsigned int pIndex = 0;
         while (ptok != NULL) {
-          // std::cout << ptok << std::endl;
           ptok = strtok(NULL, "*");
           if (fieldCount == 9 || fieldCount == 10 || fieldCount == 11) {
             p[pIndex] = atof(ptok);
             pIndex++;
-            //   std::cout << ptok << std::endl;
           }
           if (fieldCount == 6 || fieldCount == 7 || fieldCount == 8) {
             x[posIndex] = atof(ptok);
@@ -270,16 +259,7 @@ namespace evgen {
       }
       else if (fMuonsFileType.compare("root") == 0) // from root file
       {
-        /*
-              // Don't use this yet. Keep the specific branch-by-branch identification.
-              for (unsigned int ii=0;ii<fBranchNames.size();ii++)
-              {
-               TNtuple->SetBranchAddress(fBranchNames[ii], x+ii);
-              }
-            */
-        //	  TNtuple->ResetBranchAddresses();
         TNtuple->GetEntry(countFile);
-        //TNtuple->Show(countFile);
 
         x.SetXYZ(xdet, ydet, -zdet); // as with txt file, make z point up.
         // Watch for units change to mm in Modern JdJ files!!
@@ -297,7 +277,6 @@ namespace evgen {
       TParticlePDG* pdgp = pdgt.GetParticle(pdgLocal);
       if (pdgp) m = pdgp->Mass();
 
-      //       std::cout << "set the position "<<std::endl;
       // This gives coordinates at the center of the 300mx300m plate that is 3m above top of
       // cavern. Got these by histogramming deJong's xdet,ydet,zdet.
       const double cryoGap = 15.0;
@@ -311,10 +290,9 @@ namespace evgen {
       //add vector of the position of the center of the point between Cryostats
       // level with top. (To which I've added 3m - in above code - in height.)
       // This is referenced from origin at center-right of first cryostat.
-      art::ServiceHandle<geo::Geometry const> geom;
-      TVector3 off3(geom->CryostatHalfWidth() * 0.01,
-                    geom->CryostatHalfHeight() * 0.01,
-                    geom->CryostatLength() * 0.01 + cryoGap * 0.01 / 2.0);
+      TVector3 off3(cryostat.HalfWidth() * 0.01,
+                    cryostat.HalfHeight() * 0.01,
+                    cryostat.Length() * 0.01 + cryoGap * 0.01 / 2.0);
       x += off3;
 
       TLorentzVector pos(x[0] * 100.0, x[1] * 100.0, x[2] * 100.0, 0.0);
@@ -329,17 +307,11 @@ namespace evgen {
       std::string primary("primary");
       simb::MCParticle part(trackid, pdgLocal, primary);
       part.AddTrajectoryPoint(pos, pvec);
-
-      //       std::cout << "add the particle to the primary" << std::endl;
-
       mct.Add(part);
 
     } //end loop over particles
-
-    return;
   }
 
   DEFINE_ART_MODULE(FileMuons)
 
 } //end namespace evgen
-////////////////////////////////////////////////////////////////////////

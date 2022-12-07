@@ -55,6 +55,7 @@
 // LArSoft includes
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/Simulation/SimDriftedElectronCluster.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -194,8 +195,8 @@ namespace detsim {
     fLDiff_const = std::sqrt(2. * fLongitudinalDiffusion);
     fTDiff_const = std::sqrt(2. * fTransverseDiffusion);
 
-    // For this detector's geometry, save the number of cryostats and
-    // the number of TPCs within each cryostat.
+    // For this detector's geometry, save the number of cryostats and the number of TPCs
+    // within each cryostat.
     fNCryostats = fGeometry->Ncryostats();
     fNTPCs.resize(fNCryostats);
     for (size_t n = 0; n < fNCryostats; ++n)
@@ -208,77 +209,65 @@ namespace detsim {
     // Fetch the SimEnergyDeposit objects for this event.
     typedef art::Handle<std::vector<sim::SimEnergyDeposit>> energyDepositHandle_t;
     energyDepositHandle_t energyDepositHandle;
-    // If there aren't any energy deposits for this event, don't
-    // panic. It's possible someone is doing a study with events
-    // outside the TPC, or where there are only non-ionizing
-    // particles, or something like that.
+    // If there aren't any energy deposits for this event, don't panic. It's possible
+    // someone is doing a study with events outside the TPC, or where there are only
+    // non-ionizing particles, or something like that.
     if (!event.getByLabel(fSimModuleLabel, energyDepositHandle)) return;
     // Container for the SimDriftedElectronCluster objects
     std::unique_ptr<std::vector<sim::SimDriftedElectronCluster>>
       SimDriftedElectronClusterCollection(new std::vector<sim::SimDriftedElectronCluster>);
 
-    // We're going through the input vector by index, rather than by
-    // iterator, because we need the index number to compute the
-    // associations near the end of this method.
+    // We're going through the input vector by index, rather than by iterator, because we
+    // need the index number to compute the associations near the end of this method.
     auto const& energyDeposits = *energyDepositHandle;
     auto energyDepositsSize = energyDeposits.size();
 
     auto const detProp =
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
+
+    auto const& wireReadoutGeom = art::ServiceHandle<geo::WireReadout>()->Get();
     // For each energy deposit in this event
     for (size_t edIndex = 0; edIndex < energyDepositsSize; ++edIndex) {
       auto const& energyDeposit = energyDeposits[edIndex];
 
-      // "xyz" is the position of the energy deposit in world
-      // coordinates. Note that the units of distance in
-      // sim::SimEnergyDeposit are supposed to be cm.
+      // "xyz" is the position of the energy deposit in world coordinates. Note that the
+      // units of distance in sim::SimEnergyDeposit are supposed to be cm.
       auto const mp = energyDeposit.MidPoint();
       double const xyz[3] = {mp.X(), mp.Y(), mp.Z()};
 
-      // From the position in world coordinates, determine the
-      // cryostat and tpc. If somehow the step is outside a tpc
-      // (e.g., cosmic rays in rock) just move on to the next one.
-      const geo::TPCGeo& tpcGeo = fGeometry->TPC();
+      // From the position in world coordinates, determine the cryostat and tpc. If
+      // somehow the step is outside a tpc (e.g., cosmic rays in rock) just move on to the
+      // next one.
+      geo::TPCGeo const& tpcGeo = fGeometry->TPC();
+      geo::TPCID const& tpcid = tpcGeo.ID();
+      unsigned const nplanes = wireReadoutGeom.Nplanes(tpcid);
 
-      // The drift direction can be either in the positive
-      // or negative direction in any coordinate x, y or z.
-      // Charge drift in ...
-      // +x: tpcGeo.DetectDriftDirection()==1
-      // -x: tpcGeo.DetectDriftDirection()==-1
-      // +y: tpcGeo.DetectDriftDirection()==2
-      // -y tpcGeo.DetectDriftDirection()==-2
-      // +z: tpcGeo.DetectDriftDirection()==3
-      // -z: tpcGeo.DetectDriftDirection()==-3
+      // The drift direction can be either in the positive or negative direction in any
+      // coordinate x, y or z.
 
-      //Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
-      int driftcoordinate = std::abs(tpcGeo.DetectDriftDirection()) - 1; //x:0, y:1, z:2
+      // Define charge drift direction: driftcoordinate (x, y or z) and driftsign
+      // (positive or negative). Also define coordinates perpendicular to drift direction.
+      auto const [axis, sign] = tpcGeo.DriftAxisWithSign();
 
-      int transversecoordinate1 = 0;
-      int transversecoordinate2 = 0;
-      if (driftcoordinate == 0) {
-        transversecoordinate1 = 1;
-        transversecoordinate2 = 2;
-      }
-      else if (driftcoordinate == 1) {
+      // For axis == geo::Coordinate::X
+      int driftcoordinate = 0;
+      int transversecoordinate1 = 1;
+      int transversecoordinate2 = 2;
+      if (axis == geo::Coordinate::Y) {
         transversecoordinate1 = 0;
+        driftcoordinate = 1;
         transversecoordinate2 = 2;
       }
-      else if (driftcoordinate == 2) {
+      else if (axis == geo::Coordinate::Z) {
         transversecoordinate1 = 0;
         transversecoordinate2 = 1;
+        driftcoordinate = 2;
       }
 
-      if (transversecoordinate1 == transversecoordinate2)
-        continue; //this is the case when driftcoordinate != 0, 1 or 2
-
-      int driftsign = 0; //1: +x, +y or +z, -1: -x, -y or -z
-      if (tpcGeo.DetectDriftDirection() > 0)
-        driftsign = 1;
-      else
-        driftsign = -1;
+      int const driftsign = to_int(sign); //1: +x, +y or +z, -1: -x, -y or -z
 
       //Check for charge deposits behind charge readout planes
-      auto const plane_center = tpcGeo.Plane(0).GetCenter();
+      auto const plane_center = wireReadoutGeom.FirstPlane(tpcid).GetCenter();
       auto const plane_center_coord = geo::vect::coord(plane_center, driftcoordinate);
       if (driftsign == 1 && plane_center_coord < xyz[driftcoordinate]) continue;
       if (driftsign == -1 && plane_center_coord > xyz[driftcoordinate]) continue;
@@ -287,8 +276,7 @@ namespace detsim {
       // Center of plane is also returned in cm units
       double DriftDistance = std::abs(xyz[driftcoordinate] - plane_center_coord);
 
-      // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
-      // particular location in TPC
+      // Space-charge effect (SCE): Get SCE {x,y,z} offsets for particular location in TPC
       geo::Vector_t posOffsets{0.0, 0.0, 0.0};
       double posOffsetxyz[3] = {
         0.0, 0.0, 0.0}; //need this array for the driftcoordinate and transversecoordinates
@@ -308,21 +296,21 @@ namespace detsim {
       avegagetransversePos1 = xyz[transversecoordinate1] + posOffsetxyz[transversecoordinate1];
       avegagetransversePos2 = xyz[transversecoordinate2] + posOffsetxyz[transversecoordinate2];
 
-      // Space charge distortion could push the energy deposit beyond the wire
-      // plane (see issue #15131). Given that we don't have any subtlety in the
-      // simulation of this region, bringing the deposit exactly on the plane
-      // should be enough for the time being.
+      // Space charge distortion could push the energy deposit beyond the wire plane (see
+      // issue #15131). Given that we don't have any subtlety in the simulation of this
+      // region, bringing the deposit exactly on the plane should be enough for the time
+      // being.
       if (DriftDistance < 0.) DriftDistance = 0.;
 
       // Drift time in ns
       double TDrift = DriftDistance * fRecipDriftVel[0];
 
-      if (
-        tpcGeo.Nplanes() == 2 &&
-        driftcoordinate ==
-          0) { // special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
-        TDrift = ((DriftDistance - tpcGeo.PlanePitch(0, 1)) * fRecipDriftVel[0] +
-                  tpcGeo.PlanePitch(0, 1) * fRecipDriftVel[1]);
+      if (nplanes == 2 &&
+          driftcoordinate ==
+            0) { // special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0
+                 // is the second wire plane
+        auto const pitch = wireReadoutGeom.PlanePitch(tpcGeo.ID(), 0, 1);
+        TDrift = ((DriftDistance - pitch) * fRecipDriftVel[0] + pitch * fRecipDriftVel[1]);
       }
       const int nIonizedElectrons =
         fISAlg.CalculateIonizationAndScintillation(detProp, energyDeposit).numElectrons;
@@ -330,8 +318,8 @@ namespace detsim {
       const double lifetimecorrection = TMath::Exp(TDrift / fLifetimeCorr_const);
       const double energy = energyDeposit.Energy();
 
-      // if we have no electrons (too small energy or too large recombination)
-      // we are done already here
+      // if we have no electrons (too small energy or too large recombination) we are done
+      // already here
       if (nIonizedElectrons <= 0) {
         MF_LOG_DEBUG("DriftElectronstoPlane")
           << "step " // << energyDeposit << "\n"
@@ -395,8 +383,8 @@ namespace detsim {
       }
 
       // make a collection of electrons for each plane
-      for (size_t p = 0; p < tpcGeo.Nplanes(); ++p) {
-        auto const plane_center = tpcGeo.Plane(p).GetCenter();
+      for (auto const& plane : wireReadoutGeom.Iterate<geo::PlaneGeo>(tpcGeo.ID())) {
+        auto const plane_center = plane.GetCenter();
         fDriftClusterPos[driftcoordinate] = geo::vect::coord(plane_center, driftcoordinate);
 
         // Drift nClus electron clusters to the induction plane
@@ -405,15 +393,15 @@ namespace detsim {
           // Correct drift time for longitudinal diffusion and plane
           double TDiff = TDrift + fLongDiff[k] * fRecipDriftVel[0];
 
-          // Take into account different Efields between planes
-          // Also take into account special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is the second wire plane
-          for (size_t ip = 0; ip < p; ++ip) {
-            auto const plane_center = tpcGeo.Plane(ip).GetCenter();
-            auto const next_plane_center = tpcGeo.Plane(ip + 1).GetCenter();
-            TDiff +=
-              (geo::vect::coord(next_plane_center, driftcoordinate) -
-               geo::vect::coord(plane_center, driftcoordinate)) *
-              fRecipDriftVel[(tpcGeo.Nplanes() == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
+          // Take into account different Efields between planes.  Also take into account
+          // special case for ArgoNeuT (Nplanes = 2 and drift direction = x): plane 0 is
+          // the second wire plane
+          for (unsigned int ip = 0; ip < plane.ID().Plane; ++ip) {
+            auto const plane_center = wireReadoutGeom.Plane({tpcGeo.ID(), ip}).GetCenter();
+            auto const next_plane_center = wireReadoutGeom.Plane({tpcGeo.ID(), ip + 1}).GetCenter();
+            TDiff += (geo::vect::coord(next_plane_center, driftcoordinate) -
+                      geo::vect::coord(plane_center, driftcoordinate)) *
+                     fRecipDriftVel[(nplanes == 2 && driftcoordinate == 0) ? ip + 2 : ip + 1];
           }
 
           fDriftClusterPos[transversecoordinate1] = fTransDiff1[k];
