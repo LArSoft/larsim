@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-// Plugin Type: analyzer
+// Plugin Type: producer
 // File:        PhotonGen_module.cc
 // Description:
 // Produce photons at the vertex uniformly distributed in the active volume
@@ -130,9 +130,9 @@ namespace evgen {
     }
 
     if (fScan) {
-      fPx = pset.get<double>("Px");
-      fPy = pset.get<double>("Py");
-      fPz = pset.get<double>("Pz");
+      fPx = pset.get<double>("X");
+      fPy = pset.get<double>("Y");
+      fPz = pset.get<double>("Z");
       std::cout << "Will generate photons from 3 points." << std::endl;
     }
   }
@@ -231,7 +231,7 @@ namespace evgen {
       fShotMom = TLorentzVector(p * sinth * cos(phi), p * sinth * sin(phi), p * costh, p);
 
       int trackid =
-        -1 * (j + 1); // set track id to -i as these are all primary particles and have id <= 0
+        -1 * (j + 1); // set track id to negative as these are all primary particles and have id <= 0
       int PDG = 0;    //optical photons have PDG 0
       simb::MCParticle particle(trackid, PDG, "primary");
       particle.AddTrajectoryPoint(fShotPos, fShotMom);

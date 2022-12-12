@@ -5,9 +5,9 @@ standard_photongen:
     module_type:   "PhotonGen"
     FillTree:        false     # Whether to make a TTree of photon information in the TFileService
     Scan:            fasle     # Whether to generate a random vertex or perform a scan, true: to generate a random vertex according to (Px, Py, Pz), false: scan the whole volume
-    Px:              170
-    Py:              270       # Fixed coordinate, around which a random vertex is generated
-    Pz:              350
+    X:               170
+    Y:               270       # Fixed coordinate, around which a random vertex is generated
+    Z:               350
     PosDist:         0         # how to distribute production points sampled in position 0 = Uniform 1 = Gaussian
     PDist:           1         # how to distribute production points sampled in momentum 0 = Uniform 1 = Gaussian
     TDist:           0         # how to distribute production points sampled in time     0 = Uniform 1 = Gaussian
