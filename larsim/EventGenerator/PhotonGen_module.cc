@@ -231,8 +231,9 @@ namespace evgen {
       fShotMom = TLorentzVector(p * sinth * cos(phi), p * sinth * sin(phi), p * costh, p);
 
       int trackid =
-        -1 * (j + 1); // set track id to negative as these are all primary particles and have id <= 0
-      int PDG = 0;    //optical photons have PDG 0
+        -1 *
+        (j + 1);   // set track id to negative as these are all primary particles and have id <= 0
+      int PDG = 0; //optical photons have PDG 0
       simb::MCParticle particle(trackid, PDG, "primary");
       particle.AddTrajectoryPoint(fShotPos, fShotMom);
 
