@@ -1,0 +1,22 @@
+BEGIN_PROLOG
+
+standard_photongen:
+{
+    module_type:   "PhotonGen"
+    FillTree:        false     # Whether to make a TTree of photon information in the TFileService
+    Scan:            fasle     # Whether to generate a random vertex or perform a scan, true: to generate a random vertex according to (Px, Py, Pz), false: scan the whole volume
+    X:               170
+    Y:               270       # Fixed coordinate, around which a random vertex is generated
+    Z:               350
+    PosDist:         0         # how to distribute production points sampled in position 0 = Uniform 1 = Gaussian
+    PDist:           1         # how to distribute production points sampled in momentum 0 = Uniform 1 = Gaussian
+    TDist:           0         # how to distribute production points sampled in time     0 = Uniform 1 = Gaussian
+    P:               9.7       # peak photon momentum (or energy) in eV (arxiv:1511.07718)
+    SigmaP:          0.25      # momentum distribution width (arxiv:1511.07718)
+    T0:              0.0       # Peak time of photon production
+    SigmaT:          0.0       # time distribution width
+    
+    N:               1000000   # number of photons to shoot from each point
+}
+
+END_PROLOG 
