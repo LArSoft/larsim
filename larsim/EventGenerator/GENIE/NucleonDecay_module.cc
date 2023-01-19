@@ -81,12 +81,12 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const& p)
   // unless overridden in configuration with key "Seed"
   , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, p, "Seed")}
 {
-  genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
-
   string sname = "genie::EventGenerator";
   string sconfig = "NucleonDecay";
   // GENIE v3 needs a tune (even if irrelevant)
   evgb::SetEventGeneratorListAndTune("Default", "Default");
+
+  genie::PDGLibrary::Instance(); //Ensure Messenger is started first in GENIE.
 
   genie::AlgFactory* algf = genie::AlgFactory::Instance();
   mcgen = dynamic_cast<const genie::EventRecordVisitorI*>(algf->GetAlgorithm(sname, sconfig));
