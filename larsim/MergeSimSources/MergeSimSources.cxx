@@ -201,6 +201,16 @@ void sim::MergeSimSourcesUtility::MergeAuxDetHits(std::vector<sim::AuxDetHit>& d
   std::transform(begin(src), end(src), back_inserter(dest), offsetAuxDetHitID);
 }
 
+void sim::MergeSimSourcesUtility::MergeParticleAncestryMaps(std::vector<sim::ParticleAncestryMap>& dest,
+                                                            const sim::ParticleAncestryMap& src,
+                                                            std::size_t source_index) const
+{
+  const int offset = fG4TrackIDOffsets.at(source_index);
+
+  dest.reserve(dest.size() + 1);
+  dest.push_back(offsetParticleAncestryMapTrackID(src, offset));
+}
+
 void sim::MergeSimSourcesUtility::UpdateG4TrackIDRange(std::pair<int, int> newrange,
                                                        size_t source_index)
 {
@@ -277,3 +287,22 @@ sim::AuxDetHit sim::MergeSimSourcesUtility::offsetAuxDetHitTrackID(sim::AuxDetHi
     adh.GetExitMomentumZ(),
   };
 } // sim::MergeSimSourcesUtility::offsetAuxDetHitTrackID()
+
+sim::ParticleAncestryMap sim::MergeSimSourcesUtility::offsetParticleAncestryMapTrackID(sim::ParticleAncestryMap const& pam,
+                                                                                       int offset)
+{
+  std::map<int, std::set<int>> newMap;
+
+  for(auto const& [ancestor, descendants] : pam.GetMap())
+    {
+      const int newAnc = (ancestor >= 0) ? ancestor + offset : ancestor - offset;
+
+      for(auto const& descendant : descendants)
+	{
+	  const int newDesc = (descendant >= 0) ? descendant + offset : descendant - offset;
+	  newMap[newAnc].insert(newDesc);
+	}
+    }
+
+  return sim::ParticleAncestryMap(newMap);
+}
