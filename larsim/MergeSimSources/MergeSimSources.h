@@ -16,10 +16,10 @@
 
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/ParticleAncestryMap.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimPhotons.h"
-#include "lardataobj/Simulation/ParticleAncestryMap.h"
 
 #include <utility> // std::pair<>
 #include <vector>
@@ -76,7 +76,9 @@ namespace sim {
 
     static sim::AuxDetHit offsetAuxDetHitTrackID(sim::AuxDetHit const&, int);
 
-    static sim::ParticleAncestryMap offsetParticleAncestryMapTrackID(sim::ParticleAncestryMap const&, int);
+    static sim::ParticleAncestryMap offsetParticleAncestryMapTrackID(
+      sim::ParticleAncestryMap const&,
+      int);
 
   }; //end MergeSimSourcesUtility class
 

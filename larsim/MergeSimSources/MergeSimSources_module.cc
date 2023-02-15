@@ -115,8 +115,7 @@ public:
     fhicl::Atom<bool> FillParticleAncestryMaps{
       fhicl::Name{"FillParticleAncestryMaps"},
       fhicl::Comment{"whether to merge particle ancestry maps"},
-      true
-    };
+      true};
 
   }; // struct Config
 
@@ -231,9 +230,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
       }
     }
 
-    if (fFillParticleAncestryMaps) {
-      consumes<sim::ParticleAncestryMap>(tag);
-    }
+    if (fFillParticleAncestryMaps) { consumes<sim::ParticleAncestryMap>(tag); }
 
   } // for input labels
 
@@ -268,9 +265,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
       produces<std::vector<sim::AuxDetHit>>(auxdethit_inst);
   }
 
-  if (fFillParticleAncestryMaps) {
-    produces<std::vector<sim::ParticleAncestryMap>>();
-  }
+  if (fFillParticleAncestryMaps) { produces<std::vector<sim::ParticleAncestryMap>>(); }
 
   dumpConfiguration();
 }
@@ -367,11 +362,10 @@ void sim::MergeSimSources::produce(art::Event& e)
           auxdethitCol, e.getProduct<aux_det_hits_t>(auxdethit_tag), i_source);
       }
 
-    if (fFillParticleAncestryMaps) {
-      auto const& input_pamCol = e.getProduct<sim::ParticleAncestryMap>(input_label);
-      MergeUtility.MergeParticleAncestryMaps(*pamCol, input_pamCol, i_source);
-    }
-
+      if (fFillParticleAncestryMaps) {
+        auto const& input_pamCol = e.getProduct<sim::ParticleAncestryMap>(input_label);
+        MergeUtility.MergeParticleAncestryMaps(*pamCol, input_pamCol, i_source);
+      }
     }
   }
 
@@ -407,9 +401,7 @@ void sim::MergeSimSources::produce(art::Event& e)
     }
   }
 
-  if (fFillParticleAncestryMaps) {
-    e.put(std::move(pamCol));
-  }
+  if (fFillParticleAncestryMaps) { e.put(std::move(pamCol)); }
 }
 
 void sim::MergeSimSources::dumpConfiguration() const
