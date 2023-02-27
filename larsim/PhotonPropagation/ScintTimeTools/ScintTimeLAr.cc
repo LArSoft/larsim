@@ -10,23 +10,27 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-// Random number engine
-#include "CLHEP/Random/RandFlat.h"
-
 namespace phot {
   //......................................................................
   ScintTimeLAr::ScintTimeLAr(fhicl::ParameterSet const& pset)
     : LogLevel{pset.get<int>("LogLevel")}
-    , SRTime{pset.get<double>("SlowRisingTime", 0.0)}
-    , SDTime{pset.get<double>("SlowDecayTime", 0.0)}
-    , FRTime{pset.get<double>("FastRisingTime", 0.0)}
-    , FDTime{pset.get<double>("FastDecayTime", 0.0)}
+    , SRTime{pset.get<double>("SlowRisingTime", 0.)}
+    , SDTime{pset.get<double>("SlowDecayTime", 0.)}
+    , FRTime{pset.get<double>("FastRisingTime", 0.)}
+    , FDTime{pset.get<double>("FastDecayTime", 0.)}
+    , fNoFastRisingTime((FRTime >= 1.e-8) && (FRTime != -1.))
+    , fNoSlowRisingTime((SRTime >= 1.e-8) && (SRTime != -1.))
   {
     if (LogLevel >= 1) {
       std::cout << "ScintTimeLAr Tool configure:" << std::endl;
       std::cout << "Fast rising time: " << FRTime << ", Fast decay time: " << FDTime
                 << ", Slow rising time: " << SRTime << ", Slow decay time: " << SDTime << std::endl;
     }
+  }
+
+  void ScintTimeLAr::initRand(CLHEP::HepRandomEngine& engine)
+  {
+    fUniformGen = std::make_unique<CLHEP::RandFlat>(engine);
   }
 
   //......................................................................
@@ -40,6 +44,22 @@ namespace phot {
   {
     return (((std::exp((-1.0 * t) / tau2) * (1.0 - std::exp((-1.0 * t) / tau1))) / tau2) / tau2) *
            (tau1 + tau2);
+  }
+
+  //......................................................................
+  double ScintTimeLAr::with_rising_time(double tau1, double tau2)
+  {
+    // TODO: This method is very inefficient.
+    // If we care about simulating the rising time, it would be better
+    // to simulate random numbers according a general distribution
+    double d = (tau1 + tau2) / tau2;
+    while (1) {
+      double ran1 = fUniformGen->fire();
+      double ran2 = fUniformGen->fire();
+      double t = -tau2 * std::log(1 - ran1);
+      double g = d * single_exp(t, tau2);
+      if (ran2 <= bi_exp(t, tau1, tau2) / g) { return t; }
+    }
   }
 
   //......................................................................
@@ -81,6 +101,18 @@ namespace phot {
         return;
       }
     }
+  }
+
+  inline double ScintTimeLAr::fastScintTime()
+  {
+    if (fNoFastRisingTime) { return -FDTime * std::log(fUniformGen->fire()); }
+    return with_rising_time(FRTime, FDTime);
+  }
+
+  inline double ScintTimeLAr::slowScintTime()
+  {
+    if (fNoSlowRisingTime) { return -SDTime * std::log(fUniformGen->fire()); }
+    return with_rising_time(SRTime, SDTime);
   }
 
 }

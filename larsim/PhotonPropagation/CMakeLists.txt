@@ -17,6 +17,7 @@ cet_make_library(LIBRARY_NAME PhotonVisibilityTypes INTERFACE
 cet_make_library(SOURCE
   PhotonLibrary.cxx
   PhotonLibraryHybrid.cxx
+  PhotonPropagationUtils.cxx
   PropagationTimeModel.cxx
   SemiAnalyticalModel.cxx
   LIBRARIES

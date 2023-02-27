@@ -74,16 +74,12 @@ namespace phot {
     const bool fUseLitePhotons;
     const bool fStoreReflected;
     const size_t fNOpChannels;
-    const art::InputTag simTag;
-    CLHEP::HepRandomEngine& fScintTimeEngine;
-    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timing of scintillation
+    const art::InputTag fSimTag;
     CLHEP::HepRandomEngine& fPhotonEngine;
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
-
+    CLHEP::HepRandomEngine& fScintTimeEngine;
+    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timing of scintillation
     std::unique_ptr<PropagationTimeModel> fPropTimeModel;
-
-    fhicl::ParameterSet fVUVTimingParams;
-    fhicl::ParameterSet fVISTimingParams;
   };
 
   //......................................................................
@@ -96,18 +92,40 @@ namespace phot {
     , fUseLitePhotons(art::ServiceHandle<sim::LArG4Parameters const>()->UseLitePhotons())
     , fStoreReflected(fPVS->StoreReflected())
     , fNOpChannels(fPVS->NOpChannels())
-    , simTag{pset.get<art::InputTag>("SimulationLabel")}
+    , fSimTag{pset.get<art::InputTag>("SimulationLabel")}
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
+                      ->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
+    , fRandPoissPhot(std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
                                                                                  "HepJamesRandom",
                                                                                  "scinttime",
                                                                                  pset,
                                                                                  "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(pset.get<fhicl::ParameterSet>("ScintTimeTool"))}
-    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                      ->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
-    , fRandPoissPhot(std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine))
   {
-    mf::LogInfo("PDFastSimPVS") << "PDFastSimPVS Module Construct";
+    mf::LogInfo("PDFastSimPVS") << "Initializing PDFastSimPVS." << std::endl;
+    fhicl::ParameterSet VUVTimingParams;
+    fhicl::ParameterSet VISTimingParams;
+    // Validate configuration options
+    if (fIncludePropTime &&
+        !pset.get_if_present<fhicl::ParameterSet>("VUVTiming", VUVTimingParams)) {
+      throw art::Exception(art::errors::Configuration)
+        << "Propagation time simulation requested, but VUVTiming not specified."
+        << "\n";
+    }
+    if (fIncludePropTime && fStoreReflected &&
+        !pset.get_if_present<fhicl::ParameterSet>("VISTiming", VISTimingParams)) {
+      throw art::Exception(art::errors::Configuration)
+        << "Reflected light propagation time simulation requested, but VISTiming not specified."
+        << "\n";
+    }
+    // Initialise the Scintillation Time
+    fScintTime->initRand(fScintTimeEngine);
+
+    // propagation time model
+    if (fIncludePropTime)
+      fPropTimeModel = std::make_unique<PropagationTimeModel>(
+        VUVTimingParams, VISTimingParams, fScintTimeEngine, fStoreReflected);
 
     if (fUseLitePhotons) {
       mf::LogInfo("PDFastSimPVS") << "Use Lite Photon." << std::endl;
@@ -128,27 +146,7 @@ namespace phot {
         produces<std::vector<sim::SimPhotons>>("Reflected");
       }
     }
-
-    // Propagation times
-    // validate configuration
-    if (fIncludePropTime &&
-        !pset.get_if_present<fhicl::ParameterSet>("VUVTiming", fVUVTimingParams)) {
-      throw art::Exception(art::errors::Configuration)
-        << "Propagation time simulation requested, but VUVTiming not specified."
-        << "\n";
-    }
-
-    if (fIncludePropTime && fStoreReflected &&
-        !pset.get_if_present<fhicl::ParameterSet>("VISTiming", fVISTimingParams)) {
-      throw art::Exception(art::errors::Configuration)
-        << "Reflected light propagation time simulation requested, but VISTiming not specified."
-        << "\n";
-    }
-
-    // construct propagation time class
-    if (fIncludePropTime)
-      fPropTimeModel = std::make_unique<PropagationTimeModel>(
-        fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fStoreReflected);
+    mf::LogInfo("PDFastSimPVS") << "PDFastSimPVS Initialization finish" << std::endl;
   }
 
   //......................................................................
@@ -187,8 +185,8 @@ namespace phot {
     }
 
     art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
-    if (!event.getByLabel(simTag, edepHandle)) {
-      mf::LogWarning("PDFastSimPVS") << "PDFastSimPVS Module Cannot getByLabel: " << simTag;
+    if (!event.getByLabel(fSimTag, edepHandle)) {
+      mf::LogWarning("PDFastSimPVS") << "PDFastSimPVS Module Cannot getByLabel: " << fSimTag;
       return;
     }
 
@@ -256,13 +254,9 @@ namespace phot {
             if (ndetected_fast > 0 && fDoFastComponent) {
               for (int i = 0; i < ndetected_fast; ++i) {
                 // calculate the time at which each photon is seen
-                fScintTime->GenScintTime(true, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->fastScintTime();
+                if (fIncludePropTime) dtime += transport_time[i];
+                int time = static_cast<int>(std::round(dtime));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
@@ -273,13 +267,9 @@ namespace phot {
             if ((ndetected_slow > 0) && fDoSlowComponent) {
               for (int i = 0; i < ndetected_slow; ++i) {
                 // calculate the time at which each photon is seen
-                fScintTime->GenScintTime(false, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[ndetected_fast + i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->slowScintTime();
+                if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
+                int time = static_cast<int>(std::round(dtime));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
@@ -302,16 +292,13 @@ namespace phot {
               photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else
               photon.Energy = 9.7 * CLHEP::eV; // 128 nm
+            // TODO: un-hardcode and add another energy for Xe scintillation
             if (ndetected_fast > 0 && fDoFastComponent) {
               for (int i = 0; i < ndetected_fast; ++i) {
                 // calculates the time at which the photon was produced
-                fScintTime->GenScintTime(true, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->fastScintTime();
+                if (fIncludePropTime) dtime += transport_time[i];
+                int time = static_cast<int>(std::round(dtime));
                 photon.Time = time;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
@@ -321,13 +308,9 @@ namespace phot {
             }
             if (ndetected_slow > 0 && fDoSlowComponent) {
               for (int i = 0; i < ndetected_slow; ++i) {
-                fScintTime->GenScintTime(false, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[ndetected_fast + i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->slowScintTime();
+                if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
+                int time = static_cast<int>(std::round(dtime));
                 photon.Time = time;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
