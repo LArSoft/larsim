@@ -449,6 +449,7 @@ namespace phot {
             sim::OnePhoton photon;
             photon.SetInSD = false;
             photon.InitialPosition = edepi.End();
+            photon.MotherTrackID = edepi.TrackID();
             if (Reflected)
               photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else
