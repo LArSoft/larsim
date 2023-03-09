@@ -128,8 +128,6 @@ namespace phot {
     void produce(art::Event&) override;
 
   private:
-    void Initialization();
-
     void detectedNumPhotons(std::vector<int>& DetectedNumPhotons,
                             const std::vector<double>& OpDetVisibilities,
                             const int NumPhotons) const;
@@ -139,9 +137,7 @@ namespace phot {
                      const sim::OpDetBacktrackerRecord& btr) const;
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
-
-    // ISTPC
-    larg4::ISTPC fISTPC;
+    std::vector<geo::Point_t> opDetCenters() const;
 
     // semi-analytical model
     std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
@@ -153,22 +149,18 @@ namespace phot {
     CLHEP::HepRandomEngine& fPhotonEngine;
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
-
-    size_t fNOpChannels; // Pulled from geom during Initialization()
+    std::unique_ptr<ScintTime> fScintTime; // Tool to retrieve timinig of scintillation
 
     // geometry properties
-    std::vector<geo::BoxBoundedGeo> fActiveVolumes;
-    int fNTPC;
-
-    // optical detector properties
-    std::vector<geo::Point_t> fOpDetCenter;
-
-    //////////////////////
-    // Input Parameters //
-    //////////////////////
+    geo::GeometryCore const& fGeom;
+    larg4::ISTPC fISTPC;
+    const size_t fNOpChannels;
+    const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
+    const int fNTPC;
+    const std::vector<geo::Point_t> fOpDetCenter;
 
     // Module behavior
-    const art::InputTag simTag;
+    const art::InputTag fSimTag;
     const bool fDoFastComponent;
     const bool fDoSlowComponent;
     const bool fDoReflectedLight;
@@ -179,30 +171,30 @@ namespace phot {
     const bool fOpaqueCathode;
     const bool fOnlyActiveVolume;
     const bool fOnlyOneCryostat;
-    std::unique_ptr<ScintTime> fScintTime; // Tool to retrive timinig of scintillation
-
-    // Parameterized Simulation
-    fhicl::ParameterSet fVUVTimingParams;
-    fhicl::ParameterSet fVISTimingParams;
-    fhicl::ParameterSet fVUVHitsParams;
-    fhicl::ParameterSet fVISHitsParams;
   };
 
   //......................................................................
   PDFastSimPAR::PDFastSimPAR(Parameters const& config)
     : art::EDProducer{config}
-    , fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
                                                                               "HepJamesRandom",
                                                                               "photon",
                                                                               config.get_PSet(),
                                                                               "SeedPhoton"))
+    , fRandPoissPhot(std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine))
     , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
                                                                                  "HepJamesRandom",
                                                                                  "scinttime",
                                                                                  config.get_PSet(),
                                                                                  "SeedScintTime"))
-    , simTag(config().SimulationLabel())
+    , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
+    , fGeom(*(lar::providerFrom<geo::Geometry>()))
+    , fISTPC{fGeom}
+    , fNOpChannels(fGeom.NOpDets())
+    , fActiveVolumes(fISTPC.extractActiveLArVolume(fGeom))
+    , fNTPC(fGeom.NTPC())
+    , fOpDetCenter(opDetCenters())
+    , fSimTag(config().SimulationLabel())
     , fDoFastComponent(config().DoFastComponent())
     , fDoSlowComponent(config().DoSlowComponent())
     , fDoReflectedLight(config().DoReflectedLight())
@@ -213,39 +205,72 @@ namespace phot {
     , fOpaqueCathode(config().OpaqueCathode())
     , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
-    , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
-    , fVUVHitsParams(config().VUVHits.get<fhicl::ParameterSet>())
   {
+    mf::LogInfo("PDFastSimPAR") << "Initializing PDFastSimPAR." << std::endl;
+
+    // Parameterized Simulation
+    fhicl::ParameterSet VUVHitsParams = config().VUVHits.get<fhicl::ParameterSet>();
+    fhicl::ParameterSet VUVTimingParams;
+    fhicl::ParameterSet VISHitsParams;
+    fhicl::ParameterSet VISTimingParams;
+
     // Validate configuration options
     if (fIncludePropTime &&
-        !config().VUVTiming.get_if_present<fhicl::ParameterSet>(fVUVTimingParams)) {
+        !config().VUVTiming.get_if_present<fhicl::ParameterSet>(VUVTimingParams)) {
       throw art::Exception(art::errors::Configuration)
         << "Propagation time simulation requested, but VUVTiming not specified."
         << "\n";
     }
-
-    if (fDoReflectedLight &&
-        !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
+    if ((fDoReflectedLight || fIncludeAnodeReflections) &&
+        !config().VISHits.get_if_present<fhicl::ParameterSet>(VISHitsParams)) {
       throw art::Exception(art::errors::Configuration)
-        << "Reflected light simulation requested, but VisHits not specified."
+        << "Reflected light or anode reflections simulation requested, but VisHits not specified."
         << "\n";
     }
-
     if (fDoReflectedLight && fIncludePropTime &&
-        !config().VISTiming.get_if_present<fhicl::ParameterSet>(fVISTimingParams)) {
+        !config().VISTiming.get_if_present<fhicl::ParameterSet>(VISTimingParams)) {
       throw art::Exception(art::errors::Configuration)
         << "Reflected light propagation time simulation requested, but VISTiming not specified."
         << "\n";
     }
-
-    if (fIncludeAnodeReflections &&
-        !config().VISHits.get_if_present<fhicl::ParameterSet>(fVISHitsParams)) {
-      throw art::Exception(art::errors::Configuration)
-        << "Anode reflections light simulation requested, but VisHits not specified."
-        << "\n";
+    if (fGeom.Ncryostats() > 1U) {
+      if (fOnlyOneCryostat) {
+        mf::LogWarning("PDFastSimPAR")
+          << std::string(80, '=') << "\nA detector with " << fGeom.Ncryostats()
+          << " cryostats is configured"
+          << " , and semi-analytic model is requested for scintillation photon propagation."
+          << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
+          << " (e.g. scintillation may be detected only in cryostat #0)."
+          << "\nThis would be normally a fatal error, but it has been forcibly overridden."
+          << "\n"
+          << std::string(80, '=');
+      }
+      else {
+        throw art::Exception(art::errors::Configuration)
+          << "Photon propagation via semi-analytic model is not supported yet"
+          << " on detectors with more than one cryostat.";
+      }
     }
 
-    Initialization();
+    // Initialise the Scintillation Time
+    fScintTime->initRand(fScintTimeEngine);
+
+    // photo-detector visibility model (semi-analytical model)
+    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
+      VUVHitsParams, VISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
+
+    // propagation time model
+    if (fIncludePropTime)
+      fPropTimeModel = std::make_unique<PropagationTimeModel>(
+        VUVTimingParams, VISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);
+
+    {
+      auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
+                                              << fActiveVolumes.size() << " volumes:";
+      for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
+        log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+      }
+    }
 
     if (fUseLitePhotons) {
       mf::LogInfo("PDFastSimPAR") << "Using Lite Photons";
@@ -265,6 +290,9 @@ namespace phot {
         produces<std::vector<sim::SimPhotons>>("Reflected");
       }
     }
+    mf::LogInfo("PDFastSimPAR") << "PDFastSimPAR Initialization finish.\n"
+                                << "Simulate using semi-analytic model for number of hits."
+                                << std::endl;
   }
 
   //......................................................................
@@ -306,8 +334,8 @@ namespace phot {
     }
 
     art::Handle<std::vector<sim::SimEnergyDeposit>> edepHandle;
-    if (!event.getByLabel(simTag, edepHandle)) {
-      mf::LogError("PDFastSimPAR") << "PDFastSimPAR Module Cannot getByLabel: " << simTag;
+    if (!event.getByLabel(fSimTag, edepHandle)) {
+      mf::LogError("PDFastSimPAR") << "PDFastSimPAR Module Cannot getByLabel: " << fSimTag;
       return;
     }
 
@@ -407,13 +435,9 @@ namespace phot {
               num_fastdp += n;
               for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
-                fScintTime->GenScintTime(true, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->fastScintTime();
+                if (fIncludePropTime) dtime += transport_time[i];
+                int time = static_cast<int>(std::round(dtime));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
@@ -425,13 +449,9 @@ namespace phot {
               int n = ndetected_slow;
               num_slowdp += n;
               for (int i = 0; i < n; ++i) {
-                fScintTime->GenScintTime(false, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[ndetected_fast + i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->slowScintTime();
+                if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
+                int time = static_cast<int>(std::round(dtime));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
@@ -454,18 +474,15 @@ namespace phot {
               photon.Energy = 2.9 * CLHEP::eV; // 430 nm
             else
               photon.Energy = 9.7 * CLHEP::eV; // 128 nm
+            // TODO: un-hardcode and add another energy for Xe scintillation
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
               for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
-                fScintTime->GenScintTime(true, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->fastScintTime();
+                if (fIncludePropTime) dtime += transport_time[i];
+                int time = static_cast<int>(std::round(dtime));
                 photon.Time = time;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
@@ -477,13 +494,9 @@ namespace phot {
               int n = ndetected_slow;
               num_slowdp += n;
               for (int i = 0; i < n; ++i) {
-                fScintTime->GenScintTime(false, fScintTimeEngine);
-                int time;
-                if (fIncludePropTime)
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime() +
-                                          transport_time[ndetected_fast + i]);
-                else
-                  time = static_cast<int>(edepi.StartT() + fScintTime->GetScintTime());
+                double dtime = edepi.StartT() + fScintTime->slowScintTime();
+                if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
+                int time = static_cast<int>(std::round(dtime));
                 photon.Time = time;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
@@ -542,63 +555,6 @@ namespace phot {
   }
 
   //......................................................................
-  void PDFastSimPAR::Initialization()
-  {
-    std::cout << "PDFastSimPAR Initialization" << std::endl;
-    std::cout << "Initializing the geometry of the detector." << std::endl;
-    std::cout << "Simulate using semi-analytic model for number of hits." << std::endl;
-
-    fRandPoissPhot = std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine);
-    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
-
-    // photo-detector visibility model (semi-analytical model)
-    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
-      fVUVHitsParams, fVISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
-
-    // propagation time model
-    if (fIncludePropTime)
-      fPropTimeModel = std::make_unique<PropagationTimeModel>(
-        fVUVTimingParams, fVISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);
-
-    // Store info from the Geometry service
-    fNOpChannels = geom.NOpDets();
-    fActiveVolumes = fISTPC.extractActiveLArVolume(geom);
-    fNTPC = geom.NTPC();
-
-    {
-      auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
-                                              << fActiveVolumes.size() << " volumes:";
-      for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
-        log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
-      }
-    } // local scope
-
-    if (geom.Ncryostats() > 1U) {
-      if (fOnlyOneCryostat) {
-        mf::LogWarning("PDFastSimPAR")
-          << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
-          << " cryostats is configured"
-          << " , and semi-analytic model is requested for scintillation photon propagation."
-          << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
-          << " (e.g. scintillation may be detected only in cryostat #0)."
-          << "\nThis would be normally a fatal error, but it has been forcibly overridden."
-          << "\n"
-          << std::string(80, '=');
-      }
-      else {
-        throw art::Exception(art::errors::Configuration)
-          << "Photon propagation via semi-analytic model is not supported yet"
-          << " on detectors with more than one cryostat.";
-      }
-    }
-
-    for (size_t const i : util::counter(fNOpChannels)) {
-      geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
-      fOpDetCenter.push_back(opDet.GetCenter());
-    }
-  }
-
-  //......................................................................
   // calculates number of photons detected given visibility and emitted number of photons
   void PDFastSimPAR::detectedNumPhotons(std::vector<int>& DetectedNumPhotons,
                                         const std::vector<double>& OpDetVisibilities,
@@ -624,6 +580,15 @@ namespace phot {
     return true;
   }
 
+  std::vector<geo::Point_t> PDFastSimPAR::opDetCenters() const
+  {
+    std::vector<geo::Point_t> opDetCenter;
+    for (size_t const i : util::counter(fNOpChannels)) {
+      geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
+      opDetCenter.push_back(opDet.GetCenter());
+    }
+    return opDetCenter;
+  }
   // ---------------------------------------------------------------------------
 
 } // namespace phot
