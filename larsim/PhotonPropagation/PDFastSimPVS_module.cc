@@ -93,14 +93,19 @@ namespace phot {
     , fStoreReflected(fPVS->StoreReflected())
     , fNOpChannels(fPVS->NOpChannels())
     , fSimTag{pset.get<art::InputTag>("SimulationLabel")}
-    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                      ->createEngine(*this, "HepJamesRandom", "photon", pset, "SeedPhoton"))
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "photon"),
+        "HepJamesRandom",
+        "photon",
+        pset,
+        "SeedPhoton"))
     , fRandPoissPhot(std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine))
-    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
-                                                                                 "HepJamesRandom",
-                                                                                 "scinttime",
-                                                                                 pset,
-                                                                                 "SeedScintTime"))
+    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "scinttime"),
+        "HepJamesRandom",
+        "scinttime",
+        pset,
+        "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(pset.get<fhicl::ParameterSet>("ScintTimeTool"))}
   {
     mf::LogInfo("PDFastSimPVS") << "Initializing PDFastSimPVS." << std::endl;

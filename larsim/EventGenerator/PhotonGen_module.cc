@@ -110,7 +110,9 @@ namespace evgen {
     , fP{pset.get<double>("P")}
     , fSigmaP{pset.get<double>("SigmaP")}
     , fN{pset.get<int>("N")}
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
   {
     produces<sumdata::RunData, art::InRun>();
     produces<std::vector<simb::MCTruth>>();
@@ -153,7 +155,7 @@ namespace evgen {
     std::cout << "Cryo Boundaries:" << std::endl;
     std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
               << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   //----------------------------------------------------------------

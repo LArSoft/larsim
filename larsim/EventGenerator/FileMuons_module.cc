@@ -182,7 +182,7 @@ namespace evgen {
   void FileMuons::beginRun(art::Run& run)
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   //____________________________________________________________________________
@@ -271,12 +271,12 @@ namespace evgen {
       else if (fMuonsFileType.compare("root") == 0) // from root file
       {
         /*
-	      // Don't use this yet. Keep the specific branch-by-branch identification.
-	      for (unsigned int ii=0;ii<fBranchNames.size();ii++)
-	      {
-	       TNtuple->SetBranchAddress(fBranchNames[ii], x+ii);
-	      }
-	    */
+              // Don't use this yet. Keep the specific branch-by-branch identification.
+              for (unsigned int ii=0;ii<fBranchNames.size();ii++)
+              {
+               TNtuple->SetBranchAddress(fBranchNames[ii], x+ii);
+              }
+            */
         //	  TNtuple->ResetBranchAddresses();
         TNtuple->GetEntry(countFile);
         //TNtuple->Show(countFile);

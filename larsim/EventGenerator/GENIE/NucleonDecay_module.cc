@@ -79,7 +79,9 @@ evgen::NucleonDecay::NucleonDecay(fhicl::ParameterSet const& p)
   : art::EDProducer{p}
   // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, p, "Seed")}
+  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->registerAndSeedEngine(createEngine(0),
+                                                                                p,
+                                                                                "Seed")}
 {
   string sname = "genie::EventGenerator";
   string sconfig = "NucleonDecay";
@@ -190,7 +192,7 @@ void evgen::NucleonDecay::produce(art::Event& e)
 void evgen::NucleonDecay::beginRun(art::Run& run)
 {
   art::ServiceHandle<geo::Geometry const> geo;
-  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
 }
 
 DEFINE_ART_MODULE(evgen::NucleonDecay)

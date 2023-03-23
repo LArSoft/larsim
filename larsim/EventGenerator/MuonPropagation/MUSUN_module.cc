@@ -324,7 +324,9 @@ namespace evgen {
     : art::EDProducer{pset}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
     , fPDG{pset.get<int>("PDG")}
     , fChargeRatio{pset.get<double>("ChargeRatio")}
     , fInputDir{pset.get<std::string>("InputDir")}
@@ -442,7 +444,7 @@ namespace evgen {
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
 
     // area of the horizontal plane of the parallelepiped
     s_hor = (fZmax - fZmin) * (fXmax - fXmin);
@@ -473,18 +475,18 @@ namespace evgen {
       geo->CryostatBoundaries( CryoSize, 0 );
       std::cout << "Cryo bounds " << CryoSize[0] << " "<< CryoSize[1] << " "<< CryoSize[2] << " "<< CryoSize[3] << " "<< CryoSize[4] << " "<< CryoSize[5] << std::endl;
       for (unsigned int t=0; t<cryostat.NTPC(); t++) {
-	geo::TPCID id;
-	id.Cryostat=c;
-	id.TPC=t;
-	id.isValid=true;
-	const geo::TPCGeo& tpc=cryostat.TPC(id);
-	TPCMinX[t] = tpc.MinX();
-	TPCMaxX[t] = tpc.MaxX();
-	TPCMinY[t] = tpc.MinY();
-	TPCMaxY[t] = tpc.MaxY();
-	TPCMinZ[t] = tpc.MinZ();
-	TPCMaxZ[t] = tpc.MaxZ();
-	std::cout << t << "\t" << TPCMinX[t] << " " << TPCMaxX[t] << " " << TPCMinY[t] << " " << TPCMaxY[t] << " " << TPCMinZ[t] << " " << TPCMaxZ[t] << std::endl;
+        geo::TPCID id;
+        id.Cryostat=c;
+        id.TPC=t;
+        id.isValid=true;
+        const geo::TPCGeo& tpc=cryostat.TPC(id);
+        TPCMinX[t] = tpc.MinX();
+        TPCMaxX[t] = tpc.MaxX();
+        TPCMinY[t] = tpc.MinY();
+        TPCMaxY[t] = tpc.MaxY();
+        TPCMinZ[t] = tpc.MinZ();
+        TPCMaxZ[t] = tpc.MaxZ();
+        std::cout << t << "\t" << TPCMinX[t] << " " << TPCMaxX[t] << " " << TPCMinY[t] << " " << TPCMaxY[t] << " " << TPCMinZ[t] << " " << TPCMaxZ[t] << std::endl;
       }
     }
     fCryos -> Fill();
@@ -870,9 +872,9 @@ namespace evgen {
           }
         }
         /*
-	      std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = "
-	      << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n"
-	      << std::endl; */
+              std::cout << iteration<< " time of new sc value! Theta " << theta << ", phi " << phi + dp / 2. << ", sc = " << sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180. << " = "
+              << sc << " + " << sp1 << " * " << fl << " * " << dp << " * " << M_PI/180 << " * sin(" << theta0 << ") * " << dc << " * " << M_PI/180 << ".....sin(theta)=" << sin(theta) << "\n"
+              << std::endl; */
         sc = sc + sp1 * fl * dp * M_PI / 180. * sin(theta0) * dc * M_PI / 180.;
         ++iteration;
         ipc = ipc + 1;
@@ -915,13 +917,13 @@ namespace evgen {
       foundIndex = true;
     while( !foundIndex ) {
       if( xfl < fnmu[i] )
-	hiIndex = i;
+        hiIndex = i;
       else
-	loIndex = i;
+        loIndex = i;
       i = (loIndex + hiIndex)/2;
 
       if( xfl > fnmu[i-1] && xfl <= fnmu[i] )
-	foundIndex = true;
+        foundIndex = true;
     }
 #else
     double xfl = flat.fire();
@@ -961,13 +963,13 @@ namespace evgen {
       foundIndex = true;
     while( !foundIndex ) {
       if( xfl < spmu[j][ip1][ic1] )
-	hiIndex = j;
+        hiIndex = j;
       else
-	loIndex = j;
+        loIndex = j;
       j = (loIndex + hiIndex)/2;
 
       if( xfl > spmu[j-1][ip1][ic1] && xfl <= spmu[j][ip1][ic1] )
-	foundIndex = true;
+        foundIndex = true;
     }
 #else
     int j = 0;

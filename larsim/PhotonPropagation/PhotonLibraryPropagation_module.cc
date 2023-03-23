@@ -161,10 +161,18 @@ namespace phot {
     , fRiseTimeSlow{p.get<double>("RiseTimeSlow", 0.0)}
     , fDoSlowComponent{p.get<bool>("DoSlowComponent")}
     , fEDepTags{p.get<vector<art::InputTag>>("EDepModuleLabels")}
-    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                      ->createEngine(*this, "HepJamesRandom", "photon", p, "SeedPhoton"))
-    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()
-                         ->createEngine(*this, "HepJamesRandom", "scinttime", p, "SeedScintTime"))
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "photon"),
+        "HepJamesRandom",
+        "photon",
+        p,
+        "SeedPhoton"))
+    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "scinttime"),
+        "HepJamesRandom",
+        "scinttime",
+        p,
+        "SeedScintTime"))
   {
     if (art::ServiceHandle<sim::LArG4Parameters const> {}->UseLitePhotons()) {
       produces<vector<sim::SimPhotonsLite>>();

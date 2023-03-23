@@ -151,7 +151,9 @@ namespace detsim {
     , fNoiseFluctPar{pset.get<std::vector<double>>("NoiseFluctPar")}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
   {
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataForJob();
     auto const detProp =

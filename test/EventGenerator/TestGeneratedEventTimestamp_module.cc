@@ -16,12 +16,10 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
+#include "fhiclcpp/fwd.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-namespace fhicl {
-  class ParameterSet;
-}
 
-// artextensions libraries
+// nurandom
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 class TestGeneratedEventTimestamp : public art::EDAnalyzer {
@@ -32,16 +30,22 @@ private:
   void analyze(art::Event const& e) override;
   CLHEP::HepRandomEngine& fEngine;
   CLHEP::HepRandomEngine& fAuxEngine;
-}; // class TestGeneratedEventTimestamp
+};
 
 //------------------------------------------------------------------------------
 TestGeneratedEventTimestamp::TestGeneratedEventTimestamp(fhicl::ParameterSet const& pset)
   : EDAnalyzer(pset)
   // create two random engines; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed" and "AuxSeed"
-  , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
-  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                 ->createEngine(*this, "HepJamesRandom", "aux", pset, "AuxSeed"))
+  , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                               pset,
+                                                                               "Seed"))
+  , fAuxEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+      createEngine(0, "HepJamesRandom", "aux"),
+      "HepJamesRandom",
+      "aux",
+      pset,
+      "AuxSeed"))
 {}
 
 //------------------------------------------------------------------------------

@@ -49,7 +49,9 @@ namespace evgen {
   SNNueAr40CCGen::SNNueAr40CCGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset} // Create a default random engine: obtain the random seed
     // freom NuRandomService, unless overriden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
     , fGenerator{pset.get<fhicl::ParameterSet>("GeneratorAlg")}
   {
     produces<std::vector<simb::MCTruth>>();
@@ -61,7 +63,7 @@ namespace evgen {
   {
     // Store information about the geometry we are using in run information
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   //____________________________________________________________________________

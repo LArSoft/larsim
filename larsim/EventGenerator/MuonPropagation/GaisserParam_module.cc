@@ -148,7 +148,9 @@ namespace evgen {
     : art::EDProducer{pset}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
     , fMode{pset.get<int>("ParticleSelectionMode")}
     , fPadOutVectors{pset.get<bool>("PadOutVectors")}
     , fPDG{pset.get<std::vector<int>>("PDG")}
@@ -231,7 +233,7 @@ namespace evgen {
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
     MakePDF();
   }
 

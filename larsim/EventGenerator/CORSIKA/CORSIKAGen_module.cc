@@ -310,10 +310,18 @@ namespace evgen {
     , fBuffBox(p.get<std::vector<double>>("BufferBox", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}))
     , fShowerAreaExtension(p.get<double>("ShowerAreaExtension", 0.))
     , fRandomXZShift(p.get<double>("RandomXZShift", 0.))
-    , fGenEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                   ->createEngine(*this, "HepJamesRandom", "gen", p, {"Seed", "SeedGenerator"}))
-    , fPoisEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                    ->createEngine(*this, "HepJamesRandom", "pois", p, "SeedPoisson"))
+    , fGenEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "gen"),
+        "HepJamesRandom",
+        "gen",
+        p,
+        {"Seed", "SeedGenerator"}))
+    , fPoisEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "pois"),
+        "HepJamesRandom",
+        "pois",
+        p,
+        "SeedPoisson"))
   {
     if (fShowerInputFiles.size() != fShowerFluxConstants.size() || fShowerInputFiles.size() == 0 ||
         fShowerFluxConstants.size() == 0)
@@ -793,7 +801,7 @@ namespace evgen {
   void CORSIKAGen::beginRun(art::Run& run)
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   void CORSIKAGen::produce(art::Event& evt)

@@ -137,7 +137,7 @@ void evgen::TextFileGen::beginJob()
 void evgen::TextFileGen::beginRun(art::Run& run)
 {
   art::ServiceHandle<geo::Geometry const> geo;
-  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
 }
 
 //------------------------------------------------------------------------------

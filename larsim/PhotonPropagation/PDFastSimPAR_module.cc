@@ -176,17 +176,19 @@ namespace phot {
   //......................................................................
   PDFastSimPAR::PDFastSimPAR(Parameters const& config)
     : art::EDProducer{config}
-    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
-                                                                              "HepJamesRandom",
-                                                                              "photon",
-                                                                              config.get_PSet(),
-                                                                              "SeedPhoton"))
+    , fPhotonEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "photon"),
+        "HepJamesRandom",
+        "photon",
+        config.get_PSet(),
+        "SeedPhoton"))
     , fRandPoissPhot(std::make_unique<CLHEP::RandPoissonQ>(fPhotonEngine))
-    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this,
-                                                                                 "HepJamesRandom",
-                                                                                 "scinttime",
-                                                                                 config.get_PSet(),
-                                                                                 "SeedScintTime"))
+    , fScintTimeEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "scinttime"),
+        "HepJamesRandom",
+        "scinttime",
+        config.get_PSet(),
+        "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fISTPC{fGeom}

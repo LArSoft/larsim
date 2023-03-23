@@ -26,13 +26,8 @@ namespace evwgh {
      \class WeightManager
   */
   class WeightManager {
-
   public:
-    /// Default constructor
     WeightManager(const std::string name = "WeightManager");
-
-    /// Default destructor
-    ~WeightManager() {}
 
     /// Name getter
     const std::string& Name() const;
@@ -46,8 +41,8 @@ namespace evwgh {
        1) Creates the Calculators requested in step 0, and assigne a different random seed to each one \n
        3) The future call WeightManager::Run will run the calculators           \n
     */
-    template <typename Module>
-    size_t Configure(fhicl::ParameterSet const& cfg, Module& module);
+    template <typename EngineCreator>
+    size_t Configure(fhicl::ParameterSet const& cfg, EngineCreator engineCreator);
 
     /**
       * @brief Core function (previous call to Configure is needed)
@@ -78,8 +73,8 @@ namespace evwgh {
     std::string _name;                               ///< Name
   };
 
-  template <typename Module>
-  size_t WeightManager::Configure(fhicl::ParameterSet const& p, Module& module)
+  template <typename EngineCreator>
+  size_t WeightManager::Configure(fhicl::ParameterSet const& p, EngineCreator createEngine)
   {
 
     ::art::ServiceHandle<rndm::NuRandomService> seedservice;
@@ -102,8 +97,8 @@ namespace evwgh {
           << "Function " << func << " has been requested multiple times in fcl file!" << std::endl;
 
       // Create random engine for each rw function (name=func) (and seed it with random_seed set in the fcl)
-      CLHEP::HepRandomEngine& engine =
-        seedservice->createEngine(module, "HepJamesRandom", func, ps_func, "random_seed");
+      CLHEP::HepRandomEngine& engine = seedservice->registerAndSeedEngine(
+        createEngine("HepJamesRandom", func), "HepJamesRandom", func, ps_func, "random_seed");
       wcalc->SetName(func);
       wcalc->Configure(p, engine);
       Weight_t* winfo = new Weight_t();
