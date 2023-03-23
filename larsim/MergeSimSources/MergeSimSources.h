@@ -10,12 +10,13 @@
  * Typically just merges vectors/maps/etc together. But, if anything as a G4 trackID, applies
  * a user-defined offset to those IDs.
  *
-*/
+ */
 
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/ParticleAncestryMap.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimPhotons.h"
@@ -57,6 +58,10 @@ namespace sim {
                          const std::vector<sim::AuxDetHit>&,
                          size_t) const;
 
+    void MergeParticleAncestryMaps(std::vector<sim::ParticleAncestryMap>&,
+                                   const sim::ParticleAncestryMap&,
+                                   size_t) const;
+
     const std::vector<std::vector<size_t>>& GetMCParticleListMap() { return fMCParticleListMap; }
 
   private:
@@ -70,6 +75,10 @@ namespace sim {
     static sim::SimEnergyDeposit offsetSimEnergyDepositTrackID(sim::SimEnergyDeposit const&, int);
 
     static sim::AuxDetHit offsetAuxDetHitTrackID(sim::AuxDetHit const&, int);
+
+    static sim::ParticleAncestryMap offsetParticleAncestryMapTrackID(
+      sim::ParticleAncestryMap const&,
+      int);
 
   }; //end MergeSimSourcesUtility class
 

@@ -112,6 +112,11 @@ public:
                                "Other"} // default
     };
 
+    fhicl::Atom<bool> FillParticleAncestryMaps{
+      fhicl::Name{"FillParticleAncestryMaps"},
+      fhicl::Comment{"whether to merge particle ancestry maps"},
+      true};
+
   }; // struct Config
 
   using Parameters = art::EDProducer::Table<Config>;
@@ -134,6 +139,7 @@ private:
   std::vector<std::string> const fEnergyDepositionInstances;
   bool const fFillAuxDetHits;
   std::vector<std::string> const fAuxDetHitsInstanceLabels;
+  bool const fFillParticleAncestryMaps;
 
   static std::string const ReflectedLabel;
 
@@ -176,6 +182,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
   , fEnergyDepositionInstances(params().EnergyDepositInstanceLabels())
   , fFillAuxDetHits(params().FillAuxDetHits())
   , fAuxDetHitsInstanceLabels(params().AuxDetHitsInstanceLabels())
+  , fFillParticleAncestryMaps(params().FillParticleAncestryMaps())
 {
 
   if (fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
@@ -223,6 +230,8 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
       }
     }
 
+    if (fFillParticleAncestryMaps) { consumes<sim::ParticleAncestryMap>(tag); }
+
   } // for input labels
 
   if (fFillMCParticles) {
@@ -256,6 +265,8 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
       produces<std::vector<sim::AuxDetHit>>(auxdethit_inst);
   }
 
+  if (fFillParticleAncestryMaps) { produces<std::vector<sim::ParticleAncestryMap>>(); }
+
   dumpConfiguration();
 }
 
@@ -271,6 +282,7 @@ void sim::MergeSimSources::produce(art::Event& e)
   auto tpassn =
     std::make_unique<art::Assns<simb::MCTruth, simb::MCParticle, sim::GeneratedParticleInfo>>();
   auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
+  auto pamCol = std::make_unique<std::vector<sim::ParticleAncestryMap>>();
 
   using edeps_t = std::vector<sim::SimEnergyDeposit>;
   std::vector<edeps_t> edepCols;
@@ -349,6 +361,11 @@ void sim::MergeSimSources::produce(art::Event& e)
         MergeUtility.MergeAuxDetHits(
           auxdethitCol, e.getProduct<aux_det_hits_t>(auxdethit_tag), i_source);
       }
+
+      if (fFillParticleAncestryMaps) {
+        auto const& input_pamCol = e.getProduct<sim::ParticleAncestryMap>(input_label);
+        MergeUtility.MergeParticleAncestryMaps(*pamCol, input_pamCol, i_source);
+      }
     }
   }
 
@@ -383,6 +400,8 @@ void sim::MergeSimSources::produce(art::Event& e)
       e.put(std::make_unique<aux_det_hits_t>(move(auxdethitCol)), auxdethit_inst);
     }
   }
+
+  if (fFillParticleAncestryMaps) { e.put(std::move(pamCol)); }
 }
 
 void sim::MergeSimSources::dumpConfiguration() const
@@ -425,6 +444,8 @@ void sim::MergeSimSources::dumpConfiguration() const
       log << " '" << label << "'";
     log << ")";
   }
+
+  if (fFillParticleAncestryMaps) log << "\n - filling ParticleAncestryMaps";
 
 } // sim::MergeSimSources::dumpConfiguration()
 
