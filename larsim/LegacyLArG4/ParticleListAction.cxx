@@ -76,6 +76,7 @@ namespace larg4 {
     if (fparticleList) fparticleList->clear();
     if (fdroppedParticleList) fdroppedParticleList->clear();
     fParentIDMap.clear();
+    fParentIDMap_OrigTrackID.clear();
     fCurrentTrackID = sim::NoParticleId;
     fCurrentOrigTrackID = sim::NoParticleId;
     fCurrentPdgCode = 0;
