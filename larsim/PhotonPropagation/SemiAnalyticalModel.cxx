@@ -28,7 +28,8 @@ namespace phot {
   SemiAnalyticalModel::SemiAnalyticalModel(const fhicl::ParameterSet& VUVHitsParams,
                                            const fhicl::ParameterSet& VISHitsParams,
                                            const bool doReflectedLight,
-                                           const bool includeAnodeReflections)
+                                           const bool includeAnodeReflections,
+                                           const bool useXeAbsorption)
     : fGeom{*(lar::providerFrom<geo::Geometry>())}
     , fISTPC{fGeom}
     , fNTPC(fGeom.NTPC())
@@ -41,9 +42,9 @@ namespace phot {
                     fActiveVolumes[0].CenterZ()}
     , fNOpDets(fGeom.NOpDets())
     , fOpDetector(opticalDetectors())
-    , fvuv_absorption_length(VUVAbsorptionLength())
     , fDoReflectedLight(doReflectedLight)
     , fIncludeAnodeReflections(includeAnodeReflections)
+    , fUseXeAbsorption(useXeAbsorption)
   {
     mf::LogInfo("SemiAnalyticalModel") << "Initializing Semi-analytical model." << std::endl;
 
@@ -137,10 +138,14 @@ namespace phot {
       fanode_plane_depth = fanode_centre[0];
     }
 
+    // set absorption length
+    fvuv_absorption_length = VUVAbsorptionLength();
+    mf::LogInfo("SemiAnalyticalModel") << "Setting absorption length to: " << fvuv_absorption_length << std::endl;
+
     mf::LogInfo("SemiAnalyticalModel") << "Semi-analytical model initialized." << std::endl;
   }
 
-  int SemiAnalyticalModel::VUVAbsorptionLength() const
+  double SemiAnalyticalModel::VUVAbsorptionLength() const
   {
     // determine LAr absorption length in cm
     std::map<double, double> abs_length_spectrum =
@@ -150,11 +155,9 @@ namespace phot {
       x_v.push_back(elem.first);
       y_v.push_back(elem.second);
     }
-    int vuv_absorption_length = std::round(
-      interpolate(x_v,
-                  y_v,
-                  9.7,
-                  false)); // 9.7 eV: peak of VUV emission spectrum   // TODO UNHARDCODE FOR XENON
+    double vuv_absorption_length;
+    if (fUseXeAbsorption) vuv_absorption_length = interpolate( x_v, y_v, 7.1, false); // 7.1 eV: peak of Xe VUV emission spectrum
+    else vuv_absorption_length = interpolate( x_v, y_v, 9.7, false); // 9.7 eV: peak of Ar VUV emission spectrum
     if (vuv_absorption_length <= 0) {
       throw cet::exception("SemiAnalyticalModel")
         << "Error: VUV Absorption Length is 0 or negative.\n";
