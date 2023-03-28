@@ -83,7 +83,7 @@ namespace phot {
     double Rectangle_SolidAngle(const double a, const double b, const double d) const;
     double Rectangle_SolidAngle(Dims const& o,
                                 geo::Vector_t const& v,
-                                const double OpDetOrientation) const;
+                                const int OpDetOrientation) const;
     // circular aperture
     double Disk_SolidAngle(const double d, const double h, const double b) const;
     // dome aperture calculation
