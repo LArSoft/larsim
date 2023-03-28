@@ -228,8 +228,10 @@ namespace phot {
     const size_t j = (theta / fdelta_angulo_vuv);
 
     // determine GH parameters, accounting for border effects
-    // radial distance from centre of detector (Y-Z)
-    double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    // radial distance from centre of detector (Y-Z standard / X-Z laterals) 
+    double r = 0;
+    if (opDet.orientation == 1) r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
+    else r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
 
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;
