@@ -115,9 +115,10 @@ namespace phot {
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
                        Comment("Tool describing scintillation time structure")};
-      fhicl::Atom<bool> UseXeAbsorption{Name("UseXeAbsorption"),
-                                      Comment("Use Xe absorption length instead of Ar, default false"),
-                                      false};
+      fhicl::Atom<bool> UseXeAbsorption{
+        Name("UseXeAbsorption"),
+        Comment("Use Xe absorption length instead of Ar, default false"),
+        false};
       ODP VUVTiming{Name("VUVTiming"), Comment("Configuration for UV timing parameterization")};
       ODP VISTiming{Name("VISTiming"),
                     Comment("Configuration for visible timing parameterization")};
