@@ -8,6 +8,7 @@
 #include "dk2nu/tree/dk2nu.h"	
 #include "dk2nu/tree/dkmeta.h"
 #include "nutools/EventGeneratorBase/GENIE/MCTruthAndFriendsItr.h"
+#include "cetlib/search_path.h"
 
 #include "TSystem.h"
 
@@ -27,6 +28,7 @@ namespace evwgh {
        std::string fMode;
        std::string fHorn;
        std::string fTarget;
+       int fSeed;
        int fVerbose;
        NeutrinoFluxReweight::MakeReweight* fPPFXrw;
 
@@ -51,12 +53,19 @@ namespace evwgh {
     fMode        = pset.get<std::string>("mode");  
     fHorn        = pset.get<std::string>("horn_curr");
     fTarget      = pset.get<std::string>("target_config");
+    fSeed        = pset.get<int>("random_seed", -1);
 
     gSystem->Setenv("MODE", fPPFXMode.c_str());
 
     fPPFXrw = NeutrinoFluxReweight::MakeReweight::getInstance();
     std::cout<<"PPFX instance "<<fPPFXrw<<std::endl;
-    std::string inputOptions  =std::string(getenv("PPFX_DIR"))+"/xml/inputs_"+fPPFXMode+".xml";
+
+    std::string inputOptions;                                 // Full path.
+    std::string mode_file = "inputs_" + fPPFXMode + ".xml";   // Just file name.
+    cet::search_path sp("FW_SEARCH_PATH");
+    sp.find_file(mode_file, inputOptions);
+
+    if (fSeed != -1) fPPFXrw->setBaseSeed(fSeed); // Set the random seed
     std::cout << "is PPFX setup : " << fPPFXrw->AlreadyInitialized() << std::endl;  
     std::cout << "Setting PPFX, inputs: " << inputOptions << std::endl;
     std::cout << "Setting Horn Current Configuration to: " << fHorn << std::endl;
