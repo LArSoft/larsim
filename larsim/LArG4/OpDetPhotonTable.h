@@ -30,7 +30,7 @@
 // Ben Jones, MIT, 11/10/12
 //
 //
-// Changes have been made to this object to include the OpDetBacktrackerRecords for use in the photonbacktracker
+//Changes have been made to this object to include the OpDetBacktrackerRecords for use in the photonbacktracker
 
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4VPhysicalVolume.hh"

@@ -13,14 +13,12 @@
 
 #include "larcorealg/Geometry/geo_vectors_utils.h"          // geo::vect namespace
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h" // geo::Point_t
-#include "larsim/PhotonPropagation/IPhotonLibrary.h"
-//#include "larsim/PhotonPropagation/LibraryMappingTools/IPhotonMappingTransformations.h"
-//#include "larsim/PhotonPropagation/PhotonVisibilityTypes.h"
-#include "larsim/Simulation/PhotonVoxels.h"
 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "larsim/PhotonPropagation/IPhotonLibrary.h"
+#include "larsim/Simulation/PhotonVoxels.h"
 
 namespace fhicl {
   class ParameterSet;
@@ -29,7 +27,6 @@ namespace fhicl {
 class TF1;
 
 // C/C++ standard libraries
-#include <memory> // std::unique_ptr<>
 #include <string>
 #include <vector>
 
@@ -77,7 +74,7 @@ namespace phot{
     void SetLibraryTimingTF1Entry( int VoxID, int OpChannel, TF1 func );
     TF1* GetLibraryTimingTF1Entries( int VoxID ) const;
  
-    void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
+   void SetDirectLightPropFunctions(TF1 const* functions[8], double& d_break, double& d_max, double& tf1_sampling_factor) const;
     void SetReflectedCOLightPropFunctions(TF1 const* functions[5], double& t0_max, double& t0_break_point) const;
     
     void LoadVUVSemiAnalyticProperties(bool& isFlatPDCorr,
@@ -153,7 +150,7 @@ namespace phot{
     std::string          fLibraryFile;      
     mutable IPhotonLibrary* fTheLibrary;
     sim::PhotonVoxelDef  fVoxelDef;
-
+    
     //for the semi-analytic vuv/direct light signal (number of hits) correction
     bool fIsFlatPDCorr;
 

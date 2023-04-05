@@ -105,8 +105,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "TF1.h"
 
-#include <memory> // std::unique_ptr
-
 class G4EmSaturation;
 class G4Step;
 class G4Track;
@@ -116,9 +114,6 @@ namespace CLHEP {
 }
 namespace geo {
   class GeometryCore;
-}
-namespace phot {
-  class PhotonVisibilityService;
 }
 
 // Class Description:
@@ -137,11 +132,11 @@ class OpFastScintillation : public G4VRestDiscreteProcess
 
 private:
 
-    //////////////
-    // Operators
-    //////////////
-
-    // OpFastScintillation& operator=(const OpFastScintillation &right);
+        //////////////
+        // Operators
+        //////////////
+  
+        // OpFastScintillation& operator=(const OpFastScintillation &right);
   
 public: // Without description
   
@@ -149,14 +144,14 @@ public: // Without description
 	// Constructors and Destructor
 	////////////////////////////////
 
-    OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
-    //OpFastScintillation(const OpFastScintillation &right); // To-do Not sure: whether to move it or not. 
+        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
+        OpFastScintillation(const OpFastScintillation &right);
 
 	~OpFastScintillation();	
 
-    ////////////
-    // Methods
-    ////////////
+        ////////////
+        // Methods
+        ////////////
 
 public: // With description
 
@@ -168,8 +163,8 @@ public: // With description
         // Returns true -> 'is applicable', for any particle type except
         // for an 'opticalphoton' and for short-lived particles
 
-	    G4double GetMeanFreePath(const G4Track& aTrack,
-				                       G4double ,
+	G4double GetMeanFreePath(const G4Track& aTrack,
+				       G4double ,
                                        G4ForceCondition* );
         // Returns infinity; i. e. the process does not limit the step,
         // but sets the 'StronglyForced' condition for the DoIt to be 
@@ -182,14 +177,14 @@ public: // With description
         // but sets the 'StronglyForced' condition for the DoIt to be
         // invoked at every step.
 
-	    virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, 
-			                                   const G4Step&  aStep);
+	virtual G4VParticleChange* PostStepDoIt(const G4Track& aTrack, 
+			                const G4Step&  aStep);
         virtual G4VParticleChange* AtRestDoIt (const G4Track& aTrack,
-                                               const G4Step& aStep);
+                                       const G4Step& aStep);
 
         // These are the methods implementing the scintillation process.
 
-	    void SetTrackSecondariesFirst(const G4bool state);
+	void SetTrackSecondariesFirst(const G4bool state);
         // If set, the primary particle tracking is interrupted and any
         // produced scintillation photons are tracked next. When all 
         // have been tracked, the tracking of the primary resumes.
@@ -250,15 +245,15 @@ public: // With description
 
         std::vector<double> GetVUVTime(double, int) const;
         std::vector<double> GetVisibleTimeOnlyCathode(double, int) const;
-        // Update configuration parameters.
+       // Update configuration parameters.
 
-        //void reconfigure(const fhicl::ParameterSet& pset);
+       //void reconfigure(const fhicl::ParameterSet& pset);
 
         // semi-analytical model. 
-        void detectedDirectHits(std::map<size_t, int>& DetectedNum,
+        void detectedDirectHits(std::map<int, int>& DetectedNum,
                             const double Num,
                             geo::Point_t const& ScintPoint) const;
-        void detectedReflecHits(std::map<size_t, int>& ReflDetectedNum,
+        void detectedReflecHits(std::map<int, int>& ReflDetectedNum,
                             const double Num,
                             geo::Point_t const& ScintPoint) const;
 
@@ -323,9 +318,7 @@ private:
         // Facility for TPB emission energies
         double reemission_energy() const;
         std::map<double,double> tpbemission;
-
-        //CLHEP::RandGeneral *rgen0; // To-do, double-check: .cxx related to the variable, as the new release defined as std::unique_ptr<CLHEP::RandGeneral> fTPBEm;
-        std::unique_ptr<CLHEP::RandGeneral> rgen0;
+        CLHEP::RandGeneral *rgen0;
 
         void average_position(G4Step const& aStep, double *xzyPos) const;
   
@@ -369,15 +362,11 @@ private:
         std::vector<int> fOpDetType;
         std::vector<double> fOpDetLength;
         std::vector<double> fOpDetHeight;
-        //double fGlobalTimeOffset;
 
         void ProcessStep( const G4Step& step);
         
         bool bPropagate; ///< Whether propagation of photons is enabled.
 
-        // Photon visibility service instance.
-        phot::PhotonVisibilityService const* const fPVS;
-        
         /// Whether the semi-analytic model is being used for photon visibility.
         bool const fUseNhitsModel = false;
         /// Whether photon propagation is performed only from active volumes
@@ -408,8 +397,6 @@ private:
 double finter_d(double*, double*);
 double LandauPlusExpoFinal(double*, double*);
 
-static const size_t acos_bins = 2000000;
-constexpr double acos_table(const double x);
 double fast_acos(const double x);
 
 ////////////////////

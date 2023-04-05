@@ -95,7 +95,7 @@
 //              2003-06-03, V.Ivanchenko fix compilation warnings
 //
 // mail:        gum@triumf.ca
-// 
+//
 ////////////////////////////////////////////////////////////////////////
 
 //#include "Geant4/g4ios.hh"
@@ -112,7 +112,7 @@
 #include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/IonizationAndScintillation.h"
 #include "larsim/LArG4/OpFastScintillation.hh"
-// #include "larsim/PhotonPropagation/PhotonVisibilityService.h"
+#include "larsim/PhotonPropagation/PhotonVisibilityService.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
@@ -137,8 +137,6 @@
 #include "TMath.h"
 #include "boost/algorithm/string.hpp"
 
-#include <cassert>
-
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
 
@@ -148,6 +146,7 @@ typedef boost::math::policies::policy<
   boost::math::policies::promote_double<false>>
   noLDoublePromote;
 namespace larg4{
+
 
 /////////////////////////
 // Class Implementation
@@ -169,15 +168,16 @@ namespace larg4{
     : G4VRestDiscreteProcess(processName, type)
     , fActiveVolumes{extractActiveVolumes(*(lar::providerFrom<geo::Geometry>()))}
     , bPropagate(!(art::ServiceHandle<sim::LArG4Parameters>()->NoPhotonPropagation()))
-    , fPVS(bPropagate ? art::ServiceHandle<phot::PhotonVisibilityService const>().get() : nullptr)
-    , fUseNhitsModel(fPVS && fPVS->UseNhitsModel())
+    , fUseNhitsModel(bPropagate ? art::ServiceHandle<phot::PhotonVisibilityService const>().get()->UseNhitsModel() : false)
     , fOnlyActiveVolume(usesSemiAnalyticModel())
   {
     G4cout<<"BEA1 timing distribution"<<G4endl;
-    
-    SetProcessSubType(25);  // TODO: unhardcode
+    SetProcessSubType(25);
+
     fTrackSecondariesFirst = false;
     fFiniteRiseTime = false;
+
+
     YieldFactor=1.0;
     ExcitationRatio = 1.0;
         
@@ -188,28 +188,17 @@ namespace larg4{
     theFastIntegralTable = NULL;
     theSlowIntegralTable = NULL;
 
-    if (verboseLevel>0) { G4cout << GetProcessName() << " is created " << G4endl;}
+    if (verboseLevel>0) {
+      G4cout << GetProcessName() << " is created " << G4endl;
+    }
 
     BuildThePhysicsTable();
+
     emSaturation = NULL;
 
     if (bPropagate) {
-      //art::ServiceHandle<phot::PhotonVisibilityService> pvs;
-      assert(fPVS);
-
-      // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
+      art::ServiceHandle<phot::PhotonVisibilityService> pvs;
       geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
-      
-      {
-        auto log = mf::LogTrace("OpFastScintillation")
-                   << "OpFastScintillation: active volume boundaries from " << fActiveVolumes.size()
-                   << " volumes:";
-        for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
-          log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
-        } // for
-        log << "\n  (scintillation photons are propagated "
-            << (fOnlyActiveVolume ? "only from active volumes" : "from anywhere") << ")";
-      } // local scope
 
       if (usesSemiAnalyticModel()) {
         if (fOnlyOneCryostat) {
@@ -230,12 +219,14 @@ namespace larg4{
         }
       } // if
 
+      // Loading the position of each optical channel, neccessary for the parametrizatiuons of Nhits and prop-time
+      
       geo::Point_t const Cathode_centre{geom.TPC(0, 0).GetCathodeCenter().X(),
                                         fActiveVolumes[0].CenterY(),
                                         fActiveVolumes[0].CenterZ()};
       mf::LogTrace("OpFastScintillation") << "Cathode_centre: " << Cathode_centre << " cm";
 
-      for (size_t const i : util::counter(fPVS->NOpChannels())) {
+      for (size_t const i : util::counter(pvs->NOpChannels())) {
         geo::OpDetGeo const& opDet = geom.OpDetGeoFromOpDet(i);
         fOpDetCenter.push_back(opDet.GetCenter());
           
@@ -246,9 +237,9 @@ namespace larg4{
 
       }
 
-      if(fPVS->IncludePropTime()) {
-        fPVS->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
-        fPVS->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
+      if(pvs->IncludePropTime()) {
+        pvs->SetDirectLightPropFunctions(functions_vuv, fd_break, fd_max, ftf1_sampling_factor);
+        pvs->SetReflectedCOLightPropFunctions(functions_vis, ft0_max, ft0_break_point);
       }
 
       if (usesSemiAnalyticModel()) {
@@ -268,9 +259,9 @@ namespace larg4{
 
         // Load Gaisser-Hillas corrections for VUV semi-analytic hits
         std::cout << "Loading the GH corrections" << std::endl;
-        fPVS->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr, fdelta_angulo_vuv, fradius);
+        pvs->LoadVUVSemiAnalyticProperties(fIsFlatPDCorr, fdelta_angulo_vuv, fradius);
         if (fIsFlatPDCorr) {
-          fPVS->LoadGHFlat(fGHvuvpars_flat, fborder_corr_angulo_flat, fborder_corr_flat);
+          pvs->LoadGHFlat(fGHvuvpars_flat, fborder_corr_angulo_flat, fborder_corr_flat);
         }else {
             throw cet::exception("OpFastScintillation")
             << "Both isFlatPDCorr and isDomePDCorr parameters are false, at least one type of "
@@ -284,18 +275,22 @@ namespace larg4{
         fcathode_centre[2] = fActiveVolumes[0].CenterZ(); // to get full cathode dimension rather than just single tpc
       }
     }
+
     tpbemission=lar::providerFrom<detinfo::LArPropertiesService>()->TpbEm();
-    std::vector<double> parent;
-    parent.reserve(tpbemission.size());
-    for (auto iter = tpbemission.begin(); iter != tpbemission.end(); ++iter) {
-      parent.push_back(iter->second);
+    const int nbins=tpbemission.size();
+    double * parent=new double[nbins];
+    int ii=0;
+    for( std::map<double, double>::iterator iter = tpbemission.begin(); iter != tpbemission.end(); ++iter)
+    {
+      parent[ii++]=(*iter).second;
     }
-    rgen0 = std::make_unique<CLHEP::RandGeneral>(parent.data(), parent.size());
+    rgen0 = new CLHEP::RandGeneral(parent,nbins);
+    
   }
 
   
 
-  /*OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
+  OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
     :  G4VRestDiscreteProcess(rhs.GetProcessName(), rhs.GetProcessType())
   {
     theSlowIntegralTable        = rhs.GetSlowIntegralTable();
@@ -309,7 +304,7 @@ namespace larg4{
     emSaturation                = rhs.GetSaturation();
 
     BuildThePhysicsTable();
-  }*/
+  }
 
 
   ////////////////
@@ -326,15 +321,16 @@ namespace larg4{
       theSlowIntegralTable->clearAndDestroy();
       delete theSlowIntegralTable;
     }
+
   }
 
   ////////////
   // Methods
   ////////////
 
-  // AtRestDoIt
-  // ----------
-  //
+// AtRestDoIt
+// ----------
+//
   G4VParticleChange*
   OpFastScintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
 
@@ -488,7 +484,8 @@ namespace larg4{
   {
     // make sure that whatever happens afterwards, the energy deposition is stored
     art::ServiceHandle<sim::LArG4Parameters> lgp;
-    if(lgp->FillSimEnergyDeposits()) ProcessStep(aStep);
+    if(lgp->FillSimEnergyDeposits())
+      ProcessStep(aStep);
   
   
     // Get the pointer to the fast scintillation table
@@ -526,8 +523,8 @@ namespace larg4{
       return 0;
 
     // Get the visibility vector for this point
-    assert(fPVS);
-    //size_t const NOpChannels = fPVS->NOpChannels();
+    art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    size_t const NOpChannels = pvs->NOpChannels();
 
 
     G4int nscnt = 1;
@@ -608,21 +605,30 @@ namespace larg4{
         {
         
           YieldRatio = aMaterialPropertiesTable->
-          GetConstProperty("ELECTRONYIELDRATIO");
+            GetConstProperty("ELECTRONYIELDRATIO");
         
         }
       }
     }
 
-    geo::Point_t const ScintPoint = {x0[0] / CLHEP::cm, x0[1] / CLHEP::cm, x0[2] / CLHEP::cm};
+    double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
+    geo::Point_t const ScintPoint = {xyz[0], xyz[1], xyz[2]};
     if (fOnlyActiveVolume && !isScintInActiveVolume(ScintPoint)) return 0;
 
-    double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
-    float const* Visibilities = fPVS->GetAllVisibilities(xyz);
+    float const* Visibilities = pvs->GetAllVisibilities(xyz);
+
+    float const* ReflVisibilities = nullptr;
+
+    
     // Store timing information in the object for use in propagation_time method
-    if(fPVS->IncludeParPropTime())
+    if(pvs->StoreReflected()) {
+      ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
+      if(pvs->StoreReflT0())
+        ReflT0s = pvs->GetReflT0s(xyz); 
+    }
+    if(pvs->IncludeParPropTime())
     {
-      ParPropTimeTF1 = fPVS->GetTimingTF1(xyz);
+      ParPropTimeTF1 = pvs->GetTimingTF1(xyz);
     }
     
     /*
@@ -733,68 +739,58 @@ namespace larg4{
       //    << "Photon library does not cover point ( " << xyz[0] << ", "
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
-
-      if (!Visibilities && !usesSemiAnalyticModel()) continue;
-
-      // detected photons from direct light
-      std::map<size_t, int> DetectedNum;
-      if (Visibilities && !usesSemiAnalyticModel()) {
-        for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
-          if (fOpaqueCathode) continue;
-          int const DetThis = std::round(G4Poisson(Visibilities[OpDet] * Num));
-          if (DetThis > 0) DetectedNum[OpDet] = DetThis;
-        }
-      }
-      else {
-        detectedDirectHits(DetectedNum, Num, ScintPoint);
-      }
-      
-      // old configuration. 
-      /*if(!Visibilities){
+    
+      if(!Visibilities){
       }else{
         std::map<int, int> DetectedNum;
 
         std::map<int, int> ReflDetectedNum;
 
-        for(size_t OpDet=0; OpDet!=fPVS->NOpChannels(); OpDet++)
-        {
-          G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
-
-          if(DetThisPMT>0) 
+        if(usesSemiAnalyticModel()) {
+          detectedDirectHits(DetectedNum, Num, ScintPoint);
+        }
+        else {
+          for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
           {
-            DetectedNum[OpDet]=DetThisPMT;
-            //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-            //   //   it->second<<" " << Num << " " << DetThisPMT;  
+            G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
 
-            //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
-          }
-          if(pvs->StoreReflected()) {
-            G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
-            if(ReflDetThisPMT>0)
+            if(DetThisPMT>0) 
             {
-              ReflDetectedNum[OpDet]=ReflDetThisPMT;
+              DetectedNum[OpDet]=DetThisPMT;
+              //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+              //   //   it->second<<" " << Num << " " << DetThisPMT;  
+
+              //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+            }
+            if(pvs->StoreReflected()) {
+              G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+              if(ReflDetThisPMT>0)
+              {
+                ReflDetectedNum[OpDet]=ReflDetThisPMT;
+              }
             }
           }
+        }
 
-        }*/
-
+        
         // Now we run through each PMT figuring out num of detected photons
         for (int Reflected = 0; Reflected <= 1; Reflected++) {
           // Only do the reflected loop if we have reflected visibilities
-          if (Reflected && !fPVS->StoreReflected()) continue;
+          if (Reflected && !pvs->StoreReflected())
+            continue;
           
-          std::map<size_t,int>::const_iterator itstart;
-          std::map<size_t,int>::const_iterator itend;
-          /*if (Reflected) {
+          std::map<int,int>::const_iterator itstart;
+          std::map<int,int>::const_iterator itend;
+          if (Reflected) {
             itstart = ReflDetectedNum.begin();
             itend   = ReflDetectedNum.end();
-          }*/
-          if (!Reflected){
+          }
+          else{
             itstart = DetectedNum.begin();
             itend   = DetectedNum.end();
           }
           
-          for(auto itdetphot=itstart; itdetphot!=itend; ++itdetphot)
+          for(std::map<int,int>::const_iterator itdetphot=itstart; itdetphot!=itend; ++itdetphot)
           {
             int OpChannel = itdetphot->first;
             int NPhotons  = itdetphot->second;
@@ -846,7 +842,7 @@ namespace larg4{
             fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
         }
-      //}
+      }
     }
 
     //std::cout<<gen_photon_ctr<<","<<det_photon_ctr<<std::endl; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
@@ -1073,25 +1069,24 @@ namespace larg4{
   std::vector<double> OpFastScintillation::propagation_time(G4ThreeVector x0, int OpChannel, int NPhotons, bool Reflected) const
   {
     static art::ServiceHandle<geo::Geometry> geo;
-    assert(fPVS);
-    //static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    static art::ServiceHandle<phot::PhotonVisibilityService> pvs;
 
     // Initialize vector of the right length with all 0's
     std::vector<double> arrival_time_dist(NPhotons, 0);
 
 
-    if (fPVS->IncludeParPropTime() && fPVS->IncludePropTime()) {
+    if (pvs->IncludeParPropTime() && pvs->IncludePropTime()) {
       throw cet::exception("OpFastScintillation") << "Cannot have both propagation time models simultaneously.";
     }
 
-    else if (fPVS->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
+    else if (pvs->IncludeParPropTime() && !(ParPropTimeTF1  && (ParPropTimeTF1[OpChannel].GetNdim()==1)) )
     {
       //Warning: TF1::GetNdim()==1 will tell us if the TF1 is really defined or it is the default one.
       //This will fix a segfault when using timing and interpolation.
       G4cout << "WARNING: Requested parameterized timing, but no function found. Not applying propagation time." << G4endl;
     }
     
-    else if (fPVS->IncludeParPropTime()) {
+    else if (pvs->IncludeParPropTime()) {
       if (Reflected)
         throw cet::exception("OpFastScintillation") << "No parameterized propagation time for reflected light";
         
@@ -1100,7 +1095,7 @@ namespace larg4{
       }
     }
 
-    else if (fPVS->IncludePropTime()) {
+    else if (pvs->IncludePropTime()) {
       // Get VUV photons arrival time distribution from the parametrization 
       double OpDetCenter[3];
       geo->OpDetGeoFromOpDet(OpChannel).GetCenter(OpDetCenter);
@@ -1123,7 +1118,7 @@ namespace larg4{
   
   G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2) const
   {
-    // tau1: rise time and tau2: decay time
+// tau1: rise time and tau2: decay time
 
     while(1) {
       // two random numbers
@@ -1309,11 +1304,12 @@ namespace larg4{
 
   // ---------------------------------------------------------------------------
   void
-  OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,
+  OpFastScintillation::detectedDirectHits(std::map<int, int>& DetectedNum,
                                           const double Num,
                                           geo::Point_t const& ScintPoint) const
   {
-    for (size_t const OpDet : util::counter(fPVS->NOpChannels())) {
+    art::ServiceHandle<phot::PhotonVisibilityService> pvs;
+    for (size_t const OpDet : util::counter(pvs->NOpChannels())) {
       //if (!isOpDetInSameTPC(ScintPoint, fOpDetCenter.at(OpDet))) continue;
 
       // set detector struct for solid angle function
@@ -1426,7 +1422,6 @@ namespace larg4{
 
     return TMath::Abs(y1 - y2);
   }
-
   double LandauPlusExpoFinal(double *x, double *par)
   {
     // par0 = joining point
