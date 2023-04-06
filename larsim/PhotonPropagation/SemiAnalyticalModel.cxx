@@ -28,7 +28,8 @@ namespace phot {
   SemiAnalyticalModel::SemiAnalyticalModel(const fhicl::ParameterSet& VUVHitsParams,
                                            const fhicl::ParameterSet& VISHitsParams,
                                            const bool doReflectedLight,
-                                           const bool includeAnodeReflections)
+                                           const bool includeAnodeReflections,
+                                           const bool useXeAbsorption)
     : fGeom{*(lar::providerFrom<geo::Geometry>())}
     , fISTPC{fGeom}
     , fNTPC(fGeom.NTPC())
@@ -41,9 +42,9 @@ namespace phot {
                     fActiveVolumes[0].CenterZ()}
     , fNOpDets(fGeom.NOpDets())
     , fOpDetector(opticalDetectors())
-    , fvuv_absorption_length(VUVAbsorptionLength())
     , fDoReflectedLight(doReflectedLight)
     , fIncludeAnodeReflections(includeAnodeReflections)
+    , fUseXeAbsorption(useXeAbsorption)
   {
     mf::LogInfo("SemiAnalyticalModel") << "Initializing Semi-analytical model." << std::endl;
 
@@ -137,10 +138,15 @@ namespace phot {
       fanode_plane_depth = fanode_centre[0];
     }
 
+    // set absorption length
+    fvuv_absorption_length = VUVAbsorptionLength();
+    mf::LogInfo("SemiAnalyticalModel")
+      << "Setting absorption length to: " << fvuv_absorption_length << std::endl;
+
     mf::LogInfo("SemiAnalyticalModel") << "Semi-analytical model initialized." << std::endl;
   }
 
-  int SemiAnalyticalModel::VUVAbsorptionLength() const
+  double SemiAnalyticalModel::VUVAbsorptionLength() const
   {
     // determine LAr absorption length in cm
     std::map<double, double> abs_length_spectrum =
@@ -150,11 +156,13 @@ namespace phot {
       x_v.push_back(elem.first);
       y_v.push_back(elem.second);
     }
-    int vuv_absorption_length = std::round(
-      interpolate(x_v,
-                  y_v,
-                  9.7,
-                  false)); // 9.7 eV: peak of VUV emission spectrum   // TODO UNHARDCODE FOR XENON
+    double vuv_absorption_length;
+    if (fUseXeAbsorption)
+      vuv_absorption_length =
+        interpolate(x_v, y_v, 7.1, false); // 7.1 eV: peak of Xe VUV emission spectrum
+    else
+      vuv_absorption_length =
+        interpolate(x_v, y_v, 9.7, false); // 9.7 eV: peak of Ar VUV emission spectrum
     if (vuv_absorption_length <= 0) {
       throw cet::exception("SemiAnalyticalModel")
         << "Error: VUV Absorption Length is 0 or negative.\n";
@@ -228,8 +236,12 @@ namespace phot {
     const size_t j = (theta / fdelta_angulo_vuv);
 
     // determine GH parameters, accounting for border effects
-    // radial distance from centre of detector (Y-Z)
-    double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    // radial distance from centre of detector (Y-Z standard / X-Z laterals)
+    double r = 0;
+    if (opDet.orientation == 1)
+      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
+    else
+      r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
 
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;
@@ -606,7 +618,7 @@ namespace phot {
 
   double SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o,
                                                    geo::Vector_t const& v,
-                                                   double OpDetOrientation) const
+                                                   int OpDetOrientation) const
   {
     // v is the position of the track segment with respect to
     // the center position of the arapuca window
