@@ -37,7 +37,8 @@ namespace phot {
     SemiAnalyticalModel(const fhicl::ParameterSet& VUVHits,
                         const fhicl::ParameterSet& VISHits,
                         const bool doReflectedLight = false,
-                        const bool includeAnodeReflections = false);
+                        const bool includeAnodeReflections = false,
+                        const bool useXeAbsorption = false);
 
     // direct / VUV light
     void detectedDirectVisibilities(std::vector<double>& DetectedVisibilities,
@@ -49,7 +50,7 @@ namespace phot {
                                        bool AnodeMode = false) const;
 
   private:
-    int VUVAbsorptionLength() const;
+    double VUVAbsorptionLength() const;
 
     // structure for rectangular solid angle calculation
     struct Dims {
@@ -83,7 +84,7 @@ namespace phot {
     double Rectangle_SolidAngle(const double a, const double b, const double d) const;
     double Rectangle_SolidAngle(Dims const& o,
                                 geo::Vector_t const& v,
-                                const double OpDetOrientation) const;
+                                const int OpDetOrientation) const;
     // circular aperture
     double Disk_SolidAngle(const double d, const double h, const double b) const;
     // dome aperture calculation
@@ -107,8 +108,6 @@ namespace phot {
     double fradius;
     Dims fcathode_plane;
     Dims fanode_plane;
-
-    const int fvuv_absorption_length;
 
     // For VUV semi-analytic hits
     double fdelta_angulo_vuv;
@@ -151,6 +150,10 @@ namespace phot {
     std::vector<double> fvis_distances_x_dome;
     std::vector<double> fvis_distances_r_dome;
     std::vector<std::vector<std::vector<double>>> fvispars_dome;
+
+    // absorption length
+    const bool fUseXeAbsorption;
+    double fvuv_absorption_length;
   };
 
 } // namespace phot

@@ -115,6 +115,10 @@ namespace phot {
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
                        Comment("Tool describing scintillation time structure")};
+      fhicl::Atom<bool> UseXeAbsorption{
+        Name("UseXeAbsorption"),
+        Comment("Use Xe absorption length instead of Ar, default false"),
+        false};
       ODP VUVTiming{Name("VUVTiming"), Comment("Configuration for UV timing parameterization")};
       ODP VISTiming{Name("VISTiming"),
                     Comment("Configuration for visible timing parameterization")};
@@ -171,6 +175,7 @@ namespace phot {
     const bool fOpaqueCathode;
     const bool fOnlyActiveVolume;
     const bool fOnlyOneCryostat;
+    const bool fUseXeAbsorption;
   };
 
   //......................................................................
@@ -207,6 +212,7 @@ namespace phot {
     , fOpaqueCathode(config().OpaqueCathode())
     , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
+    , fUseXeAbsorption(config().UseXeAbsorption())
   {
     mf::LogInfo("PDFastSimPAR") << "Initializing PDFastSimPAR." << std::endl;
 
@@ -259,7 +265,7 @@ namespace phot {
 
     // photo-detector visibility model (semi-analytical model)
     fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
-      VUVHitsParams, VISHitsParams, fDoReflectedLight, fIncludeAnodeReflections);
+      VUVHitsParams, VISHitsParams, fDoReflectedLight, fIncludeAnodeReflections, fUseXeAbsorption);
 
     // propagation time model
     if (fIncludePropTime)
