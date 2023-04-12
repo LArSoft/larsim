@@ -25,6 +25,7 @@ cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
 cet_cmake_module_directories(Modules BINARY)
 
+find_package(artg4tk REQUIRED EXPORT)
 find_package(art REQUIRED EXPORT)
 find_package(art_root_io REQUIRED EXPORT)
 find_package(canvas_root_io REQUIRED)
