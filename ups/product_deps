@@ -249,7 +249,7 @@ gdmldir	product_dir	gdml
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-larg4		v09_80_00rc0	-
+larg4		v09_80_00rc1	-
 larsoft_data	v1_02_02	-
 marley		v1_2_0h		-
 nugen		v1_18_04	-
