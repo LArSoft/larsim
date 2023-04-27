@@ -9,6 +9,8 @@
 #include "MCShowerRecoPart.h"
 #include "larsim/MCSTReco/MCRecoPart.h"
 
+#include "TString.h"
+
 #include <iostream>
 #include <limits>
 

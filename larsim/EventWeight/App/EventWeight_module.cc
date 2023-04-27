@@ -13,6 +13,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -72,7 +73,10 @@ namespace evwgh {
     // Tell GENIE about the event generator list and tune
     evgb::SetEventGeneratorListAndTune(evgen_list_name, genie_tune_name);
 
-    auto const n_func = _wgt_manager.Configure(p, *this);
+    auto const n_func = _wgt_manager.Configure(
+      p, [this](std::string const& type, std::string const& instance) -> CLHEP::HepRandomEngine& {
+        return createEngine(0, type, instance);
+      });
     if (n_func > 0) produces<std::vector<MCEventWeight>>();
   }
 

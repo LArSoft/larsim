@@ -76,7 +76,7 @@ namespace evgen {
    *
    * As custom, if the random seed is not provided by the configuration, one is
    * fetched from `NuRandomService` (if available), with the behaviour in
-	* lar::util::FetchRandomSeed().
+        * lar::util::FetchRandomSeed().
    */
   class GENIEGen : public art::EDProducer {
   public:
@@ -334,7 +334,7 @@ namespace evgen {
   void GENIEGen::beginRun(art::Run& run)
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   //____________________________________________________________________________
@@ -356,7 +356,7 @@ namespace evgen {
     p->totpot = fGENIEHelp->TotalExposure() - fPrevTotPOT;
     p->totgoodpot = fGENIEHelp->TotalExposure() - fPrevTotGoodPOT;
 
-    sr.put(std::move(p));
+    sr.put(std::move(p), art::subRunFragment());
 
     return;
   }

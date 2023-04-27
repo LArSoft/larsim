@@ -415,13 +415,16 @@ namespace larg4 {
     , fOffPlaneMargin(pset.get<double>("ChargeRecoveryMargin", 0.0))
     , fKeepParticlesInVolumes(pset.get<std::vector<std::string>>("KeepParticlesInVolumes", {}))
     , fSparsifyTrajectories(pset.get<bool>("SparsifyTrajectories", false))
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}
-                ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "propagation"),
+        "HepJamesRandom",
+        "propagation",
+        pset,
+        "PropagationSeed"))
     , fDetProp{art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob()}
     , fAllPhysicsLists{fDetProp}
   {
     MF_LOG_DEBUG("LArG4") << "Debug: LArG4()";
-    art::ServiceHandle<art::RandomNumberGenerator const> rng;
 
     if (!fMakeMCParticles) { // configuration option consistency
       if (fdumpParticleList) {
@@ -444,8 +447,8 @@ namespace larg4 {
     // obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed" or "GEANTSeed"
     // FIXME: THIS APPEARS TO BE A NO-OP; IS IT NEEDED?
-    (void)art::ServiceHandle<rndm::NuRandomService>()->createEngine(
-      *this, "G4Engine", "GEANT", pset, "GEANTSeed");
+    (void)art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+      createEngine(0, "G4Engine", "GEANT"), "G4Engine", "GEANT", pset, "GEANTSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object

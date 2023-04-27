@@ -40,8 +40,8 @@ const double lambdaUV = 106.6 * 1e-7; // LAr UV Resonance lambda (cm)
 const double lambdaIR = 908.3 * 1e-7; // LAr IR Resonance lambda (cm)
 const double alngth = 66.;            // LAr attenuation length in cm at 128 nm
                                       // from N. Ishida et al :
-  // Nuclear Instruments and Methods in Physics Research Section A: Accelerators,
-  // Spectrometers, Detectors and Associated Equipment 384 (23) (1997) 380 - 386.
+// Nuclear Instruments and Methods in Physics Research Section A: Accelerators,
+// Spectrometers, Detectors and Associated Equipment 384 (23) (1997) 380 - 386.
 // refractive index at triple point LAr from
 // A. C. Sinnock, B. L. Smith, Refractive indices of the condensed inert gases, Phys. Rev. 181 (1969) 1297-1307.
 const Int_t nr = 9;

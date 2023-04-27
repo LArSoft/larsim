@@ -58,8 +58,12 @@ namespace larg4 {
     : EDAnalyzer(pset)
     , fEDepTag{pset.get<art::InputTag>("SimulationLabel")}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()
-                ->createEngine(*this, "HepJamesRandom", "NEST", pset, "SeedNEST"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "NEST"),
+        "HepJamesRandom",
+        "NEST",
+        pset,
+        "SeedNEST"))
   {
     std::cout << "ISCalcAna constructor." << std::endl;
   }

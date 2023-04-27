@@ -101,7 +101,9 @@ evgen::NeutronOsc::NeutronOsc(fhicl::ParameterSet const& p)
   : art::EDProducer{p}
   // create a default random engine; obtain the random seed from NuRandomService,
   // unless overridden in configuration with key "Seed"
-  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->createEngine(*this, p, "Seed")}
+  , flatDist{art::ServiceHandle<rndm::NuRandomService>{}->registerAndSeedEngine(createEngine(0),
+                                                                                p,
+                                                                                "Seed")}
 {
   string sname = "genie::EventGenerator";
   // GENIE v2 // string sconfig = "NeutronOsc";
@@ -208,7 +210,7 @@ void evgen::NeutronOsc::produce(art::Event& e)
 void evgen::NeutronOsc::beginRun(art::Run& run)
 {
   art::ServiceHandle<geo::Geometry const> geo;
-  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+  run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
 }
 
 int evgen::NeutronOsc::SelectAnnihilationMode(int pdg_code)

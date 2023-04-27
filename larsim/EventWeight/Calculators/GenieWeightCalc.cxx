@@ -505,22 +505,10 @@ namespace evwgh {
   // Returns a vector of weights for each neutrino interaction in the event
   std::vector<std::vector<double>> GenieWeightCalc::GetWeight(art::Event& e)
   {
-    // Get the MC generator information out of the event
-    // These are both handles to MC information.
-    art::Handle<std::vector<simb::MCTruth>> mcTruthHandle;
-    art::Handle<std::vector<simb::GTruth>> gTruthHandle;
+    auto const& mcTruth = e.getProduct<std::vector<simb::MCTruth>>(fGenieModuleLabel);
+    auto const& gTruth = e.getProduct<std::vector<simb::GTruth>>(fGenieModuleLabel);
 
-    // Actually go and get the stuff
-    e.getByLabel(fGenieModuleLabel, mcTruthHandle);
-    e.getByLabel(fGenieModuleLabel, gTruthHandle);
-
-    std::vector<art::Ptr<simb::MCTruth>> mclist;
-    art::fill_ptr_vector(mclist, mcTruthHandle);
-
-    std::vector<art::Ptr<simb::GTruth>> glist;
-    art::fill_ptr_vector(glist, gTruthHandle);
-
-    size_t num_neutrinos = mclist.size();
+    size_t num_neutrinos = mcTruth.size();
     size_t num_knobs = reweightVector.size();
 
     // Calculate weight(s) here
@@ -530,7 +518,7 @@ namespace evwgh {
       // Convert the MCTruth and GTruth objects from the event
       // back into the original genie::EventRecord needed to
       // compute the weights
-      std::unique_ptr<genie::EventRecord> genie_event(evgb::RetrieveGHEP(*mclist[v], *glist[v]));
+      std::unique_ptr<genie::EventRecord> genie_event(evgb::RetrieveGHEP(mcTruth[v], gTruth[v]));
 
       // Set the final lepton kinetic energy and scattering cosine
       // in the owned GENIE kinematics object. This is done during

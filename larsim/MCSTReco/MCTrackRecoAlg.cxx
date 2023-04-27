@@ -19,6 +19,8 @@
 #include "larsim/MCSTReco/MCRecoEdep.h"                   // for MCEdep
 #include "larsim/MCSTReco/MCRecoPart.h"                   // for MCMiniPart
 
+#include "TString.h"
+
 namespace sim {
 
   //##################################################################

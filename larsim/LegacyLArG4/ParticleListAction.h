@@ -153,7 +153,7 @@ namespace larg4 {
                                 ///< for EM shower particles
     static int
       fCurrentOrigTrackID; ///< g4 real track ID of the current particle (including for EM shower daughters)
-      ///< except for EM shower particles where it always shows the original track ID
+    ///< except for EM shower particles where it always shows the original track ID
     static int fCurrentPdgCode;  ///< pdg code of current particle
     static int fTrackIDOffset;   ///< offset added to track ids when running over
                                  ///< multiple MCTruth objects.

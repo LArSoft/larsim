@@ -106,7 +106,9 @@ namespace evgen {
     , fEventFile{fNdkFile}
     // create a default random engine; obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed"
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->createEngine(*this, pset, "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 pset,
+                                                                                 "Seed"))
   {
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();
@@ -182,7 +184,7 @@ namespace evgen {
   void NDKGen::beginRun(art::Run& run)
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()));
+    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
   //____________________________________________________________________________

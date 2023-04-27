@@ -87,12 +87,14 @@ namespace larg4 {
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()
-              ->createEngine(*this, "HepJamesRandom", "ISCalcAlg", pset, "SeedISCalcAlg"))
-    , Instances{
-        pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive"),
-      }
-    , fSavePriorSCE{pset.get<bool>("SavePriorSCE",  false)}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->registerAndSeedEngine(
+        createEngine(0, "HepJamesRandom", "ISCalcAlg"),
+        "HepJamesRandom",
+        "ISCalcAlg",
+        pset,
+        "SeedISCalcAlg"))
+    , Instances{pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive")}
+    , fSavePriorSCE{pset.get<bool>("SavePriorSCE", false)}
   {
     std::cout << "IonAndScint Module Construct" << std::endl;
 
