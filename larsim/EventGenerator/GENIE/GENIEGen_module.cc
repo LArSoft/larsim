@@ -35,6 +35,7 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
+#include "lardata/Utilities/AssociationUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
 #include "larcoreobj/SummaryData/RunData.h"
@@ -51,7 +52,7 @@
 #include "dk2nu/genie/GDk2NuFlux.h"
 
 #include "GENIE/Framework/EventGen/EventRecord.h"
-#include "nutools/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
+#include "nugen/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
 #include "nutools/EventGeneratorBase/evgenbase.h"
 
 ///Event Generation using GENIE, cosmics or single particles

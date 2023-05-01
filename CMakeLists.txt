@@ -39,6 +39,9 @@ find_package(nurandom REQUIRED EXPORT)
 find_package(nusimdata REQUIRED EXPORT)
 find_package(nutools REQUIRED EXPORT)
 
+find_package(dk2nugenie REQUIRED EXPORT)
+find_package(dk2nudata REQUIRED EXPORT)
+
 find_package(Boost REQUIRED COMPONENTS headers math_tr1 REQUIRED EXPORT) # boost::math::policies, boost::math::ellint*
 find_package(CLHEP COMPONENTS Evaluator Geometry Random Vector REQUIRED EXPORT)
 find_package(CRY REQUIRED EXPORT) # find module in nutools
