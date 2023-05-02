@@ -1,3 +1,10 @@
+include_directories ( $ENV{DK2NUDATA_INC} )
+include_directories ( $ENV{DK2NUGENIE_INC} )
+include_directories ( $ENV{GENIE_INC} )
+include_directories ( $ENV{GENIE_INC}/GENIE )
+include_directories ( $ENV{NUTOOLS_INC} )
+
+
 cet_build_plugin(GENIEGen art::EDProducer
   LIBRARIES PRIVATE
   larcore::Geometry_Geometry_service
@@ -14,6 +21,9 @@ cet_build_plugin(GENIEGen art::EDProducer
   canvas::canvas
   messagefacility::MF_MessageLogger
   fhiclcpp::fhiclcpp
+  dk2nu::Genie
+  dk2nu::Tree
+  ${GENIE_LIB_LIST}
   ROOT::Core
   ROOT::EG
   ROOT::Hist
