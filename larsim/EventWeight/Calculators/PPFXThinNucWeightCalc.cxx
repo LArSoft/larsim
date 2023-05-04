@@ -7,7 +7,7 @@
 #include "MakeReweight.h"
 #include "dk2nu/tree/dk2nu.h"	
 #include "dk2nu/tree/dkmeta.h"
-#include "nutools/EventGeneratorBase/GENIE/MCTruthAndFriendsItr.h"
+#include "nugen/EventGeneratorBase/GENIE/MCTruthAndFriendsItr.h"
 
 #include "TSystem.h"
 
@@ -27,6 +27,7 @@ namespace evwgh {
        std::string fMode;
        std::string fHorn;
        std::string fTarget;
+       int fSeed;
        int fVerbose;
        NeutrinoFluxReweight::MakeReweight* fPPFXrw;
 
@@ -78,8 +79,8 @@ namespace evwgh {
     int nmctruth=0, nmatched=0;
     bool flag = true;
     int  ievt = -1;
-    std::vector<art::Handle<std::vector<bsim::Dk2Nu>>> dk2nus2;
-    e.getManyByType(dk2nus2);	
+    std::vector<art::Handle<std::vector<bsim::Dk2Nu>>> dk2nus2 =
+      e.getMany<std::vector<bsim::Dk2Nu>>();
     for (size_t dk2=0; dk2 < dk2nus2.size(); ++dk2) {
       art::Handle<std::vector<bsim::Dk2Nu>> dk2nus = dk2nus2[dk2];
     }

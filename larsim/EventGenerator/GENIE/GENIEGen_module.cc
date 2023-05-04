@@ -53,7 +53,7 @@
 
 #include "GENIE/Framework/EventGen/EventRecord.h"
 #include "nugen/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
-#include "nutools/EventGeneratorBase/evgenbase.h"
+#include "nugen/EventGeneratorBase/evgenbase.h"
 
 ///Event Generation using GENIE, cosmics or single particles
 namespace evgen {
