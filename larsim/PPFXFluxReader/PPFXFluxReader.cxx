@@ -30,8 +30,6 @@
 #include "DK2NuInterface.h"
 
 #include "GENIE/Framework/EventGen/EventRecord.h"
-#include "nutools/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
-#include "nutools/EventGeneratorBase/evgenbase.h"
 
 //#include "cetlib/exception.h"
 
