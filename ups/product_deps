@@ -255,6 +255,7 @@ marley		v1_2_0h		-
 nugen		v1_19_00	-
 nurandom	v1_10_00	-
 nutools		v3_15_02	-
+ppfx            v02_17_04       -
 cetmodules	v3_20_00	-	only_for_build
 end_product_list
 ####################################
@@ -310,13 +311,13 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	larg4		nutools		nugen		nurandom	marley		larsoft_data
-c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	-nq-
-c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		-nq-
-e19:debug	e19:debug	e19:debug	e19:debug	e19:debug	e19:debug	-nq-
-e19:prof	e19:prof	e19:prof	e19:prof	e19:prof	e19:prof	-nq-
-e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	-nq-
-e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	-nq-
+qualifier	larg4		nutools		nugen		nurandom	marley		ppfx		larsoft_data
+c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	-nq-
+c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		-nq-
+e19:debug	e19:debug	e19:debug	e19:debug	e19:debug	e19:debug	e19:debug	-nq-
+e19:prof	e19:prof	e19:prof	e19:prof	e19:prof	e19:prof	e19:prof	-nq-
+e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	-nq-
+e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	-nq-
 end_qualifier_list
 ####################################
 
