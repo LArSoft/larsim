@@ -52,8 +52,6 @@
 
 namespace larg4 {
 
-  static CustomPhysicsTable* TheCustomPhysicsTable;
-
   template <class T>
   TConfigurablePhysicsList<T>::TConfigurablePhysicsList(G4int const ver) : T()
   {
@@ -71,6 +69,7 @@ namespace larg4 {
       logmsg << "Custom physics list enabled, contents:\n";
       for (auto const& val : EnabledPhysics) {
         logmsg << "  " << val << '\n';
+        assert(TheCustomPhysicsTable);
         if (!TheCustomPhysicsTable->IsPhysicsAvailable(val)) {
           logmsg << "\nERROR: physics not available: " << val << '\n';
           std::vector<std::string> availablePhysics(

@@ -12,7 +12,7 @@
 
 namespace larg4 {
 
-  static CustomPhysicsTable* TheCustomPhysicsTable;
+  CustomPhysicsTable* TheCustomPhysicsTable{nullptr};
 
   //-----------------------------------------------------------------
   CustomPhysicsTable::CustomPhysicsTable(CustomPhysicsFactoryBase* Factory)

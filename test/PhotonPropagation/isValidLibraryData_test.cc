@@ -75,7 +75,7 @@ void isValidLibraryData_test()
   float const* const valid_cptrc = valid_array;
   float const* const invalid_cptrc = nullptr;
 
-  std::unique_ptr<float> valid_uptr{new float[4U]};
+  std::unique_ptr<float[]> valid_uptr{new float[4U]};
   std::unique_ptr<float> invalid_uptr;
 
   ContainerWith_size valid_with_size{4U};

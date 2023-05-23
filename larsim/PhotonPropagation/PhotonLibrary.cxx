@@ -466,15 +466,16 @@ namespace phot {
     RooReader<RooInt, Int_t> readInt{srcDir, missingKeys};
     RooReader<RooDouble, Double_t> readDouble{srcDir, missingKeys};
 
-    double xMin;
-    double xMax;
-    int xN;
-    double yMin;
-    double yMax;
-    int yN;
-    double zMin;
-    double zMax;
-    int zN;
+    // FIXME: Not sure initializing to 0 is appropriate.
+    double xMin{};
+    double xMax{};
+    int xN{};
+    double yMin{};
+    double yMax{};
+    int yN{};
+    double zMin{};
+    double zMax{};
+    int zN{};
     if (auto metaValue = readDouble("MinX")) xMin = *metaValue;
     if (auto metaValue = readDouble("MaxX")) xMax = *metaValue;
     if (auto metaValue = readInt("NDivX")) xN = *metaValue;
