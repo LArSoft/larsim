@@ -46,6 +46,8 @@ namespace larg4 {
     std::map<std::string, CustomPhysicsFactoryBase*> theTable;
   };
 
+  extern CustomPhysicsTable* TheCustomPhysicsTable;
+
 }
 
 #endif

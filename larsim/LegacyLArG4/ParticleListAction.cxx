@@ -412,12 +412,11 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   /// Utility class for the EndOfEventAction method: update the
   /// daughter relationships in the particle list.
-  class UpdateDaughterInformation
-    : public std::unary_function<sim::ParticleList::value_type, void> {
+  class UpdateDaughterInformation {
   public:
     UpdateDaughterInformation() : particleList(0) {}
     void SetParticleList(sim::ParticleList* p) { particleList = p; }
-    void operator()(sim::ParticleList::value_type& particleListEntry)
+    void operator()(sim::ParticleList::value_type& particleListEntry) const
     {
       // We're looking at this Particle in the list.
       int particleID = particleListEntry.first;
