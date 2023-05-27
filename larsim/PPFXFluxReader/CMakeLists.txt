@@ -58,5 +58,3 @@ art_make( EXCLUDE PPFXFluxReader_source.cc ${INTERFACEFILES}
 install_headers()
 install_source()
 install_fhicl()
-
-add_subdirectory(job)
