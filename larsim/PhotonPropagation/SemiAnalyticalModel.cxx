@@ -194,7 +194,9 @@ namespace phot {
     geo::Vector_t const relative = ScintPoint - opDet.center;
     const double distance = relative.R();
     double cosine;
-    if (opDet.orientation == 1)
+    if (opDet.orientation == 2)
+      cosine = std::abs(relative.Z()) / distance;
+    else if (opDet.orientation == 1)
       cosine = std::abs(relative.Y()) / distance;
     else
       cosine = std::abs(relative.X()) / distance;
@@ -238,7 +240,9 @@ namespace phot {
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
     double r = 0;
-    if (opDet.orientation == 1)
+    if (opDet.orientation == 2)
+      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
+    else if (opDet.orientation == 1)
       r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
     else
       r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
@@ -249,7 +253,8 @@ namespace phot {
     double s3 = 0;
     // flat PDs
     if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
-      if (opDet.orientation == 1 && fIsFlatPDCorrLat) { // laterals
+      if ((opDet.orientation == 1 && fIsFlatPDCorrLat) ||
+          (opDet.orientation == 2 && fIsFlatPDCorrLat)) { // laterals
         pars_ini[0] = fGHvuvpars_flat_lateral[0][j];
         pars_ini[1] = fGHvuvpars_flat_lateral[1][j];
         pars_ini[2] = fGHvuvpars_flat_lateral[2][j];
@@ -429,7 +434,10 @@ namespace phot {
     const double distance_vis = emission_relative.R();
     //  angle between hotspot and optical detector
     double cosine_vis;
-    if (opDet.orientation == 1) { // lateral
+    if (opDet.orientation == 2) { // lateral
+      cosine_vis = std::abs(emission_relative.Z()) / distance_vis;
+    }
+    else if (opDet.orientation == 1) { // lateral
       cosine_vis = std::abs(emission_relative.Y()) / distance_vis;
     }
     else { // anode/cathode (default)
@@ -476,15 +484,16 @@ namespace phot {
     double r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
     double d_c = std::abs(ScintPoint.X() - plane_depth); // distance to cathode
     double border_correction = 0;
-    // flat PDs
+    // flat PDs (ARAPUCAS and disk PMTs)
     if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
       // cathode/anode case
-      if (opDet.orientation == 0 && fIsFlatPDCorr) {
-        border_correction =
-          interpolate2(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat, d_c, r, k);
-      }
+      //if (opDet.orientation == 0 && fIsFlatPDCorr) {
+
+      border_correction =
+        interpolate2(fvis_distances_x_flat, fvis_distances_r_flat, fvispars_flat, d_c, r, k);
+      //}
       // laterals case
-      else if (opDet.orientation == 1 && fIsFlatPDCorrLat) {
+      /*else if (opDet.orientation == 1 && fIsFlatPDCorrLat) {
         border_correction = interpolate2(fvis_distances_x_flat_lateral,
                                          fvis_distances_r_flat_lateral,
                                          fvispars_flat_lateral,
@@ -497,7 +506,7 @@ namespace phot {
           << "Error: Invalid optical detector shape requested or corrections "
              "are missing - configuration error in semi-analytical model."
           << "\n";
-      }
+      }*/
     }
     // dome PDs
     else if (opDet.type == 1 && fIsDomePDCorr) {
@@ -627,7 +636,12 @@ namespace phot {
     // to use
     double d1;
     double d2;
-    if (OpDetOrientation == 1) {
+    if (OpDetOrientation == 2) {
+      // lateral PD, arapuca plane fixed in z direction
+      d1 = std::abs(v.X());
+      d2 = std::abs(v.Z());
+    }
+    else if (OpDetOrientation == 1) {
       // lateral PD, arapuca plane fixed in y direction
       d1 = std::abs(v.X());
       d2 = std::abs(v.Y());
@@ -757,13 +771,17 @@ namespace phot {
         type = 0; // (X)Arapucas/Bars
         // determine orientation to get correction OpDet dimensions
         length = opDet.Length();
-        if (opDet.Width() > opDet.Height()) { // laterals, Y dimension smallest
+        height = opDet.Height();
+        if (opDet.Width() > opDet.Height()) { // laterals along x-z plane, Y dimension smallest
           orientation = 1;
           height = opDet.Width();
         }
+        else if (opDet.Width() > opDet.Length()) { // laterals along x-y plane, Z dimension smallest
+          orientation = 2;
+          length = opDet.Width();
+        }
         else { // anode/cathode (default), X dimension smallest
           orientation = 0;
-          height = opDet.Height();
         }
       }
       else {
