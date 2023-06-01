@@ -481,7 +481,7 @@ namespace phot {
       r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
     double d_c = std::abs(ScintPoint.X() - plane_depth); // distance to cathode
     double border_correction = 0;
-    // flat PDs (ARAPUCAS and disk PMTs)
+    // flat PDs
     if ((opDet.type == 0 || opDet.type == 2) && (fIsFlatPDCorr || fIsFlatPDCorrLat)) {
       // cathode/anode case
       if (opDet.orientation == 0 && fIsFlatPDCorr) {
