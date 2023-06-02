@@ -194,7 +194,7 @@ namespace phot {
     geo::Vector_t const relative = ScintPoint - opDet.center;
     const double distance = relative.R();
     double cosine;
-    if (opDet.orientation == 2) 
+    if (opDet.orientation == 2)
       cosine = std::abs(relative.Z()) / distance;
     else if (opDet.orientation == 1)
       cosine = std::abs(relative.Y()) / distance;
