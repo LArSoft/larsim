@@ -177,10 +177,12 @@ namespace evgen {
     produces<std::vector<sim::BeamGateInfo>>();
 
     // dk2nu additions
-    produces< std::vector<bsim::Dk2Nu>     >();
-    produces< std::vector<bsim::NuChoice>  >();
-    produces< art::Assns<simb::MCTruth, bsim::Dk2Nu>    >();
-    produces< art::Assns<simb::MCTruth, bsim::NuChoice> >();
+    if (pset.get<std::string>("FluxType").find("dk2nu") != std::string::npos) {
+      produces< std::vector<bsim::Dk2Nu>     >();
+      produces< std::vector<bsim::NuChoice>  >();
+      produces< art::Assns<simb::MCTruth, bsim::Dk2Nu>    >();
+      produces< art::Assns<simb::MCTruth, bsim::NuChoice> >();
+    }
 
     std::string beam_type_name = pset.get<std::string>("BeamName");
 
@@ -399,6 +401,8 @@ namespace evgen {
     std::unique_ptr< art::Assns<simb::MCTruth, bsim::NuChoice> >
       nuchoiceassn(new art::Assns<simb::MCTruth, bsim::NuChoice>);
 
+    genie::flux::GDk2NuFlux* dk2nuDriver =
+      dynamic_cast<genie::flux::GDk2NuFlux*>(fGENIEHelp->GetFluxDriver(true));
     while (truthcol->size() < 1) {
       while (!fGENIEHelp->Stop()) {
 
@@ -421,9 +425,6 @@ namespace evgen {
 
           FillHistograms(truth);
 
-	  genie::GFluxI* fdriver = fGENIEHelp->GetFluxDriver(true);
-	  genie::flux::GDk2NuFlux* dk2nuDriver =
-	    dynamic_cast<genie::flux::GDk2NuFlux*>(fdriver);
 	  if ( dk2nuDriver ) {
 	    const bsim::Dk2Nu& dk2nuObj = dk2nuDriver->GetDk2Nu();
 	    dk2nucol   ->push_back(dk2nuObj);
@@ -478,10 +479,13 @@ namespace evgen {
     evt.put(std::move(tgtassn));
     evt.put(std::move(gateCollection));
 
-    evt.put(std::move(dk2nucol));
-    evt.put(std::move(nuchoicecol));
-    evt.put(std::move(dk2nuassn));
-    evt.put(std::move(nuchoiceassn));
+    // dk2nu additions
+    if ( dk2nuDriver ) {
+      evt.put(std::move(dk2nucol));
+      evt.put(std::move(nuchoicecol));
+      evt.put(std::move(dk2nuassn));
+      evt.put(std::move(nuchoiceassn));
+    }
 
     return;
   }
