@@ -77,14 +77,15 @@ namespace larg4 {
     double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
-    double num_ions = energy_deposit / fWion;
+    double num_ions=0.0; //check if the deposited energy is above ionization threshold
+    if(energy_deposit>=fWion) num_ions = energy_deposit / fWion;
     double num_quanta = energy_deposit / fWph;
 
     double ds = edep.StepLength();
     double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
     dEdx = (dEdx < 1.) ? 1. : dEdx;
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
-    double recomb = 0.;
+    double recomb = 0., num_electrons = 0.;
 
     //calculate recombination survival fraction value inside, otherwise zero
     if (EFieldStep > 0.) {
@@ -117,8 +118,8 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    double num_electrons =
-      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
+    if(num_ions>0.) num_electrons =
+      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);    
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
