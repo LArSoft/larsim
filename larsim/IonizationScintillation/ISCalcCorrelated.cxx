@@ -59,7 +59,8 @@ namespace larg4 {
     fLarqlChi0C = LArG4PropHandle->LarqlChi0C();
     fLarqlChi0D = LArG4PropHandle->LarqlChi0D();
     fLarqlAlpha = LArG4PropHandle->LarqlAlpha();
-    fLarqlBeta = LArG4PropHandle->LarqlBeta();
+    fLarqlBeta  = LArG4PropHandle->LarqlBeta();
+    fQAlpha     = LArG4PropHandle->QAlpha();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
     // ionization work function
@@ -101,7 +102,7 @@ namespace larg4 {
       }
     }
 
-    if (fUseModLarqlRecomb) { //Use corrections from LArQL model
+    if (fUseModLarqlRecomb && edep.PdgCode()!=1000020040) { //Use corrections from LArQL model (except for alpha)
       recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
@@ -119,10 +120,15 @@ namespace larg4 {
 
     // using this recombination, calculate number of ionization electrons
     if(num_ions>0.) num_electrons =
-      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);    
+      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
+
+    if(edep.PdgCode()==1000020040){
+      num_electrons = num_electrons*fQAlpha;
+      num_photons = (num_quanta - num_electrons) * fScintPreScale*fQAlpha;
+      }
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
