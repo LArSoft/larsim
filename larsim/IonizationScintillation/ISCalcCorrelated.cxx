@@ -59,8 +59,8 @@ namespace larg4 {
     fLarqlChi0C = LArG4PropHandle->LarqlChi0C();
     fLarqlChi0D = LArG4PropHandle->LarqlChi0D();
     fLarqlAlpha = LArG4PropHandle->LarqlAlpha();
-    fLarqlBeta  = LArG4PropHandle->LarqlBeta();
-    fQAlpha     = LArG4PropHandle->QAlpha();
+    fLarqlBeta = LArG4PropHandle->LarqlBeta();
+    fQAlpha = LArG4PropHandle->QAlpha();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
     // ionization work function
@@ -78,8 +78,8 @@ namespace larg4 {
     double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
-    double num_ions=0.0; //check if the deposited energy is above ionization threshold
-    if(energy_deposit>=fWion) num_ions = energy_deposit / fWion;
+    double num_ions = 0.0; //check if the deposited energy is above ionization threshold
+    if (energy_deposit >= fWion) num_ions = energy_deposit / fWion;
     double num_quanta = energy_deposit / fWph;
 
     double ds = edep.StepLength();
@@ -102,7 +102,8 @@ namespace larg4 {
       }
     }
 
-    if (fUseModLarqlRecomb && edep.PdgCode()!=1000020040) { //Use corrections from LArQL model (except for alpha)
+    if (fUseModLarqlRecomb &&
+        edep.PdgCode() != 1000020040) { //Use corrections from LArQL model (except for alpha)
       recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
     }
 
@@ -119,16 +120,17 @@ namespace larg4 {
     }
 
     // using this recombination, calculate number of ionization electrons
-    if(num_ions>0.) num_electrons =
-      (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
+    if (num_ions > 0.)
+      num_electrons =
+        (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
-    if(edep.PdgCode()==1000020040){
-      num_electrons = num_electrons*fQAlpha;
-      num_photons = num_photons*fQAlpha;
-      }
+    if (edep.PdgCode() == 1000020040) {
+      num_electrons = num_electrons * fQAlpha;
+      num_photons = num_photons * fQAlpha;
+    }
 
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
