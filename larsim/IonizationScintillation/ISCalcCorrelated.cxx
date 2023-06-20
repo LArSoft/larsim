@@ -127,7 +127,7 @@ namespace larg4 {
 
     if(edep.PdgCode()==1000020040){
       num_electrons = num_electrons*fQAlpha;
-      num_photons = (num_quanta - num_electrons) * fScintPreScale*fQAlpha;
+      num_photons = num_photons*fQAlpha;
       }
 
     MF_LOG_DEBUG("ISCalcCorrelated")
