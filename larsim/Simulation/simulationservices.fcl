@@ -43,7 +43,8 @@ standard_largeantparameters:
  ModBoxA: 0.930
  ModBoxB: 0.212
 
- #* Recombination factor coefficients for LArQL can be found in https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/LArQL_algorithm
+ #* Recombination factor coefficients for LArQL
+ #* https://doi.org/10.1088/1748-0221/17/07/C07009
  #* * @f$ dE/dx @f$ is given by the energy deposition in MeV/cm
  #* * electric field: @f$ E @f$ in kV/cm
  LarqlChi0A: 0.00338427
@@ -52,6 +53,10 @@ standard_largeantparameters:
  LarqlChi0D: 0.000129379
  LarqlAlpha: 0.0372
  LarqlBeta: 0.0124
+
+  #* alpha particle quenching factor
+  #* Doke et al. Jpn. J. Appl. Phys. Vol. 41 (2002) pp. 1538
+ QAlpha: 0.72
 
   #* ion+excitation work function in eV
   #* https://doi.org/10.1016/0168-9002(90)90011-T
