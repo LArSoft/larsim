@@ -50,6 +50,7 @@ namespace sim {
     double LarqlAlpha() const { return fLarqlAlpha; }
     double LarqlBeta() const { return fLarqlBeta; }
     double Wph() const { return fWph; }
+    double QAlpha() const { return fQAlpha; }
     bool UseModBoxRecomb() const { return fUseModBoxRecomb; }
     bool UseModLarqlRecomb() const { return fUseModLarqlRecomb; }
     bool UseBinomialFlucts() const { return fUseBinomialFlucts; }
@@ -124,6 +125,7 @@ namespace sim {
     double const fLarqlAlpha;      ///< Possibly override the LarqlAlpha parameter
     double const fLarqlBeta;       ///< Possibly override the LarqlBeta parameter
     double const fWph;             ///< Possibly override the Wph parameter
+    double const fQAlpha;          ///< Possibly override the QAlpha parameter
     bool const fUseModBoxRecomb;   ///< Use Modified Box model recombination instead of Birks
     bool const fUseModLarqlRecomb; ///< Use LArQL model recombination correction (dependence on EF)
     bool const fUseBinomialFlucts; ///< Use binomial fluctuations in correlated method

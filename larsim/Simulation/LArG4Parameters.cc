@@ -53,6 +53,7 @@ namespace sim {
     , fLarqlAlpha{pset.get<double>("LarqlAlpha")}
     , fLarqlBeta{pset.get<double>("LarqlBeta")}
     , fWph{pset.get<double>("Wph")}
+    , fQAlpha{pset.get<double>("QAlpha")}
     , fUseModBoxRecomb{pset.get<bool>("UseModBoxRecomb")}
     , fUseModLarqlRecomb{pset.get<bool>("UseModLarqlRecomb")}
     , fUseBinomialFlucts{pset.get<bool>("UseBinomialFlucts", true)}
