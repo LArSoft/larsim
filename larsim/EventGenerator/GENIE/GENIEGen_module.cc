@@ -35,10 +35,10 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft includes
-#include "lardata/Utilities/AssociationUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
 #include "larcoreobj/SummaryData/RunData.h"
+#include "lardata/Utilities/AssociationUtil.h"
 #include "lardataalg/MCDumpers/MCDumpers.h" // sim::dump namespace
 #include "lardataobj/Simulation/BeamGateInfo.h"
 #include "nugen/EventGeneratorBase/GENIE/GENIEHelper.h"
@@ -47,9 +47,9 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 // dk2nu extensions
-#include "dk2nu/tree/dk2nu.h"
-#include "dk2nu/tree/NuChoice.h"
 #include "dk2nu/genie/GDk2NuFlux.h"
+#include "dk2nu/tree/NuChoice.h"
+#include "dk2nu/tree/dk2nu.h"
 
 #include "GENIE/Framework/EventGen/EventRecord.h"
 #include "nugen/EventGeneratorBase/GENIE/EVGBAssociationUtil.h"
@@ -178,10 +178,10 @@ namespace evgen {
 
     // dk2nu additions
     if (pset.get<std::string>("FluxType").find("dk2nu") != std::string::npos) {
-      produces< std::vector<bsim::Dk2Nu>     >();
-      produces< std::vector<bsim::NuChoice>  >();
-      produces< art::Assns<simb::MCTruth, bsim::Dk2Nu>    >();
-      produces< art::Assns<simb::MCTruth, bsim::NuChoice> >();
+      produces<std::vector<bsim::Dk2Nu>>();
+      produces<std::vector<bsim::NuChoice>>();
+      produces<art::Assns<simb::MCTruth, bsim::Dk2Nu>>();
+      produces<art::Assns<simb::MCTruth, bsim::NuChoice>>();
     }
 
     std::string beam_type_name = pset.get<std::string>("BeamName");
@@ -392,14 +392,12 @@ namespace evgen {
     std::unique_ptr<std::vector<sim::BeamGateInfo>> gateCollection(
       new std::vector<sim::BeamGateInfo>);
 
-    std::unique_ptr< std::vector<bsim::Dk2Nu> >
-      dk2nucol(new std::vector<bsim::Dk2Nu>);
-    std::unique_ptr< std::vector<bsim::NuChoice> >
-      nuchoicecol(new std::vector<bsim::NuChoice>);
-    std::unique_ptr< art::Assns<simb::MCTruth, bsim::Dk2Nu> >
-      dk2nuassn(new art::Assns<simb::MCTruth, bsim::Dk2Nu>);
-    std::unique_ptr< art::Assns<simb::MCTruth, bsim::NuChoice> >
-      nuchoiceassn(new art::Assns<simb::MCTruth, bsim::NuChoice>);
+    std::unique_ptr<std::vector<bsim::Dk2Nu>> dk2nucol(new std::vector<bsim::Dk2Nu>);
+    std::unique_ptr<std::vector<bsim::NuChoice>> nuchoicecol(new std::vector<bsim::NuChoice>);
+    std::unique_ptr<art::Assns<simb::MCTruth, bsim::Dk2Nu>> dk2nuassn(
+      new art::Assns<simb::MCTruth, bsim::Dk2Nu>);
+    std::unique_ptr<art::Assns<simb::MCTruth, bsim::NuChoice>> nuchoiceassn(
+      new art::Assns<simb::MCTruth, bsim::NuChoice>);
 
     genie::flux::GDk2NuFlux* dk2nuDriver =
       dynamic_cast<genie::flux::GDk2NuFlux*>(fGENIEHelp->GetFluxDriver(true));
@@ -425,16 +423,21 @@ namespace evgen {
 
           FillHistograms(truth);
 
-	  if ( dk2nuDriver ) {
-	    const bsim::Dk2Nu& dk2nuObj = dk2nuDriver->GetDk2Nu();
-	    dk2nucol   ->push_back(dk2nuObj);
-	    const bsim::NuChoice& nuchoiceObj = dk2nuDriver->GetNuChoice();
-	    nuchoicecol->push_back(nuchoiceObj);
-	    util::CreateAssn(*this, evt, *truthcol, *dk2nucol, *dk2nuassn,
-			     dk2nucol->size()-1, dk2nucol->size());
-	    util::CreateAssn(*this, evt, *truthcol, *nuchoicecol, *nuchoiceassn,
-			     nuchoicecol->size()-1, nuchoicecol->size());
-	  }
+          if (dk2nuDriver) {
+            const bsim::Dk2Nu& dk2nuObj = dk2nuDriver->GetDk2Nu();
+            dk2nucol->push_back(dk2nuObj);
+            const bsim::NuChoice& nuchoiceObj = dk2nuDriver->GetNuChoice();
+            nuchoicecol->push_back(nuchoiceObj);
+            util::CreateAssn(
+              *this, evt, *truthcol, *dk2nucol, *dk2nuassn, dk2nucol->size() - 1, dk2nucol->size());
+            util::CreateAssn(*this,
+                             evt,
+                             *truthcol,
+                             *nuchoicecol,
+                             *nuchoiceassn,
+                             nuchoicecol->size() - 1,
+                             nuchoicecol->size());
+          }
 
           // check that the process code is not unsupported by GENIE
           // (see issue #18025 for reference);
@@ -480,7 +483,7 @@ namespace evgen {
     evt.put(std::move(gateCollection));
 
     // dk2nu additions
-    if ( dk2nuDriver ) {
+    if (dk2nuDriver) {
       evt.put(std::move(dk2nucol));
       evt.put(std::move(nuchoicecol));
       evt.put(std::move(dk2nuassn));
