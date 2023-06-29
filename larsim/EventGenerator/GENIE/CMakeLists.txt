@@ -1,6 +1,7 @@
 cet_build_plugin(GENIEGen art::EDProducer
   LIBRARIES PRIVATE
   larcore::Geometry_Geometry_service
+  lardata::Utilities
   larcoreobj::SummaryData
   lardataalg::MCDumpers
   lardataobj::Simulation
