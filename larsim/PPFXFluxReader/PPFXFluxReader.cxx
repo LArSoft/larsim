@@ -5,13 +5,20 @@
 ////////////////////////////////////////////////////////////////////////
 
 //LArSoft
+#include "larsim/PPFXFluxReader/PPFXFluxReader.h"
 #include "larcoreobj/SummaryData/POTSummary.h"
+#include "larsim/PPFXFluxReader/DK2NuInterface.h"
+#include "larsim/PPFXFluxReader/GSimpleInterface.h"
 
 //ART, ...
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
+#include "art/Framework/Principal/EventPrincipal.h"
+#include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRun.h"
+#include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art_root_io/TFileService.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //root
@@ -25,15 +32,8 @@
 #include "dk2nu/tree/NuChoice.h"
 #include "dk2nu/tree/dk2nu.h"
 
-#include "DK2NuInterface.h"
-#include "GSimpleInterface.h"
-#include "PPFXFluxReader.h"
-
 #include "GENIE/Framework/EventGen/EventRecord.h"
 
-//#include "cetlib/exception.h"
-
-#include "lardata/Utilities/AssociationUtil.h"
 namespace fluxr {
 
   PPFXFluxReader::PPFXFluxReader(fhicl::ParameterSet const& ps,
@@ -51,7 +51,6 @@ namespace fluxr {
                     helper.reconstitutes<std::vector<bsim::NuChoice>, art::InEvent>("flux") :
                     fTLmctruth}
   {
-
     helper.reconstitutes<sumdata::POTSummary, art::InSubRun>("flux");
 
     if (fInputType == "dk2nu") {
@@ -120,7 +119,6 @@ namespace fluxr {
       }
     }
 
-    //  TH1D* h=tffluxdir.make<TH1D>("numu","numu",240,0,120);
     fEventCounter = 0;
     fEntry = ps.get<uint32_t>("skipEvents", 0);
     fMaxEvents = ps.get<int>("maxEvents", -1);
@@ -128,7 +126,6 @@ namespace fluxr {
 
   void PPFXFluxReader::closeCurrentFile()
   {
-    //mf::LogInfo(__FUNCTION__)<<"File boundary (processed "<<fEventCounter<<" events)"<<std::endl;
     fSubRunID.flushSubRun();
     fEventCounter = 0;
     fFluxInputFile->Close();
@@ -165,10 +162,6 @@ namespace fluxr {
     std::cout << "POT = " << fFluxDriver->GetPOT() << std::endl;
     std::cout << "Run = " << fFluxDriver->GetRun() << std::endl;
     fPOT += fFluxDriver->GetPOT();
-
-    /*if (fFluxDriver->GetRun()<0) {
-	throw cet::exception(__PRETTY_FUNCTION__) << "Run number is less than 0."<<std::endl;
-    }*/
   }
 
   bool PPFXFluxReader::readNext(art::RunPrincipal* const& /*inR*/,
@@ -179,8 +172,6 @@ namespace fluxr {
   {
     if (fMaxEvents > 0 && fEventCounter == unsigned(fMaxEvents)) return false;
 
-    //if (fEventCounter%10000==0)
-    //mf::LogInfo(__FUNCTION__)<<"Attempting to read event: "<<fEventCounter<<std::endl;
     // Create empty result, then fill it from current file:
     std::unique_ptr<std::vector<simb::MCFlux>> mcfluxvec(new std::vector<simb::MCFlux>);
     std::unique_ptr<std::vector<simb::MCTruth>> mctruthvec(new std::vector<simb::MCTruth>);
@@ -197,7 +188,6 @@ namespace fluxr {
     simb::MCFlux flux;
     if (!fFluxDriver->FillMCFlux(fEntry, flux)) return false;
 
-    //    std::cout<<fEventCounter<<std::endl;
     //fake mctruth product to cheat eventweight that gets neutrino energy from it
     simb::MCTruth mctruth;
     simb::MCParticle mcpnu(0, flux.fntype, "Flux");
@@ -259,7 +249,6 @@ namespace fluxr {
     art::RunNumber_t rn;
     if (fFluxDriver->GetRun() > 0) { rn = fFluxDriver->GetRun(); }
     else {
-      //mf::LogInfo(__FUNCTION__)<<"Run number is not valid! Reassigning to positive value...." << std::endl;
       rn = 999999;
     }
     art::Timestamp tstamp(time(0));
@@ -289,15 +278,11 @@ namespace fluxr {
       fSourceHelper.makeEventPrincipal(fSubRunID.run(), fSubRunID.subRun(), fEventCounter, tstamp);
 
     // Put products in the event.
-    art::put_product_in_principal(std::move(mcfluxvec), *outE,
-                                  "flux"); // Module label
-    art::put_product_in_principal(std::move(mctruthvec), *outE,
-                                  "flux"); // Module label
+    art::put_product_in_principal(std::move(mcfluxvec), *outE, "flux");
+    art::put_product_in_principal(std::move(mctruthvec), *outE, "flux");
     if (fInputType == "dk2nu") {
-      art::put_product_in_principal(std::move(dk2nuvec), *outE,
-                                    "flux"); // Module label
-      art::put_product_in_principal(std::move(nuchoicevec), *outE,
-                                    "flux"); // Module label
+      art::put_product_in_principal(std::move(dk2nuvec), *outE, "flux");
+      art::put_product_in_principal(std::move(nuchoicevec), *outE, "flux");
 
       auto aptr = fSourceHelper.makePtr<simb::MCTruth>(fTLmctruth, *outE, 0);
       auto bptr = fSourceHelper.makePtr<bsim::Dk2Nu>(fTLdk2nu, *outE, 0);
@@ -308,12 +293,9 @@ namespace fluxr {
       nuchoiceassn->addSingle(aptr, cptr);
       mcfluxassn->addSingle(aptr, dptr);
 
-      art::put_product_in_principal(std::move(dk2nuassn), *outE,
-                                    "flux"); // Module label
-      art::put_product_in_principal(std::move(nuchoiceassn), *outE,
-                                    "flux"); // Module label
-      art::put_product_in_principal(std::move(mcfluxassn), *outE,
-                                    "flux"); // Module label
+      art::put_product_in_principal(std::move(dk2nuassn), *outE, "flux");
+      art::put_product_in_principal(std::move(nuchoiceassn), *outE, "flux");
+      art::put_product_in_principal(std::move(mcfluxassn), *outE, "flux");
     }
 
     return true;

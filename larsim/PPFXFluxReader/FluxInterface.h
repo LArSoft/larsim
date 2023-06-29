@@ -9,12 +9,12 @@ namespace fluxr {
   class FluxInterface {
   public:
     virtual bool FillMCFlux(Long64_t ientry, simb::MCFlux& mclux) = 0;
-    virtual const float GetPOT() = 0;
-    virtual const Long64_t GetEntries() = 0;
-    virtual const int GetRun() = 0;
+    virtual float GetPOT() const = 0;
+    virtual Long64_t GetEntries() const = 0;
+    virtual int GetRun() const = 0;
 
-    virtual const TLorentzVector GetNuPosition() = 0;
-    virtual const TLorentzVector GetNuMomentum() = 0;
+    virtual TLorentzVector GetNuPosition() const = 0;
+    virtual TLorentzVector GetNuMomentum() const = 0;
   };
 
 }
