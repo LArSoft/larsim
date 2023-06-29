@@ -1,4 +1,4 @@
-#include "DK2NuInterface.h"
+#include "larsim/PPFXFluxReader/DK2NuInterface.h"
 #include "dk2nu/tree/NuChoice.h"
 #include "dk2nu/tree/calcLocationWeights.h"
 #include "dk2nu/tree/dk2nu.h"
@@ -13,10 +13,6 @@
 #include <iomanip>
 
 namespace fluxr {
-  DK2NuInterface::DK2NuInterface() {}
-
-  DK2NuInterface::~DK2NuInterface() {}
-
   void DK2NuInterface::SetRootFile(TFile* rootFile)
   {
     fDk2NuTree = dynamic_cast<TTree*>(rootFile->Get("dk2nuTree"));
@@ -105,39 +101,6 @@ namespace fluxr {
     //
     // calculation from flux window
     // discontinued in favor of random point in active volume
-
-    /*std::vector<double> windowBase=ps.get<std::vector<double> >("windowBase");
-    std::vector<double> window1   =ps.get<std::vector<double> >("window1");
-    std::vector<double> window2   =ps.get<std::vector<double> >("window2");
-
-    fFluxWindowPtUser[0]=TVector3( windowBase[0], windowBase[1], windowBase[2] );
-    fFluxWindowPtUser[1]=TVector3( window1[0]   , window1[1]   , window1[2] );
-    fFluxWindowPtUser[2]=TVector3( window2[0]   , window2[1]   , window2[2] );
-
-    // convert from user to beam coord and from 3 points to base + 2 directions
-    // apply units conversion
-    TLorentzVector ptbm0, ptbm1, ptbm2;
-    User2BeamPos(TLorentzVector(fFluxWindowPtUser[0],0),ptbm0);
-    User2BeamPos(TLorentzVector(fFluxWindowPtUser[1],0),ptbm1);
-    User2BeamPos(TLorentzVector(fFluxWindowPtUser[2],0),ptbm2);
-
-    fFluxWindowBase = ptbm0;
-    fFluxWindowDir1 = ptbm1 - ptbm0;
-    fFluxWindowDir2 = ptbm2 - ptbm0;
-
-    fFluxWindowLen1 = fFluxWindowDir1.Mag();
-    fFluxWindowLen2 = fFluxWindowDir2.Mag();
-    fWindowNormal = fFluxWindowDir1.Vect().Cross(fFluxWindowDir2.Vect()).Unit();
-    //in genie flux driver area is divided out when calculating effective POT
-    //here we will keeep the POT of dk2nu file, so boost up weights
-    //convert to m^2 (since window specified in cm)
-    fWindowArea   = fFluxWindowDir1.Vect().Cross(fFluxWindowDir2.Vect()).Mag()/10000.;
-
-    double dot = fFluxWindowDir1.Dot(fFluxWindowDir2);
-    if ( TMath::Abs(dot) > 1.0e-8 )
-      std::cout << "Dot product between window direction vectors was "
-        << dot << "; please check for orthoganality"<<std::endl;
-    */
 
     //
     //////////////////////////////////////////////////////////////////////////
@@ -229,7 +192,6 @@ namespace fluxr {
     }
 
     // bypass flux window method in favor of random point in detector
-    //TLorentzVector x4beam=fFluxWindowBase+fRnd.Uniform()*fFluxWindowDir1+fRnd.Uniform()*fFluxWindowDir2;
     TLorentzVector x4beam = fRandBeam;
 
     // enu = resulting energy when the neutrino is redirected
@@ -245,14 +207,6 @@ namespace fluxr {
 
     TVector3 xyzDk(fDk2Nu->decay.vx, fDk2Nu->decay.vy, fDk2Nu->decay.vz); // origin of decay
     TVector3 p3beam = enu * (x4beam.Vect() - xyzDk).Unit();
-
-    /*
-    //weight due to window being tilted with respect to beam direction
-    double tiltwgt = p3beam.Unit().Dot( fWindowNormal );
-    wgt*=tiltwgt;
-    //weight for the window area and divide by pi (since wgt returned by calcEnuWgt function is flux/(pi*m^2)
-    wgt*=fWindowArea/3.14159;
-    */
 
     // divide output wgt by pi so it is in unit area (output wgt is returned as flux/(pi*m^2))
     wgt *= 1 / TMath::Pi();

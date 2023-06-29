@@ -429,9 +429,8 @@ namespace evgen {
             const bsim::NuChoice& nuchoiceObj = dk2nuDriver->GetNuChoice();
             nuchoicecol->push_back(nuchoiceObj);
             util::CreateAssn(
-              *this, evt, *truthcol, *dk2nucol, *dk2nuassn, dk2nucol->size() - 1, dk2nucol->size());
-            util::CreateAssn(*this,
-                             evt,
+              evt, *truthcol, *dk2nucol, *dk2nuassn, dk2nucol->size() - 1, dk2nucol->size());
+            util::CreateAssn(evt,
                              *truthcol,
                              *nuchoicecol,
                              *nuchoiceassn,

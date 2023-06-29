@@ -1,7 +1,7 @@
 #ifndef _GSIMPLEINTERFACE_H_
 #define _GSIMPLEINTERFACE_H_
 
-#include "FluxInterface.h"
+#include "larsim/PPFXFluxReader/FluxInterface.h"
 
 #include "Tools/Flux/GNuMIFlux.h"
 #include "Tools/Flux/GSimpleNtpFlux.h"
@@ -15,11 +15,11 @@ namespace fluxr {
     GSimpleInterface();
     ~GSimpleInterface();
 
-    const Long64_t GetEntries() { return fNEntries; };
-    const int GetRun() { return fRun; };
-    const float GetPOT() { return fPOT; };
-    const TLorentzVector GetNuPosition() { return fNuPos; };
-    const TLorentzVector GetNuMomentum() { return fNuMom; };
+    Long64_t GetEntries() const { return fNEntries; };
+    int GetRun() const { return fRun; };
+    float GetPOT() const { return fPOT; };
+    TLorentzVector GetNuPosition() const { return fNuPos; };
+    TLorentzVector GetNuMomentum() const { return fNuMom; };
 
     void SetRootFile(TFile* rootFileName);
     bool FillMCFlux(Long64_t ientry, simb::MCFlux& mcflux);

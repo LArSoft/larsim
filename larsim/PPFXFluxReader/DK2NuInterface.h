@@ -1,7 +1,12 @@
 #ifndef _DK2NUINTERFACE_H_
 #define _DK2NUINTERFACE_H_
-#include "FluxInterface.h"
-#include <vector>
+
+#include "larsim/PPFXFluxReader/FluxInterface.h"
+#include "dk2nu/tree/NuChoice.h"
+#include "dk2nu/tree/dk2nu.h"
+#include "dk2nu/tree/dkmeta.h"
+
+#include "fhiclcpp/ParameterSet.h"
 
 class TTree;
 class TFile;
@@ -9,23 +14,16 @@ class TFile;
 #include "TLorentzRotation.h"
 #include "TRandom3.h"
 
-#include "dk2nu/tree/NuChoice.h"
-#include "dk2nu/tree/dk2nu.h"
-#include "dk2nu/tree/dkmeta.h"
-
-#include "fhiclcpp/ParameterSet.h"
+#include <vector>
 
 namespace fluxr {
   class DK2NuInterface : public FluxInterface {
   public:
-    DK2NuInterface();
-    ~DK2NuInterface();
-
-    const Long64_t GetEntries() { return fNEntries; };
-    const int GetRun() { return fRun; };
-    const float GetPOT() { return fPOT; };
-    const TLorentzVector GetNuPosition() { return fNuPos; };
-    const TLorentzVector GetNuMomentum() { return fNuMom; };
+    Long64_t GetEntries() const { return fNEntries; };
+    int GetRun() const { return fRun; };
+    float GetPOT() const  { return fPOT; };
+    TLorentzVector GetNuPosition() const { return fNuPos; };
+    TLorentzVector GetNuMomentum() const { return fNuMom; };
 
     void SetRootFile(TFile* rootFile);
     bool FillMCFlux(Long64_t ientry, simb::MCFlux& mcflux);
@@ -58,12 +56,6 @@ namespace fluxr {
     TLorentzVector fBeamZero;
     TVector3 detAV_rand_user;
     TLorentzVector fRandUser, fRandBeam;
-    //TVector3 fFluxWindowPtUser[3];
-    //TLorentzVector fFluxWindowBase, fFluxWindowDir1, fFluxWindowDir2;
-    //TVector3 fWindowNormal;
-    //Double_t fFluxWindowLen1, fFluxWindowLen2;
-    //Double_t fWindowArea;
-    //TRandom3 fRnd;
   };
 
 }

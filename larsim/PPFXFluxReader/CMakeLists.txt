@@ -1,65 +1,52 @@
-
-
-
-cet_build_plugin( PPFXFluxReader art::source
+cet_build_plugin(PPFXFluxReader art::source
   LIBRARIES PRIVATE
-        larsim::PPFXFluxReader
-  	nusimdata::SimulationBase
-        art::Framework_Core
-        art::Framework_IO_Sources
-        ROOT::Tree
-        )
+    larsim::PPFXFluxReader
+)
 
 cet_make_library(LIBRARY_NAME FluxInterface USE_PROJECT_NAME
   SOURCE
-        DK2NuInterface.cxx
-        GSimpleInterface.cxx
+    DK2NuInterface.cxx
+    GSimpleInterface.cxx
   LIBRARIES PUBLIC
-	nusimdata::SimulationBase
-        log4cpp::log4cpp
-        GENIE::GFwEG
-        GENIE::GFwAlg
-        GENIE::GFwMsg
-        GENIE::GFwGHEP
-        GENIE::GTlFlx
-        dk2nu::Tree
-        dk2nu::Genie
-        ROOT::Tree
+    GENIE::GTlFlx
+    ROOT::Physics
   PRIVATE
-        cetlib::cetlib
-        cetlib_except::cetlib_except
-	fhiclcpp::fhiclcpp
-        messagefacility::MF_MessageLogger
-	CLHEP::CLHEP
-        )
+    CLHEP::CLHEP
+    GENIE::GFwAlg
+    GENIE::GFwEG
+    GENIE::GFwGHEP
+    GENIE::GFwMsg
+    ROOT::Tree
+    dk2nu::Genie
+    dk2nu::Tree
+    fhiclcpp::fhiclcpp
+    log4cpp::log4cpp
+    messagefacility::MF_MessageLogger
+    nusimdata::SimulationBase
+)
+
 
 cet_make_library(
-  SOURCE
-        PPFXFluxReader.cxx
+  SOURCE PPFXFluxReader.cxx
   LIBRARIES PUBLIC
-  	nusimdata::SimulationBase
-	larsim::FluxInterface
-        lardata::Utilities
-	larcoreobj::SummaryData
-        nugen::EventGeneratorBase_GENIE
-        art_root_io::TFileService_service
-        canvas::canvas
-	messagefacility::MF_MessageLogger
-        fhiclcpp::fhiclcpp
-	cetlib::cetlib
-        cetlib_except::cetlib_except
-        dk2nu::Tree
-        dk2nu::Genie
-        ROOT::Hist
+    larsim::FluxInterface
+    nusimdata::SimulationBase
   PRIVATE
-        art::Framework_Core
-        art::Framework_IO_Sources
-        art::Utilities
-        art::Persistency_Common
-        art::Persistency_Provenance
-        art::Framework_Principal
-        art::Framework_Services_Registry
-        )                                                           
+    ROOT::Hist
+    art::Framework_Core
+    art::Framework_IO_Sources
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    art_root_io::TFileService_service
+    canvas::canvas
+    dk2nu::Genie
+    dk2nu::Tree
+    fhiclcpp::fhiclcpp
+    larcoreobj::SummaryData
+    lardata::Utilities
+    messagefacility::MF_MessageLogger
+    nugen::EventGeneratorBase_GENIE
+)
 
 install_headers()
 install_source()
