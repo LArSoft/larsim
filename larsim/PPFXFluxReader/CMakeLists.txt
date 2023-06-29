@@ -10,7 +10,7 @@ cet_build_plugin( PPFXFluxReader art::source
                 ROOT::Tree
              )
 
-cet_make_library(LIBRARY_NAME FluxInterface
+cet_make_library(LIBRARY_NAME FluxInterface USE_PROJECT_NAME
   SOURCE
                  DK2NuInterface.cxx
                  GSimpleInterface.cxx
