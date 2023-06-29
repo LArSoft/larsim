@@ -1,10 +1,10 @@
 #ifndef _DK2NUINTERFACE_H_
 #define _DK2NUINTERFACE_H_
 
-#include "larsim/PPFXFluxReader/FluxInterface.h"
 #include "dk2nu/tree/NuChoice.h"
 #include "dk2nu/tree/dk2nu.h"
 #include "dk2nu/tree/dkmeta.h"
+#include "larsim/PPFXFluxReader/FluxInterface.h"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -21,7 +21,7 @@ namespace fluxr {
   public:
     Long64_t GetEntries() const { return fNEntries; };
     int GetRun() const { return fRun; };
-    float GetPOT() const  { return fPOT; };
+    float GetPOT() const { return fPOT; };
     TLorentzVector GetNuPosition() const { return fNuPos; };
     TLorentzVector GetNuMomentum() const { return fNuMom; };
 
