@@ -255,6 +255,7 @@ marley		v1_2_0i		-
 nugen		v1_19_05	-
 nurandom	v1_10_01	-
 nutools		v3_15_03	-
+ppfx            v02_18_00       -
 cetmodules	v3_20_00	-	only_for_build
 end_product_list
 ####################################
@@ -310,15 +311,15 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	larg4		nutools		nugen		nurandom	marley		larsoft_data
-c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	-nq-
-c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	-nq-
-c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	-nq-
-c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		-nq-
-e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	-nq-
-e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	-nq-
-e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	-nq-
-e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	-nq-
+qualifier	larg4		nutools		nugen		nurandom	marley		ppfx		larsoft_data
+c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	-nq-
+c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	-nq-
+c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	-nq-
+c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		-nq-
+e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	-nq-
+e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	-nq-
+e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	-nq-
+e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	-nq-
 end_qualifier_list
 ####################################
 

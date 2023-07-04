@@ -1,6 +1,21 @@
+
 cet_make_library(SOURCE GenieWeightCalc.cxx
+                        PPFXCVWeightCalc.cxx
+                        PPFXMIPPKaonWeightCalc.cxx
+                        PPFXMIPPPionWeightCalc.cxx
+                        PPFXOtherWeightCalc.cxx
+                        PPFXTargAttenWeightCalc.cxx
+                        PPFXThinKaonWeightCalc.cxx
+                        PPFXThinMesonWeightCalc.cxx
+                        PPFXThinNeutronPionWeightCalc.cxx
+                        PPFXThinNucAWeightCalc.cxx
+                        PPFXThinNucWeightCalc.cxx
+                        PPFXThinPionWeightCalc.cxx
+                        PPFXTotAbsorpWeightCalc.cxx
+                        PPFXWeightCalc.cxx
   LIBRARIES
   PRIVATE
+  ppfx::ppfx
   larsim::EventWeight_Base
   nugen::EventGeneratorBase_GENIE
   nusimdata::SimulationBase
@@ -9,6 +24,8 @@ cet_make_library(SOURCE GenieWeightCalc.cxx
   fhiclcpp::fhiclcpp
   cetlib_except::cetlib_except
   ${GENIE_LIB_LIST}
+  dk2nu::Tree
+  dk2nu::Genie
   CLHEP::Random
   log4cpp::log4cpp # FIXME Should be transitive from GENIE target(s).
 )
