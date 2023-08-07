@@ -419,16 +419,20 @@ namespace evgen {
       else if (nuclideName == "42Ar") {
         readfile(
           "42Ar_1",
-          "Argon_42_1.root", fPathToFile); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
+          "Argon_42_1.root",
+          fPathToFile); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
         readfile(
           "42Ar_2",
-          "Argon_42_2.root", fPathToFile); //This allows us to know which decay chain to follow for the dexcitation gammas.
+          "Argon_42_2.root",
+          fPathToFile); //This allows us to know which decay chain to follow for the dexcitation gammas.
         readfile(
           "42Ar_3",
-          "Argon_42_3.root", fPathToFile); //The dexcitation gammas are not included in the root files as we want to
+          "Argon_42_3.root",
+          fPathToFile); //The dexcitation gammas are not included in the root files as we want to
         readfile(
           "42Ar_4",
-          "Argon_42_4.root", fPathToFile); //probabilistically simulate the correct coincident gammas, which we cannot guarantee
+          "Argon_42_4.root",
+          fPathToFile); //probabilistically simulate the correct coincident gammas, which we cannot guarantee
         readfile("42Ar_5", "Argon_42_5.root", fPathToFile); //by sampling a histogram.
         continue;
       } //Ar42  is handeled separately later
@@ -682,7 +686,9 @@ namespace evgen {
 
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
 
-  void RadioGen::readfile(std::string nuclide, std::string const& filename, std::string const& PathToFile)
+  void RadioGen::readfile(std::string nuclide,
+                          std::string const& filename,
+                          std::string const& PathToFile)
   {
     bool found{false};
     std::regex const re_argon{"42Ar.*"};
