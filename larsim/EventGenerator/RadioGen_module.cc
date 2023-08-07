@@ -310,6 +310,12 @@ namespace evgen {
     auto t0 = pset.get<std::vector<double>>("T0", {});
     auto t1 = pset.get<std::vector<double>>("T1", {});
 
+    if (fPathToFile.find_last_of('/') !=
+        fPathToFile.length() - 1) { //Checking that last character in path is a forward slash
+      throw cet::exception("RadioGen")
+        << "Last entry of the path to radiological files needs to be a forward slash ('/')\n";
+    }
+
     if (fT0.empty() || fT1.empty()) { // better be both empty...
       if (!fT0.empty() || !fT1.empty()) {
         throw art::Exception(art::errors::Configuration)
