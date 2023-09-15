@@ -35,7 +35,12 @@ namespace larg4 {
 
   bool ISTPC::isScintInActiveVolume(geo::Point_t const& ScintPoint)
   {
-    return fActiveVolumes[0].ContainsPosition(ScintPoint);
+    for (auto const& box : fActiveVolumes) {
+      if (box.ContainsPosition(ScintPoint)) {
+	return true;
+      }
+    }
+    return false;
   }
   //----------------------------------------------------------------------------
 
