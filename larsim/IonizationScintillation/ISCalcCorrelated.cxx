@@ -79,94 +79,98 @@ namespace larg4 {
                                                sim::SimEnergyDeposit const& edep)
   {
 
-      double const energy_deposit = edep.Energy();
-      
-      // calculate total quanta (ions + excitons)
-      double num_ions = 0.0; //check if the deposited energy is above ionization threshold
-      if (energy_deposit >= fWion) num_ions = energy_deposit / fWion;
-      double num_quanta = energy_deposit / fWph;
-      
-      double ds = edep.StepLength();
-      double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
-      dEdx = (dEdx < 1.) ? 1. : dEdx;
-      double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
-      double recomb = 0., num_electrons = 0.;
-      
-      //calculate recombination survival fraction value inside, otherwise zero
-      if (EFieldStep > 0.) {
-	// calculate recombination survival fraction
-	// ...using Modified Box model
-	if (fUseModBoxRecomb) {
-	  double Xi = fModBoxB * dEdx / EFieldStep;
-	  recomb = std::log(fModBoxA + Xi) / Xi;
-      }
-	else if (fUseEllipsModBoxRecomb){
+    double const energy_deposit = edep.Energy();
 
-	  double phi = std::acos(abs(edep.StartX() - edep.EndX()) / sqrt(pow(edep.StartX() - edep.EndX(), 2) + pow(edep.StartY() - edep.EndY(), 2) + pow(edep.StartZ() - edep.EndZ(), 2)));
-	  
-	  if(phi > std::atan(1)*2){
-	    double temp_phi = phi;
-	    phi = std::atan(1)*4-temp_phi;
-	  }
-	  
-	  if(phi != phi){
-	    double Xi = fModBoxB * dEdx / EFieldStep;
-	    recomb = std::log(fModBoxA + Xi) / Xi;
-	  }	  
-	  else{
-	    double B_ellips = fEllipsModBoxB * dEdx / (EFieldStep * sqrt( pow(std::sin(phi),2) + ( pow(std::cos(phi),2) / pow(fEllipsModBoxR,2)))); 
+    // calculate total quanta (ions + excitons)
+    double num_ions = 0.0; //check if the deposited energy is above ionization threshold
+    if (energy_deposit >= fWion) num_ions = energy_deposit / fWion;
+    double num_quanta = energy_deposit / fWph;
 
-	    recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
-	    
-	  }
-	}
-	// ... or using Birks/Doke
-	else {
-	  recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
-	}
-      }
-      
-      if (fUseModLarqlRecomb &&
-	  edep.PdgCode() != 1000020040) { //Use corrections from LArQL model (except for alpha)
-	recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
-      }
+    double ds = edep.StepLength();
+    double dEdx = (ds <= 0.0) ? 0.0 : energy_deposit / ds;
+    dEdx = (dEdx < 1.) ? 1. : dEdx;
+    double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
+    double recomb = 0., num_electrons = 0.;
 
-      // Guard against unphysical recombination values
-      if (recomb < 0.) {
-	mf::LogWarning("ISCalcCorrelated")
-	  << "Recombination survival fraction is lower than 0.: " << recomb << ", fixing it to 0.";
-	recomb = 0.;
+    //calculate recombination survival fraction value inside, otherwise zero
+    if (EFieldStep > 0.) {
+      // calculate recombination survival fraction
+      // ...using Modified Box model
+      if (fUseModBoxRecomb) {
+        double Xi = fModBoxB * dEdx / EFieldStep;
+        recomb = std::log(fModBoxA + Xi) / Xi;
       }
-      else if (recomb > 1.) {
-	mf::LogWarning("ISCalcCorrelated")
+      else if (fUseEllipsModBoxRecomb) {
+
+        double phi =
+          std::acos(abs(edep.StartX() - edep.EndX()) /
+                    sqrt(pow(edep.StartX() - edep.EndX(), 2) + pow(edep.StartY() - edep.EndY(), 2) +
+                         pow(edep.StartZ() - edep.EndZ(), 2)));
+
+        if (phi > std::atan(1) * 2) {
+          double temp_phi = phi;
+          phi = std::atan(1) * 4 - temp_phi;
+        }
+
+        if (phi != phi) {
+          double Xi = fModBoxB * dEdx / EFieldStep;
+          recomb = std::log(fModBoxA + Xi) / Xi;
+        }
+        else {
+          double B_ellips = fEllipsModBoxB * dEdx /
+                            (EFieldStep * sqrt(pow(std::sin(phi), 2) +
+                                               (pow(std::cos(phi), 2) / pow(fEllipsModBoxR, 2))));
+
+          recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
+        }
+      }
+      // ... or using Birks/Doke
+      else {
+        recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
+      }
+    }
+
+    if (fUseModLarqlRecomb &&
+        edep.PdgCode() != 1000020040) { //Use corrections from LArQL model (except for alpha)
+      recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
+    }
+
+    // Guard against unphysical recombination values
+    if (recomb < 0.) {
+      mf::LogWarning("ISCalcCorrelated")
+        << "Recombination survival fraction is lower than 0.: " << recomb << ", fixing it to 0.";
+      recomb = 0.;
+    }
+    else if (recomb > 1.) {
+      mf::LogWarning("ISCalcCorrelated")
         << "Recombination survival fraction is higher than 1.: " << recomb << ", fixing it to 1.";
-	recomb = 1.;
-      }
+      recomb = 1.;
+    }
 
-      // using this recombination, calculate number energy_deposit of ionization electrons
-      if (num_ions > 0.)
-      	num_electrons =
-	  (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
-      
-      // calculate scintillation photons
-      double num_photons = (num_quanta - num_electrons) * fScintPreScale;
-      
-      if (edep.PdgCode() == 1000020040) {
-	num_electrons = num_electrons * fQAlpha;
-	num_photons = num_photons * fQAlpha;
-      }
-          
+    // using this recombination, calculate number energy_deposit of ionization electrons
+    if (num_ions > 0.)
+      num_electrons =
+        (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
+
+    // calculate scintillation photons
+    double num_photons = (num_quanta - num_electrons) * fScintPreScale;
+
+    if (edep.PdgCode() == 1000020040) {
+      num_electrons = num_electrons * fQAlpha;
+      num_photons = num_photons * fQAlpha;
+    }
+
     MF_LOG_DEBUG("ISCalcCorrelated")
       << "With " << energy_deposit << " MeV of deposited energy, "
       << "and a recombination of " << recomb << ", \nthere are " << num_electrons
       << " electrons, and " << num_photons << " photons.";
-     
+
     return {energy_deposit, num_electrons, num_photons, GetScintYieldRatio(edep)};
   }
-    
+
   //----------------------------------------------------------------------------
-    double ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
-    {
+  double ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  {
     // electric field outside active volume set to zero
     if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 

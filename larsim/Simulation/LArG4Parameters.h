@@ -55,7 +55,7 @@ namespace sim {
     double Wph() const { return fWph; }
     double QAlpha() const { return fQAlpha; }
     bool UseModBoxRecomb() const { return fUseModBoxRecomb; }
-    bool UseEllipsModBoxRecomb() const {return fUseEllipsModBoxRecomb; }
+    bool UseEllipsModBoxRecomb() const { return fUseEllipsModBoxRecomb; }
     bool UseModLarqlRecomb() const { return fUseModLarqlRecomb; }
     bool UseBinomialFlucts() const { return fUseBinomialFlucts; }
     double GeVToElectrons() const { return util::kGeVToElectrons; }
@@ -117,24 +117,25 @@ namespace sim {
     bool const fDisableWireplanes;     ///< Turn of LAr sensitivity and remove charge
                                        ///< drift simulation - use for running pure optical sims
     std::vector<unsigned short int> const
-      fSkipWireSignalInTPCs;       ///< selective disabling of drift simulation
-    double const fRecombA;         ///< Possibly override the RecombA parameter
-    double const fRecombk;         ///< Possibly override the Recombk parameter
-    double const fModBoxA;         ///< Possibly override the ModBoxA parameter
-    double const fModBoxB;         ///< Possibly override the ModBoxB parameter
-    double const fEllipsModBoxA;         ///< Possibly override the EllipsModBoxA parameter
-    double const fEllipsModBoxB;         ///< Possibly override the EllipsModBoxB parameter
-    double const fEllipsModBoxR;         ///< Possibly override the EllipsModBoxR parameter
-    double const fLarqlChi0A;      ///< Possibly override the LarqlChi0A parameter
-    double const fLarqlChi0B;      ///< Possibly override the LarqlChi0B parameter
-    double const fLarqlChi0C;      ///< Possibly override the LarqlChi0C parameter
-    double const fLarqlChi0D;      ///< Possibly override the LarqlChi0D parameter
-    double const fLarqlAlpha;      ///< Possibly override the LarqlAlpha parameter
-    double const fLarqlBeta;       ///< Possibly override the LarqlBeta parameter
-    double const fWph;             ///< Possibly override the Wph parameter
-    double const fQAlpha;          ///< Possibly override the QAlpha parameter
-    bool const fUseModBoxRecomb;   ///< Use Modified Box model recombination instead of Birks
-    bool const fUseEllipsModBoxRecomb;   ///< Use Ellipsoid Modified Box model recombination instead of Birks
+      fSkipWireSignalInTPCs;     ///< selective disabling of drift simulation
+    double const fRecombA;       ///< Possibly override the RecombA parameter
+    double const fRecombk;       ///< Possibly override the Recombk parameter
+    double const fModBoxA;       ///< Possibly override the ModBoxA parameter
+    double const fModBoxB;       ///< Possibly override the ModBoxB parameter
+    double const fEllipsModBoxA; ///< Possibly override the EllipsModBoxA parameter
+    double const fEllipsModBoxB; ///< Possibly override the EllipsModBoxB parameter
+    double const fEllipsModBoxR; ///< Possibly override the EllipsModBoxR parameter
+    double const fLarqlChi0A;    ///< Possibly override the LarqlChi0A parameter
+    double const fLarqlChi0B;    ///< Possibly override the LarqlChi0B parameter
+    double const fLarqlChi0C;    ///< Possibly override the LarqlChi0C parameter
+    double const fLarqlChi0D;    ///< Possibly override the LarqlChi0D parameter
+    double const fLarqlAlpha;    ///< Possibly override the LarqlAlpha parameter
+    double const fLarqlBeta;     ///< Possibly override the LarqlBeta parameter
+    double const fWph;           ///< Possibly override the Wph parameter
+    double const fQAlpha;        ///< Possibly override the QAlpha parameter
+    bool const fUseModBoxRecomb; ///< Use Modified Box model recombination instead of Birks
+    bool const
+      fUseEllipsModBoxRecomb; ///< Use Ellipsoid Modified Box model recombination instead of Birks
     bool const fUseModLarqlRecomb; ///< Use LArQL model recombination correction (dependence on EF)
     bool const fUseBinomialFlucts; ///< Use binomial fluctuations in correlated method
     std::string const
