@@ -51,6 +51,10 @@ namespace larg4 {
     double fLarqlChi0D;      ///< from LArG4Parameters service
     double fLarqlAlpha;      ///< from LArG4Parameters service
     double fLarqlBeta;       ///< from LArG4Parameters service
+    double fEllipsModBoxA;   ///< from LArG4Parameters service
+    double fEllipsModBoxB;   ///< from LArG4Parameters service
+    double fEllipsModBoxR;   ///< from LArG4Parameters service
+    bool fUseEllipsModBoxRecomb; ///< from LArG4Parameters service
     bool fUseModBoxRecomb;   ///< from LArG4Parameters service
     bool fUseModLarqlRecomb; ///< from LArG4Parameters service
 
