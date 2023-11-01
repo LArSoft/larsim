@@ -9,9 +9,10 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 find_package(cetmodules 3.11.02 REQUIRED)
-project(larsim VERSION 09.38.06 LANGUAGES CXX)
+project(larsim LANGUAGES CXX)
 
 include(CetCMakeEnv)
+set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 10.00.00-rc0)
 cet_cmake_env()
 
 # -Wno-unused-variable needed because of CLHEP
