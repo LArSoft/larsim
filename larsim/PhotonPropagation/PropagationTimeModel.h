@@ -12,11 +12,12 @@
 
 // LArSoft libraries
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
+#include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
 // fhicl
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/fwd.h"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGeneral.h"
@@ -69,13 +70,6 @@ namespace phot {
     geo::Point_t cathodeCentre() const;
     std::vector<geo::Point_t> opDetCenters() const;
     std::vector<int> opDetOrientations() const;
-
-    // utility functions
-    static double finter_d(const double* x, const double* par);
-
-    static double model_close(const double* x, const double* par);
-
-    static double model_far(const double* x, const double* par);
 
     // configuration
     const bool fGeoPropTimeOnly;

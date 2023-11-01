@@ -12,11 +12,12 @@
 // Nov 2021 by P. Green
 
 // LArSoft Libraries
+#include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
 // fhicl
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/fwd.h"
 
 #include "TVector3.h"
 
@@ -96,6 +97,7 @@ namespace phot {
 
     // geometry properties
     geo::GeometryCore const& fGeom;
+    geo::WireReadoutGeom const& fChannelMap;
     const larg4::ISTPC fISTPC;
     const int fNTPC;
     const std::vector<geo::BoxBoundedGeo> fActiveVolumes;

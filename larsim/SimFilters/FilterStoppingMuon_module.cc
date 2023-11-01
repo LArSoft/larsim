@@ -57,10 +57,10 @@ namespace {
   void FilterStoppingMuon::beginRun(art::Run&, art::ProcessingFrame const& frame)
   {
     // Detector geometries are allowed to change on run boundaries.
-    auto const geom = frame.serviceHandle<geo::Geometry const>();
-    fXBounds = {0., 2. * geom->DetHalfWidth()};
-    fYBounds = {-geom->DetHalfHeight(), geom->DetHalfHeight()};
-    fZBounds = {0., geom->DetLength()};
+    auto const& tpc = frame.serviceHandle<geo::Geometry const>()->TPC();
+    fXBounds = {0., 2. * tpc.HalfWidth()};
+    fYBounds = {-tpc.HalfHeight(), tpc.HalfHeight()};
+    fZBounds = {0., tpc.Length()};
   }
 
   //-----------------------------------------------------------------------
