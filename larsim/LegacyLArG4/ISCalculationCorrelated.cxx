@@ -71,7 +71,7 @@ namespace larg4 {
     fLarqlBeta = lgpHandle->LarqlBeta();
     fUseModBoxRecomb = lgpHandle->UseModBoxRecomb();
     fUseEllipsModBoxRecomb = (bool)lgpHandle->UseEllipsModBoxRecomb();
-    
+
     fUseModLarqlRecomb = lgpHandle->UseModLarqlRecomb();
 
     // determine the step size using the voxel sizes
@@ -133,27 +133,25 @@ namespace larg4 {
         recomb = 0;
     }
     else if (fUseEllipsModBoxRecomb) {
-      
+
       double phi = std::acos(abs(edep.StartX() - edep.EndX()) / edep.StepLength());
-      
+
       if (phi > std::atan(1) * 2) { phi = std::atan(1) * 4 - phi; }
-      
+
       if (phi != phi) {
-	double Xi = fModBoxB * dEdx / EFieldStep;
-	recomb = std::log(fModBoxA + Xi) / Xi;
+        double Xi = fModBoxB * dEdx / EFieldStep;
+        recomb = std::log(fModBoxA + Xi) / Xi;
       }
       else {
-	double B_ellips =
-	  fEllipsModBoxB * dEdx /
-	  (EFieldStep * std::hypot(std::sin(phi), std::cos(phi) / fEllipsModBoxR));
-	
-	recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
+        double B_ellips = fEllipsModBoxB * dEdx /
+                          (EFieldStep * std::hypot(std::sin(phi), std::cos(phi) / fEllipsModBoxR));
+
+        recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
       }
     }
     else {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
     }
-
 
     if (fUseModLarqlRecomb) { //Use corrections from LArQL model
       recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
