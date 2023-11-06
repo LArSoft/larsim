@@ -104,17 +104,16 @@ namespace larg4 {
 
         double phi = std::acos(abs(edep.StartX() - edep.EndX()) / edep.StepLength());
 
-        if (phi > std::atan(1) * 2) {
-          phi = std::atan(1) * 4 - phi;
-        }
+        if (phi > std::atan(1) * 2) { phi = std::atan(1) * 4 - phi; }
 
         if (phi != phi) {
           double Xi = fModBoxB * dEdx / EFieldStep;
           recomb = std::log(fModBoxA + Xi) / Xi;
         }
         else {
-          double B_ellips = fEllipsModBoxB * dEdx /
-                            (EFieldStep * std::hypot(std::sin(phi),  std::cos(phi) / fEllipsModBoxR));
+          double B_ellips =
+            fEllipsModBoxB * dEdx /
+            (EFieldStep * std::hypot(std::sin(phi), std::cos(phi) / fEllipsModBoxR));
 
           recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
         }
