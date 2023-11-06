@@ -134,7 +134,7 @@ namespace larg4 {
     }
     else if (fUseEllipsModBoxRecomb) {
 
-      double phi = std::acos(abs(edep.StartX() - edep.EndX()) / edep.StepLength());
+      double phi = std::acos(abs(step->GetPreStepPoint()->GetPosition().x() - step->GetPostStepPoint()->GetPosition().x()) / step->GetStepLength());
 
       if (phi > std::atan(1) * 2) { phi = std::atan(1) * 4 - phi; }
 
