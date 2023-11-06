@@ -108,8 +108,7 @@ namespace larg4 {
                          pow(edep.StartZ() - edep.EndZ(), 2)));
 
         if (phi > std::atan(1) * 2) {
-          double temp_phi = phi;
-          phi = std::atan(1) * 4 - temp_phi;
+          phi = std::atan(1) * 4 - phi;
         }
 
         if (phi != phi) {
