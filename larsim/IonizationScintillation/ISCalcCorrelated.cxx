@@ -117,8 +117,7 @@ namespace larg4 {
         }
         else {
           double B_ellips = fEllipsModBoxB * dEdx /
-                            (EFieldStep * sqrt(pow(std::sin(phi), 2) +
-                                               (pow(std::cos(phi), 2) / pow(fEllipsModBoxR, 2))));
+                            (EFieldStep * std::hypot(std::sin(phi),  std::cos(phi) / fEllipsModBoxR));
 
           recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
         }
