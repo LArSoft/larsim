@@ -60,6 +60,9 @@ namespace larg4 {
     fRecombk = lgpHandle->Recombk() / density;
     fModBoxA = lgpHandle->ModBoxA();
     fModBoxB = lgpHandle->ModBoxB() / density;
+    fEllipsModBoxA = lgpHandle->EllipsModBoxA();
+    fEllipsModBoxB = lgpHandle->EllipsModBoxB() / detProp.Density(detProp.Temperature());
+    fEllipsModBoxR = lgpHandle->EllipsModBoxR();
     fLarqlChi0A = lgpHandle->LarqlChi0A();
     fLarqlChi0B = lgpHandle->LarqlChi0B();
     fLarqlChi0C = lgpHandle->LarqlChi0C();
@@ -67,6 +70,8 @@ namespace larg4 {
     fLarqlAlpha = lgpHandle->LarqlAlpha();
     fLarqlBeta = lgpHandle->LarqlBeta();
     fUseModBoxRecomb = lgpHandle->UseModBoxRecomb();
+    fUseEllipsModBoxRecomb = (bool)lgpHandle->UseEllipsModBoxRecomb();
+
     fUseModLarqlRecomb = lgpHandle->UseModLarqlRecomb();
 
     // determine the step size using the voxel sizes
@@ -126,6 +131,25 @@ namespace larg4 {
       }
       else
         recomb = 0;
+    }
+    else if (fUseEllipsModBoxRecomb) {
+
+      double phi = std::acos(abs(step->GetPreStepPoint()->GetPosition().x() -
+                                 step->GetPostStepPoint()->GetPosition().x()) /
+                             step->GetStepLength());
+
+      if (phi > std::atan(1) * 2) { phi = std::atan(1) * 4 - phi; }
+
+      if (phi != phi) {
+        double Xi = fModBoxB * dEdx / EFieldStep;
+        recomb = std::log(fModBoxA + Xi) / Xi;
+      }
+      else {
+        double B_ellips = fEllipsModBoxB * dEdx /
+                          (EFieldStep * std::hypot(std::sin(phi), std::cos(phi) / fEllipsModBoxR));
+
+        recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
+      }
     }
     else {
       recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
