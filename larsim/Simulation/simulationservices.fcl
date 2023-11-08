@@ -23,10 +23,10 @@ standard_largeantparameters:
  CosmogenicXSMNBiasOn:     0 # 0 is off. 1 works. 2 still in development.
  CosmogenicXSMNBiasFactor: 1 # Not more than 5-ish cuz of numerical instabilities.
  DisableWireplanes:        false #if set true, charge drift simulation does not run - used for optical sim jobs OR just when you don't wanna drift the e's.
- SkipWireSignalInTPCs:     []     # put here TPC id's which should not receive ionization electrons - used to simulate TPC geom volumes which are actually dead LAr volumes in protoDUNE
- UseModBoxRecomb:          true   # use Modified Box recombination instead of Birks
- UseEllipsModBoxRecomb:    false    # use Ellipsoid Modified Box recomination instead of Birks
- UseModLarqlRecomb:        true   # use LArQL recombination corrections (dependence on EF)
+ SkipWireSignalInTPCs:     []    # put here TPC id's which should not receive ionization electrons - used to simulate TPC geom volumes which are actually dead LAr volumes in protoDUNE
+ UseModBoxRecomb:          true  # use Modified Box recombination instead of Birks
+ UseEllipsModBoxRecomb:    false # use Ellipsoid Modified Box recomination instead of Birks
+ UseModLarqlRecomb:        false # use LArQL recombination corrections (dependence on EF)
 
  #* Recombination factor coefficients come from Nucl.Instrum.Meth.A523:275-286,2004
  #* * @f$ dE/dx @f$ is given by the voxel energy deposition, but have to convert it to MeV/cm from GeV/voxel width

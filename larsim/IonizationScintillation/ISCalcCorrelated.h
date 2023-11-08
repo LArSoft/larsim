@@ -38,6 +38,7 @@ namespace larg4 {
     double EFieldAtStep(double efield,
                         sim::SimEnergyDeposit const& edep)
       override; //value of field with any corrections for this step
+    double AngleToEFieldAtStep(double efield, sim::SimEnergyDeposit const& edep);
     ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
                                sim::SimEnergyDeposit const& edep) override;
 
