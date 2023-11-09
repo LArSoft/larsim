@@ -205,10 +205,6 @@ namespace larg4 {
           efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), -1 * efield * eFieldOffsets.Z());
 
       elecvec += scevec;
-
-      std::cout << "New : " << elecvec.Mag() << " old : "
-                << efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z())
-                << " at X: " << edep.StartX() << std::endl;
     }
 
     return elecvec.Mag();
