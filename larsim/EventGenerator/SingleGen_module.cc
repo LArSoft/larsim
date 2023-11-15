@@ -447,7 +447,11 @@ namespace evgen {
     , fHistFileName(config().HistogramFile())
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(createEngine(0))
+    /// @todo Remove `registerAndSeedEngine()` dummy template type
+    ///       when [`nurandom` #28424 bug](https://cdcvs.fnal.gov/redmine/issues/28424) is solved
+    , fEngine(
+        art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine<void>(createEngine(0),
+                                                                                 config().Seed))
   {
     setup();
     rndm::NuRandomService::seed_t seed;
