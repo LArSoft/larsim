@@ -536,7 +536,7 @@ namespace detsim {
             // Add the electron clusters and energy to the
             // sim::SimChannel
             channelPtr->AddIonizationElectrons(
-              energyDeposit.TrackID(), tdc, fnElDiff[k], data(xyz), fnEnDiff[k]);
+              energyDeposit.TrackID(), tdc, fnElDiff[k], data(xyz), fnEnDiff[k], energyDeposit.OrigTrackID());
 
             if (fStoreDriftedElectronClusters)
               SimDriftedElectronClusterCollection->emplace_back(
