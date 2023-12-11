@@ -195,27 +195,28 @@ namespace larg4{
     BuildThePhysicsTable();
 
     emSaturation = NULL;
-
     if (bPropagate) {
       art::ServiceHandle<phot::PhotonVisibilityService> pvs;
       geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
 
-      if (usesSemiAnalyticModel()) {
-        if (fOnlyOneCryostat) {
-          mf::LogWarning("OpFastScintillation")
-            << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
-            << " cryostats is configured"
-            << " , and semi-analytic model is requested for scintillation photon propagation."
-            << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
-            << " (e.g. scintillation may be detected only in cryostat #0)."
-            << "\nThis would be normally a fatal error, but it has been forcibly overridden."
-            << "\n"
-            << std::string(80, '=');
-        }
-        else {
-          throw art::Exception(art::errors::Configuration)
-            << "Photon propagation via semi-analytic model is not supported yet"
-            << " on detectors with more than one cryostat.";
+      if (usesSemiAnalyticModel()) {  
+        if (geom.Ncryostats() > 1U) {
+          if (fOnlyOneCryostat) {
+            mf::LogWarning("OpFastScintillation")
+              << std::string(80, '=') << "\nA detector with " << geom.Ncryostats()
+              << " cryostats is configured"
+              << " , and semi-analytic model is requested for scintillation photon propagation."
+              << " THIS CONFIGURATION IS NOT SUPPORTED and it is open to bugs"
+              << " (e.g. scintillation may be detected only in cryostat #0)."
+              << "\nThis would be normally a fatal error, but it has been forcibly overridden."
+              << "\n"
+              << std::string(80, '=');
+          }
+          else {
+            throw art::Exception(art::errors::Configuration)
+              << "Photon propagation via semi-analytic model is not supported yet"
+              << " on detectors with more than one cryostat.";
+          }
         }
       } // if
 
@@ -739,110 +740,110 @@ namespace larg4{
       //    << "Photon library does not cover point ( " << xyz[0] << ", "
       //    << xyz[1] << ", " << xyz[2] << " ) cm.\n";
       //}
-    
-      if(!Visibilities){
-      }else{
-        std::map<int, int> DetectedNum;
+      if (!Visibilities && !usesSemiAnalyticModel()) continue; // skip if not using photon library or semi-analytical model
+     
+      std::map<int, int> DetectedNum;
 
-        std::map<int, int> ReflDetectedNum;
+      std::map<int, int> ReflDetectedNum;
 
-        if(usesSemiAnalyticModel()) {
-          detectedDirectHits(DetectedNum, Num, ScintPoint);
-        }
-        else {
-          for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+      if (Visibilities && !usesSemiAnalyticModel()) { // photon library
+        for(size_t OpDet=0; OpDet!=NOpChannels; OpDet++)
+        {
+          G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+
+          if(DetThisPMT>0) // direct light
           {
-            G4int DetThisPMT = G4int(G4Poisson(Visibilities[OpDet] * Num));
+            DetectedNum[OpDet]=DetThisPMT; 
+            //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+            //   //   it->second<<" " << Num << " " << DetThisPMT;  
 
-            if(DetThisPMT>0) 
+            //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+          }
+          if(pvs->StoreReflected()) { // reflected light
+            G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
+            if(ReflDetThisPMT>0)
             {
-              DetectedNum[OpDet]=DetThisPMT;
-              //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
-              //   //   it->second<<" " << Num << " " << DetThisPMT;  
-
-              //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
+              ReflDetectedNum[OpDet]=ReflDetThisPMT;
             }
-            if(pvs->StoreReflected()) {
-              G4int ReflDetThisPMT = G4int(G4Poisson(ReflVisibilities[OpDet] * Num));
-              if(ReflDetThisPMT>0)
-              {
-                ReflDetectedNum[OpDet]=ReflDetThisPMT;
-              }
-            }
-          }
-        }
-
-        
-        // Now we run through each PMT figuring out num of detected photons
-        for (int Reflected = 0; Reflected <= 1; Reflected++) {
-          // Only do the reflected loop if we have reflected visibilities
-          if (Reflected && !pvs->StoreReflected())
-            continue;
-          
-          std::map<int,int>::const_iterator itstart;
-          std::map<int,int>::const_iterator itend;
-          if (Reflected) {
-            itstart = ReflDetectedNum.begin();
-            itend   = ReflDetectedNum.end();
-          }
-          else{
-            itstart = DetectedNum.begin();
-            itend   = DetectedNum.end();
-          }
-          
-          for(std::map<int,int>::const_iterator itdetphot=itstart; itdetphot!=itend; ++itdetphot)
-          {
-            int OpChannel = itdetphot->first;
-            int NPhotons  = itdetphot->second;
-
-            // Set up the OpDetBTR information
-            sim::OpDetBacktrackerRecord tmpOpDetBTRecord(OpChannel);
-            int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
-            double xyzPos[3];
-            average_position(aStep, xyzPos);
-            double Edeposited  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
-
-            // Get the transport time distribution
-            std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
-
-            // Loop through the photons
-            for (G4int i = 0; i < NPhotons; ++i)
-            {
-              G4double Time = t0
-                + scint_time(aStep, ScintillationTime, ScintillationRiseTime)
-                + arrival_time_dist[i]*CLHEP::ns;
-
-              // Always store the BTR
-              tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
-
-              // Store as lite photon or as OnePhoton
-              if(lgp->UseLitePhotons())
-              {
-                fst->AddLitePhoton(OpChannel, static_cast<int>(Time), 1, Reflected);
-              }
-              else {
-                // The sim photon in this case stores its production point and time
-                TVector3 PhotonPosition( x0[0], x0[1], x0[2] );
-
-                float PhotonEnergy = 0;
-                if (Reflected)  PhotonEnergy = reemission_energy()*CLHEP::eV;
-                else            PhotonEnergy = 9.7*CLHEP::eV;
-            
-                // Make a photon object for the collection
-                sim::OnePhoton PhotToAdd;
-                PhotToAdd.InitialPosition  = PhotonPosition;
-                PhotToAdd.Energy           = PhotonEnergy;
-                PhotToAdd.Time             = Time;
-                PhotToAdd.SetInSD          = false;
-                PhotToAdd.MotherTrackID    = tracknumber;
-
-                fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
-              }
-            }
-            fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
           }
         }
       }
+      else { // semi-analytical model for direct light.
+        detectedDirectHits(DetectedNum, Num, ScintPoint);
+      }
+
+
+      
+      // Now we run through each PMT figuring out num of detected photons
+      for (int Reflected = 0; Reflected <= 1; Reflected++) {
+        // Only do the reflected loop if we have reflected visibilities
+        if (Reflected && !pvs->StoreReflected())
+          continue;
+        
+        std::map<int,int>::const_iterator itstart;
+        std::map<int,int>::const_iterator itend;
+        if (Reflected) {
+          itstart = ReflDetectedNum.begin();
+          itend   = ReflDetectedNum.end();
+        }
+        else{
+          itstart = DetectedNum.begin();
+          itend   = DetectedNum.end();
+        }
+        
+        for(std::map<int,int>::const_iterator itdetphot=itstart; itdetphot!=itend; ++itdetphot)
+        {
+          int OpChannel = itdetphot->first;
+          int NPhotons  = itdetphot->second;
+
+          // Set up the OpDetBTR information
+          sim::OpDetBacktrackerRecord tmpOpDetBTRecord(OpChannel);
+          int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
+          double xyzPos[3];
+          average_position(aStep, xyzPos);
+          double Edeposited  = larg4::IonizationAndScintillation::Instance()->VisibleEnergyDeposit()/CLHEP::MeV;
+
+          // Get the transport time distribution
+          std::vector<double> arrival_time_dist = propagation_time(x0, OpChannel, NPhotons, Reflected);
+
+          // Loop through the photons
+          for (G4int i = 0; i < NPhotons; ++i)
+          {
+            G4double Time = t0
+              + scint_time(aStep, ScintillationTime, ScintillationRiseTime)
+              + arrival_time_dist[i]*CLHEP::ns;
+
+            // Always store the BTR
+            tmpOpDetBTRecord.AddScintillationPhotons(thisG4TrackID, Time, 1, xyzPos, Edeposited);
+
+            // Store as lite photon or as OnePhoton
+            if(lgp->UseLitePhotons())
+            {
+              fst->AddLitePhoton(OpChannel, static_cast<int>(Time), 1, Reflected);
+            }
+            else {
+              // The sim photon in this case stores its production point and time
+              TVector3 PhotonPosition( x0[0], x0[1], x0[2] );
+
+              float PhotonEnergy = 0;
+              if (Reflected)  PhotonEnergy = reemission_energy()*CLHEP::eV;
+              else            PhotonEnergy = 9.7*CLHEP::eV;
+          
+              // Make a photon object for the collection
+              sim::OnePhoton PhotToAdd;
+              PhotToAdd.InitialPosition  = PhotonPosition;
+              PhotToAdd.Energy           = PhotonEnergy;
+              PhotToAdd.Time             = Time;
+              PhotToAdd.SetInSD          = false;
+              PhotToAdd.MotherTrackID    = tracknumber;
+
+              fst->AddPhoton(OpChannel, std::move(PhotToAdd), Reflected);
+            }
+          }
+          fst->AddOpDetBacktrackerRecord(tmpOpDetBTRecord, Reflected);
+        }
+      }
+      
     }
 
     //std::cout<<gen_photon_ctr<<","<<det_photon_ctr<<std::endl; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
@@ -1393,7 +1394,6 @@ namespace larg4{
     // calculate number photons
     double hits_rec = GH_correction * hits_geo / cosine;
     int hits_vuv = std::round(G4Poisson(hits_rec));
-
     return hits_vuv;
   }
 
