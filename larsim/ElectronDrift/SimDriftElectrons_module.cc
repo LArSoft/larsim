@@ -541,7 +541,6 @@ namespace detsim {
                                                data(xyz),
                                                fnEnDiff[k],
                                                energyDeposit.OrigTrackID());
-            std::cout << "Orig Track ID: " << energyDeposit.OrigTrackID() << std::endl;
             if (fStoreDriftedElectronClusters)
               SimDriftedElectronClusterCollection->emplace_back(
                 fnElDiff[k],
