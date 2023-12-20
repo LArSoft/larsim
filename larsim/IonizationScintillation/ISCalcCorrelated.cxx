@@ -166,11 +166,48 @@ namespace larg4 {
     // electric field outside active volume set to zero
     if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-    // electric field inside active volume
-    if (!fSCE->EnableSimEfieldSCE()) return efield;
+    TVector3 elecvec;
 
-    auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-    return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+    art::ServiceHandle<geo::Geometry const> fGeometry;
+    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
+    const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
+
+    if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
+    if (tpcGeo.DetectDriftDirection() == -1) elecvec.SetXYZ(-1, 0, 0);
+    if (tpcGeo.DetectDriftDirection() == 2) elecvec.SetXYZ(0, 1, 0);
+    if (tpcGeo.DetectDriftDirection() == -2) elecvec.SetXYZ(0, -1, 0);
+    if (tpcGeo.DetectDriftDirection() == 3) elecvec.SetXYZ(0, 0, 1);
+    if (tpcGeo.DetectDriftDirection() == -3) elecvec.SetXYZ(0, 0, -1);
+
+    elecvec *= efield;
+
+    if (fSCE->EnableSimEfieldSCE()) {
+      auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+      TVector3 scevec;
+
+      if (tpcGeo.DetectDriftDirection() == 1)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -1)
+        scevec.SetXYZ(
+          -1 * efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == 2)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -2)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), -1 * efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == 3)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -3)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), -1 * efield * eFieldOffsets.Z());
+
+      elecvec += scevec;
+    }
+
+    return elecvec.Mag();
   }
   //----------------------------------------------------------------------------
   double ISCalcCorrelated::AngleToEFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
@@ -200,8 +237,28 @@ namespace larg4 {
     // electric field inside active volume
     if (fSCE->EnableSimEfieldSCE()) {
       auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-      TVector3 scevec(
-        efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+
+      TVector3 scevec;
+
+      if (tpcGeo.DetectDriftDirection() == 1)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -1)
+        scevec.SetXYZ(
+          -1 * efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == 2)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -2)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), -1 * efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == 3)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
+      if (tpcGeo.DetectDriftDirection() == -3)
+        scevec.SetXYZ(
+          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), -1 * efield * eFieldOffsets.Z());
+
       elecvec += scevec;
     }
 
