@@ -3,25 +3,28 @@
 // Utility functions
 ////////////////////////////////////////////////////////////////////////
 #include "larsim/PhotonPropagation/PhotonPropagationUtils.h"
+#include <cmath>
 
 namespace phot {
 
   //......................................................................
-  double fast_acos(double x)
-  {
-    double negate = double(x < 0.);
-    x = std::abs(x);
-    x -= double(x > 1.) * (x - 1.); // <- equivalent to min(1.,x), but faster
-    double ret = -0.0187293;
-    ret = ret * x;
-    ret = ret + 0.0742610;
-    ret = ret * x;
-    ret = ret - 0.2121144;
-    ret = ret * x;
-    ret = ret + 1.5707288;
-    ret = ret * std::sqrt(1. - x);
-    ret = ret - 2. * negate * ret;
-    return negate * 3.14159265358979 + ret;
+  // fast approximation to acos, from C. Hastings, Jr., "Approximations for Digital Computers", Princeton University Press, 1955.
+ double fast_acos(double xin) {
+   double const x = std::abs(xin);
+   double const a0 =  1.5707288;
+   double const a1 = -0.2121144;
+   double const a2 =  0.0742610;
+   double const a3 = -0.0187293;
+   double ret = a3;
+   ret *= x;
+   ret += a2;
+   ret *= x;
+   ret += a1;
+   ret *= x;
+   ret += a0;
+   ret *= std::sqrt(1.0-x);
+   if (xin >= 0) return ret;
+   return M_PI - ret;
   }
 
   //......................................................................
