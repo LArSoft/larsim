@@ -8,23 +8,37 @@
 namespace phot {
 
   //......................................................................
-  // fast approximation to acos, from C. Hastings, Jr., "Approximations for Digital Computers", Princeton University Press, 1955.
- double fast_acos(double xin) {
-   double const x = std::abs(xin);
-   double const a0 =  1.5707288;
-   double const a1 = -0.2121144;
-   double const a2 =  0.0742610;
-   double const a3 = -0.0187293;
-   double ret = a3;
-   ret *= x;
-   ret += a2;
-   ret *= x;
-   ret += a1;
-   ret *= x;
-   ret += a0;
-   ret *= std::sqrt(1.0-x);
-   if (xin >= 0) return ret;
-   return M_PI - ret;
+  // fast approximation to acos, This implementation foillows the functional
+  // form from C. Hastings, Jr., "Approximations for Digital Computers",
+  // Princeton University Press, 1955.
+  // This differs from that version by using a new fit to the same functional
+  // form, but done in double precision. The resulting parameters differ, and
+  // result in the same calculation speed but yield a better approximation.
+  //
+  // The functional form for the fit is:
+  //    acos(x) = sqrt(1-x) * a0 * (x + a1 * (x + a2 * (x + a3)))
+  // The fit done is *not* a least squares fit.
+  // It is a fit that minimizes the value of the maximum absolute deviation
+  // between the fitted function and the C math library's implementation of
+  // acos(double).
+  //
+  double fast_acos(double xin)
+  {
+    double const a3 = -2.08730442907856008e-02;
+    double const a2 =  7.68769404161671888e-02;
+    double const a1 = -2.12871094165645952e-01;
+    double const a0 =  1.57075835365209659e+00;
+    double const x = std::abs(xin);
+    double ret = a3;
+    ret *= x;
+    ret += a2;
+    ret *= x;
+    ret += a1;
+    ret *= x;
+    ret += a0;
+    ret *= std::sqrt(1.0-x);
+    if (xin >= 0) return ret;
+    return M_PI - ret;
   }
 
   //......................................................................
