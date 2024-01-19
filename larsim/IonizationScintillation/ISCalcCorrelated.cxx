@@ -170,7 +170,9 @@ namespace larg4 {
 
     art::ServiceHandle<geo::Geometry const> fGeometry;
     geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
+    if (!bool(tpcid)) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
+
 
     if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
     if (tpcGeo.DetectDriftDirection() == -1) elecvec.SetXYZ(-1, 0, 0);
@@ -223,6 +225,7 @@ namespace larg4 {
 
     art::ServiceHandle<geo::Geometry const> fGeometry;
     geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
+    if (!bool(tpcid)) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
     if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
