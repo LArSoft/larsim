@@ -173,7 +173,6 @@ namespace larg4 {
     if (!bool(tpcid)) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
-
     if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
     if (tpcGeo.DetectDriftDirection() == -1) elecvec.SetXYZ(-1, 0, 0);
     if (tpcGeo.DetectDriftDirection() == 2) elecvec.SetXYZ(0, 1, 0);
