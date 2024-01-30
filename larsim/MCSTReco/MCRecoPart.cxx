@@ -55,7 +55,7 @@ namespace sim {
     unsigned int result = this->at(part_index)._mother;
 
     //Is a primary particle. Account for possible track ID offsets
-    for (auto const& offset : _trackIDOffsets) { 
+    for (auto const& offset : _trackIDOffsets) {
       if (result == offset) return this->at(part_index)._track_id;
     }
 
@@ -85,7 +85,7 @@ namespace sim {
     if (result == this->at(part_index)._track_id) return result;
 
     //Is a primary particle. Account for possible track ID offsets
-    for (auto const& offset : _trackIDOffsets) { 
+    for (auto const& offset : _trackIDOffsets) {
       if (result == offset) return this->at(part_index)._track_id;
     }
 
