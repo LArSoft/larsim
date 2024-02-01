@@ -90,6 +90,7 @@ cet_build_plugin(RadioGen art::EDProducer
   larcorealg::headers
   larcoreobj::SummaryData
   larcoreobj::geo_vectors
+  nugen::EventGeneratorBase
   nurandom::RandomUtils_NuRandomService_service
   nusimdata::SimulationBase
   art::Framework_Principal
@@ -99,22 +100,6 @@ cet_build_plugin(RadioGen art::EDProducer
   cetlib::cetlib
   cetlib_except::cetlib_except
 )
-
-# For evgenbase.h:
-if (TARGET nugen::EventGeneratorBase)
-  target_link_libraries(larsim_EventGenerator_RadioGen_module
-    PRIVATE
-    nugen::EventGeneratorBase
-  )
-else()
-  target_link_libraries(larsim_EventGenerator_RadioGen_module
-    PRIVATE
-    ROOT::MathCore
-  )
-  target_include_directories(larsim_EventGenerator_RadioGen_module
-    BEFORE PRIVATE ${nugen_INCLUDE_DIR}
-  )
-endif()
 
 cet_build_plugin(SNNueAr40CCGen art::EDProducer
   LIBRARIES PRIVATE

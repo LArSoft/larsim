@@ -1,4 +1,3 @@
-
 cet_make_library(SOURCE GenieWeightCalc.cxx
                         PPFXCVWeightCalc.cxx
                         PPFXMIPPKaonWeightCalc.cxx

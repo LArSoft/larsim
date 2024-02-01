@@ -79,7 +79,7 @@ cet_make_library(SOURCE
   CLHEP::Geometry
   CLHEP::Random
   CLHEP::Vector
-  Boost::math_tr1
+  Boost::boost
 )
 
 cet_build_plugin(LArG4 art::EDProducer
