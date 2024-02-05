@@ -220,6 +220,7 @@ namespace larg4 {
         double endTime_tmp = edepi.EndT();
         int trackID_tmp = edepi.TrackID();
         int pdgCode_tmp = edepi.PdgCode();
+        int origTrackID_tmp = edepi.OrigTrackID();
 
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
@@ -244,7 +245,8 @@ namespace larg4 {
                               startTime_tmp,
                               endTime_tmp,
                               trackID_tmp,
-                              pdgCode_tmp);
+                              pdgCode_tmp,
+                              origTrackID_tmp);
 
         if (fSavePriorSCE) {
           simedep1->emplace_back(ph_num,
@@ -256,7 +258,8 @@ namespace larg4 {
                                  edepi.StartT(),
                                  edepi.EndT(),
                                  edepi.TrackID(),
-                                 edepi.PdgCode());
+                                 edepi.PdgCode(),
+                                 edepi.OrigTrackID());
         }
       }
     }
