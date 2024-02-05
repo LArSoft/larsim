@@ -343,7 +343,9 @@ namespace detsim {
 
       /// \todo think about effects of drift between planes.
       // Center of plane is also returned in cm units
-      double DriftDistance = std::abs(xyz[driftcoordinate] - plane_location_coord);
+      //double DriftDistance = std::abs(xyz[driftcoordinate] - plane_location_coord);
+      double DriftPosition = xyz[driftcoordinate] - plane_location_coord;
+      double DriftDistance = std::abs(DriftPosition);
 
       // Space-charge effect (SCE): Get SCE {x,y,z} offsets for
       // particular location in TPC
@@ -352,7 +354,11 @@ namespace detsim {
                                                 // transversecoordinates
       auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
       if (SCE->EnableSimSpatialSCE() == true) {
-        posOffsets = SCE->GetPosOffsets(mp);
+        posOffsets = SCE->GetPosOffsets(mp,tpcid);
+
+        // This line makes us skip Edeps where the correction is too large.
+        // Note that the *entire* drift calculation is silently skipped, so bad
+        // corrrection calculations will result in (subtlely?!!) erroneous results.
         if (larsim::Utils::SCE::out_of_bounds(posOffsets)) { continue; }
         posOffsetxyz[0] = posOffsets.X();
         posOffsetxyz[1] = posOffsets.Y();
@@ -362,7 +368,11 @@ namespace detsim {
       double avegagetransversePos1 = 0.;
       double avegagetransversePos2 = 0.;
 
-      DriftDistance += -1. * posOffsetxyz[driftcoordinate];
+      // Add SCE offset to true position to get apparent position
+      // (commented line below assumed the old convention)
+      //DriftDistance += -1. * posOffsetxyz[driftcoordinate];
+      DriftPosition += posOffsetxyz[driftcoordinate];
+      DriftDistance = std::abs(DriftPosition);
       avegagetransversePos1 = xyz[transversecoordinate1] + posOffsetxyz[transversecoordinate1];
       avegagetransversePos2 = xyz[transversecoordinate2] + posOffsetxyz[transversecoordinate2];
 
@@ -373,7 +383,9 @@ namespace detsim {
       if (DriftDistance < 0.) DriftDistance = 0.;
 
       // Drift time in ns
-      double TDrift = DriftDistance * fRecipDriftVel[0];
+      // double TDrift = DriftDistance * fRecipDriftVel[0];
+      double TDrift = std::abs(DriftPosition) * fRecipDriftVel[0];
+
 
       if (tpcGeo.Nplanes() == 2 &&
           driftcoordinate == 0) { // special case for ArgoNeuT (Nplanes = 2 and drift direction =
