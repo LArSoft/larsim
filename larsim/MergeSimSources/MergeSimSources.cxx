@@ -250,6 +250,8 @@ sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetSimEnergyDepositTrackID
 {
 
   auto tid = (edep.TrackID() >= 0) ? (edep.TrackID() + offset) : (edep.TrackID() - offset);
+  auto orig_tid =
+    (edep.OrigTrackID() >= 0) ? (edep.OrigTrackID() + offset) : (edep.OrigTrackID() - offset);
 
   return sim::SimEnergyDeposit{
     edep.NumPhotons(),      // np
@@ -261,7 +263,8 @@ sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetSimEnergyDepositTrackID
     edep.T0(),              // t0
     edep.T1(),              // t1
     tid,                    // id
-    edep.PdgCode()          // pdg
+    edep.PdgCode(),         // pdg
+    orig_tid                // orig id
   };
 } // sim::MergeSimSourcesUtility::offsetTrackID()
 

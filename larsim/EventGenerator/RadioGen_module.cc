@@ -27,6 +27,9 @@
 //             Ni59 Calibration sources. This is another "hacky"
 //             fix to something that really deserves a more
 //             elegant and comprehensive solution.
+//
+//           Aug 2023 L Paulucci
+//             Adding a fhicl parameter for generic path to radiogen files
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
@@ -210,7 +213,7 @@ namespace evgen {
 
     TLorentzVector dirCalc(double p, double m);
 
-    void readfile(std::string nuclide, std::string const& filename);
+    void readfile(std::string nuclide, std::string const& filename, std::string const& PathToFile);
     void samplespectrum(std::string nuclide, int& itype, double& t, double& m, double& p);
 
     void Ar42Gamma2(std::vector<std::tuple<ti_PDGID, td_Mass, TLorentzVector>>& v_prods);
@@ -254,6 +257,7 @@ namespace evgen {
     std::vector<double> fZ1; ///< Top corner z position (cm) in world coordinates
     bool fIsFirstSignalSpecial;
     int trackidcounter; ///< Serial number for the MC track ID
+    std::string fPathToFile;
 
     // leftovers from the phase space generator
     // const double gevperamu = 0.931494061;
@@ -299,11 +303,18 @@ namespace evgen {
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();
 
+    auto const fPathToFile = pset.get<std::string>("PathToFile", "Radionuclides/");
     auto const nuclide = pset.get<std::vector<std::string>>("Nuclide");
     auto const material = pset.get<std::vector<std::string>>("Material");
     auto const Bq = pset.get<std::vector<double>>("BqPercc");
     auto t0 = pset.get<std::vector<double>>("T0", {});
     auto t1 = pset.get<std::vector<double>>("T1", {});
+
+    if (fPathToFile.find_last_of('/') !=
+        fPathToFile.length() - 1) { //Checking that last character in path is a forward slash
+      throw cet::exception("RadioGen")
+        << "Last entry of the path to radiological files needs to be a forward slash ('/')\n";
+    }
 
     if (fT0.empty() || fT1.empty()) { // better be both empty...
       if (!fT0.empty() || !fT1.empty()) {
@@ -389,21 +400,21 @@ namespace evgen {
       throw cet::exception("RadioGen") << "Different size Z1 vector and Nuclide vector\n";
 
     for (std::string& nuclideName : fNuclide) {
-      if (nuclideName == "39Ar") { readfile("39Ar", "Argon_39.root"); }
+      if (nuclideName == "39Ar") { readfile("39Ar", "Argon_39.root", fPathToFile); }
       else if (nuclideName == "60Co") {
-        readfile("60Co", "Cobalt_60.root");
+        readfile("60Co", "Cobalt_60.root", fPathToFile);
       }
       else if (nuclideName == "85Kr") {
-        readfile("85Kr", "Krypton_85.root");
+        readfile("85Kr", "Krypton_85.root", fPathToFile);
       }
       else if (nuclideName == "40K") {
-        readfile("40K", "Potassium_40.root");
+        readfile("40K", "Potassium_40.root", fPathToFile);
       }
       else if (nuclideName == "232Th") {
-        readfile("232Th", "Thorium_232.root");
+        readfile("232Th", "Thorium_232.root", fPathToFile);
       }
       else if (nuclideName == "238U") {
-        readfile("238U", "Uranium_238.root");
+        readfile("238U", "Uranium_238.root", fPathToFile);
       }
       else if (nuclideName == "222Rn") {
         continue;
@@ -414,23 +425,27 @@ namespace evgen {
       else if (nuclideName == "42Ar") {
         readfile(
           "42Ar_1",
-          "Argon_42_1.root"); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
+          "Argon_42_1.root",
+          fPathToFile); //Each possible beta decay mode of Ar42 is given it's own .root file for now.
         readfile(
           "42Ar_2",
-          "Argon_42_2.root"); //This allows us to know which decay chain to follow for the dexcitation gammas.
+          "Argon_42_2.root",
+          fPathToFile); //This allows us to know which decay chain to follow for the dexcitation gammas.
         readfile(
           "42Ar_3",
-          "Argon_42_3.root"); //The dexcitation gammas are not included in the root files as we want to
+          "Argon_42_3.root",
+          fPathToFile); //The dexcitation gammas are not included in the root files as we want to
         readfile(
           "42Ar_4",
-          "Argon_42_4.root"); //probabilistically simulate the correct coincident gammas, which we cannot guarantee
-        readfile("42Ar_5", "Argon_42_5.root"); //by sampling a histogram.
+          "Argon_42_4.root",
+          fPathToFile); //probabilistically simulate the correct coincident gammas, which we cannot guarantee
+        readfile("42Ar_5", "Argon_42_5.root", fPathToFile); //by sampling a histogram.
         continue;
       } //Ar42  is handeled separately later
       else {
         std::string searchName = nuclideName;
         searchName += ".root";
-        readfile(nuclideName, searchName);
+        readfile(nuclideName, searchName, fPathToFile);
       }
     }
   }
@@ -677,7 +692,9 @@ namespace evgen {
 
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
 
-  void RadioGen::readfile(std::string nuclide, std::string const& filename)
+  void RadioGen::readfile(std::string nuclide,
+                          std::string const& filename,
+                          std::string const& PathToFile)
   {
     bool found{false};
     std::regex const re_argon{"42Ar.*"};
@@ -702,7 +719,7 @@ namespace evgen {
 
     spectrumname.push_back(nuclide);
     cet::search_path sp("FW_SEARCH_PATH");
-    std::string fn2 = "Radionuclides/";
+    std::string fn2 = PathToFile;
     fn2 += filename;
     std::string fullname;
     sp.find_file(fn2, fullname);

@@ -46,6 +46,9 @@ namespace sim {
     , fRecombk{pset.get<double>("Recombk", util::kRecombk)}
     , fModBoxA{pset.get<double>("ModBoxA", util::kModBoxA)}
     , fModBoxB{pset.get<double>("ModBoxB", util::kModBoxB)}
+    , fEllipsModBoxA{pset.get<double>("EllipsModBoxA")}
+    , fEllipsModBoxB{pset.get<double>("EllipsModBoxB")}
+    , fEllipsModBoxR{pset.get<double>("EllipsModBoxR")}
     , fLarqlChi0A{pset.get<double>("LarqlChi0A")}
     , fLarqlChi0B{pset.get<double>("LarqlChi0B")}
     , fLarqlChi0C{pset.get<double>("LarqlChi0C")}
@@ -55,6 +58,7 @@ namespace sim {
     , fWph{pset.get<double>("Wph")}
     , fQAlpha{pset.get<double>("QAlpha")}
     , fUseModBoxRecomb{pset.get<bool>("UseModBoxRecomb")}
+    , fUseEllipsModBoxRecomb{pset.get<bool>("UseEllipsModBoxRecomb")}
     , fUseModLarqlRecomb{pset.get<bool>("UseModLarqlRecomb")}
     , fUseBinomialFlucts{pset.get<bool>("UseBinomialFlucts", true)}
     , fIonAndScintCalculator{pset.get<std::string>("IonAndScintCalculator", "Separate")}

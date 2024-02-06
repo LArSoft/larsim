@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		larsim
-defaultqual	e20
+defaultqual	e26
 ####################################
 
 ####################################
@@ -249,13 +249,13 @@ gdmldir	product_dir	gdml
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-larg4		v09_16_01	-
+larg4		v09_17_00	-
 larsoft_data	v1_02_02	-
-marley		v1_2_0i		-
-nugen		v1_19_05	-
-nurandom	v1_10_01	-
-nutools		v3_15_03	-
-ppfx            v02_18_01       -
+marley		v1_2_1		-
+nugen		v1_19_06	-
+nurandom	v1_10_03	-
+nutools		v3_15_04	-
+ppfx            v02_18_03       -
 cetmodules	v3_20_00	-	only_for_build
 end_product_list
 ####################################
@@ -314,12 +314,8 @@ end_product_list
 qualifier	larg4		nutools		nugen		nurandom	marley		ppfx		larsoft_data
 c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	-nq-
 c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	-nq-
-c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	c7:debug	-nq-
-c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		c7:prof		-nq-
 e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	-nq-
 e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	-nq-
-e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	e20:debug	-nq-
-e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	e20:prof	-nq-
 end_qualifier_list
 ####################################
 
