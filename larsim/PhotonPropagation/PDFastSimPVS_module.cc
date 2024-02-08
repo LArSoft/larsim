@@ -261,7 +261,7 @@ namespace phot {
                 // calculate the time at which each photon is seen
                 double dtime = edepi.StartT() + fScintTime->fastScintTime();
                 if (fIncludePropTime) dtime += transport_time[i];
-                int time = static_cast<int>(std::round(dtime));
+                int time(dtime > static_cast<double>(std::numeric_limits<int>::max()) ? std::numeric_limits<int>::max() : static_cast<int>(std::round(dtime)));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
@@ -274,7 +274,7 @@ namespace phot {
                 // calculate the time at which each photon is seen
                 double dtime = edepi.StartT() + fScintTime->slowScintTime();
                 if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
-                int time = static_cast<int>(std::round(dtime));
+                int time(dtime > static_cast<double>(std::numeric_limits<int>::max()) ? std::numeric_limits<int>::max() : static_cast<int>(std::round(dtime)));
                 if (Reflected)
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                 else
