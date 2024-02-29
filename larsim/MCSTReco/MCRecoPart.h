@@ -147,6 +147,7 @@ namespace sim {
     double _y_min; //!< y-min of volume box used to determine whether to save track information
     double _z_max; //!< z-max of volume box used to determine whether to save track information
     double _z_min; //!< z-min of volume box used to determine whether to save track information
+    std::vector<unsigned int> _trackIDOffsets; //!< Track ID offsets for different MCTruths
 
   }; // class MCRecoPart
 
