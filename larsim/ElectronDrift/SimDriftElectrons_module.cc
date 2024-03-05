@@ -273,24 +273,18 @@ namespace detsim {
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
-      try {
-        cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
-      }
-      catch (cet::exception& e) {
+      cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
+      if (cryostat == geo::CryostatID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a cryostat\n"
-                                            << e;
+                                            << "cannot be found in a cryostat\n";
         continue;
       }
 
       geo::TPCID tpcid;
-      try {
-        tpcid = fGeometry->PositionToTPCID(mp);
-      }
-      catch (cet::exception& e) {
+      tpcid = fGeometry->PositionToTPCID(mp);
+      if (tpcid.TPC == geo::TPCID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a TPC\n"
-                                            << e;
+                                            << "cannot be found in a TPC\n";
         continue;
       }
 
