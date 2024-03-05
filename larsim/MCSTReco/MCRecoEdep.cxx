@@ -160,7 +160,7 @@ namespace sim {
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
-      cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
+      cryostat = geom->PositionToCryostatID(mp).Cryostat;
       if (cryostat == geo::CryostatID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
                                             << "cannot be found in a cryostat\n";
@@ -168,7 +168,7 @@ namespace sim {
       }
 
       unsigned int tpc = 0;
-      tpcid = fGeometry->PositionToTPCID(mp).TPC;
+      tpcid = geom->PositionToTPCID(mp).TPC;
       if (tpcid == geo::TPCID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
                                             << "cannot be found in a TPC\n";
