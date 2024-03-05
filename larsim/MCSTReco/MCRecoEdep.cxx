@@ -168,8 +168,8 @@ namespace sim {
       }
 
       unsigned int tpc = 0;
-      tpcid = geom->PositionToTPCID(mp).TPC;
-      if (tpcid == geo::TPCID::getInvalidID()) {
+      tpc = geom->PositionToTPCID(mp).TPC;
+      if (tpc == geo::TPCID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
                                             << "cannot be found in a TPC\n";
         continue;
