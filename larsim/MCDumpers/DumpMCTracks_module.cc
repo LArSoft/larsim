@@ -132,7 +132,7 @@ void sim::DumpMCTracks::DumpMCTrack(Stream&& out,
                                     sim::MCTrack const& track,
                                     std::string indent /* = "" */,
                                     bool bIndentFirst /* = true */
-                                    ) const
+) const
 {
   if (bIndentFirst) out << indent;
   out << "from GEANT track ID=" << track.TrackID() << " PDG ID=" << track.PdgCode() << " from "

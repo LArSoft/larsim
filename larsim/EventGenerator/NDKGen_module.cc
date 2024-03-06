@@ -188,7 +188,10 @@ namespace evgen {
   }
 
   //____________________________________________________________________________
-  void NDKGen::endJob() { fEventFile.close(); }
+  void NDKGen::endJob()
+  {
+    fEventFile.close();
+  }
 
   //____________________________________________________________________________
   void NDKGen::produce(art::Event& evt)

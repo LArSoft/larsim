@@ -146,9 +146,8 @@ namespace detsim {
     // create a default random engine; obtain the random seed from
     // NuRandomService, unless overridden in configuration with key
     // "Seed"
-    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}->registerAndSeedEngine(createEngine(0),
-                                                                                    pset,
-                                                                                    "Seed")}
+    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}
+                 -> registerAndSeedEngine(createEngine(0), pset, "Seed")}
     , fStoreDriftedElectronClusters{pset.get<bool>("StoreDriftedElectronClusters", true)}
     , fLongitudinalDiffusion{pset.get<double>("LongitudinalDiffusion", 6.2e-9)}
     , fTransverseDiffusion{pset.get<double>("TransverseDiffusion", 16.3e-9)}

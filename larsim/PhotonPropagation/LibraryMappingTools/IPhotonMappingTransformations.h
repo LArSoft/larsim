@@ -411,7 +411,7 @@ auto phot::IPhotonMappingTransformations::applyOpDetMapping(
   OpDetToLibraryIndexMap const& opDetToLibraryMap,
   Coll&& source,
   util::collection_value_t<Coll> defaultValue /* = {} */
-  ) const -> MappedOpDetData_t<Coll>
+) const -> MappedOpDetData_t<Coll>
 {
 
   using std::size;

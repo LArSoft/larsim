@@ -2,9 +2,15 @@
 
 namespace evwgh {
 
-  WeightManager::WeightManager(const std::string name) : _name(name) { _configured = false; }
+  WeightManager::WeightManager(const std::string name) : _name(name)
+  {
+    _configured = false;
+  }
 
-  const std::string& WeightManager::Name() const { return _name; }
+  const std::string& WeightManager::Name() const
+  {
+    return _name;
+  }
 
   //
   // CORE FUNCTION
@@ -38,6 +44,9 @@ namespace evwgh {
     return mcwgh;
   }
 
-  void WeightManager::PrintConfig() { return; }
+  void WeightManager::PrintConfig()
+  {
+    return;
+  }
 
 }

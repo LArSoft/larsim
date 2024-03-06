@@ -90,7 +90,10 @@ namespace larg4 {
       "EDep IS Calc Ntuple",
       "run:event:t:x:y:z:ds:e:trackid:pdg:e_deposit:n_electron:n_photon:scintyield");
   }
-  void ISCalcAna::endJob() { std::cout << "ISCalcAna endJob." << std::endl; }
+  void ISCalcAna::endJob()
+  {
+    std::cout << "ISCalcAna endJob." << std::endl;
+  }
 
   void ISCalcAna::analyze(art::Event const& event)
   {

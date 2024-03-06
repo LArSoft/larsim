@@ -102,7 +102,7 @@ void sim::DumpSimChannels::DumpSimChannel(Stream&& out,
                                           sim::SimChannel const& channel,
                                           std::string indent /* = "" */,
                                           bool bIndentFirst /* = true */
-                                          ) const
+) const
 {
   if (bIndentFirst) out << indent;
   channel.Dump(out, indent);

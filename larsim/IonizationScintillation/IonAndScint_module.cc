@@ -87,12 +87,12 @@ namespace larg4 {
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->registerAndSeedEngine(
-        createEngine(0, "HepJamesRandom", "ISCalcAlg"),
-        "HepJamesRandom",
-        "ISCalcAlg",
-        pset,
-        "SeedISCalcAlg"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}
+              -> registerAndSeedEngine(createEngine(0, "HepJamesRandom", "ISCalcAlg"),
+                                       "HepJamesRandom",
+                                       "ISCalcAlg",
+                                       pset,
+                                       "SeedISCalcAlg"))
     , Instances{pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive")}
     , fSavePriorSCE{pset.get<bool>("SavePriorSCE", false)}
   {
@@ -139,7 +139,10 @@ namespace larg4 {
   }
 
   //......................................................................
-  void IonAndScint::endJob() { std::cout << "IonAndScint endJob." << std::endl; }
+  void IonAndScint::endJob()
+  {
+    std::cout << "IonAndScint endJob." << std::endl;
+  }
 
   //......................................................................
   std::vector<art::Handle<SimEnergyDepositCollection>> IonAndScint::inputCollections(

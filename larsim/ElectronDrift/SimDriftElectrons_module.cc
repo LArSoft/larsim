@@ -164,9 +164,8 @@ namespace detsim {
     // create a default random engine; obtain the random seed from
     // NuRandomService, unless overridden in configuration with key
     // "Seed"
-    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}->registerAndSeedEngine(createEngine(0),
-                                                                                    pset,
-                                                                                    "Seed")}
+    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}
+                 -> registerAndSeedEngine(createEngine(0), pset, "Seed")}
     , fStoreDriftedElectronClusters{pset.get<bool>("StoreDriftedElectronClusters", false)}
   {
     produces<std::vector<sim::SimChannel>>();

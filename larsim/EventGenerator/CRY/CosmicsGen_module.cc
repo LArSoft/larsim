@@ -96,7 +96,7 @@ namespace evgen {
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
                                                                                  "Seed"))
-    , fCRYHelp{pset, fEngine, art::ServiceHandle<geo::Geometry const>{}->GetWorldVolumeName()}
+    , fCRYHelp{pset, fEngine, art::ServiceHandle<geo::Geometry const>{} -> GetWorldVolumeName()}
   {
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();

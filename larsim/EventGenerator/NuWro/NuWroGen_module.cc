@@ -1257,7 +1257,10 @@ namespace evgen {
 
   //____________________________________________________________________________
 
-  NuWroGen::~NuWroGen() { fStopwatch.Stop(); }
+  NuWroGen::~NuWroGen()
+  {
+    fStopwatch.Stop();
+  }
 
   //____________________________________________________________________________
   void NuWroGen::reconfigure(fhicl::ParameterSet const& p)

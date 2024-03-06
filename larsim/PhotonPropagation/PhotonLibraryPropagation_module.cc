@@ -33,7 +33,10 @@ using namespace std;
 
 namespace {
 
-  double single_exp(double t, double tau2) { return exp((-1.0 * t) / tau2) / tau2; }
+  double single_exp(double t, double tau2)
+  {
+    return exp((-1.0 * t) / tau2) / tau2;
+  }
 
   double bi_exp(double t, double tau1, double tau2)
   {
@@ -174,7 +177,7 @@ namespace phot {
         p,
         "SeedScintTime"))
   {
-    if (art::ServiceHandle<sim::LArG4Parameters const> {}->UseLitePhotons()) {
+    if (art::ServiceHandle<sim::LArG4Parameters const> {} -> UseLitePhotons()) {
       produces<vector<sim::SimPhotonsLite>>();
     }
     else {

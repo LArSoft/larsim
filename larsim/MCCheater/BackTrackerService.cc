@@ -68,7 +68,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  bool BackTrackerService::priv_CanRun(const art::Event& evt) { return BackTracker::CanRun(evt); }
+  bool BackTrackerService::priv_CanRun(const art::Event& evt)
+  {
+    return BackTracker::CanRun(evt);
+  }
 
   //---------------------------------------------------------------------
   void BackTrackerService::priv_PrepFailed()

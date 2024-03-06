@@ -68,7 +68,10 @@ namespace cheat {
   {}
 
   //----------------------------------------------------------------
-  const double PhotonBackTracker::GetDelay() { return this->fDelay; }
+  const double PhotonBackTracker::GetDelay()
+  {
+    return this->fDelay;
+  }
 
   //----------------------------------------------------------------
   void PhotonBackTracker::ClearEvent()
@@ -78,10 +81,16 @@ namespace cheat {
   }
 
   //----------------------------------------------------------------
-  const bool PhotonBackTracker::BTRsReady() { return !(priv_OpDetBTRs.empty()); }
+  const bool PhotonBackTracker::BTRsReady()
+  {
+    return !(priv_OpDetBTRs.empty());
+  }
 
   //----------------------------------------------------------------
-  const bool PhotonBackTracker::OpFlashToOpHitsReady() { return !(priv_OpFlashToOpHits.empty()); }
+  const bool PhotonBackTracker::OpFlashToOpHitsReady()
+  {
+    return !(priv_OpFlashToOpHits.empty());
+  }
 
   //----------------------------------------------------------------
   const std::vector<art::Ptr<sim::OpDetBacktrackerRecord>>& PhotonBackTracker::OpDetBTRs()

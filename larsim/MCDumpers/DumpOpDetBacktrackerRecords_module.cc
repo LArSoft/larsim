@@ -104,7 +104,7 @@ void sim::DumpOpDetBacktrackerRecords::DumpOpDetBacktrackerRecord(
   sim::OpDetBacktrackerRecord const& channel,
   std::string indent /* = "" */,
   bool bIndentFirst /* = true */
-  ) const
+) const
 {
   if (bIndentFirst) out << indent;
   channel.Dump(out, indent);
