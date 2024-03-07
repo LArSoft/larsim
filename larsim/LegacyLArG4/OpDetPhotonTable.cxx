@@ -219,7 +219,10 @@ namespace larg4 {
   }
 
   //--------------------------------------------------
-  void OpDetPhotonTable::ClearEnergyDeposits() { fSimEDepCol.clear(); }
+  void OpDetPhotonTable::ClearEnergyDeposits()
+  {
+    fSimEDepCol.clear();
+  }
 
   //--------------------------------------------------
   std::unordered_map<std::string, std::vector<sim::SimEnergyDeposit>> const&

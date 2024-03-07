@@ -73,7 +73,10 @@ namespace phot {
   PhotonLibraryHybrid::~PhotonLibraryHybrid() {}
 
   //--------------------------------------------------------------------
-  int PhotonLibraryHybrid::NVoxels() const { return fVoxDef.GetNVoxels(); }
+  int PhotonLibraryHybrid::NVoxels() const
+  {
+    return fVoxDef.GetNVoxels();
+  }
 
   //--------------------------------------------------------------------
   const float* PhotonLibraryHybrid::GetCounts(size_t vox) const

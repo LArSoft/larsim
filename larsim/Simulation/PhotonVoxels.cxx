@@ -52,7 +52,10 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  unsigned int PhotonVoxelDef::GetNVoxels() const { return fxSteps * fySteps * fzSteps; }
+  unsigned int PhotonVoxelDef::GetNVoxels() const
+  {
+    return fxSteps * fySteps * fzSteps;
+  }
 
   //----------------------------------------------------------------------------
   int PhotonVoxelDef::GetVoxelID(double const* Position) const

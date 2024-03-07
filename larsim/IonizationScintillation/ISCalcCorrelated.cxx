@@ -51,7 +51,11 @@ namespace larg4 {
     fRecombk = LArG4PropHandle->Recombk() / detProp.Density(detProp.Temperature());
     fModBoxA = LArG4PropHandle->ModBoxA();
     fModBoxB = LArG4PropHandle->ModBoxB() / detProp.Density(detProp.Temperature());
+    fEllipsModBoxA = LArG4PropHandle->EllipsModBoxA();
+    fEllipsModBoxB = LArG4PropHandle->EllipsModBoxB() / detProp.Density(detProp.Temperature());
+    fEllipsModBoxR = LArG4PropHandle->EllipsModBoxR();
     fUseModBoxRecomb = (bool)LArG4PropHandle->UseModBoxRecomb();
+    fUseEllipsModBoxRecomb = (bool)LArG4PropHandle->UseEllipsModBoxRecomb();
     fUseModLarqlRecomb = (bool)LArG4PropHandle->UseModLarqlRecomb();
     fUseBinomialFlucts = (bool)LArG4PropHandle->UseBinomialFlucts();
     fLarqlChi0A = LArG4PropHandle->LarqlChi0A();
@@ -96,6 +100,22 @@ namespace larg4 {
         double Xi = fModBoxB * dEdx / EFieldStep;
         recomb = std::log(fModBoxA + Xi) / Xi;
       }
+      else if (fUseEllipsModBoxRecomb) {
+
+        double phi = AngleToEFieldAtStep(detProp.Efield(), edep);
+
+        if (std::isnan(phi)) {
+          double Xi = fModBoxB * dEdx / EFieldStep;
+          recomb = std::log(fModBoxA + Xi) / Xi;
+        }
+        else {
+          double B_ellips =
+            fEllipsModBoxB * dEdx /
+            (EFieldStep * std::hypot(std::sin(phi), std::cos(phi) / fEllipsModBoxR));
+
+          recomb = std::log(fEllipsModBoxA + B_ellips) / B_ellips;
+        }
+      }
       // ... or using Birks/Doke
       else {
         recomb = fRecombA / (1. + dEdx * fRecombk / EFieldStep);
@@ -119,7 +139,7 @@ namespace larg4 {
       recomb = 1.;
     }
 
-    // using this recombination, calculate number of ionization electrons
+    // using this recombination, calculate number energy_deposit of ionization electrons
     if (num_ions > 0.)
       num_electrons =
         (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
@@ -146,11 +166,115 @@ namespace larg4 {
     // electric field outside active volume set to zero
     if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-    // electric field inside active volume
-    if (!fSCE->EnableSimEfieldSCE()) return efield;
+    geo::Vector_t elecvec{};
 
-    auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-    return efield * std::hypot(1 + eFieldOffsets.X(), eFieldOffsets.Y(), eFieldOffsets.Z());
+    art::ServiceHandle<geo::Geometry const> fGeometry;
+    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
+    if (!bool(tpcid)) return 0.;
+    const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
+
+    using geo::to_int;
+    auto const [axis, sign] = tpcGeo.DriftAxisWithSign();
+    switch (axis) {
+    case geo::Coordinate::X: {
+      elecvec.SetX(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Y: {
+      elecvec.SetY(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Z: {
+      elecvec.SetZ(to_int(sign));
+    }
+    }
+
+    elecvec *= efield;
+
+    // electric field inside active volume
+    if (fSCE->EnableSimEfieldSCE()) {
+      auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+      geo::Vector_t scevec = eFieldOffsets * efield;
+      if (sign == geo::DriftSign::Negative) {
+        switch (axis) {
+        case geo::Coordinate::X: {
+          scevec.SetX(scevec.X() * -1.);
+          break;
+        }
+        case geo::Coordinate::Y: {
+          scevec.SetY(scevec.Y() * -1.);
+          break;
+        }
+        case geo::Coordinate::Z: {
+          scevec.SetZ(scevec.Z() * -1.);
+        }
+        }
+      }
+      elecvec += scevec;
+    }
+
+    return elecvec.R();
+  }
+  //----------------------------------------------------------------------------
+  double ISCalcCorrelated::AngleToEFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
+  {
+
+    // electric field outside active volume set to zero
+    if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
+
+    geo::Vector_t stepvec = edep.Start() - edep.End();
+    geo::Vector_t elecvec{};
+
+    art::ServiceHandle<geo::Geometry const> fGeometry;
+    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
+    if (!bool(tpcid)) return 0.;
+    const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
+
+    using geo::to_int;
+    auto const [axis, sign] = tpcGeo.DriftAxisWithSign();
+    switch (axis) {
+    case geo::Coordinate::X: {
+      elecvec.SetX(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Y: {
+      elecvec.SetY(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Z: {
+      elecvec.SetZ(to_int(sign));
+    }
+    }
+
+    elecvec *= efield;
+
+    // electric field inside active volume
+    if (fSCE->EnableSimEfieldSCE()) {
+      auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
+      geo::Vector_t scevec = eFieldOffsets * efield;
+      if (sign == geo::DriftSign::Negative) {
+        switch (axis) {
+        case geo::Coordinate::X: {
+          scevec.SetX(scevec.X() * -1.);
+          break;
+        }
+        case geo::Coordinate::Y: {
+          scevec.SetY(scevec.Y() * -1.);
+          break;
+        }
+        case geo::Coordinate::Z: {
+          scevec.SetZ(scevec.Z() * -1.);
+        }
+        }
+      }
+      elecvec += scevec;
+    }
+
+    double angle = std::acos(stepvec.Dot(elecvec) / (stepvec.R() * elecvec.R()));
+
+    if (angle > TMath::PiOver2()) { angle = abs(TMath::Pi() - angle); }
+
+    return angle;
   }
 
   //----------------------------------------------------------------------------

@@ -75,6 +75,9 @@ namespace larg4 {
 
   //--------------------------------------------------------
 
-  void OpParamSD::Initialize(G4HCofThisEvent*) { fPhotonAlreadyCrossed.clear(); }
+  void OpParamSD::Initialize(G4HCofThisEvent*)
+  {
+    fPhotonAlreadyCrossed.clear();
+  }
 
 }

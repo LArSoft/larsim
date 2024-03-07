@@ -22,7 +22,10 @@ namespace larg4 {
   OpDetLookup* TheOpDetLookup;
 
   //--------------------------------------------------
-  OpDetLookup::OpDetLookup() { fTheTopOpDet = 0; }
+  OpDetLookup::OpDetLookup()
+  {
+    fTheTopOpDet = 0;
+  }
 
   //--------------------------------------------------
   OpDetLookup* OpDetLookup::Instance()
@@ -32,7 +35,10 @@ namespace larg4 {
   }
 
   //--------------------------------------------------
-  int OpDetLookup::GetOpDet(std::string const& TheName) { return fTheOpDetMap[TheName]; }
+  int OpDetLookup::GetOpDet(std::string const& TheName)
+  {
+    return fTheOpDetMap[TheName];
+  }
 
   //--------------------------------------------------
   int OpDetLookup::GetOpDet(G4VPhysicalVolume const* TheVolume)
@@ -89,6 +95,9 @@ namespace larg4 {
   }
 
   //--------------------------------------------------
-  int OpDetLookup::GetN() const { return fTheTopOpDet; }
+  int OpDetLookup::GetN() const
+  {
+    return fTheTopOpDet;
+  }
 
 }

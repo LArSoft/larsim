@@ -33,7 +33,10 @@ namespace larg4 {
     fAuxDetSimChannel = sim::AuxDetSimChannel(fAuxDet, std::move(fAuxDetIDEs), fAuxDetSensitive);
   }
   //---------------------------------------------------------------------------------------
-  void AuxDetReadout::clear() { fAuxDetIDEs.clear(); }
+  void AuxDetReadout::clear()
+  {
+    fAuxDetIDEs.clear();
+  }
 
   //---------------------------------------------------------------------------------------
   // Called for each step. Create a vector of AuxDetSimTrack objects. One for each new TrackID.

@@ -58,7 +58,10 @@ namespace cheat {
   {}
 
   //----------------------------------------------------------------
-  double PhotonBackTracker::GetDelay() const { return fDelay; }
+  double PhotonBackTracker::GetDelay() const
+  {
+    return fDelay;
+  }
 
   //----------------------------------------------------------------
   void PhotonBackTracker::ClearEvent()
@@ -68,10 +71,16 @@ namespace cheat {
   }
 
   //----------------------------------------------------------------
-  bool PhotonBackTracker::BTRsReady() const { return !priv_OpDetBTRs.empty(); }
+  bool PhotonBackTracker::BTRsReady() const
+  {
+    return !priv_OpDetBTRs.empty();
+  }
 
   //----------------------------------------------------------------
-  bool PhotonBackTracker::OpFlashToOpHitsReady() const { return !priv_OpFlashToOpHits.empty(); }
+  bool PhotonBackTracker::OpFlashToOpHitsReady() const
+  {
+    return !priv_OpFlashToOpHits.empty();
+  }
 
   //----------------------------------------------------------------
   const std::vector<art::Ptr<sim::OpDetBacktrackerRecord>>& PhotonBackTracker::OpDetBTRs() const
@@ -456,10 +465,16 @@ namespace cheat {
   }
 
   //----------------------------------------------------------------
-  std::set<int> PhotonBackTracker::GetSetOfEveIds() const { return fPartInv->GetSetOfEveIds(); }
+  std::set<int> PhotonBackTracker::GetSetOfEveIds() const
+  {
+    return fPartInv->GetSetOfEveIds();
+  }
 
   //----------------------------------------------------------------
-  std::set<int> PhotonBackTracker::GetSetOfTrackIds() const { return fPartInv->GetSetOfTrackIds(); }
+  std::set<int> PhotonBackTracker::GetSetOfTrackIds() const
+  {
+    return fPartInv->GetSetOfTrackIds();
+  }
 
   //----------------------------------------------------------------
   std::set<int> PhotonBackTracker::GetSetOfEveIds(

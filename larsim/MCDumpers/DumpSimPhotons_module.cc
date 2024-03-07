@@ -182,7 +182,7 @@ void sim::DumpSimPhotons::DumpElement(Stream&& out,
                                       sim::SimPhotons const& simphotons,
                                       std::string indent /* = "" */,
                                       bool bIndentFirst /* = true */
-                                      ) const
+) const
 {
   if (bIndentFirst) out << indent;
   out << "channel=" << simphotons.OpChannel() << " has ";

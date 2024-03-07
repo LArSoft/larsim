@@ -150,11 +150,11 @@ namespace detsim {
   SimDriftElectrons::SimDriftElectrons(fhicl::ParameterSet const& pset)
     : art::EDProducer{pset}
     , fSimModuleLabel{pset.get<art::InputTag>("SimulationLabel")}
-    // create a default random engine; obtain the random seed from NuRandomService, unless
-    // overridden in configuration with key "Seed"
-    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}->registerAndSeedEngine(createEngine(0),
-                                                                                    pset,
-                                                                                    "Seed")}
+    // create a default random engine; obtain the random seed from
+    // NuRandomService, unless overridden in configuration with key
+    // "Seed"
+    , fRandGauss{art::ServiceHandle<rndm::NuRandomService>{}
+                 -> registerAndSeedEngine(createEngine(0), pset, "Seed")}
     , fStoreDriftedElectronClusters{pset.get<bool>("StoreDriftedElectronClusters", false)}
   {
     produces<std::vector<sim::SimChannel>>();
@@ -258,24 +258,18 @@ namespace detsim {
       // somehow the step is outside a tpc (e.g., cosmic rays in rock) just move on to the
       // next one.
       unsigned int cryostat = 0;
-      try {
-        cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
-      }
-      catch (cet::exception& e) {
+      cryostat = fGeometry->PositionToCryostatID(mp).Cryostat;
+      if (cryostat == geo::CryostatID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a cryostat\n"
-                                            << e;
+                                            << "cannot be found in a cryostat\n";
         continue;
       }
 
       geo::TPCID tpcid;
-      try {
-        tpcid = fGeometry->PositionToTPCID(mp);
-      }
-      catch (cet::exception& e) {
+      tpcid = fGeometry->PositionToTPCID(mp);
+      if (tpcid.TPC == geo::TPCID::getInvalidID()) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a TPC\n"
-                                            << e;
+                                            << "cannot be found in a TPC\n";
         continue;
       }
 
@@ -501,9 +495,12 @@ namespace detsim {
 
             // Add the electron clusters and energy to the
             // sim::SimChannel
-            channelPtr->AddIonizationElectrons(
-              energyDeposit.TrackID(), tdc, fnElDiff[k], data(xyz), fnEnDiff[k]);
-
+            channelPtr->AddIonizationElectrons(energyDeposit.TrackID(),
+                                               tdc,
+                                               fnElDiff[k],
+                                               data(xyz),
+                                               fnEnDiff[k],
+                                               energyDeposit.OrigTrackID());
             if (fStoreDriftedElectronClusters)
               SimDriftedElectronClusterCollection->emplace_back(
                 fnElDiff[k],

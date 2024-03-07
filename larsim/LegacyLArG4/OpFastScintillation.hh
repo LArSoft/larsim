@@ -355,14 +355,20 @@ namespace larg4 {
     return fTrackSecondariesFirst;
   }
 
-  inline G4bool OpFastScintillation::GetFiniteRiseTime() const { return fFiniteRiseTime; }
+  inline G4bool OpFastScintillation::GetFiniteRiseTime() const
+  {
+    return fFiniteRiseTime;
+  }
 
   inline void OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
   {
     YieldFactor = yieldfactor;
   }
 
-  inline G4double OpFastScintillation::GetScintillationYieldFactor() const { return YieldFactor; }
+  inline G4double OpFastScintillation::GetScintillationYieldFactor() const
+  {
+    return YieldFactor;
+  }
 
   inline void OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
   {

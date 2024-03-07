@@ -205,8 +205,9 @@ namespace evgen {
   void FileMuons::ReadEvents(simb::MCTruth& mct)
   {
     /// every event will have one of each particle species in the fPDG array
-    auto const& cryostat = art::ServiceHandle<geo::Geometry const> {}
-    ->Cryostat();
+    auto const& cryostat = art::ServiceHandle<geo::Geometry const>
+    {
+      } -> Cryostat();
     for (unsigned int i = 0; i < fPDG.size(); ++i) {
 
       // Choose momentum

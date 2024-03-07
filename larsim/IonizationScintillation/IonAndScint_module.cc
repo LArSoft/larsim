@@ -87,12 +87,12 @@ namespace larg4 {
     : art::EDProducer{pset}
     , calcTag{pset.get<art::InputTag>("ISCalcAlg")}
     , fInputModuleLabels{pset.get<std::vector<std::string>>("InputModuleLabels", {})}
-    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}->registerAndSeedEngine(
-        createEngine(0, "HepJamesRandom", "ISCalcAlg"),
-        "HepJamesRandom",
-        "ISCalcAlg",
-        pset,
-        "SeedISCalcAlg"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService> {}
+              -> registerAndSeedEngine(createEngine(0, "HepJamesRandom", "ISCalcAlg"),
+                                       "HepJamesRandom",
+                                       "ISCalcAlg",
+                                       pset,
+                                       "SeedISCalcAlg"))
     , Instances{pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive")}
     , fSavePriorSCE{pset.get<bool>("SavePriorSCE", false)}
   {
@@ -139,7 +139,10 @@ namespace larg4 {
   }
 
   //......................................................................
-  void IonAndScint::endJob() { std::cout << "IonAndScint endJob." << std::endl; }
+  void IonAndScint::endJob()
+  {
+    std::cout << "IonAndScint endJob." << std::endl;
+  }
 
   //......................................................................
   std::vector<art::Handle<SimEnergyDepositCollection>> IonAndScint::inputCollections(
@@ -220,6 +223,7 @@ namespace larg4 {
         double endTime_tmp = edepi.EndT();
         int trackID_tmp = edepi.TrackID();
         int pdgCode_tmp = edepi.PdgCode();
+        int origTrackID_tmp = edepi.OrigTrackID();
 
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
@@ -244,7 +248,8 @@ namespace larg4 {
                               startTime_tmp,
                               endTime_tmp,
                               trackID_tmp,
-                              pdgCode_tmp);
+                              pdgCode_tmp,
+                              origTrackID_tmp);
 
         if (fSavePriorSCE) {
           simedep1->emplace_back(ph_num,
@@ -256,7 +261,8 @@ namespace larg4 {
                                  edepi.StartT(),
                                  edepi.EndT(),
                                  edepi.TrackID(),
-                                 edepi.PdgCode());
+                                 edepi.PdgCode(),
+                                 edepi.OrigTrackID());
         }
       }
     }

@@ -68,7 +68,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  bool BackTrackerService::priv_CanRun(const art::Event& evt) { return BackTracker::CanRun(evt); }
+  bool BackTrackerService::priv_CanRun(const art::Event& evt)
+  {
+    return BackTracker::CanRun(evt);
+  }
 
   //---------------------------------------------------------------------
   void BackTrackerService::priv_PrepFailed()
@@ -295,7 +298,10 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
-  std::set<int> BackTrackerService::GetSetOfEveIds() const { return BackTracker::GetSetOfEveIds(); }
+  std::set<int> BackTrackerService::GetSetOfEveIds() const
+  {
+    return BackTracker::GetSetOfEveIds();
+  }
 
   //---------------------------------------------------------------------
   std::set<int> BackTrackerService::GetSetOfTrackIds(

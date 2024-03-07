@@ -155,9 +155,15 @@ namespace sim {
   }
 
   //----------------------------------------------------------------------------
-  LArVoxelID::operator TLorentzVector() const { return TLorentzVector(X(), Y(), Z(), T()); }
+  LArVoxelID::operator TLorentzVector() const
+  {
+    return TLorentzVector(X(), Y(), Z(), T());
+  }
 
   //----------------------------------------------------------------------------
-  LArVoxelID::operator TVector3() const { return TVector3(X(), Y(), Z()); }
+  LArVoxelID::operator TVector3() const
+  {
+    return TVector3(X(), Y(), Z());
+  }
 
 } // namespace sim

@@ -118,7 +118,10 @@ namespace cheat {
   }
 
   //----------------------------------------------------------------------
-  double PhotonBackTrackerService::GetDelay() { return PhotonBackTracker::GetDelay(); }
+  double PhotonBackTrackerService::GetDelay()
+  {
+    return PhotonBackTracker::GetDelay();
+  }
 
   //----------------------------------------------------------------------
   std::vector<const sim::SDP*> PhotonBackTrackerService::TrackIdToSimSDPs_Ps(int const id)

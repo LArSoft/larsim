@@ -207,7 +207,7 @@ void sim::DumpMCParticles::DumpMCParticle(Stream&& out,
                                           sim::GeneratedParticleInfo const& truthInfo,
                                           std::string indent /* = "" */,
                                           bool bIndentFirst /* = true */
-                                          ) const
+) const
 {
 
   if (!truthTag.label().empty() || truthInfo.hasGeneratedParticleIndex()) {
@@ -269,10 +269,10 @@ void sim::DumpMCParticles::analyze(art::Event const& event)
     mf::LogVerbatim log(fOutputCategory);
 
     // fetch the input tag of the truth information (if any)
-    art::Ptr<simb::MCTruth> const& truth =
-      particleToTruth ?
-        particleToTruth->at(iParticle) :
-        particleToTruthLight ? particleToTruthLight->at(iParticle) : art::Ptr<simb::MCTruth>{};
+    art::Ptr<simb::MCTruth> const& truth = particleToTruth ? particleToTruth->at(iParticle) :
+                                           particleToTruthLight ?
+                                                             particleToTruthLight->at(iParticle) :
+                                                             art::Ptr<simb::MCTruth>{};
     art::InputTag const& truthTag = truth ? namesRegistry[truth] : art::InputTag{};
 
     // fetch the index of the true particle in the truth record (if any)

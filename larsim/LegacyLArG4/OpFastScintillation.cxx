@@ -1185,7 +1185,10 @@ namespace larg4 {
   }
 
   // ---------------------------------------------------------------------------
-  bool OpFastScintillation::usesSemiAnalyticModel() const { return fUseNhitsModel; }
+  bool OpFastScintillation::usesSemiAnalyticModel() const
+  {
+    return fUseNhitsModel;
+  }
 
   // ---------------------------------------------------------------------------
   void OpFastScintillation::detectedDirectHits(std::map<size_t, int>& DetectedNum,

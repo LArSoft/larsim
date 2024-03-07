@@ -142,7 +142,7 @@ void sim::DumpMCShowers::DumpMCShower(Stream&& out,
                                       sim::MCShower const& shower,
                                       std::string indent /* = "" */,
                                       bool bIndentFirst /* = true */
-                                      ) const
+) const
 {
   if (bIndentFirst) out << indent;
   out << "from GEANT track ID=" << shower.TrackID() << " PDG ID=" << shower.PdgCode() << " from "
