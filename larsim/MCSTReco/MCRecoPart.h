@@ -8,7 +8,6 @@ namespace fhicl {
 
 // LArSoft
 #include "lardataobj/MCBase/MCLimits.h"       // kINVALID_X
-#include "lardataobj/MCBase/MCParticleLite.h" // sim::MCParticleLite
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
 
@@ -87,19 +86,6 @@ namespace sim {
       _end_vtx = p.EndPosition();
       _end_mom = 1.e3 * p.EndMomentum(); // idem as above
     }
-
-    MCMiniPart(const sim::MCParticleLite& p)
-    {
-      Reset();
-      _track_id = p.TrackID();
-      _pdgcode = p.PdgCode();
-      _mother = p.Mother();
-      _process = p.Process();
-      _start_vtx = p.StartVtx();
-      _start_mom = 1.e3 * p.StartMom(); // Change units to (MeV, cm, us)
-      _end_vtx = p.EndVtx();
-      _end_mom = 1.e3 * p.EndMom(); // idem as above
-    }
   };
 
   class MCRecoPart : public std::vector<sim::MCMiniPart> {
@@ -113,7 +99,7 @@ namespace sim {
 
     void AddParticles(const std::vector<simb::MCParticle>& mcp_v,
                       const std::vector<simb::Origin_t>& orig_v,
-                      const std::vector<sim::MCParticleLite>& mcmp_v = {});
+                      const std::vector<simb::MCParticle>& mcmp_v = {});
 
     unsigned int AncestorTrackID(const unsigned int part_index);
 

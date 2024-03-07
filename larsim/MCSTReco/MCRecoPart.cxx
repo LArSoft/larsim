@@ -132,7 +132,7 @@ namespace sim {
   //--------------------------------------------------------------------------------------------
   void MCRecoPart::AddParticles(const std::vector<simb::MCParticle>& mcp_v,
                                 const std::vector<simb::Origin_t>& orig_v,
-                                const std::vector<sim::MCParticleLite>& mcmp_v)
+                                const std::vector<simb::MCParticle>& mcmp_v)
   //--------------------------------------------------------------------------------------------
   {
     if (orig_v.size() != mcp_v.size())
@@ -193,7 +193,7 @@ namespace sim {
     // Now loop over dropped particles
     for (auto const& mcmp : mcmp_v) {
 
-      _track_index.try_emplace(mcmp.TrackID(), this->size());
+      _track_index.try_emplace(mcmp.TrackId(), this->size());
 
       this->push_back(sim::MCMiniPart(mcmp));
 
