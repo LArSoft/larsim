@@ -7,7 +7,7 @@ namespace fhicl {
 }
 
 // LArSoft
-#include "lardataobj/MCBase/MCLimits.h"       // kINVALID_X
+#include "lardataobj/MCBase/MCLimits.h" // kINVALID_X
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h" // simb::Origin_t
 
