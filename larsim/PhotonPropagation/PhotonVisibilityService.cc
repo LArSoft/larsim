@@ -315,14 +315,14 @@ namespace phot {
 
       // Find the TPC volume, following example from
       // https://github.com/LArSoft/larsim/blob/05378155a2a07551fa5757d0449ffb30476d5cf9/larsim/LegacyLArG4/OpFastScintillation.cxx#L2149-L2165
-      geo::BoxBoundedGeo tpcVolume{geom->Cryostat().TPC(0).ActiveBoundingBox()};
-      for (geo::CryostatGeo const& cryo : geom->Iterate<geo::CryostatGeo>()) {
+      geo::BoxBoundedGeo cryoVolume{ geom->Cryostat().BoundingBox() };
+      geo::BoxBoundedGeo tpcVolume{ geom->Cryostat().TPC(0).ActiveBoundingBox() };
+      for ( geo::CryostatGeo const& cryo : geom->Iterate<geo::CryostatGeo>() ) {
 
-        int i = 0;
-        for (geo::TPCGeo const& TPC : cryo.IterateTPCs())
+        cryoVolume.ExtendToInclude( cryo.BoundingBox() );
+        for ( geo::TPCGeo const& TPC : cryo.IterateTPCs() )
         {
-          tpcVolume.ExtendToInclude(TPC.ActiveBoundingBox());
-          ++i;
+          tpcVolume.ExtendToInclude( TPC.ActiveBoundingBox() );
         }
       }
 
@@ -330,11 +330,11 @@ namespace phot {
       if (fUseAutomaticVoxels) {
 
         std::string logString = "Automatic voxelisation x-dimension\n";
-        findVoxelSuggestion( logString, tpcVolume.MinX(), tpcVolume.MaxX(), geom->Cryostat().Boundaries().MinX(), geom->Cryostat().Boundaries().MaxX(), fNx, fXmin, fXmax );
+        findVoxelSuggestion( logString, tpcVolume.MinX(), tpcVolume.MaxX(), cryoVolume.MinX(), cryoVolume.MaxX(), fNx, fXmin, fXmax );
         logString += "Automatic voxelisation y-dimension\n";
-        findVoxelSuggestion( logString, tpcVolume.MinY(), tpcVolume.MaxY(), geom->Cryostat().Boundaries().MinY(), geom->Cryostat().Boundaries().MaxY(), fNy, fYmin, fYmax );
+        findVoxelSuggestion( logString, tpcVolume.MinY(), tpcVolume.MaxY(), cryoVolume.MinY(), cryoVolume.MaxY(), fNy, fYmin, fYmax );
         logString += "Automatic voxelisation z-dimension\n";
-        findVoxelSuggestion( logString, tpcVolume.MinZ(), tpcVolume.MaxZ(), geom->Cryostat().Boundaries().MinZ(), geom->Cryostat().Boundaries().MaxZ(), fNz, fZmin, fZmax );
+        findVoxelSuggestion( logString, tpcVolume.MinZ(), tpcVolume.MaxZ(), cryoVolume.MinZ(), cryoVolume.MaxZ(), fNz, fZmin, fZmax );
         mf::LogInfo("PhotonVisibilityService") << logString;
       }
 
