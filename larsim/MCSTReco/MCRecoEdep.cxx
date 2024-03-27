@@ -160,21 +160,25 @@ namespace sim {
       // cryostat and tpc. If somehow the step is outside a tpc
       // (e.g., cosmic rays in rock) just move on to the next one.
       unsigned int cryostat = 0;
-      cryostat = geom->PositionToCryostatID(mp).Cryostat;
-      if (cryostat == geo::CryostatID::getInvalidID()) {
+      try {
+        geom->PositionToCryostatID(mp);
+      }
+      catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a cryostat\n";
+                                            << "cannot be found in a cryostat\n"
+                                            << e;
         continue;
       }
-
       unsigned int tpc = 0;
-      tpc = geom->PositionToTPCID(mp).TPC;
-      if (tpc == geo::TPCID::getInvalidID()) {
+      try {
+        geom->PositionToTPCID(mp);
+      }
+      catch (cet::exception& e) {
         mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a TPC\n";
+                                            << "cannot be found in a TPC\n"
+                                            << e;
         continue;
       }
-
       geo::TPCID const tpcid{cryostat, tpc};
 
       //Define charge drift direction: driftcoordinate (x, y or z) and driftsign (positive or negative). Also define coordinates perpendicular to drift direction.
