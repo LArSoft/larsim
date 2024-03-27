@@ -300,15 +300,26 @@ namespace phot {
 
     MappedFunctions_t doGetTimingTF1(geo::Point_t const& p) const;
 
-    void findVoxelSuggestion( std::string& logString,
-                              float tpcMin, float tpcMax, float cryoMin, float cryoMax,
-                              int& nVoxels, float& voxelMin, float& voxelMax,
-                              float voxelSizeGoal=10.0 ) const;
+    void findVoxelSuggestion(std::string& logString,
+                             float tpcMin,
+                             float tpcMax,
+                             float cryoMin,
+                             float cryoMax,
+                             int& nVoxels,
+                             float& voxelMin,
+                             float& voxelMax,
+                             float voxelSizeGoal = 10.0) const;
 
-    float testVoxelSuggestion( std::string& logString,
-                               float tpcMin, float tpcMax, float cryoMin, float cryoMax,
-                               int& nVoxels, float& voxelMin, float& voxelMax,
-                               float voxelSizeGoal=10.0, int jog=0 ) const;
+    float testVoxelSuggestion(std::string& logString,
+                              float tpcMin,
+                              float tpcMax,
+                              float cryoMin,
+                              float cryoMax,
+                              int& nVoxels,
+                              float& voxelMin,
+                              float& voxelMax,
+                              float voxelSizeGoal = 10.0,
+                              int jog = 0) const;
 
     /// @}
     // --- END Implementation functions ----------------------------------------
