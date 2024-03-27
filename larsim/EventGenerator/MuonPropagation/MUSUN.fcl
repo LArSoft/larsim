@@ -61,6 +61,7 @@ standard_MUSUN:
  #	+z: 1022
 
  igflag:                 1         # If want muons sampled from parallelepiped, not a sphere.
+ # Dimensions for DUNE Far Detector - includes 5 m of rock around the detector
  Xmin:                   -1477.    # Minumum X position cm
  Xmax:                   1477.     # Maximum X position cm
  Ymin:                   -1288.    # Minumum Y position cm
@@ -68,10 +69,16 @@ standard_MUSUN:
  Zmin:                   -1083.    # Minumum Z position cm
  Zmax:                   6639.     # Maximum Z position cm
 
-# detector rotation, default is the nominal HD FD
+# detector rotation, default is the nominal DUNE HD FD
  DetRotX:               0.         # rotation around X axis, clockwise
  DetRotY:               0.         # rotation around Y axis, clockwise
  DetRotZ:               0.         # rotation around Z axis, clockwise
+
+# For DUNE FD VD, where X is vertical, rotate Z by 90 deg.
+# DetRotX:               0.         # rotation around X axis, clockwise
+# DetRotY:               0.         # rotation around Y axis, clockwise
+# DetRotZ:              90.         # rotation around Z axis, clockwise
+
 
 #   Vitaly's Fortran code for LBNE uses these positions.
 # Xmin:                   -1500.    # Minumum X position cm
