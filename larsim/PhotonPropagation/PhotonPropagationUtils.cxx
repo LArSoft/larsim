@@ -25,9 +25,9 @@ namespace phot {
   double fast_acos(double xin)
   {
     double const a3 = -2.08730442907856008e-02;
-    double const a2 =  7.68769404161671888e-02;
+    double const a2 = 7.68769404161671888e-02;
     double const a1 = -2.12871094165645952e-01;
-    double const a0 =  1.57075835365209659e+00;
+    double const a0 = 1.57075835365209659e+00;
     double const x = std::abs(xin);
     double ret = a3;
     ret *= x;
@@ -36,7 +36,7 @@ namespace phot {
     ret += a1;
     ret *= x;
     ret += a0;
-    ret *= std::sqrt(1.0-x);
+    ret *= std::sqrt(1.0 - x);
     if (xin >= 0) return ret;
     return M_PI - ret;
   }
