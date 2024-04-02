@@ -146,6 +146,9 @@ cet_build_plugin(PhotonLibraryAnalyzer art::EDAnalyzer
   ROOT::Hist
 )
 
+add_executable(test_fast_acos test_fast_acos.cc)
+target_link_libraries(test_fast_acos PRIVATE larsim::PhotonPropagation)
+
 add_subdirectory(LibraryBuildTools)
 
 install_headers()
