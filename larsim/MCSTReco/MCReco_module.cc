@@ -65,11 +65,11 @@ MCReco::MCReco(fhicl::ParameterSet const& pset)
                                     << "\nUse 'MCParticleLabel' and 'SimChannelLabel' instead.";
 
     fMCParticleLabel = pset.get<art::InputTag>("G4ModName", "largeant");
-    fMCParticleDroppedLabel = pset.get<art::InputTag>("G4ModName", "largeantdropped");
+    fMCParticleDroppedLabel = pset.get<art::InputTag>("G4ModName", "largeant:droppedMCParticles");
     fSimChannelLabel = pset.get<art::InputTag>("G4ModName", "largeant");
   }
   else {
-    fMCParticleDroppedLabel = pset.get<art::InputTag>("MCParticleDroppedLabel", "largeantdropped");
+    fMCParticleDroppedLabel = pset.get<art::InputTag>("MCParticleDroppedLabel", "largeant:droppedMCParticles");
   }
 
   fUseSimEnergyDeposit = pset.get<bool>("UseSimEnergyDeposit", false);
