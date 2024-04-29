@@ -308,7 +308,7 @@ namespace phot {
                              float& voxelMin,
                              float& voxelMax,
                              float voxelSizeGoal,
-                             std::string* logString) const;
+                             std::string* logString = nullptr) const;
 
     float testVoxelSuggestion(float tpcMin,
                               float tpcMax,
@@ -319,7 +319,7 @@ namespace phot {
                               float& voxelMax,
                               float voxelSizeGoal,
                               int jog,
-                              std::string* logString) const;
+                              std::string* logString = nullptr) const;
 
     /// @}
     // --- END Implementation functions ----------------------------------------

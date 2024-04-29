@@ -934,16 +934,8 @@ namespace phot {
     int bestJog = 0;
     float bestResult = 1000;
     for (int jog = -10; jog <= 10; ++jog) {
-      float result = testVoxelSuggestion(tpcMin,
-                                         tpcMax,
-                                         cryoMin,
-                                         cryoMax,
-                                         nVoxels,
-                                         voxelMin,
-                                         voxelMax,
-                                         voxelSizeGoal,
-                                         jog,
-                                         nullptr); // No logging string
+      float result = testVoxelSuggestion(
+        tpcMin, tpcMax, cryoMin, cryoMax, nVoxels, voxelMin, voxelMax, voxelSizeGoal, jog);
       if (result < bestResult) {
         bestResult = result;
         bestJog = jog;
