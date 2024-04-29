@@ -329,32 +329,36 @@ namespace phot {
       if (fUseAutomaticVoxels) {
 
         std::string logString = "Automatic voxelisation x-dimension\n";
-        findVoxelSuggestion(logString,
-                            tpcVolume.MinX(),
+        float voxelSizeGoal = 10.0; // 10cm standard choice
+        findVoxelSuggestion(tpcVolume.MinX(),
                             tpcVolume.MaxX(),
                             cryoVolume.MinX(),
                             cryoVolume.MaxX(),
                             fNx,
                             fXmin,
-                            fXmax);
+                            fXmax,
+                            voxelSizeGoal,
+                            &logString);
         logString += "Automatic voxelisation y-dimension\n";
-        findVoxelSuggestion(logString,
-                            tpcVolume.MinY(),
+        findVoxelSuggestion(tpcVolume.MinY(),
                             tpcVolume.MaxY(),
                             cryoVolume.MinY(),
                             cryoVolume.MaxY(),
                             fNy,
                             fYmin,
-                            fYmax);
+                            fYmax,
+                            voxelSizeGoal,
+                            &logString);
         logString += "Automatic voxelisation z-dimension\n";
-        findVoxelSuggestion(logString,
-                            tpcVolume.MinZ(),
+        findVoxelSuggestion(tpcVolume.MinZ(),
                             tpcVolume.MaxZ(),
                             cryoVolume.MinZ(),
                             cryoVolume.MaxZ(),
                             fNz,
                             fZmin,
-                            fZmax);
+                            fZmax,
+                            voxelSizeGoal,
+                            &logString);
         mf::LogInfo("PhotonVisibilityService") << logString;
       }
 
@@ -986,13 +990,13 @@ namespace phot {
     float cryoVoxelNumberGuess = cryoSize / voxelSize;
     nVoxels = round((voxelMax - voxelMin) / voxelSize);
 
-    if ( logString ) {
+    if (logString) {
       *logString += "\tTPC size " + std::to_string(tpcSize) + "cm requires " +
-                    std::to_string(tpcVoxelNumber) + " voxels of size " + std::to_string(voxelSize) +
-                    "cm\n";
+                    std::to_string(tpcVoxelNumber) + " voxels of size " +
+                    std::to_string(voxelSize) + "cm\n";
       *logString += "\tCryostat boundaries " + std::to_string(cryoMin) + " to " +
-                    std::to_string(cryoMax) + "cm would use " + std::to_string(cryoVoxelNumberGuess) +
-                    " voxels\n";
+                    std::to_string(cryoMax) + "cm would use " +
+                    std::to_string(cryoVoxelNumberGuess) + " voxels\n";
       *logString += "\tCryostat voxel range " + std::to_string(voxelMin) + " to " +
                     std::to_string(voxelMax) + "cm uses " + std::to_string(nVoxels) + " voxels\n";
     }
