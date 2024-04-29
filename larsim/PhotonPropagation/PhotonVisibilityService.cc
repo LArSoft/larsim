@@ -325,7 +325,7 @@ namespace phot {
         }
       }
 
-      // Try to make ~10cm voxels, fit TPC exactly, then fit cryostat approximately
+      // Try to make ~10cm voxels: fit TPC exactly, then fit cryostat approximately
       if (fUseAutomaticVoxels) {
 
         std::string logString = "Automatic voxelisation x-dimension\n";
@@ -384,12 +384,12 @@ namespace phot {
         if (fSaveTPCVoxels != "") {
           std::ofstream outputFile = std::ofstream(fSaveTPCVoxels);
           for (auto voxel : tpcVoxels)
-            outputFile << std::to_string(voxel) + "\n";
+            outputFile << voxel << "\n";
         }
         if (fSaveOtherVoxels != "") {
           std::ofstream outputFile = std::ofstream(fSaveOtherVoxels);
           for (auto voxel : otherVoxels)
-            outputFile << std::to_string(voxel) + "\n";
+            outputFile << voxel << "\n";
         }
       }
     }
@@ -916,24 +916,21 @@ namespace phot {
     return fMapping->detectorToLibrary(p);
   }
 
-  void PhotonVisibilityService::findVoxelSuggestion(std::string& logString,
-                                                    float tpcMin,
+  void PhotonVisibilityService::findVoxelSuggestion(float tpcMin,
                                                     float tpcMax,
                                                     float cryoMin,
                                                     float cryoMax,
                                                     int& nVoxels,
                                                     float& voxelMin,
                                                     float& voxelMax,
-                                                    float voxelSizeGoal) const
+                                                    float voxelSizeGoal,
+                                                    std::string* logString) const
   {
     // Scan the "jog" parameter, which adds an integer amount of voxels within the TPC
     int bestJog = 0;
     float bestResult = 1000;
-    std::string dummyString = "";
     for (int jog = -10; jog <= 10; ++jog) {
-      dummyString = "";
-      float result = testVoxelSuggestion(dummyString,
-                                         tpcMin,
+      float result = testVoxelSuggestion(tpcMin,
                                          tpcMax,
                                          cryoMin,
                                          cryoMax,
@@ -941,7 +938,8 @@ namespace phot {
                                          voxelMin,
                                          voxelMax,
                                          voxelSizeGoal,
-                                         jog);
+                                         jog,
+                                         nullptr); // No logging string
       if (result < bestResult) {
         bestResult = result;
         bestJog = jog;
@@ -949,8 +947,7 @@ namespace phot {
     }
 
     // Print the best result (and update the outputs)
-    testVoxelSuggestion(logString,
-                        tpcMin,
+    testVoxelSuggestion(tpcMin,
                         tpcMax,
                         cryoMin,
                         cryoMax,
@@ -958,11 +955,11 @@ namespace phot {
                         voxelMin,
                         voxelMax,
                         voxelSizeGoal,
-                        bestJog);
+                        bestJog,
+                        logString);
   }
 
-  float PhotonVisibilityService::testVoxelSuggestion(std::string& logString,
-                                                     float tpcMin,
+  float PhotonVisibilityService::testVoxelSuggestion(float tpcMin,
                                                      float tpcMax,
                                                      float cryoMin,
                                                      float cryoMax,
@@ -970,16 +967,14 @@ namespace phot {
                                                      float& voxelMin,
                                                      float& voxelMax,
                                                      float voxelSizeGoal,
-                                                     int jog) const
+                                                     int jog,
+                                                     std::string* logString) const
   {
     // Examine TPC to establish voxel size
     float tpcSize = tpcMax - tpcMin;
     int tpcVoxelNumber = ceil(tpcSize / voxelSizeGoal) + jog; // units are cm
     float voxelSize = tpcSize / tpcVoxelNumber;
     float cryoSize = cryoMax - cryoMin;
-    logString += "\tTPC size " + std::to_string(tpcSize) + "cm requires " +
-                 std::to_string(tpcVoxelNumber) + " voxels of size " + std::to_string(voxelSize) +
-                 "cm\n";
 
     // Extend voxel grid to full cryostat
     voxelMin = tpcMin;
@@ -990,11 +985,19 @@ namespace phot {
       voxelMax += voxelSize;
     float cryoVoxelNumberGuess = cryoSize / voxelSize;
     nVoxels = round((voxelMax - voxelMin) / voxelSize);
-    logString += "\tCryostat boundaries " + std::to_string(cryoMin) + " to " +
-                 std::to_string(cryoMax) + "cm would use " + std::to_string(cryoVoxelNumberGuess) +
-                 " voxels\n";
-    logString += "\tCryostat voxel range " + std::to_string(voxelMin) + " to " +
-                 std::to_string(voxelMax) + "cm uses " + std::to_string(nVoxels) + " voxels\n";
+
+    if ( logString ) {
+      *logString += "\tTPC size " + std::to_string(tpcSize) + "cm requires " +
+                    std::to_string(tpcVoxelNumber) + " voxels of size " + std::to_string(voxelSize) +
+                    "cm\n";
+      *logString += "\tCryostat boundaries " + std::to_string(cryoMin) + " to " +
+                    std::to_string(cryoMax) + "cm would use " + std::to_string(cryoVoxelNumberGuess) +
+                    " voxels\n";
+      *logString += "\tCryostat voxel range " + std::to_string(voxelMin) + " to " +
+                    std::to_string(voxelMax) + "cm uses " + std::to_string(nVoxels) + " voxels\n";
+    }
+
+    // Return figure of merit for optimisation
     float voxelDelta = fabs(nVoxels - cryoVoxelNumberGuess);
     return voxelDelta;
   }
