@@ -180,6 +180,8 @@ namespace phot {
     int fNx, fNy, fNz;
 
     bool fUseCryoBoundary;
+    bool fUseAutomaticVoxels;
+    std::string fSaveTPCVoxels, fSaveOtherVoxels;
 
     bool fLibraryBuildJob;
     bool fDoNotLoadLibrary;
@@ -297,6 +299,27 @@ namespace phot {
     MappedParams_t doGetTimingPar(geo::Point_t const& p) const;
 
     MappedFunctions_t doGetTimingTF1(geo::Point_t const& p) const;
+
+    void findVoxelSuggestion(float tpcMin,
+                             float tpcMax,
+                             float cryoMin,
+                             float cryoMax,
+                             int& nVoxels,
+                             float& voxelMin,
+                             float& voxelMax,
+                             float voxelSizeGoal,
+                             std::string* logString = nullptr) const;
+
+    float testVoxelSuggestion(float tpcMin,
+                              float tpcMax,
+                              float cryoMin,
+                              float cryoMax,
+                              int& nVoxels,
+                              float& voxelMin,
+                              float& voxelMax,
+                              float voxelSizeGoal,
+                              int jog,
+                              std::string* logString = nullptr) const;
 
     /// @}
     // --- END Implementation functions ----------------------------------------
