@@ -17,6 +17,7 @@ namespace larg4 {
   NeutronTrackingCutFactory     f8;
   LowEnergyEmFactory            f9;
   ChargeExchange                f10;
+  PenelopeEmFactory             f11;
 }
 
 
