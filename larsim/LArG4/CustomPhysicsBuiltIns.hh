@@ -33,6 +33,7 @@
 
 #include "larsim/LArG4/CustomPhysicsFactory.hh"
 
+#include "Geant4/G4EmPenelopePhysics.hh"
 
 namespace larg4 {
 
@@ -119,9 +120,19 @@ namespace larg4 {
     };
 
 
+
+
+//G4EmPenelopePhysics.cc
+class PenelopeEmFactory : public CustomPhysicsFactory<G4EmPenelopePhysics>
+{
+        public:
+                G4VPhysicsConstructor * Build() { return new G4EmPenelopePhysics();}
+                PenelopeEmFactory() : CustomPhysicsFactory<G4EmPenelopePhysics>("penelopeEm"){}
+                virtual ~PenelopeEmFactory() {}
+};
+
+
 }
-
-
 
 
 
