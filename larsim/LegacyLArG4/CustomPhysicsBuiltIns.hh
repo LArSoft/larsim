@@ -15,6 +15,7 @@
 #include "Geant4/G4DecayPhysics.hh"
 #include "Geant4/G4EmExtraPhysics.hh"
 #include "Geant4/G4EmLivermorePhysics.hh"
+#include "Geant4/G4EmPenelopePhysics.hh"
 #include "Geant4/G4EmStandardPhysics.hh"
 #include "Geant4/G4HadronElasticPhysics.hh"
 #include "Geant4/G4HadronElasticPhysicsHP.hh"
