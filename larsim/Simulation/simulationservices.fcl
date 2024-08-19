@@ -44,12 +44,12 @@ standard_largeantparameters:
  ModBoxA: 0.930
  ModBoxB: 0.212
 
- #* Recombination factor coefficients come from Gray Putnam 
+ #* Recombination factor coefficients come from Gray Putnam: https://arxiv.org/abs/2407.12969
  #* * @f$ dE/dx @f$ is given by the voxel energy deposition, but have to convert it to MeV/cm from GeV/voxel width
  #* * electric field: @f$ E @f$ in kV/cm
  #* * `EllipsModBoxB` needs to be scaled with the electric field.
- EllipsModBoxA: 0.906 # +/- 0.008 
- EllipsModBoxB: 0.203 # +/- 0.008
+ EllipsModBoxA: 0.904 # +/- 0.008 
+ EllipsModBoxB: 0.204 # +/- 0.008
  EllipsModBoxR: 1.25  # +/- 0.02
 
  #* Recombination factor coefficients for LArQL
