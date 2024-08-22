@@ -28,6 +28,7 @@ namespace larg4 {
     Factory_t<G4DecayPhysics> fDecayPhysics{"Decay"};
     Factory_t<G4EmExtraPhysics> fSynchrotronAndGN{"SynchrotronAndGN"};
     Factory_t<G4EmLivermorePhysics> fLowEnergyEm{"LowEnergyEm"};
+    Factory_t<G4EmPenelopePhysics> fpenelopeEmPhysics{"penelopeEm"};
     Factory_t<G4EmStandardPhysics> fEmPhysics{"Em"};
     Factory_t<G4HadronElasticPhysics> fHadronElasticPhysics{"HadronElastic"};
     Factory_t<G4HadronElasticPhysicsHP> fHadronElasticHPPhysics{"HadronElasticHP"};
