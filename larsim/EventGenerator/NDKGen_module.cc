@@ -104,8 +104,6 @@ namespace evgen {
     : EDProducer{pset}
     , fNdkFile{pset.get<std::string>("NdkFile")}
     , fEventFile{fNdkFile}
-    // create a default random engine; obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed"
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
                                                                                  "Seed"))
@@ -163,10 +161,10 @@ namespace evgen {
 
     fECons = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
-    art::ServiceHandle<geo::Geometry const> geo;
-    double x = 2.1 * geo->DetHalfWidth();
-    double y = 2.1 * geo->DetHalfHeight();
-    double z = 2. * geo->DetLength();
+    auto const& tpc = art::ServiceHandle<geo::Geometry const>()->TPC();
+    double x = 2.1 * tpc.HalfWidth();
+    double y = 2.1 * tpc.HalfHeight();
+    double z = 2. * tpc.Length();
     int xdiv = TMath::Nint(2 * x / 5.);
     int ydiv = TMath::Nint(2 * y / 5.);
     int zdiv = TMath::Nint(2 * z / 5.);

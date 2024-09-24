@@ -9,13 +9,9 @@ services:
   @table::custom_disp
   SpaceChargeService:       @local::standard_spacecharge
   Geometry: {
-     Name: "zeng4"
-     GDML: "zeng4.gdml" 
-     ROOT: "zeng4.gdml"
+     GDML: "zeng4.gdml"
      SurfaceY: 0
-     DisableWiresInG4: true
      SortingParameters: {}
-     service_type: "Geometry"
   }
 }
 
@@ -45,13 +41,13 @@ physics:
  {
   evdisp:{module_type: EVD}
  }
- 
- #list the modules for this path, order matters, filters reject all following items
- evd: [ evdisp ] 
 
- #end_path are things that do not modify art::Event, includes analyzers 
+ #list the modules for this path, order matters, filters reject all following items
+ evd: [ evdisp ]
+
+ #end_path are things that do not modify art::Event, includes analyzers
  #and output modules. all items here can be run simultaneously
- end_paths: [evd]  
+ end_paths: [evd]
 }
 
 services.SimulationDrawingOptions.SimChannelLabel:   "elecDrift"

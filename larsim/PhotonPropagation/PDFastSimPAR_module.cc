@@ -31,8 +31,6 @@
 // LArSoft libraries
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
@@ -66,6 +64,8 @@
 
 // Random numbers
 #include "CLHEP/Random/RandPoissonQ.h"
+
+#include "range/v3/view/enumerate.hpp"
 
 #include <cmath>
 #include <ctime>
@@ -275,7 +275,7 @@ namespace phot {
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
                                               << fActiveVolumes.size() << " volumes:";
-      for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
+      for (auto const& [iCryo, box] : ::ranges::views::enumerate(fActiveVolumes)) {
         log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
     }
@@ -591,7 +591,7 @@ namespace phot {
   std::vector<geo::Point_t> PDFastSimPAR::opDetCenters() const
   {
     std::vector<geo::Point_t> opDetCenter;
-    for (size_t const i : util::counter(fNOpChannels)) {
+    for (size_t const i : ::ranges::views::ints(size_t(0), fNOpChannels)) {
       geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
       opDetCenter.push_back(opDet.GetCenter());
     }

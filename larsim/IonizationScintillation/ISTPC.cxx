@@ -9,11 +9,12 @@
 #include "larsim/IonizationScintillation/ISTPC.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "range/v3/view/enumerate.hpp"
 
 namespace larg4 {
   //----------------------------------------------------------------------------
@@ -25,7 +26,7 @@ namespace larg4 {
     {
       auto log = mf::LogTrace("IonAndScint") << "IonAndScint: active volume boundaries from "
                                              << fActiveVolumes.size() << " volumes:";
-      for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
+      for (auto const& [iCryo, box] : fActiveVolumes | ranges::views::enumerate) {
         log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
     } // local scope

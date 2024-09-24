@@ -13,22 +13,18 @@
 
 #include <vector>
 
+#include "fhiclcpp/fwd.h"
 #include "fhiclcpp/types/Atom.h"
 
+#include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/MCCheater/ParticleInventory.h"
 
-namespace fhicl {
-  class ParameterSet;
-}
 namespace detinfo {
   class DetectorClocksData;
-}
-namespace geo {
-  class GeometryCore;
 }
 namespace recob {
   class SpacePoint;
@@ -67,16 +63,18 @@ namespace cheat {
         false};
       fhicl::Atom<double> HitTimeRMS{fhicl::Name("HitTimeRMS"),
                                      fhicl::Comment("The number of RMS units to move away"
-                                                    "from a Hit peak time for searching IDE."),
+                                                    "From a Hit peak time for searching IDE."),
                                      1.0};
     };
 
     BackTracker(const fhiclConfig& config,
                 const cheat::ParticleInventory* partInv,
-                const geo::GeometryCore* geom);
+                geo::GeometryCore const* geom,
+                geo::WireReadoutGeom const* wireReadoutGeom);
     BackTracker(const fhicl::ParameterSet& pSet,
                 const cheat::ParticleInventory* partInv,
-                const geo::GeometryCore* geom);
+                geo::GeometryCore const* geom,
+                geo::WireReadoutGeom const* wireReadoutGeom);
 
     // I may need to include this to delete copy of service providers.
     BackTracker(BackTracker const&) = delete;
@@ -111,11 +109,10 @@ namespace cheat {
     bool SimChannelsReady() const { return !fSimChannels.empty(); }
 
     const std::vector<art::Ptr<sim::SimChannel>>& SimChannels() const { return fSimChannels; }
-    // All Hit List would go here. We explicitly choose not to include it, as
-    // the user should not be using backtracker to access Hits. This could
-    // change in a concievable future use case where we also allow the user to
-    // define what the "AllHitList" should be, though this would have
-    // ramifications on other functions.
+    // All Hit List would go here. We explicitly choose not to include it, as the user
+    // should not be using backtracker to access Hits. This could change in a concievable
+    // future use case where we also allow the user to define what the "AllHitList" should
+    // be, though this would have ramifications on other functions.
 
     std::vector<const sim::IDE*> TrackIdToSimIDEs_Ps(int const& id) const;
     std::vector<const sim::IDE*> TrackIdToSimIDEs_Ps(int const& id, const geo::View_t view) const;
@@ -143,31 +140,28 @@ namespace cheat {
                                                   const double hit_start_time,
                                                   const double hit_end_time) const;
 
-    // Track IDEs cannot be returned as pointers, as they dont exist in the data
-    // product, and we will not be storing them.
+    // Track IDEs cannot be returned as pointers, as they dont exist in the data product,
+    // and we will not be storing them.
     std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                               recob::Hit const& hit) const;
     std::vector<sim::TrackIDE> HitToTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                               art::Ptr<recob::Hit> const& hit) const
     {
-      return this->HitToTrackIDEs(clockData, *hit);
+      return HitToTrackIDEs(clockData, *hit);
     }
 
     std::vector<int> HitToTrackIds(detinfo::DetectorClocksData const& clockData,
                                    recob::Hit const& hit) const;
-    //   std::vector< const int> HitToTrackId(art::Ptr<recob::Hit> const& hit) {
-    //   return this->HitToTrackId(*hit); }
 
     std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                                  recob::Hit const& hit) const;
     std::vector<sim::TrackIDE> HitToEveTrackIDEs(detinfo::DetectorClocksData const& clockData,
                                                  art::Ptr<recob::Hit> const& hit) const
     {
-      return this->HitToEveTrackIDEs(clockData, *hit);
+      return HitToEveTrackIDEs(clockData, *hit);
     }
 
-    // I will not return these by copy, as that could get very large very
-    // quickly.
+    // I will not return these by copy, as that could get very large very quickly.
     std::vector<art::Ptr<recob::Hit>> TrackIdToHits_Ps(
       detinfo::DetectorClocksData const& clockData,
       int tkId,
@@ -183,7 +177,7 @@ namespace cheat {
     std::vector<sim::IDE> HitToAvgSimIDEs(detinfo::DetectorClocksData const& clockData,
                                           art::Ptr<recob::Hit> const& hit) const
     {
-      return this->HitToAvgSimIDEs(clockData, *hit);
+      return HitToAvgSimIDEs(clockData, *hit);
     }
 
     std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
@@ -191,7 +185,7 @@ namespace cheat {
     std::vector<const sim::IDE*> HitToSimIDEs_Ps(detinfo::DetectorClocksData const& clockData,
                                                  art::Ptr<recob::Hit> const& hit) const
     {
-      return this->HitToSimIDEs_Ps(clockData, *hit);
+      return HitToSimIDEs_Ps(clockData, *hit);
     }
 
     std::vector<double> SimIDEsToXYZ(std::vector<sim::IDE> const& ides) const;
@@ -202,7 +196,7 @@ namespace cheat {
     std::vector<double> HitToXYZ(detinfo::DetectorClocksData const& clockData,
                                  art::Ptr<recob::Hit> const& hit) const
     {
-      return this->HitToXYZ(clockData, *hit);
+      return HitToXYZ(clockData, *hit);
     }
 
     double HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
@@ -239,6 +233,7 @@ namespace cheat {
   private:
     const cheat::ParticleInventory* fPartInv; // The constructor needs to put something in here
     const geo::GeometryCore* fGeom;
+    const geo::WireReadoutGeom* fWireReadoutGeom;
     const art::InputTag fG4ModuleLabel;
     const art::InputTag fSimChannelModuleLabel;
     const art::InputTag fHitLabel;

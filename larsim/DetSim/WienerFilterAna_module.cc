@@ -24,6 +24,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "lardataobj/RawData/RawDigit.h"
@@ -35,7 +36,6 @@ namespace detsim {
 
   /// Base class for creation of raw signals on wires.
   class WienerFilterAna : public art::EDAnalyzer {
-
   public:
     explicit WienerFilterAna(fhicl::ParameterSet const& pset);
 
@@ -83,7 +83,8 @@ namespace detsim {
     double samprate = sampling_rate(clock_data);
     double sampfreq = 1. / samprate * 1e6; // in kHz
     art::ServiceHandle<geo::Geometry const> geo;
-    unsigned int fNPlanes = geo->Nplanes();
+    auto const& wireReadoutGeom = art::ServiceHandle<geo::WireReadout>()->Get();
+    unsigned int fNPlanes = wireReadoutGeom.Nplanes();
     unsigned int fNCryostats = geo->Ncryostats();
     unsigned int fNTPC = geo->NTPC();
 
@@ -127,18 +128,15 @@ namespace detsim {
       }
     }
 
-    //ff=tfs->make<TH1>(Form("fftwaveform"),Form("fftwaveform"),4096,0,4096);
     hh = tfs->make<TH1F>(Form("waveform"), Form("waveform"), fNTicks, 0, fNTicks);
-
-    return;
   }
 
   //-------------------------------------------------
   void WienerFilterAna::endJob()
   {
-
     art::ServiceHandle<geo::Geometry const> geom;
-    unsigned int nplanes = geom->Nplanes();
+    auto const& wireReadoutGeom = art::ServiceHandle<geo::WireReadout>()->Get();
+    unsigned int nplanes = wireReadoutGeom.Nplanes();
     unsigned int fNCryostats = geom->Ncryostats();
     unsigned int fNTPC = geom->NTPC();
 
@@ -177,7 +175,6 @@ namespace detsim {
   //-------------------------------------------------
   void WienerFilterAna::analyze(const art::Event& evt)
   {
-
     // loop over the raw digits and get the adc vector for each, then compress it and uncompress it
 
     art::Handle<std::vector<raw::RawDigit>> rdHandle;
@@ -195,12 +192,11 @@ namespace detsim {
     for (unsigned int i = 0; i < rdHandle->size(); ++i) {
       art::Ptr<raw::RawDigit> r(rdHandle, i);
       rdvec.push_back(r);
-      // std::cout << " i, rdvec: "<<i <<" " << r->ADC(0) << " "<< rdvec[i]->ADC(0)<< std::endl;
     }
 
-    art::ServiceHandle<geo::Geometry const> geom;
     art::ServiceHandle<util::LArFFT const> fft;
 
+    auto const& wireReadoutGeom = art::ServiceHandle<geo::WireReadout const>()->Get();
     for (unsigned int rd = 0; rd < rdvec.size(); ++rd) {
 
       std::vector<double> adc(fft->FFTSize());
@@ -210,7 +206,7 @@ namespace detsim {
         hh->SetBinContent(t, rdvec[rd]->ADC(t));
       }
 
-      geo::WireID wireid = geom->ChannelToWire(rdvec[rd]->Channel())[0];
+      geo::WireID wireid = wireReadoutGeom.ChannelToWire(rdvec[rd]->Channel())[0];
 
       // this is hardcoded for the time being. Should be automatized.
       unsigned int plane = wireid.Plane; /// \todo  Need to change hardcoded values to an automatic
@@ -232,16 +228,9 @@ namespace detsim {
         }
       }
 
-      //
     } //end loop over rawDigits
-
-    return;
-  } //end analyze method
+  }   //end analyze method
 
 } //end namespace
 
-namespace detsim {
-
-  DEFINE_ART_MODULE(WienerFilterAna)
-
-}
+DEFINE_ART_MODULE(detsim::WienerFilterAna)

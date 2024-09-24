@@ -68,7 +68,6 @@
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/GeoNodePath.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/ROOTGeometryNavigator.h"
@@ -97,6 +96,8 @@
 #include "TH1D.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
+
+#include "range/v3/view/enumerate.hpp"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
@@ -350,7 +351,7 @@ namespace evgen {
 
     std::size_t iNext = fX0.size();
     auto const volumes = pset.get<std::vector<std::string>>("Volumes", {});
-    for (auto&& [iVolume, volName] : util::enumerate(volumes)) {
+    for (auto&& [iVolume, volName] : volumes | ranges::views::enumerate) {
       // this expands the coordinate vectors
       auto const nVolumes = addvolume(volName);
       if (nVolumes == 0) {
@@ -484,7 +485,7 @@ namespace evgen {
 
     std::vector<geo::GeoNodePath> volumePaths;
     auto findVolume = [&volumePaths, volumeName](auto& path) {
-      if (path.current().GetVolume()->GetName() == volumeName) volumePaths.push_back(path);
+      if (path.current()->GetVolume()->GetName() == volumeName) volumePaths.push_back(path);
       return true;
     };
 
@@ -497,10 +498,10 @@ namespace evgen {
       //
       // find the coordinates of the volume in local coordinates
       //
-      TGeoShape const* pShape = path.current().GetVolume()->GetShape();
+      TGeoShape const* pShape = path.current()->GetVolume()->GetShape();
       auto pBox = dynamic_cast<TGeoBBox const*>(pShape);
       if (!pBox) {
-        throw cet::exception("RadioGen") << "Volume '" << path.current().GetName() << "' is a "
+        throw cet::exception("RadioGen") << "Volume '" << path.current()->GetName() << "' is a "
                                          << pShape->IsA()->GetName() << ", not a TGeoBBox.\n";
       }
 

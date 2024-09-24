@@ -18,6 +18,7 @@
 
 // LArSoft Includes
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/sim.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
@@ -40,10 +41,10 @@ namespace larg4 {
     /// Standard constructor and destructor for an FMWK module.
     explicit LArG4Ana(fhicl::ParameterSet const& pset);
 
-    void analyze(const art::Event& evt);
-    void beginJob();
-
   private:
+    void analyze(const art::Event& evt) override;
+    void beginJob() override;
+
     std::string fG4ModuleLabel;    ///< module label for the Geant
     std::string fTruthModuleLabel; ///< module label for the Geant
 
@@ -105,7 +106,6 @@ namespace larg4 {
   void LArG4Ana::beginJob()
   {
     art::ServiceHandle<art::TFileService const> tfs;
-    art::ServiceHandle<geo::Geometry const> geo;
 
     fPDGCodes = tfs->make<TH1D>("pdgcodes", ";PDG Code;", 5000, -2500, 2500);
     fPi0Momentum = tfs->make<TH1D>("pi0mom", ";#pi^{0} Momentum (GeV);", 1000, 0., 1000.);
@@ -117,13 +117,14 @@ namespace larg4 {
 
     // Some histograms relating to drift electrons, active detector
     // channels and charge/energy on channels
+    auto const nchannels = art::ServiceHandle<geo::WireReadout const>()->Get().Nchannels();
     fnumChannels = tfs->make<TH1D>(
-      "fnumChannels", "Active channels;Active channels;# events", 256, 0, geo->Nchannels());
+      "fnumChannels", "Active channels;Active channels;# events", 256, 0, nchannels);
     fnumIDEs = tfs->make<TProfile>("fnumIDEs",
                                    "Drift Electrons per channel;Channel;Drift electrons",
-                                   geo->Nchannels() + 1,
+                                   nchannels + 1,
                                    0,
-                                   geo->Nchannels(),
+                                   nchannels,
                                    0,
                                    1e4);
     fEventCharge = tfs->make<TH1D>(
@@ -132,16 +133,16 @@ namespace larg4 {
       "fEventEnergy", "Energy in event;Total energy per event;# events", 100, 0, 1e4);
     fChannelCharge = tfs->make<TProfile>("fChannelCharge",
                                          "Charge on channel;Channel;Total charge per channel",
-                                         geo->Nchannels() + 1,
+                                         nchannels + 1,
                                          0,
-                                         geo->Nchannels(),
+                                         nchannels,
                                          0,
                                          1e5);
     fChannelEnergy = tfs->make<TProfile>("fChannelEnergy",
                                          "Energy on channel;Channel;Total energy per channel",
-                                         geo->Nchannels() + 1,
+                                         nchannels + 1,
                                          0,
-                                         geo->Nchannels(),
+                                         nchannels,
                                          0,
                                          1e3);
 
@@ -183,7 +184,6 @@ namespace larg4 {
   //-----------------------------------------------------------------------
   void LArG4Ana::analyze(const art::Event& evt)
   {
-
     //get the list of particles from this event
     art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
     const sim::ParticleList& plist = pi_serv->ParticleList();

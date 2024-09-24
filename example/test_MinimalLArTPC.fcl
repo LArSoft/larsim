@@ -9,30 +9,30 @@
 
 standard_singlep:
 {
- module_type:           "SingleGen" 
+ module_type:           "SingleGen"
  ParticleSelectionMode: "all"       # 0 = use full list, 1 =  randomly select a single listed particle
  PadOutVectors:        false        # false: require all vectors to be same length
-                                    # true:  pad out if a vector is size one    
+                                    # true:  pad out if a vector is size one
  PDG:                   [ 13 ]      # list of pdg codes for particles to make
  P0:                    [ 6. ]      # central value of momentum for each particle
- SigmaP:                [ 0. ]      # variation about the central value 
- PDist:                 "Gaussian"  # 0 - uniform, 1 - gaussian distribution                               
- X0:                    [ 0. ]     # in cm in world coordinates, ie x = 0 is at the wire plane          
-                                    # and increases away from the wire plane                             
- Y0:                    [ 0. ]      # in cm in world coordinates, ie y = 0 is at the center of the TPC   
- Z0:                    [ -130. ]   # in cm in world coordinates, ie z = 0 is at the upstream edge of    
-                                    # the TPC and increases with the beam direction                      
+ SigmaP:                [ 0. ]      # variation about the central value
+ PDist:                 "Gaussian"  # 0 - uniform, 1 - gaussian distribution
+ X0:                    [ 0. ]     # in cm in world coordinates, ie x = 0 is at the wire plane
+                                    # and increases away from the wire plane
+ Y0:                    [ 0. ]      # in cm in world coordinates, ie y = 0 is at the center of the TPC
+ Z0:                    [ -130. ]   # in cm in world coordinates, ie z = 0 is at the upstream edge of
+                                    # the TPC and increases with the beam direction
  T0:                    [ 0. ]      # starting time
  SigmaX:                [ 0. ]      # variation in the starting x position
- SigmaY:                [ 0. ]      # variation in the starting y position                            
- SigmaZ:                [ 0.0 ]     # variation in the starting z position                            
+ SigmaY:                [ 0. ]      # variation in the starting y position
+ SigmaZ:                [ 0.0 ]     # variation in the starting z position
  SigmaT:                [ 0.0 ]     # variation in the starting time
  PosDist:               "uniform"   # 0 - uniform, 1 - gaussian
- TDist:                 "uniform"   # 0 - uniform, 1 - gaussian         
- Theta0XZ:              [ 0. ]      #angle in XZ plane (degrees)                                         
- Theta0YZ:              [ 0. ]      #angle in YZ plane (degrees)                                         
- SigmaThetaXZ:          [ 0. ]      #in degrees                                                          
- SigmaThetaYZ:          [ 0. ]      #in degrees                                                          
+ TDist:                 "uniform"   # 0 - uniform, 1 - gaussian
+ Theta0XZ:              [ 0. ]      #angle in XZ plane (degrees)
+ Theta0YZ:              [ 0. ]      #angle in YZ plane (degrees)
+ SigmaThetaXZ:          [ 0. ]      #in degrees
+ SigmaThetaYZ:          [ 0. ]      #in degrees
  AngleDist:             "Gaussian"  # 0 - uniform, 1 - gaussian
 }
 
@@ -42,11 +42,11 @@ services:
 {
   message : {
      debugModules : ["*"]
-     suppressInfo : []    
+     suppressInfo : []
      destinations : {
        LogToConsole : {
-         type : "cout" 
-         threshold : "DEBUG" 
+         type : "cout"
+         threshold : "DEBUG"
          categories : {
            default : { limit : 50 }
          }
@@ -57,50 +57,45 @@ services:
   TFileService : { fileName: "testlarg4.root" }
   RandomNumberGenerator: {}
   NuRandomService:{
-    service_type: "NuRandomService" 
+    service_type: "NuRandomService"
     endOfJobSummary: true
-    policy: "random" 
+    policy: "random"
   }
 
   DetectorHolder: {}
   ActionHolder: {}
-  PhysicsListHolder: {} 
-  PhysicsList: { 
-    PhysicsListName: "FTFP_BERT" 
-    DumpList: false    
+  PhysicsListHolder: {}
+  PhysicsList: {
+    PhysicsListName: "FTFP_BERT"
+    DumpList: false
     enableCerenkov: false
     enableScintillation: false
     ScintillationByParticleType: false
-    enableAbsorption: false   
-    enableRayleigh: false     
-    enableMieHG: false       
-    enableBoundary: false    
+    enableAbsorption: false
+    enableRayleigh: false
+    enableMieHG: false
+    enableBoundary: false
     enableWLS: false
   }
-  LArG4Detector : 
+  LArG4Detector :
   {
-    category: "world" 
-    gdmlFileName_ : "MinimalLArTPCdetector_nowires.gdml" 
-  }   
+    category: "world"
+    gdmlFileName_ : "MinimalLArTPCdetector_nowires.gdml"
+  }
 
   MCTruthEventAction: {service_type: "MCTruthEventActionService"}
   ParticleListAction: {service_type: "ParticleListActionService"}
 
   Geometry: {
-     Name: "MinimalLArTPCdetector_g4"
-     GDML: "MinimalLArTPCdetector_g4.gdml" 
-     ROOT: "MinimalLArTPCdetector_g4.gdml"
+     GDML: "MinimalLArTPCdetector_g4.gdml"
      SurfaceY: 0
-     DisableWiresInG4: true
      SortingParameters: {}
-     service_type: "Geometry"
   }
 
-  ExptGeoHelperInterface: {
-     service_provider : StandardGeometryHelper
-     service_type: "ExptGeoHelperInterface"
+  WireReadout: {
+     service_provider : StandardWireReadout
   }
-  
+
   GeometryConfigurationWriter: {}
 
   # -- in larsim
@@ -112,26 +107,26 @@ services:
   DetectorPropertiesService:	{
   service_provider: "DetectorPropertiesServiceStandard"
 
-  # Drift properties 
+  # Drift properties
 
      SternheimerA:     0.1956  # Ar Sternheimer parameter a.
      SternheimerK:     3.0000  # Ar Sternheimer parameter k.
      SternheimerX0:    0.2000  # Ar Sternheimer parameter x0.
      SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
      SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
-    
+
      DriftVelFudgeFactor: 1.
-     
+
      ElectronsToADC:    1.208041e-3  # in ADC/e; 6241.5 electrons = 1fC = 7.54 ADC counts for ArgoNeuT
      NumberTimeSamples: 2048         # ticks of the clock per readout frame
      ReadOutWindowSize: 2048
-   
+
      SimpleBoundaryProcess: true  #enable opticalBoundaryProcessSimple instead of G4 default
 
 Temperature:       87            # in K
 Electronlifetime:  3.0e3         # in us
 Efield:            [0.5,4.0,0.0] # in kV/cm
-ElectronsToADC:    1.02534e-03   # 
+ElectronsToADC:    1.02534e-03   #
 NumberTimeSamples: 1667
 ReadOutWindowSize: 1667
 #TimeOffsetX:       0.
@@ -158,8 +153,8 @@ physics:
     larg4Main: {
       module_type: larg4Main
       enableVisualization: false
-      macroPath: ".:./macros" 
-      visMacro: "vis.mac" 
+      macroPath: ".:./macros"
+      visMacro: "vis.mac"
     }
     elecDrift: {
       module_type:     "SimDriftElectrons"
@@ -187,12 +182,12 @@ physics:
   {
     CheckSimEnergyDeposit: {
       module_type: CheckSimEnergyDeposit
-      hist_dir: "HistoDir" 
+      hist_dir: "HistoDir"
     }
     SimDriftedElectronClusterAna: {
       module_type: SimDriftedElectronClusterAna
       EDepModuleLabel: "elecDrift"
-    }		 
+    }
   }
 
   path1: [ generator,larg4Main,elecDrift,simWire ]
@@ -205,7 +200,7 @@ outputs:
 {
   out1:
   {
-    module_type: RootOutput   
-    fileName: "Testingout.root" 
+    module_type: RootOutput
+    fileName: "Testingout.root"
   }
 }

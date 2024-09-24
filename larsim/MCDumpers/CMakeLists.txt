@@ -21,6 +21,7 @@ endforeach()
 set_property(TARGET
   larsim_MCDumpers_DumpSimPhotons_module
   APPEND PROPERTY LINK_LIBRARIES
+  larcorealg::CoreUtils
   larcorealg::headers
 )
 

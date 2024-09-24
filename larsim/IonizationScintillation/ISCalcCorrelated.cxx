@@ -166,49 +166,54 @@ namespace larg4 {
     // electric field outside active volume set to zero
     if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-    TVector3 elecvec;
+    geo::Vector_t elecvec{};
 
     art::ServiceHandle<geo::Geometry const> fGeometry;
     geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
     if (!bool(tpcid)) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
-    if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
-    if (tpcGeo.DetectDriftDirection() == -1) elecvec.SetXYZ(-1, 0, 0);
-    if (tpcGeo.DetectDriftDirection() == 2) elecvec.SetXYZ(0, 1, 0);
-    if (tpcGeo.DetectDriftDirection() == -2) elecvec.SetXYZ(0, -1, 0);
-    if (tpcGeo.DetectDriftDirection() == 3) elecvec.SetXYZ(0, 0, 1);
-    if (tpcGeo.DetectDriftDirection() == -3) elecvec.SetXYZ(0, 0, -1);
+    using geo::to_int;
+    auto const [axis, sign] = tpcGeo.DriftAxisWithSign();
+    switch (axis) {
+    case geo::Coordinate::X: {
+      elecvec.SetX(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Y: {
+      elecvec.SetY(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Z: {
+      elecvec.SetZ(to_int(sign));
+    }
+    }
 
     elecvec *= efield;
 
+    // electric field inside active volume
     if (fSCE->EnableSimEfieldSCE()) {
       auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-      TVector3 scevec;
-
-      if (tpcGeo.DetectDriftDirection() == 1)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -1)
-        scevec.SetXYZ(
-          -1 * efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == 2)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -2)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), -1 * efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == 3)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -3)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), -1 * efield * eFieldOffsets.Z());
-
+      geo::Vector_t scevec = eFieldOffsets * efield;
+      if (sign == geo::DriftSign::Negative) {
+        switch (axis) {
+        case geo::Coordinate::X: {
+          scevec.SetX(scevec.X() * -1.);
+          break;
+        }
+        case geo::Coordinate::Y: {
+          scevec.SetY(scevec.Y() * -1.);
+          break;
+        }
+        case geo::Coordinate::Z: {
+          scevec.SetZ(scevec.Z() * -1.);
+        }
+        }
+      }
       elecvec += scevec;
     }
 
-    return elecvec.Mag();
+    return elecvec.R();
   }
   //----------------------------------------------------------------------------
   double ISCalcCorrelated::AngleToEFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
@@ -217,54 +222,55 @@ namespace larg4 {
     // electric field outside active volume set to zero
     if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
 
-    TVector3 stepvec(
-      edep.StartX() - edep.EndX(), edep.StartY() - edep.EndY(), edep.StartZ() - edep.EndZ());
-
-    TVector3 elecvec;
+    geo::Vector_t stepvec = edep.Start() - edep.End();
+    geo::Vector_t elecvec{};
 
     art::ServiceHandle<geo::Geometry const> fGeometry;
     geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
     if (!bool(tpcid)) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
-    if (tpcGeo.DetectDriftDirection() == 1) elecvec.SetXYZ(1, 0, 0);
-    if (tpcGeo.DetectDriftDirection() == -1) elecvec.SetXYZ(-1, 0, 0);
-    if (tpcGeo.DetectDriftDirection() == 2) elecvec.SetXYZ(0, 1, 0);
-    if (tpcGeo.DetectDriftDirection() == -2) elecvec.SetXYZ(0, -1, 0);
-    if (tpcGeo.DetectDriftDirection() == 3) elecvec.SetXYZ(0, 0, 1);
-    if (tpcGeo.DetectDriftDirection() == -3) elecvec.SetXYZ(0, 0, -1);
+    using geo::to_int;
+    auto const [axis, sign] = tpcGeo.DriftAxisWithSign();
+    switch (axis) {
+    case geo::Coordinate::X: {
+      elecvec.SetX(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Y: {
+      elecvec.SetY(to_int(sign));
+      break;
+    }
+    case geo::Coordinate::Z: {
+      elecvec.SetZ(to_int(sign));
+    }
+    }
 
     elecvec *= efield;
 
     // electric field inside active volume
     if (fSCE->EnableSimEfieldSCE()) {
       auto const eFieldOffsets = fSCE->GetEfieldOffsets(edep.MidPoint());
-
-      TVector3 scevec;
-
-      if (tpcGeo.DetectDriftDirection() == 1)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -1)
-        scevec.SetXYZ(
-          -1 * efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == 2)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -2)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), -1 * efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == 3)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), efield * eFieldOffsets.Z());
-      if (tpcGeo.DetectDriftDirection() == -3)
-        scevec.SetXYZ(
-          efield * eFieldOffsets.X(), efield * eFieldOffsets.Y(), -1 * efield * eFieldOffsets.Z());
-
+      geo::Vector_t scevec = eFieldOffsets * efield;
+      if (sign == geo::DriftSign::Negative) {
+        switch (axis) {
+        case geo::Coordinate::X: {
+          scevec.SetX(scevec.X() * -1.);
+          break;
+        }
+        case geo::Coordinate::Y: {
+          scevec.SetY(scevec.Y() * -1.);
+          break;
+        }
+        case geo::Coordinate::Z: {
+          scevec.SetZ(scevec.Z() * -1.);
+        }
+        }
+      }
       elecvec += scevec;
     }
 
-    double angle = std::acos(stepvec.Dot(elecvec) / (stepvec.Mag() * elecvec.Mag()));
+    double angle = std::acos(stepvec.Dot(elecvec) / (stepvec.R() * elecvec.R()));
 
     if (angle > TMath::PiOver2()) { angle = abs(TMath::Pi() - angle); }
 
