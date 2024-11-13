@@ -17,15 +17,15 @@
 #include "Geant4/G4ParticleHPThermalScattering.hh"
 #include "Geant4/G4ParticleHPThermalScatteringData.hh"
 
-#include "Geant4/G4NeutronInelasticProcess.hh"
+#include "Geant4/G4HadronInelasticProcess.hh"
 #include "Geant4/G4ParticleHPInelastic.hh"
 #include "Geant4/G4ParticleHPInelasticData.hh"
 
-#include "Geant4/G4HadronCaptureProcess.hh"
+#include "Geant4/G4NeutronCaptureProcess.hh"
 #include "Geant4/G4ParticleHPCapture.hh"
 #include "Geant4/G4ParticleHPCaptureData.hh"
 
-#include "Geant4/G4HadronFissionProcess.hh"
+#include "Geant4/G4NeutronFissionProcess.hh"
 #include "Geant4/G4ParticleHPFission.hh"
 #include "Geant4/G4ParticleHPFissionData.hh"
 
@@ -77,7 +77,7 @@ void NeutronHPphysics::ConstructProcess()
 
   // (re) create process: inelastic
   //
-  G4NeutronInelasticProcess* process2 = new G4NeutronInelasticProcess();
+  G4HadronInelasticProcess* process2 = new G4HadronInelasticProcess();
   pManager->AddDiscreteProcess(process2);
   //
   // cross section data set
@@ -90,7 +90,7 @@ void NeutronHPphysics::ConstructProcess()
 
   // (re) create process: nCapture
   //
-  G4HadronCaptureProcess* process3 = new G4HadronCaptureProcess();
+  G4NeutronCaptureProcess* process3 = new G4NeutronCaptureProcess();
   pManager->AddDiscreteProcess(process3);
   //
   // cross section data set
@@ -103,7 +103,7 @@ void NeutronHPphysics::ConstructProcess()
 
   // (re) create process: nFission
   //
-  G4HadronFissionProcess* process4 = new G4HadronFissionProcess();
+  G4NeutronFissionProcess* process4 = new G4NeutronFissionProcess();
   pManager->AddDiscreteProcess(process4);
   //
   // cross section data set
