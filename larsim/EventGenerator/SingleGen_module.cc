@@ -447,11 +447,18 @@ namespace evgen {
     , fHistFileName(config().HistogramFile())
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(createEngine(0))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0), "HepJamesRandom", "Seed"))
   {
     setup();
     rndm::NuRandomService::seed_t seed;
-    if (config().Seed(seed)) { fEngine.setSeed(seed, 0 /* dummy? */); }
+    if (config().Seed(seed)) {
+      fEngine.setSeed(seed, 0 /* dummy? */);
+      mf::LogInfo("SingleGen") << "Seed set to " << seed << " (from configuration)";
+    }
+    else {
+      seed = fEngine.getSeed();
+      mf::LogInfo("SingleGen") << "Seed set to " << seed;
+    }
 
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();
