@@ -447,7 +447,9 @@ namespace evgen {
     , fHistFileName(config().HistogramFile())
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0), "HepJamesRandom", "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+                                                                                 "HepJamesRandom",
+                                                                                 "Seed"))
   {
     setup();
     rndm::NuRandomService::seed_t seed;
