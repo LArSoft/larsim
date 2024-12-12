@@ -157,7 +157,7 @@ namespace evgen {
   //____________________________________________________________________________
   void PhotonGen::beginRun(art::Run& run)
   {
-    std::cout<<"\n\nBegin Job\n\n"<<std::endl;
+    std::cout << "\n\nBegin Job\n\n" << std::endl;
 
     art::ServiceHandle<geo::Geometry const> geo;
     std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
@@ -197,7 +197,7 @@ namespace evgen {
     std::uniform_real_distribution<double> distX(fXmin, fXmax);
     std::uniform_real_distribution<double> distY(fYmin, fYmax);
     std::uniform_real_distribution<double> distZ(fZmin, fZmax);
-    std::uniform_real_distribution<double> width(-2.0, 2.0);//scan width---
+    std::uniform_real_distribution<double> width(-2.0, 2.0); //scan width---
 
     std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
@@ -223,7 +223,8 @@ namespace evgen {
 
   void PhotonGen::Sample(simb::MCTruth& mct)
   {
-    std::cout << "\n\nPhotons Shooting at the Position: " << fX << " " << fY << " " << fZ <<"\n\n"<< std::endl;
+    std::cout << "\n\nPhotons Shooting at the Position: " << fX << " " << fY << " " << fZ << "\n\n"
+              << std::endl;
 
     CLHEP::RandFlat flat(fEngine);
     CLHEP::RandGaussQ gauss(fEngine);
