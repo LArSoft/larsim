@@ -173,7 +173,7 @@ namespace evgen {
         Name("ThetaXzYzHist"),
         Comment("name of the histograms of angular (X-Z and Y-Z) distribution"),
         [this]() { return fromHistogram(AngleDist()); }};
-
+      
       fhicl::Atom<rndm::NuRandomService::seed_t> Seed{
         Name("Seed"),
         Comment("override the random number generator seed"),
@@ -448,9 +448,8 @@ namespace evgen {
     , fHistFileName(config().HistogramFile())
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(config().Seed()),
-                                                                                 "HepJamesRandom",
-                                                                                 "Seed"))
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()
+                ->registerAndSeedEngine(createEngine(config().Seed()), "HepJamesRandom", "Seed"))
   {
     setup();
     mf::LogInfo("SingleGen") << "Seed set to " << fEngine.getSeed();
