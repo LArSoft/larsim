@@ -174,9 +174,10 @@ namespace evgen {
         Comment("name of the histograms of angular (X-Z and Y-Z) distribution"),
         [this]() { return fromHistogram(AngleDist()); }};
 
-      fhicl::OptionalAtom<rndm::NuRandomService::seed_t> Seed{
+      fhicl::Atom<rndm::NuRandomService::seed_t> Seed{
         Name("Seed"),
-        Comment("override the random number generator seed")};
+        Comment("override the random number generator seed"),
+        0 /* dummy? */};
 
     private:
       /// Returns whether the specified mode is an histogram distribution.
@@ -447,20 +448,12 @@ namespace evgen {
     , fHistFileName(config().HistogramFile())
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
-    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(config().Seed()),
                                                                                  "HepJamesRandom",
                                                                                  "Seed"))
   {
     setup();
-    rndm::NuRandomService::seed_t seed;
-    if (config().Seed(seed)) {
-      fEngine.setSeed(seed, 0 /* dummy? */);
-      mf::LogInfo("SingleGen") << "Seed set to " << seed << " (from configuration)";
-    }
-    else {
-      seed = fEngine.getSeed();
-      mf::LogInfo("SingleGen") << "Seed set to " << seed;
-    }
+    mf::LogInfo("SingleGen") << "Seed set to " << fEngine.getSeed();
 
     produces<std::vector<simb::MCTruth>>();
     produces<sumdata::RunData, art::InRun>();
