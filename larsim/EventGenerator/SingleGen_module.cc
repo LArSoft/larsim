@@ -177,7 +177,7 @@ namespace evgen {
       fhicl::Atom<rndm::NuRandomService::seed_t> Seed{
         Name("Seed"),
         Comment("override the random number generator seed"),
-        0 /* dummy? */};
+        rndm::NuRandomService::InvalidSeed};
 
     private:
       /// Returns whether the specified mode is an histogram distribution.
