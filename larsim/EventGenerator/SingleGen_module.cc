@@ -449,7 +449,7 @@ namespace evgen {
     , fPHist(config().PHist())
     , fThetaXzYzHist(config().ThetaXzYzHist())
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()
-                ->registerAndSeedEngine(createEngine(config().Seed()), "HepJamesRandom", "Seed"))
+                ->registerAndSeedEngine(createEngine(config().Seed()), "", "", config().Seed()))
   {
     setup();
     mf::LogInfo("SingleGen") << "Seed set to " << fEngine.getSeed();
