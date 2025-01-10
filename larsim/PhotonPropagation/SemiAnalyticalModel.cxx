@@ -63,7 +63,9 @@ namespace phot {
     fApplyFieldCageTransparency = VUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
     fFieldCageTransparencyLateral = VUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
     fFieldCageTransparencyCathode = VUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);
-    fMaxPDDistance = VUVHitsParams.get<double>("MaxPDDistance", 1000); // max distance between scintillation and PD to evaluate light, default 10m
+    fMaxPDDistance = VUVHitsParams.get<double>(
+      "MaxPDDistance",
+      1000); // max distance between scintillation and PD to evaluate light, default 10m
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -145,8 +147,9 @@ namespace phot {
 
     // determine drift distance
     fDriftDistance = fGeom.TPC().DriftDistance();
-    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)  
-    if (fNTPC > 1 && fDriftDistance < 50) fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
+    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)
+    if (fNTPC > 1 && fDriftDistance < 50)
+      fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
 
     // set absorption length
     fvuv_absorption_length = VUVAbsorptionLength();
@@ -201,7 +204,6 @@ namespace phot {
       }
 
       DetectedVisibilities[OpDet] = VUVVisibility(ScintPoint, fOpDetector[OpDet]);
-
     }
   }
 
@@ -325,11 +327,11 @@ namespace phot {
 
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
-   
+
     // check sensible GH correction values, GH correction should never be large
     // catches occasional issues caused by overflow
-    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0; 
-   
+    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0;
+
     // determine corrected visibility of photo-detector
     return GH_correction * visibility_geo / cosine;
   }
@@ -409,11 +411,11 @@ namespace phot {
 
     // calculate corrected number of hits
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
-    
+
     // check sensible GH correction values, GH correction should never be large
     // catches occasional issues caused by overflow
-    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0; 
-    
+    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0;
+
     const double cathode_visibility_rec = GH_correction * cathode_visibility_geo;
 
     // 2). detemine visibility of each PD
@@ -560,7 +562,7 @@ namespace phot {
     double Diff = par[1] - X_mu_0;
     double Term = std::pow((x - X_mu_0) / Diff, Diff / par[2]);
     double Exponential = std::exp((par[1] - x) / par[2]);
-    
+
     return (Normalization * Term * Exponential);
   }
 
@@ -758,23 +760,24 @@ namespace phot {
                                              geo::Point_t const& OpDetPoint) const
   {
     // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service 
+    // temporary method, needs to be replaced with geometry service
     // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-    
+
     // special case for SBND = 2 TPCs
     // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10.) {
-       return false;
+    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
+        std::abs(OpDetPoint.X()) > 10.) {
+      return false;
     }
-    
+
     // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance 
-    if (fNTPC == 300 && std::abs( ScintPoint.X() - OpDetPoint.X() ) > fDriftDistance ) {
-       return false;
+    // check whether distance in drift direction > 1 drift distance
+    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
+      return false;
     }
 
     // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
-    
+
     return true;
   }
 

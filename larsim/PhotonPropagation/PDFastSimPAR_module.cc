@@ -302,8 +302,9 @@ namespace phot {
 
     // determine drift distance
     fDriftDistance = fGeom.TPC().DriftDistance();
-    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)  
-    if (fNTPC > 1 && fDriftDistance < 50) fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
+    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)
+    if (fNTPC > 1 && fDriftDistance < 50)
+      fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
 
     mf::LogInfo("PDFastSimPAR") << "PDFastSimPAR Initialization finish.\n"
                                 << "Simulate using semi-analytic model for number of hits."
@@ -434,7 +435,7 @@ namespace phot {
           if (!((ndetected_fast > 0 && fDoFastComponent) ||
                 (ndetected_slow > 0 && fDoSlowComponent)))
             continue;
-          
+
           // calculate propagation time, does not matter whether fast or slow photon
           std::vector<double> transport_time;
           if (fIncludePropTime) {
@@ -586,19 +587,20 @@ namespace phot {
                                       geo::Point_t const& OpDetPoint) const
   {
     // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service 
+    // temporary method, needs to be replaced with geometry service
     // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-    
+
     // special case for SBND = 2 TPCs
     // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10.) { 
-       return false;
+    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
+        std::abs(OpDetPoint.X()) > 10.) {
+      return false;
     }
-    
+
     // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance 
-    if (fNTPC == 300 && std::abs( ScintPoint.X() - OpDetPoint.X() ) > fDriftDistance ) {
-       return false;
+    // check whether distance in drift direction > 1 drift distance
+    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
+      return false;
     }
     // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
 
