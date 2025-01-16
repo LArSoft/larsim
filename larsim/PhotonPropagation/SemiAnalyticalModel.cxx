@@ -9,6 +9,7 @@
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
+
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
 // support libraries
@@ -62,6 +63,9 @@ namespace phot {
     fApplyFieldCageTransparency = VUVHitsParams.get<bool>("ApplyFieldCageTransparency", false);
     fFieldCageTransparencyLateral = VUVHitsParams.get<double>("FieldCageTransparencyLateral", 1.0);
     fFieldCageTransparencyCathode = VUVHitsParams.get<double>("FieldCageTransparencyCathode", 1.0);
+    fMaxPDDistance = VUVHitsParams.get<double>(
+      "MaxPDDistance",
+      1000); // max distance between scintillation and PD to evaluate light, default 10m
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -141,6 +145,12 @@ namespace phot {
       fanode_plane_depth = fanode_centre[0];
     }
 
+    // determine drift distance
+    fDriftDistance = fGeom.TPC().DriftDistance();
+    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)
+    if (fNTPC > 1 && fDriftDistance < 50)
+      fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
+
     // set absorption length
     fvuv_absorption_length = VUVAbsorptionLength();
     mf::LogInfo("SemiAnalyticalModel")
@@ -180,13 +190,20 @@ namespace phot {
   {
     DetectedVisibilities.resize(fNOpDets);
     for (size_t const OpDet : util::counter(fNOpDets)) {
+      // check OpDet in same drift volume
       if (!isOpDetInSameTPC(ScintPoint, fOpDetector[OpDet].center)) {
+        DetectedVisibilities[OpDet] = 0.;
+        continue;
+      }
+      // check distance smaller than maximum distance
+      geo::Vector_t const relative = ScintPoint - fOpDetector[OpDet].center;
+      const double distance = relative.R();
+      if (distance > fMaxPDDistance) {
         DetectedVisibilities[OpDet] = 0.;
         continue;
       }
 
       DetectedVisibilities[OpDet] = VUVVisibility(ScintPoint, fOpDetector[OpDet]);
-      ;
     }
   }
 
@@ -311,6 +328,10 @@ namespace phot {
     // calculate correction
     double GH_correction = Gaisser_Hillas(distance, pars_ini);
 
+    // check sensible GH correction values, GH correction should never be large
+    // catches occasional issues caused by overflow
+    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0;
+
     // determine corrected visibility of photo-detector
     return GH_correction * visibility_geo / cosine;
   }
@@ -390,6 +411,11 @@ namespace phot {
 
     // calculate corrected number of hits
     double GH_correction = Gaisser_Hillas(distance_cathode, pars_ini);
+
+    // check sensible GH correction values, GH correction should never be large
+    // catches occasional issues caused by overflow
+    if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0;
+
     const double cathode_visibility_rec = GH_correction * cathode_visibility_geo;
 
     // 2). detemine visibility of each PD
@@ -709,7 +735,7 @@ namespace phot {
     constexpr double par0[9] = {0., 0., 0., 0., 0., 0.597542, 1.00872, 1.46993, 2.04221};
     constexpr double par1[9] = {
       0., 0., 0.19569, 0.300449, 0.555598, 0.854939, 1.39166, 2.19141, 2.57732};
-    const double delta_theta = 10.; // TODO: should this be fdelta_angulo_vuv?
+    const double delta_theta = 10.;
     int j = int(theta / delta_theta);
     // PMT radius
     const double b = fradius; // cm
@@ -733,14 +759,25 @@ namespace phot {
   bool SemiAnalyticalModel::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
                                              geo::Point_t const& OpDetPoint) const
   {
-    // method working for SBND, uBooNE, DUNE-HD 1x2x6 and DUNE-VD 1x8x6
-    // will need to be replaced to work in full DUNE geometry, ICARUS geometry
-    // check x coordinate has same sign or is close to zero, otherwise return
-    // false
-    if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10. &&
-        fNTPC == 2) { // TODO: replace with geometry service
+    // check optical channel is in same TPC as scintillation light, if not doesn't see light
+    // temporary method, needs to be replaced with geometry service
+    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
+
+    // special case for SBND = 2 TPCs
+    // check x coordinate has same sign or is close to zero
+    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
+        std::abs(OpDetPoint.X()) > 10.) {
       return false;
     }
+
+    // special case for DUNE-HD 10kt = 300 TPCs
+    // check whether distance in drift direction > 1 drift distance
+    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
+      return false;
+    }
+
+    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
+
     return true;
   }
 
