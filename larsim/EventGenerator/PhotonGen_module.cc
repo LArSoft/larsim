@@ -5,7 +5,7 @@
 // Produce photons at the vertex uniformly distributed in the active volume
 // Oct. 20, 2020 by Mu Wei wmu@fnal.gov
 //
-// Add new feature: user-defined region (arbitrary rectangular block) of 
+// Add new feature: user-defined region (arbitrary rectangular block) of
 // photon emission vertex
 // Jan 10, 2024 by Shuaiixang (Shu) Zhang, szh2@iu.edu
 ////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ namespace evgen {
     double fZmin;
     double fZmax;
 
-    CLHEP::HepRandomEngine& fEngine;    
+    CLHEP::HepRandomEngine& fEngine;
   };
 
   //----------------------------------------------------------------
@@ -158,12 +158,12 @@ namespace evgen {
     art::ServiceHandle<geo::Geometry const> geo;
     std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
 
-
     if (fXmin != 0) {
       //Boundaries set by user---
       std::cout << "\n\nPhoton Emission Region (user-defined) [cm]:" << std::endl;
-      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin
+                << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n"
+                << std::endl;
     }
     else {
       auto const CryoBounds = geo->Cryostat().Boundaries();
@@ -175,11 +175,10 @@ namespace evgen {
       fZmax = CryoBounds.MaxZ();
       //Initial default boundaries---
       std::cout << "\n\nPhoton Emission Region (default Cryo Boundaries) [cm]:" << std::endl;
-      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin
+                << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n"
+                << std::endl;
     }
-
-
 
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
