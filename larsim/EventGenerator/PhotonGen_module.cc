@@ -87,20 +87,8 @@ namespace evgen {
     double fP;      // central momentm of photon
     double fSigmaP; // mom width;
 
-    // Number of photons per event
+    //Number of photons per event
     int fN; // number of photons per event
-
-    bool fUserD; //Whether apply user-defined region: false = no, true = yes
-
-    //user-defined boundaries to constrain photon emission vertex---
-    double fBminX;
-    double fBmaxX;
-    double fBminY;
-    double fBmaxY;
-    double fBminZ;
-    double fBmaxZ;
-
-    CLHEP::HepRandomEngine& fEngine;
 
     //Boundaries of the detector
     double fXmin;
@@ -109,6 +97,8 @@ namespace evgen {
     double fYmax;
     double fZmin;
     double fZmax;
+
+    CLHEP::HepRandomEngine& fEngine;    
   };
 
   //----------------------------------------------------------------
@@ -124,13 +114,12 @@ namespace evgen {
     , fP{pset.get<double>("P")}
     , fSigmaP{pset.get<double>("SigmaP")}
     , fN{pset.get<int>("N")}
-    , fUserD{pset.get<bool>("UserD", false)}//Default to false
-    , fBminX{pset.get<double>("BminX", 0)}
-    , fBmaxX{pset.get<double>("BmaxX", 0)}
-    , fBminY{pset.get<double>("BminY", 0)}
-    , fBmaxY{pset.get<double>("BmaxY", 0)}
-    , fBminZ{pset.get<double>("BminZ", 0)}
-    , fBmaxZ{pset.get<double>("BmaxZ", 0)}
+    , fXmin{pset.get<double>("Xmin", 0)}
+    , fXmax{pset.get<double>("Xmax", 0)}
+    , fYmin{pset.get<double>("Ymin", 0)}
+    , fYmax{pset.get<double>("Ymax", 0)}
+    , fZmin{pset.get<double>("Zmin", 0)}
+    , fZmax{pset.get<double>("Zmax", 0)}
 
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
@@ -169,31 +158,27 @@ namespace evgen {
     art::ServiceHandle<geo::Geometry const> geo;
     std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
 
-    auto const CryoBounds = geo->Cryostat().Boundaries();
-    fXmin = CryoBounds.MinX();
-    fXmax = CryoBounds.MaxX();
-    fYmin = CryoBounds.MinY();
-    fYmax = CryoBounds.MaxY();
-    fZmin = CryoBounds.MinZ();
-    fZmax = CryoBounds.MaxZ();
-    //Initial default boundaries---
-    std::cout << "\n\nCryo Boundaries (default):" << std::endl;
 
-    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
-
-    if (fUserD) {
-      fXmin = fBminX;
-      fXmax = fBmaxX;
-      fYmin = fBminY;
-      fYmax = fBmaxY;
-      fZmin = fBminZ;
-      fZmax = fBmaxZ;
+    if (fXmin != 0) {
       //Boundaries set by user---
-      std::cout << "\n\nCURRENT New Boundaries (user-defined):" << std::endl;
+      std::cout << "\n\nPhoton Emission Region (user-defined) [cm]:" << std::endl;
       std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
+              << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n" << std::endl;
     }
+    else {
+      auto const CryoBounds = geo->Cryostat().Boundaries();
+      fXmin = CryoBounds.MinX();
+      fXmax = CryoBounds.MaxX();
+      fYmin = CryoBounds.MinY();
+      fYmax = CryoBounds.MaxY();
+      fZmin = CryoBounds.MinZ();
+      fZmax = CryoBounds.MaxZ();
+      //Initial default boundaries---
+      std::cout << "\n\nPhoton Emission Region (default Cryo Boundaries) [cm]:" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
+              << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n" << std::endl;
+    }
+
 
 
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
