@@ -3,7 +3,11 @@
 // File:        PhotonGen_module.cc
 // Description:
 // Produce photons at the vertex uniformly distributed in the active volume
-// Oct. 20, 2020 by Mu Wei wmu@fnal.gov 2020
+// Oct. 20, 2020 by Mu Wei wmu@fnal.gov
+//
+// Add new feature: user-defined region (arbitrary rectangular block) of 
+// photon emission vertex
+// Jan 10, 2024 by Shuaiixang (Shu) Zhang, szh2@iu.edu
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
@@ -86,6 +90,16 @@ namespace evgen {
     // Number of photons per event
     int fN; // number of photons per event
 
+    bool fUserD; //Whether apply user-defined region: false = no, true = yes
+
+    //user-defined boundaries to constrain photon emission vertex---
+    double fBminX;
+    double fBmaxX;
+    double fBminY;
+    double fBmaxY;
+    double fBminZ;
+    double fBmaxZ;
+
     CLHEP::HepRandomEngine& fEngine;
 
     //Boundaries of the detector
@@ -110,6 +124,14 @@ namespace evgen {
     , fP{pset.get<double>("P")}
     , fSigmaP{pset.get<double>("SigmaP")}
     , fN{pset.get<int>("N")}
+    , fUserD{pset.get<bool>("UserD", false)}//Default to false
+    , fBminX{pset.get<double>("BminX", 0)}
+    , fBmaxX{pset.get<double>("BmaxX", 0)}
+    , fBminY{pset.get<double>("BminY", 0)}
+    , fBmaxY{pset.get<double>("BmaxY", 0)}
+    , fBminZ{pset.get<double>("BminZ", 0)}
+    , fBmaxZ{pset.get<double>("BmaxZ", 0)}
+
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
                                                                                  "Seed"))
@@ -142,6 +164,8 @@ namespace evgen {
   //____________________________________________________________________________
   void PhotonGen::beginRun(art::Run& run)
   {
+    std::cout << "\n\nBegin Job\n\n" << std::endl;
+
     art::ServiceHandle<geo::Geometry const> geo;
     std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
 
@@ -152,9 +176,26 @@ namespace evgen {
     fYmax = CryoBounds.MaxY();
     fZmin = CryoBounds.MinZ();
     fZmax = CryoBounds.MaxZ();
-    std::cout << "Cryo Boundaries:" << std::endl;
+    //Initial default boundaries---
+    std::cout << "\n\nCryo Boundaries (default):" << std::endl;
+
     std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
               << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
+
+    if (fUserD) {
+      fXmin = fBminX;
+      fXmax = fBmaxX;
+      fYmin = fBminY;
+      fYmax = fBmaxY;
+      fZmin = fBminZ;
+      fZmax = fBmaxZ;
+      //Boundaries set by user---
+      std::cout << "\n\nCURRENT New Boundaries (user-defined):" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
+              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
+    }
+
+
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
   }
 
@@ -166,7 +207,7 @@ namespace evgen {
     std::uniform_real_distribution<double> distX(fXmin, fXmax);
     std::uniform_real_distribution<double> distY(fYmin, fYmax);
     std::uniform_real_distribution<double> distZ(fZmin, fZmax);
-    std::uniform_real_distribution<double> width(-2.0, 2.0);
+    std::uniform_real_distribution<double> width(-2.0, 2.0); //scan width---
 
     std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
@@ -192,7 +233,8 @@ namespace evgen {
 
   void PhotonGen::Sample(simb::MCTruth& mct)
   {
-    std::cout << "Photons Shooting at the Position: " << fX << " " << fY << " " << fZ << std::endl;
+    std::cout << "\n\nPhotons Shooting at the Position: " << fX << " " << fY << " " << fZ << "\n\n"
+              << std::endl;
 
     CLHEP::RandFlat flat(fEngine);
     CLHEP::RandGaussQ gauss(fEngine);
