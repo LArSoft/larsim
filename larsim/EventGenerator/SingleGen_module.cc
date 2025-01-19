@@ -725,7 +725,8 @@ namespace evgen {
 
     static TDatabasePDG pdgt;
     TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-    if (pdgp) m = pdgp->Mass();
+    if (fPDG[i] == 1000020040) m = 3.727379240; // alpha particles    
+    else if (pdgp) m = pdgp->Mass();
 
     // Choose position
     TVector3 x;
@@ -805,14 +806,20 @@ namespace evgen {
     int trackid = -1 * (i + 1);
     std::string primary("primary");
 
-    simb::MCParticle part(trackid, fPDG[i], primary);
-    part.AddTrajectoryPoint(pos, pvec);
+    if (fPDG[i] == 1000020040) {
+      simb::MCParticle part(trackid, fPDG[i], primary, -1, m, 1);
+      part.AddTrajectoryPoint(pos, pvec);
+      mct.Add(part);
+    } // end "If alpha"
+    else {
+      simb::MCParticle part(trackid, fPDG[i], primary);
+      part.AddTrajectoryPoint(pos, pvec);
+      mct.Add(part);
+    } // end All standard cases.
 
     //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
     //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
     //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl;
-
-    mct.Add(part);
   }
 
   //____________________________________________________________________________
@@ -862,7 +869,8 @@ namespace evgen {
 
       static TDatabasePDG pdgt;
       TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-      if (pdgp) m = pdgp->Mass();
+      if (fPDG[i] == 1000020040) m = 3.727379240; // alpha particle mass
+      else if (pdgp) m = pdgp->Mass();
 
       // Choose angles
       double thxz = 0;
@@ -920,13 +928,20 @@ namespace evgen {
       int trackid = -1 * (i + 1);
       std::string primary("primary");
 
-      simb::MCParticle part(trackid, fPDG[i], primary);
-      part.AddTrajectoryPoint(pos, pvec);
+      if (fPDG[i] == 1000020040) {
+        simb::MCParticle part(trackid, fPDG[i], primary, -1, m, 1);
+        part.AddTrajectoryPoint(pos, pvec);
+        mct.Add(part);
+      } // end "If alpha"
+      else {
+        simb::MCParticle part(trackid, fPDG[i], primary);
+        part.AddTrajectoryPoint(pos, pvec);
+        mct.Add(part);
+      } // end All standard cases.
 
       //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
       //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
       //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl;
-      mct.Add(part);
     }
   }
 
