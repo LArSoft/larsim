@@ -725,8 +725,10 @@ namespace evgen {
 
     static TDatabasePDG pdgt;
     TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-    if (fPDG[i] == 1000020040) m = 3.727379240; // alpha particles    
-    else if (pdgp) m = pdgp->Mass();
+    if (fPDG[i] == 1000020040)
+      m = 3.727379240; // alpha particles
+    else if (pdgp)
+      m = pdgp->Mass();
 
     // Choose position
     TVector3 x;
@@ -869,8 +871,10 @@ namespace evgen {
 
       static TDatabasePDG pdgt;
       TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-      if (fPDG[i] == 1000020040) m = 3.727379240; // alpha particle mass
-      else if (pdgp) m = pdgp->Mass();
+      if (fPDG[i] == 1000020040)
+        m = 3.727379240; // alpha particle mass
+      else if (pdgp)
+        m = pdgp->Mass();
 
       // Choose angles
       double thxz = 0;
