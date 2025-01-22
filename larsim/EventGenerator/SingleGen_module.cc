@@ -222,6 +222,12 @@ namespace evgen {
     static constexpr int kHIST = 2; ///< Distribution from histograms.
     /// @}
 
+    /// @{
+    /// @name Constants for particle kinematics
+
+    static constexpr double kAlphaMass = 3.727379240;
+    /// @}
+
     int fMode;           ///< Particle Selection Mode
                          ///< 0--generate a list of all particles,
                          ///< 1--generate a single particle selected randomly from the list
@@ -726,7 +732,7 @@ namespace evgen {
     static TDatabasePDG pdgt;
     TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
     if (fPDG[i] == 1000020040)
-      m = 3.727379240; // alpha particles
+      m = kAlphaMass; // alpha particles
     else if (pdgp)
       m = pdgp->Mass();
 
@@ -872,7 +878,7 @@ namespace evgen {
       static TDatabasePDG pdgt;
       TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
       if (fPDG[i] == 1000020040)
-        m = 3.727379240; // alpha particle mass
+        m = kAlphaMass; // alpha particle mass
       else if (pdgp)
         m = pdgp->Mass();
 
