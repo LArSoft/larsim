@@ -46,7 +46,9 @@
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft Includes
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcorealg/CoreUtils/ParticleFilters.h" // util::PositionInVolumeFilter
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -97,100 +99,93 @@ namespace larg4 {
   /**
    * @brief Runs Geant4 simulation and propagation of electrons and photons to readout
    *
-   * This module collects generated particles from one or more generators and
-   * processes them through Geant4.
+   * This module collects generated particles from one or more generators and processes
+   * them through Geant4.
    *
    * Input
    * ------
    *
-   * The module reads the particles to process from `simb::MCTruth` records.
-   * Each particle generator is required to produce a vector of such records:
+   * The module reads the particles to process from `simb::MCTruth` records.  Each
+   * particle generator is required to produce a vector of such records:
    * `std::vector<simb::MCTruth>`.
    *
    * The module allows two operation modes:
-   * -# process specific generators: the label of the generator modules to be
-   *   processed is specified explicitly in `LArG4` configuration
-   * -# process all truth information generated so far: no generator is specified
-   *   in the `LArG4` module configuration, and the module will process all
-   *   data products of type `std::vector<simb::MCTruth>`, in a non-specified
-   *   order
    *
-   * For each `simb::MCTruth`, a Geant4 run is started.
-   * The interface with Geant4 is via a helper class provided by _nug4_.
-   * Only the particles in the truth record which have status code
-   * (`simb::MCParticle::StatusCode()`) equal to `1` are processed.
-   * These particles are called, in `LArG4` jargon, _primaries_.
+   * -# process specific generators: the label of the generator modules to be processed is
+   *   specified explicitly in `LArG4` configuration
+   * -# process all truth information generated so far: no generator is specified in the
+   *   `LArG4` module configuration, and the module will process all data products of type
+   *   `std::vector<simb::MCTruth>`, in a non-specified order
+   *
+   * For each `simb::MCTruth`, a Geant4 run is started.  The interface with Geant4 is via
+   * a helper class provided by _nug4_.  Only the particles in the truth record which have
+   * status code (`simb::MCParticle::StatusCode()`) equal to `1` are processed.  These
+   * particles are called, in `LArG4` jargon, _primaries_.
    *
    *
    * Output
    * -------
    *
    * The `LArG4` module produces:
-   * * a collection of `sim::SimChannel`: each `sim::SimChannel` represents the
-   *   set of energy depositions in liquid argon which drifted and were observed
-   *   on a certain channel; it includes physics effects like attenuation,
-   *   diffusion, electric field distortion, etc. Information of the generating
-   *   Geant4 "track" is retained;
-   * * a collection of `sim::SimPhotons` or `sim::SimPhotonsLite`: each
-   *   `sim::SimPhotons` represents the set of individual photons reaching a
-   *   channel of the optical detector; it includes physics effects as well as
-   *   quantum efficiency of the detector (to reduce data size early in the
-   *   process); `sim::SimPhotonsLite` drops the information of the single
-   *   photons and stores only collective information (e.g. their number).
+   * * a collection of `sim::SimChannel`: each `sim::SimChannel` represents the set of
+   *   energy depositions in liquid argon which drifted and were observed on a certain
+   *   channel; it includes physics effects like attenuation, diffusion, electric field
+   *   distortion, etc. Information of the generating Geant4 "track" is retained;
+   * * a collection of `sim::SimPhotons` or `sim::SimPhotonsLite`: each `sim::SimPhotons`
+   *   represents the set of individual photons reaching a channel of the optical
+   *   detector; it includes physics effects as well as quantum efficiency of the detector
+   *   (to reduce data size early in the process); `sim::SimPhotonsLite` drops the
+   *   information of the single photons and stores only collective information
+   *   (e.g. their number).
    * * a collection of `sim::OpDetBacktrackerRecord` (to be documented)
    * * a collection of `sim::AuxDetSimChannel` (to be documented)
-   * * a collection of `simb::MCParticle`: the particles generated in the
-   *   interaction of the primary particles with the material in the world
-   *   are stored, but minor filtering by geometry and by physics is possible.
-   *   An association of them with the originating `simb::MCTruth` object is
-   *   also produced.
+   * * a collection of `simb::MCParticle`: the particles generated in the interaction of
+   *   the primary particles with the material in the world are stored, but minor
+   *   filtering by geometry and by physics is possible.  An association of them with the
+   *   originating `simb::MCTruth` object is also produced.
    *
    *
    * Notes on the conventions
    * -------------------------
    *
-   * * all and the particles in the truth record (`simb::MCTruth`) which have
-   *   status code (`simb::MCParticle::StatusCode()`) equal to `1` are passed
-   *   to Geant4. These particles are called, in `LArG4` jargon, _primaries_.
-   *   The interface with Geant4 is via a helper class provided by _nug4_.
-   * * normally, information about each particle that Geant4 propagates (which
-   *   Geant4 calls _tracks_), primary or not, is saved as an individual
-   *   `simb::MCParticle` object into the output particle list. Each
-   *   `simb::MCParticle` includes a Geant4-like track ID which is also recorded
-   *   into each `sim::IDE` deposited by that particle. This information can be
-   *   used to track all the deposition from a particle, or to backtrack the
-   *   particle responsible of a deposition (but see below...).
-   *   Note that the stored track ID may be different than the one Geant4 used
-   *   (and, in particular, it's guaranteed to be unique within a `sim::LArG4`
-   *   instance output).
-   * * there are options (some set in `sim::LArG4Parameters` service) which
-   *   allow for Geant4 tracks not to be saved as `simb::MCParticle` (e.g.
-   *   `ParticleKineticEnergyCut`, `KeepEMShowerDaughters`). When these
-   *   particles have deposited energy, their `sim::IDE` will report the ID of
-   *   the first parent Geant4 track which is saved in the `simb::MCParticle`
-   *   list, but _with its sign flipped_. Therefore, when tracking or
-   *   backtracking (see above), comparisons should be performed using the
-   *   absolute value of the `sim::IDE` (e.g. `std::abs(ide.trackID)`).
+   * * all and the particles in the truth record (`simb::MCTruth`) which have status code
+   *   (`simb::MCParticle::StatusCode()`) equal to `1` are passed to Geant4. These
+   *   particles are called, in `LArG4` jargon, _primaries_.  The interface with Geant4 is
+   *   via a helper class provided by _nug4_.
+   * * normally, information about each particle that Geant4 propagates (which Geant4
+   *   calls _tracks_), primary or not, is saved as an individual `simb::MCParticle`
+   *   object into the output particle list. Each `simb::MCParticle` includes a
+   *   Geant4-like track ID which is also recorded into each `sim::IDE` deposited by that
+   *   particle. This information can be used to track all the deposition from a particle,
+   *   or to backtrack the particle responsible of a deposition (but see below...).  Note
+   *   that the stored track ID may be different than the one Geant4 used (and, in
+   *   particular, it's guaranteed to be unique within a `sim::LArG4` instance output).
+   * * there are options (some set in `sim::LArG4Parameters` service) which allow for
+   *   Geant4 tracks not to be saved as `simb::MCParticle` (e.g.
+   *   `ParticleKineticEnergyCut`, `KeepEMShowerDaughters`). When these particles have
+   *   deposited energy, their `sim::IDE` will report the ID of the first parent Geant4
+   *   track which is saved in the `simb::MCParticle` list, but _with its sign
+   *   flipped_. Therefore, when tracking or backtracking (see above), comparisons should
+   *   be performed using the absolute value of the `sim::IDE`
+   *   (e.g. `std::abs(ide.trackID)`).
    *
    *
    * Timing
    * -------
    *
    * The `LArG4` module produces `sim::SimChannel` objects from generated
-   * `simb::MCParticle`. Each particle ("primary") is assigned the time taken
-   * from its vertex (a 4-vector), which is expected to be represented in
-   * nanoseconds.
-   * The `sim::SimChannel` object is a collection of `sim::IDE` in time. The
-   * position in the `sim::IDE` is the location where some ionization occurred.
-   * The time associated to a `sim::IDE` is stored in tick units. The time it
-   * represents is the time when the ionization happened, which is the time of
-   * the primary particle plus the propagation time to the ionization location,
-   * plus the drift time, which the ionized electrons take to reach the anode
-   * wire. This time is then shifted to the frame of the electronics time
-   * via `detinfo::DetectorClocks::G4ToElecTime()`, which adds a configurable
-   * time offset. The time is converted into ticks via
-   * `detinfo::DetectorClocks::TPCClock()`, and this is the final value
-   * associated to the `sim::IDE`. For a more complete overview, see
+   * `simb::MCParticle`. Each particle ("primary") is assigned the time taken from its
+   * vertex (a 4-vector), which is expected to be represented in nanoseconds.  The
+   * `sim::SimChannel` object is a collection of `sim::IDE` in time. The position in the
+   * `sim::IDE` is the location where some ionization occurred.  The time associated to a
+   * `sim::IDE` is stored in tick units. The time it represents is the time when the
+   * ionization happened, which is the time of the primary particle plus the propagation
+   * time to the ionization location, plus the drift time, which the ionized electrons
+   * take to reach the anode wire. This time is then shifted to the frame of the
+   * electronics time via `detinfo::DetectorClocks::G4ToElecTime()`, which adds a
+   * configurable time offset. The time is converted into ticks via
+   * `detinfo::DetectorClocks::TPCClock()`, and this is the final value associated to the
+   * `sim::IDE`. For a more complete overview, see
    * https://cdcvs.fnal.gov/redmine/projects/larsoft/wiki/Simulation#Simulation-Timing
    *
    *
@@ -249,67 +244,61 @@ namespace larg4 {
    *
    * @anchor LArG4_MaterialProperties
    *
-   * Some of the physical properties have their values set in FHiCL
-   * configuration (e.g. `detinfo::LArParameters`). Then, GEANT4 is informed
-   * of them via `larg4::MaterialPropertyLoader`. The material property table
-   * in GEANT4 is then used by other LArSoft components to discover the
-   * parameter values.
+   * Some of the physical properties have their values set in FHiCL configuration
+   * (e.g. `detinfo::LArParameters`). Then, GEANT4 is informed of them via
+   * `larg4::MaterialPropertyLoader`. The material property table in GEANT4 is then used
+   * by other LArSoft components to discover the parameter values.
    *
-   * Among the parameters registered to GEANT4, the scintillation yields, i.e.
-   * how many scintillation photons are produced on average by 1 MeV of
-   * deposited energy, are also stored by type of ioniziong particle.
-   * These scintillation yields _do include a prescale factor_ (that may
-   * include, for example, the photomultiplier quantum efficiency), from the
-   * `ScintPreScale` parameter of `detinfo::LArPropertiesStandard`
+   * Among the parameters registered to GEANT4, the scintillation yields, i.e.  how many
+   * scintillation photons are produced on average by 1 MeV of deposited energy, are also
+   * stored by type of ioniziong particle.  These scintillation yields _do include a
+   * prescale factor_ (that may include, for example, the photomultiplier quantum
+   * efficiency), from the `ScintPreScale` parameter of `detinfo::LArPropertiesStandard`
    * or equivalent.
    *
    *
    * Reflectivity to optical photons
    * --------------------------------
    *
-   * Two models are supported for the simulation of (scintillation) light
-   * crossing detector surfaces:
+   * Two models are supported for the simulation of (scintillation) light crossing
+   * detector surfaces:
    * -# the standard one from GEANT4, implemented in `G4OpBoundaryProcess`
    * -# a simplified one, implemented in `larg4::OpBoundaryProcessSimple`
    *
    * The model is chosen according to the value of
-   * `detinfo::DetectorProperties::SimpleBoundary()`, and the choice is
-   * currently exerted by `larg4::OpticalPhysics`.
+   * `detinfo::DetectorProperties::SimpleBoundary()`, and the choice is currently exerted
+   * by `larg4::OpticalPhysics`.
    *
-   * The simplified model is faster and simpler: it only deals with absorption
-   * and reflection (both specular and diffues).
-   * This is the "default" model used in most contexts.
+   * The simplified model is faster and simpler: it only deals with absorption and
+   * reflection (both specular and diffues).  This is the "default" model used in most
+   * contexts.
    *
-   * GEANT4 model is more complete and slower. It may take some art to fully
-   * configure all the properties of the materials at the sides of the surfaces.
-   * The price is a detailed simulation that includes among others refraction
-   * and wavelength shifting.
+   * GEANT4 model is more complete and slower. It may take some art to fully configure all
+   * the properties of the materials at the sides of the surfaces.  The price is a
+   * detailed simulation that includes among others refraction and wavelength shifting.
    *
    *
    * Scintillation
    * --------------
    *
-   * When using the fast optical simulation, which is the "standard" running
-   * mode, energy depositions from GEANT4 are "converted" into a number of
-   * scintillation photons by the global `larg4::IonizationAndScintillation`
-   * object instance, which internally utilizes the algorithm set up via
-   * configuration parameter `IonAndScintCalculator` in `LArG4Parameters`
-   * service (at the time of writing, `"Separate"` is supported and `"NEST"` is
-   * accepted too).
-   * The number of scintillation photons per energy unit is read from GEANT4
-   * @ref LArG4_MaterialProperties "material properties table". It includes
-   * already quantum efficiency ("prescale") and it may depend on the type of
-   * ionizing particle, depending on the configuration (`LArPropertiesStandard`
-   * parameter `ScintByParticleType`). This value ("yield") is used as
-   * the average of a Poisson distribution from which the actual number of
-   * scintillation photons is extracted case by case.
-   * The implementation `larg4::ISCalculationSeparate` may also include medium
-   * saturation effects as well, if configured, but only if the scintillation
-   * yield is set not to depend on the type of ionizing particle.
-   * The number of scintillation photons is then distributed between the fast
-   * and slow component by a yield ratio also set in the material parameters,
-   * and the single photons are distributed in time accordingly to their
-   * component.
+   * When using the fast optical simulation, which is the "standard" running mode, energy
+   * depositions from GEANT4 are "converted" into a number of scintillation photons by the
+   * global `larg4::IonizationAndScintillation` object instance, which internally utilizes
+   * the algorithm set up via configuration parameter `IonAndScintCalculator` in
+   * `LArG4Parameters` service (at the time of writing, `"Separate"` is supported and
+   * `"NEST"` is accepted too).
+   *
+   * The number of scintillation photons per energy unit is read from GEANT4 @ref
+   * LArG4_MaterialProperties "material properties table". It includes already quantum
+   * efficiency ("prescale") and it may depend on the type of ionizing particle, depending
+   * on the configuration (`LArPropertiesStandard` parameter `ScintByParticleType`). This
+   * value ("yield") is used as the average of a Poisson distribution from which the
+   * actual number of scintillation photons is extracted case by case.  The implementation
+   * `larg4::ISCalculationSeparate` may also include medium saturation effects as well, if
+   * configured, but only if the scintillation yield is set not to depend on the type of
+   * ionizing particle.  The number of scintillation photons is then distributed between
+   * the fast and slow component by a yield ratio also set in the material parameters, and
+   * the single photons are distributed in time accordingly to their component.
    *
    */
   class LArG4 : public art::EDProducer {
@@ -317,9 +306,8 @@ namespace larg4 {
     explicit LArG4(fhicl::ParameterSet const& pset);
 
   private:
-    /// The main routine of this module: Fetch the primary particles
-    /// from the event, simulate their evolution in the detector, and
-    /// produce the detector response.
+    /// The main routine of this module: Fetch the primary particles from the event,
+    /// simulate their evolution in the detector, and produce the detector response.
     void produce(art::Event& evt) override;
     void beginJob() override;
     void beginRun(art::Run& run) override;
@@ -340,8 +328,8 @@ namespace larg4 {
     bool fUseLitePhotons;
     bool fStoreReflected{false};
     int fSmartStacking;          ///< Whether to instantiate and use class to
-    double fOffPlaneMargin = 0.; ///< Off-plane charge recovery margin
-                                 ///< dictate how tracks are put on stack.
+    double fOffPlaneMargin = 0.; ///< Off-plane charge recovery margin dictate how tracks
+                                 ///< are put on stack.
     std::vector<std::string> fInputLabels;
     std::vector<std::string>
       fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
@@ -375,14 +363,12 @@ namespace {
    *
    * The data contained in `source` is moved (appended) to the end of `dest`.
    *
-   * The data is moved from source element by element; as an exception, if
-   * `dest` is still empty, the data is moved in a block.
+   * The data is moved from source element by element; as an exception, if `dest` is still
+   * empty, the data is moved in a block.
    *
-   * The `source` collection is always returned depleted as after being "moved
-   * away" (i.e. after `auto temp = std::move(source);`): that means that the
-   * only thing that can be done with it according to C++ standard is to
-   * destruct it.
-   *
+   * The `source` collection is always returned depleted as after being "moved away"
+   * (i.e. after `auto temp = std::move(source);`): that means that the only thing that
+   * can be done with it according to C++ standard is to destruct it.
    */
   template <typename T>
   std::vector<T>& append(std::vector<T>& dest, std::vector<T>&& source)
@@ -442,16 +428,15 @@ namespace larg4 {
         << "The configuration of LArG4 module has the discontinued 'Seed' parameter.\n"
            "Seeds are now controlled by two parameters: 'GEANTSeed' and 'PropagationSeed'.";
     }
-    // setup the random number service for Geant4, the "G4Engine" label is a
-    // special tag setting up a global engine for use by Geant4/CLHEP;
-    // obtain the random seed from NuRandomService,
-    // unless overridden in configuration with key "Seed" or "GEANTSeed"
+    // setup the random number service for Geant4, the "G4Engine" label is a special tag
+    // setting up a global engine for use by Geant4/CLHEP; obtain the random seed from
+    // NuRandomService, unless overridden in configuration with key "Seed" or "GEANTSeed"
     // FIXME: THIS APPEARS TO BE A NO-OP; IS IT NEEDED?
     (void)art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(
       createEngine(0, "G4Engine", "GEANT"), "G4Engine", "GEANT", pset, "GEANTSeed");
 
-    //get a list of generators to use, otherwise, we'll end up looking for anything that's
-    //made an MCTruth object
+    // get a list of generators to use, otherwise, we'll end up looking for anything
+    // that's made an MCTruth object
     bool useInputLabels =
       pset.get_if_present<std::vector<std::string>>("InputLabels", fInputLabels);
     if (!useInputLabels) fInputLabels.resize(0);
@@ -465,9 +450,9 @@ namespace larg4 {
         fStoreReflected = pvs->StoreReflected();
       }
       catch (art::Exception const& e) {
-        // If the service is not configured, then just keep the default
-        // false for reflected light. If reflected photons are simulated
-        // without PVS they will show up in the regular SimPhotons collection
+        // If the service is not configured, then just keep the default false for
+        // reflected light. If reflected photons are simulated without PVS they will show
+        // up in the regular SimPhotons collection
         if (e.categoryCode() != art::errors::ServiceNotFound) throw;
       }
 
@@ -517,6 +502,7 @@ namespace larg4 {
 
     art::ServiceHandle<geo::Geometry const> geom;
     fG4Help->ConstructDetector(geom->GDMLFile());
+    auto const& wireReadoutGeom = art::ServiceHandle<geo::WireReadout const>()->Get();
 
     // Get the logical volume store and assign material properties
     larg4::MaterialPropertyLoader mpl;
@@ -531,37 +517,35 @@ namespace larg4 {
     // Intialize G4 physics and primary generator action
     fG4Help->InitPhysics();
 
-    // create the ionization and scintillation calculator;
-    // this is a singleton (!) so it does not make sense
-    // to create it in LArVoxelReadoutGeometry
+    // create the ionization and scintillation calculator; this is a singleton (!) so it
+    // does not make sense to create it in LArVoxelReadoutGeometry
     IonizationAndScintillation::CreateInstance(detProp, fEngine);
 
     // make a parallel world for each TPC in the detector
-    LArVoxelReadoutGeometry::Setup_t readoutGeomSetupData;
-    readoutGeomSetupData.readoutSetup.offPlaneMargin = fOffPlaneMargin;
-    readoutGeomSetupData.readoutSetup.propGen = &fEngine;
+    // User-action class for accumulating LAr voxels.
+    art::ServiceHandle<sim::LArG4Parameters const> lgp;
+
+    LArVoxelReadoutGeometry::Setup_t readoutGeomSetupData{
+      geom.get(), &wireReadoutGeom, lgp.get(), {&fEngine, fOffPlaneMargin}};
 
     fVoxelReadoutGeometry =
       new LArVoxelReadoutGeometry("LArVoxelReadoutGeometry", readoutGeomSetupData);
     pworlds.push_back(fVoxelReadoutGeometry);
-    pworlds.push_back(
-      new OpDetReadoutGeometry(geom->OpDetGeoName(), "OpDetReadoutGeometry", fUseLitePhotons));
-    pworlds.push_back(new AuxDetReadoutGeometry("AuxDetReadoutGeometry"));
+    pworlds.push_back(new OpDetReadoutGeometry(
+      geom->Cryostat().OpDetGeoName(), "OpDetReadoutGeometry", fUseLitePhotons));
+    pworlds.push_back(new AuxDetReadoutGeometry(
+      art::ServiceHandle<geo::AuxDetGeometry const>()->GetProviderPtr(), "AuxDetReadoutGeometry"));
 
     fG4Help->SetParallelWorlds(pworlds);
 
-    // moved up
     // Intialize G4 physics and primary generator action
     fG4Help->InitPhysics();
 
     // Use the UserActionManager to handle all the Geant4 user hooks.
     g4b::UserActionManager* uaManager = g4b::UserActionManager::Instance();
 
-    // User-action class for accumulating LAr voxels.
-    art::ServiceHandle<sim::LArG4Parameters const> lgp;
-
-    // User-action class for accumulating particles and trajectories
-    // produced in the detector.
+    // User-action class for accumulating particles and trajectories produced in the
+    // detector.
     fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
                                                         lgp->StoreTrajectories(),
                                                         lgp->KeepEMShowerDaughters(),
@@ -572,8 +556,8 @@ namespace larg4 {
     // UserActionManager is now configured so continue G4 initialization
     fG4Help->SetUserAction();
 
-    // With an enormous detector with lots of rock ala LAr34 (nee LAr20)
-    // we need to be smarter about stacking.
+    // With an enormous detector with lots of rock ala LAr34 (nee LAr20) we need to be
+    // smarter about stacking.
     if (fSmartStacking > 0) {
       G4UserStackingAction* stacking_action = new LArStackingAction(fSmartStacking);
       fG4Help->GetRunManager()->SetUserAction(stacking_action);
@@ -616,8 +600,8 @@ namespace larg4 {
         *pRot = *pRot * thisrotate;
       }
 
-      // for some reason, pRot and pTransl don't have tr and rot bits set
-      // correctly make new translations and rotations so bits are set correctly
+      // for some reason, pRot and pTransl don't have tr and rot bits set correctly make
+      // new translations and rotations so bits are set correctly
       auto pTransl2 = new TGeoTranslation(
         pTransl->GetTranslation()[0], pTransl->GetTranslation()[1], pTransl->GetTranslation()[2]);
       double phi = 0., theta = 0., psi = 0.;
@@ -640,8 +624,7 @@ namespace larg4 {
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
     LArVoxelReadoutGeometry::Sentry const set_for_event{fVoxelReadoutGeometry, clockData, detProp};
 
-    // loop over the lists and put the particles and voxels into the event as
-    // collections
+    // loop over the lists and put the particles and voxels into the event as collections
     auto scCol = std::make_unique<std::vector<sim::SimChannel>>();
     auto adCol = std::make_unique<std::vector<sim::AuxDetSimChannel>>();
     auto tpassn = fMakeMCParticles ?
@@ -669,6 +652,7 @@ namespace larg4 {
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters const> lgp;
     art::ServiceHandle<geo::Geometry const> geom;
+    auto const* auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry const>()->GetProviderPtr();
 
     // Clear the detected photon table
     OpDetPhotonTable::Instance()->ClearTable(geom->NOpDets());
@@ -677,11 +661,9 @@ namespace larg4 {
     // reset the track ID offset as we have a new collection of interactions
     fparticleListAction->ResetTrackIDOffset();
 
-    //look to see if there is any MCTruth information for this
-    //event
+    // look to see if there is any MCTruth information for this event
     std::vector<art::Handle<std::vector<simb::MCTruth>>> mclists;
     if (empty(fInputLabels))
-      //evt.getManyByType(mclists);
       mclists = evt.getMany<std::vector<simb::MCTruth>>();
     else {
       mclists.resize(fInputLabels.size());
@@ -714,9 +696,9 @@ namespace larg4 {
           simb::MCParticle& p = *(partPair.second);
           ++nGeneratedParticles;
 
-          // if the particle has been marked as dropped, we don't save it
-          // (as of LArSoft ~v5.6 this does not ever happen because
-          // ParticleListAction has already taken care of deleting them)
+          // if the particle has been marked as dropped, we don't save it (as of LArSoft
+          // ~v5.6 this does not ever happen because ParticleListAction has already taken
+          // care of deleting them)
           if (ParticleListAction::isDropped(&p)) continue;
 
           sim::GeneratedParticleInfo const truthInfo{
@@ -742,8 +724,7 @@ namespace larg4 {
         } // for(particleList)
 
         if (fStoreDroppedMCParticles && droppedPartCol) {
-          // Request a list of dropped particles
-          // Store them in MCParticleLite format
+          // Request a list of dropped particles. Store them in MCParticleLite format
           sim::ParticleList droppedParticleList = fparticleListAction->YieldDroppedList();
           droppedPartCol->reserve(droppedParticleList.size());
 
@@ -768,8 +749,8 @@ namespace larg4 {
 
     } // end loop over interactions
 
-    // get the electrons from the LArVoxelReadout sensitive detector
-    // Get the sensitive-detector manager.
+    // get the electrons from the LArVoxelReadout sensitive detector.  Get the
+    // sensitive-detector manager.
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
 
     // Find the sensitive detector with the name "LArVoxelSD".
@@ -777,7 +758,6 @@ namespace larg4 {
       sdManager->FindSensitiveDetector("OpDetSensitiveDetector"));
 
     // Store the contents of the detected photon table
-    //
     if (theOpDetDet) {
 
       if (!lgp->NoPhotonPropagation()) {
@@ -842,8 +822,8 @@ namespace larg4 {
 
     if (!lgp->NoElectronPropagation()) {
 
-      // only put the sim::SimChannels into the event once, not once for every
-      // MCTruth in the event
+      // only put the sim::SimChannels into the event once, not once for every MCTruth in
+      // the event
 
       std::set<LArVoxelReadout*> ReadoutList; // to be cleared later on
 
@@ -861,13 +841,13 @@ namespace larg4 {
           std::ostringstream sstr;
           sstr << name << "_Cryostat" << c << "_TPC" << t;
 
-          // try first to find the sensitive detector specific for this TPC;
-          // do not bother writing on screen if there is none (yet)
+          // try first to find the sensitive detector specific for this TPC; do not bother
+          // writing on screen if there is none (yet)
           G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(sstr.str(), false);
           // if there is none, catch the general one (called just "LArVoxelSD")
           if (!sd) sd = sdManager->FindSensitiveDetector(name, false);
-          // If this didn't work, then a sensitive detector with
-          // the name "LArVoxelSD" does not exist.
+          // If this didn't work, then a sensitive detector with the name "LArVoxelSD"
+          // does not exist.
           if (!sd) {
             throw cet::exception("LArG4")
               << "Sensitive detector for cryostat " << c << " TPC " << t << " not found (neither '"
@@ -877,8 +857,8 @@ namespace larg4 {
           // Convert the G4VSensitiveDetector* to a LArVoxelReadout*.
           auto larVoxelReadout = dynamic_cast<LArVoxelReadout*>(sd);
 
-          // If this didn't work, there is a "LArVoxelSD" detector, but
-          // it's not a LArVoxelReadout object.
+          // If this didn't work, there is a "LArVoxelSD" detector, but it's not a
+          // LArVoxelReadout object.
           if (!larVoxelReadout) {
             throw cet::exception("LArG4")
               << "Sensitive detector '" << sd->GetName() << "' is not a LArVoxelReadout object\n";
@@ -893,8 +873,9 @@ namespace larg4 {
           for (auto ch_pair : channels) {
             sim::SimChannel& sc = ch_pair.second;
 
-            // push sc onto scCol but only if we haven't already put something in scCol for this channel.
-            // if we have, then merge the ionization deposits.  Skip the check if we only have one TPC
+            // push sc onto scCol but only if we haven't already put something in scCol
+            // for this channel.  if we have, then merge the ionization deposits.  Skip
+            // the check if we only have one TPC
 
             if (ntpcs > 1) {
               unsigned int ichan = sc.Channel();
@@ -935,19 +916,19 @@ namespace larg4 {
       }
     } //endif electron prop
 
-    // only put the sim::AuxDetSimChannels into the event once, not once for every
-    // MCTruth in the event
+    // only put the sim::AuxDetSimChannels into the event once, not once for every MCTruth
+    // in the event
 
-    adCol->reserve(geom->NAuxDets());
-    for (unsigned int a = 0; a < geom->NAuxDets(); ++a) {
+    adCol->reserve(auxDetGeom->NAuxDets());
+    for (unsigned int a = 0; a < auxDetGeom->NAuxDets(); ++a) {
 
-      // there should always be at least one senstive volume because
-      // we make one for the full aux det if none are specified in the
-      // gdml file - see AuxDetGeo.cxx
-      for (size_t sv = 0; sv < geom->AuxDet(a).NSensitiveVolume(); ++sv) {
+      // there should always be at least one senstive volume because we make one for the
+      // full aux det if none are specified in the gdml file - see AuxDetGeo.cxx
+      auto const& ad = auxDetGeom->AuxDet(a);
+      for (size_t sv = 0; sv < ad.NSensitiveVolume(); ++sv) {
 
-        // N.B. this name convention is used when creating the
-        //      AuxDetReadout SD in AuxDetReadoutGeometry
+        // N.B. this name convention is used when creating the AuxDetReadout SD in
+        //      AuxDetReadoutGeometry
         std::stringstream name;
         name << "AuxDetSD_AuxDet" << a << "_" << sv;
         G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());

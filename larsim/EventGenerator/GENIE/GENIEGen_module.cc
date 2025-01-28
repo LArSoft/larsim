@@ -231,7 +231,7 @@ namespace evgen {
     }
 
     fGENIEHelp =
-      new evgb::GENIEHelper(GENIEconfig, geo->ROOTGeoManager(), geo->ROOTFile(), detectorMass);
+      new evgb::GENIEHelper(GENIEconfig, geo->ROOTGeoManager(), geo->GDMLFile(), detectorMass);
   }
 
   //____________________________________________________________________________
@@ -292,10 +292,10 @@ namespace evgen {
     fECons = tfs->make<TH1F>("fECons", ";#Delta E(#nu,lepton);", 500, -5., 5.);
 
     if (fDefinedVtxHistRange == false) {
-      art::ServiceHandle<geo::Geometry const> geo;
-      double x = 2.1 * geo->DetHalfWidth();
-      double y = 2.1 * geo->DetHalfHeight();
-      double z = 2. * geo->DetLength();
+      auto const& tpc = art::ServiceHandle<geo::Geometry const>()->TPC();
+      double x = 2.1 * tpc.HalfWidth();
+      double y = 2.1 * tpc.HalfHeight();
+      double z = 2. * tpc.Length();
       int xdiv = TMath::Nint(2 * x / 5.);
       int ydiv = TMath::Nint(2 * y / 5.);
       int zdiv = TMath::Nint(2 * z / 5.);
@@ -358,25 +358,19 @@ namespace evgen {
   //____________________________________________________________________________
   void GENIEGen::beginSubRun(art::SubRun& sr)
   {
-
     fPrevTotPOT = fGENIEHelp->TotalExposure();
     fPrevTotGoodPOT = fGENIEHelp->TotalExposure();
-
-    return;
   }
 
   //____________________________________________________________________________
   void GENIEGen::endSubRun(art::SubRun& sr)
   {
-
     auto p = std::make_unique<sumdata::POTSummary>();
 
     p->totpot = fGENIEHelp->TotalExposure() - fPrevTotPOT;
     p->totgoodpot = fGENIEHelp->TotalExposure() - fPrevTotGoodPOT;
 
     sr.put(std::move(p), art::subRunFragment());
-
-    return;
   }
 
   //____________________________________________________________________________
@@ -488,8 +482,6 @@ namespace evgen {
       evt.put(std::move(dk2nuassn));
       evt.put(std::move(nuchoiceassn));
     }
-
-    return;
   }
 
   //......................................................................
@@ -648,14 +640,8 @@ namespace evgen {
         }
       } // end loop over particles
     }   //end if CC interaction
-
-    return;
   }
 
 }
 
-namespace evgen {
-
-  DEFINE_ART_MODULE(GENIEGen)
-
-}
+DEFINE_ART_MODULE(evgen::GENIEGen)

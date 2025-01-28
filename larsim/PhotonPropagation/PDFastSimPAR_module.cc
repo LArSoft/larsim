@@ -31,8 +31,6 @@
 // LArSoft libraries
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/CoreUtils/counter.h"
-#include "larcorealg/CoreUtils/enumerate.h"
 #include "larcorealg/Geometry/BoxBoundedGeo.h"
 #include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
@@ -66,6 +64,8 @@
 
 // Random numbers
 #include "CLHEP/Random/RandPoissonQ.h"
+
+#include "range/v3/view/enumerate.hpp"
 
 #include <cmath>
 #include <ctime>
@@ -161,6 +161,7 @@ namespace phot {
     const size_t fNOpChannels;
     const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     const int fNTPC;
+    double fDriftDistance;
     const std::vector<geo::Point_t> fOpDetCenter;
 
     // Module behavior
@@ -275,7 +276,7 @@ namespace phot {
     {
       auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
                                               << fActiveVolumes.size() << " volumes:";
-      for (auto const& [iCryo, box] : util::enumerate(fActiveVolumes)) {
+      for (auto const& [iCryo, box] : ::ranges::views::enumerate(fActiveVolumes)) {
         log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
     }
@@ -298,6 +299,13 @@ namespace phot {
         produces<std::vector<sim::SimPhotons>>("Reflected");
       }
     }
+
+    // determine drift distance
+    fDriftDistance = fGeom.TPC().DriftDistance();
+    // for multiple TPCs, use second TPC to skip small volume at edges of detector (DUNE)
+    if (fNTPC > 1 && fDriftDistance < 50)
+      fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
+
     mf::LogInfo("PDFastSimPAR") << "PDFastSimPAR Initialization finish.\n"
                                 << "Simulate using semi-analytic model for number of hits."
                                 << std::endl;
@@ -579,19 +587,30 @@ namespace phot {
                                       geo::Point_t const& OpDetPoint) const
   {
     // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method working for SBND, uBooNE, DUNE 1x2x6; to be replaced to work in full DUNE geometry
+    // temporary method, needs to be replaced with geometry service
+    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
+
+    // special case for SBND = 2 TPCs
     // check x coordinate has same sign or is close to zero
-    if (((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) && std::abs(OpDetPoint.X()) > 10. &&
-        fNTPC == 2) { // TODO: replace with geometry service method
+    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
+        std::abs(OpDetPoint.X()) > 10.) {
       return false;
     }
+
+    // special case for DUNE-HD 10kt = 300 TPCs
+    // check whether distance in drift direction > 1 drift distance
+    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
+      return false;
+    }
+    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
+
     return true;
   }
 
   std::vector<geo::Point_t> PDFastSimPAR::opDetCenters() const
   {
     std::vector<geo::Point_t> opDetCenter;
-    for (size_t const i : util::counter(fNOpChannels)) {
+    for (size_t const i : ::ranges::views::ints(size_t(0), fNOpChannels)) {
       geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
       opDetCenter.push_back(opDet.GetCenter());
     }

@@ -12,11 +12,12 @@
 // Nov 2021 by P. Green
 
 // LArSoft Libraries
+#include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
 
 // fhicl
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/fwd.h"
 
 #include "TVector3.h"
 
@@ -90,17 +91,18 @@ namespace phot {
     // dome aperture calculation
     double Omega_Dome_Model(const double distance, const double theta) const;
 
-    // TODO: replace with geometry service
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<OpticalDetector> opticalDetectors() const;
 
     // geometry properties
     geo::GeometryCore const& fGeom;
+    geo::WireReadoutGeom const& fChannelMap;
     const larg4::ISTPC fISTPC;
     const int fNTPC;
     const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     const TVector3 fcathode_centre, fanode_centre;
     double fplane_depth, fanode_plane_depth;
+    double fDriftDistance;
 
     // photodetector geometry properties
     const size_t fNOpDets;
@@ -154,6 +156,9 @@ namespace phot {
     // absorption length
     const bool fUseXeAbsorption;
     double fvuv_absorption_length;
+
+    // maximum distance
+    double fMaxPDDistance;
   };
 
 } // namespace phot

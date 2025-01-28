@@ -11,11 +11,50 @@
 
 // support libraries
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TMath.h"
 
 #include <iostream>
+
+namespace {
+  //......................................................................
+  double finter_d(const double* x, const double* par)
+  {
+    double y1 = par[2] * TMath::Landau(x[0], par[0], par[1]);
+    double y2 = TMath::Exp(par[3] + x[0] * par[4]);
+    return TMath::Abs(y1 - y2);
+  }
+
+  //......................................................................
+  double model_close(const double* x, const double* par)
+  {
+    // par0 = joining point
+    // par1 = Landau MPV
+    // par2 = Landau width
+    // par3 = normalization
+    // par4 = Expo cte
+    // par5 = Expo tau
+    // par6 = t_min
+    double y1 = par[3] * TMath::Landau(x[0], par[1], par[2]);
+    double y2 = TMath::Exp(par[4] + x[0] * par[5]);
+    if (x[0] <= par[6] || x[0] > par[0]) y1 = 0.;
+    if (x[0] < par[0]) y2 = 0.;
+    return (y1 + y2);
+  }
+
+  //......................................................................
+  double model_far(const double* x, const double* par)
+  {
+    // par1 = Landau MPV
+    // par2 = Landau width
+    // par3 = normalization
+    // par0 = t_min
+    if (x[0] <= par[0]) return 0.;
+    return par[3] * TMath::Landau(x[0], par[1], par[2]);
+  }
+}
 
 namespace phot {
 
@@ -429,42 +468,6 @@ namespace phot {
       }
     }
     return opDetOrientation;
-  }
-
-  //......................................................................
-  double PropagationTimeModel::finter_d(const double* x, const double* par)
-  {
-    double y1 = par[2] * TMath::Landau(x[0], par[0], par[1]);
-    double y2 = TMath::Exp(par[3] + x[0] * par[4]);
-    return TMath::Abs(y1 - y2);
-  }
-
-  //......................................................................
-  double PropagationTimeModel::model_close(const double* x, const double* par)
-  {
-    // par0 = joining point
-    // par1 = Landau MPV
-    // par2 = Landau width
-    // par3 = normalization
-    // par4 = Expo cte
-    // par5 = Expo tau
-    // par6 = t_min
-    double y1 = par[3] * TMath::Landau(x[0], par[1], par[2]);
-    double y2 = TMath::Exp(par[4] + x[0] * par[5]);
-    if (x[0] <= par[6] || x[0] > par[0]) y1 = 0.;
-    if (x[0] < par[0]) y2 = 0.;
-    return (y1 + y2);
-  }
-
-  //......................................................................
-  double PropagationTimeModel::model_far(const double* x, const double* par)
-  {
-    // par1 = Landau MPV
-    // par2 = Landau width
-    // par3 = normalization
-    // par0 = t_min
-    if (x[0] <= par[0]) return 0.;
-    return par[3] * TMath::Landau(x[0], par[1], par[2]);
   }
 
 } // namespace phot

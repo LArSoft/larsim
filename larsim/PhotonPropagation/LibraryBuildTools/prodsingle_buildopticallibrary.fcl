@@ -43,8 +43,8 @@ physics:
 
  producers:
  {
-   generator: @local::microboone_lightsource	  
-   largeant:  @local::microboone_largeant	  
+   generator: @local::microboone_lightsource
+   largeant:  @local::microboone_largeant
  }
 
  analyzers:
@@ -52,20 +52,20 @@ physics:
    pmtresponse: @local::microboone_simphotoncounter
  }
 
- #define the producer and filter modules for this path, order matters, 
+ #define the producer and filter modules for this path, order matters,
  #filters reject all following items.  see lines starting physics.producers below
- simulate: [ generator, largeant ] 
+ simulate: [ generator, largeant ]
  analyzeIt:  [ pmtresponse ]
- #define the output stream, there could be more than one if using filters 
+ #define the output stream, there could be more than one if using filters
  stream1:  [ ]
 
- #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #trigger_paths is a keyword and contains the paths that modify the art::event,
  #ie filters and producers
- trigger_paths: [simulate] 
+ trigger_paths: [simulate]
 
- #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #end_paths is a keyword and contains the paths that do not modify the art::Event,
  #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [analyzeIt, stream1]  
+ end_paths:     [analyzeIt, stream1]
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -82,19 +82,19 @@ outputs:
 
 # Begin optical specific parts:
 
-# set quantum efficiency supressed scint yield to 0.03 * 24000 
+# set quantum efficiency supressed scint yield to 0.03 * 24000
 services.LArPropertiesService.ScintYield: 72
 
 # enable optical physics in LArG4
-services.LArG4Parameters.EnabledPhysics: [ "Em", 
-						"Optical", 
-						"SynchrotronAndGN", 
-						"Ion", 
-						"Hadron", 
-						"Decay", 
-						"HadronElastic", 
-						"Stopping", 
-						"NeutronTrackingCut" ]
+services.LArG4Parameters.EnabledPhysics: [ "Em",
+                                                "Optical",
+                                                "SynchrotronAndGN",
+                                                "Ion",
+                                                "Hadron",
+                                                "Decay",
+                                                "HadronElastic",
+                                                "Stopping",
+                                                "NeutronTrackingCut" ]
 
 # enable this custom physics list
 services.LArG4Parameters.UseCustomPhysics: true
@@ -120,8 +120,6 @@ services.PhotonVisibilityService.NY: 75
 services.PhotonVisibilityService.NZ: 400
 
 services.Geometry.GDML: "microboonev10_opticalSim.gdml"
-services.Geometry.Name: "microboonev10_opticalSim"
-services.Geometry.ROOT: "microboonev10_opticalSim.gdml"
 
 #services.PhotonVisibilityService.XMin: 100
 #services.PhotonVisibilityService.XMax: 110

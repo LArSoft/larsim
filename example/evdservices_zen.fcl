@@ -45,7 +45,7 @@ custom_infotransfer:     @local::standard_infotransfer
 custom_disp:
 {
   Geometry:               @local::standard_geo # from geometry.fcl
-  ExptGeoHelperInterface: @local::standard_geometry_helper # from geometry.fcl
+  WireReadout: @local::standard_geometry_helper # from geometry.fcl
   GeometryConfigurationWriter: {}
   DetectorPropertiesService:     @local::standard_detproperties # from detectorproperties.fcl
   LArPropertiesService:          @local::standard_properties # from larproperties.fcl

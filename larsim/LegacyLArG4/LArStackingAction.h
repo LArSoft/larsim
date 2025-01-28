@@ -34,14 +34,11 @@
 
 class G4Track;
 
-//#include "ExN04TrackerHit.hh"
-//#include "ExN04MuonHit.hh"
 class LArStackingActionMessenger;
 
 class LArStackingAction : public G4UserStackingAction {
 public:
   LArStackingAction(int);
-  virtual ~LArStackingAction();
 
 public:
   // These 3 methods must be implemented by us. EC, 16-Feb-2011.

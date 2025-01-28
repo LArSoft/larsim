@@ -249,12 +249,12 @@ gdmldir	product_dir	gdml
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-larg4		v09_19_03	-
+larg4		v10_00_03	-
 marley		v1_2_1d		-
-nugen		v1_20_07	-
+nugen		v1_21_04	-
 nurandom	v1_11_05	-
-nutools		v3_16_06	-
-ppfx            v02_20_01       -
+nutools		v3_17_00	-
+ppfx            v02_20_04       -
 cetmodules	v3_24_01	-	only_for_build
 end_product_list
 ####################################
