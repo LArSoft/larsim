@@ -183,10 +183,8 @@ namespace detsim {
     // ... Poisson dist function for fluctuating magnitude of noise frequency component
     if (fNoiseFluctChoice == "SimplePoisson") {
       // .. simple modified Poisson with (x-1)! in denominator
-      double params[1];
       fNoiseFluct = new TF1("_poisson", "[0]**(x) * exp(-[0]) / ROOT::Math::tgamma(x)", 0, 5.);
-      params[0] = fNoiseFluctPar[0]; // Poisson mean
-      fNoiseFluct->SetParameters(params);
+      fNoiseFluct->SetParameters(fNoiseFluctPar[0]); // Poisson mean
     }
     else if (fNoiseFluctChoice == "WeightedPoisson") {
       // .. weighted Poisson in ArgoNeuT DDN model

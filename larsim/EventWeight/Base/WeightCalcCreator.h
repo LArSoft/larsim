@@ -18,11 +18,11 @@ namespace evwgh {
   template <class T>
   class WeightCalcImpl : public WeightCalcCreator {
   public:
-    WeightCalcImpl<T>(const std::string& classname) : WeightCalcCreator(classname)
+    WeightCalcImpl(const std::string& classname) : WeightCalcCreator(classname)
     {
       std::cout << __PRETTY_FUNCTION__ << " called." << std::endl;
     }
-    virtual ~WeightCalcImpl<T>() {}
+    virtual ~WeightCalcImpl() {}
     virtual WeightCalc* Create() { return new T; }
   };
 
