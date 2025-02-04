@@ -149,7 +149,7 @@ namespace evgen {
       fYmin = boundaries->get<double>("Ymin");
       fYmax = boundaries->get<double>("Ymax");
       fZmin = boundaries->get<double>("Zmin");
-      fZmax = boundaries->get<double>("Zmax"); 
+      fZmax = boundaries->get<double>("Zmax");
 
       //Boundaries set by user---
       std::cout << "\n\nPhoton Emission Region (user-defined) [cm]:" << std::endl;
@@ -172,7 +172,6 @@ namespace evgen {
                 << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n"
                 << std::endl;
     }
-
   }
 
   //____________________________________________________________________________
