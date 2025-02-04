@@ -104,7 +104,7 @@ namespace evgen {
         Name("Z0"),
         Comment("central z position (cm) in world coordinates [per PDG ID]")};
 
-      fhicl::Sequence<double> T0{Name("T0"), Comment("central time (s) [per PDG ID]")};
+      fhicl::Sequence<double> T0{Name("T0"), Comment("central time (ns) [per PDG ID]")};
 
       fhicl::Sequence<double> SigmaX{
         Name("SigmaX"),
@@ -120,7 +120,7 @@ namespace evgen {
 
       fhicl::Sequence<double> SigmaT{
         Name("SigmaT"),
-        Comment("variation (semi-interval or RMS) in time (s) [per PDG ID]")};
+        Comment("variation (semi-interval or RMS) in time (ns) [per PDG ID]")};
 
       fhicl::Atom<std::string> PosDist{Name("PosDist"),
                                        Comment("distribution of starting position: " +
@@ -236,11 +236,11 @@ namespace evgen {
     std::vector<double> fX0;           ///< Central x position (cm) in world coordinates
     std::vector<double> fY0;           ///< Central y position (cm) in world coordinates
     std::vector<double> fZ0;           ///< Central z position (cm) in world coordinates
-    std::vector<double> fT0;           ///< Central t position (s) in world coordinates
+    std::vector<double> fT0;           ///< Central t position (ns) in world coordinates
     std::vector<double> fSigmaX;       ///< Variation in x position (cm)
     std::vector<double> fSigmaY;       ///< Variation in y position (cm)
     std::vector<double> fSigmaZ;       ///< Variation in z position (cm)
-    std::vector<double> fSigmaT;       ///< Variation in t position (s)
+    std::vector<double> fSigmaT;       ///< Variation in t position (ns)
     int fPosDist;                      ///< How to distribute xyz (gaus, or uniform)
     int fTDist;                        ///< How to distribute t  (gaus, or uniform)
     bool fSingleVertex;                ///< if true - all particles produced at the same location
