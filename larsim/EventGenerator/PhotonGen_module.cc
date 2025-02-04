@@ -90,6 +90,8 @@ namespace evgen {
     //Number of photons per event
     int fN; // number of photons per event
 
+    CLHEP::HepRandomEngine& fEngine;
+
     //Boundaries of the detector
     double fXmin;
     double fXmax;
@@ -97,8 +99,6 @@ namespace evgen {
     double fYmax;
     double fZmin;
     double fZmax;
-
-    CLHEP::HepRandomEngine& fEngine;
   };
 
   //----------------------------------------------------------------
@@ -114,12 +114,6 @@ namespace evgen {
     , fP{pset.get<double>("P")}
     , fSigmaP{pset.get<double>("SigmaP")}
     , fN{pset.get<int>("N")}
-    , fXmin{pset.get<double>("Xmin", 0)}
-    , fXmax{pset.get<double>("Xmax", 0)}
-    , fYmin{pset.get<double>("Ymin", 0)}
-    , fYmax{pset.get<double>("Ymax", 0)}
-    , fZmin{pset.get<double>("Zmin", 0)}
-    , fZmax{pset.get<double>("Zmax", 0)}
 
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
@@ -148,17 +142,15 @@ namespace evgen {
       fPz = pset.get<double>("Z");
       std::cout << "Will generate photons from 3 points." << std::endl;
     }
-  }
 
-  //____________________________________________________________________________
-  void PhotonGen::beginRun(art::Run& run)
-  {
-    std::cout << "\n\nBegin Job\n\n" << std::endl;
+    if (auto boundaries = pset.get_if_present<fhicl::ParameterSet>("boundaries")) {
+      fXmin = boundaries->get<double>("Xmin");
+      fXmax = boundaries->get<double>("Xmax");
+      fYmin = boundaries->get<double>("Ymin");
+      fYmax = boundaries->get<double>("Ymax");
+      fZmin = boundaries->get<double>("Zmin");
+      fZmax = boundaries->get<double>("Zmax"); 
 
-    art::ServiceHandle<geo::Geometry const> geo;
-    std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
-
-    if (fXmin != 0) {
       //Boundaries set by user---
       std::cout << "\n\nPhoton Emission Region (user-defined) [cm]:" << std::endl;
       std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin
@@ -166,6 +158,7 @@ namespace evgen {
                 << std::endl;
     }
     else {
+      art::ServiceHandle<geo::Geometry const> geo;
       auto const CryoBounds = geo->Cryostat().Boundaries();
       fXmin = CryoBounds.MinX();
       fXmax = CryoBounds.MaxX();
@@ -180,7 +173,17 @@ namespace evgen {
                 << std::endl;
     }
 
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
+  }
+
+  //____________________________________________________________________________
+  void PhotonGen::beginRun(art::Run& run)
+  {
+    std::cout << "\n\nBegin Job\n\n" << std::endl;
+
+    art::ServiceHandle<geo::Geometry const> geo1;
+    std::cout << "Number of optical detector: " << int(geo1->Cryostat().NOpDet()) << std::endl;
+
+    run.put(std::make_unique<sumdata::RunData>(geo1->DetectorName()), art::fullRun());
   }
 
   //----------------------------------------------------------------
