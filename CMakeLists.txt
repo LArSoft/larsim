@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
-find_package(cetmodules 3.11.02 REQUIRED)
+find_package(cetmodules 3.24.00 REQUIRED)
 project(larsim VERSION 10.01.00 LANGUAGES CXX)
 
 include(CetCMakeEnv)
@@ -27,36 +27,34 @@ cet_cmake_module_directories(Modules BINARY)
 
 find_package(artg4tk REQUIRED EXPORT)
 find_package(art REQUIRED EXPORT)
-find_package(art_root_io REQUIRED EXPORT)
-find_package(canvas_root_io REQUIRED)
+find_package(art_root_io REQUIRED)
 find_package(cetlib REQUIRED EXPORT)
 find_package(cetlib_except REQUIRED EXPORT)
 find_package(fhiclcpp REQUIRED EXPORT)
-find_package(messagefacility REQUIRED EXPORT)
+find_package(messagefacility REQUIRED)
 
 find_package(nug4 REQUIRED EXPORT)
-find_package(nugen REQUIRED EXPORT)
+find_package(nugen REQUIRED)
 find_package(nurandom REQUIRED EXPORT)
+find_package(nufinder REQUIRED EXPORT)
 find_package(nusimdata REQUIRED EXPORT)
-find_package(nutools REQUIRED EXPORT)
+find_package(nutools REQUIRED)
 
-find_package(dk2nugenie REQUIRED EXPORT)
+find_package(dk2nugenie REQUIRED EXPORT) # find module in nufinder
 find_package(dk2nudata REQUIRED EXPORT)
-find_package(ppfx REQUIRED EXPORT)
+find_package(ppfx REQUIRED)
 
-find_package(Boost REQUIRED COMPONENTS headers math_tr1 REQUIRED EXPORT) # boost::math::policies, boost::math::ellint*
+find_package(Boost REQUIRED EXPORT)
 find_package(CLHEP COMPONENTS Evaluator Geometry Random Vector REQUIRED EXPORT)
 find_package(CRY REQUIRED EXPORT) # find module in nutools
 find_package(GENIE REQUIRED EXPORT) # find module in nugen
 find_package(Geant4 REQUIRED EXPORT)
-find_package(LibXml2 REQUIRED EXPORT)
 find_package(MARLEY REQUIRED EXPORT)
-find_package(PostgreSQL REQUIRED EXPORT)
 find_package(ROOT COMPONENTS Core EG GenVector Geom Gpad Hist MathCore Matrix Physics RIO RooFitCore Tree REQUIRED EXPORT)
-find_package(Range-v3 REQUIRED EXPORT)
-find_package(SQLite3 REQUIRED EXPORT)
-find_package(ifdhc REQUIRED EXPORT)
-find_package(log4cpp REQUIRED EXPORT)
+find_package(Range-v3 REQUIRED)
+find_package(SQLite3 REQUIRED)
+find_package(ifdhc REQUIRED)
+find_package(log4cpp REQUIRED)
 
 find_package(larcore REQUIRED EXPORT)
 find_package(larcorealg REQUIRED  EXPORT)
@@ -65,9 +63,6 @@ find_package(lardata REQUIRED EXPORT)
 find_package(lardataalg REQUIRED EXPORT)
 find_package(lardataobj REQUIRED EXPORT)
 find_package(larevt REQUIRED EXPORT)
-
-# Wes put this here to use TRACE for debugging...
-#find_ups_product( TRACE )
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)

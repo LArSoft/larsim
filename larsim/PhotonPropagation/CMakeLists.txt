@@ -28,7 +28,7 @@ cet_make_library(SOURCE
   fhiclcpp::fhiclcpp
   ROOT::Hist
   ROOT::Physics
-  Boost::headers
+  Boost::boost
   PRIVATE
   larsim::IonizationScintillation
   larsim::Simulation
@@ -44,7 +44,7 @@ cet_make_library(SOURCE
   ROOT::MathCore
   ROOT::RooFitCore
   CLHEP::Random
-  Boost::math_tr1
+  Boost::boost
 )
 
 cet_build_plugin(PhotonVisibilityService art::service
