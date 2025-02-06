@@ -3,7 +3,11 @@
 // File:        PhotonGen_module.cc
 // Description:
 // Produce photons at the vertex uniformly distributed in the active volume
-// Oct. 20, 2020 by Mu Wei wmu@fnal.gov 2020
+// Oct. 20, 2020 by Mu Wei wmu@fnal.gov
+//
+// Add new feature: user-defined region (arbitrary rectangular block) of
+// photon emission vertex
+// Jan 10, 2024 by Shuaiixang (Shu) Zhang, szh2@iu.edu
 ////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
@@ -83,7 +87,7 @@ namespace evgen {
     double fP;      // central momentm of photon
     double fSigmaP; // mom width;
 
-    // Number of photons per event
+    //Number of photons per event
     int fN; // number of photons per event
 
     CLHEP::HepRandomEngine& fEngine;
@@ -110,6 +114,7 @@ namespace evgen {
     , fP{pset.get<double>("P")}
     , fSigmaP{pset.get<double>("SigmaP")}
     , fN{pset.get<int>("N")}
+
     , fEngine(art::ServiceHandle<rndm::NuRandomService>()->registerAndSeedEngine(createEngine(0),
                                                                                  pset,
                                                                                  "Seed"))
@@ -137,25 +142,47 @@ namespace evgen {
       fPz = pset.get<double>("Z");
       std::cout << "Will generate photons from 3 points." << std::endl;
     }
+
+    if (auto boundaries = pset.get_if_present<fhicl::ParameterSet>("boundaries")) {
+      fXmin = boundaries->get<double>("Xmin");
+      fXmax = boundaries->get<double>("Xmax");
+      fYmin = boundaries->get<double>("Ymin");
+      fYmax = boundaries->get<double>("Ymax");
+      fZmin = boundaries->get<double>("Zmin");
+      fZmax = boundaries->get<double>("Zmax");
+
+      //Boundaries set by user---
+      std::cout << "\n\nPhoton Emission Region (user-defined) [cm]:" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin
+                << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n"
+                << std::endl;
+    }
+    else {
+      art::ServiceHandle<geo::Geometry const> geo;
+      auto const CryoBounds = geo->Cryostat().Boundaries();
+      fXmin = CryoBounds.MinX();
+      fXmax = CryoBounds.MaxX();
+      fYmin = CryoBounds.MinY();
+      fYmax = CryoBounds.MaxY();
+      fZmin = CryoBounds.MinZ();
+      fZmax = CryoBounds.MaxZ();
+      //Initial default boundaries---
+      std::cout << "\n\nPhoton Emission Region (default Cryo Boundaries) [cm]:" << std::endl;
+      std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin
+                << " Ymax: " << fYmax << " Zmin: " << fZmin << " Zmax: " << fZmax << "\n\n"
+                << std::endl;
+    }
   }
 
   //____________________________________________________________________________
   void PhotonGen::beginRun(art::Run& run)
   {
-    art::ServiceHandle<geo::Geometry const> geo;
-    std::cout << "Number of optical detector: " << int(geo->Cryostat().NOpDet()) << std::endl;
+    std::cout << "\n\nBegin Job\n\n" << std::endl;
 
-    auto const CryoBounds = geo->Cryostat().Boundaries();
-    fXmin = CryoBounds.MinX();
-    fXmax = CryoBounds.MaxX();
-    fYmin = CryoBounds.MinY();
-    fYmax = CryoBounds.MaxY();
-    fZmin = CryoBounds.MinZ();
-    fZmax = CryoBounds.MaxZ();
-    std::cout << "Cryo Boundaries:" << std::endl;
-    std::cout << "Xmin: " << fXmin << " Xmax: " << fXmax << " Ymin: " << fYmin << " Ymax: " << fYmax
-              << " Zmin: " << fZmin << " Zmax: " << fZmax << std::endl;
-    run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
+    art::ServiceHandle<geo::Geometry const> geo1;
+    std::cout << "Number of optical detector: " << int(geo1->Cryostat().NOpDet()) << std::endl;
+
+    run.put(std::make_unique<sumdata::RunData>(geo1->DetectorName()), art::fullRun());
   }
 
   //----------------------------------------------------------------
@@ -166,7 +193,7 @@ namespace evgen {
     std::uniform_real_distribution<double> distX(fXmin, fXmax);
     std::uniform_real_distribution<double> distY(fYmin, fYmax);
     std::uniform_real_distribution<double> distZ(fZmin, fZmax);
-    std::uniform_real_distribution<double> width(-2.0, 2.0);
+    std::uniform_real_distribution<double> width(-2.0, 2.0); //scan width---
 
     std::unique_ptr<std::vector<simb::MCTruth>> truthcol(new std::vector<simb::MCTruth>);
     simb::MCTruth truth;
@@ -192,7 +219,8 @@ namespace evgen {
 
   void PhotonGen::Sample(simb::MCTruth& mct)
   {
-    std::cout << "Photons Shooting at the Position: " << fX << " " << fY << " " << fZ << std::endl;
+    std::cout << "\n\nPhotons Shooting at the Position: " << fX << " " << fY << " " << fZ << "\n\n"
+              << std::endl;
 
     CLHEP::RandFlat flat(fEngine);
     CLHEP::RandGaussQ gauss(fEngine);
