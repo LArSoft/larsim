@@ -205,6 +205,10 @@ namespace evgen {
     bool PadVector(std::vector<double>& vec);
     double SelectFromHist(const TH1& h);
     void SelectFromHist(const TH2& h, double& x, double& y);
+    /// Returns the particle mass for the specified PDG code.
+    double particle_mass(int particle_id);
+    /// Returns a `simb::MCParticle` object for the specified track and particle IDs.
+    simb::MCParticle mc_particle(int track_id, int particle_id, double mass);
 
     /// @{
     /// @name Constants for particle type extraction mode (`ParticleSelectionMode` parameter).
@@ -419,6 +423,26 @@ namespace evgen {
   {
     return selectOption(PDist(), DistributionNames) == kHIST;
   } // SingleGen::Config::fromHistogram()
+
+  double SingleGen::particle_mass(int particle_id)
+  {
+    constexpr double kAlphaMass = 3.727379240;
+    if (particle_id == 1000020040) {
+      return kAlphaMass; // alpha particles
+    }
+
+    static TDatabasePDG pdgt;
+    TParticlePDG* pdgp = pdgt.GetParticle(particle_id);
+    return pdgp ? pdgp->Mass() : 0.;
+  }
+
+  simb::MCParticle SingleGen::mc_particle(int track_id, int particle_id, double mass)
+  {
+    if (particle_id == 1000020040) {
+      return simb::MCParticle{track_id, particle_id, "primary", -1, mass, 1};
+    }
+    return simb::MCParticle{track_id, particle_id, "primary"};
+  }
 
   //____________________________________________________________________________
   SingleGen::SingleGen(Parameters const& config)
@@ -722,10 +746,7 @@ namespace evgen {
       p = fP0[i] + fSigmaP[i] * (2.0 * flat.fire() - 1.0);
     }
     //    else {std::cout << "do not understand the value of PDist!";}
-
-    static TDatabasePDG pdgt;
-    TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-    if (pdgp) m = pdgp->Mass();
+    m = particle_mass(fPDG[i]);
 
     // Choose position
     TVector3 x;
@@ -805,14 +826,13 @@ namespace evgen {
     int trackid = -1 * (i + 1);
     std::string primary("primary");
 
-    simb::MCParticle part(trackid, fPDG[i], primary);
+    auto part = mc_particle(trackid, fPDG[i], m);
     part.AddTrajectoryPoint(pos, pvec);
+    mct.Add(part);
 
     //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
     //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
     //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl;
-
-    mct.Add(part);
   }
 
   //____________________________________________________________________________
@@ -860,9 +880,7 @@ namespace evgen {
         p = fP0[i] + fSigmaP[i] * (2.0 * flat.fire() - 1.0);
       }
 
-      static TDatabasePDG pdgt;
-      TParticlePDG* pdgp = pdgt.GetParticle(fPDG[i]);
-      if (pdgp) m = pdgp->Mass();
+      m = particle_mass(fPDG[i]);
 
       // Choose angles
       double thxz = 0;
@@ -920,13 +938,13 @@ namespace evgen {
       int trackid = -1 * (i + 1);
       std::string primary("primary");
 
-      simb::MCParticle part(trackid, fPDG[i], primary);
+      auto part = mc_particle(trackid, fPDG[i], m);
       part.AddTrajectoryPoint(pos, pvec);
+      mct.Add(part);
 
       //std::cout << "Px: " <<  pvec.Px() << " Py: " << pvec.Py() << " Pz: " << pvec.Pz() << std::endl;
       //std::cout << "x: " <<  pos.X() << " y: " << pos.Y() << " z: " << pos.Z() << " time: " << pos.T() << std::endl;
       //std::cout << "YZ Angle: " << (thyzrad * (180./M_PI)) << " XZ Angle: " << (thxzrad * (180./M_PI)) << std::endl;
-      mct.Add(part);
     }
   }
 
