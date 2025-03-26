@@ -320,7 +320,7 @@ void sim::MergeSimSources::produce(art::Event& e)
     }
 
     if (fFillSimChannels) {
-      auto const& input_scCol = e.getProduct<std::vector<sim::SimChannel>>(input_label);      
+      auto const& input_scCol = e.getProduct<std::vector<sim::SimChannel>>(input_label);
       MergeUtility.MergeSimChannels(*scCol, input_scCol, i_source, fSkipTrackIDOffsets);
 
       /*

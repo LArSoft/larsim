@@ -40,7 +40,7 @@ namespace sim {
     void MergeSimChannels(std::vector<sim::SimChannel>&,
                           const std::vector<sim::SimChannel>&,
                           size_t,
-			  bool);
+                          bool);
 
     void MergeAuxDetSimChannels(std::vector<sim::AuxDetSimChannel>&,
                                 const std::vector<sim::AuxDetSimChannel>&,
