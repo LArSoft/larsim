@@ -146,6 +146,11 @@ namespace sim {
 
       // Get data to loop over
       auto const& sed = sedArray[i];
+      
+      mf::LogVerbatim log{ "MakeMCEdep" }; // FIXME DEBUG
+      log << "EDep=" << sed.Energy() << " Q=" << sed.NumElectrons()
+        << " at " << sed.MidPoint() << " t=" << sed.Time()
+        << " PDGID=" << sed.PdgCode() << " ID=" << sed.TrackID();
 
       // David Caratelli: much of the code below is taken from the module:
       // https://cdcvs.fnal.gov/redmine/projects/larsim/repository/revisions/develop/entry/larsim/ElectronDrift/SimDriftElectrons_module.cc
@@ -225,12 +230,17 @@ namespace sim {
           // This particle energy deposition is never recorded so far. Create a new Edep
           __GetEdepArray__(real_track_id)
             .emplace_back(pos, pid, pindex.size(), sed.Energy(), charge, channel_id);
+          log << "\n  plane #" << channel_id << " => pos=" << mp << " plane " << pid
+            << " (#" << channel_id << "/" << pindex.size() << ")"
+            " Q=" << charge << " E=" << sed.Energy();
         }
         else {
           // Append charge to the relevant edep (@ hit_index)
           MCEdep& edep = __GetEdepArray__(real_track_id).at(hit_index);
           edep.deps[channel_id].charge += charge;
           edep.deps[channel_id].energy += sed.Energy();
+          log << "\n  plane #" << channel_id << " => Q=" << edep.deps[channel_id].charge
+            << " E=" << edep.deps[channel_id].energy;
         }
       } // end looping over planes
     }   // end looping over SimEnergyDeposits
