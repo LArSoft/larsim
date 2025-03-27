@@ -162,34 +162,28 @@ namespace sim {
       // From the position in world coordinates, determine the cryostat and tpc. If
       // somehow the step is outside a tpc (e.g., cosmic rays in rock) just move on to the
       // next one.
-      unsigned int cryostat = 0;
-      try {
-        geom->PositionToCryostatID(mp);
-      }
-      catch (cet::exception& e) {
-        mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a cryostat\n"
-                                            << e;
+      geo::TPCGeo const* TPC = geom->PositionToTPCptr(mp);
+      if (!TPC) {
+        mf::LogWarning("SimDriftElectrons") << "step at " << mp << " is not within any TPC.";
         continue;
       }
-      unsigned int tpc = 0;
-      try {
-        geom->PositionToTPCID(mp);
-      }
-      catch (cet::exception& e) {
-        mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                            << "cannot be found in a TPC\n"
-                                            << e;
-        continue;
-      }
-      geo::TPCID const tpcid{cryostat, tpc};
-
+      
       // Define charge drift direction: driftcoordinate (x, y or z) and driftsign
       // (positive or negative). Also define coordinates perpendicular to drift direction.
 
       // make a collection of electrons for each plane
-      for (auto const& planeid : wireReadoutGeom.Iterate<geo::PlaneID>()) {
+      for (geo::PlaneGeo const& plane: wireReadoutGeom.Iterate<geo::PlaneGeo>(TPC->ID())) {
 
+        // require containment on the plane
+        if (!plane.isProjectionOnPlane(mp)) {
+          geo::PlaneGeo::WidthDepthProjection_t const deltaProj
+            = plane.DeltaFromPlane(plane.PointWidthDepthProjection(mp));
+          mf::LogVerbatim{ "SimDriftElectrons" }
+            << "Point " << mp << " is off " << plane.ID() << " by " << deltaProj.R() << " cm " << deltaProj;
+          continue;
+        }
+        geo::PlaneID const planeid = plane.ID();
+        
         // grab the nearest channel to the fDriftClusterPos position
         // David Caratelli, comment begin:
         // NOTE: the below code works only when the drift coordinate is indeed in x (i.e. 0th coordinate)
