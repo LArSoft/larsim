@@ -184,22 +184,7 @@ namespace sim {
         }
         geo::PlaneID const planeid = plane.ID();
         
-        // grab the nearest channel to the fDriftClusterPos position
-        // David Caratelli, comment begin:
-        // NOTE: the below code works only when the drift coordinate is indeed in x (i.e. 0th coordinate)
-        // see code linked above for a much more careful treatment of the coordinate system
-        // David Caratelli, comment end.
-        raw::ChannelID_t ch;
-        try {
-          ch = wireReadoutGeom.NearestChannel(mp, planeid);
-        }
-        catch (cet::exception& e) {
-          mf::LogWarning("SimDriftElectrons") << "step " // << energyDeposit << "\n"
-                                              << "nearest wire not in TPC\n"
-                                              << e;
-          continue;
-        }
-
+        // grab the nearest wire
         int track_id = sed.TrackID();
 
         if (track_id < 0) track_id = track_id * (-1);
@@ -217,24 +202,23 @@ namespace sim {
         else {
           hit_index = (*hit_index_track_iter).second;
         }
-        auto const pid = wireReadoutGeom.ChannelToWire(ch)[0].planeID();
-        auto const channel_id = pindex[pid];
+        auto const planeNumber = pindex[planeid];
         double charge = sed.NumElectrons();
         if (hit_index < 0) {
           // This particle energy deposition is never recorded so far. Create a new Edep
           __GetEdepArray__(real_track_id)
-            .emplace_back(pos, pid, pindex.size(), sed.Energy(), charge, channel_id);
-          log << "\n  plane #" << channel_id << " => pos=" << mp << " plane " << pid
-            << " (#" << channel_id << "/" << pindex.size() << ")"
+            .emplace_back(pos, planeid, pindex.size(), sed.Energy(), charge, planeNumber);
+          log << "\n  plane #" << planeNumber << " => pos=" << mp << " plane " << planeid
+            << " (#" << planeNumber << "/" << pindex.size() << ")"
             " Q=" << charge << " E=" << sed.Energy();
         }
         else {
           // Append charge to the relevant edep (@ hit_index)
           MCEdep& edep = __GetEdepArray__(real_track_id).at(hit_index);
-          edep.deps[channel_id].charge += charge;
-          edep.deps[channel_id].energy += sed.Energy();
-          log << "\n  plane #" << channel_id << " => Q=" << edep.deps[channel_id].charge
-            << " E=" << edep.deps[channel_id].energy;
+          edep.deps[planeNumber].charge += charge;
+          edep.deps[planeNumber].energy += sed.Energy();
+          log << "\n  plane #" << planeNumber << " => Q=" << edep.deps[planeNumber].charge
+            << " E=" << edep.deps[planeNumber].energy;
         }
       } // end looping over planes
     }   // end looping over SimEnergyDeposits
