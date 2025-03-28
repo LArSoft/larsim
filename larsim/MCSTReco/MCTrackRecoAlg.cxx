@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "MCTrackRecoAlg.h"
+#include <cmath>
 #include <iostream>
 
 #include "cetlib_except/exception.h"
@@ -122,8 +123,8 @@ namespace sim {
 
         //Find the distance between two adjacent MCSteps
         double dist =
-          sqrt(pow(step_trk.X() - nxt_step_trk.X(), 2) + pow(step_trk.Y() - nxt_step_trk.Y(), 2) +
-               pow(step_trk.Z() - nxt_step_trk.Z(), 2));
+          std::hypot(step_trk.X() - nxt_step_trk.X(), step_trk.Y() - nxt_step_trk.Y(),
+               step_trk.Z() - nxt_step_trk.Z());
 
         //Make a plane at the step pointed at the next step
 
@@ -132,7 +133,7 @@ namespace sim {
         // a*x + b*y + c*z + d = 0
         // where, a = dir_x, b = dir_y, c = dir_z, d = - (a*x_0+b*y_0+c*z_0)
         // then the *signed* distance of any point (x_1, y_1, z_1) from this plane is:
-        // D = (a*x_1 + b*y_1 + c*z_1 + d )/sqrt( pow(a,2) + pow(b,2) + pow(c,2))
+        // D = (a*x_1 + b*y_1 + c*z_1 + d )/hypot(a,b,c)
 
         double a = 0, b = 0, c = 0, d = 0;
         a = nxt_step_trk.X() - step_trk.X();
@@ -174,7 +175,7 @@ namespace sim {
           double LineDist = 0;
 
           if (B.Mag2() != 0) {
-            LineDist = sqrt(A.Mag2() - 2 * pow(A * B, 2) / B.Mag2() + pow(A * B, 2) / B.Mag2());
+            LineDist = sqrt(A.Mag2() - 2 * (A * B)*(A * B) / B.Mag2() + (A * B)*(A * B) / B.Mag2());
           }
           else {
             LineDist = 0;
@@ -185,10 +186,10 @@ namespace sim {
           // the line distance allows for 1mm GEANT multiple columb scattering correction,
           // small compared to average MCStep-to-MCStep distance
           if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) <=
+                  std::hypot(a, b, c) <=
                 dist + 0.03 &&
               (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) >=
+                  std::hypot(a, b, c) >=
                 0 - 0.03 &&
               LineDist < 0.1) {
 
