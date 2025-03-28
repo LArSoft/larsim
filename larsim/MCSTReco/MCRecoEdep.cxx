@@ -18,8 +18,8 @@
 #include "MCRecoEdep.h"
 
 #include <iostream>
-#include <numeric> // std::iota()
 #include <map>
+#include <numeric> // std::iota()
 #include <utility>
 #include <vector>
 
@@ -30,7 +30,8 @@ namespace sim {
     {
       geo::WireReadoutGeom const& wireReadout = art::ServiceHandle<geo::WireReadout const>()->Get();
       geo::GeometryCore const& geom = *lar::providerFrom<geo::Geometry>();
-      geo::PlaneDataContainer<std::size_t> planeIndices{ geom.Ncryostats(), geom.MaxTPCs(), wireReadout.MaxPlanes() };
+      geo::PlaneDataContainer<std::size_t> planeIndices{
+        geom.Ncryostats(), geom.MaxTPCs(), wireReadout.MaxPlanes()};
       std::iota(planeIndices.begin(), planeIndices.end(), 0);
       return planeIndices;
     }
@@ -140,16 +141,15 @@ namespace sim {
 
     if (_debug_mode)
       std::cout << "Processing " << sedArray.size() << " energy deposits..." << std::endl;
-    
-    geo::TPCGeo const* TPC = nullptr; // the TPC where the last deposit was seen
-    
-    // Loop over energy depositions
-    for (sim::SimEnergyDeposit const& sed: sedArray) {
 
-      mf::LogVerbatim log{ "MakeMCEdep" }; // FIXME DEBUG
-      log << "EDep=" << sed.Energy() << " Q=" << sed.NumElectrons()
-        << " at " << sed.MidPoint() << " t=" << sed.Time()
-        << " PDGID=" << sed.PdgCode() << " ID=" << sed.TrackID();
+    geo::TPCGeo const* TPC = nullptr; // the TPC where the last deposit was seen
+
+    // Loop over energy depositions
+    for (sim::SimEnergyDeposit const& sed : sedArray) {
+
+      mf::LogVerbatim log{"MakeMCEdep"}; // FIXME DEBUG
+      log << "EDep=" << sed.Energy() << " Q=" << sed.NumElectrons() << " at " << sed.MidPoint()
+          << " t=" << sed.Time() << " PDGID=" << sed.PdgCode() << " ID=" << sed.TrackID();
 
       // David Caratelli: much of the code below is taken from the module:
       // https://cdcvs.fnal.gov/redmine/projects/larsim/repository/revisions/develop/entry/larsim/ElectronDrift/SimDriftElectrons_module.cc
@@ -167,15 +167,15 @@ namespace sim {
       }
 
       // make a collection of electrons for each plane
-      for (geo::PlaneGeo const& plane: wireReadoutGeom.Iterate<geo::PlaneGeo>(TPC->ID())) {
+      for (geo::PlaneGeo const& plane : wireReadoutGeom.Iterate<geo::PlaneGeo>(TPC->ID())) {
 
         // require containment on the plane;
         // it may fail also if the TPC volume is bigger than the active one
         if (!plane.isProjectionOnPlane(mp)) {
-          geo::PlaneGeo::WidthDepthProjection_t const deltaProj
-            = plane.DeltaFromPlane(plane.PointWidthDepthProjection(mp));
-          mf::LogVerbatim{ "SimDriftElectrons" }
-            << "Point " << mp << " is off " << plane.ID() << " by " << deltaProj.R() << " cm " << deltaProj;
+          geo::PlaneGeo::WidthDepthProjection_t const deltaProj =
+            plane.DeltaFromPlane(plane.PointWidthDepthProjection(mp));
+          mf::LogVerbatim{"SimDriftElectrons"} << "Point " << mp << " is off " << plane.ID()
+                                               << " by " << deltaProj.R() << " cm " << deltaProj;
           continue;
         }
         geo::PlaneID const planeid = plane.ID();
@@ -189,13 +189,11 @@ namespace sim {
         UniquePosition const pos{mp};
         std::vector<sim::MCEdep>& trackEDeps = __GetEdepArray__(track_id);
         std::pair const key{pos, track_id};
-        
+
         // find the index of the hit the energy belongs to (possibly a new one):
         int hit_index = -1;
         auto const hit_index_track_iter = hit_index_m.find(key);
-        if (hit_index_track_iter == hit_index_m.end()) {
-          hit_index_m[key] = trackEDeps.size();
-        }
+        if (hit_index_track_iter == hit_index_m.end()) { hit_index_m[key] = trackEDeps.size(); }
         else {
           hit_index = hit_index_track_iter->second;
         }
@@ -204,17 +202,15 @@ namespace sim {
         if (hit_index < 0) {
           // This particle energy deposition is never recorded so far. Create a new Edep
           trackEDeps.emplace_back(pos, planeid, pindex.size(), sed.Energy(), charge, planeNumber);
-          log << "\n  plane #" << planeNumber << " => pos=" << mp << " plane " << planeid
-            << " (#" << planeNumber << "/" << pindex.size() << ")"
-            " Q=" << charge << " E=" << sed.Energy();
+          log << "\n  plane #" << planeNumber << " => pos=" << mp << " plane " << planeid << " (#"
+              << planeNumber << "/" << pindex.size() << ") Q=" << charge << " E=" << sed.Energy();
         }
         else {
           // Append charge to the relevant edep (@ hit_index)
           MCEdep::deposit& dep = trackEDeps.at(hit_index).deps[planeNumber];
           dep.charge += charge;
           dep.energy += sed.Energy();
-          log << "\n  plane #" << planeNumber << " => Q=" << dep.charge
-            << " E=" << dep.energy;
+          log << "\n  plane #" << planeNumber << " => Q=" << dep.charge << " E=" << dep.energy;
         }
       } // end looping over planes in TPC
     }   // end looping over SimEnergyDeposits

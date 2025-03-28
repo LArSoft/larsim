@@ -2,11 +2,11 @@
 #define MCRECOEDEP_H
 
 // LArSoft
+#include "larcorealg/Geometry/GeometryDataContainers.h" // geo::PlaneDataContainer
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimEnergyDepositLite.h"
-#include "larcorealg/Geometry/GeometryDataContainers.h" // geo::PlaneDataContainer
 
 // Framework includes
 namespace fhicl {
@@ -47,11 +47,11 @@ namespace sim {
     }
   };
 
-  struct UniquePosition: geo::Point_t {
+  struct UniquePosition : geo::Point_t {
 
     using geo::Point_t::Point_t;
-    UniquePosition(geo::Point_t const& p): geo::Point_t{ p } {}
-    
+    UniquePosition(geo::Point_t const& p) : geo::Point_t{p} {}
+
     inline bool operator<(const UniquePosition& rhs) const
     {
       if (X() < rhs.X()) return true;
@@ -76,7 +76,12 @@ namespace sim {
 
     MCEdep() = default;
 
-    MCEdep(sim::UniquePosition p, geo::PlaneID const& pi, size_t num_planes, float e, float c, size_t id)
+    MCEdep(sim::UniquePosition p,
+           geo::PlaneID const& pi,
+           size_t num_planes,
+           float e,
+           float c,
+           size_t id)
       : pos(p), pid(pi), deps(num_planes)
     {
       assert(id < num_planes);

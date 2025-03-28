@@ -122,9 +122,9 @@ namespace sim {
         //Defining the track step-by-step dEdx and dQdx
 
         //Find the distance between two adjacent MCSteps
-        double dist =
-          std::hypot(step_trk.X() - nxt_step_trk.X(), step_trk.Y() - nxt_step_trk.Y(),
-               step_trk.Z() - nxt_step_trk.Z());
+        double dist = std::hypot(step_trk.X() - nxt_step_trk.X(),
+                                 step_trk.Y() - nxt_step_trk.Y(),
+                                 step_trk.Z() - nxt_step_trk.Z());
 
         //Make a plane at the step pointed at the next step
 
@@ -175,7 +175,8 @@ namespace sim {
           double LineDist = 0;
 
           if (B.Mag2() != 0) {
-            LineDist = sqrt(A.Mag2() - 2 * (A * B)*(A * B) / B.Mag2() + (A * B)*(A * B) / B.Mag2());
+            LineDist =
+              sqrt(A.Mag2() - 2 * (A * B) * (A * B) / B.Mag2() + (A * B) * (A * B) / B.Mag2());
           }
           else {
             LineDist = 0;
@@ -185,11 +186,9 @@ namespace sim {
           // Add in a voxel before and after to account for MCSteps
           // the line distance allows for 1mm GEANT multiple columb scattering correction,
           // small compared to average MCStep-to-MCStep distance
-          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  std::hypot(a, b, c) <=
+          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) <=
                 dist + 0.03 &&
-              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  std::hypot(a, b, c) >=
+              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) >=
                 0 - 0.03 &&
               LineDist < 0.1) {
 

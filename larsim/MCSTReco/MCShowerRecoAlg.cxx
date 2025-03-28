@@ -26,9 +26,9 @@
 #include "larsim/MCSTReco/MCRecoPart.h"
 #include "larsim/MCSTReco/MCShowerRecoPart.h"
 
+#include <cmath> // std::hypot()
 #include <memory>
 #include <vector>
-#include <cmath> // std::hypot()
 
 namespace sim {
 
@@ -309,7 +309,7 @@ namespace sim {
             mcs_daughter_mom[1] += mom.at(1);
             mcs_daughter_mom[2] += mom.at(2);
           }
-          
+
           //Determine the direction of the shower right at the start point
           double E = 0;
           double N = 0;
@@ -380,11 +380,9 @@ namespace sim {
             continue;
           }
           //Radial Distance
-          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  std::hypot(a, b, c) <
+          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) <
                 2.4 &&
-              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
-                  std::hypot(a, b, c) >
+              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) >
                 0) {
 
             double E = 0;
