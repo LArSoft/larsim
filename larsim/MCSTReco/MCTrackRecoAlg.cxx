@@ -164,7 +164,7 @@ namespace sim {
         //Iterate through all the energy deposition points
         for (auto const& edep : edeps) {
           // 'x_0' definition
-          TVector3 x_0(edep.pos._x, edep.pos._y, edep.pos._z);
+          TVector3 x_0(edep.pos.X(), edep.pos.Y(), edep.pos.Z());
           // 'A' definition
           TVector3 A(step_trk.Position().X() - x_0.X(),
                      step_trk.Position().Y() - x_0.Y(),
@@ -184,10 +184,10 @@ namespace sim {
           // Add in a voxel before and after to account for MCSteps
           // the line distance allows for 1mm GEANT multiple columb scattering correction,
           // small compared to average MCStep-to-MCStep distance
-          if ((a * edep.pos._x + b * edep.pos._y + c * edep.pos._z + d) /
+          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
                   sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) <=
                 dist + 0.03 &&
-              (a * edep.pos._x + b * edep.pos._y + c * edep.pos._z + d) /
+              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) /
                   sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) >=
                 0 - 0.03 &&
               LineDist < 0.1) {
@@ -208,8 +208,7 @@ namespace sim {
 
             step_dedx += engy;
             auto const pid = edep.pid;
-            auto q_i = pindex.find(pid);
-            if (q_i != pindex.end())
+            if (pindex.hasPlane(pid))
               step_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
           }
         }

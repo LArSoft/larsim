@@ -6,6 +6,7 @@
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimEnergyDepositLite.h"
+#include "larcorealg/Geometry/GeometryDataContainers.h" // geo::PlaneDataContainer
 
 // Framework includes
 namespace fhicl {
@@ -13,6 +14,7 @@ namespace fhicl {
 }
 
 // STL
+#include <cassert>
 #include <map>
 #include <vector>
 
@@ -21,7 +23,7 @@ namespace sim {
   namespace details {
     // Returns a map with all available plane IDs,
     //  each mapped into an index from a compact range.
-    std::map<geo::PlaneID, size_t> createPlaneIndexMap();
+    geo::PlaneDataContainer<std::size_t> createPlaneIndexMap();
   } // namespace details
 
   class MCEdepHit {
@@ -45,47 +47,39 @@ namespace sim {
     }
   };
 
-  class UniquePosition {
-  public:
-    double _x, _y, _z;
+  struct UniquePosition: geo::Point_t {
 
-  public:
-    UniquePosition(double x = 0, double y = 0, double z = 0)
-    {
-      _x = x;
-      _y = y;
-      _z = z;
-    }
-
+    using geo::Point_t::Point_t;
+    UniquePosition(geo::Point_t const& p): geo::Point_t{ p } {}
+    
     inline bool operator<(const UniquePosition& rhs) const
     {
-      if (_x < rhs._x) return true;
-      if (rhs._x < _x) return false;
-      if (_y < rhs._y) return true;
-      if (rhs._y < _y) return false;
-      if (_z < rhs._z) return true;
-      if (rhs._z < _z) return false;
+      if (X() < rhs.X()) return true;
+      if (rhs.X() < X()) return false;
+      if (Y() < rhs.Y()) return true;
+      if (rhs.Y() < Y()) return false;
+      if (Z() < rhs.Z()) return true;
+      if (rhs.Z() < Z()) return false;
       return false;
     }
   };
 
   struct MCEdep {
     struct deposit {
-      float energy{};
-      float charge{};
-      deposit() = default;
-      deposit(float e, float c) : energy(e), charge(c) {}
+      float energy;
+      float charge;
     };
 
-    sim::UniquePosition pos{};
-    geo::PlaneID pid{};
-    std::vector<deposit> deps{};
+    sim::UniquePosition pos;
+    geo::PlaneID pid;
+    std::vector<deposit> deps;
 
     MCEdep() = default;
 
-    MCEdep(sim::UniquePosition p, geo::PlaneID pi, size_t num_planes, float e, float c, size_t id)
+    MCEdep(sim::UniquePosition p, geo::PlaneID const& pi, size_t num_planes, float e, float c, size_t id)
       : pos(p), pid(pi), deps(num_planes)
     {
+      assert(id < num_planes);
       deps[id].energy = e;
       deps[id].charge = c;
     }
@@ -96,7 +90,6 @@ namespace sim {
   public:
     /// Default constructor with fhicl parameters
     MCRecoEdep(fhicl::ParameterSet const& pset);
-    //ClusterMergeAlg(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
 
     void MakeMCEdep(const std::vector<sim::SimChannel>& schArray);
 
