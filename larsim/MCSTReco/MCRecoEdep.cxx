@@ -141,6 +141,9 @@ namespace sim {
 
     if (_debug_mode)
       std::cout << "Processing " << sedArray.size() << " energy deposits..." << std::endl;
+    
+    geo::TPCGeo const* TPC = nullptr; // the TPC where the last deposit was seen
+    
     // Loop over channels
     for (size_t i = 0; i < sedArray.size(); ++i) {
 
@@ -162,7 +165,8 @@ namespace sim {
       // From the position in world coordinates, determine the cryostat and tpc. If
       // somehow the step is outside a tpc (e.g., cosmic rays in rock) just move on to the
       // next one.
-      geo::TPCGeo const* TPC = geom->PositionToTPCptr(mp);
+      
+      if (!TPC || !TPC->ContainsPosition(mp)) TPC = geom->PositionToTPCptr(mp);
       if (!TPC) {
         mf::LogWarning("SimDriftElectrons") << "step at " << mp << " is not within any TPC.";
         continue;
