@@ -17,11 +17,11 @@ namespace sim {
 
   //--------------------------------------------------------------------------------------------
   MCRecoPart::MCRecoPart(fhicl::ParameterSet const& pset)
-    : _x_max{std::numeric_limits<double>::min()}
+    : _x_max{std::numeric_limits<double>::lowest()}
     , _x_min{std::numeric_limits<double>::max()}
-    , _y_max{std::numeric_limits<double>::min()}
+    , _y_max{std::numeric_limits<double>::lowest()}
     , _y_min{std::numeric_limits<double>::max()}
-    , _z_max{std::numeric_limits<double>::min()}
+    , _z_max{std::numeric_limits<double>::lowest()}
     , _z_min{std::numeric_limits<double>::max()}
     , _trackIDOffsets{pset.get<std::vector<unsigned int>>("TrackIDOffsets", {0})}
   {
