@@ -84,6 +84,12 @@ public:
       true // default
     };
 
+    fhicl::Atom<bool> SkipTrackIDOffsets{
+      fhicl::Name{"SkipTrackIDOffsets"},
+      fhicl::Comment{"skip the application of trackID offsets"},
+      false // default
+    };
+
     fhicl::Atom<bool> FillAuxDetSimChannels{
       fhicl::Name{"FillAuxDetSimChannels"},
       fhicl::Comment{"whether to merge AuxDetSimChannels"},
@@ -135,6 +141,7 @@ private:
   bool const fFillMCParticles;
   bool const fFillSimPhotons;
   bool const fFillSimChannels;
+  bool const fSkipTrackIDOffsets;
   bool const fFillAuxDetSimChannels;
   bool const fFillSimEnergyDeposits;
   std::vector<std::string> const fEnergyDepositionInstances;
@@ -176,6 +183,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
   , fFillMCParticles(params().FillMCParticles())
   , fFillSimPhotons(params().FillSimPhotons())
   , fFillSimChannels(params().FillSimChannels())
+  , fSkipTrackIDOffsets(params().SkipTrackIDOffsets())
   , fFillAuxDetSimChannels(params().FillAuxDetSimChannels())
   , fFillSimEnergyDeposits(
       getOptionalValue(params().FillSimEnergyDeposits)
@@ -186,7 +194,7 @@ sim::MergeSimSources::MergeSimSources(Parameters const& params)
   , fFillParticleAncestryMaps(params().FillParticleAncestryMaps())
 {
 
-  if (fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
+  if (fSkipTrackIDOffsets == false && fInputSourcesLabels.size() != fTrackIDOffsets.size()) {
     throw art::Exception(art::errors::Configuration)
       << "Unequal input vector sizes: InputSourcesLabels and TrackIDOffsets.\n";
   }
@@ -314,7 +322,18 @@ void sim::MergeSimSources::produce(art::Event& e)
 
     if (fFillSimChannels) {
       auto const& input_scCol = e.getProduct<std::vector<sim::SimChannel>>(input_label);
-      MergeUtility.MergeSimChannels(*scCol, input_scCol, i_source);
+      MergeUtility.MergeSimChannels(*scCol, input_scCol, i_source, fSkipTrackIDOffsets);
+
+      /*
+      for (auto& simChannel : *scCol) {
+	auto& tdcIDEMap = simChannel.TDCIDEMap();
+	std::map<int, std::vector<sim::IDE>> sortedTDCIDEMap;
+	for (auto& entry : tdcIDEMap) {
+	  sortedTDCIDEMap[entry.first] = std::move(entry.second);
+	}
+	simChannel.SetTDCIDEMap(std::move(sortedTDCIDEMap));
+      }
+      */
     }
 
     if (fFillAuxDetSimChannels) {
