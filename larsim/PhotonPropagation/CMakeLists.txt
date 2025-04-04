@@ -87,6 +87,24 @@ cet_build_plugin(PDFastSimPAR art::EDProducer
   cetlib_except::cetlib_except
   CLHEP::Random
 )
+cet_build_plugin(DiscretizeEdeps art::EDProducer
+  LIBRARIES PRIVATE
+  larsim::PhotonPropagation
+  larsim::IonizationScintillation
+  larcore::ServiceUtil
+  larcorealg::Geometry
+  larcoreobj::geo_vectors
+  lardataobj::Simulation
+  nurandom::RandomUtils_NuRandomService_service
+  art::Framework_Principal
+  art_plugin_support::toolMaker
+  canvas::canvas
+  messagefacility::MF_MessageLogger
+  fhiclcpp::types
+  fhiclcpp::fhiclcpp
+  cetlib_except::cetlib_except
+  CLHEP::Random
+)
 
 cet_build_plugin(PDFastSimPVS art::EDProducer
   LIBRARIES PRIVATE

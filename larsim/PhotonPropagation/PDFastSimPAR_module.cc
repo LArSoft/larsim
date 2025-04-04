@@ -401,6 +401,7 @@ namespace phot {
         std::cout << "End: " << edepi.End() << std::endl;
         std::cout << "NF: " << edepi.NumFPhotons() << std::endl;
         std::cout << "NS: " << edepi.NumSPhotons() << std::endl;
+        std::cout << "SYR: " << edepi.ScintYieldRatio() << std::endl;
       }
       num_points++;
 

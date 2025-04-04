@@ -53,12 +53,18 @@ namespace phot {
     // If we care about simulating the rising time, it would be better
     // to simulate random numbers according a general distribution
     double d = (tau1 + tau2) / tau2;
+    int ncalls = 0;
+    std::cout << "Calling with_rising_time" << std::endl;
     while (1) {
+      ++ncalls;
       double ran1 = fUniformGen->fire();
       double ran2 = fUniformGen->fire();
       double t = -tau2 * std::log(1 - ran1);
       double g = d * single_exp(t, tau2);
-      if (ran2 <= bi_exp(t, tau1, tau2) / g) { return t; }
+      if (ran2 <= bi_exp(t, tau1, tau2) / g) {
+        std::cout << "sim'd rise time after " << ncalls << " calls" << std::endl;
+        return t;
+      }
     }
   }
 
