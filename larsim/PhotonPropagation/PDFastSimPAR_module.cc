@@ -389,10 +389,18 @@ namespace phot {
     }
 
     for (auto const& edepi : *edeps) {
-      if (fVerbose) {
-        std::cout << "SimEnergyDeposit: " << edepi.TrackID() << " " << edepi.Energy() << std::endl;
+      // if (fVerbose) {
+      //   std::cout << "SimEnergyDeposit: " << edepi.TrackID() << " " << edepi.Energy() << std::endl;
+      //   std::cout << "Start: " << edepi.Start() << std::endl;
+      //   std::cout << "End: " << edepi.End() << std::endl;
+      // }
+      if (fVerbose && !(num_points % 1000)) {
+        std::cout << "SimEnergyDeposit: " << num_points << " " << edepi.TrackID() << " "
+                  << edepi.Energy() << std::endl;
         std::cout << "Start: " << edepi.Start() << std::endl;
         std::cout << "End: " << edepi.End() << std::endl;
+        std::cout << "NF: " << edepi.NumFPhotons() << std::endl;
+        std::cout << "NS: " << edepi.NumSPhotons() << std::endl;
       }
       num_points++;
 
@@ -671,11 +679,11 @@ namespace phot {
       ChannelMap[channel] = opbtr.size();
       opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
     }
-    if (fVerbose && num_photons > 1) {
-      std::cout << "Adding " << num_photons << " photons to channel " << channel << std::endl;
-      std::cout << "Time: " << time << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << std::endl;
-      std::cout << "TrackID: " << trackID << " energy: " << edeposit << std::endl;
-    }
+    // if (fVerbose && num_photons > 1) {
+    //   std::cout << "Adding " << num_photons << " photons to channel " << channel << std::endl;
+    //   std::cout << "Time: " << time << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << std::endl;
+    //   std::cout << "TrackID: " << trackID << " energy: " << edeposit << std::endl;
+    // }
     size_t idtest = ChannelMap[channel];
     opbtr.at(idtest).AddScintillationPhotons(
       trackID, time, num_photons, pos, edeposit);
