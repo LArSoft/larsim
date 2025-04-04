@@ -125,6 +125,11 @@ namespace phot {
       DP VUVHits{Name("VUVHits"), Comment("Configuration for UV visibility parameterization")};
       ODP VISHits{Name("VISHits"),
                   Comment("Configuration for visibile visibility parameterization")};
+      fhicl::Atom<bool> Verbose{
+        Name("Verbose"),
+        Comment("Print verbose information"),
+        false
+      };
     };
     using Parameters = art::EDProducer::Table<Config>;
 
@@ -139,6 +144,19 @@ namespace phot {
     void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
                      std::vector<int>& ChannelMap,
                      const sim::OpDetBacktrackerRecord& btr) const;
+    void NewAdd(
+      std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+      std::vector<int>& ChannelMap,
+      size_t channel, int trackID, int time,
+      double pos[3], double edeposit, int num_photons=1);
+    // void NewAdd2(
+    //     std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+    //     std::vector<int>& ChannelMap,
+    //     size_t channel, int trackID,
+    //     double pos[3], 
+    //     double edeposit,
+    //     const std::vector<sim::SimPhotonsLite> & photons_vec
+    // );
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<geo::Point_t> opDetCenters() const;
@@ -177,6 +195,7 @@ namespace phot {
     const bool fOnlyActiveVolume;
     const bool fOnlyOneCryostat;
     const bool fUseXeAbsorption;
+    const bool fVerbose;
   };
 
   //......................................................................
@@ -214,6 +233,7 @@ namespace phot {
     , fOnlyActiveVolume(config().OnlyActiveVolume())
     , fOnlyOneCryostat(config().OnlyOneCryostat())
     , fUseXeAbsorption(config().UseXeAbsorption())
+    , fVerbose(config().Verbose())
   {
     mf::LogInfo("PDFastSimPAR") << "Initializing PDFastSimPAR." << std::endl;
 
@@ -363,7 +383,17 @@ namespace phot {
     int num_fastdp = 0;
     int num_slowdp = 0;
 
+    if (fVerbose) {
+      std::cout << "Creating SimPhotonsLite/SimPhotons from " <<
+                    (*edeps).size() << " energy deopsits" << std::endl;
+    }
+
     for (auto const& edepi : *edeps) {
+      if (fVerbose) {
+        std::cout << "SimEnergyDeposit: " << edepi.TrackID() << " " << edepi.Energy() << std::endl;
+        std::cout << "Start: " << edepi.Start() << std::endl;
+        std::cout << "End: " << edepi.End() << std::endl;
+      }
       num_points++;
 
       int nphot_fast = edepi.NumFPhotons();
@@ -445,8 +475,9 @@ namespace phot {
 
           // SimPhotonsLite case
           if (fUseLitePhotons) {
-            sim::OpDetBacktrackerRecord tmpbtr(channel);
+            // sim::OpDetBacktrackerRecord tmpbtr(channel);
             if (ndetected_fast > 0 && fDoFastComponent) {
+              std::map<int, int> temp_photon_times;
               int n = ndetected_fast;
               num_fastdp += n;
               for (int i = 0; i < n; ++i) {
@@ -454,31 +485,90 @@ namespace phot {
                 double dtime = edepi.StartT() + fScintTime->fastScintTime();
                 if (fIncludePropTime) dtime += transport_time[i];
                 int time = static_cast<int>(std::round(dtime));
-                if (Reflected)
+                ++temp_photon_times[time];
+                if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
-                else
+                  // NewAdd(
+                  //   *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID,
+                  //   time, pos, edeposit, 1);
+                }
+                else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
-                tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                  // NewAdd(
+                  //   *opbtr, PDChannelToSOCMapDirect, channel, trackID,
+                  //   time, pos, edeposit, 1);
+                }
+                // tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+              }
+              for (auto const& [time, nphotons] : temp_photon_times) {
+                NewAdd(
+                  (Reflected ? *opbtr_ref : *opbtr),
+                  (Reflected ? PDChannelToSOCMapReflect : PDChannelToSOCMapDirect),
+                  channel, trackID,
+                  time, pos, edeposit, nphotons
+                );
+                // if (Reflected) {
+                //   // ref_phlitcol[channel].DetectedPhotons[time] += nphotons;
+                //   NewAdd(
+                //     *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID,
+                //     time, pos, edeposit, nphotons);
+                // }
+                // else {
+                //   // dir_phlitcol[channel].DetectedPhotons[time] += nphotons;
+                //   NewAdd(
+                //     *opbtr, PDChannelToSOCMapDirect, channel, trackID,
+                //     time, pos, edeposit, nphotons);
+                // }
               }
             }
             if (ndetected_slow > 0 && fDoSlowComponent) {
+              std::map<int, int> temp_photon_times;
               int n = ndetected_slow;
               num_slowdp += n;
               for (int i = 0; i < n; ++i) {
                 double dtime = edepi.StartT() + fScintTime->slowScintTime();
                 if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
                 int time = static_cast<int>(std::round(dtime));
-                if (Reflected)
+                ++temp_photon_times[time];
+                if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
-                else
+                  // NewAdd(
+                  //   *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID,
+                  //   time, pos, edeposit, 1);
+                }
+                else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
-                tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                  // NewAdd(
+                  //   *opbtr, PDChannelToSOCMapDirect, channel, trackID,
+                  //   time, pos, edeposit, 1);
+                }
+                // tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+              }
+              for (auto const& [time, nphotons] : temp_photon_times) {
+                NewAdd(
+                  (Reflected ? *opbtr_ref : *opbtr),
+                  (Reflected ? PDChannelToSOCMapReflect : PDChannelToSOCMapDirect),
+                  channel, trackID,
+                  time, pos, edeposit, nphotons
+                );
+                // if (Reflected) {
+                //   // ref_phlitcol[channel].DetectedPhotons[time] += nphotons;
+                //   NewAdd(
+                //     *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID,
+                //     time, pos, edeposit, nphotons);
+                // }
+                // else {
+                //   // dir_phlitcol[channel].DetectedPhotons[time] += nphotons;
+                //   NewAdd(
+                //     *opbtr, PDChannelToSOCMapDirect, channel, trackID,
+                //     time, pos, edeposit, nphotons);
+                // }
               }
             }
-            if (Reflected)
-              AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr);
-            else
-              AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
+            // if (Reflected)
+            //   AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr);
+            // else
+            //   AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
           }
           // SimPhotons case
           else {
@@ -563,12 +653,54 @@ namespace phot {
       for (auto const& timePDclockSDP : timePDclockSDPsMap) {
         for (auto const& sdp : timePDclockSDP.second) {
           double xyz[3] = {sdp.x, sdp.y, sdp.z};
+	  std::cout << "Time: " << timePDclockSDP.first << " nphot: " << sdp.numPhotons << " energy: " << sdp.energy << std::endl;
           opbtr.at(idtest).AddScintillationPhotons(
             sdp.trackID, timePDclockSDP.first, sdp.numPhotons, xyz, sdp.energy);
         }
       }
     }
   }
+
+  void PDFastSimPAR::NewAdd(
+      std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+      std::vector<int>& ChannelMap,
+      size_t channel, int trackID, int time,
+      double pos[3], double edeposit, int num_photons
+    ) {
+    if (ChannelMap[channel] < 0) {
+      ChannelMap[channel] = opbtr.size();
+      opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
+    }
+    if (fVerbose && num_photons > 1) {
+      std::cout << "Adding " << num_photons << " photons to channel " << channel << std::endl;
+      std::cout << "Time: " << time << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << std::endl;
+      std::cout << "TrackID: " << trackID << " energy: " << edeposit << std::endl;
+    }
+    size_t idtest = ChannelMap[channel];
+    opbtr.at(idtest).AddScintillationPhotons(
+      trackID, time, num_photons, pos, edeposit);
+  }
+
+  // void PDFastSimPAR::NewAdd2(
+  //     std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+  //     std::vector<int>& ChannelMap,
+  //     size_t channel, int trackID,
+  //     double pos[3],
+  //     double edeposit,
+  //     const std::vector<sim::SimPhotonsLite> & photons_vec
+  // ) {
+  //   if (ChannelMap[channel] < 0) {
+  //     ChannelMap[channel] = opbtr.size();
+  //     opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
+  //   }
+
+  //   size_t idtest = ChannelMap[channel];
+  //   auto & timed_photons = photons_vec[channel].DetectedPhotons;
+  //   for (auto const & [time, nphotons] : timed_photons) {
+  //     opbtr.at(idtest).AddScintillationPhotons(
+  //       trackID, time, nphotons, pos, edeposit);
+  //   }
+  // }
 
   //......................................................................
   // calculates number of photons detected given visibility and emitted number of photons
