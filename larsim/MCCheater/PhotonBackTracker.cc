@@ -301,19 +301,7 @@ namespace cheat {
     if (start_time > end_time) { throw; }
 
     auto const& timeSDPMap = FindOpDetBTR(fWireReadoutGeom->OpDetFromOpChannel(opHit.OpChannel()))
-                               ->timePDclockSDPsMap(); //Not guranteed to be sorted.
-
-    std::vector<const std::pair<double, std::vector<sim::SDP>>*> timePDclockSDPMap_SortedPointers;
-    for (auto& pair : timeSDPMap) {
-      timePDclockSDPMap_SortedPointers.push_back(&pair);
-    }
-    auto pairSort = [](auto& a, auto& b) { return a->first < b->first; };
-    if (!std::is_sorted(timePDclockSDPMap_SortedPointers.begin(),
-                        timePDclockSDPMap_SortedPointers.end(),
-                        pairSort)) {
-      std::sort(
-        timePDclockSDPMap_SortedPointers.begin(), timePDclockSDPMap_SortedPointers.end(), pairSort);
-    }
+                               ->timePDclockSDPsMap();
 
     //This section is a hack to make comparisons work right.
     std::vector<sim::SDP> dummyVec;
@@ -322,16 +310,12 @@ namespace cheat {
     auto start_timePair_P = &start_timePair;
     auto end_timePair_P = &end_timePair;
     //First interesting iterator.
-    auto mapFirst = std::lower_bound(timePDclockSDPMap_SortedPointers.begin(),
-                                     timePDclockSDPMap_SortedPointers.end(),
-                                     start_timePair_P,
-                                     pairSort);
+    auto mapFirst = timeSDPMap.lower_bound(start_time);
     //Last interesting iterator.
-    auto mapLast =
-      std::upper_bound(mapFirst, timePDclockSDPMap_SortedPointers.end(), end_timePair_P, pairSort);
+    auto mapLast = timeSDPMap.upper_bound(end_time);
 
     for (auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr)
-      for (auto& sdp : (*mapitr)->second)
+      for (auto& sdp : mapitr->second)
         retVec.push_back(&sdp);
 
     return retVec;
