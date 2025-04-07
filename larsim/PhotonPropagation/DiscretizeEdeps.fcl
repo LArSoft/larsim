@@ -1,5 +1,0 @@
-BEGIN_PROLOG
-discretize: {
-    module_type: "DiscretizeEdeps"
-}
-END_PROLOG
