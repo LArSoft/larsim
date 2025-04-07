@@ -18,8 +18,8 @@ namespace phot {
     , SDTime{pset.get<double>("SlowDecayTime", 0.)}
     , FRTime{pset.get<double>("FastRisingTime", 0.)}
     , FDTime{pset.get<double>("FastDecayTime", 0.)}
-    , fNoFastRisingTime((FRTime >= 1.e-8) && (FRTime != -1.))
-    , fNoSlowRisingTime((SRTime >= 1.e-8) && (SRTime != -1.))
+    , fNoFastRisingTime(pset.get<bool>("NoFastRisingTime", false))
+    , fNoSlowRisingTime(pset.get<bool>("NoSlowRisingTime", false))
   {
     if (LogLevel >= 1) {
       std::cout << "ScintTimeLAr Tool configure:" << std::endl;
@@ -117,7 +117,9 @@ namespace phot {
 
   inline double ScintTimeLAr::slowScintTime()
   {
-    if (fNoSlowRisingTime) { return -SDTime * std::log(fUniformGen->fire()); }
+    if (fNoSlowRisingTime) {
+      return -SDTime * std::log(fUniformGen->fire());
+    }
     return with_rising_time(SRTime, SDTime);
   }
 
