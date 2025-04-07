@@ -495,7 +495,6 @@ namespace phot {
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
-              // double * the_transport_time = &transport_time[ndetected_fast];
               for (int i = 0; i < n; ++i) {
                 // calculates the time at which the photon was produced
                 double dtime = edepi.StartT() + fScintTime->slowScintTime();
