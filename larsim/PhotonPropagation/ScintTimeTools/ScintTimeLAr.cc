@@ -117,9 +117,7 @@ namespace phot {
 
   inline double ScintTimeLAr::slowScintTime()
   {
-    if (fNoSlowRisingTime) {
-      return -SDTime * std::log(fUniformGen->fire());
-    }
+    if (fNoSlowRisingTime) { return -SDTime * std::log(fUniformGen->fire()); }
     return with_rising_time(SRTime, SDTime);
   }
 

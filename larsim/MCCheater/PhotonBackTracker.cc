@@ -300,8 +300,8 @@ namespace cheat {
     sim::OpDetBacktrackerRecord::timePDclock_t end_time = ((fPeakTime + fWidth) * 1000.0) - fDelay;
     if (start_time > end_time) { throw; }
 
-    auto const& timeSDPMap = FindOpDetBTR(fWireReadoutGeom->OpDetFromOpChannel(opHit.OpChannel()))
-                               ->timePDclockSDPsMap();
+    auto const& timeSDPMap =
+      FindOpDetBTR(fWireReadoutGeom->OpDetFromOpChannel(opHit.OpChannel()))->timePDclockSDPsMap();
 
     //This section is a hack to make comparisons work right.
     std::vector<sim::SDP> dummyVec;
