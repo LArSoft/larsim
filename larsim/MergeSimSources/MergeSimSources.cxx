@@ -62,7 +62,8 @@ void sim::MergeSimSourcesUtility::MergeMCParticles(
 
 void sim::MergeSimSourcesUtility::MergeSimChannels(std::vector<sim::SimChannel>& merged_vector,
                                                    const std::vector<sim::SimChannel>& input_vector,
-                                                   size_t source_index)
+                                                   size_t source_index,
+                                                   bool skip_trackIDs)
 {
   if (source_index >= fG4TrackIDOffsets.size())
     std::runtime_error("ERROR in MergeSimSourcesUtility: Source index out of range!");
@@ -89,7 +90,7 @@ void sim::MergeSimSourcesUtility::MergeSimChannels(std::vector<sim::SimChannel>&
       range_trackID.second = std::abs(thisrange.second);
   }
 
-  UpdateG4TrackIDRange(range_trackID, source_index);
+  if (!skip_trackIDs) UpdateG4TrackIDRange(range_trackID, source_index);
 }
 
 void sim::MergeSimSourcesUtility::MergeAuxDetSimChannels(
