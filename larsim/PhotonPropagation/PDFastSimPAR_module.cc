@@ -140,14 +140,16 @@ namespace phot {
     void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
                      std::vector<int>& ChannelMap,
                      const sim::OpDetBacktrackerRecord& btr) const;
-    void SimpleAddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
-                           std::vector<int>& ChannelMap,
-                           size_t channel,
-                           int trackID,
-                           int time,
-                           double pos[3],
-                           double edeposit,
-                           int num_photons = 1);
+    void SimpleAddOpDetBTR(
+      // std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+      std::map<int, sim::OBTRHelper>& opbtr,
+      std::vector<int>& ChannelMap,
+      size_t channel,
+      int trackID,
+      int time,
+      double pos[3],
+      double edeposit,
+      int num_photons = 1);
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<geo::Point_t> opDetCenters() const;
@@ -334,6 +336,10 @@ namespace phot {
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
     auto phlit_ref = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr_ref = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
+
+    //Helpers holding maps
+    std::map<int, sim::OBTRHelper> opbtr_helper, opbtr_helper_ref;
+
     auto& dir_phlitcol(*phlit);
     auto& ref_phlitcol(*phlit_ref);
     // SimPhotons
@@ -477,12 +483,28 @@ namespace phot {
                 if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                   SimpleAddOpDetBTR(
-                    *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    // *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper_ref,
+                    PDChannelToSOCMapReflect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
                 }
                 else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
                   SimpleAddOpDetBTR(
-                    *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    // *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper,
+                    PDChannelToSOCMapDirect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
                 }
               }
             }
@@ -497,12 +519,28 @@ namespace phot {
                 if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
                   SimpleAddOpDetBTR(
-                    *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    // *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper_ref,
+                    PDChannelToSOCMapReflect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
                 }
                 else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
                   SimpleAddOpDetBTR(
-                    *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    // *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper,
+                    PDChannelToSOCMapDirect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
                 }
               }
             }
@@ -570,9 +608,17 @@ namespace phot {
     }
 
     if (fUseLitePhotons) {
+
+      for (auto& iopbtr : opbtr_helper) {
+        opbtr->emplace_back(iopbtr.second);
+      }
+
       event.put(move(phlit));
       event.put(move(opbtr));
       if (fDoReflectedLight) {
+        for (auto& iopbtr : opbtr_helper_ref) {
+          opbtr_ref->emplace_back(iopbtr.second);
+        }
         event.put(move(phlit_ref), "Reflected");
         event.put(move(opbtr_ref), "Reflected");
       }
@@ -608,21 +654,24 @@ namespace phot {
     }
   }
 
-  void PDFastSimPAR::SimpleAddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
-                                       std::vector<int>& ChannelMap,
-                                       size_t channel,
-                                       int trackID,
-                                       int time,
-                                       double pos[3],
-                                       double edeposit,
-                                       int num_photons)
+  void PDFastSimPAR::SimpleAddOpDetBTR( //std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+    std::map<int, sim::OBTRHelper>& opbtr,
+    std::vector<int>& ChannelMap,
+    size_t channel,
+    int trackID,
+    int time,
+    double pos[3],
+    double edeposit,
+    int num_photons)
   {
     if (ChannelMap[channel] < 0) {
       ChannelMap[channel] = opbtr.size();
-      opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
+      // opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
+      opbtr.emplace(channel, channel);
     }
-    size_t idtest = ChannelMap[channel];
-    opbtr.at(idtest).AddScintillationPhotons(trackID, time, num_photons, pos, edeposit);
+    // size_t idtest = ChannelMap[channel];
+    // opbtr.at(idtest).AddScintillationPhotonsToMap(trackID, time, num_photons, pos, edeposit);
+    opbtr.at(channel).AddScintillationPhotonsToMap(trackID, time, num_photons, pos, edeposit);
   }
 
   //......................................................................
