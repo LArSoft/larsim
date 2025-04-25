@@ -60,9 +60,7 @@ namespace phot {
       double ran2 = fUniformGen->fire();
       double t = -tau2 * std::log(1 - ran1);
       double g = d * single_exp(t, tau2);
-      if (ran2 <= bi_exp(t, tau1, tau2) / g) {
-        return t;
-      }
+      if (ran2 <= bi_exp(t, tau1, tau2) / g) { return t; }
     }
   }
 
