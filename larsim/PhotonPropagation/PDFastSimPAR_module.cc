@@ -125,6 +125,7 @@ namespace phot {
       DP VUVHits{Name("VUVHits"), Comment("Configuration for UV visibility parameterization")};
       ODP VISHits{Name("VISHits"),
                   Comment("Configuration for visibile visibility parameterization")};
+      fhicl::Atom<bool> Verbose{Name("Verbose"), Comment("Print verbose information"), false};
     };
     using Parameters = art::EDProducer::Table<Config>;
 
@@ -139,6 +140,16 @@ namespace phot {
     void AddOpDetBTR(std::vector<sim::OpDetBacktrackerRecord>& opbtr,
                      std::vector<int>& ChannelMap,
                      const sim::OpDetBacktrackerRecord& btr) const;
+    void SimpleAddOpDetBTR(
+      // std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+      std::map<int, sim::OBTRHelper>& opbtr,
+      std::vector<int>& ChannelMap,
+      size_t channel,
+      int trackID,
+      int time,
+      double pos[3],
+      double edeposit,
+      int num_photons = 1);
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<geo::Point_t> opDetCenters() const;
@@ -325,6 +336,10 @@ namespace phot {
     auto opbtr = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
     auto phlit_ref = std::make_unique<std::vector<sim::SimPhotonsLite>>();
     auto opbtr_ref = std::make_unique<std::vector<sim::OpDetBacktrackerRecord>>();
+
+    //Helpers holding maps
+    std::map<int, sim::OBTRHelper> opbtr_helper, opbtr_helper_ref;
+
     auto& dir_phlitcol(*phlit);
     auto& ref_phlitcol(*phlit_ref);
     // SimPhotons
@@ -363,7 +378,18 @@ namespace phot {
     int num_fastdp = 0;
     int num_slowdp = 0;
 
+    mf::LogTrace("PDFastSimPAR") << "Creating SimPhotonsLite/SimPhotons from " << (*edeps).size()
+                                 << " energy deposits\n";
+
     for (auto const& edepi : *edeps) {
+
+      if (!(num_points % 1000)) {
+        mf::LogTrace("PDFastSimPAR")
+          << "SimEnergyDeposit: " << num_points << " " << edepi.TrackID() << " " << edepi.Energy()
+          << "\nStart: " << edepi.Start() << "\nEnd: " << edepi.End()
+          << "\nNF: " << edepi.NumFPhotons() << "\nNS: " << edepi.NumSPhotons()
+          << "\nSYR: " << edepi.ScintYieldRatio() << "\n";
+      }
       num_points++;
 
       int nphot_fast = edepi.NumFPhotons();
@@ -445,7 +471,6 @@ namespace phot {
 
           // SimPhotonsLite case
           if (fUseLitePhotons) {
-            sim::OpDetBacktrackerRecord tmpbtr(channel);
             if (ndetected_fast > 0 && fDoFastComponent) {
               int n = ndetected_fast;
               num_fastdp += n;
@@ -453,32 +478,72 @@ namespace phot {
                 // calculates the time at which the photon was produced
                 double dtime = edepi.StartT() + fScintTime->fastScintTime();
                 if (fIncludePropTime) dtime += transport_time[i];
+
                 int time = static_cast<int>(std::round(dtime));
-                if (Reflected)
+                if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
-                else
+                  SimpleAddOpDetBTR(
+                    // *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper_ref,
+                    PDChannelToSOCMapReflect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
+                }
+                else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
-                tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                  SimpleAddOpDetBTR(
+                    // *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper,
+                    PDChannelToSOCMapDirect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
+                }
               }
             }
             if (ndetected_slow > 0 && fDoSlowComponent) {
               int n = ndetected_slow;
               num_slowdp += n;
               for (int i = 0; i < n; ++i) {
+                // calculates the time at which the photon was produced
                 double dtime = edepi.StartT() + fScintTime->slowScintTime();
                 if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
                 int time = static_cast<int>(std::round(dtime));
-                if (Reflected)
+                if (Reflected) {
                   ++ref_phlitcol[channel].DetectedPhotons[time];
-                else
+                  SimpleAddOpDetBTR(
+                    // *opbtr_ref, PDChannelToSOCMapReflect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper_ref,
+                    PDChannelToSOCMapReflect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
+                }
+                else {
                   ++dir_phlitcol[channel].DetectedPhotons[time];
-                tmpbtr.AddScintillationPhotons(trackID, time, 1, pos, edeposit);
+                  SimpleAddOpDetBTR(
+                    // *opbtr, PDChannelToSOCMapDirect, channel, trackID, time, pos, edeposit, 1);
+                    opbtr_helper,
+                    PDChannelToSOCMapDirect,
+                    channel,
+                    trackID,
+                    time,
+                    pos,
+                    edeposit,
+                    1);
+                }
               }
             }
-            if (Reflected)
-              AddOpDetBTR(*opbtr_ref, PDChannelToSOCMapReflect, tmpbtr);
-            else
-              AddOpDetBTR(*opbtr, PDChannelToSOCMapDirect, tmpbtr);
           }
           // SimPhotons case
           else {
@@ -531,10 +596,29 @@ namespace phot {
                                  << "\ndetected fast photons: " << num_fastdp
                                  << ", detected slow photons: " << num_slowdp;
 
+    mf::LogDebug("PDFastSimPAR") << "Number of entries in opbtrs";
+    for (auto& iopbtr : *opbtr) {
+      mf::LogDebug("PDFastSimPAR")
+        << "OpDet: " << iopbtr.OpDetNum() << " " << iopbtr.timePDclockSDPsMap().size();
+    }
+    mf::LogDebug("PDFastSimPAR") << "Number of entries in opbtrs refelected";
+    for (auto& iopbtr : *opbtr_ref) {
+      mf::LogDebug("PDFastSimPAR")
+        << "OpDet: " << iopbtr.OpDetNum() << " " << iopbtr.timePDclockSDPsMap().size();
+    }
+
     if (fUseLitePhotons) {
+
+      for (auto& iopbtr : opbtr_helper) {
+        opbtr->emplace_back(iopbtr.second);
+      }
+
       event.put(move(phlit));
       event.put(move(opbtr));
       if (fDoReflectedLight) {
+        for (auto& iopbtr : opbtr_helper_ref) {
+          opbtr_ref->emplace_back(iopbtr.second);
+        }
         event.put(move(phlit_ref), "Reflected");
         event.put(move(opbtr_ref), "Reflected");
       }
@@ -568,6 +652,26 @@ namespace phot {
         }
       }
     }
+  }
+
+  void PDFastSimPAR::SimpleAddOpDetBTR( //std::vector<sim::OpDetBacktrackerRecord>& opbtr,
+    std::map<int, sim::OBTRHelper>& opbtr,
+    std::vector<int>& ChannelMap,
+    size_t channel,
+    int trackID,
+    int time,
+    double pos[3],
+    double edeposit,
+    int num_photons)
+  {
+    if (ChannelMap[channel] < 0) {
+      ChannelMap[channel] = opbtr.size();
+      // opbtr.push_back(sim::OpDetBacktrackerRecord(channel));
+      opbtr.emplace(channel, channel);
+    }
+    // size_t idtest = ChannelMap[channel];
+    // opbtr.at(idtest).AddScintillationPhotonsToMap(trackID, time, num_photons, pos, edeposit);
+    opbtr.at(channel).AddScintillationPhotonsToMap(trackID, time, num_photons, pos, edeposit);
   }
 
   //......................................................................
