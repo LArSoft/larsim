@@ -13,11 +13,11 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-//#include "art/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "cetlib/pow.h"
+#include <TVector3.h>
 #include <cmath>
 #include <memory>
 #include <vector>
@@ -31,8 +31,8 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
 
+#include "nurandom/RandomUtils/NuRandomService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
@@ -69,17 +69,14 @@ public:
 
   void beginRun(art::Run& run) override;
 
-  void GenPosition(double& x, double& y, double& z);
+  TVector3 GenPosition();
 
   std::array<double, 3U> extractDirection() const;
-  void GenMomentum(const PartGenParam& param,
-                   const double& mass,
-                   double& px,
-                   double& py,
-                   double& pz,
-                   const double x,
-                   const double y,
-                   const double z);
+  TVector3 GenMomentum(const PartGenParam& param,
+                       const double& mass,
+                       const double x,
+                       const double y,
+                       const double z);
 
   std::vector<size_t> GenParticles() const;
 
@@ -132,26 +129,25 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
       createEngine(0, "HepJamesRandom", "GenRain"),
       "HepJamesRandom",
       "GenRain"))
-//, fFlatEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "Gen", p, "Seed"))
-// :
 // Initialize member data here.
 {
 
-  //
   // Random engine initialization
-  //
   fFlatRandom = std::make_unique<CLHEP::RandFlat>(fFlatEngine, 0, 1);
-  fNormalRandom = std::make_unique<CLHEP::RandGauss>(fFlatEngine);
-
-  // x^2 distribution for fCosmicAngleRandom
-  // will be used to draw cos(theta)
-  const int nbins(100);
-  double parent[nbins];
-  for (size_t idx = 0; idx < nbins; ++idx) {
-    //parent[idx] = cet::square(cos(((float) idx)/nbins * util::pi()));
-    parent[idx] = cet::square(((float)idx) / nbins);
+  if (_cosmic_distribution) {
+    // x^2 distribution for fCosmicAngleRandom
+    // will be used to draw cos(theta)
+    const int nbins(100);
+    double parent[nbins];
+    for (size_t idx = 0; idx < nbins; ++idx) {
+      //parent[idx] = cet::square(cos(((float) idx)/nbins * util::pi()));
+      parent[idx] = cet::square(((float)idx) / nbins); //
+    }
+    fCosmicAngleRandom = std::make_unique<CLHEP::RandGeneral>(fFlatEngine, parent, nbins);
   }
-  fCosmicAngleRandom = std::make_unique<CLHEP::RandGeneral>(fFlatEngine, parent, nbins);
+  else {
+    fNormalRandom = std::make_unique<CLHEP::RandGauss>(fFlatEngine);
+  }
 
   produces<std::vector<simb::MCTruth>>();
   produces<sumdata::RunData, art::InRun>();
@@ -172,7 +168,6 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
   auto const zrange = p.get<std::vector<double>>("ZRange");
   auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
 
-  _param_v.clear();
   auto const pdg_v = part_cfg.get<std::vector<std::vector<int>>>("PDGCode");
   auto const minmult_v = part_cfg.get<std::vector<unsigned short>>("MinMulti");
   auto const maxmult_v = part_cfg.get<std::vector<unsigned short>>("MaxMulti");
@@ -272,7 +267,7 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
   assert(_yrange[0] <= _yrange[1]);
   assert(_zrange[0] <= _zrange[1]);
 
-  if (_debug > 0) {
+  if (_debug) {
     std::cout << "Particle generation world boundaries..." << std::endl
               << "X " << _xrange[0] << " => " << _xrange[1] << std::endl
               << "Y " << _yrange[0] << " => " << _yrange[1] << std::endl
@@ -280,12 +275,12 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
   }
 
   // register
-  //auto db = new TDatabasePDG;
   auto db = TDatabasePDG::Instance();
   bool direct_inward = p.get<bool>("DirectInward", true);
   if (_cosmic_distribution && direct_inward) {
-    std::cout << "Cannot satisfy both CosmicDistribution and Inward Directioning at the same time"
-              << std::endl;
+    if (_debug)
+      std::cout << "Cannot satisfy both CosmicDistribution and Inward Directioning at the same time"
+                << std::endl;
     throw std::exception();
   }
   for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
@@ -311,7 +306,7 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
     // overall range check
     if (param.kerange[0] > param.kerange[1]) this->abort("KE range has no phase space...");
 
-    if (_debug > 0) {
+    if (_debug) {
       std::cout << "Generating particle (PDG";
       for (auto const& pdg : param.pdg)
         std::cout << " " << pdg;
@@ -375,16 +370,19 @@ std::vector<size_t> MultiPartRain::GenParticles() const
   return result;
 }
 
-void MultiPartRain::GenPosition(double& x, double& y, double& z)
+TVector3 MultiPartRain::GenPosition()
 {
+  double x, y, z;
 
   x = fFlatRandom->fire(_xrange[0], _xrange[1]);
   y = fFlatRandom->fire(_yrange[0], _yrange[1]);
   z = fFlatRandom->fire(_zrange[0], _zrange[1]);
 
-  if (_debug > 0) {
+  if (_debug) {
     std::cout << "Generating a rain particle at (" << x << "," << y << "," << z << ")" << std::endl;
   }
+
+  return TVector3(x, y, z);
 }
 
 std::array<double, 3U> MultiPartRain::extractDirection() const
@@ -413,20 +411,17 @@ std::array<double, 3U> MultiPartRain::extractDirection() const
   return result;
 }
 
-void MultiPartRain::GenMomentum(const PartGenParam& param,
-                                const double& mass,
-                                double& px,
-                                double& py,
-                                double& pz,
-                                const double x,
-                                const double y,
-                                const double z)
+TVector3 MultiPartRain::GenMomentum(const PartGenParam& param,
+                                    const double& mass,
+                                    const double x,
+                                    const double y,
+                                    const double z)
 {
 
   double tot_energy = 0;
   if (param.use_mom)
     tot_energy =
-      sqrt(cet::square(fFlatRandom->fire(param.kerange[0], param.kerange[1])) + cet::square(mass));
+      std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass); // KE + mass
   else
     tot_energy = fFlatRandom->fire(param.kerange[0], param.kerange[1]) + mass;
 
@@ -439,10 +434,11 @@ void MultiPartRain::GenMomentum(const PartGenParam& param,
      * each direction and normalize.
      *
      * https://mathworld.wolfram.com/SpherePointPicking.html
-     */
+  */
 
+  double px, py, pz;
   if (!param.direct_inward) {
-    std::cout << "No inward directioning..." << std::endl;
+    if (_debug) { std::cout << "No inward directioning..." << std::endl; }
     std::array<double, 3U> p = extractDirection();
     px = p[0];
     py = p[1];
@@ -470,20 +466,22 @@ void MultiPartRain::GenMomentum(const PartGenParam& param,
       if ((px * sign_x) >= 0. && (py * sign_y) >= 0. && (pz * sign_z) >= 0.) break;
     }
   }
-  //std::cout<<"LOGME,"<<phi<<","<<theta<<","<<px<<","<<py<<","<<pz<<std::endl;
 
-  if (_debug > 1)
+  if (_debug) {
     std::cout << "    Direction : (" << px << "," << py << "," << pz << ")" << std::endl
               << "    Momentum  : " << mom_mag << " [MeV/c]" << std::endl
               << "    Energy    : " << tot_energy << " [MeV/c^2]" << std::endl;
+  }
   px *= mom_mag;
   py *= mom_mag;
   pz *= mom_mag;
+
+  return TVector3(px, py, pz);
 }
 
 void MultiPartRain::produce(art::Event& e)
 {
-  if (_debug > 0) std::cout << "Processing a new event..." << std::endl;
+  if (_debug) std::cout << "Processing a new event..." << std::endl;
 
   std::unique_ptr<std::vector<simb::MCTruth>> mctArray(new std::vector<simb::MCTruth>);
 
@@ -498,19 +496,29 @@ void MultiPartRain::produce(art::Event& e)
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
     auto const& param = _param_v[param_idx_v[idx]];
-    double px, py, pz;
+
     // decide which particle
     size_t pdg_index = (size_t)(fFlatRandom->fire(0, param.pdg.size() - 1.e-10));
     auto const& pdg = param.pdg[pdg_index];
     auto const& mass = param.mass[pdg_index];
     if (_debug) std::cout << "  " << idx << "th instance PDG " << pdg << std::endl;
+
+    TVector3 position = GenPosition();
     double x, y, z;
-    GenPosition(x, y, z);
+    x = position.X();
+    y = position.Y();
+    z = position.Z();
     double g4_time = fFlatRandom->fire(_t0 - _t0_sigma / 2., _t0 + _t0_sigma / 2.);
     TLorentzVector pos(x, y, z, g4_time);
-    std::cout << "Generating momentum..." << std::endl;
-    GenMomentum(param, mass, px, py, pz, x, y, z);
-    std::cout << "done" << std::endl;
+
+    if (_debug) std::cout << "Generating momentum..." << std::endl;
+    TVector3 momentum = GenMomentum(param, mass, x, y, z);
+    double px, py, pz;
+    px = momentum.X();
+    py = momentum.Y();
+    pz = momentum.Z();
+    if (_debug) std::cout << "done" << std::endl;
+
     TLorentzVector mom(
       px, py, pz, sqrt(cet::square(px) + cet::square(py) + cet::square(pz) + cet::square(mass)));
     simb::MCParticle part(part_v.size(), pdg, "primary", 0, mass, 1);
@@ -519,23 +527,7 @@ void MultiPartRain::produce(art::Event& e)
   }
 
   if (_debug) std::cout << "Total number particles: " << mct.NParticles() << std::endl;
-  /*
-     simb::MCParticle nu(mct.NParticles(), 16, "primary", mct.NParticles(), 0, 0);
-     double px=0;
-     double py=0;
-     double pz=0;
-     double en=0;
-     for(auto const& part : part_v) {
-     px = part.Momentum().Px();
-     py = part.Momentum().Py();
-     pz = part.Momentum().Pz();
-     en = part.Momentum().E();
-     }
-     TLorentzVector mom(px,py,pz,en);
-     nu.AddTrajectoryPoint(pos,mom);
 
-     mct.Add(nu);
-     */
   for (auto& part : part_v)
     mct.Add(part);
 

@@ -13,23 +13,25 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-//#include "art/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "cetlib/pow.h"
+#include <TVector3.h>
+#include <cmath>
 #include <memory>
 #include <vector>
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
+
 #include "TRandom.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 #include "larcoreobj/SummaryData/RunData.h"
-#include "nurandom/RandomUtils/NuRandomService.h"
 
+#include "nurandom/RandomUtils/NuRandomService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
@@ -65,23 +67,14 @@ public:
 
   void beginRun(art::Run& run) override;
 
-  void GenPosition(double& x, double& y, double& z);
-  void GenBoost(double& bx, double& by, double& bz);
+  TVector3 GenPosition();
+  TVector3 GenBoost();
 
   std::array<double, 3U> extractDirection() const;
-  void GenMomentum(const PartGenParam& param,
-                   const double& mass,
-                   double& px,
-                   double& py,
-                   double& pz);
-  void GenMomentum(const PartGenParam& param,
-                   const double& mass,
-                   double& px,
-                   double& py,
-                   double& pz,
-                   bool& same_range);
+  TVector3 GenMomentum(const PartGenParam& param, const double& mass);
+  TVector3 GenMomentum(const PartGenParam& param, const double& mass, bool& same_range);
 
-  void GenMomentumSF(const double& sf, const double& mass, const double& p, double& p_sf);
+  double GenMomentumSF(const double& sf, const double& mass, const double& p);
   std::vector<size_t> GenParticles() const;
 
 private:
@@ -117,9 +110,8 @@ private:
   // verbosity flag
   unsigned short _debug;
 
-  unsigned short _use_boost;
-
-  unsigned short _revert;
+  bool _use_boost;
+  bool _revert;
 };
 
 void MultiPartVertex::abort(const std::string msg) const
@@ -136,13 +128,10 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
       createEngine(0, "HepJamesRandom", "GenVertex"),
       "HepJamesRandom",
       "GenVertex"))
-//, fFlatEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, "HepJamesRandom", "Gen", p, "Seed"))
 // Initialize member data here.
 {
 
-  //
   // Random engine initialization
-  //
   fFlatRandom = std::make_unique<CLHEP::RandFlat>(fFlatEngine, 0, 1);
   fNormalRandom = std::make_unique<CLHEP::RandGauss>(fFlatEngine);
 
@@ -150,8 +139,8 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   produces<sumdata::RunData, art::InRun>();
 
   _debug = p.get<unsigned short>("DebugMode", 0);
-  _revert = p.get<unsigned short>("Revert", 0);
-  _use_boost = p.get<unsigned short>("UseBoost", 0);
+  _revert = p.get<bool>("Revert", false);
+  _use_boost = p.get<bool>("UseBoost", false);
   _t0 = p.get<double>("G4Time");
   _t0_sigma = p.get<double>("G4TimeJitter");
   if (_t0_sigma < 0) this->abort("Cannot have a negative value for G4 time jitter");
@@ -168,7 +157,6 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   _gamma_beta_range =
     p.get<std::array<double, 2>>("GammaBetaRange", {0.0, 0.0}); // _gamma_beta denotes gamma * beta
 
-  _param_v.clear();
   auto const pdg_v = part_cfg.get<std::vector<std::vector<int>>>("PDGCode");
   auto const minmult_v = part_cfg.get<std::vector<unsigned short>>("MinMulti");
   auto const maxmult_v = part_cfg.get<std::vector<unsigned short>>("MaxMulti");
@@ -208,20 +196,6 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   }
   _multi_min = std::max(_multi_min, multi_min);
   if (_multi_max < _multi_min) this->abort("Overall MultiMax <= overall MultiMin!");
-
-  /*
-    if(!xrange.empty() && xrange.size() >2) this->abort("Incompatible legnth @ X vector!" );
-    if(!yrange.empty() && yrange.size() >2) this->abort("Incompatible legnth @ Y vector!" );
-    if(!zrange.empty() && zrange.size() >2) this->abort("Incompatible legnth @ Z vector!" );
-
-    // range register
-    if(xrange.size()==1) { _xrange[0] = _xrange[1] = xrange[0]; }
-    if(xrange.size()==2) { _xrange[0] = xrange[0]; _xrange[1] = xrange[1]; }
-    if(yrange.size()==1) { _yrange[0] = _yrange[1] = yrange[0]; }
-    if(yrange.size()==2) { _yrange[0] = yrange[0]; _yrange[1] = yrange[1]; }
-    if(zrange.size()==1) { _zrange[0] = _zrange[1] = zrange[0]; }
-    if(zrange.size()==2) { _zrange[0] = zrange[0]; _zrange[1] = zrange[1]; }
-  */
 
   if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible legnth @ X vector!");
   if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible legnth @ Y vector!");
@@ -293,7 +267,6 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   }
 
   // register
-  //auto db = new TDatabasePDG;
   auto db = TDatabasePDG::Instance();
   for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
     auto const& pdg = pdg_v[idx];
@@ -392,9 +365,10 @@ std::vector<size_t> MultiPartVertex::GenParticles() const
   return result;
 }
 
-void MultiPartVertex::GenPosition(double& x, double& y, double& z)
+TVector3 MultiPartVertex::GenPosition()
 {
 
+  double x, y, z;
   x = fFlatRandom->fire(_xrange[0], _xrange[1]);
   y = fFlatRandom->fire(_yrange[0], _yrange[1]);
   z = fFlatRandom->fire(_zrange[0], _zrange[1]);
@@ -402,9 +376,11 @@ void MultiPartVertex::GenPosition(double& x, double& y, double& z)
   if (_debug > 0) {
     std::cout << "Generating a rain particle at (" << x << "," << y << "," << z << ")" << std::endl;
   }
+
+  return TVector3(x, y, z);
 }
 
-void MultiPartVertex::GenBoost(double& bx, double& by, double& bz)
+TVector3 MultiPartVertex::GenBoost()
 {
 
   double gbmag = 0.; // saves gamma * beta
@@ -419,6 +395,7 @@ void MultiPartVertex::GenBoost(double& bx, double& by, double& bz)
   double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
   double bmag = gbmag / TMath::Sqrt(1.0 + gbmag * gbmag);
 
+  double bx, by, bz;
   bx = bmag * st * TMath::Cos(phi);
   by = bmag * st * TMath::Sin(phi);
   bz = bmag * ct;
@@ -428,36 +405,9 @@ void MultiPartVertex::GenBoost(double& bx, double& by, double& bz)
               << ", phi = " << phi << std::endl;
     std::cout << "Generating a boost (" << bx << "," << by << "," << bz << ")" << std::endl;
   }
+
+  return TVector3(bx, by, bz);
 }
-
-/*
-void MultiPartVertex::GenPosition(double& x, double& y, double& z) {
-
-  auto const& tpc_id = _tpc_v.at((size_t)(fFlatRandom->fire(0,_tpc_v.size())));
-  // Implementation of required member function here.
-  auto geop = lar::providerFrom<geo::Geometry>();
-  size_t cid = tpc_id[0];
-  size_t tid = tpc_id[1];
-  auto const& cryostat = geop->Cryostat(cid);
-  if(!cryostat.HasTPC(tid)) {
-  std::cerr<< "\033[93mTPC " << tid << " not found... in cryostat " << cid << "\033[00m" << std::endl;
-    throw std::exception();
-  }
-
-  auto const& tpc = cryostat.TPC(tid);
-  auto const& tpcabox = tpc.ActiveBoundingBox();
-  double xmin = tpcabox.MinX() + _xrange[0];
-  double xmax = tpcabox.MaxX() - _xrange[1];
-  double ymin = tpcabox.MinY() + _yrange[0];
-  double ymax = tpcabox.MaxY() - _yrange[1];
-  double zmin = tpcabox.MinZ() + _zrange[0];
-double zmax = tpcabox.MaxZ() - _zrange[1];
-x = fFlatRandom->fire(xmin,xmax);
-y = fFlatRandom->fire(ymin,ymax);
-z = fFlatRandom->fire(zmin,zmax);
-
-}
-*/
 
 std::array<double, 3U> MultiPartVertex::extractDirection() const
 {
@@ -470,38 +420,22 @@ std::array<double, 3U> MultiPartVertex::extractDirection() const
   std::array<double, 3U> result = {px, py, pz};
   return result;
 }
-/*
-std::array<double, 3U> MultiPartVertex::extractDirection() const {
-    double px, py, pz;
-    px = fNormalRandom->fire(0, 1);
-    py = fNormalRandom->fire(0, 1);
-    pz = fNormalRandom->fire(0, 1);
-    double p = std::hypot(px, py, pz);
-    px = px / p;
-    py = py / p;
-    pz = pz / p;
-    std::array<double, 3U> result = { px, py, pz };
-    return result;
-}
-*/
 
-void MultiPartVertex::GenMomentum(const PartGenParam& param,
-                                  const double& mass,
-                                  double& px,
-                                  double& py,
-                                  double& pz)
+TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param, const double& mass)
 {
 
   double tot_energy = 0;
   if (param.use_mom)
     tot_energy =
-      sqrt(cet::square(fFlatRandom->fire(param.kerange[0], param.kerange[1])) + cet::square(mass));
+      std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass); // KE + mass
   else
     tot_energy = fFlatRandom->fire(param.kerange[0], param.kerange[1]) + mass;
 
   double mom_mag = sqrt(cet::square(tot_energy) - cet::square(mass));
 
   std::array<double, 3U> p = extractDirection();
+
+  double px, py, pz;
   px = p[0];
   py = p[1];
   pz = p[2];
@@ -513,28 +447,33 @@ void MultiPartVertex::GenMomentum(const PartGenParam& param,
   px *= mom_mag;
   py *= mom_mag;
   pz *= mom_mag;
+
+  return TVector3(px, py, pz);
 }
 
-void MultiPartVertex::GenMomentum(const PartGenParam& param,
-                                  const double& mass,
-                                  double& px,
-                                  double& py,
-                                  double& pz,
-                                  bool& same_range)
+TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
+                                      const double& mass,
+                                      bool& same_range)
 {
 
-  if (!same_range) { GenMomentum(param, mass, px, py, pz); }
+  double px, py, pz;
+  if (!same_range) {
+    TVector3 momentum = GenMomentum(param, mass);
+    px = momentum.X();
+    py = momentum.Y();
+    pz = momentum.Z();
+  }
   else {
     double tot_energy = 0;
     if (param.use_mom)
-      tot_energy = sqrt(cet::square(fFlatRandom->fire(param.kerange[0], param.kerange[1])) +
-                        cet::square(mass));
+      tot_energy =
+        std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass); // KE + mass
     else
       tot_energy = fFlatRandom->fire(param.kerange[0], 1) + mass;
 
     double mom_mag = sqrt(cet::square(tot_energy) - cet::square(mass));
-
     std::array<double, 3U> p = extractDirection();
+
     px = p[0];
     py = p[1];
     pz = p[2];
@@ -547,17 +486,18 @@ void MultiPartVertex::GenMomentum(const PartGenParam& param,
     py *= mom_mag;
     pz *= mom_mag;
   }
+
+  return TVector3(px, py, pz);
 }
 
-void MultiPartVertex::GenMomentumSF(const double& sf,
-                                    const double& m,
-                                    const double& p,
-                                    double& p_sf)
+double MultiPartVertex::GenMomentumSF(const double& sf, const double& m, const double& p)
 {
-  p_sf =
+  double p_sf =
     sqrt(sf * (2 * (sf - 1) * cet::square(m) -
                2 * (sf - 1) * m * sqrt(cet::square(m) + cet::square(p)) + sf * cet::square(p))) /
     p;
+
+  return p_sf;
 }
 
 void MultiPartVertex::produce(art::Event& e)
@@ -568,12 +508,16 @@ void MultiPartVertex::produce(art::Event& e)
 
   double g4_time = fFlatRandom->fire(_t0 - _t0_sigma / 2., _t0 + _t0_sigma / 2.);
 
-  double x, y, z;
-  GenPosition(x, y, z);
+  TVector3 position = GenPosition();
+  double x = position.X();
+  double y = position.Y();
+  double z = position.Z();
   TLorentzVector pos(x, y, z, g4_time);
 
-  double bx, by, bz;
-  GenBoost(bx, by, bz);
+  TVector3 pos_boost = GenBoost();
+  double bx = pos_boost.X();
+  double by = pos_boost.Y();
+  double bz = pos_boost.Z();
 
   simb::MCTruth mct;
 
@@ -595,7 +539,6 @@ void MultiPartVertex::produce(art::Event& e)
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
     auto const& param = _param_v[param_idx_v[idx]];
-    double px, py, pz;
     bool same_range = true;
     // decide which particle
     size_t pdg_index = (size_t)(fFlatRandom->fire(0, param.pdg.size() - 1.e-10));
@@ -603,21 +546,15 @@ void MultiPartVertex::produce(art::Event& e)
     auto const& mass = param.mass[pdg_index];
     if (_debug) std::cout << "  " << idx << "th instance PDG " << pdg << std::endl;
 
-    if (_revert) { GenMomentum(param, mass, px, py, pz); }
+    // empty  TVector3 momentum
+    TVector3 momentum;
+    if (_revert) { momentum = GenMomentum(param, mass); }
     else {
-      GenMomentum(param, mass, px, py, pz, same_range);
+      momentum = GenMomentum(param, mass, same_range);
     }
-    // moving boost
-    //
-    //TLorentzVector mom(px,py,pz,sqrt(cet::square(px)+cet::square(py)+cet::square(pz)+cet::square(mass)));
-    //
-    /*
-       if(_use_boost){
-       mom.Boost(bx,by,bz);
-         px=mom.X();
-	   py=mom.Y();
-	     pz=mom.Z();
-	     }*/
+    double px = momentum.X();
+    double py = momentum.Y();
+    double pz = momentum.Z();
 
     E_vec.push_back(sqrt(cet::square(px) + cet::square(py) + cet::square(pz) + cet::square(mass)));
     mass_vec.push_back(mass);
@@ -637,7 +574,6 @@ void MultiPartVertex::produce(art::Event& e)
     }
   }
   else {
-
     double total_KE = 0;
     for (size_t idx = 0; idx < E_vec.size(); ++idx) {
       total_KE += (E_vec[idx] - mass_vec[idx]);
@@ -648,7 +584,6 @@ void MultiPartVertex::produce(art::Event& e)
     if (_debug) std::cout << "total KE: " << total_KE << std::endl;
 
     if (total_KE > 1.) {
-
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
         auto const& param = _param_v[param_idx_v[idx]];
 
@@ -660,7 +595,7 @@ void MultiPartVertex::produce(art::Event& e)
           if (_debug)
             std::cout << "KE range: " << param.kerange[1] << " , pdg :  " << pdg_vec[idx]
                       << std::endl;
-          GenMomentumSF(param.kerange[1], mass_vec[idx], temp_p, mom_sf);
+          mom_sf = GenMomentumSF(param.kerange[1], mass_vec[idx], temp_p);
           if (_debug)
             std::cout << "particle KE sf: " << param.kerange[1] << ", p : " << temp_p
                       << " , mass :  " << mass_vec[idx] << " , mom_sf: " << mom_sf << std::endl;
@@ -681,9 +616,6 @@ void MultiPartVertex::produce(art::Event& e)
           part.AddTrajectoryPoint(pos, mom);
           part_v.emplace_back(std::move(part));
         }
-        //simb::MCParticle part(part_v.size(), pdg_vec[idx], "primary", 0, mass_vec[idx], 1);
-        //part.AddTrajectoryPoint(pos,mom);
-        //part_v.emplace_back(std::move(part));
       }
     }
 
@@ -703,7 +635,7 @@ void MultiPartVertex::produce(art::Event& e)
         if (_debug)
           std::cout << "KE range: " << param.kerange[1] << " , pdg :  " << pdg_vec[idx]
                     << std::endl;
-        GenMomentumSF(total_KE_sf * param.kerange[1], mass_vec[idx], temp_p, mom_sf);
+        mom_sf = GenMomentumSF(total_KE_sf * param.kerange[1], mass_vec[idx], temp_p);
         if (_debug)
           std::cout << "particle KE sf: " << total_KE_sf * param.kerange[1] << ", p : " << temp_p
                     << " , mass :  " << mass_vec[idx] << " , mom_sf: " << mom_sf << std::endl;
