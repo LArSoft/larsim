@@ -59,18 +59,15 @@ namespace {
     fhicl::Atom<bool> PrintStepPositions{
       Name("PrintStepPositions"),
       Comment("prints the position and time of each trajectory point"),
-      true
-    };
-    fhicl::Atom<bool> PrintStepMomenta{
-      Name("PrintStepMomenta"),
-      Comment("prints the momentum at each trajectory point"),
-      false
-    };
-    fhicl::Atom<bool> PrintStepEnergies{
-      Name("PrintStepEnergies"),
-      Comment("prints the total energy at each trajectory point"),
-      false
-    };
+      true};
+
+    fhicl::Atom<bool> PrintStepMomenta{Name("PrintStepMomenta"),
+                                       Comment("prints the momentum at each trajectory point"),
+                                       false};
+
+    fhicl::Atom<bool> PrintStepEnergies{Name("PrintStepEnergies"),
+                                        Comment("prints the total energy at each trajectory point"),
+                                        false};
 
     fhicl::Atom<unsigned int> PointsPerLine{
       Name("PointsPerLine"),
@@ -249,10 +246,13 @@ void sim::DumpMCParticles::DumpMCParticle(Stream&& out,
   const unsigned int nPoints = particle.NumberTrajectoryPoints();
   if ((nPoints > 0) && (fPointsPerLine > 0)) {
     out << ":";
-    sim::dump::DumpMCParticleTrajectory(
-      std::forward<Stream>(out), particle.Trajectory(), fPointsPerLine, indent + "  ",
-      fPrintStepPositions, fPrintStepMomenta, fPrintStepEnergies
-      );
+    sim::dump::DumpMCParticleTrajectory(std::forward<Stream>(out),
+                                        particle.Trajectory(),
+                                        fPointsPerLine,
+                                        indent + "  ",
+                                        fPrintStepPositions,
+                                        fPrintStepMomenta,
+                                        fPrintStepEnergies);
   } // if has points
 
 } // sim::DumpMCParticles::DumpMCParticle()
