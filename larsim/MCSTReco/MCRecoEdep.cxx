@@ -135,7 +135,9 @@ namespace sim {
     art::ServiceHandle<geo::Geometry const> geom;
 
     // Key map to identify a unique particle energy deposition point
-    std::map<std::pair<UniquePosition, unsigned int>, int> hit_index_m;
+    using TrackPoint_t = std::pair<UniquePosition, unsigned int>;
+    using HitIndices_t = std::map<TrackPoint_t, int>;
+    HitIndices_t hit_index_m;
 
     geo::PlaneDataContainer<std::size_t> const pindex = details::createPlaneIndexMap();
 
@@ -156,11 +158,7 @@ namespace sim {
       // next one.
       // Try first with the TPC from the previous point, if any; if it fails, go hunting
       if (!TPC || !TPC->ContainsPosition(mp)) TPC = geom->PositionToTPCptr(mp);
-      if (!TPC) {
-        // mf::LogWarning("SimDriftElectrons") << "step at " << mp << " is not within any TPC.";
-        // ... e.g. in the cathode
-        continue;
-      }
+      if (!TPC) continue;
 
       // make a collection of electrons for each plane
       for (geo::PlaneGeo const& plane : wireReadoutGeom.Iterate<geo::PlaneGeo>(TPC->ID())) {
@@ -182,9 +180,8 @@ namespace sim {
         // and all the planes in the TPC get the same charge contributions (barred geometric acceptance).
         // So: __GetEdepArray__[trackID][hitIndex].deps[planeIndex].energy/charge
         int const track_id = std::abs(sed.TrackID());
-        UniquePosition const pos{mp};
         std::vector<sim::MCEdep>& trackEDeps = __GetEdepArray__(track_id);
-        std::pair const key{pos, track_id};
+        TrackPoint_t const key{mp, track_id};
 
         // find the index of the hit the energy belongs to (possibly a new one):
         int hit_index = -1;
@@ -197,7 +194,7 @@ namespace sim {
         double const charge = sed.NumElectrons();
         if (hit_index < 0) {
           // This particle energy deposition is never recorded so far. Create a new Edep
-          trackEDeps.emplace_back(pos, planeid, pindex.size(), sed.Energy(), charge, planeNumber);
+          trackEDeps.emplace_back(mp, planeid, pindex.size(), sed.Energy(), charge, planeNumber);
         }
         else {
           // Append charge to the relevant edep (@ hit_index)

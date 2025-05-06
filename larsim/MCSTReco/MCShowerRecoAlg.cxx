@@ -241,7 +241,9 @@ namespace sim {
               shower_dep_dir[1] = edep.pos.Y() - mcshower[mcs_index].Start().Y();
               shower_dep_dir[2] = edep.pos.Z() - mcshower[mcs_index].Start().Z();
 
-              double dist = std::hypot(shower_dep_dir[0], shower_dep_dir[1], shower_dep_dir[2]);
+              double const dist =
+                std::hypot(shower_dep_dir[0], shower_dep_dir[1], shower_dep_dir[2]);
+              if (dist == 0) continue; // it would yield nonsense anyway
               for (auto& v : shower_dep_dir)
                 v /= dist;
 
@@ -291,7 +293,6 @@ namespace sim {
           mom[2] = edep.pos.Z() - mcs_daughter_vtx[2];
 
           // Weight by energy (momentum)
-          // double magnitude = sqrt(pow(mom.at(0), 2) + pow(mom.at(1), 2) + pow(mom.at(2), 2));
           double magnitude = std::hypot(mom[0], mom[1], mom[2]);
 
           double energy = 0;
@@ -365,8 +366,6 @@ namespace sim {
           // then the *signed* distance of any point (x_1, y_1, z_1) from this plane is:
           // D = (a*x_1 + b*y_1 + c*z_1 + d )/hypot(a,b,c)
 
-          // double p_mag = sqrt(pow(mcs_daughter_dir[0], 2) + pow(mcs_daughter_dir[1], 2) +
-          //                     pow(mcs_daughter_dir[2], 2));
           double p_mag = std::hypot(mcs_daughter_dir[0], mcs_daughter_dir[1], mcs_daughter_dir[2]);
           double a = 0, b = 0, c = 0, d = 0;
           if (p_mag > 1.e-10) {
@@ -380,10 +379,9 @@ namespace sim {
             continue;
           }
           //Radial Distance
-          if ((a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) <
-                2.4 &&
-              (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c) >
-                0) {
+          double const radialDistance =
+            (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c);
+          if (radialDistance < 2.4 && radialDistance > 0) {
 
             double E = 0;
             double N = 0;

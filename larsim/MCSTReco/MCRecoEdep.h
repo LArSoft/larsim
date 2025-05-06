@@ -66,8 +66,8 @@ namespace sim {
 
   struct MCEdep {
     struct deposit {
-      float energy;
-      float charge;
+      float energy = 0.0;
+      float charge = 0.0;
     };
 
     sim::UniquePosition pos;
