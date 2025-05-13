@@ -76,6 +76,7 @@ namespace sim {
 
     MCEdep() = default;
 
+    /// @todo Document the protocol for using this object and the (unprotected) `deps` in particular
     MCEdep(sim::UniquePosition p,
            geo::PlaneID const& pi,
            size_t num_planes,
@@ -84,7 +85,7 @@ namespace sim {
            size_t id)
       : pos(p), pid(pi), deps(num_planes)
     {
-      assert(id < num_planes);
+      assert(id < num_planes); // prerequisite
       deps[id].energy = e;
       deps[id].charge = c;
     }

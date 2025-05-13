@@ -379,6 +379,7 @@ namespace sim {
             continue;
           }
           //Radial Distance
+          assert(std::hypot(a, b, c) > 0.0); // guaranteed by p_mag > 0
           double const radialDistance =
             (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c);
           if (radialDistance < 2.4 && radialDistance > 0) {

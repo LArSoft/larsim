@@ -20,6 +20,9 @@ namespace sim {
 
 namespace sim {
 
+  /// @todo The implementation of this algorithm has several hard-coded,
+  ///       undocumented values which should be documented and stored
+  ///       into constants.
   class MCTrackRecoAlg {
 
   public:
