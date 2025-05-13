@@ -1,5 +1,5 @@
 cet_build_plugin( MultiPartRain art::module
-        LIBRARIES
+        LIBRARIES PRIVATE
             larcorealg::Geometry
             lardata::ArtDataHelper
             larsim::Simulation nug4::ParticleNavigation
@@ -23,7 +23,7 @@ cet_build_plugin( MultiPartRain art::module
         )
 
 cet_build_plugin( MultiPartVertex art::module
-        LIBRARIES
+        LIBRARIES PRIVATE
             larcorealg::Geometry
             lardata::ArtDataHelper
             larsim::Simulation nug4::ParticleNavigation
