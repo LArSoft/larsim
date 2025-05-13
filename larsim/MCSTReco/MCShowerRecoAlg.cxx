@@ -26,6 +26,7 @@
 #include "larsim/MCSTReco/MCRecoPart.h"
 #include "larsim/MCSTReco/MCShowerRecoPart.h"
 
+#include <cmath> // std::hypot()
 #include <memory>
 #include <vector>
 
@@ -203,15 +204,15 @@ namespace sim {
         double min_dist = sim::kINVALID_DOUBLE;
         for (auto const& edep : daughter_edep) {
 
-          double dist = sqrt(pow(edep.pos._x - daughter_part._start_vtx[0], 2) +
-                             pow(edep.pos._y - daughter_part._start_vtx[1], 2) +
-                             pow(edep.pos._z - daughter_part._start_vtx[2], 2));
+          double dist = std::hypot(edep.pos.X() - daughter_part._start_vtx[0],
+                                   edep.pos.Y() - daughter_part._start_vtx[1],
+                                   edep.pos.Z() - daughter_part._start_vtx[2]);
 
           if (dist < min_dist) {
             min_dist = dist;
-            mcs_daughter_vtx[0] = edep.pos._x;
-            mcs_daughter_vtx[1] = edep.pos._y;
-            mcs_daughter_vtx[2] = edep.pos._z;
+            mcs_daughter_vtx[0] = edep.pos.X();
+            mcs_daughter_vtx[1] = edep.pos.Y();
+            mcs_daughter_vtx[2] = edep.pos.Z();
             mcs_daughter_vtx[3] = (dist / 100. / 2.998e8) * 1.e9 + daughter_part._start_vtx[3];
           }
         }
@@ -223,7 +224,7 @@ namespace sim {
           shower_dir[2] = mcshower[mcs_index].Start().Pz();
           double magnitude = 0;
           for (size_t i = 0; i < 3; ++i)
-            magnitude += pow(shower_dir[i], 2);
+            magnitude += shower_dir[i] * shower_dir[i];
 
           magnitude = sqrt(magnitude);
 
@@ -236,12 +237,13 @@ namespace sim {
 
             for (auto const& edep : daughter_edep) {
               std::vector<double> shower_dep_dir(3, 0);
-              shower_dep_dir[0] = edep.pos._x - mcshower[mcs_index].Start().X();
-              shower_dep_dir[1] = edep.pos._y - mcshower[mcs_index].Start().Y();
-              shower_dep_dir[2] = edep.pos._z - mcshower[mcs_index].Start().Z();
+              shower_dep_dir[0] = edep.pos.X() - mcshower[mcs_index].Start().X();
+              shower_dep_dir[1] = edep.pos.Y() - mcshower[mcs_index].Start().Y();
+              shower_dep_dir[2] = edep.pos.Z() - mcshower[mcs_index].Start().Z();
 
-              double dist = sqrt(pow(shower_dep_dir[0], 2) + pow(shower_dep_dir[1], 2) +
-                                 pow(shower_dep_dir[2], 2));
+              double const dist =
+                std::hypot(shower_dep_dir[0], shower_dep_dir[1], shower_dep_dir[2]);
+              if (dist == 0) continue; // it would yield nonsense anyway
               for (auto& v : shower_dep_dir)
                 v /= dist;
 
@@ -253,9 +255,9 @@ namespace sim {
               if (dist < min_dist && angle < 10) {
 
                 min_dist = dist;
-                mcs_daughter_vtx[0] = edep.pos._x;
-                mcs_daughter_vtx[1] = edep.pos._y;
-                mcs_daughter_vtx[2] = edep.pos._z;
+                mcs_daughter_vtx[0] = edep.pos.X();
+                mcs_daughter_vtx[1] = edep.pos.Y();
+                mcs_daughter_vtx[2] = edep.pos.Z();
                 mcs_daughter_vtx[3] =
                   (dist / 100. / 2.998e8) * 1.e9 + mcshower[mcs_index].Start().T();
               }
@@ -286,12 +288,12 @@ namespace sim {
         for (auto const& edep : daughter_edep) {
 
           // Compute unit vector to this energy deposition
-          mom[0] = edep.pos._x - mcs_daughter_vtx[0];
-          mom[1] = edep.pos._y - mcs_daughter_vtx[1];
-          mom[2] = edep.pos._z - mcs_daughter_vtx[2];
+          mom[0] = edep.pos.X() - mcs_daughter_vtx[0];
+          mom[1] = edep.pos.Y() - mcs_daughter_vtx[1];
+          mom[2] = edep.pos.Z() - mcs_daughter_vtx[2];
 
           // Weight by energy (momentum)
-          double magnitude = sqrt(pow(mom.at(0), 2) + pow(mom.at(1), 2) + pow(mom.at(2), 2));
+          double magnitude = std::hypot(mom[0], mom[1], mom[2]);
 
           double energy = 0;
           double npid = 0;
@@ -308,12 +310,13 @@ namespace sim {
             mcs_daughter_mom[1] += mom.at(1);
             mcs_daughter_mom[2] += mom.at(2);
           }
+
           //Determine the direction of the shower right at the start point
           double E = 0;
           double N = 0;
-          if (sqrt(pow(edep.pos._x - mcs_daughter_vtx[0], 2) +
-                   pow(edep.pos._y - mcs_daughter_vtx[1], 2) +
-                   pow(edep.pos._z - mcs_daughter_vtx[2], 2)) < 2.4 &&
+          if (std::hypot(edep.pos.X() - mcs_daughter_vtx[0],
+                         edep.pos.Y() - mcs_daughter_vtx[1],
+                         edep.pos.Z() - mcs_daughter_vtx[2]) < 2.4 &&
               magnitude > 1.e-10) {
 
             mcs_daughter_dir[0] += mom.at(0);
@@ -330,8 +333,7 @@ namespace sim {
 
           // Charge
           auto const pid = edep.pid;
-          auto q_i = pindex.find(pid);
-          if (q_i != pindex.end())
+          if (pindex.hasPlane(pid))
             plane_charge[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
 
         } ///Looping through the MCShower daughter's energy depositions
@@ -362,10 +364,9 @@ namespace sim {
           // a*x + b*y + c*z + d = 0
           // where, a = dir_x, b = dir_y, c = dir_z, d = - (a*x_0+b*y_0+c*z_0)
           // then the *signed* distance of any point (x_1, y_1, z_1) from this plane is:
-          // D = (a*x_1 + b*y_1 + c*z_1 + d )/sqrt( pow(a,2) + pow(b,2) + pow(c,2))
+          // D = (a*x_1 + b*y_1 + c*z_1 + d )/hypot(a,b,c)
 
-          double p_mag = sqrt(pow(mcs_daughter_dir[0], 2) + pow(mcs_daughter_dir[1], 2) +
-                              pow(mcs_daughter_dir[2], 2));
+          double p_mag = std::hypot(mcs_daughter_dir[0], mcs_daughter_dir[1], mcs_daughter_dir[2]);
           double a = 0, b = 0, c = 0, d = 0;
           if (p_mag > 1.e-10) {
             a = mcs_daughter_dir[0] / p_mag;
@@ -378,12 +379,10 @@ namespace sim {
             continue;
           }
           //Radial Distance
-          if ((a * edep.pos._x + b * edep.pos._y + c * edep.pos._z + d) /
-                  sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) <
-                2.4 &&
-              (a * edep.pos._x + b * edep.pos._y + c * edep.pos._z + d) /
-                  sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2)) >
-                0) {
+          assert(std::hypot(a, b, c) > 0.0); // guaranteed by p_mag > 0
+          double const radialDistance =
+            (a * edep.pos.X() + b * edep.pos.Y() + c * edep.pos.Z() + d) / std::hypot(a, b, c);
+          if (radialDistance < 2.4 && radialDistance > 0) {
 
             double E = 0;
             double N = 0;
@@ -402,8 +401,7 @@ namespace sim {
 
             // Charge
             auto const pid = edep.pid;
-            auto q_i = pindex.find(pid);
-            if (q_i != pindex.end())
+            if (pindex.hasPlane(pid))
               plane_dqdx[pid.Plane] += (double)(edep.deps[pindex[pid]].charge);
           }
         }
@@ -429,8 +427,7 @@ namespace sim {
       auto& plane_charge = plane_charge_v[mcs_index];
       auto& plane_dqdx = plane_dqdx_v[mcs_index];
 
-      double magnitude =
-        sqrt(pow(daughter_mom[0], 2) + pow(daughter_mom[1], 2) + pow(daughter_mom[2], 2));
+      double magnitude = daughter_mom.P();
 
       if (daughter_mom[3] > 1.e-10) {
         daughter_mom[0] *= daughter_mom[3] / magnitude;
