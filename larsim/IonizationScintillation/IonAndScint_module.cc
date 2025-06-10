@@ -29,10 +29,14 @@
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 #include "larsim/IonizationScintillation/ISCalcNESTLAr.h"
 #include "larsim/IonizationScintillation/ISCalcSeparate.h"
+#include "larsim/IonizationScintillation/IGapChargeTransport.hh"
 
 #include "nurandom/RandomUtils/NuRandomService.h"
 
 // Framework includes
+
+#include "art/Utilities/make_tool.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -53,6 +57,16 @@
 
 using std::string;
 using SimEnergyDepositCollection = std::vector<sim::SimEnergyDeposit>;
+
+//make_tool function for a tool moving the charge from the CRP gap (DUNE only)
+namespace {
+  std::unique_ptr<gap::IGapChargeTransport>
+  make_gap_tool(fhicl::ParameterSet const& tool_pset) {
+  if (tool_pset.is_empty()) return nullptr;
+   std::cout << "Building the charge recovery tool!" << std::endl; 
+   return art::make_tool<gap::IGapChargeTransport>(tool_pset);
+  }
+}
 
 namespace larg4 {
   class IonAndScint : public art::EDProducer {
@@ -80,6 +94,7 @@ namespace larg4 {
     string Instances;
     std::vector<string> instanceNames;
     bool fSavePriorSCE;
+    std::unique_ptr<gap::IGapChargeTransport> fGapTool;
   };
 
   //......................................................................
@@ -95,9 +110,13 @@ namespace larg4 {
                                        "SeedISCalcAlg"))
     , Instances{pset.get<string>("Instances", "LArG4DetectorServicevolTPCActive")}
     , fSavePriorSCE{pset.get<bool>("SavePriorSCE", false)}
+    , fGapTool{make_gap_tool(pset.get<fhicl::ParameterSet>("ChargeTransport", {}))}
   {
     std::cout << "IonAndScint Module Construct" << std::endl;
-
+    std::cout << "==== ParameterSet Keys for IonAndScint ====" << std::endl;
+    for (const auto& name : pset.get_names()) {
+      std::cout << " - " << name << std::endl;
+    }
     if (Instances.empty()) {
       std::cout << "Produce SimEnergyDeposit in default volume - LArG4DetectorServicevolTPCActive"
                 << std::endl;
@@ -118,6 +137,12 @@ namespace larg4 {
 
     produces<std::vector<sim::SimEnergyDeposit>>();
     if (fSavePriorSCE) produces<std::vector<sim::SimEnergyDeposit>>("priorSCE");
+
+    if (fGapTool) {
+      std::cout << "fGapTool is configured" << std::endl;
+    } else {
+      //std::cout << "fGapTool is nullptr (tool not configured)" << std::endl;
+    }
   }
 
   //......................................................................
@@ -136,6 +161,7 @@ namespace larg4 {
       fISAlg = std::make_unique<ISCalcNESTLAr>(fEngine);
     else
       mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
+    if (fGapTool) std::cout << "Tool on, begin job" << std::endl; 
   }
 
   //......................................................................
@@ -224,7 +250,7 @@ namespace larg4 {
         int trackID_tmp = edepi.TrackID();
         int pdgCode_tmp = edepi.PdgCode();
         int origTrackID_tmp = edepi.OrigTrackID();
-
+	int ion_num_tmp = ion_num;
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
             sce->GetPosOffsets({edepi.StartX(), edepi.StartY(), edepi.StartZ()});
@@ -239,8 +265,26 @@ namespace larg4 {
                          (float)(edepi.EndZ() + posOffsetsEnd.Z())};
         }
 
-        simedep->emplace_back(ph_num,
-                              ion_num,
+
+       
+	//----------gap charge-----------------------
+	if (fGapTool){
+	if (fGapTool->EnableGapChargeTransport()){
+           if (edeps.provenance()->productInstanceName() == "LArG4DetectorServicevolEnclosureTPC"){
+               std::pair<geo::Point_t, int> pair_ = fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
+	       ion_num_tmp = pair_.second;
+	       startPos_tmp = pair_.first; 
+               endPos_tmp = geo::Point_t{edepi.EndX() + startPos_tmp.X() - edepi.StartX(), 
+			         edepi.EndY() + startPos_tmp.Y() - edepi.StartY(),
+				 edepi.EndZ() + startPos_tmp.Z() - edepi.StartZ()};
+
+		std::cout << "Cherge moved to: " << startPos_tmp.X() << "; " << startPos_tmp.Y()  << "; " << startPos_tmp.Z() << std::endl;
+           }
+        }
+        }
+	
+        if (!fGapTool || (fGapTool &&!(fGapTool->EnableGapChargeTransport() && ion_num_tmp <= 0))) simedep->emplace_back(ph_num,
+                              ion_num_tmp,
                               scintyield,
                               edep_tmp,
                               startPos_tmp,
@@ -250,8 +294,10 @@ namespace larg4 {
                               trackID_tmp,
                               pdgCode_tmp,
                               origTrackID_tmp);
+	//----------gap charge-----------------------
+	       
 
-        if (fSavePriorSCE) {
+	if (fSavePriorSCE) {
           simedep1->emplace_back(ph_num,
                                  ion_num,
                                  scintyield,
