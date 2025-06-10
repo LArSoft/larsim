@@ -269,7 +269,6 @@ namespace larg4 {
        
 	//----------gap charge-----------------------
 	if (fGapTool){
-	if (fGapTool->EnableGapChargeTransport()){
            if (edeps.provenance()->productInstanceName() == "LArG4DetectorServicevolEnclosureTPC"){
                std::pair<geo::Point_t, int> pair_ = fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
 	       ion_num_tmp = pair_.second;
@@ -278,12 +277,10 @@ namespace larg4 {
 			         edepi.EndY() + startPos_tmp.Y() - edepi.StartY(),
 				 edepi.EndZ() + startPos_tmp.Z() - edepi.StartZ()};
 
-		std::cout << "Cherge moved to: " << startPos_tmp.X() << "; " << startPos_tmp.Y()  << "; " << startPos_tmp.Z() << std::endl;
            }
         }
-        }
 	
-        if (!fGapTool || (fGapTool &&!(fGapTool->EnableGapChargeTransport() && ion_num_tmp <= 0))) simedep->emplace_back(ph_num,
+        if (!fGapTool || (fGapTool && ion_num_tmp > 0)) simedep->emplace_back(ph_num,
                               ion_num_tmp,
                               scintyield,
                               edep_tmp,

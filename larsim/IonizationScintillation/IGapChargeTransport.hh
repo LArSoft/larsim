@@ -5,7 +5,7 @@
 #include <utility>
 
 namespace gap {
-  class IGapChargeTransport {
+  class IGapChargeTransport { // used to recover charge from the gap between CRPs
   public:
     virtual ~IGapChargeTransport() = default;
 
