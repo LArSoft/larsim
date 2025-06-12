@@ -13,8 +13,7 @@ namespace gap {
     virtual bool EnableGapChargeTransport() const = 0;
 
     /// Return shifted position and number of moved electrons
-    virtual std::pair<geo::Point_t, int> GetOffset(
-      double x, double y, double z, int n) const = 0;
+    virtual std::pair<geo::Point_t, int> GetOffset(double x, double y, double z, int n) const = 0;
   };
 }
 
