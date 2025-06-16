@@ -12,7 +12,7 @@ find_package(cetmodules 3.24.00 REQUIRED)
 project(larsim LANGUAGES CXX)
 
 include(CetCMakeEnv)
-set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 10.21.00-rc0)
+set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 10.21.00-rc1)
 cet_cmake_env()
 
 # -Wno-unused-variable needed because of CLHEP
