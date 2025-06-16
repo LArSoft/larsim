@@ -18,8 +18,8 @@ namespace phot {
     , SDTime{pset.get<double>("SlowDecayTime", 0.)}
     , FRTime{pset.get<double>("FastRisingTime", 0.)}
     , FDTime{pset.get<double>("FastDecayTime", 0.)}
-    , fNoFastRisingTime((FRTime >= 1.e-8) && (FRTime != -1.))
-    , fNoSlowRisingTime((SRTime >= 1.e-8) && (SRTime != -1.))
+    , fNoFastRisingTime(pset.get<bool>("NoFastRisingTime", false))
+    , fNoSlowRisingTime(pset.get<bool>("NoSlowRisingTime", false))
   {
     if (LogLevel >= 1) {
       std::cout << "ScintTimeLAr Tool configure:" << std::endl;
@@ -53,7 +53,9 @@ namespace phot {
     // If we care about simulating the rising time, it would be better
     // to simulate random numbers according a general distribution
     double d = (tau1 + tau2) / tau2;
+    int ncalls = 0;
     while (1) {
+      ++ncalls;
       double ran1 = fUniformGen->fire();
       double ran2 = fUniformGen->fire();
       double t = -tau2 * std::log(1 - ran1);
