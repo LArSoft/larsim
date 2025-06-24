@@ -63,7 +63,7 @@ namespace {
   std::unique_ptr<gap::IGapChargeTransport> make_gap_tool(fhicl::ParameterSet const& tool_pset)
   {
     if (tool_pset.is_empty()) return nullptr;
-    std::cout << "Building the charge recovery tool!" << std::endl;
+    mf::LogInfo ("GapChargeTransport") << "Building the charge recovery tool!";
     return art::make_tool<gap::IGapChargeTransport>(tool_pset);
   }
 }
@@ -137,11 +137,6 @@ namespace larg4 {
 
     produces<std::vector<sim::SimEnergyDeposit>>();
     if (fSavePriorSCE) produces<std::vector<sim::SimEnergyDeposit>>("priorSCE");
-
-    if (fGapTool) { std::cout << "fGapTool is configured" << std::endl; }
-    else {
-      //std::cout << "fGapTool is nullptr (tool not configured)" << std::endl;
-    }
   }
 
   //......................................................................
@@ -160,7 +155,7 @@ namespace larg4 {
       fISAlg = std::make_unique<ISCalcNESTLAr>(fEngine);
     else
       mf::LogWarning("IonAndScint") << "No ISCalculation set, this can't be good.";
-    if (fGapTool) std::cout << "Tool on, begin job" << std::endl;
+    if (fGapTool) mf::LogInfo("GapChargeTransport") << "Tool on, begin job";
   }
 
   //......................................................................
