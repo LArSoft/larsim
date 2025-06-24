@@ -266,7 +266,7 @@ namespace larg4 {
 
         //----------gap charge-----------------------
         if (fGapTool) {
-          if (edeps.provenance()->productInstanceName() == "LArG4DetectorServicevolEnclosureTPC") {
+          if (edeps.provenance()->productInstanceName() == fGapTool->Volume()) {
             std::pair<geo::Point_t, int> pair_ =
               fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
             ion_num_tmp = pair_.second;
