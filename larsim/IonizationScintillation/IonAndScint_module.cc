@@ -63,7 +63,7 @@ namespace {
   std::unique_ptr<gap::IGapChargeTransport> make_gap_tool(fhicl::ParameterSet const& tool_pset)
   {
     if (tool_pset.is_empty()) return nullptr;
-    mf::LogInfo ("GapChargeTransport") << "Building the charge recovery tool!";
+    mf::LogInfo("GapChargeTransport") << "Building the charge recovery tool!";
     return art::make_tool<gap::IGapChargeTransport>(tool_pset);
   }
 }
