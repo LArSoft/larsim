@@ -308,8 +308,7 @@ namespace phot {
                 // calculates the time at which the photon was produced
                 double dtime = edepi.StartT() + fScintTime->fastScintTime();
                 if (fIncludePropTime) dtime += transport_time[i];
-                int time = static_cast<int>(std::round(dtime));
-                photon.Time = time;
+                photon.Time = dtime;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
                 else
@@ -320,8 +319,7 @@ namespace phot {
               for (int i = 0; i < ndetected_slow; ++i) {
                 double dtime = edepi.StartT() + fScintTime->slowScintTime();
                 if (fIncludePropTime) dtime += transport_time[ndetected_fast + i];
-                int time = static_cast<int>(std::round(dtime));
-                photon.Time = time;
+                photon.Time = dtime;
                 if (Reflected)
                   ref_photcol[channel].insert(ref_photcol[channel].end(), 1, photon);
                 else
