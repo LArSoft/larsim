@@ -68,6 +68,7 @@ namespace phot {
     fMaxPDDistance = VUVHitsParams.get<double>(
       "MaxPDDistance",
       1000); // max distance between scintillation and PD to evaluate light, default 10m
+    fVerticalBorderCorrectionMode = VUVHitsParams.get<bool>("VerticalBorderCorrectionMode", false);
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -261,13 +262,19 @@ namespace phot {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
+    // special case: VerticalBorderCorrectionMode use Y direction only
     double r = 0;
-    if (opDet.orientation == 2)
-      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
-    else if (opDet.orientation == 1)
-      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
-    else
-      r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    if (fVerticalBorderCorrectionMode) {
+      r = std::abs(ScintPoint.Y() - fcathode_centre[1]);
+    }    
+    else {
+      if (opDet.orientation == 2)
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
+      else if (opDet.orientation == 1)
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
+      else
+        r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    }
 
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;

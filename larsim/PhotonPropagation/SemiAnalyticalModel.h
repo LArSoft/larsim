@@ -163,6 +163,9 @@ namespace phot {
     // maximum distance
     double fMaxPDDistance;
 
+    // flag to apply border corrections for vertical direction only
+    bool fVerticalBorderCorrectionMode;
+
     // Tool to to determine visibility of optical detectors from scintillation emission points
     std::shared_ptr<OpticalPath> fOpticalPath;
   };
