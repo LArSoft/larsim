@@ -1,5 +1,6 @@
 add_subdirectory(LibraryMappingTools)
 add_subdirectory(ScintTimeTools)
+add_subdirectory(OpticalPathTools)
 
 cet_make_library(LIBRARY_NAME PhotonLibraryInterface INTERFACE
   SOURCE IPhotonLibrary.h

@@ -41,6 +41,7 @@
 #include "larsim/PhotonPropagation/PropagationTimeModel.h"
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 #include "larsim/PhotonPropagation/SemiAnalyticalModel.h"
+#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 
 #include "nurandom/RandomUtils/NuRandomService.h"
 
@@ -115,6 +116,9 @@ namespace phot {
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
                        Comment("Tool describing scintillation time structure")};
+      DP OpticalPathTool{
+        Name("OpticalPathTool"),
+        Comment("Tool to determine visibility of optical detectors from scintillation emission points")};
       fhicl::Atom<bool> UseXeAbsorption{
         Name("UseXeAbsorption"),
         Comment("Use Xe absorption length instead of Ar, default false"),
@@ -152,7 +156,7 @@ namespace phot {
       int num_photons = 1);
 
     bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
-    std::vector<geo::Point_t> opDetCenters() const;
+    std::vector<geo::Point_t> opDetCenters() const; 
 
     // semi-analytical model
     std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
@@ -165,6 +169,9 @@ namespace phot {
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
     std::unique_ptr<ScintTime> fScintTime; // Tool to retrieve timinig of scintillation
+
+    // Tool to to determine visibility of optical detectors from scintillation emission points
+    std::shared_ptr<OpticalPath> fOpticalPath;
 
     // geometry properties
     geo::GeometryCore const& fGeom;
@@ -207,6 +214,7 @@ namespace phot {
         config.get_PSet(),
         "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
+    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(std::move(art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>())))}
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fISTPC{fGeom}
     , fNOpChannels(fGeom.NOpDets())
@@ -277,7 +285,7 @@ namespace phot {
 
     // photo-detector visibility model (semi-analytical model)
     fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
-      VUVHitsParams, VISHitsParams, fDoReflectedLight, fIncludeAnodeReflections, fUseXeAbsorption);
+      VUVHitsParams, VISHitsParams, fOpticalPath, fDoReflectedLight, fIncludeAnodeReflections, fUseXeAbsorption);
 
     // propagation time model
     if (fIncludePropTime)
@@ -450,7 +458,8 @@ namespace phot {
       for (size_t Reflected = 0; Reflected <= DoReflected; ++Reflected) {
         for (size_t channel = 0; channel < fNOpChannels; channel++) {
 
-          if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter[channel])) continue;
+          if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel])) continue;
+          // fOpaqueCathode && is this needed? obsolete? 
 
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
@@ -693,6 +702,8 @@ namespace phot {
     // check optical channel is in same TPC as scintillation light, if not doesn't see light
     // temporary method, needs to be replaced with geometry service
     // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
+
+    std::cout << "In PDFastSimPAR::isOpDetInSameTPC" << std::endl;
 
     // special case for SBND = 2 TPCs
     // check x coordinate has same sign or is close to zero

@@ -30,6 +30,7 @@ namespace phot {
   // constructor
   SemiAnalyticalModel::SemiAnalyticalModel(const fhicl::ParameterSet& VUVHitsParams,
                                            const fhicl::ParameterSet& VISHitsParams,
+                                           const std::shared_ptr<OpticalPath> &OpticalPath,
                                            const bool doReflectedLight,
                                            const bool includeAnodeReflections,
                                            const bool useXeAbsorption)
@@ -49,6 +50,7 @@ namespace phot {
     , fDoReflectedLight(doReflectedLight)
     , fIncludeAnodeReflections(includeAnodeReflections)
     , fUseXeAbsorption(useXeAbsorption)
+    , fOpticalPath(OpticalPath)
   {
     mf::LogInfo("SemiAnalyticalModel") << "Initializing Semi-analytical model." << std::endl;
 
@@ -191,7 +193,7 @@ namespace phot {
     DetectedVisibilities.resize(fNOpDets);
     for (size_t const OpDet : util::counter(fNOpDets)) {
       // check OpDet in same drift volume
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetector[OpDet].center)) {
+      if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetector[OpDet].center)) {
         DetectedVisibilities[OpDet] = 0.;
         continue;
       }
@@ -422,7 +424,7 @@ namespace phot {
     const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
     ReflDetectedVisibilities.resize(fNOpDets);
     for (size_t const OpDet : util::counter(fNOpDets)) {
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetector[OpDet].center)) {
+      if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetector[OpDet].center)) {
         ReflDetectedVisibilities[OpDet] = 0.;
         continue;
       }
@@ -763,6 +765,8 @@ namespace phot {
     // temporary method, needs to be replaced with geometry service
     // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
 
+    std::cout << "In SemiAnalyticalModel::isOpDetInSameTPC" << std::endl;
+    
     // special case for SBND = 2 TPCs
     // check x coordinate has same sign or is close to zero
     if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&

@@ -15,6 +15,7 @@
 #include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
+#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 
 // fhicl
 #include "fhiclcpp/fwd.h"
@@ -25,6 +26,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 
 // Define a new policy *not* internally promoting RealType to double:
 typedef boost::math::policies::policy<boost::math::policies::promote_double<false>>
@@ -37,6 +39,7 @@ namespace phot {
     // constructor
     SemiAnalyticalModel(const fhicl::ParameterSet& VUVHits,
                         const fhicl::ParameterSet& VISHits,
+                        const std::shared_ptr<OpticalPath> &OpticalPath,
                         const bool doReflectedLight = false,
                         const bool includeAnodeReflections = false,
                         const bool useXeAbsorption = false);
@@ -159,6 +162,9 @@ namespace phot {
 
     // maximum distance
     double fMaxPDDistance;
+
+    // Tool to to determine visibility of optical detectors from scintillation emission points
+    std::shared_ptr<OpticalPath> fOpticalPath;
   };
 
 } // namespace phot

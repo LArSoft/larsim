@@ -1,0 +1,10 @@
+// standard optical path tool
+
+BEGIN_PROLOG
+
+StandardOpticalPath:
+{
+    tool_type: StandardOpticalPath
+}
+
+END_PROLOG
