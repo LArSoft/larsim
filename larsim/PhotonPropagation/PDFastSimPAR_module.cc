@@ -155,7 +155,6 @@ namespace phot {
       double edeposit,
       int num_photons = 1);
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<geo::Point_t> opDetCenters() const; 
 
     // semi-analytical model
@@ -458,9 +457,8 @@ namespace phot {
       for (size_t Reflected = 0; Reflected <= DoReflected; ++Reflected) {
         for (size_t channel = 0; channel < fNOpChannels; channel++) {
 
-          if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel])) continue;
-          // fOpaqueCathode && is this needed? obsolete? 
-
+          if (fOpaqueCathode && !fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel])) continue;
+          
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
           if (Reflected) {
@@ -695,33 +693,6 @@ namespace phot {
   }
 
   //......................................................................
-  // checks whether photo-detector is able to see the emitted light scintillation
-  bool PDFastSimPAR::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                      geo::Point_t const& OpDetPoint) const
-  {
-    // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service
-    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-
-    std::cout << "In PDFastSimPAR::isOpDetInSameTPC" << std::endl;
-
-    // special case for SBND = 2 TPCs
-    // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10.) {
-      return false;
-    }
-
-    // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance
-    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
-      return false;
-    }
-    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
-
-    return true;
-  }
-
   std::vector<geo::Point_t> PDFastSimPAR::opDetCenters() const
   {
     std::vector<geo::Point_t> opDetCenter;

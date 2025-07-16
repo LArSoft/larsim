@@ -764,34 +764,6 @@ namespace phot {
   }
 
   //......................................................................
-  // checks photo-detector is in same TPC/argon volume as scintillation
-  bool SemiAnalyticalModel::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                             geo::Point_t const& OpDetPoint) const
-  {
-    // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service
-    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-
-    std::cout << "In SemiAnalyticalModel::isOpDetInSameTPC" << std::endl;
-    
-    // special case for SBND = 2 TPCs
-    // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10.) {
-      return false;
-    }
-
-    // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance
-    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
-      return false;
-    }
-
-    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
-
-    return true;
-  }
-
   std::vector<SemiAnalyticalModel::OpticalDetector> SemiAnalyticalModel::opticalDetectors() const
   {
     std::vector<SemiAnalyticalModel::OpticalDetector> opticalDetector;

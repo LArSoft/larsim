@@ -94,7 +94,6 @@ namespace phot {
     // dome aperture calculation
     double Omega_Dome_Model(const double distance, const double theta) const;
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<OpticalDetector> opticalDetectors() const;
 
     // geometry properties
