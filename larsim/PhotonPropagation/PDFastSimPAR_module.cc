@@ -38,10 +38,10 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
+#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 #include "larsim/PhotonPropagation/PropagationTimeModel.h"
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 #include "larsim/PhotonPropagation/SemiAnalyticalModel.h"
-#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 
 #include "nurandom/RandomUtils/NuRandomService.h"
 
@@ -118,7 +118,8 @@ namespace phot {
                        Comment("Tool describing scintillation time structure")};
       DP OpticalPathTool{
         Name("OpticalPathTool"),
-        Comment("Tool to determine visibility of optical detectors from scintillation emission points")};
+        Comment(
+          "Tool to determine visibility of optical detectors from scintillation emission points")};
       fhicl::Atom<bool> UseXeAbsorption{
         Name("UseXeAbsorption"),
         Comment("Use Xe absorption length instead of Ar, default false"),
@@ -155,7 +156,7 @@ namespace phot {
       double edeposit,
       int num_photons = 1);
 
-    std::vector<geo::Point_t> opDetCenters() const; 
+    std::vector<geo::Point_t> opDetCenters() const;
 
     // semi-analytical model
     std::unique_ptr<SemiAnalyticalModel> fVisibilityModel;
@@ -213,7 +214,8 @@ namespace phot {
         config.get_PSet(),
         "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
-    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(std::move(art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>())))}
+    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(std::move(
+        art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>())))}
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fISTPC{fGeom}
     , fNOpChannels(fGeom.NOpDets())
@@ -283,8 +285,12 @@ namespace phot {
     fScintTime->initRand(fScintTimeEngine);
 
     // photo-detector visibility model (semi-analytical model)
-    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
-      VUVHitsParams, VISHitsParams, fOpticalPath, fDoReflectedLight, fIncludeAnodeReflections, fUseXeAbsorption);
+    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(VUVHitsParams,
+                                                             VISHitsParams,
+                                                             fOpticalPath,
+                                                             fDoReflectedLight,
+                                                             fIncludeAnodeReflections,
+                                                             fUseXeAbsorption);
 
     // propagation time model
     if (fIncludePropTime)
@@ -457,8 +463,9 @@ namespace phot {
       for (size_t Reflected = 0; Reflected <= DoReflected; ++Reflected) {
         for (size_t channel = 0; channel < fNOpChannels; channel++) {
 
-          if (fOpaqueCathode && !fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel])) continue;
-          
+          if (fOpaqueCathode && !fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel]))
+            continue;
+
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
           if (Reflected) {

@@ -30,7 +30,7 @@ namespace phot {
   // constructor
   SemiAnalyticalModel::SemiAnalyticalModel(const fhicl::ParameterSet& VUVHitsParams,
                                            const fhicl::ParameterSet& VISHitsParams,
-                                           const std::shared_ptr<OpticalPath> &OpticalPath,
+                                           const std::shared_ptr<OpticalPath>& OpticalPath,
                                            const bool doReflectedLight,
                                            const bool includeAnodeReflections,
                                            const bool useXeAbsorption)
@@ -264,9 +264,7 @@ namespace phot {
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
     // special case: VerticalBorderCorrectionMode use Y direction only
     double r = 0;
-    if (fVerticalBorderCorrectionMode) {
-      r = std::abs(ScintPoint.Y() - fcathode_centre[1]);
-    }    
+    if (fVerticalBorderCorrectionMode) { r = std::abs(ScintPoint.Y() - fcathode_centre[1]); }
     else {
       if (opDet.orientation == 2)
         r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);

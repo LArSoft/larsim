@@ -160,9 +160,7 @@ namespace phot {
       // determine nearest parameterisation in discretisation
       size_t index = std::round((distance - fmin_d) / fstep_size);
       // check index is within range, otherwise use furthest parameterisation
-      if (index >= number_of_vuv_timing_params) {
-        index = number_of_vuv_timing_params - 1;
-      }
+      if (index >= number_of_vuv_timing_params) { index = number_of_vuv_timing_params - 1; }
       // randomly sample parameterisation for each photon
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = fVUVTimingGen[angle_bin][index].fire() *

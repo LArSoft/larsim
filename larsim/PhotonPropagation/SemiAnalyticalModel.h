@@ -25,8 +25,8 @@
 #include "boost/math/policies/policy.hpp"
 
 #include <map>
-#include <vector>
 #include <memory>
+#include <vector>
 
 // Define a new policy *not* internally promoting RealType to double:
 typedef boost::math::policies::policy<boost::math::policies::promote_double<false>>
@@ -39,7 +39,7 @@ namespace phot {
     // constructor
     SemiAnalyticalModel(const fhicl::ParameterSet& VUVHits,
                         const fhicl::ParameterSet& VISHits,
-                        const std::shared_ptr<OpticalPath> &OpticalPath,
+                        const std::shared_ptr<OpticalPath>& OpticalPath,
                         const bool doReflectedLight = false,
                         const bool includeAnodeReflections = false,
                         const bool useXeAbsorption = false);

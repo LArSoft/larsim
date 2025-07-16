@@ -7,10 +7,11 @@
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 
 namespace phot {
-    class OpticalPath {
-    public:
-        virtual ~OpticalPath() noexcept = default; 
-        virtual const bool isOpDetVisible(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) = 0;
+  class OpticalPath {
+  public:
+    virtual ~OpticalPath() noexcept = default;
+    virtual const bool isOpDetVisible(geo::Point_t const& ScintPoint,
+                                      geo::Point_t const& OpDetPoint) = 0;
   };
 }
 
