@@ -65,6 +65,7 @@ namespace larg4 {
     fLarqlAlpha = LArG4PropHandle->LarqlAlpha();
     fLarqlBeta = LArG4PropHandle->LarqlBeta();
     fQAlpha = LArG4PropHandle->QAlpha();
+    fQProton = LArG4PropHandle->QProton();
     fGeVToElectrons = LArG4PropHandle->GeVToElectrons();
 
     // ionization work function
@@ -146,6 +147,17 @@ namespace larg4 {
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
+    
+    /*
+    if(abs(edep.PdgCode()) == 11 && dEdx>17) {
+      std::cout << "Electron:  Original number of photons " << num_photons << " new number of photons " << energy_deposit * 24000 << std::endl;
+      num_photons = energy_deposit * 24000*fScintPreScale;
+    }
+    */
+   
+    if( edep.PdgCode() == 2212 ) {
+      num_photons = num_photons * fQProton;
+    }
 
     if (edep.PdgCode() == 1000020040) {
       num_electrons = num_electrons * fQAlpha;

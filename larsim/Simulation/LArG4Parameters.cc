@@ -57,6 +57,7 @@ namespace sim {
     , fLarqlBeta{pset.get<double>("LarqlBeta")}
     , fWph{pset.get<double>("Wph")}
     , fQAlpha{pset.get<double>("QAlpha")}
+    , fQProton{pset.get<double>("QProton")}
     , fUseModBoxRecomb{pset.get<bool>("UseModBoxRecomb")}
     , fUseEllipsModBoxRecomb{pset.get<bool>("UseEllipsModBoxRecomb")}
     , fUseModLarqlRecomb{pset.get<bool>("UseModLarqlRecomb")}
