@@ -56,6 +56,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/Name.h"
@@ -82,7 +83,7 @@ namespace phot {
       using Comment = fhicl::Comment;
       using DP = fhicl::DelegatedParameter;
       using ODP = fhicl::OptionalDelegatedParameter;
-
+      const std::vector<int> default_TPCs{};
       fhicl::Atom<art::InputTag> SimulationLabel{Name("SimulationLabel"),
                                                  Comment("SimEnergyDeposit label.")};
       fhicl::Atom<bool> DoFastComponent{Name("DoFastComponent"),
@@ -111,6 +112,10 @@ namespace phot {
         Name("OnlyActiveVolume"),
         Comment("PAR fast sim usually only for active volume, default true"),
         true};
+      fhicl::Sequence<int> RestrictedTPCs{
+        Name("RestrictedTPCs"),
+        Comment("Simulate for EDeps only in these TPCs.\nDefault is empty which means simulate in all TPCs"),
+        default_TPCs};
       fhicl::Atom<bool> OnlyOneCryostat{Name("OnlyOneCryostat"),
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
@@ -172,6 +177,7 @@ namespace phot {
     const size_t fNOpChannels;
     const std::vector<geo::BoxBoundedGeo> fActiveVolumes;
     const int fNTPC;
+    const std::vector<int> fRestrictedTPCs;
     double fDriftDistance;
     const std::vector<geo::Point_t> fOpDetCenter;
 
@@ -212,6 +218,7 @@ namespace phot {
     , fNOpChannels(fGeom.NOpDets())
     , fActiveVolumes(fISTPC.extractActiveLArVolume(fGeom))
     , fNTPC(fGeom.NTPC())
+    , fRestrictedTPCs(config().RestrictedTPCs())
     , fOpDetCenter(opDetCenters())
     , fSimTag(config().SimulationLabel())
     , fDoFastComponent(config().DoFastComponent())
@@ -272,6 +279,10 @@ namespace phot {
       }
     }
 
+    mf::LogDebug("PDFastSimPAR") << "Only generating edeps in the following TPCs:";
+    for (const auto & tpc : fRestrictedTPCs)
+      mf::LogDebug("PDFastSimPAR") << tpc;
+
     // Initialise the Scintillation Time
     fScintTime->initRand(fScintTimeEngine);
 
@@ -285,10 +296,10 @@ namespace phot {
         VUVTimingParams, VISTimingParams, fScintTimeEngine, fDoReflectedLight, fGeoPropTimeOnly);
 
     {
-      auto log = mf::LogTrace("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
-                                              << fActiveVolumes.size() << " volumes:";
+      mf::LogInfo("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
+                                   << fActiveVolumes.size() << " volumes:";
       for (auto const& [iCryo, box] : ::ranges::views::enumerate(fActiveVolumes)) {
-        log << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+        mf::LogInfo("PDFastSimPAR") << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
     }
 
@@ -381,6 +392,8 @@ namespace phot {
     mf::LogTrace("PDFastSimPAR") << "Creating SimPhotonsLite/SimPhotons from " << (*edeps).size()
                                  << " energy deposits\n";
 
+    std::map<int, size_t> skipped_edeps;
+
     for (auto const& edepi : *edeps) {
 
       if (!(num_points % 1000)) {
@@ -406,7 +419,23 @@ namespace phot {
       double pos[3] = {edepi.MidPointX(), edepi.MidPointY(), edepi.MidPointZ()};
       geo::Point_t const ScintPoint = {pos[0], pos[1], pos[2]};
 
+      //Check if we're within the active volume and sim or skip accordingly
       if (fOnlyActiveVolume && !fISTPC.isScintInActiveVolume(ScintPoint)) continue;
+
+      //If we're in the active volume (and we want to simulate within it),
+      //check which TPC we're in and whether we want to simulate within that TPC
+      int scint_point_TPC = fGeom.PositionToTPCID(ScintPoint).TPC;
+      auto in_valid_TPC = (
+        (fRestrictedTPCs.size() == 0) || //If no TPCs specified, simulate in all
+        std::find(fRestrictedTPCs.begin(),
+                  fRestrictedTPCs.end(),
+                  scint_point_TPC) != fRestrictedTPCs.end()
+      );
+      if (fOnlyActiveVolume && !(in_valid_TPC)) {
+        skipped_edeps[scint_point_TPC]++;
+        
+        continue;
+      }
 
       // direct light
       std::vector<int> DetectedNumFast(fNOpChannels);
@@ -605,6 +634,10 @@ namespace phot {
     for (auto& iopbtr : *opbtr_ref) {
       mf::LogDebug("PDFastSimPAR")
         << "OpDet: " << iopbtr.OpDetNum() << " " << iopbtr.timePDclockSDPsMap().size();
+    }
+
+    for (const auto & [tpc, nskipped] : skipped_edeps) {
+      mf::LogDebug("PDFastSimPAR") << "Skipped " << nskipped << " edeps in TPC " << tpc;
     }
 
     if (fUseLitePhotons) {
