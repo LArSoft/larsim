@@ -57,11 +57,11 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/Name.h"
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Random numbers
@@ -113,10 +113,10 @@ namespace phot {
         Name("OnlyActiveVolume"),
         Comment("PAR fast sim usually only for active volume, default true"),
         true};
-      fhicl::Sequence<int> RestrictedTPCs{
-        Name("RestrictedTPCs"),
-        Comment("Simulate for EDeps only in these TPCs.\nDefault is empty which means simulate in all TPCs"),
-        default_TPCs};
+      fhicl::Sequence<int> RestrictedTPCs{Name("RestrictedTPCs"),
+                                          Comment("Simulate for EDeps only in these TPCs.\nDefault "
+                                                  "is empty which means simulate in all TPCs"),
+                                          default_TPCs};
       fhicl::Atom<bool> OnlyOneCryostat{Name("OnlyOneCryostat"),
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
@@ -289,7 +289,7 @@ namespace phot {
     }
 
     mf::LogDebug("PDFastSimPAR") << "Only generating edeps in the following TPCs:";
-    for (const auto & tpc : fRestrictedTPCs)
+    for (const auto& tpc : fRestrictedTPCs)
       mf::LogDebug("PDFastSimPAR") << tpc;
 
     // Initialise the Scintillation Time
@@ -310,9 +310,10 @@ namespace phot {
 
     {
       mf::LogInfo("PDFastSimPAR") << "PDFastSimPAR: active volume boundaries from "
-                                   << fActiveVolumes.size() << " volumes:";
+                                  << fActiveVolumes.size() << " volumes:";
       for (auto const& [iCryo, box] : ::ranges::views::enumerate(fActiveVolumes)) {
-        mf::LogInfo("PDFastSimPAR") << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
+        mf::LogInfo("PDFastSimPAR")
+          << "\n - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm";
       }
     }
 
@@ -438,15 +439,13 @@ namespace phot {
       //If we're in the active volume (and we want to simulate within it),
       //check which TPC we're in and whether we want to simulate within that TPC
       int scint_point_TPC = fGeom.PositionToTPCID(ScintPoint).TPC;
-      auto in_valid_TPC = (
-        (fRestrictedTPCs.size() == 0) || //If no TPCs specified, simulate in all
-        std::find(fRestrictedTPCs.begin(),
-                  fRestrictedTPCs.end(),
-                  scint_point_TPC) != fRestrictedTPCs.end()
-      );
+      auto in_valid_TPC =
+        ((fRestrictedTPCs.size() == 0) || //If no TPCs specified, simulate in all
+         std::find(fRestrictedTPCs.begin(), fRestrictedTPCs.end(), scint_point_TPC) !=
+           fRestrictedTPCs.end());
       if (fOnlyActiveVolume && !(in_valid_TPC)) {
         skipped_edeps[scint_point_TPC]++;
-        
+
         continue;
       }
 
@@ -648,7 +647,7 @@ namespace phot {
         << "OpDet: " << iopbtr.OpDetNum() << " " << iopbtr.timePDclockSDPsMap().size();
     }
 
-    for (const auto & [tpc, nskipped] : skipped_edeps) {
+    for (const auto& [tpc, nskipped] : skipped_edeps) {
       mf::LogDebug("PDFastSimPAR") << "Skipped " << nskipped << " edeps in TPC " << tpc;
     }
 
