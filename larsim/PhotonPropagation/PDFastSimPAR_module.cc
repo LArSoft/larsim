@@ -214,8 +214,8 @@ namespace phot {
         config.get_PSet(),
         "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
-    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(std::move(
-        art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>())))}
+    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(
+        art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>()))}
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fISTPC{fGeom}
     , fNOpChannels(fGeom.NOpDets())
