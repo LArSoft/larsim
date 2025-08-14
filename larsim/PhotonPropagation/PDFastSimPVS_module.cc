@@ -71,6 +71,7 @@ namespace phot {
     const bool fDoFastComponent;
     const bool fDoSlowComponent;
     const bool fIncludePropTime;
+    const bool fGeoPropTimeOnly;
     const bool fUseLitePhotons;
     const bool fStoreReflected;
     const size_t fNOpChannels;
@@ -89,6 +90,7 @@ namespace phot {
     , fDoFastComponent(pset.get<bool>("DoFastComponent", true))
     , fDoSlowComponent(pset.get<bool>("DoSlowComponent", true))
     , fIncludePropTime(pset.get<bool>("IncludePropTime", false))
+    , fGeoPropTimeOnly(pset.get<bool>("GeoPropTimeOnly", false))
     , fUseLitePhotons(art::ServiceHandle<sim::LArG4Parameters const>()->UseLitePhotons())
     , fStoreReflected(fPVS->StoreReflected())
     , fNOpChannels(fPVS->NOpChannels())
@@ -130,7 +132,7 @@ namespace phot {
     // propagation time model
     if (fIncludePropTime)
       fPropTimeModel = std::make_unique<PropagationTimeModel>(
-        VUVTimingParams, VISTimingParams, fScintTimeEngine, fStoreReflected);
+        VUVTimingParams, VISTimingParams, fScintTimeEngine, fStoreReflected, fGeoPropTimeOnly);
 
     if (fUseLitePhotons) {
       mf::LogInfo("PDFastSimPVS") << "Use Lite Photon." << std::endl;

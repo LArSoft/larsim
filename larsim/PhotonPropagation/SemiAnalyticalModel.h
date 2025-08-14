@@ -15,6 +15,7 @@
 #include "larcorealg/Geometry/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
+#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 
 // fhicl
 #include "fhiclcpp/fwd.h"
@@ -24,6 +25,7 @@
 #include "boost/math/policies/policy.hpp"
 
 #include <map>
+#include <memory>
 #include <vector>
 
 // Define a new policy *not* internally promoting RealType to double:
@@ -37,6 +39,7 @@ namespace phot {
     // constructor
     SemiAnalyticalModel(const fhicl::ParameterSet& VUVHits,
                         const fhicl::ParameterSet& VISHits,
+                        const std::shared_ptr<OpticalPath>& OpticalPath,
                         const bool doReflectedLight = false,
                         const bool includeAnodeReflections = false,
                         const bool useXeAbsorption = false);
@@ -91,7 +94,6 @@ namespace phot {
     // dome aperture calculation
     double Omega_Dome_Model(const double distance, const double theta) const;
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<OpticalDetector> opticalDetectors() const;
 
     // geometry properties
@@ -159,6 +161,12 @@ namespace phot {
 
     // maximum distance
     double fMaxPDDistance;
+
+    // flag to apply border corrections for vertical direction only
+    bool fVerticalBorderCorrectionMode;
+
+    // Tool to to determine visibility of optical detectors from scintillation emission points
+    std::shared_ptr<OpticalPath> fOpticalPath;
   };
 
 } // namespace phot

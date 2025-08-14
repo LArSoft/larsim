@@ -38,6 +38,7 @@
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
+#include "larsim/PhotonPropagation/OpticalPathTools/OpticalPath.h"
 #include "larsim/PhotonPropagation/PropagationTimeModel.h"
 #include "larsim/PhotonPropagation/ScintTimeTools/ScintTime.h"
 #include "larsim/PhotonPropagation/SemiAnalyticalModel.h"
@@ -115,6 +116,10 @@ namespace phot {
                                         Comment("Set to true if light is only supported in C:1")};
       DP ScintTimeTool{Name("ScintTimeTool"),
                        Comment("Tool describing scintillation time structure")};
+      DP OpticalPathTool{
+        Name("OpticalPathTool"),
+        Comment(
+          "Tool to determine visibility of optical detectors from scintillation emission points")};
       fhicl::Atom<bool> UseXeAbsorption{
         Name("UseXeAbsorption"),
         Comment("Use Xe absorption length instead of Ar, default false"),
@@ -151,7 +156,6 @@ namespace phot {
       double edeposit,
       int num_photons = 1);
 
-    bool isOpDetInSameTPC(geo::Point_t const& ScintPoint, geo::Point_t const& OpDetPoint) const;
     std::vector<geo::Point_t> opDetCenters() const;
 
     // semi-analytical model
@@ -165,6 +169,9 @@ namespace phot {
     std::unique_ptr<CLHEP::RandPoissonQ> fRandPoissPhot;
     CLHEP::HepRandomEngine& fScintTimeEngine;
     std::unique_ptr<ScintTime> fScintTime; // Tool to retrieve timinig of scintillation
+
+    // Tool to to determine visibility of optical detectors from scintillation emission points
+    std::shared_ptr<OpticalPath> fOpticalPath;
 
     // geometry properties
     geo::GeometryCore const& fGeom;
@@ -207,6 +214,8 @@ namespace phot {
         config.get_PSet(),
         "SeedScintTime"))
     , fScintTime{art::make_tool<phot::ScintTime>(config().ScintTimeTool.get<fhicl::ParameterSet>())}
+    , fOpticalPath{std::shared_ptr<phot::OpticalPath>(std::move(
+        art::make_tool<phot::OpticalPath>(config().OpticalPathTool.get<fhicl::ParameterSet>())))}
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fISTPC{fGeom}
     , fNOpChannels(fGeom.NOpDets())
@@ -276,8 +285,12 @@ namespace phot {
     fScintTime->initRand(fScintTimeEngine);
 
     // photo-detector visibility model (semi-analytical model)
-    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(
-      VUVHitsParams, VISHitsParams, fDoReflectedLight, fIncludeAnodeReflections, fUseXeAbsorption);
+    fVisibilityModel = std::make_unique<SemiAnalyticalModel>(VUVHitsParams,
+                                                             VISHitsParams,
+                                                             fOpticalPath,
+                                                             fDoReflectedLight,
+                                                             fIncludeAnodeReflections,
+                                                             fUseXeAbsorption);
 
     // propagation time model
     if (fIncludePropTime)
@@ -450,7 +463,8 @@ namespace phot {
       for (size_t Reflected = 0; Reflected <= DoReflected; ++Reflected) {
         for (size_t channel = 0; channel < fNOpChannels; channel++) {
 
-          if (fOpaqueCathode && !isOpDetInSameTPC(ScintPoint, fOpDetCenter[channel])) continue;
+          if (fOpaqueCathode && !fOpticalPath->isOpDetVisible(ScintPoint, fOpDetCenter[channel]))
+            continue;
 
           int ndetected_fast = DetectedNumFast[channel];
           int ndetected_slow = DetectedNumSlow[channel];
@@ -684,31 +698,6 @@ namespace phot {
   }
 
   //......................................................................
-  // checks whether photo-detector is able to see the emitted light scintillation
-  bool PDFastSimPAR::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                      geo::Point_t const& OpDetPoint) const
-  {
-    // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service
-    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-
-    // special case for SBND = 2 TPCs
-    // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10.) {
-      return false;
-    }
-
-    // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance
-    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
-      return false;
-    }
-    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
-
-    return true;
-  }
-
   std::vector<geo::Point_t> PDFastSimPAR::opDetCenters() const
   {
     std::vector<geo::Point_t> opDetCenter;

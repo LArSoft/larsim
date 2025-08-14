@@ -1,5 +1,6 @@
 #include "opticalsimparameterisations.fcl"
 #include "scintillationtime_tool.fcl"
+#include "opticalpath_tool.fcl"
 
 BEGIN_PROLOG
 
@@ -18,6 +19,7 @@ standard_pdfastsim_par_ar:
   OnlyActiveVolume:     true
   OnlyOneCryostat:       false
   ScintTimeTool:         @local::ScintTimeLAr
+  OpticalPathTool:       @local::StandardOpticalPath
   UseXeAbsorption:       false
 
   VUVTiming: @local::common_vuv_timing_parameterization

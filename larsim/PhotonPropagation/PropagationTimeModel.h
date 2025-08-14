@@ -90,6 +90,7 @@ namespace phot {
     double fstep_size, fvuv_vgroup_mean, fvuv_vgroup_max, fmin_d, finflexion_point_distance,
       fangle_bin_timing_vuv;
     // vector containing generated VUV timing parameterisations
+    unsigned int number_of_vuv_timing_params;
     std::vector<std::vector<CLHEP::RandGeneral>> fVUVTimingGen;
     // vector containing min and max range VUV timing parameterisations are
     // sampled to

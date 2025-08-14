@@ -30,6 +30,7 @@ namespace phot {
   // constructor
   SemiAnalyticalModel::SemiAnalyticalModel(const fhicl::ParameterSet& VUVHitsParams,
                                            const fhicl::ParameterSet& VISHitsParams,
+                                           const std::shared_ptr<OpticalPath>& OpticalPath,
                                            const bool doReflectedLight,
                                            const bool includeAnodeReflections,
                                            const bool useXeAbsorption)
@@ -49,6 +50,7 @@ namespace phot {
     , fDoReflectedLight(doReflectedLight)
     , fIncludeAnodeReflections(includeAnodeReflections)
     , fUseXeAbsorption(useXeAbsorption)
+    , fOpticalPath(OpticalPath)
   {
     mf::LogInfo("SemiAnalyticalModel") << "Initializing Semi-analytical model." << std::endl;
 
@@ -66,6 +68,7 @@ namespace phot {
     fMaxPDDistance = VUVHitsParams.get<double>(
       "MaxPDDistance",
       1000); // max distance between scintillation and PD to evaluate light, default 10m
+    fVerticalBorderCorrectionMode = VUVHitsParams.get<bool>("VerticalBorderCorrectionMode", false);
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -191,7 +194,7 @@ namespace phot {
     DetectedVisibilities.resize(fNOpDets);
     for (size_t const OpDet : util::counter(fNOpDets)) {
       // check OpDet in same drift volume
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetector[OpDet].center)) {
+      if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetector[OpDet].center)) {
         DetectedVisibilities[OpDet] = 0.;
         continue;
       }
@@ -259,13 +262,17 @@ namespace phot {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
+    // special case: VerticalBorderCorrectionMode use Y direction only
     double r = 0;
-    if (opDet.orientation == 2)
-      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
-    else if (opDet.orientation == 1)
-      r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
-    else
-      r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    if (fVerticalBorderCorrectionMode) { r = std::abs(ScintPoint.Y() - fcathode_centre[1]); }
+    else {
+      if (opDet.orientation == 2)
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
+      else if (opDet.orientation == 1)
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Z() - fcathode_centre[2]);
+      else
+        r = std::hypot(ScintPoint.Y() - fcathode_centre[1], ScintPoint.Z() - fcathode_centre[2]);
+    }
 
     double pars_ini[4] = {0, 0, 0, 0};
     double s1 = 0;
@@ -422,7 +429,7 @@ namespace phot {
     const geo::Point_t hotspot = {plane_depth, ScintPoint.Y(), ScintPoint.Z()};
     ReflDetectedVisibilities.resize(fNOpDets);
     for (size_t const OpDet : util::counter(fNOpDets)) {
-      if (!isOpDetInSameTPC(ScintPoint, fOpDetector[OpDet].center)) {
+      if (!fOpticalPath->isOpDetVisible(ScintPoint, fOpDetector[OpDet].center)) {
         ReflDetectedVisibilities[OpDet] = 0.;
         continue;
       }
@@ -755,32 +762,6 @@ namespace phot {
   }
 
   //......................................................................
-  // checks photo-detector is in same TPC/argon volume as scintillation
-  bool SemiAnalyticalModel::isOpDetInSameTPC(geo::Point_t const& ScintPoint,
-                                             geo::Point_t const& OpDetPoint) const
-  {
-    // check optical channel is in same TPC as scintillation light, if not doesn't see light
-    // temporary method, needs to be replaced with geometry service
-    // working for SBND, uBooNE, DUNE HD 1x2x6, DUNE HD 10kt and DUNE VD subset
-
-    // special case for SBND = 2 TPCs
-    // check x coordinate has same sign or is close to zero
-    if (fNTPC == 2 && ((ScintPoint.X() < 0.) != (OpDetPoint.X() < 0.)) &&
-        std::abs(OpDetPoint.X()) > 10.) {
-      return false;
-    }
-
-    // special case for DUNE-HD 10kt = 300 TPCs
-    // check whether distance in drift direction > 1 drift distance
-    if (fNTPC == 300 && std::abs(ScintPoint.X() - OpDetPoint.X()) > fDriftDistance) {
-      return false;
-    }
-
-    // not needed for DUNE HD 1x2x6, DUNE VD subset, uBooNE
-
-    return true;
-  }
-
   std::vector<SemiAnalyticalModel::OpticalDetector> SemiAnalyticalModel::opticalDetectors() const
   {
     std::vector<SemiAnalyticalModel::OpticalDetector> opticalDetector;

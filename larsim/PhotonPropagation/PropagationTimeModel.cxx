@@ -158,7 +158,9 @@ namespace phot {
     }
     else {
       // determine nearest parameterisation in discretisation
-      int index = std::round((distance - fmin_d) / fstep_size);
+      size_t index = std::round((distance - fmin_d) / fstep_size);
+      // check index is within range, otherwise use furthest parameterisation
+      if (index >= number_of_vuv_timing_params) { index = number_of_vuv_timing_params - 1; }
       // randomly sample parameterisation for each photon
       for (size_t i = 0; i < arrivalTimes.size(); ++i) {
         arrivalTimes[i] = fVUVTimingGen[angle_bin][index].fire() *
@@ -198,6 +200,7 @@ namespace phot {
     fVUVTimingGen = std::vector(num_angles, std::vector(num_params, CLHEP::RandGeneral(dummy, 1)));
     fVUV_max = std::vector(num_angles, std::vector(num_params, 0.0));
     fVUV_min = std::vector(num_angles, std::vector(num_params, 0.0));
+    number_of_vuv_timing_params = num_params;
 
     std::vector<std::vector<double>> parameters[7];
     parameters[0] = std::vector(1, VUVTimingParams.get<std::vector<double>>("Distances_landau"));
@@ -355,7 +358,9 @@ namespace phot {
     if (VUVdist < fmin_d) { vuv_time = VUVdist / fvuv_vgroup_max; }
     else {
       // find index of required parameterisation
-      const size_t index = std::round((VUVdist - fmin_d) / fstep_size);
+      size_t index = std::round((VUVdist - fmin_d) / fstep_size);
+      // check index is within range, otherwise use furthest parameterisation
+      if (index >= number_of_vuv_timing_params) index = number_of_vuv_timing_params - 1;
       // find shortest time
       vuv_time = fVUV_min[angle_bin_vuv][index];
     }
