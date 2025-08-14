@@ -8,6 +8,7 @@ include (phot::OpticalPath)
 
 cet_build_plugin(StandardOpticalPath phot::OpticalPath
   LIBRARIES PRIVATE
+  larsim::OpticalPath
   larcoreobj::geo_vectors
 )
 
