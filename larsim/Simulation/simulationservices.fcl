@@ -65,7 +65,7 @@ standard_largeantparameters:
 
   #* alpha particle quenching factor
   #* Doke et al. Jpn. J. Appl. Phys. Vol. 41 (2002) pp. 1538
- QAlpha: 0.72
+ QAlpha: 0.33
 
   #* ion+excitation work function in eV
   #* https://doi.org/10.1016/0168-9002(90)90011-T
