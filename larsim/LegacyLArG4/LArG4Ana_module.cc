@@ -191,8 +191,7 @@ namespace larg4 {
 
     // loop over all sim::SimChannels in the event and make sure there are no
     // sim::IDEs with trackID values that are not in the sim::ParticleList
-    std::vector<const sim::SimChannel*> sccol;
-    evt.getView(fG4ModuleLabel, sccol);
+    auto const& sccol = evt.getProduct<std::vector<sim::SimChannel>>(fG4ModuleLabel);
 
     double totalCharge = 0.0;
     double totalEnergy = 0.0;
@@ -201,7 +200,7 @@ namespace larg4 {
       double numIDEs = 0.0;
       double scCharge = 0.0;
       double scEnergy = 0.0;
-      const auto& tdcidemap = sccol[sc]->TDCIDEMap();
+      const auto& tdcidemap = sccol[sc].TDCIDEMap();
       for (auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++) {
         const std::vector<sim::IDE> idevec = (*mapitr).second;
         numIDEs += idevec.size();
