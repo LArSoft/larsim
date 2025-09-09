@@ -27,16 +27,15 @@ namespace sim {
     auto const clocks = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
 
     // get the sim::SimChannels
-    std::vector<const sim::SimChannel*> sccol;
-    evt.getView(moduleLabel, sccol);
+    auto const& sccol = evt.getProduct<std::vector<sim::SimChannel>>(moduleLabel);
 
     sim::LArVoxelList voxList;
 
     // loop over the voxels and put them into the list
-    for (auto itr = sccol.begin(); itr != sccol.end(); ++itr) {
+    for (auto const& sc : sccol) {
 
       // get all sim::IDE associated with this channel
-      const auto& idemap = (*itr)->TDCIDEMap();
+      const auto& idemap = sc.TDCIDEMap();
 
       // loop over all the sim::IDE values
       for (auto mitr = idemap.begin(); mitr != idemap.end(); mitr++) {

@@ -240,12 +240,11 @@ namespace detsim {
     //     of entries as the number of channels in the detector
     //     and set the entries for the channels that have signal on them
     //     using the chanHandle
-    std::vector<const sim::SimChannel*> chanHandle;
-    evt.getView(fDriftEModuleLabel, chanHandle);
+    auto const& avail_channels = evt.getProduct<std::vector<sim::SimChannel>>(fDriftEModuleLabel);
 
     std::vector<const sim::SimChannel*> channels(nchannels);
-    for (size_t c = 0; c < chanHandle.size(); ++c) {
-      channels[chanHandle[c]->Channel()] = chanHandle[c];
+    for (auto const& ch : avail_channels) {
+      channels[ch.Channel()] = &ch;
     }
 
     // ... make an unique_ptr of sim::SimDigits that allows ownership of the produced
