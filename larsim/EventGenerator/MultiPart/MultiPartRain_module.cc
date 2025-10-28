@@ -129,7 +129,7 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
       createEngine(0, "HepJamesRandom", "GenRain"),
       "HepJamesRandom",
       "GenRain"))
-// Initialize member data here.
+  , _cosmic_distribution{p.get<bool>("CosmicDistribution", false)}
 {
 
   // Random engine initialization
@@ -156,7 +156,6 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
 
   _multi_min = p.get<size_t>("MultiMin");
   _multi_max = p.get<size_t>("MultiMax");
-  _cosmic_distribution = p.get<bool>("CosmicDistribution", false);
 
   _tpc_v = p.get<std::vector<std::vector<unsigned short>>>("TPCRange");
   auto const xrange = p.get<std::vector<double>>("XRange");
