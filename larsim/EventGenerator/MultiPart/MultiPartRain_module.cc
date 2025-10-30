@@ -134,16 +134,20 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
 
   // Random engine initialization
   fFlatRandom = std::make_unique<CLHEP::RandFlat>(fFlatEngine, 0, 1);
-  fNormalRandom = std::make_unique<CLHEP::RandGauss>(fFlatEngine);
-  // x^2 distribution for fCosmicAngleRandom
-  // will be used to draw cos(theta)
-  const int nbins(100);
-  double parent[nbins];
-  for (size_t idx = 0; idx < nbins; ++idx) {
-    //parent[idx] = cet::square(cos(((float) idx)/nbins * util::pi()));
-    parent[idx] = cet::square(((float)idx) / nbins); //
+  if (_cosmic_distribution) {
+    // x^2 distribution for fCosmicAngleRandom
+    // will be used to draw cos(theta)
+    const int nbins(100);
+    double parent[nbins];
+    for (size_t idx = 0; idx < nbins; ++idx) {
+      //parent[idx] = cet::square(cos(((float) idx)/nbins * util::pi()));
+      parent[idx] = cet::square(((float)idx) / nbins); //
+    }
+    fCosmicAngleRandom = std::make_unique<CLHEP::RandGeneral>(fFlatEngine, parent, nbins);
   }
-  fCosmicAngleRandom = std::make_unique<CLHEP::RandGeneral>(fFlatEngine, parent, nbins);
+  else {
+    fNormalRandom = std::make_unique<CLHEP::RandGauss>(fFlatEngine);
+  }
 
   produces<std::vector<simb::MCTruth>>();
   produces<sumdata::RunData, art::InRun>();
@@ -156,6 +160,7 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
 
   _multi_min = p.get<size_t>("MultiMin");
   _multi_max = p.get<size_t>("MultiMax");
+  _cosmic_distribution = p.get<bool>("CosmicDistribution", false);
 
   _tpc_v = p.get<std::vector<std::vector<unsigned short>>>("TPCRange");
   auto const xrange = p.get<std::vector<double>>("XRange");
