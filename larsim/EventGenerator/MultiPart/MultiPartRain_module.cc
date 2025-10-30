@@ -129,7 +129,7 @@ MultiPartRain::MultiPartRain(fhicl::ParameterSet const& p)
       createEngine(0, "HepJamesRandom", "GenRain"),
       "HepJamesRandom",
       "GenRain"))
-// Initialize member data here.
+  , _cosmic_distribution{p.get<bool>("CosmicDistribution", false)}
 {
 
   // Random engine initialization
