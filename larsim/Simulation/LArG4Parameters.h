@@ -133,7 +133,8 @@ namespace sim {
     double const fQAlpha;        ///< Possibly override the QAlpha parameter
     double const fQProton;       ///< Possibly override the QProton parameter
     bool const fUseModBoxRecomb; ///< Use Modified Box model recombination instead of Birks
-    bool const fUseEllipsModBoxRecomb; ///< Use Ellipsoid Modified Box model recombination instead of Birks
+    bool const
+      fUseEllipsModBoxRecomb; ///< Use Ellipsoid Modified Box model recombination instead of Birks
     bool const fUseModLarqlRecomb; ///< Use LArQL model recombination correction (dependence on EF)
     bool const fUseBinomialFlucts; ///< Use binomial fluctuations in correlated method
     std::string const
