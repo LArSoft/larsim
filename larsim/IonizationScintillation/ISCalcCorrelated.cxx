@@ -147,13 +147,6 @@ namespace larg4 {
 
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
-    
-    /*
-    if(abs(edep.PdgCode()) == 11 && dEdx>17) {
-      std::cout << "Electron:  Original number of photons " << num_photons << " new number of photons " << energy_deposit * 24000 << std::endl;
-      num_photons = energy_deposit * 24000*fScintPreScale;
-    }
-    */
    
     if( edep.PdgCode() == 2212 ) {
       num_photons = num_photons * fQProton;
