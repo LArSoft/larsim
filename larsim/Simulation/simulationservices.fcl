@@ -64,7 +64,7 @@ standard_largeantparameters:
  LarqlBeta: 0.0124
 
 ## Proton Quenching Factor
- QProton: 0.66
+ QProton: 1
 
   #* alpha particle quenching factor
   #* Doke et al. Jpn. J. Appl. Phys. Vol. 41 (2002) pp. 1538
