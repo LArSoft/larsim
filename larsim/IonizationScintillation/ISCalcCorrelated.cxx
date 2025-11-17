@@ -148,6 +148,7 @@ namespace larg4 {
     // calculate scintillation photons
     double num_photons = (num_quanta - num_electrons) * fScintPreScale;
 
+    // add light quenching factor for protons
     if (edep.PdgCode() == 2212) { num_photons = num_photons * fQProton; }
 
     if (edep.PdgCode() == 1000020040) {
