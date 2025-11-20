@@ -51,6 +51,7 @@ namespace sim {
     double LarqlBeta() const { return fLarqlBeta; }
     double Wph() const { return fWph; }
     double QAlpha() const { return fQAlpha; }
+    double QProton() const { return fQProton; }
     bool UseModBoxRecomb() const { return fUseModBoxRecomb; }
     bool UseEllipsModBoxRecomb() const { return fUseEllipsModBoxRecomb; }
     bool UseModLarqlRecomb() const { return fUseModLarqlRecomb; }
@@ -130,6 +131,7 @@ namespace sim {
     double const fLarqlBeta;     ///< Possibly override the LarqlBeta parameter
     double const fWph;           ///< Possibly override the Wph parameter
     double const fQAlpha;        ///< Possibly override the QAlpha parameter
+    double const fQProton;       ///< Possibly override the QProton parameter
     bool const fUseModBoxRecomb; ///< Use Modified Box model recombination instead of Birks
     bool const
       fUseEllipsModBoxRecomb; ///< Use Ellipsoid Modified Box model recombination instead of Birks
