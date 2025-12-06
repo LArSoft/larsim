@@ -72,6 +72,7 @@ public:
   TVector3 GenPosition();
 
   std::array<double, 3U> extractDirection() const;
+  std::array<double, 3U> extractDirection(double sign_x, double sign_y, double sign_z) const;
   TVector3 GenMomentum(const PartGenParam& param,
                        const double& mass,
                        const double x,
@@ -411,6 +412,48 @@ std::array<double, 3U> MultiPartRain::extractDirection() const
   return result;
 }
 
+std::array<double, 3U> MultiPartRain::extractDirection(double sign_x, double sign_y, double sign_z) const
+{
+  double px, py, pz;
+
+  if (_cosmic_distribution) {
+    double phi = fFlatRandom->fire(0, 2 * util::pi());
+    // Zenith angle theta in [pi/2, pi]
+    double costheta = -1. * fCosmicAngleRandom->fire();
+    double sintheta = sqrt(1 - costheta * costheta);
+
+    // To constrain the Original cosmic sampling to octant, multiply components by signs and use absolute values
+    px = cos(phi) * sintheta;
+    py = sin(phi) * sintheta;
+    pz = costheta;
+
+    // Enforce direction sign by absolute value times sign
+    px = fabs(px) * sign_x;
+    py = fabs(py) * sign_y;
+    pz = fabs(pz) * sign_z;
+  }
+  else {
+    // Sample each component uniformly in [0, 1], then multiply by sign
+    auto sample_component = [this](double sign) {
+      double val = fFlatRandom->fire(0.0, 1.0);
+      return val * sign;
+    };
+
+    px = sample_component(sign_x);
+    py = sample_component(sign_y);
+    pz = sample_component(sign_z);
+  }
+
+  // Normalize the vector to unit length
+  double p = std::hypot(px, py, pz);
+  px /= p;
+  py /= p;
+  pz /= p;
+
+  return {px, py, pz};
+}
+
+
 TVector3 MultiPartRain::GenMomentum(const PartGenParam& param,
                                     const double& mass,
                                     const double x,
@@ -458,13 +501,11 @@ TVector3 MultiPartRain::GenMomentum(const PartGenParam& param,
                 << std::endl;
     }
 
-    while (1) {
-      std::array<double, 3U> p = extractDirection();
-      px = p[0];
-      py = p[1];
-      pz = p[2];
-      if ((px * sign_x) >= 0. && (py * sign_y) >= 0. && (pz * sign_z) >= 0.) break;
-    }
+    std::array<double, 3U> p = extractDirection(sign_x, sign_y, sign_z);
+    px = p[0];
+    py = p[1];
+    pz = p[2];
+
   }
 
   if (_debug) {
