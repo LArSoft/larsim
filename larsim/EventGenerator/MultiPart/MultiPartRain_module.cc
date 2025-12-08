@@ -412,7 +412,9 @@ std::array<double, 3U> MultiPartRain::extractDirection() const
   return result;
 }
 
-std::array<double, 3U> MultiPartRain::extractDirection(double sign_x, double sign_y, double sign_z) const
+std::array<double, 3U> MultiPartRain::extractDirection(double sign_x,
+                                                       double sign_y,
+                                                       double sign_z) const
 {
   double px, py, pz;
 
@@ -452,7 +454,6 @@ std::array<double, 3U> MultiPartRain::extractDirection(double sign_x, double sig
 
   return {px, py, pz};
 }
-
 
 TVector3 MultiPartRain::GenMomentum(const PartGenParam& param,
                                     const double& mass,
@@ -505,7 +506,6 @@ TVector3 MultiPartRain::GenMomentum(const PartGenParam& param,
     px = p[0];
     py = p[1];
     pz = p[2];
-
   }
 
   if (_debug) {
