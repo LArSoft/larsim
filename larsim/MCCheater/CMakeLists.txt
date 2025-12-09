@@ -63,6 +63,7 @@ cet_build_plugin(PhotonBackTrackerService art::service
   PUBLIC
   larsim::MCCheater_PhotonBackTracker
   larcoreobj::SimpleTypesAndConstants
+  larcorealg::Geometry
   lardataobj::RecoBase
   lardataobj::Simulation
   art::Persistency_Provenance
@@ -72,7 +73,6 @@ cet_build_plugin(PhotonBackTrackerService art::service
   larsim::MCCheater_ParticleInventoryService_service
   larsim::MCCheater_ParticleInventory
   larcore::ServiceUtil
-  larcorealg::Geometry
   art::Framework_Principal
   messagefacility::MF_MessageLogger
   fhiclcpp::fhiclcpp
