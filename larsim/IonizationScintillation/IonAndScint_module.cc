@@ -231,20 +231,54 @@ namespace larg4 {
                 << ", instance name: " << edeps.provenance()->productInstanceName() << std::endl;
 
       for (sim::SimEnergyDeposit const& edepi : *edeps) {
-        auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi);
+
+         sim::SimEnergyDeposit edepi_modified;
+ 	 bool moved_charge = false;
+	 if (fGapTool) {
+	  geo::Point_t startPos_tmp_gap;
+          geo::Point_t endPos_tmp_gap;
+          float energy_tmp_gap;
+          if (edeps.provenance()->productInstanceName() == fGapTool->Volume()) {
+            std::pair<geo::Point_t, float> pair_ =
+              fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), edepi.Energy());
+            energy_tmp_gap = pair_.second;
+            startPos_tmp_gap = pair_.first;
+            endPos_tmp_gap = geo::Point_t{edepi.EndX() + startPos_tmp_gap.X() - edepi.StartX(),
+                                      edepi.EndY() + startPos_tmp_gap.Y() - edepi.StartY(),
+                                      edepi.EndZ() + startPos_tmp_gap.Z() - edepi.StartZ()};
+	  
+	    moved_charge = true;
+	    edepi_modified = sim::SimEnergyDeposit(
+                    edepi.NumPhotons(),         
+                    edepi.NumElectrons(),      
+                    edepi.ScintYieldRatio(),
+                    energy_tmp_gap,                 // modified edep
+                    startPos_tmp_gap,               // moved start
+                    endPos_tmp_gap,                 // moved end
+                    edepi.StartT(),
+                    edepi.EndT(),
+                    edepi.TrackID(),
+                    edepi.PdgCode(),
+                    edepi.OrigTrackID()
+                );
+          }
+        }
+	
+	if (!moved_charge) edepi_modified = edepi;
+        
+        auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi_modified);
 
         int ph_num = round(isCalcData.numPhotons);
         int ion_num = round(isCalcData.numElectrons);
         float scintyield = isCalcData.scintillationYieldRatio;
-        float edep_tmp = edepi.Energy();
-        geo::Point_t startPos_tmp = edepi.Start();
-        geo::Point_t endPos_tmp = edepi.End();
-        double startTime_tmp = edepi.StartT();
-        double endTime_tmp = edepi.EndT();
-        int trackID_tmp = edepi.TrackID();
-        int pdgCode_tmp = edepi.PdgCode();
-        int origTrackID_tmp = edepi.OrigTrackID();
-        int ion_num_tmp = ion_num;
+        float edep_tmp = edepi_modified.Energy();
+        geo::Point_t startPos_tmp = edepi_modified.Start();
+        geo::Point_t endPos_tmp = edepi_modified.End();
+        double startTime_tmp = edepi_modified.StartT();
+        double endTime_tmp = edepi_modified.EndT();
+        int trackID_tmp = edepi_modified.TrackID();
+        int pdgCode_tmp = edepi_modified.PdgCode();
+        int origTrackID_tmp = edepi_modified.OrigTrackID();
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
             sce->GetPosOffsets({edepi.StartX(), edepi.StartY(), edepi.StartZ()});
@@ -260,21 +294,10 @@ namespace larg4 {
         }
 
         //----------gap charge-----------------------
-        if (fGapTool) {
-          if (edeps.provenance()->productInstanceName() == fGapTool->Volume()) {
-            std::pair<geo::Point_t, int> pair_ =
-              fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
-            ion_num_tmp = pair_.second;
-            startPos_tmp = pair_.first;
-            endPos_tmp = geo::Point_t{edepi.EndX() + startPos_tmp.X() - edepi.StartX(),
-                                      edepi.EndY() + startPos_tmp.Y() - edepi.StartY(),
-                                      edepi.EndZ() + startPos_tmp.Z() - edepi.StartZ()};
-          }
-        }
 
-        if (!fGapTool || (fGapTool && ion_num_tmp > 0))
+        if (!fGapTool || (fGapTool && edep_tmp > 0))
           simedep->emplace_back(ph_num,
-                                ion_num_tmp,
+                                ion_num,
                                 scintyield,
                                 edep_tmp,
                                 startPos_tmp,
