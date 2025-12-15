@@ -232,10 +232,10 @@ namespace larg4 {
 
       for (sim::SimEnergyDeposit const& edepi : *edeps) {
 
-         sim::SimEnergyDeposit edepi_modified;
- 	 bool moved_charge = false;
-	 if (fGapTool) {
-	  geo::Point_t startPos_tmp_gap;
+        sim::SimEnergyDeposit edepi_modified;
+        bool moved_charge = false;
+        if (fGapTool) {
+          geo::Point_t startPos_tmp_gap;
           geo::Point_t endPos_tmp_gap;
           float energy_tmp_gap;
           if (edeps.provenance()->productInstanceName() == fGapTool->Volume()) {
@@ -244,28 +244,26 @@ namespace larg4 {
             energy_tmp_gap = pair_.second;
             startPos_tmp_gap = pair_.first;
             endPos_tmp_gap = geo::Point_t{edepi.EndX() + startPos_tmp_gap.X() - edepi.StartX(),
-                                      edepi.EndY() + startPos_tmp_gap.Y() - edepi.StartY(),
-                                      edepi.EndZ() + startPos_tmp_gap.Z() - edepi.StartZ()};
-	  
-	    moved_charge = true;
-	    edepi_modified = sim::SimEnergyDeposit(
-                    edepi.NumPhotons(),         
-                    edepi.NumElectrons(),      
-                    edepi.ScintYieldRatio(),
-                    energy_tmp_gap,                 // modified edep
-                    startPos_tmp_gap,               // moved start
-                    endPos_tmp_gap,                 // moved end
-                    edepi.StartT(),
-                    edepi.EndT(),
-                    edepi.TrackID(),
-                    edepi.PdgCode(),
-                    edepi.OrigTrackID()
-                );
+                                          edepi.EndY() + startPos_tmp_gap.Y() - edepi.StartY(),
+                                          edepi.EndZ() + startPos_tmp_gap.Z() - edepi.StartZ()};
+
+            moved_charge = true;
+            edepi_modified = sim::SimEnergyDeposit(edepi.NumPhotons(),
+                                                   edepi.NumElectrons(),
+                                                   edepi.ScintYieldRatio(),
+                                                   energy_tmp_gap,   // modified edep
+                                                   startPos_tmp_gap, // moved start
+                                                   endPos_tmp_gap,   // moved end
+                                                   edepi.StartT(),
+                                                   edepi.EndT(),
+                                                   edepi.TrackID(),
+                                                   edepi.PdgCode(),
+                                                   edepi.OrigTrackID());
           }
         }
-	
-	if (!moved_charge) edepi_modified = edepi;
-        
+
+        if (!moved_charge) edepi_modified = edepi;
+
         auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi_modified);
 
         int ph_num = round(isCalcData.numPhotons);

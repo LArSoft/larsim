@@ -10,7 +10,10 @@ namespace gap {
     virtual ~IGapChargeTransport() = default;
 
     /// Return shifted position and number of moved electrons
-    virtual std::pair<geo::Point_t, float> GetOffset(double x, double y, double z, float n) const = 0;
+    virtual std::pair<geo::Point_t, float> GetOffset(double x,
+                                                     double y,
+                                                     double z,
+                                                     float n) const = 0;
 
     //Apply the tool in this volume
     virtual std::string Volume() const = 0;
