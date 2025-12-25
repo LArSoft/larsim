@@ -320,7 +320,10 @@ namespace cheat {
     if (start_tdc < 0) start_tdc = 0;
     if (end_tdc < 0) end_tdc = 0;
 
-    if (start_tdc > end_tdc) { throw; }
+    if (start_tdc > end_tdc) {
+      throw cet::exception("BackTracker") << "HitToSimIDEs_Ps(): Requested empty tick interval "
+                                          << start_tdc << " - " << end_tdc << "\n";
+    }
 
     // The following does not return a std::map. It returns a vector... with no guarantee
     // that it is sorted...
