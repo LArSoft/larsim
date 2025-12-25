@@ -325,45 +325,14 @@ namespace cheat {
                                           << start_tdc << " - " << end_tdc << "\n";
     }
 
-    // The following does not return a std::map. It returns a vector... with no guarantee
-    // that it is sorted...
-    auto const& tdcIDEMap = FindSimChannel(hit.Channel())->TDCIDEMap();
-    std::vector<const std::pair<unsigned short, std::vector<sim::IDE>>*> tdcIDEMap_SortedPointers;
-    for (auto& pair : tdcIDEMap) {
-      tdcIDEMap_SortedPointers.push_back(&pair);
-    }
+    sim::SimChannel const& sc = *FindSimChannel(hit.Channel());
 
-    // This is a bunch of extra steps, due to needing a vector we can sort, and needing
-    // those items in the sorted vector to be the items from the sim channels (so a
-    // pointer to the IDEs inside the sim channels can be made).  The work around is to
-    // make a vector of pointers to IDEs inside the TDCIDEMap (which is a constant
-    // reference to the fTDCIDEs in the SimChannel.)
-    auto pairSort = [](auto& a, auto& b) { return a->first < b->first; };
-    if (!std::is_sorted(
-          tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort)) {
-      std::sort(tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), pairSort);
-    }
-
-    std::vector<sim::IDE> dummyVec; // I need something to stick in a pair to compare
-                                    // pair<tdcVal, IDE>. This is an otherwise useless
-                                    // "hack".
-    std::pair<double, std::vector<sim::IDE>> start_tdcPair =
-      std::make_pair(start_tdc, dummyVec); // This pair is a "hack" to make my comparison
-                                           // work for lower and upper bound.
-    std::pair<double, std::vector<sim::IDE>> end_tdcPair = std::make_pair(end_tdc, dummyVec);
-    auto start_tdcPair_P = &start_tdcPair;
-    auto end_tdcPair_P = &end_tdcPair;
-    auto mapFirst = std::lower_bound(
-      tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), start_tdcPair_P, pairSort);
-
-    // iterator to just after the last interesting IDE
-    auto mapLast = std::upper_bound(
-      tdcIDEMap_SortedPointers.begin(), tdcIDEMap_SortedPointers.end(), end_tdcPair_P, pairSort);
-    for (auto& mapitr = mapFirst; mapitr != mapLast; ++mapitr) {
-      for (auto& ide : (*mapitr)->second) {
+    // end_tdc itself is included
+    for (auto const& [_, IDEs] : sc.IDEsBetween(start_tdc, end_tdc + 1)) {
+      for (sim::IDE const& ide : IDEs)
         retVec.push_back(&ide);
-      } // Add all interesting IDEs to the retVec
     }
+
     return retVec;
   }
 
