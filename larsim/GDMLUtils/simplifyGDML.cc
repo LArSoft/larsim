@@ -15,7 +15,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * g++ -Wall -pedantic -std=c++14 \
  *   -I"${GEANT4_FQ_DIR}/include" -I"$CLHEP_INC" -I"$XERCES_C_INC" \
- *   -L"${GEANT4_FQ_DIR}/lib64" -lG4persistency -lG4geometry \
+ *   -L"${GEANT4_FQ_DIR}/lib64" -lG4gdml -lG4geometry \
  *   -L"$XERCES_C_LIB" -lxerces-c \
  *   -o simplifyGDML.exe simplifyGDML.cc
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
