@@ -7,8 +7,6 @@ add_subdirectory(MCCheater)
 add_subdirectory(Utils)
 add_subdirectory(ElectronDrift)
 add_subdirectory(MCDumpers)
-## disable LegacyLArG4 when building with geant4 4.11
-## add_subdirectory(LegacyLArG4)
 add_subdirectory(DetSim)
 add_subdirectory(EventGenerator)
 add_subdirectory(EventWeight)
