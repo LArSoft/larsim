@@ -16,10 +16,10 @@
 #ifndef IS_ISCALCCORRELATED_H
 #define IS_ISCALCCORRELATED_H
 
+#include "CLHEP/Random/RandBinomial.h"
+#include "larcorealg/Geometry/GeometryCore.h"
 #include "larsim/IonizationScintillation/ISCalc.h"
 #include "larsim/IonizationScintillation/ISTPC.h"
-
-#include "CLHEP/Random/RandBinomial.h"
 
 namespace spacecharge {
   class SpaceCharge;
@@ -42,7 +42,11 @@ namespace larg4 {
     ISCalcData CalcIonAndScint(detinfo::DetectorPropertiesData const& detProp,
                                sim::SimEnergyDeposit const& edep) override;
 
+    void SetGapAware(bool v) { fUseGapAwareField = v; }
+
   private:
+    bool fUseGapAwareField;
+    geo::TPCID FindTPCForPosition(geo::Point_t const& p) const;
     ISTPC fISTPC;
     const spacecharge::SpaceCharge* fSCE;
     CLHEP::RandBinomial fBinomialGen;

@@ -8,10 +8,11 @@
 // Input: 'sim::SimEnergyDeposit'
 // Output: updated 'sim::SimEnergyDeposit' with numPhotons and numElectrons
 //
-//This module calculate the number of photons and electrons produced at each step where energy is deposited.
-//The Separate algorithm is used by default, but this can be changed via the "ISCalcAlg"
-//fhicl parameter tag.
-//At the end of this module the numPhotons and numElectrons of sim:SimEnergyDeposit have been updated.
+// This module calculate the number of photons and electrons produced at each
+// step where energy is deposited. The Separate algorithm is used by default,
+// but this can be changed via the "ISCalcAlg" fhicl parameter tag. At the end
+// of this module the numPhotons and numElectrons of sim:SimEnergyDeposit have
+// been updated.
 //
 // Aug.18 by Mu Wei
 //
@@ -58,7 +59,7 @@
 using std::string;
 using SimEnergyDepositCollection = std::vector<sim::SimEnergyDeposit>;
 
-//make_tool function for a tool moving the charge from the CRP gap (DUNE only)
+// make_tool function for a tool moving the charge from the CRP gap (DUNE only)
 namespace {
   std::unique_ptr<gap::IGapChargeTransport> make_gap_tool(fhicl::ParameterSet const& tool_pset)
   {
@@ -66,7 +67,7 @@ namespace {
     mf::LogInfo("GapChargeTransport") << "Building the charge recovery tool!";
     return art::make_tool<gap::IGapChargeTransport>(tool_pset);
   }
-}
+} // namespace
 
 namespace larg4 {
   class IonAndScint : public art::EDProducer {
@@ -118,7 +119,8 @@ namespace larg4 {
       std::cout << " - " << name << std::endl;
     }
     if (Instances.empty()) {
-      std::cout << "Produce SimEnergyDeposit in default volume - LArG4DetectorServicevolTPCActive"
+      std::cout << "Produce SimEnergyDeposit in default volume - "
+                   "LArG4DetectorServicevolTPCActive"
                 << std::endl;
       instanceNames.push_back("LArG4DetectorServicevolTPCActive");
     }
@@ -184,8 +186,9 @@ namespace larg4 {
 
       if (empty(handels)) {
         throw art::Exception(art::errors::ProductNotFound)
-          << "IonAndScint module cannot find any SimEnergyDeposits with module label " << module
-          << " as requested in InputModuleLabels. \n";
+          << "IonAndScint module cannot find any SimEnergyDeposits with module "
+             "label "
+          << module << " as requested in InputModuleLabels. \n";
       }
 
       result.insert(result.end(), handels.begin(), handels.end());
@@ -211,7 +214,8 @@ namespace larg4 {
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event);
 
     auto simedep = std::make_unique<std::vector<sim::SimEnergyDeposit>>();
-    auto simedep1 = std::make_unique<std::vector<sim::SimEnergyDeposit>>(); // for prior-SCE depos
+    auto simedep1 = std::make_unique<std::vector<sim::SimEnergyDeposit>>(); // for prior-SCE
+                                                                            // depos
     for (auto edeps : edepHandle) {
       // Do some checking before we proceed
       if (!edeps.isValid()) {
@@ -231,69 +235,46 @@ namespace larg4 {
                 << ", instance name: " << edeps.provenance()->productInstanceName() << std::endl;
 
       for (sim::SimEnergyDeposit const& edepi : *edeps) {
+        bool isGap = fGapTool && edeps.provenance()->productInstanceName() == fGapTool->Volume();
 
-        sim::SimEnergyDeposit edepi_modified;
-        bool moved_charge = false;
-        if (fGapTool) {
-          geo::Point_t startPos_tmp_gap;
-          geo::Point_t endPos_tmp_gap;
-          float energy_tmp_gap;
-          if (edeps.provenance()->productInstanceName() == fGapTool->Volume()) {
-            std::pair<geo::Point_t, float> pair_ =
-              fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), edepi.Energy());
-            energy_tmp_gap = pair_.second;
-            startPos_tmp_gap = pair_.first;
-            endPos_tmp_gap = geo::Point_t{edepi.EndX() + startPos_tmp_gap.X() - edepi.StartX(),
-                                          edepi.EndY() + startPos_tmp_gap.Y() - edepi.StartY(),
-                                          edepi.EndZ() + startPos_tmp_gap.Z() - edepi.StartZ()};
+        ISCalcCorrelated* fISAlg_gap = nullptr;
 
-            moved_charge = true;
-            edepi_modified = sim::SimEnergyDeposit(edepi.NumPhotons(),
-                                                   edepi.NumElectrons(),
-                                                   edepi.ScintYieldRatio(),
-                                                   energy_tmp_gap,   // modified edep
-                                                   startPos_tmp_gap, // moved start
-                                                   endPos_tmp_gap,   // moved end
-                                                   edepi.StartT(),
-                                                   edepi.EndT(),
-                                                   edepi.TrackID(),
-                                                   edepi.PdgCode(),
-                                                   edepi.OrigTrackID());
-          }
+        if (isGap) {
+          fISAlg_gap = dynamic_cast<ISCalcCorrelated*>(fISAlg.get());
+          if (fISAlg_gap) fISAlg_gap->SetGapAware(true);
         }
 
-        if (!moved_charge) edepi_modified = edepi;
+        auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi);
 
-        auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi_modified);
-
+        if (fISAlg_gap) fISAlg_gap->SetGapAware(false);
         int ph_num = round(isCalcData.numPhotons);
         int ion_num = round(isCalcData.numElectrons);
         float scintyield = isCalcData.scintillationYieldRatio;
-        float edep_tmp = edepi_modified.Energy();
-        geo::Point_t startPos_tmp = edepi_modified.Start();
-        geo::Point_t endPos_tmp = edepi_modified.End();
-        double startTime_tmp = edepi_modified.StartT();
-        double endTime_tmp = edepi_modified.EndT();
-        int trackID_tmp = edepi_modified.TrackID();
-        int pdgCode_tmp = edepi_modified.PdgCode();
-        int origTrackID_tmp = edepi_modified.OrigTrackID();
+        float edep_tmp = edepi.Energy();
+        geo::Point_t startPos_tmp = edepi.Start();
+        geo::Point_t endPos_tmp = edepi.End();
+        double startTime_tmp = edepi.StartT();
+        double endTime_tmp = edepi.EndT();
+        int trackID_tmp = edepi.TrackID();
+        int pdgCode_tmp = edepi.PdgCode();
+        int origTrackID_tmp = edepi.OrigTrackID();
+        int ion_num_tmp = ion_num;
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
             sce->GetPosOffsets({edepi.StartX(), edepi.StartY(), edepi.StartZ()});
           auto posOffsetsEnd = sce->GetPosOffsets({edepi.EndX(), edepi.EndY(), edepi.EndZ()});
           startPos_tmp =
-            geo::Point_t{(float)(edepi.StartX() - posOffsetsStart.X()), //x should be subtracted
+            geo::Point_t{(float)(edepi.StartX() - posOffsetsStart.X()), // x should be subtracted
                          (float)(edepi.StartY() + posOffsetsStart.Y()),
                          (float)(edepi.StartZ() + posOffsetsStart.Z())};
           endPos_tmp =
-            geo::Point_t{(float)(edepi.EndX() - posOffsetsEnd.X()), //x should be subtracted
+            geo::Point_t{(float)(edepi.EndX() - posOffsetsEnd.X()), // x should be subtracted
                          (float)(edepi.EndY() + posOffsetsEnd.Y()),
                          (float)(edepi.EndZ() + posOffsetsEnd.Z())};
         }
 
         //----------gap charge-----------------------
-
-        if (!fGapTool || (fGapTool && edep_tmp > 0))
+        if (!isGap) {
           simedep->emplace_back(ph_num,
                                 ion_num,
                                 scintyield,
@@ -305,6 +286,63 @@ namespace larg4 {
                                 trackID_tmp,
                                 pdgCode_tmp,
                                 origTrackID_tmp);
+        }
+        else {
+          // --- Move charge ---
+          auto [shiftedStart, movedCharge] =
+            fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
+          if (movedCharge <= 0) {
+            // Not actually a gap, do nothing special
+            simedep->emplace_back(ph_num,
+                                  ion_num,
+                                  scintyield,
+                                  edep_tmp,
+                                  startPos_tmp,
+                                  endPos_tmp,
+                                  startTime_tmp,
+                                  endTime_tmp,
+                                  trackID_tmp,
+                                  pdgCode_tmp,
+                                  origTrackID_tmp);
+            continue;
+          }
+          else {
+            //GAP (light only)
+            simedep->emplace_back(ph_num, // all photons stay
+                                  0,      // NO charge
+                                  scintyield,
+                                  edep_tmp,
+                                  edepi.Start(), // original position
+                                  edepi.End(),
+                                  startTime_tmp,
+                                  endTime_tmp,
+                                  trackID_tmp,
+                                  pdgCode_tmp,
+                                  origTrackID_tmp);
+
+            // ACTIVE (charge only)
+            if (
+              movedCharge >
+              0) { //movedCharge = 0 happens when the energy deposition was in the gap but too far from the active volume to be recovered
+              geo::Point_t shiftedEnd{edepi.EndX() + shiftedStart.X() - edepi.StartX(),
+                                      edepi.EndY() + shiftedStart.Y() - edepi.StartY(),
+                                      edepi.EndZ() + shiftedStart.Z() - edepi.StartZ()};
+
+              simedep->emplace_back(0,           // NO photons
+                                    movedCharge, // fraction of the charge
+                                    scintyield,
+                                    edep_tmp,
+                                    shiftedStart,
+                                    shiftedEnd, //new position in the active volume
+                                    startTime_tmp,
+                                    endTime_tmp,
+                                    trackID_tmp,
+                                    pdgCode_tmp,
+                                    origTrackID_tmp);
+            }
+          }
+        }
+
         //----------gap charge-----------------------
 
         if (fSavePriorSCE) {
@@ -325,5 +363,5 @@ namespace larg4 {
     event.put(std::move(simedep));
     if (fSavePriorSCE) event.put(std::move(simedep1), "priorSCE");
   }
-} // namespace
+} // namespace larg4
 DEFINE_ART_MODULE(larg4::IonAndScint)
