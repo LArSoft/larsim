@@ -1,3 +1,18 @@
+////////////////////////////////////////////////////////////////////////
+//// Class:       ISCalcCorrelated
+//// Plugin Type: algorithm
+//// File:        ISCalcCorrelated.h and ISCalcCorrelated.cxx
+//// Description: Interface to algorithm class for a specific calculation of
+////              ionization electrons and scintillation photons, based on
+////              simple microphysics arguments to establish an anticorrelation
+////              between these two quantities.
+//// Input: 'sim::SimEnergyDeposit'
+//// Output: num of Photons and Electrons
+//// May 2020 by W Foreman
+//// Modified: Adding corrections for low electric field (LArQL model)
+//// Jun 2020 by L. Paulucci and F. Marinho
+//////////////////////////////////////////////////////////////////////////
+
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 
 #include "larcore/CoreUtils/ServiceUtil.h"
