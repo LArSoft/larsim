@@ -2,7 +2,10 @@ cet_make_library(LIBRARY_NAME ScintTimeTool INTERFACE
   SOURCE ScintTime.h)
 
 cet_write_plugin_builder(lar::ScintTimeTool art::tool Modules
-  INSTALL_BUILDER)
+  INSTALL_BUILDER
+  LIBRARIES CONDITIONAL
+  CLHEP::Random
+)
 
 include (lar::ScintTimeTool)
 

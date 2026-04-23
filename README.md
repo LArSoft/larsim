@@ -29,7 +29,7 @@ larsim
 - GDMLUtils
 - GenericCRT
 - IonizationScintillation
-- LegacyLArG4
+- LegacyLArG4 - disabled when building with gean4 4.11
 - MCCheater
 - MCDumpers
 - MCSTReco
