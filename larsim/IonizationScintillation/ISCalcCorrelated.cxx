@@ -302,7 +302,7 @@ namespace larg4 {
 
   geo::TPCID ISCalcCorrelated::FindTPCForPosition(geo::Point_t const& p) const
   {
-    constexpr double eps = 25; //max gap is 42mm
+    constexpr double eps = 4.25; //max gap is 42mm
 
     art::ServiceHandle<geo::Geometry const> geom;
 
