@@ -234,7 +234,7 @@ namespace larg4 {
   {
 
     // electric field outside active volume set to zero
-    if (!fISTPC.isScintInActiveVolume(edep.MidPoint()) && fUseGapAwareField) return 0.;
+    if (!fISTPC.isScintInActiveVolume(edep.MidPoint()) && !fUseGapAwareField) return 0.;
 
     geo::Vector_t stepvec = edep.Start() - edep.End();
     geo::Vector_t elecvec{};
