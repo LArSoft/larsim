@@ -32,10 +32,11 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp,
                                      CLHEP::HepRandomEngine& Engine)
-    : fUseGapAwareField(false)
-    , fISTPC{*(lar::providerFrom<geo::Geometry>())}
+    : fISTPC{*(lar::providerFrom<geo::Geometry>())}
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
     , fBinomialGen{CLHEP::RandBinomial(Engine)}
+    , fUseGapAwareField(false)
+    , fMaxGap(0)
   {
     MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize.";
 
@@ -302,8 +303,7 @@ namespace larg4 {
 
   geo::TPCID ISCalcCorrelated::FindTPCForPosition(geo::Point_t const& p) const
   {
-    constexpr double eps = 4.25; //max gap is 42mm
-
+    double eps = fMaxGap * 1.01;
     art::ServiceHandle<geo::Geometry const> geom;
 
     auto probe = [&](double dx, double dy, double dz) {

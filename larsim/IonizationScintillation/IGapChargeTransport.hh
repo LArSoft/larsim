@@ -17,6 +17,7 @@ namespace gap {
 
     //Apply the tool in this volume
     virtual std::string Volume() const = 0;
+    virtual double MaxGap() const = 0;
   };
 }
 
