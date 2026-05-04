@@ -303,7 +303,7 @@ namespace larg4 {
 
   geo::TPCID ISCalcCorrelated::FindTPCForPosition(geo::Point_t const& p) const
   {
-    double eps = fMaxGap * 1.01;
+    double eps = fMaxGap * 1.01; // in cm, default value is 4.2cm which is the largest gap in DUNE FD-VD
     art::ServiceHandle<geo::Geometry const> geom;
 
     auto probe = [&](double dx, double dy, double dz) {
