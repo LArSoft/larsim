@@ -84,14 +84,15 @@ public:
   // Beam-mode generators
   TVector3 GenBeamEntrancePosition();
   TVector3 GenBeamTarget() const;
-  std::array<double, 3U> GenBeamDirection(const TVector3& start_pos,
-                                          const TVector3& target) const;
+  std::array<double, 3U> GenBeamDirection(const TVector3& start_pos, const TVector3& target) const;
 
-  std::array<double, 3U> extractDirection() const; 
+  std::array<double, 3U> extractDirection() const;
   TVector3 GenMomentum(const PartGenParam& param, const double& mass);
   TVector3 GenMomentum(const PartGenParam& param, const double& mass, bool& same_range);
-  TVector3 GenMomentum(const PartGenParam& param, const double& mass,
-                       bool& same_range, const std::array<double, 3>& dir);
+  TVector3 GenMomentum(const PartGenParam& param,
+                       const double& mass,
+                       bool& same_range,
+                       const std::array<double, 3>& dir);
 
   double GenMomentumSF(const double& sf, const double& mass, const double& p);
   std::vector<size_t> GenParticles() const;
@@ -189,11 +190,10 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   // ---------------------------------------------------------------
   // Beam-mode configuration
   // ---------------------------------------------------------------
-  _beam_mode   = p.get<bool>("BeamMode", false);
+  _beam_mode = p.get<bool>("BeamMode", false);
   _beam_radius = p.get<double>("BeamRadius", 10.0); // cm
   _beam_target_radius = p.get<double>("BeamTargetRadius", 0.0);
-  if (_beam_target_radius < 0.0)
-    this->abort("BeamTargetRadius must be >= 0");
+  if (_beam_target_radius < 0.0) this->abort("BeamTargetRadius must be >= 0");
 
   auto beam_entrance_v = p.get<std::vector<double>>("BeamEntrance", {94.8, 142.6, 0.7});
   if (beam_entrance_v.size() != 3)
@@ -201,26 +201,22 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   _beam_entrance = {beam_entrance_v[0], beam_entrance_v[1], beam_entrance_v[2]};
 
   auto beam_inward_v = p.get<std::vector<double>>("BeamInwardDirection", {0.0, 0.0, 1.0});
-  if (beam_inward_v.size() != 3)
-    this->abort("BeamInwardDirection must have exactly 3 elements");
-  double norm = std::sqrt(beam_inward_v[0]*beam_inward_v[0] +
-                          beam_inward_v[1]*beam_inward_v[1] +
-                          beam_inward_v[2]*beam_inward_v[2]);
+  if (beam_inward_v.size() != 3) this->abort("BeamInwardDirection must have exactly 3 elements");
+  double norm =
+    std::sqrt(beam_inward_v[0] * beam_inward_v[0] + beam_inward_v[1] * beam_inward_v[1] +
+              beam_inward_v[2] * beam_inward_v[2]);
   if (norm < 1e-9) this->abort("BeamInwardDirection has zero magnitude!");
-  _beam_inward_dir = {beam_inward_v[0]/norm, beam_inward_v[1]/norm, beam_inward_v[2]/norm};
+  _beam_inward_dir = {beam_inward_v[0] / norm, beam_inward_v[1] / norm, beam_inward_v[2] / norm};
 
-  if (_beam_radius <= 0.)
-    this->abort("BeamRadius must be positive!");
+  if (_beam_radius <= 0.) this->abort("BeamRadius must be positive!");
 
   if (_beam_mode && _debug > 0) {
     std::cout << "[MultiPartVertex] BeamMode ENABLED\n"
-              << "  Entrance  : (" << _beam_entrance[0] << ", "
-                                   << _beam_entrance[1] << ", "
-                                   << _beam_entrance[2] << ") cm\n"
+              << "  Entrance  : (" << _beam_entrance[0] << ", " << _beam_entrance[1] << ", "
+              << _beam_entrance[2] << ") cm\n"
               << "  Radius    : " << _beam_radius << " cm\n"
-              << "  Inward dir: (" << _beam_inward_dir[0] << ", "
-                                   << _beam_inward_dir[1] << ", "
-                                   << _beam_inward_dir[2] << ")\n"
+              << "  Inward dir: (" << _beam_inward_dir[0] << ", " << _beam_inward_dir[1] << ", "
+              << _beam_inward_dir[2] << ")\n"
               << "  Target radius : " << _beam_target_radius << " cm\n";
   }
 
@@ -234,7 +230,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   auto const zrange = p.get<std::vector<double>>("ZRange");
 
   auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
-  _gamma_beta_range = 
+  _gamma_beta_range =
     p.get<std::array<double, 2>>("GammaBetaRange", {0.0, 0.0}); // _gamma_beta denotes gamma * beta
 
   auto const pdg_v = part_cfg.get<std::vector<std::vector<int>>>("PDGCode");
@@ -254,7 +250,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
     kerange_v = momrange_v;
     use_mom = true;
   }
-// sanity check
+  // sanity check
   if (pdg_v.size() != kerange_v.size() || pdg_v.size() != minmult_v.size() ||
       pdg_v.size() != maxmult_v.size() || pdg_v.size() != weight_v.size())
     this->abort("configuration parameters have incompatible lengths!");
@@ -315,9 +311,9 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   if (yrange.size() == 1) { _yrange[0] = _yrange[1] = yrange[0]; }
   if (zrange.size() == 1) { _zrange[0] = _zrange[1] = zrange[0]; }
   if (xrange.size() == 2) {
-     _xrange[0] = xrange[0];
-     _xrange[1] = xrange[1];
-    }
+    _xrange[0] = xrange[0];
+    _xrange[1] = xrange[1];
+  }
   if (yrange.size() == 2) {
     _yrange[0] = yrange[0];
     _yrange[1] = yrange[1];
@@ -387,7 +383,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
 void MultiPartVertex::beginRun(art::Run& run)
 {
   // grab the geometry object to see what geometry we are using
-    art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry> geo;
 
   std::unique_ptr<sumdata::RunData> runData(new sumdata::RunData(geo->DetectorName()));
 
@@ -466,8 +462,8 @@ TVector3 MultiPartVertex::GenPosition()
 // centred on _beam_entrance.
 TVector3 MultiPartVertex::GenBeamEntrancePosition()
 {
-  double ct  = fFlatRandom->fire(0.0, 1.0);
-  double st  = TMath::Sqrt(1.0 - ct * ct);
+  double ct = fFlatRandom->fire(0.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
   double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
 
   TVector3 n_up(-_beam_inward_dir[0], -_beam_inward_dir[1], -_beam_inward_dir[2]);
@@ -478,19 +474,17 @@ TVector3 MultiPartVertex::GenBeamEntrancePosition()
   TVector3 e1 = (arb - n_up * n_up.Dot(arb)).Unit();
   TVector3 e2 = n_up.Cross(e1).Unit();
 
-  TVector3 offset = _beam_radius * (st * TMath::Cos(phi) * e1 +
-                                    st * TMath::Sin(phi) * e2 +
-                                    ct               * n_up);
+  TVector3 offset =
+    _beam_radius * (st * TMath::Cos(phi) * e1 + st * TMath::Sin(phi) * e2 + ct * n_up);
 
-  TVector3 pos(_beam_entrance[0] + offset.X(),
-               _beam_entrance[1] + offset.Y(),
-               _beam_entrance[2] + offset.Z());
+  TVector3 pos(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
 
   if (_debug > 0)
-    std::cout << "[BeamMode] Start position: ("
-              << pos.X() << ", " << pos.Y() << ", " << pos.Z() << ") cm\n"
-              << "           Offset from entrance: ("
-              << offset.X() << ", " << offset.Y() << ", " << offset.Z() << ") cm" << std::endl;
+    std::cout << "[BeamMode] Start position: (" << pos.X() << ", " << pos.Y() << ", " << pos.Z()
+              << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
 
   return pos;
 }
@@ -504,38 +498,37 @@ TVector3 MultiPartVertex::GenBeamTarget() const
     return TVector3(_beam_entrance[0], _beam_entrance[1], _beam_entrance[2]);
 
   TVector3 n_in(_beam_inward_dir[0], _beam_inward_dir[1], _beam_inward_dir[2]);
-  TVector3 arb(1.,0.,0.);
-  if (std::fabs(n_in.Dot(arb)) > 0.9) arb = TVector3(0.,1.,0.);
+  TVector3 arb(1., 0., 0.);
+  if (std::fabs(n_in.Dot(arb)) > 0.9) arb = TVector3(0., 1., 0.);
   TVector3 u = (arb - n_in * n_in.Dot(arb)).Unit();
   TVector3 v = n_in.Cross(u).Unit();
 
-  double r   = std::sqrt(fFlatRandom->fire()) * _beam_target_radius;
+  double r = std::sqrt(fFlatRandom->fire()) * _beam_target_radius;
   double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
   TVector3 offset = r * (std::cos(phi) * u + std::sin(phi) * v);
 
-  TVector3 target(_beam_entrance[0] + offset.X(),
-                  _beam_entrance[1] + offset.Y(),
-                  _beam_entrance[2] + offset.Z());
+  TVector3 target(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
 
   if (_debug > 0)
-    std::cout << "[BeamMode] Target point: ("
-              << target.X() << ", " << target.Y() << ", " << target.Z() << ") cm\n"
-              << "           Offset from entrance: ("
-              << offset.X() << ", " << offset.Y() << ", " << offset.Z() << ") cm" << std::endl;
+    std::cout << "[BeamMode] Target point: (" << target.X() << ", " << target.Y() << ", "
+              << target.Z() << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
 
   return target;
 }
 
 // ---------------------------------------------------------------------------
 // Returns the unit vector from start_pos toward target.
-std::array<double, 3U>
-MultiPartVertex::GenBeamDirection(const TVector3& start_pos, const TVector3& target) const
+std::array<double, 3U> MultiPartVertex::GenBeamDirection(const TVector3& start_pos,
+                                                         const TVector3& target) const
 {
   TVector3 dir = (target - start_pos).Unit();
 
   if (_debug > 0)
-    std::cout << "[BeamMode] Direction: ("
-              << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")" << std::endl;
+    std::cout << "[BeamMode] Direction: (" << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")"
+              << std::endl;
 
   return {dir.X(), dir.Y(), dir.Z()};
 }
@@ -544,8 +537,8 @@ MultiPartVertex::GenBeamDirection(const TVector3& start_pos, const TVector3& tar
 // Isotropic direction sampler (original, used when _beam_mode == false).
 std::array<double, 3U> MultiPartVertex::extractDirection() const
 {
-  double ct  = fFlatRandom->fire(-1.0, 1.0);
-  double st  = TMath::Sqrt(1.0 - ct * ct);
+  double ct = fFlatRandom->fire(-1.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
   double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
   return {st * TMath::Cos(phi), st * TMath::Sin(phi), ct};
 }
@@ -580,14 +573,13 @@ TVector3 MultiPartVertex::GenBoost()
   return TVector3(bx, by, bz);
 }
 
-
 TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param, const double& mass)
 {
 
   double tot_energy = 0;
   if (param.use_mom)
-    tot_energy = 
-    std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass); // KE + mass
+    tot_energy =
+      std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass); // KE + mass
   else
     tot_energy = fFlatRandom->fire(param.kerange[0], param.kerange[1]) + mass;
 
@@ -657,8 +649,7 @@ TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
                                       bool& same_range,
                                       const std::array<double, 3>& dir)
 {
-  if (!same_range)
-    return GenMomentum(param, mass);
+  if (!same_range) return GenMomentum(param, mass);
 
   double tot_energy = 0;
   if (param.use_mom)
@@ -699,7 +690,7 @@ void MultiPartVertex::produce(art::Event& e)
   // Determine start position and beam direction for this event
   // ------------------------------------------------------------------
   TVector3 position;
-  std::array<double, 3> beam_dir{};  // only used in beam mode
+  std::array<double, 3> beam_dir{}; // only used in beam mode
 
   if (_beam_mode) {
     position = GenBeamEntrancePosition();
@@ -736,7 +727,7 @@ void MultiPartVertex::produce(art::Event& e)
   auto const param_idx_v = GenParticles();
   if (_debug)
     std::cout << "Event Vertex @ (" << x << "," << y << "," << z << ") ... " << param_idx_v.size()
-    << " particles..." << std::endl;
+              << " particles..." << std::endl;
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
     auto const& param = _param_v[param_idx_v[idx]];
@@ -796,7 +787,7 @@ void MultiPartVertex::produce(art::Event& e)
           double mom_sf = 1;
           double temp_p =
             sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
-            if (_debug)
+          if (_debug)
             std::cout << "KE range: " << param.kerange[1] << " , pdg :  " << pdg_vec[idx]
                       << std::endl;
           mom_sf = GenMomentumSF(param.kerange[1], mass_vec[idx], temp_p);
@@ -835,7 +826,7 @@ void MultiPartVertex::produce(art::Event& e)
         auto const& param = _param_v[param_idx_v[idx]];
         double mom_sf = 1;
         double temp_p =
-        sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
+          sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
         if (_debug)
           std::cout << "KE range: " << param.kerange[1] << " , pdg :  " << pdg_vec[idx]
                     << std::endl;
