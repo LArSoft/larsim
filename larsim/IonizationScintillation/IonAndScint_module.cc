@@ -242,7 +242,7 @@ namespace larg4 {
         if (isGap) {
           fISAlg_gap = dynamic_cast<ISCalcCorrelated*>(fISAlg.get());
           if (fISAlg_gap) fISAlg_gap->SetGapAware(true);
-	  if (fISAlg_gap) fISAlg_gap->SetMaxGap(fGapTool->MaxGap());
+          if (fISAlg_gap) fISAlg_gap->SetMaxGap(fGapTool->MaxGap());
         }
 
         auto const isCalcData = fISAlg->CalcIonAndScint(detProp, edepi);

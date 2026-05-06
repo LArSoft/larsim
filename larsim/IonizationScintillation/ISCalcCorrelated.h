@@ -43,7 +43,7 @@ namespace larg4 {
                                sim::SimEnergyDeposit const& edep) override;
 
     void SetGapAware(bool v) { fUseGapAwareField = v; }
-    void SetMaxGap(double max_gap){ fMaxGap = max_gap; }
+    void SetMaxGap(double max_gap) { fMaxGap = max_gap; }
 
   private:
     geo::TPCID FindTPCForPosition(geo::Point_t const& p) const;
