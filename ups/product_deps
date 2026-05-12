@@ -252,10 +252,10 @@ product		version		qual	flags		<table_format=2>
 larg4		v10_20_02	-
 larsoft_data    v1_02_02
 marley		v1_2_1d		-
-nugen		v1_23_04	-
+nugen		v1_24_00	-
 nurandom	v1_11_06	-
-nutools		v3_22_01	-
-ppfx            v02_20_08       -
+nutools		v3_23_00	-
+ppfx            v02_21_00       -
 cetmodules	v3_27_04	-	only_for_build
 end_product_list
 ####################################
@@ -316,6 +316,8 @@ c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	c14:debug	-nq-
 c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	c14:prof	-nq-
 e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	e26:debug	-nq-
 e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	e26:prof	-nq-
+e28:debug	e28:debug	e28:debug	e28:debug	e28:debug	e28:debug	e28:debug	-nq-
+e28:prof	e28:prof	e28:prof	e28:prof	e28:prof	e28:prof	e28:prof	-nq-
 end_qualifier_list
 ####################################
 
