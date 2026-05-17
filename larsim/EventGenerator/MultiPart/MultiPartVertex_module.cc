@@ -378,6 +378,30 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
 
     _param_v.push_back(param);
   }
+  
+  // ---------------------------------------------------------------
+  // Advisory: this generator samples phase space with intentionally
+  // broad, approximately uniform distributions (flat in KE/momentum,
+  // isotropic in angle, uniform in vertex position).  These choices
+  // maximise coverage of the detector response space and are well
+  // suited for training and validating AI/ML reconstruction models,
+  // but they do NOT reflect any physically motivated interaction
+  // cross-section or flux weighting.  Generated samples should NOT
+  // be used for physics analyses that require a realistic prior on
+  // particle kinematics or interaction rates.
+  // ---------------------------------------------------------------
+  mf::LogWarning("MultiPartVertex")
+    << "\n"
+    << "************************************************************\n"
+    << "  MultiPartVertex: INTENDED FOR AI/ML TRAINING USE ONLY\n"
+    << "  This generator samples phase space with broad, approximately\n"
+    << "  uniform distributions (flat in KE/momentum, isotropic in\n"
+    << "  angle, uniform in vertex position) to maximise detector-\n"
+    << "  response coverage for training and validating reconstruction\n"
+    << "  models.  It does NOT apply physical cross-section or flux\n"
+    << "  weighting and is NOT suitable for physics analyses requiring\n"
+    << "  a realistic kinematic or rate prior.\n"
+    << "************************************************************\n";
 }
 
 void MultiPartVertex::beginRun(art::Run& run)
