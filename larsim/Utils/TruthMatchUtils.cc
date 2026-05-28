@@ -79,6 +79,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::TrueParticleID(detinfo::DetectorClocksDat
 bool TruthMatchUtils::isShowerParticle(
       const int trackID)
   {
+    art::ServiceHandle<cheat::ParticleInventoryService> piInv;
     const simb::MCParticle* particle = piInv->TrackIdToParticle_P(trackID);
     std::string process = particle->Process();
     int pdgCode = particle->PdgCode();
@@ -101,9 +102,9 @@ bool TruthMatchUtils::isShowerParticle(
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 TruthMatchUtils::G4ID TruthMatchUtils::FindShowerPrimaryID(
-      const art::ServiceHandle<cheat::ParticleInventoryService>& piInv,
       const int trackID)
   {
+      art::ServiceHandle<cheat::ParticleInventoryService> piInv;
       const simb::MCParticle* particle = piInv->TrackIdToParticle_P(trackID);
       if (!particle) return static_cast<G4ID>(trackID); // fallback
 
@@ -114,7 +115,7 @@ TruthMatchUtils::G4ID TruthMatchUtils::FindShowerPrimaryID(
         // if yes then reiterate with particle = parent
         // if not -> fond shower origin! Break and report trackID
 
-        const int parentID = particle->Mother()
+        const int parentID = particle->Mother();
         
         bool isParentInShower = TruthMatchUtils::isShowerParticle(parentID);
         if (!isParentInShower) break; // parent is outside the shower, stop here

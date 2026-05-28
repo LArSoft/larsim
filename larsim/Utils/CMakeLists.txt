@@ -8,6 +8,7 @@ cet_make_library(SOURCE
   PRIVATE
   lardataobj::RecoBase
   larsim::MCCheater_BackTrackerService_service
+  larsim::MCCheater_ParticleInventoryService_service
   art::Framework_Services_Registry
   messagefacility::MF_MessageLogger
   canvas::canvas
