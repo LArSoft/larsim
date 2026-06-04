@@ -42,6 +42,26 @@ namespace TruthMatchUtils {
   bool Valid(const G4ID g4ID) noexcept;
 
   /**
+ *  @brief  Check if a particle is a possible shower candidate via pID and process
+ *  
+ *  @param  particle particle!
+ *
+ *  @return true if possible candidate
+ */
+  bool isShowerParticle(
+    const int trackID);
+
+    /**
+ *  @brief  The G4 ID of the true particle which generated the E.M. shower that generated the particle
+ *
+ *  @param  trackID the particleID to be assessed
+ *
+ *  @return the ID of the G4 particle
+ */
+  G4ID FindShowerPrimaryID(
+      const int trackID);
+
+  /**
  *  @brief  The G4 ID of the true particle which deposits the most energy in the recob::Hit
  *
  *  @param  pHit the recob::Hit to be assessed
