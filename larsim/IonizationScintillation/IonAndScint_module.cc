@@ -259,7 +259,6 @@ namespace larg4 {
         int trackID_tmp = edepi.TrackID();
         int pdgCode_tmp = edepi.PdgCode();
         int origTrackID_tmp = edepi.OrigTrackID();
-        int ion_num_tmp = ion_num;
         if (sce->EnableSimSpatialSCE()) {
           auto posOffsetsStart =
             sce->GetPosOffsets({edepi.StartX(), edepi.StartY(), edepi.StartZ()});
@@ -292,7 +291,7 @@ namespace larg4 {
           // --- Move charge ---
           auto [shiftedStart, movedCharge] =
             fGapTool->GetOffset(edepi.StartX(), edepi.StartY(), edepi.StartZ(), ion_num);
-          if (movedCharge <= 0) {
+          if (movedCharge < 0) {
             // Not actually a gap, do nothing special
             simedep->emplace_back(ph_num,
                                   ion_num,

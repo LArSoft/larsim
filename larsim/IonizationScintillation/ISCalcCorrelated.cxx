@@ -32,7 +32,8 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp,
                                      CLHEP::HepRandomEngine& Engine)
-    : fISTPC{*(lar::providerFrom<geo::Geometry>())}
+    : fGeometry(lar::providerFrom<geo::Geometry>())
+    , fISTPC{*fGeometry}
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
     , fBinomialGen{CLHEP::RandBinomial(Engine)}
     , fUseGapAwareField(false)
@@ -174,18 +175,8 @@ namespace larg4 {
 
     geo::Vector_t elecvec{};
 
-    art::ServiceHandle<geo::Geometry const> fGeometry;
-    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
-    if (fUseGapAwareField) {
-      // If we want to use the true electric field in the CRP gap, we need to check if the position is in the gap, and if so, use the field from the nearest TPC instead of returning 0.
-      if (!bool(tpcid)) {
-        tpcid = FindTPCForPosition(edep.MidPoint());
-        if (!tpcid) return 0.;
-      }
-    }
-    else {
-      if (!bool(tpcid)) return 0.;
-    }
+    geo::TPCID tpcid = TPCIDAtPosition(edep.MidPoint());
+    if (!tpcid) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
     using geo::to_int;
@@ -239,19 +230,8 @@ namespace larg4 {
 
     geo::Vector_t stepvec = edep.Start() - edep.End();
     geo::Vector_t elecvec{};
-
-    art::ServiceHandle<geo::Geometry const> fGeometry;
-    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
-    if (fUseGapAwareField) {
-      // If we want to use the true electric field in the CRP gap, we need to check if the position is in the gap, and if so, use the field from the nearest TPC instead of returning 0.
-      if (!bool(tpcid)) {
-        tpcid = FindTPCForPosition(edep.MidPoint());
-        if (!tpcid) return 0.;
-      }
-    }
-    else {
-      if (!bool(tpcid)) return 0.;
-    }
+    geo::TPCID tpcid = TPCIDAtPosition(edep.MidPoint());
+    if (!tpcid) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
     using geo::to_int;
@@ -301,15 +281,26 @@ namespace larg4 {
     return angle;
   }
 
-  geo::TPCID ISCalcCorrelated::FindTPCForPosition(geo::Point_t const& p) const
+  geo::TPCID ISCalcCorrelated::TPCIDAtPosition(geo::Point_t const& point) const
   {
-    double eps =
+    geo::TPCID tpcid = fGeometry->PositionToTPCID(point);
+
+    if (fUseGapAwareField && !tpcid) {
+      // If we want to use the true electric field in the CRP gap, we need to check if the position is in the gap, and if so, use the field from the nearest TPC instead of returning 0.
+      tpcid = FindTPCForGap(point);
+    }
+
+    return tpcid;
+  }
+
+  geo::TPCID ISCalcCorrelated::FindTPCForGap(geo::Point_t const& p) const
+  {
+    const double eps =
       fMaxGap * 1.01; // in cm, default value is 4.2cm which is the largest gap in DUNE FD-VD
-    art::ServiceHandle<geo::Geometry const> geom;
 
     auto probe = [&](double dx, double dy, double dz) {
       geo::Point_t shifted{p.X() + dx, p.Y() + dy, p.Z() + dz};
-      return geom->PositionToTPCID(shifted);
+      return fGeometry->PositionToTPCID(shifted);
     };
 
     // --- Check X axis ---

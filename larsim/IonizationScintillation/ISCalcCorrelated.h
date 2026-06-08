@@ -46,7 +46,9 @@ namespace larg4 {
     void SetMaxGap(double max_gap) { fMaxGap = max_gap; }
 
   private:
-    geo::TPCID FindTPCForPosition(geo::Point_t const& p) const;
+    geo::TPCID FindTPCForGap(geo::Point_t const& p) const;
+    geo::TPCID TPCIDAtPosition(geo::Point_t const& point) const;
+    const geo::GeometryCore* fGeometry;
     ISTPC fISTPC;
     const spacecharge::SpaceCharge* fSCE;
     CLHEP::RandBinomial fBinomialGen;
