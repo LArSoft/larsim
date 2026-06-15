@@ -378,7 +378,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
 
     _param_v.push_back(param);
   }
-  
+
   // ---------------------------------------------------------------
   // Advisory: this generator samples phase space with intentionally
   // broad, approximately uniform distributions (flat in KE/momentum,
