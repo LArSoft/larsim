@@ -1,0 +1,54 @@
+BEGIN_PROLOG
+
+multipart_vertex_cc_nc_5050:
+{
+  module_type: "MultiPartVertex"
+  DebugMode: 1
+  Revert: false
+  UseBoost: false
+  G4Time: 0.0
+  G4TimeJitter: 0.0
+  TPCRange: [[0, 0]]
+  XRange: [20, 20]
+  YRange: [20, 20]
+  ZRange: [20, 20]
+  GammaBetaRange: [0.0, 0.0]
+  InteractionProfiles: [
+    {
+      Name: "profile_cc"
+      ProbabilityWeight: 0.5
+      MultiMin: 3
+      MultiMax: 5
+      IncomingNuPDG: 14
+      InteractionMode: 0
+      PrimaryLeptonPool: {
+        PDGCode: [13, -13]
+        KERange: [100.0, 300.0]
+      }
+      HadronicPool: {
+        PDGCode: [[2212], [211, -211]]
+        MinMulti: [1, 0]
+        MaxMulti: [2, 1]
+        ProbWeight: [0.5, 0.5]
+        KERange: [[50.0, 100.0], [100.0, 200.0]]
+      }
+    },
+    {
+      Name: "profile_nc"
+      ProbabilityWeight: 0.5
+      MultiMin: 2
+      MultiMax: 4
+      IncomingNuPDG: 14
+      InteractionMode: 1
+      HadronicPool: {
+        PDGCode: [[2212], [211, -211]]
+        MinMulti: [1, 0]
+        MaxMulti: [2, 1]
+        ProbWeight: [0.5, 0.5]
+        KERange: [[50.0, 100.0], [100.0, 200.0]]
+      }
+    }
+  ]
+}
+
+END_PROLOG

@@ -47,6 +47,26 @@ struct PartGenParam {
   double weight;
 };
 
+struct ProfileParam {
+  std::string name;
+  double profile_weight;
+  size_t multi_min;
+  size_t multi_max;
+
+  int incoming_nu_pdg;  // Map metadata appropriately (e.g. 12 for nue, 14 for numu)
+  int interaction_mode; // Maps directly to simb::kCC (0) or simb::kNC (1)
+
+  // Primary Lepton Settings
+  bool has_primary_lepton;
+  std::vector<int> lepton_pdg;
+  std::vector<double> lepton_mass;
+  std::array<double, 2> lepton_range; // Stores min/max bounds
+  bool lepton_use_mom;                // true if MomRange, false if KERange
+
+  // Hadronic Pool Configuration
+  std::vector<PartGenParam> hadronic_param_v;
+};
+
 class MultiPartVertex;
 
 class MultiPartVertex : public art::EDProducer {
@@ -75,7 +95,8 @@ public:
   TVector3 GenMomentum(const PartGenParam& param, const double& mass, bool& same_range);
 
   double GenMomentumSF(const double& sf, const double& mass, const double& p);
-  std::vector<size_t> GenParticles() const;
+  std::vector<size_t> GenParticles(const std::vector<PartGenParam>& pool,
+                                   int target_hadron_multiplicity) const;
 
 private:
   CLHEP::HepRandomEngine& fFlatEngine;
@@ -85,8 +106,8 @@ private:
   // exception thrower
   void abort(const std::string msg) const;
 
-  // array of particle info for generation
-  std::vector<PartGenParam> _param_v;
+  // array of interaction profiles for generation
+  std::vector<ProfileParam> _profiles_v;
 
   // g4 time of generation
   double _t0;
@@ -100,10 +121,6 @@ private:
   // TPC range
   std::vector<std::vector<unsigned short>> _tpc_v;
 
-  // multiplicity constraint
-  size_t _multi_min;
-  size_t _multi_max;
-
   // Range of boosts
   std::array<double, 2> _gamma_beta_range;
 
@@ -112,6 +129,9 @@ private:
 
   bool _use_boost;
   bool _revert;
+
+  std::vector<PartGenParam> parseHadronicPool(const fhicl::ParameterSet& pool_ps,
+                                              const std::string& profile_name) const;
 };
 
 void MultiPartVertex::abort(const std::string msg) const
@@ -121,6 +141,85 @@ void MultiPartVertex::abort(const std::string msg) const
 }
 
 MultiPartVertex::~MultiPartVertex() {}
+
+std::vector<PartGenParam> MultiPartVertex::parseHadronicPool(const fhicl::ParameterSet& pool_ps,
+                                                             const std::string& profile_name) const
+{
+  std::vector<PartGenParam> hadronic_param_v;
+
+  auto const pdg_v = pool_ps.get<std::vector<std::vector<int>>>("PDGCode");
+  auto const minmult_v = pool_ps.get<std::vector<unsigned short>>("MinMulti");
+  auto const maxmult_v = pool_ps.get<std::vector<unsigned short>>("MaxMulti");
+  auto const weight_v = pool_ps.get<std::vector<double>>("ProbWeight");
+
+  auto kerange_v = pool_ps.get<std::vector<std::vector<double>>>("KERange", {});
+  auto momrange_v = pool_ps.get<std::vector<std::vector<double>>>("MomRange", {});
+
+  if ((kerange_v.empty() && momrange_v.empty()) || (!kerange_v.empty() && !momrange_v.empty())) {
+    this->abort("Only one of KERange or MomRange must be empty in pool for profile " +
+                profile_name);
+  }
+
+  bool use_mom = false;
+  if (kerange_v.empty()) {
+    kerange_v = momrange_v;
+    use_mom = true;
+  }
+
+  if (pdg_v.size() != kerange_v.size() || pdg_v.size() != minmult_v.size() ||
+      pdg_v.size() != maxmult_v.size() || pdg_v.size() != weight_v.size())
+    this->abort("Configuration parameters have incompatible lengths in pool for profile " +
+                profile_name);
+
+  auto db = TDatabasePDG::Instance();
+  for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
+    auto const& pdg = pdg_v[idx];
+    auto const& kerange = kerange_v[idx];
+    if (pdg.empty()) this->abort("PDG code not given in pool for profile " + profile_name);
+    if (kerange.size() != 2)
+      this->abort("Incompatible length @ KE/Mom vector in pool for profile " + profile_name);
+
+    PartGenParam param;
+    param.use_mom = use_mom;
+    param.pdg = pdg;
+    param.kerange[0] = kerange[0];
+    param.kerange[1] = kerange[1];
+    param.mass.resize(pdg.size());
+    if (minmult_v[idx] > maxmult_v[idx]) {
+      this->abort("MinMulti > MaxMulti for species at index " + std::to_string(idx) +
+                  " in pool for profile " + profile_name);
+    }
+    param.multi[0] = minmult_v[idx];
+    param.multi[1] = maxmult_v[idx];
+    param.weight = weight_v[idx];
+    for (size_t i = 0; i < pdg.size(); ++i) {
+      auto particle = db->GetParticle(param.pdg[i]);
+      if (!particle) {
+        this->abort("Unknown PDG code: " + std::to_string(param.pdg[i]) + " in pool for profile " +
+                    profile_name);
+      }
+      param.mass[i] = particle->Mass();
+    }
+
+    if (kerange[0] < 0 || kerange[1] < 0)
+      this->abort("Negative energy is not allowed in pool for profile " + profile_name);
+    if (param.kerange[0] > param.kerange[1])
+      this->abort("KE/Mom range has no phase space in pool for profile " + profile_name);
+
+    if (_debug > 0) {
+      std::cout << "Profile " << profile_name << " hadronic (PDG";
+      for (auto const& p_code : param.pdg)
+        std::cout << " " << p_code;
+      std::cout << ")" << std::endl
+                << (param.use_mom ? "    Mom range ....... " : "    KE range ....... ")
+                << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl;
+    }
+
+    hadronic_param_v.push_back(param);
+  }
+
+  return hadronic_param_v;
+}
 
 MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   : EDProducer(p)
@@ -145,57 +244,136 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   _t0_sigma = p.get<double>("G4TimeJitter");
   if (_t0_sigma < 0) this->abort("Cannot have a negative value for G4 time jitter");
 
-  _multi_min = p.get<size_t>("MultiMin");
-  _multi_max = p.get<size_t>("MultiMax");
-
   _tpc_v = p.get<std::vector<std::vector<unsigned short>>>("TPCRange");
   auto const xrange = p.get<std::vector<double>>("XRange");
   auto const yrange = p.get<std::vector<double>>("YRange");
   auto const zrange = p.get<std::vector<double>>("ZRange");
 
-  auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
   _gamma_beta_range =
     p.get<std::array<double, 2>>("GammaBetaRange", {0.0, 0.0}); // _gamma_beta denotes gamma * beta
+  if (_gamma_beta_range[0] > _gamma_beta_range[1]) { this->abort("Incompatible boost range!"); }
 
-  auto const pdg_v = part_cfg.get<std::vector<std::vector<int>>>("PDGCode");
-  auto const minmult_v = part_cfg.get<std::vector<unsigned short>>("MinMulti");
-  auto const maxmult_v = part_cfg.get<std::vector<unsigned short>>("MaxMulti");
-  auto const weight_v = part_cfg.get<std::vector<double>>("ProbWeight");
+  if (p.has_key("InteractionProfiles")) {
+    auto const profile_ps_v = p.get<std::vector<fhicl::ParameterSet>>("InteractionProfiles");
+    for (auto const& prof_ps : profile_ps_v) {
+      ProfileParam profile;
+      profile.name = prof_ps.get<std::string>("Name");
+      profile.profile_weight = prof_ps.get<double>("ProbabilityWeight");
+      if (profile.profile_weight < 0.0) {
+        this->abort("ProbabilityWeight must be non-negative in profile " + profile.name);
+      }
+      if (profile.profile_weight == 0.0) {
+        mf::LogWarning("MultiPartVertex")
+          << "Profile " << profile.name
+          << " has ProbabilityWeight set to 0.0 and will never be selected.";
+      }
 
-  auto kerange_v = part_cfg.get<std::vector<std::vector<double>>>("KERange");
-  auto momrange_v = part_cfg.get<std::vector<std::vector<double>>>("MomRange");
+      profile.multi_min = prof_ps.get<size_t>("MultiMin");
+      profile.multi_max = prof_ps.get<size_t>("MultiMax");
+      profile.incoming_nu_pdg = prof_ps.get<int>("IncomingNuPDG");
+      profile.interaction_mode = prof_ps.get<int>("InteractionMode");
+      if (profile.interaction_mode != simb::kCC && profile.interaction_mode != simb::kNC) {
+        this->abort("InteractionMode must be 0 (kCC) or 1 (kNC) in profile " + profile.name);
+      }
 
-  if ((kerange_v.empty() && momrange_v.empty()) || (!kerange_v.empty() && !momrange_v.empty())) {
-    this->abort("Only one of KERange or MomRange must be empty!");
+      // Primary Lepton Pool
+      profile.has_primary_lepton = prof_ps.has_key("PrimaryLeptonPool");
+      if (profile.has_primary_lepton) {
+        auto const lepton_ps = prof_ps.get<fhicl::ParameterSet>("PrimaryLeptonPool");
+        profile.lepton_pdg = lepton_ps.get<std::vector<int>>("PDGCode");
+        if (profile.lepton_pdg.empty()) {
+          this->abort("PrimaryLeptonPool PDGCode must not be empty in profile " + profile.name);
+        }
+
+        auto lep_kerange_v = lepton_ps.get<std::vector<double>>("KERange", {});
+        auto lep_momrange_v = lepton_ps.get<std::vector<double>>("MomRange", {});
+        if ((lep_kerange_v.empty() && lep_momrange_v.empty()) ||
+            (!lep_kerange_v.empty() && !lep_momrange_v.empty())) {
+          this->abort(
+            "Only one of KERange or MomRange must be empty for PrimaryLeptonPool in profile " +
+            profile.name);
+        }
+        profile.lepton_use_mom = lep_kerange_v.empty();
+        auto const& lep_range = profile.lepton_use_mom ? lep_momrange_v : lep_kerange_v;
+        if (lep_range.size() != 2) {
+          this->abort("Incompatible length @ lepton energy/momentum range vector in profile " +
+                      profile.name);
+        }
+        profile.lepton_range[0] = lep_range[0];
+        profile.lepton_range[1] = lep_range[1];
+        if (profile.lepton_range[0] > profile.lepton_range[1]) {
+          this->abort("Lepton range has no phase space in profile " + profile.name);
+        }
+        if (profile.lepton_range[0] < 0 || profile.lepton_range[1] < 0) {
+          this->abort("Negative lepton energy/momentum is not allowed in profile " + profile.name);
+        }
+
+        // Populate mass
+        auto db = TDatabasePDG::Instance();
+        profile.lepton_mass.resize(profile.lepton_pdg.size());
+        for (size_t i = 0; i < profile.lepton_pdg.size(); ++i) {
+          auto particle = db->GetParticle(profile.lepton_pdg[i]);
+          if (!particle) {
+            this->abort("Unknown lepton PDG code: " + std::to_string(profile.lepton_pdg[i]));
+          }
+          profile.lepton_mass[i] = particle->Mass();
+        }
+      }
+
+      // Hadronic Pool
+      auto const hadronic_ps = prof_ps.get<fhicl::ParameterSet>("HadronicPool");
+      profile.hadronic_param_v = parseHadronicPool(hadronic_ps, profile.name);
+
+      // Multiplicity validation
+      size_t hadron_multi_min = 0;
+      for (auto const& param : profile.hadronic_param_v) {
+        hadron_multi_min += param.multi[0];
+      }
+      size_t min_total_mult = hadron_multi_min + (profile.has_primary_lepton ? 1 : 0);
+      if (profile.multi_min < min_total_mult) {
+        this->abort("MultiMin (" + std::to_string(profile.multi_min) +
+                    ") is less than the sum of minimum multiplicities (" +
+                    std::to_string(min_total_mult) + ") for profile " + profile.name);
+      }
+      if (profile.multi_max < profile.multi_min) {
+        this->abort("Overall MultiMax < overall MultiMin in profile " + profile.name);
+      }
+
+      _profiles_v.push_back(profile);
+    }
+  }
+  else {
+    // Fallback
+    ProfileParam profile;
+    profile.name = "LegacyDefault";
+    profile.profile_weight = 1.0;
+    profile.multi_min = p.get<size_t>("MultiMin");
+    profile.multi_max = p.get<size_t>("MultiMax");
+    profile.incoming_nu_pdg = 16; // Legacy defaults to tau neutrino
+    profile.interaction_mode = 0; // Legacy default mode is CC (simb::kCC)
+    profile.has_primary_lepton =
+      false; // Legacy does not have a distinct primary lepton configuration
+
+    auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
+    profile.hadronic_param_v = parseHadronicPool(part_cfg, profile.name);
+
+    size_t hadron_multi_min = 0;
+    for (auto const& param : profile.hadronic_param_v) {
+      hadron_multi_min += param.multi[0];
+    }
+    if (profile.multi_min < hadron_multi_min) {
+      this->abort("MultiMin (" + std::to_string(profile.multi_min) +
+                  ") is less than the sum of minimum multiplicities (" +
+                  std::to_string(hadron_multi_min) + ") for fallback profile");
+    }
+    if (profile.multi_max < profile.multi_min) {
+      this->abort("Overall MultiMax < overall MultiMin for fallback profile");
+    }
+
+    _profiles_v.push_back(profile);
   }
 
-  bool use_mom = false;
-  if (kerange_v.empty()) {
-    kerange_v = momrange_v;
-    use_mom = true;
-  }
-  // sanity check
-  if (pdg_v.size() != kerange_v.size() || pdg_v.size() != minmult_v.size() ||
-      pdg_v.size() != maxmult_v.size() || pdg_v.size() != weight_v.size())
-    this->abort("configuration parameters have incompatible lengths!");
-
-  // further sanity check (1 more depth for some double-array)
-  for (auto const& r : pdg_v) {
-    if (r.empty()) this->abort("PDG code not given!");
-  }
-  for (auto const& r : kerange_v) {
-    if (r.size() != 2) this->abort("Incompatible legnth @ KE vector!");
-  }
-  if (_gamma_beta_range[0] > _gamma_beta_range[1]) this->abort("Incompatible boost range!");
-
-  size_t multi_min = 0;
-  for (size_t idx = 0; idx < minmult_v.size(); ++idx) {
-    if (minmult_v[idx] > maxmult_v[idx]) this->abort("Particle MinMulti > Particle MaxMulti!");
-    if (minmult_v[idx] > _multi_max) this->abort("Particle MinMulti > overall MultiMax!");
-    multi_min += minmult_v[idx];
-  }
-  _multi_min = std::max(_multi_min, multi_min);
-  if (_multi_max < _multi_min) this->abort("Overall MultiMax <= overall MultiMin!");
+  if (_profiles_v.empty()) { this->abort("No interaction profiles loaded!"); }
 
   if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible legnth @ X vector!");
   if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible legnth @ Y vector!");
@@ -265,43 +443,6 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
               << "Y " << _yrange[0] << " => " << _yrange[1] << std::endl
               << "Z " << _zrange[0] << " => " << _zrange[1] << std::endl;
   }
-
-  // register
-  auto db = TDatabasePDG::Instance();
-  for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
-    auto const& pdg = pdg_v[idx];
-    auto const& kerange = kerange_v[idx];
-    PartGenParam param;
-    param.use_mom = use_mom;
-    param.pdg = pdg;
-    param.kerange[0] = kerange[0];
-    param.kerange[1] = kerange[1];
-    param.mass.resize(pdg.size());
-    param.multi[0] = minmult_v[idx];
-    param.multi[1] = maxmult_v[idx];
-    param.weight = weight_v[idx];
-    for (size_t i = 0; i < pdg.size(); ++i)
-      param.mass[i] = db->GetParticle(param.pdg[i])->Mass();
-
-    // sanity check
-    if (kerange[0] < 0 || kerange[1] < 0)
-      this->abort("You provided negative energy? Fuck off Mr. Trump.");
-
-    // overall range check
-    if (param.kerange[0] > param.kerange[1]) this->abort("KE range has no phase space...");
-
-    if (_debug > 0) {
-      std::cout << "Generating particle (PDG";
-      for (auto const& pdg : param.pdg)
-        std::cout << " " << pdg;
-      std::cout << ")" << std::endl
-                << (param.use_mom ? "    KE range ....... " : "    Mom range ....... ")
-                << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl
-                << std::endl;
-    }
-
-    _param_v.push_back(param);
-  }
 }
 
 void MultiPartVertex::beginRun(art::Run& run)
@@ -316,24 +457,25 @@ void MultiPartVertex::beginRun(art::Run& run)
   return;
 }
 
-std::vector<size_t> MultiPartVertex::GenParticles() const
+std::vector<size_t> MultiPartVertex::GenParticles(const std::vector<PartGenParam>& pool,
+                                                  int target_hadron_multiplicity) const
 {
 
   std::vector<size_t> result;
-  std::vector<size_t> gen_count_v(_param_v.size(), 0);
+  std::vector<size_t> gen_count_v(pool.size(), 0);
 
-  int num_part = (int)(fFlatRandom->fire(_multi_min, _multi_max + 1 - 1.e-10));
+  int num_part = target_hadron_multiplicity;
 
   // generate min multiplicity first
-  std::vector<double> weight_v(_param_v.size(), 0);
-  for (size_t idx = 0; idx < _param_v.size(); ++idx) {
-    weight_v[idx] = _param_v[idx].weight;
-    for (size_t ctr = 0; ctr < _param_v[idx].multi[0]; ++ctr) {
+  std::vector<double> weight_v(pool.size(), 0);
+  for (size_t idx = 0; idx < pool.size(); ++idx) {
+    weight_v[idx] = pool[idx].weight;
+    for (size_t ctr = 0; ctr < pool[idx].multi[0]; ++ctr) {
       result.push_back(idx);
       gen_count_v[idx] += 1;
       num_part -= 1;
     }
-    if (gen_count_v[idx] >= _param_v[idx].multi[1]) weight_v[idx] = 0.;
+    if (gen_count_v[idx] >= pool[idx].multi[1]) weight_v[idx] = 0.;
   }
 
   assert(num_part >= 0);
@@ -358,7 +500,7 @@ std::vector<size_t> MultiPartVertex::GenParticles() const
 
     // if generation count exceeds max, set probability weight to be 0
     gen_count_v[idx] += 1;
-    if (gen_count_v[idx] >= _param_v[idx].multi[1]) weight_v[idx] = 0.;
+    if (gen_count_v[idx] >= pool[idx].multi[1]) weight_v[idx] = 0.;
 
     --num_part;
   }
@@ -532,13 +674,58 @@ void MultiPartVertex::produce(art::Event& e)
   std::vector<double> py_vec;
   std::vector<double> pz_vec;
 
-  auto const param_idx_v = GenParticles();
+  double total_weight = 0.0;
+  for (auto const& prof : _profiles_v) {
+    total_weight += prof.profile_weight;
+  }
+  if (total_weight <= 0.0) { this->abort("Total profile weight must be positive!"); }
+  double rval = fFlatRandom->fire(0, total_weight);
+  const ProfileParam* active_prof = nullptr;
+  for (auto const& prof : _profiles_v) {
+    rval -= prof.profile_weight;
+    if (rval <= 0.0) {
+      active_prof = &prof;
+      break;
+    }
+  }
+  if (!active_prof) { active_prof = &_profiles_v.back(); }
+
+  int total_mult =
+    (int)(fFlatRandom->fire(active_prof->multi_min, active_prof->multi_max + 1 - 1.e-10));
+
+  if (active_prof->has_primary_lepton) {
+    size_t lep_idx = (size_t)(fFlatRandom->fire(0, active_prof->lepton_pdg.size() - 1.e-10));
+    int lep_pdg = active_prof->lepton_pdg[lep_idx];
+    double lep_mass = active_prof->lepton_mass[lep_idx];
+
+    PartGenParam lep_param;
+    lep_param.pdg = {lep_pdg};
+    lep_param.mass = {lep_mass};
+    lep_param.kerange = {active_prof->lepton_range[0], active_prof->lepton_range[1]};
+    lep_param.use_mom = active_prof->lepton_use_mom;
+    lep_param.multi = {1, 1};
+
+    bool same_range = false;
+    TVector3 lep_mom = GenMomentum(lep_param, lep_mass, same_range);
+    double lep_E = sqrt(lep_mom.Mag2() + lep_mass * lep_mass);
+
+    TLorentzVector mom(lep_mom.X(), lep_mom.Y(), lep_mom.Z(), lep_E);
+    if (_use_boost) mom.Boost(bx, by, bz);
+
+    simb::MCParticle part(part_v.size(), lep_pdg, "primary", 0, lep_mass, 1);
+    part.AddTrajectoryPoint(pos, mom);
+    part_v.emplace_back(std::move(part));
+
+    total_mult -= 1;
+  }
+
+  auto const param_idx_v = GenParticles(active_prof->hadronic_param_v, total_mult);
   if (_debug)
     std::cout << "Event Vertex @ (" << x << "," << y << "," << z << ") ... " << param_idx_v.size()
               << " particles..." << std::endl;
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-    auto const& param = _param_v[param_idx_v[idx]];
+    auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
     bool same_range = true;
     // decide which particle
     size_t pdg_index = (size_t)(fFlatRandom->fire(0, param.pdg.size() - 1.e-10));
@@ -585,7 +772,7 @@ void MultiPartVertex::produce(art::Event& e)
 
     if (total_KE > 1.) {
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = _param_v[param_idx_v[idx]];
+        auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
 
         if (param.kerange[1] != 1) {
           // lepton scale here.
@@ -618,9 +805,8 @@ void MultiPartVertex::produce(art::Event& e)
         }
       }
     }
-
-    else {
-
+    // Ensure total_KE is above a small threshold (1.e-10 MeV) to prevent division by zero or near-zero during scaling
+    else if (total_KE > 1.e-10) {
       double gen_total_KE = fFlatRandom->fire(0, 1);
       double total_KE_sf = gen_total_KE / total_KE;
       if (_debug)
@@ -628,7 +814,7 @@ void MultiPartVertex::produce(art::Event& e)
                   << std::endl;
 
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = _param_v[param_idx_v[idx]];
+        auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
         double mom_sf = 1;
         double temp_p =
           sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
@@ -654,7 +840,8 @@ void MultiPartVertex::produce(art::Event& e)
   }
   if (_debug) std::cout << "Total number particles: " << mct.NParticles() << std::endl;
 
-  simb::MCParticle nu(mct.NParticles(), 16, "primary", mct.NParticles(), 0, 0);
+  simb::MCParticle nu(
+    mct.NParticles(), active_prof->incoming_nu_pdg, "primary", mct.NParticles(), 0, 0);
   double px = 0;
   double py = 0;
   double pz = 0;
@@ -672,19 +859,8 @@ void MultiPartVertex::produce(art::Event& e)
   for (auto& part : part_v)
     mct.Add(part);
 
-  // Set the neutrino for the MCTruth object:
-  // NOTE: currently these parameters are all pretty much a guess...
   mct.SetNeutrino(
-    simb::kCC,
-    simb::kQE,   // not sure what the mode should be here, assumed that these are all QE???
-    simb::kCCQE, // not sure what the int_type should be either...
-    0,           // target is AR40? not sure how to specify that...
-    0,           // nucleon pdg ???
-    0,           // quark pdg ???
-    -1.0,        // W ??? - not sure how to calculate this from the above
-    -1.0,        // X ??? - not sure how to calculate this from the above
-    -1.0,        // Y ??? - not sure how to calculate this from the above
-    -1.0);       // Qsqr ??? - not sure how to calculate this from the above
+    active_prof->interaction_mode, simb::kQE, simb::kCCQE, 0, 0, 0, -1.0, -1.0, -1.0, -1.0);
 
   mctArray->push_back(mct);
 
