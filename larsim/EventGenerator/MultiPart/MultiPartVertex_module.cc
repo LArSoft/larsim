@@ -53,8 +53,10 @@ struct ProfileParam {
   size_t multi_min;
   size_t multi_max;
 
-  int incoming_nu_pdg;  // Map metadata appropriately (e.g. 12 for nue, 14 for numu)
-  int interaction_mode; // Maps directly to simb::kCC (0) or simb::kNC (1)
+  int
+    incoming_nu_pdg; // Optional truth-record annotation (e.g. 12 for nue, 14 for numu). Default: 0 (unset)
+  int
+    interaction_mode; // Optional truth-record annotation: simb::kCC (0) or simb::kNC (1). Default: simb::kCC
 
   // Required Particle Settings
   bool has_required_particle;
@@ -270,11 +272,8 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
 
       profile.multi_min = prof_ps.get<size_t>("MultiMin");
       profile.multi_max = prof_ps.get<size_t>("MultiMax");
-      profile.incoming_nu_pdg = prof_ps.get<int>("IncomingNuPDG");
-      profile.interaction_mode = prof_ps.get<int>("InteractionMode");
-      if (profile.interaction_mode != simb::kCC && profile.interaction_mode != simb::kNC) {
-        this->abort("InteractionMode must be 0 (kCC) or 1 (kNC) in profile " + profile.name);
-      }
+      profile.incoming_nu_pdg = prof_ps.get<int>("IncomingNuPDG", 0);
+      profile.interaction_mode = prof_ps.get<int>("InteractionMode", simb::kCC);
 
       // Required Particle Pool
       profile.has_required_particle = prof_ps.has_key("RequiredParticlePool");

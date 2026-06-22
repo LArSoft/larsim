@@ -19,6 +19,7 @@ multipart_vertex_cc_nc_5050:
       ProbabilityWeight: 0.5
       MultiMin: 3
       MultiMax: 5
+      # Optional truth-record annotations — do not affect particle generation.
       IncomingNuPDG: 14
       InteractionMode: 0
       RequiredParticlePool: {
@@ -38,6 +39,7 @@ multipart_vertex_cc_nc_5050:
       ProbabilityWeight: 0.5
       MultiMin: 2
       MultiMax: 4
+      # Optional truth-record annotations — do not affect particle generation.
       IncomingNuPDG: 14
       InteractionMode: 1
       ParticlePool: {
