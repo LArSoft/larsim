@@ -56,15 +56,15 @@ struct ProfileParam {
   int incoming_nu_pdg;  // Map metadata appropriately (e.g. 12 for nue, 14 for numu)
   int interaction_mode; // Maps directly to simb::kCC (0) or simb::kNC (1)
 
-  // Primary Lepton Settings
-  bool has_primary_lepton;
-  std::vector<int> lepton_pdg;
-  std::vector<double> lepton_mass;
-  std::array<double, 2> lepton_range; // Stores min/max bounds
-  bool lepton_use_mom;                // true if MomRange, false if KERange
+  // Required Particle Settings
+  bool has_required_particle;
+  std::vector<int> required_pdg;
+  std::vector<double> required_mass;
+  std::array<double, 2> required_range; // Stores min/max bounds
+  bool required_use_mom;                // true if MomRange, false if KERange
 
-  // Hadronic Pool Configuration
-  std::vector<PartGenParam> hadronic_param_v;
+  // Particle Pool Configuration
+  std::vector<PartGenParam> particle_param_v;
 };
 
 class MultiPartVertex;
@@ -130,7 +130,7 @@ private:
   bool _use_boost;
   bool _revert;
 
-  std::vector<PartGenParam> parseHadronicPool(const fhicl::ParameterSet& pool_ps,
+  std::vector<PartGenParam> parseParticlePool(const fhicl::ParameterSet& pool_ps,
                                               const std::string& profile_name) const;
 };
 
@@ -142,10 +142,10 @@ void MultiPartVertex::abort(const std::string msg) const
 
 MultiPartVertex::~MultiPartVertex() {}
 
-std::vector<PartGenParam> MultiPartVertex::parseHadronicPool(const fhicl::ParameterSet& pool_ps,
+std::vector<PartGenParam> MultiPartVertex::parseParticlePool(const fhicl::ParameterSet& pool_ps,
                                                              const std::string& profile_name) const
 {
-  std::vector<PartGenParam> hadronic_param_v;
+  std::vector<PartGenParam> particle_param_v;
 
   auto const pdg_v = pool_ps.get<std::vector<std::vector<int>>>("PDGCode");
   auto const minmult_v = pool_ps.get<std::vector<unsigned short>>("MinMulti");
@@ -207,7 +207,7 @@ std::vector<PartGenParam> MultiPartVertex::parseHadronicPool(const fhicl::Parame
       this->abort("KE/Mom range has no phase space in pool for profile " + profile_name);
 
     if (_debug > 0) {
-      std::cout << "Profile " << profile_name << " hadronic (PDG";
+      std::cout << "Profile " << profile_name << " particle pool (PDG";
       for (auto const& p_code : param.pdg)
         std::cout << " " << p_code;
       std::cout << ")" << std::endl
@@ -215,10 +215,10 @@ std::vector<PartGenParam> MultiPartVertex::parseHadronicPool(const fhicl::Parame
                 << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl;
     }
 
-    hadronic_param_v.push_back(param);
+    particle_param_v.push_back(param);
   }
 
-  return hadronic_param_v;
+  return particle_param_v;
 }
 
 MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
@@ -276,60 +276,63 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
         this->abort("InteractionMode must be 0 (kCC) or 1 (kNC) in profile " + profile.name);
       }
 
-      // Primary Lepton Pool
-      profile.has_primary_lepton = prof_ps.has_key("PrimaryLeptonPool");
-      if (profile.has_primary_lepton) {
-        auto const lepton_ps = prof_ps.get<fhicl::ParameterSet>("PrimaryLeptonPool");
-        profile.lepton_pdg = lepton_ps.get<std::vector<int>>("PDGCode");
-        if (profile.lepton_pdg.empty()) {
-          this->abort("PrimaryLeptonPool PDGCode must not be empty in profile " + profile.name);
+      // Required Particle Pool
+      profile.has_required_particle = prof_ps.has_key("RequiredParticlePool");
+      if (profile.has_required_particle) {
+        auto const req_ps = prof_ps.get<fhicl::ParameterSet>("RequiredParticlePool");
+        profile.required_pdg = req_ps.get<std::vector<int>>("PDGCode");
+        if (profile.required_pdg.empty()) {
+          this->abort("RequiredParticlePool PDGCode must not be empty in profile " + profile.name);
         }
 
-        auto lep_kerange_v = lepton_ps.get<std::vector<double>>("KERange", {});
-        auto lep_momrange_v = lepton_ps.get<std::vector<double>>("MomRange", {});
-        if ((lep_kerange_v.empty() && lep_momrange_v.empty()) ||
-            (!lep_kerange_v.empty() && !lep_momrange_v.empty())) {
+        auto req_kerange_v = req_ps.get<std::vector<double>>("KERange", {});
+        auto req_momrange_v = req_ps.get<std::vector<double>>("MomRange", {});
+        if ((req_kerange_v.empty() && req_momrange_v.empty()) ||
+            (!req_kerange_v.empty() && !req_momrange_v.empty())) {
           this->abort(
-            "Only one of KERange or MomRange must be empty for PrimaryLeptonPool in profile " +
+            "Only one of KERange or MomRange must be empty for RequiredParticlePool in profile " +
             profile.name);
         }
-        profile.lepton_use_mom = lep_kerange_v.empty();
-        auto const& lep_range = profile.lepton_use_mom ? lep_momrange_v : lep_kerange_v;
-        if (lep_range.size() != 2) {
-          this->abort("Incompatible length @ lepton energy/momentum range vector in profile " +
+        profile.required_use_mom = req_kerange_v.empty();
+        auto const& req_range = profile.required_use_mom ? req_momrange_v : req_kerange_v;
+        if (req_range.size() != 2) {
+          this->abort("Incompatible length @ required particle energy/momentum range in profile " +
                       profile.name);
         }
-        profile.lepton_range[0] = lep_range[0];
-        profile.lepton_range[1] = lep_range[1];
-        if (profile.lepton_range[0] > profile.lepton_range[1]) {
-          this->abort("Lepton range has no phase space in profile " + profile.name);
+        profile.required_range[0] = req_range[0];
+        profile.required_range[1] = req_range[1];
+        if (profile.required_range[0] > profile.required_range[1]) {
+          this->abort("RequiredParticlePool range has no phase space in profile " + profile.name);
         }
-        if (profile.lepton_range[0] < 0 || profile.lepton_range[1] < 0) {
-          this->abort("Negative lepton energy/momentum is not allowed in profile " + profile.name);
+        if (profile.required_range[0] < 0 || profile.required_range[1] < 0) {
+          this->abort(
+            "Negative energy/momentum is not allowed in RequiredParticlePool in profile " +
+            profile.name);
         }
 
         // Populate mass
         auto db = TDatabasePDG::Instance();
-        profile.lepton_mass.resize(profile.lepton_pdg.size());
-        for (size_t i = 0; i < profile.lepton_pdg.size(); ++i) {
-          auto particle = db->GetParticle(profile.lepton_pdg[i]);
+        profile.required_mass.resize(profile.required_pdg.size());
+        for (size_t i = 0; i < profile.required_pdg.size(); ++i) {
+          auto particle = db->GetParticle(profile.required_pdg[i]);
           if (!particle) {
-            this->abort("Unknown lepton PDG code: " + std::to_string(profile.lepton_pdg[i]));
+            this->abort("Unknown PDG code in RequiredParticlePool: " +
+                        std::to_string(profile.required_pdg[i]));
           }
-          profile.lepton_mass[i] = particle->Mass();
+          profile.required_mass[i] = particle->Mass();
         }
       }
 
-      // Hadronic Pool
-      auto const hadronic_ps = prof_ps.get<fhicl::ParameterSet>("HadronicPool");
-      profile.hadronic_param_v = parseHadronicPool(hadronic_ps, profile.name);
+      // Particle Pool
+      auto const particle_ps = prof_ps.get<fhicl::ParameterSet>("ParticlePool");
+      profile.particle_param_v = parseParticlePool(particle_ps, profile.name);
 
       // Multiplicity validation
-      size_t hadron_multi_min = 0;
-      for (auto const& param : profile.hadronic_param_v) {
-        hadron_multi_min += param.multi[0];
+      size_t particle_multi_min = 0;
+      for (auto const& param : profile.particle_param_v) {
+        particle_multi_min += param.multi[0];
       }
-      size_t min_total_mult = hadron_multi_min + (profile.has_primary_lepton ? 1 : 0);
+      size_t min_total_mult = particle_multi_min + (profile.has_required_particle ? 1 : 0);
       if (profile.multi_min < min_total_mult) {
         this->abort("MultiMin (" + std::to_string(profile.multi_min) +
                     ") is less than the sum of minimum multiplicities (" +
@@ -351,20 +354,19 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
     profile.multi_max = p.get<size_t>("MultiMax");
     profile.incoming_nu_pdg = 16; // Legacy defaults to tau neutrino
     profile.interaction_mode = 0; // Legacy default mode is CC (simb::kCC)
-    profile.has_primary_lepton =
-      false; // Legacy does not have a distinct primary lepton configuration
+    profile.has_required_particle = false;
 
     auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
-    profile.hadronic_param_v = parseHadronicPool(part_cfg, profile.name);
+    profile.particle_param_v = parseParticlePool(part_cfg, profile.name);
 
-    size_t hadron_multi_min = 0;
-    for (auto const& param : profile.hadronic_param_v) {
-      hadron_multi_min += param.multi[0];
+    size_t particle_multi_min = 0;
+    for (auto const& param : profile.particle_param_v) {
+      particle_multi_min += param.multi[0];
     }
-    if (profile.multi_min < hadron_multi_min) {
+    if (profile.multi_min < particle_multi_min) {
       this->abort("MultiMin (" + std::to_string(profile.multi_min) +
                   ") is less than the sum of minimum multiplicities (" +
-                  std::to_string(hadron_multi_min) + ") for fallback profile");
+                  std::to_string(particle_multi_min) + ") for fallback profile");
     }
     if (profile.multi_max < profile.multi_min) {
       this->abort("Overall MultiMax < overall MultiMin for fallback profile");
@@ -693,39 +695,39 @@ void MultiPartVertex::produce(art::Event& e)
   int total_mult =
     (int)(fFlatRandom->fire(active_prof->multi_min, active_prof->multi_max + 1 - 1.e-10));
 
-  if (active_prof->has_primary_lepton) {
-    size_t lep_idx = (size_t)(fFlatRandom->fire(0, active_prof->lepton_pdg.size() - 1.e-10));
-    int lep_pdg = active_prof->lepton_pdg[lep_idx];
-    double lep_mass = active_prof->lepton_mass[lep_idx];
+  if (active_prof->has_required_particle) {
+    size_t req_idx = (size_t)(fFlatRandom->fire(0, active_prof->required_pdg.size() - 1.e-10));
+    int req_pdg = active_prof->required_pdg[req_idx];
+    double req_mass = active_prof->required_mass[req_idx];
 
-    PartGenParam lep_param;
-    lep_param.pdg = {lep_pdg};
-    lep_param.mass = {lep_mass};
-    lep_param.kerange = {active_prof->lepton_range[0], active_prof->lepton_range[1]};
-    lep_param.use_mom = active_prof->lepton_use_mom;
-    lep_param.multi = {1, 1};
+    PartGenParam req_param;
+    req_param.pdg = {req_pdg};
+    req_param.mass = {req_mass};
+    req_param.kerange = {active_prof->required_range[0], active_prof->required_range[1]};
+    req_param.use_mom = active_prof->required_use_mom;
+    req_param.multi = {1, 1};
 
     bool same_range = false;
-    TVector3 lep_mom = GenMomentum(lep_param, lep_mass, same_range);
-    double lep_E = sqrt(lep_mom.Mag2() + lep_mass * lep_mass);
+    TVector3 req_mom = GenMomentum(req_param, req_mass, same_range);
+    double req_E = sqrt(req_mom.Mag2() + req_mass * req_mass);
 
-    TLorentzVector mom(lep_mom.X(), lep_mom.Y(), lep_mom.Z(), lep_E);
+    TLorentzVector mom(req_mom.X(), req_mom.Y(), req_mom.Z(), req_E);
     if (_use_boost) mom.Boost(bx, by, bz);
 
-    simb::MCParticle part(part_v.size(), lep_pdg, "primary", 0, lep_mass, 1);
+    simb::MCParticle part(part_v.size(), req_pdg, "primary", 0, req_mass, 1);
     part.AddTrajectoryPoint(pos, mom);
     part_v.emplace_back(std::move(part));
 
     total_mult -= 1;
   }
 
-  auto const param_idx_v = GenParticles(active_prof->hadronic_param_v, total_mult);
+  auto const param_idx_v = GenParticles(active_prof->particle_param_v, total_mult);
   if (_debug)
     std::cout << "Event Vertex @ (" << x << "," << y << "," << z << ") ... " << param_idx_v.size()
               << " particles..." << std::endl;
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-    auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
+    auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
     bool same_range = true;
     // decide which particle
     size_t pdg_index = (size_t)(fFlatRandom->fire(0, param.pdg.size() - 1.e-10));
@@ -772,7 +774,7 @@ void MultiPartVertex::produce(art::Event& e)
 
     if (total_KE > 1.) {
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
+        auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
 
         if (param.kerange[1] != 1) {
           // lepton scale here.
@@ -814,7 +816,7 @@ void MultiPartVertex::produce(art::Event& e)
                   << std::endl;
 
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = active_prof->hadronic_param_v[param_idx_v[idx]];
+        auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
         double mom_sf = 1;
         double temp_p =
           sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
@@ -859,6 +861,8 @@ void MultiPartVertex::produce(art::Event& e)
   for (auto& part : part_v)
     mct.Add(part);
 
+  // Truth-record annotation only: IncomingNuPDG and InteractionMode are user-defined metadata.
+  // They do not imply physically consistent neutrino-interaction kinematics.
   mct.SetNeutrino(
     active_prof->interaction_mode, simb::kQE, simb::kCCQE, 0, 0, 0, -1.0, -1.0, -1.0, -1.0);
 

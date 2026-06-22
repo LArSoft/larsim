@@ -15,17 +15,17 @@ multipart_vertex_cc_nc_5050:
   GammaBetaRange: [0.0, 0.0]
   InteractionProfiles: [
     {
-      Name: "profile_cc"
+      Name: "with_lepton"
       ProbabilityWeight: 0.5
       MultiMin: 3
       MultiMax: 5
       IncomingNuPDG: 14
       InteractionMode: 0
-      PrimaryLeptonPool: {
+      RequiredParticlePool: {
         PDGCode: [13, -13]
         KERange: [100.0, 300.0]
       }
-      HadronicPool: {
+      ParticlePool: {
         PDGCode: [[2212], [211, -211]]
         MinMulti: [1, 0]
         MaxMulti: [2, 1]
@@ -34,13 +34,13 @@ multipart_vertex_cc_nc_5050:
       }
     },
     {
-      Name: "profile_nc"
+      Name: "without_lepton"
       ProbabilityWeight: 0.5
       MultiMin: 2
       MultiMax: 4
       IncomingNuPDG: 14
       InteractionMode: 1
-      HadronicPool: {
+      ParticlePool: {
         PDGCode: [[2212], [211, -211]]
         MinMulti: [1, 0]
         MaxMulti: [2, 1]
