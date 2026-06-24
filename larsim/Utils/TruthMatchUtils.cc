@@ -248,7 +248,6 @@ void TruthMatchUtils::FillG4IDToEnergyDepositMap(IDToEDepositMap& idToEDepMap,
                           (TruthMatchUtils::isShowerParticle(std::abs(trackIDE.trackID)) ?
                              TruthMatchUtils::FindShowerPrimaryID(std::abs(trackIDE.trackID)) :
                              trackIDE.trackID)));
-    std::cout << trackIDE.trackID << " " << g4ID << std::endl;
     const EDeposit eDep(static_cast<EDeposit>(trackIDE.energy));
     auto [iterator, inserted] = idToEDepMap.try_emplace(g4ID, eDep);
     //mf::LogInfo("TruthMatchUtils::FillG4IDToEnergyDepositMap")<<"FillG4IDToEnergyDepositMap: "<<g4ID<<" "<<eDep<<std::endl;
