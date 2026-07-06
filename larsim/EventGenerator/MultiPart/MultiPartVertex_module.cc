@@ -5,6 +5,17 @@
 //
 // Generated at Tue Dec 13 15:48:59 2016 by Kazuhiro Terao using artmod
 // from cetpkgsupport v1_11_00.
+//
+// Modified to support beam-mode hemisphere start position:
+//   particles are generated on the surface of a hemisphere of configurable
+//   radius, centered on a beam entrance point, with the flat face of the
+//   hemisphere flush with the detector entrance.  The momentum direction
+//   is always aimed from the surface point back through the entrance and
+//   into the detector.
+//
+// Further modified: allow random target point around beam entrance
+//   (BeamTargetRadius) so that particles are aimed at a random point
+//   within a disk of that radius, simulating a finite beam spot.
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -92,9 +103,18 @@ public:
   TVector3 GenPosition();
   TVector3 GenBoost();
 
+  // Beam-mode generators
+  TVector3 GenBeamEntrancePosition();
+  TVector3 GenBeamTarget() const;
+  std::array<double, 3U> GenBeamDirection(const TVector3& start_pos, const TVector3& target) const;
+
   std::array<double, 3U> extractDirection() const;
   TVector3 GenMomentum(const PartGenParam& param, const double& mass);
   TVector3 GenMomentum(const PartGenParam& param, const double& mass, bool& same_range);
+  TVector3 GenMomentum(const PartGenParam& param,
+                       const double& mass,
+                       bool& same_range,
+                       const std::array<double, 3>& dir);
 
   double GenMomentumSF(const double& sf, const double& mass, const double& p);
   std::vector<size_t> GenParticles(const std::vector<PartGenParam>& pool,
@@ -134,6 +154,25 @@ private:
 
   std::vector<PartGenParam> parseParticlePool(const fhicl::ParameterSet& pool_ps,
                                               const std::string& profile_name) const;
+
+  // ---------------------------------------------------------------
+  // Beam-mode members
+  // ---------------------------------------------------------------
+  bool _beam_mode;
+
+  // Centre of the hemisphere = the nominal beam entrance point on the
+  // detector face, in LArSoft cm coordinates.
+  std::array<double, 3> _beam_entrance;
+
+  // Radius of the hemisphere [cm].  Particles are placed on this surface.
+  double _beam_radius;
+
+  // Unit vector pointing *into* the detector from the entrance face.
+  std::array<double, 3> _beam_inward_dir;
+
+  // Radius (in cm) of the disk in which the random target point is generated
+  // around _beam_entrance.  If zero, target = _beam_entrance exactly.
+  double _beam_target_radius;
 };
 
 void MultiPartVertex::abort(const std::string msg) const
@@ -246,6 +285,43 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   _t0_sigma = p.get<double>("G4TimeJitter");
   if (_t0_sigma < 0) this->abort("Cannot have a negative value for G4 time jitter");
 
+  // ---------------------------------------------------------------
+  // Beam-mode configuration
+  // ---------------------------------------------------------------
+  _beam_mode = p.get<bool>("BeamMode", false);
+  _beam_radius = p.get<double>("BeamRadius", 10.0); // cm
+  _beam_target_radius = p.get<double>("BeamTargetRadius", 0.0);
+  if (_beam_target_radius < 0.0) this->abort("BeamTargetRadius must be >= 0");
+
+  auto beam_entrance_v = p.get<std::vector<double>>("BeamEntrance", {94.8, 142.6, 0.7});
+  if (beam_entrance_v.size() != 3)
+    this->abort("BeamEntrance must have exactly 3 elements [x, y, z]");
+  _beam_entrance = {beam_entrance_v[0], beam_entrance_v[1], beam_entrance_v[2]};
+
+  auto beam_inward_v = p.get<std::vector<double>>("BeamInwardDirection", {0.0, 0.0, 1.0});
+  if (beam_inward_v.size() != 3) this->abort("BeamInwardDirection must have exactly 3 elements");
+  double norm =
+    std::sqrt(beam_inward_v[0] * beam_inward_v[0] + beam_inward_v[1] * beam_inward_v[1] +
+              beam_inward_v[2] * beam_inward_v[2]);
+  if (norm < 1e-9) this->abort("BeamInwardDirection has zero magnitude!");
+  _beam_inward_dir = {beam_inward_v[0] / norm, beam_inward_v[1] / norm, beam_inward_v[2] / norm};
+
+  if (_beam_radius <= 0.) this->abort("BeamRadius must be positive!");
+
+  if (_beam_mode && _debug > 0) {
+    std::cout << "[MultiPartVertex] BeamMode ENABLED\n"
+              << "  Entrance  : (" << _beam_entrance[0] << ", " << _beam_entrance[1] << ", "
+              << _beam_entrance[2] << ") cm\n"
+              << "  Radius    : " << _beam_radius << " cm\n"
+              << "  Inward dir: (" << _beam_inward_dir[0] << ", " << _beam_inward_dir[1] << ", "
+              << _beam_inward_dir[2] << ")\n"
+              << "  Target radius : " << _beam_target_radius << " cm\n";
+  }
+
+  // ---------------------------------------------------------------
+  // Original TPC-based geometry (still required by the constructor
+  // even in beam mode, for the particle parameter sanity checks)
+  // ---------------------------------------------------------------
   _tpc_v = p.get<std::vector<std::vector<unsigned short>>>("TPCRange");
   auto const xrange = p.get<std::vector<double>>("XRange");
   auto const yrange = p.get<std::vector<double>>("YRange");
@@ -376,9 +452,9 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
 
   if (_profiles_v.empty()) { this->abort("No interaction profiles loaded!"); }
 
-  if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible legnth @ X vector!");
-  if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible legnth @ Y vector!");
-  if (!zrange.empty() && zrange.size() > 2) this->abort("Incompatible legnth @ Z vector!");
+  if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible length @ X vector!");
+  if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible length @ Y vector!");
+  if (!zrange.empty() && zrange.size() > 2) this->abort("Incompatible length @ Z vector!");
 
   // slight modification from mpv: define the overall volume across specified TPC IDs + range options
   double xmin, xmax, ymin, ymax, zmin, zmax;
@@ -444,6 +520,30 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
               << "Y " << _yrange[0] << " => " << _yrange[1] << std::endl
               << "Z " << _zrange[0] << " => " << _zrange[1] << std::endl;
   }
+
+  // ---------------------------------------------------------------
+  // Advisory: this generator samples phase space with intentionally
+  // broad, approximately uniform distributions (flat in KE/momentum,
+  // isotropic in angle, uniform in vertex position).  These choices
+  // maximise coverage of the detector response space and are well
+  // suited for training and validating AI/ML reconstruction models,
+  // but they do NOT reflect any physically motivated interaction
+  // cross-section or flux weighting.  Generated samples should NOT
+  // be used for physics analyses that require a realistic prior on
+  // particle kinematics or interaction rates.
+  // ---------------------------------------------------------------
+  mf::LogWarning("MultiPartVertex")
+    << "\n"
+    << "************************************************************\n"
+    << "  MultiPartVertex: INTENDED FOR AI/ML TRAINING USE ONLY\n"
+    << "  This generator samples phase space with broad, approximately\n"
+    << "  uniform distributions (flat in KE/momentum, isotropic in\n"
+    << "  angle, uniform in vertex position) to maximise detector-\n"
+    << "  response coverage for training and validating reconstruction\n"
+    << "  models.  It does NOT apply physical cross-section or flux\n"
+    << "  weighting and is NOT suitable for physics analyses requiring\n"
+    << "  a realistic kinematic or rate prior.\n"
+    << "************************************************************\n";
 }
 
 void MultiPartVertex::beginRun(art::Run& run)
@@ -508,6 +608,7 @@ std::vector<size_t> MultiPartVertex::GenParticles(const std::vector<PartGenParam
   return result;
 }
 
+// used when _beam_mode == false
 TVector3 MultiPartVertex::GenPosition()
 {
 
@@ -523,6 +624,93 @@ TVector3 MultiPartVertex::GenPosition()
   return TVector3(x, y, z);
 }
 
+// ---------------------------------------------------------------------------
+// Beam-mode: uniform sample on the upstream hemisphere of radius _beam_radius
+// centred on _beam_entrance.
+TVector3 MultiPartVertex::GenBeamEntrancePosition()
+{
+  double ct = fFlatRandom->fire(0.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+
+  TVector3 n_up(-_beam_inward_dir[0], -_beam_inward_dir[1], -_beam_inward_dir[2]);
+
+  TVector3 arb(1., 0., 0.);
+  if (std::fabs(n_up.Dot(arb)) > 0.9) arb = TVector3(0., 1., 0.);
+
+  TVector3 e1 = (arb - n_up * n_up.Dot(arb)).Unit();
+  TVector3 e2 = n_up.Cross(e1).Unit();
+
+  TVector3 offset =
+    _beam_radius * (st * TMath::Cos(phi) * e1 + st * TMath::Sin(phi) * e2 + ct * n_up);
+
+  TVector3 pos(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Start position: (" << pos.X() << ", " << pos.Y() << ", " << pos.Z()
+              << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
+
+  return pos;
+}
+
+// ---------------------------------------------------------------------------
+// Generate a random target point within a disk of radius _beam_target_radius
+// centred on _beam_entrance, in the plane perpendicular to _beam_inward_dir.
+TVector3 MultiPartVertex::GenBeamTarget() const
+{
+  if (_beam_target_radius <= 0.0)
+    return TVector3(_beam_entrance[0], _beam_entrance[1], _beam_entrance[2]);
+
+  TVector3 n_in(_beam_inward_dir[0], _beam_inward_dir[1], _beam_inward_dir[2]);
+  TVector3 arb(1., 0., 0.);
+  if (std::fabs(n_in.Dot(arb)) > 0.9) arb = TVector3(0., 1., 0.);
+  TVector3 u = (arb - n_in * n_in.Dot(arb)).Unit();
+  TVector3 v = n_in.Cross(u).Unit();
+
+  double r = std::sqrt(fFlatRandom->fire()) * _beam_target_radius;
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+  TVector3 offset = r * (std::cos(phi) * u + std::sin(phi) * v);
+
+  TVector3 target(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Target point: (" << target.X() << ", " << target.Y() << ", "
+              << target.Z() << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
+
+  return target;
+}
+
+// ---------------------------------------------------------------------------
+// Returns the unit vector from start_pos toward target.
+std::array<double, 3U> MultiPartVertex::GenBeamDirection(const TVector3& start_pos,
+                                                         const TVector3& target) const
+{
+  TVector3 dir = (target - start_pos).Unit();
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Direction: (" << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")"
+              << std::endl;
+
+  return {dir.X(), dir.Y(), dir.Z()};
+}
+
+// ---------------------------------------------------------------------------
+// Isotropic direction sampler (original, used when _beam_mode == false).
+std::array<double, 3U> MultiPartVertex::extractDirection() const
+{
+  double ct = fFlatRandom->fire(-1.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+  return {st * TMath::Cos(phi), st * TMath::Sin(phi), ct};
+}
+
+// ---------------------------------------------------------------------------
 TVector3 MultiPartVertex::GenBoost()
 {
 
@@ -550,18 +738,6 @@ TVector3 MultiPartVertex::GenBoost()
   }
 
   return TVector3(bx, by, bz);
-}
-
-std::array<double, 3U> MultiPartVertex::extractDirection() const
-{
-  double ct = fFlatRandom->fire(-1.0, 1.0);
-  double st = TMath::Sqrt(1.0 - ct * ct);
-  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
-  double px = st * TMath::Cos(phi);
-  double py = st * TMath::Sin(phi);
-  double pz = ct;
-  std::array<double, 3U> result = {px, py, pz};
-  return result;
 }
 
 TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param, const double& mass)
@@ -633,6 +809,32 @@ TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
   return TVector3(px, py, pz);
 }
 
+// ---------------------------------------------------------------------------
+// Beam-mode overload: direction is supplied explicitly instead of sampled isotropically.
+TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
+                                      const double& mass,
+                                      bool& same_range,
+                                      const std::array<double, 3>& dir)
+{
+  if (!same_range) return GenMomentum(param, mass);
+
+  double tot_energy = 0;
+  if (param.use_mom)
+    tot_energy = std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass);
+  else
+    tot_energy = fFlatRandom->fire(param.kerange[0], 1) + mass;
+
+  double mom_mag = sqrt(cet::square(tot_energy) - cet::square(mass));
+
+  if (_debug > 1)
+    std::cout << "    Direction : (" << dir[0] << "," << dir[1] << "," << dir[2] << ")\n"
+              << "    Momentum  : " << mom_mag << " [MeV/c]\n"
+              << "    Energy    : " << tot_energy << " [MeV/c^2]" << std::endl;
+
+  return TVector3(dir[0] * mom_mag, dir[1] * mom_mag, dir[2] * mom_mag);
+}
+
+// ---------------------------------------------------------------------------
 double MultiPartVertex::GenMomentumSF(const double& sf, const double& m, const double& p)
 {
   double p_sf =
@@ -651,7 +853,21 @@ void MultiPartVertex::produce(art::Event& e)
 
   double g4_time = fFlatRandom->fire(_t0 - _t0_sigma / 2., _t0 + _t0_sigma / 2.);
 
-  TVector3 position = GenPosition();
+  // ------------------------------------------------------------------
+  // Determine start position and beam direction for this event
+  // ------------------------------------------------------------------
+  TVector3 position;
+  std::array<double, 3> beam_dir{}; // only used in beam mode
+
+  if (_beam_mode) {
+    position = GenBeamEntrancePosition();
+    TVector3 target = GenBeamTarget();
+    beam_dir = GenBeamDirection(position, target);
+  }
+  else {
+    position = GenPosition();
+  }
+
   double x = position.X();
   double y = position.Y();
   double z = position.Z();
@@ -707,7 +923,19 @@ void MultiPartVertex::produce(art::Event& e)
     req_param.multi = {1, 1};
 
     bool same_range = false;
-    TVector3 req_mom = GenMomentum(req_param, req_mass, same_range);
+    TVector3 req_mom;
+    if (_beam_mode && !_revert) {
+      double tot_energy = 0;
+      if (req_param.use_mom)
+        tot_energy = std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
+      else
+        tot_energy = fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]) + req_mass;
+      double mom_mag = sqrt(cet::square(tot_energy) - cet::square(req_mass));
+      req_mom = TVector3(beam_dir[0] * mom_mag, beam_dir[1] * mom_mag, beam_dir[2] * mom_mag);
+    }
+    else {
+      req_mom = GenMomentum(req_param, req_mass, same_range);
+    }
     double req_E = sqrt(req_mom.Mag2() + req_mass * req_mass);
 
     TLorentzVector mom(req_mom.X(), req_mom.Y(), req_mom.Z(), req_E);
@@ -737,6 +965,9 @@ void MultiPartVertex::produce(art::Event& e)
     // empty  TVector3 momentum
     TVector3 momentum;
     if (_revert) { momentum = GenMomentum(param, mass); }
+    else if (_beam_mode) {
+      momentum = GenMomentum(param, mass, same_range, beam_dir);
+    }
     else {
       momentum = GenMomentum(param, mass, same_range);
     }
