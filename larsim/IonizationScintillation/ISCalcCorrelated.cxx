@@ -12,7 +12,6 @@
 // Modified: Adding corrections for low electric field (LArQL model)
 // Jun 2020 by L. Paulucci and F. Marinho
 ////////////////////////////////////////////////////////////////////////
-
 #include "larsim/IonizationScintillation/ISCalcCorrelated.h"
 
 #include "larcore/CoreUtils/ServiceUtil.h"
@@ -33,9 +32,12 @@ namespace larg4 {
   //----------------------------------------------------------------------------
   ISCalcCorrelated::ISCalcCorrelated(detinfo::DetectorPropertiesData const& detProp,
                                      CLHEP::HepRandomEngine& Engine)
-    : fISTPC{*(lar::providerFrom<geo::Geometry>())}
+    : fGeometry(lar::providerFrom<geo::Geometry>())
+    , fISTPC{*fGeometry}
     , fSCE(lar::providerFrom<spacecharge::SpaceChargeService>())
     , fBinomialGen{CLHEP::RandBinomial(Engine)}
+    , fUseGapAwareField(false)
+    , fMaxGap(0)
   {
     MF_LOG_INFO("ISCalcCorrelated") << "IonizationAndScintillation/ISCalcCorrelated Initialize.";
 
@@ -83,7 +85,7 @@ namespace larg4 {
     double const energy_deposit = edep.Energy();
 
     // calculate total quanta (ions + excitons)
-    double num_ions = 0.0; //check if the deposited energy is above ionization threshold
+    double num_ions = 0.0; // check if the deposited energy is above ionization threshold
     if (energy_deposit >= fWion) num_ions = energy_deposit / fWion;
     double num_quanta = energy_deposit / fWph;
 
@@ -92,8 +94,7 @@ namespace larg4 {
     dEdx = (dEdx < 1.) ? 1. : dEdx;
     double EFieldStep = EFieldAtStep(detProp.Efield(), edep);
     double recomb = 0., num_electrons = 0.;
-
-    //calculate recombination survival fraction value inside, otherwise zero
+    // calculate recombination survival fraction value inside, otherwise zero
     if (EFieldStep > 0.) {
       // calculate recombination survival fraction
       // ...using Modified Box model
@@ -124,8 +125,9 @@ namespace larg4 {
     }
 
     if (fUseModLarqlRecomb &&
-        edep.PdgCode() != 1000020040) { //Use corrections from LArQL model (except for alpha)
-      recomb += EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); //Correction for low EF
+        edep.PdgCode() != 1000020040) { // Use corrections from LArQL model (except for alpha)
+      recomb +=
+        EscapingEFraction(dEdx) * FieldCorrection(EFieldStep, dEdx); // Correction for low EF
     }
 
     // Guard against unphysical recombination values
@@ -140,7 +142,8 @@ namespace larg4 {
       recomb = 1.;
     }
 
-    // using this recombination, calculate number energy_deposit of ionization electrons
+    // using this recombination, calculate number energy_deposit of ionization
+    // electrons
     if (num_ions > 0.)
       num_electrons =
         (fUseBinomialFlucts) ? fBinomialGen.fire(num_ions, recomb) : (num_ions * recomb);
@@ -168,13 +171,12 @@ namespace larg4 {
   double ISCalcCorrelated::EFieldAtStep(double efield, sim::SimEnergyDeposit const& edep)
   {
     // electric field outside active volume set to zero
-    if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
+    if (!fISTPC.isScintInActiveVolume(edep.MidPoint()) && !fUseGapAwareField) return 0.;
 
     geo::Vector_t elecvec{};
 
-    art::ServiceHandle<geo::Geometry const> fGeometry;
-    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
-    if (!bool(tpcid)) return 0.;
+    geo::TPCID tpcid = TPCIDAtPosition(edep.MidPoint());
+    if (!tpcid) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
     using geo::to_int;
@@ -224,14 +226,12 @@ namespace larg4 {
   {
 
     // electric field outside active volume set to zero
-    if (!fISTPC.isScintInActiveVolume(edep.MidPoint())) return 0.;
+    if (!fISTPC.isScintInActiveVolume(edep.MidPoint()) && !fUseGapAwareField) return 0.;
 
     geo::Vector_t stepvec = edep.Start() - edep.End();
     geo::Vector_t elecvec{};
-
-    art::ServiceHandle<geo::Geometry const> fGeometry;
-    geo::TPCID tpcid = fGeometry->PositionToTPCID(edep.MidPoint());
-    if (!bool(tpcid)) return 0.;
+    geo::TPCID tpcid = TPCIDAtPosition(edep.MidPoint());
+    if (!tpcid) return 0.;
     const geo::TPCGeo& tpcGeo = fGeometry->TPC(tpcid);
 
     using geo::to_int;
@@ -279,6 +279,59 @@ namespace larg4 {
     if (angle > TMath::PiOver2()) { angle = abs(TMath::Pi() - angle); }
 
     return angle;
+  }
+
+  geo::TPCID ISCalcCorrelated::TPCIDAtPosition(geo::Point_t const& point) const
+  {
+    geo::TPCID tpcid = fGeometry->PositionToTPCID(point);
+
+    if (fUseGapAwareField && !tpcid) {
+      // If we want to use the true electric field in the CRP gap, we need to check if the position is in the gap, and if so, use the field from the nearest TPC instead of returning 0.
+      tpcid = FindTPCForGap(point);
+    }
+
+    return tpcid;
+  }
+
+  geo::TPCID ISCalcCorrelated::FindTPCForGap(geo::Point_t const& p) const
+  {
+    const double eps =
+      fMaxGap * 1.01; // in cm, default value is 4.2cm which is the largest gap in DUNE FD-VD
+
+    auto probe = [&](double dx, double dy, double dz) {
+      geo::Point_t shifted{p.X() + dx, p.Y() + dy, p.Z() + dz};
+      return fGeometry->PositionToTPCID(shifted);
+    };
+
+    // --- Check X axis ---
+    {
+      geo::TPCID tpc_plus = probe(+eps, 0, 0);
+      geo::TPCID tpc_minus = probe(-eps, 0, 0);
+
+      if (tpc_plus && tpc_minus) {
+        // Return one side (doesn't matter which, field should be consistent)
+        return tpc_plus;
+      }
+    }
+
+    // --- Check Y axis ---
+    {
+      geo::TPCID tpc_plus = probe(0, +eps, 0);
+      geo::TPCID tpc_minus = probe(0, -eps, 0);
+
+      if (tpc_plus && tpc_minus) { return tpc_plus; }
+    }
+
+    // --- Check Z axis ---
+    {
+      geo::TPCID tpc_plus = probe(0, 0, +eps);
+      geo::TPCID tpc_minus = probe(0, 0, -eps);
+
+      if (tpc_plus && tpc_minus) { return tpc_plus; }
+    }
+
+    // Not a valid gap (likely outside the active volume of the detector)
+    return {};
   }
 
   //----------------------------------------------------------------------------
