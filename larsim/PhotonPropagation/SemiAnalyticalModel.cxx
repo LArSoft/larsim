@@ -662,29 +662,32 @@ namespace phot {
     // to use
     double d1;
     double d2;
+    double d3; // in-plane coordinate paired with o.w
     if (OpDetOrientation == 2) {
       // lateral PD, arapuca plane fixed in z direction
       d1 = std::abs(v.X());
       d2 = std::abs(v.Z());
+      d3 = std::abs(v.Y());
     }
     else if (OpDetOrientation == 1) {
       // lateral PD, arapuca plane fixed in y direction
       d1 = std::abs(v.X());
       d2 = std::abs(v.Y());
+      d3 = std::abs(v.Z());
     }
     else {
       // anode/cathode PD, arapuca plane fixed in x direction [default]
       d1 = std::abs(v.Y());
       d2 = std::abs(v.X());
+      d3 = std::abs(v.Z());
     }
     // arapuca plane fixed in x direction
-    if (isApproximatelyZero(d1) && isApproximatelyZero(v.Z())) {
+    if (isApproximatelyZero(d1) && isApproximatelyZero(d3)) {
       return Rectangle_SolidAngle(o.h, o.w, d2);
     }
-    if (isDefinitelyGreaterThan(d1, o.h * .5) &&
-        isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && isDefinitelyGreaterThan(d3, o.w * .5)) {
       double A = d1 - o.h * .5;
-      double B = std::abs(v.Z()) - o.w * .5;
+      double B = d3 - o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) +
@@ -692,9 +695,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if ((d1 <= o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
+    if ((d1 <= o.h * .5) && (d3 <= o.w * .5)) {
       double A = -d1 + o.h * .5;
-      double B = -std::abs(v.Z()) + o.w * .5;
+      double B = -d3 + o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
@@ -702,9 +705,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if (isDefinitelyGreaterThan(d1, o.h * .5) && (std::abs(v.Z()) <= o.w * .5)) {
+    if (isDefinitelyGreaterThan(d1, o.h * .5) && (d3 <= o.w * .5)) {
       double A = d1 - o.h * .5;
-      double B = -std::abs(v.Z()) + o.w * .5;
+      double B = -d3 + o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (A + o.h), 2. * (o.w - B), d2) -
                           Rectangle_SolidAngle(2. * A, 2. * (o.w - B), d2) +
                           Rectangle_SolidAngle(2. * (A + o.h), 2. * B, d2) -
@@ -712,9 +715,9 @@ namespace phot {
                          .25;
       return to_return;
     }
-    if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(std::abs(v.Z()), o.w * .5)) {
+    if ((d1 <= o.h * .5) && isDefinitelyGreaterThan(d3, o.w * .5)) {
       double A = -d1 + o.h * .5;
-      double B = std::abs(v.Z()) - o.w * .5;
+      double B = d3 - o.w * .5;
       double to_return = (Rectangle_SolidAngle(2. * (o.h - A), 2. * (B + o.w), d2) -
                           Rectangle_SolidAngle(2. * (o.h - A), 2. * B, d2) +
                           Rectangle_SolidAngle(2. * A, 2. * (B + o.w), d2) -
