@@ -1,8 +1,3 @@
-name=larsim/PhotonPropagation/SemiAnalyticalModel.cxx
-// Modified SemiAnalyticalModel.cxx — added world-space local axes and normal usage
-// Note: This is the full file content with changes to populate and use
-//       OpticalDetector::normal and u_local_{x,y,z} for world-space computations.
-
 #include "SemiAnalyticalModel.h"
 #include "larsim/PhotonPropagation/PhotonPropagationUtils.h"
 
