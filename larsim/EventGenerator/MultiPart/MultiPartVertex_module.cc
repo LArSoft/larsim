@@ -927,7 +927,8 @@ void MultiPartVertex::produce(art::Event& e)
     if (_beam_mode && !_revert) {
       double tot_energy = 0;
       if (req_param.use_mom)
-        tot_energy = std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
+        tot_energy =
+          std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
       else
         tot_energy = fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]) + req_mass;
       double mom_mag = sqrt(cet::square(tot_energy) - cet::square(req_mass));
