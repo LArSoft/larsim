@@ -256,7 +256,7 @@ std::vector<PartGenParam> MultiPartVertex::parseParticlePool(const fhicl::Parame
                 << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl;
     }
 
-    particle_param_v.push_back(param);
+    particle_param_v.push_back(std::move(param));
   }
 
   return particle_param_v;
@@ -417,7 +417,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
         this->abort("Overall MultiMax < overall MultiMin in profile " + profile.name);
       }
 
-      _profiles_v.push_back(profile);
+      _profiles_v.push_back(std::move(profile));
     }
   }
   else {
@@ -447,7 +447,7 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
       this->abort("Overall MultiMax < overall MultiMin for fallback profile");
     }
 
-    _profiles_v.push_back(profile);
+    _profiles_v.push_back(std::move(profile));
   }
 
   if (_profiles_v.empty()) { this->abort("No interaction profiles loaded!"); }
@@ -907,8 +907,7 @@ void MultiPartVertex::produce(art::Event& e)
   }
   if (!active_prof) { active_prof = &_profiles_v.back(); }
 
-  int total_mult =
-    (int)(fFlatRandom->fire(active_prof->multi_min, active_prof->multi_max + 1 - 1.e-10));
+  int total_mult = fFlatRandom->fire(active_prof->multi_min, active_prof->multi_max + 1 - 1.e-10);
 
   if (active_prof->has_required_particle) {
     size_t req_idx = (size_t)(fFlatRandom->fire(0, active_prof->required_pdg.size() - 1.e-10));
@@ -931,8 +930,8 @@ void MultiPartVertex::produce(art::Event& e)
           std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
       else
         tot_energy = fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]) + req_mass;
-      double mom_mag = sqrt(cet::square(tot_energy) - cet::square(req_mass));
-      req_mom = TVector3(beam_dir[0] * mom_mag, beam_dir[1] * mom_mag, beam_dir[2] * mom_mag);
+      double mom_mag = cet::diff_of_squares(tot_energy, req_mass);
+      req_mom = TVector3(beam_dir.data()) * mom_mag;
     }
     else {
       req_mom = GenMomentum(req_param, req_mass, same_range);
