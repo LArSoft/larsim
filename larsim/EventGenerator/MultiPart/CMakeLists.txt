@@ -46,5 +46,6 @@ cet_build_plugin( MultiPartVertex art::module
             ROOT::EG
         )
 
+install_fhicl()
 install_source()
 
