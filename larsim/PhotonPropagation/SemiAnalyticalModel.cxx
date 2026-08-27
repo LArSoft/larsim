@@ -19,9 +19,9 @@
 
 #include "TMath.h"
 
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
 
 #include "boost/math/special_functions/ellint_1.hpp"
 #include "boost/math/special_functions/ellint_3.hpp"
@@ -227,12 +227,12 @@ namespace phot {
     // ARAPUCAS/Bars (rectangle)
     if (opDet.type == 0) {
       // project the world-space relative vector into the detector local axes (stored in world coords)
-      double lx = std::abs(relative.X() * opDet.u_local_x.X() +
-                           relative.Y() * opDet.u_local_x.Y() + relative.Z() * opDet.u_local_x.Z());
-      double ly = std::abs(relative.X() * opDet.u_local_y.X() +
-                           relative.Y() * opDet.u_local_y.Y() + relative.Z() * opDet.u_local_y.Z());
-      double lz = std::abs(relative.X() * opDet.u_local_z.X() +
-                           relative.Y() * opDet.u_local_z.Y() + relative.Z() * opDet.u_local_z.Z());
+      double lx = std::abs(relative.X() * opDet.u_local_x.X() + relative.Y() * opDet.u_local_x.Y() +
+                           relative.Z() * opDet.u_local_x.Z());
+      double ly = std::abs(relative.X() * opDet.u_local_y.X() + relative.Y() * opDet.u_local_y.Y() +
+                           relative.Z() * opDet.u_local_y.Z());
+      double lz = std::abs(relative.X() * opDet.u_local_z.X() + relative.Y() * opDet.u_local_z.Y() +
+                           relative.Z() * opDet.u_local_z.Z());
       geo::Vector_t const abs_relative{lx, ly, lz};
       solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative, opDet.orientation);
     }
@@ -829,9 +829,12 @@ namespace phot {
       od.u_local_z = normalize(wz);
 
       // choose detector normal according to local orientation (preserve existing convention)
-      if (od.orientation == 0) od.normal = od.u_local_x;
-      else if (od.orientation == 1) od.normal = od.u_local_y;
-      else od.normal = od.u_local_z;
+      if (od.orientation == 0)
+        od.normal = od.u_local_x;
+      else if (od.orientation == 1)
+        od.normal = od.u_local_y;
+      else
+        od.normal = od.u_local_z;
 
       opticalDetector.emplace_back(std::move(od));
     }
