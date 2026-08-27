@@ -19,6 +19,7 @@
 
 #include "TMath.h"
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -216,21 +217,23 @@ namespace phot {
     // distance and angle between ScintPoint and OpDet center
     geo::Vector_t const relative = ScintPoint - opDet.center;
     const double distance = relative.R();
-    double cosine;
-    if (opDet.orientation == 2)
-      cosine = std::abs(relative.Z()) / distance;
-    else if (opDet.orientation == 1)
-      cosine = std::abs(relative.Y()) / distance;
-    else
-      cosine = std::abs(relative.X()) / distance;
+    // cosine between the direction to the scintillation point and the detector normal:
+    const double dot = relative.X() * opDet.normal.X() + relative.Y() * opDet.normal.Y() +
+                       relative.Z() * opDet.normal.Z();
+    const double cosine = std::abs(dot / (distance > 0. ? distance : 1.0));
     const double theta = fast_acos(cosine) * 180. / CLHEP::pi;
 
     double solid_angle = 0.;
     // ARAPUCAS/Bars (rectangle)
     if (opDet.type == 0) {
-      // get scintillation point coordinates relative to arapuca window centre
-      geo::Vector_t const abs_relative{
-        std::abs(relative.X()), std::abs(relative.Y()), std::abs(relative.Z())};
+      // project the world-space relative vector into the detector local axes (stored in world coords)
+      double lx = std::abs(relative.X() * opDet.u_local_x.X() + relative.Y() * opDet.u_local_x.Y() +
+                           relative.Z() * opDet.u_local_x.Z());
+      double ly = std::abs(relative.X() * opDet.u_local_y.X() + relative.Y() * opDet.u_local_y.Y() +
+                           relative.Z() * opDet.u_local_y.Z());
+      double lz = std::abs(relative.X() * opDet.u_local_z.X() + relative.Y() * opDet.u_local_z.Y() +
+                           relative.Z() * opDet.u_local_z.Z());
+      geo::Vector_t const abs_relative{lx, ly, lz};
       solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative, opDet.orientation);
     }
     // PMTs (dome)
@@ -460,27 +463,28 @@ namespace phot {
     // calculate distances and angles for application of corrections
     // distance from hotspot to optical detector
     const double distance_vis = emission_relative.R();
-    //  angle between hotspot and optical detector
-    double cosine_vis;
-    if (opDet.orientation == 2) { // lateral fixed at z
-      cosine_vis = std::abs(emission_relative.Z()) / distance_vis;
-    }
-    else if (opDet.orientation == 1) { // lateral fixed at y
-      cosine_vis = std::abs(emission_relative.Y()) / distance_vis;
-    }
-    else { // anode/cathode (default)
-      cosine_vis = std::abs(emission_relative.X()) / distance_vis;
-    }
+    // angle between hotspot and optical detector normal
+    const double dot_vis = emission_relative.X() * opDet.normal.X() +
+                           emission_relative.Y() * opDet.normal.Y() +
+                           emission_relative.Z() * opDet.normal.Z();
+    const double cosine_vis = std::abs(dot_vis / (distance_vis > 0. ? distance_vis : 1.0));
     const double theta_vis = fast_acos(cosine_vis) * 180. / CLHEP::pi;
 
     // calculate solid angle of optical channel
     double solid_angle_detector = 0.;
     // ARAPUCAS/Bars (rectangle)
     if (opDet.type == 0) {
-      // get hotspot coordinates relative to opDet
-      geo::Vector_t const abs_emission_relative{std::abs(emission_relative.X()),
-                                                std::abs(emission_relative.Y()),
-                                                std::abs(emission_relative.Z())};
+      // project emission_relative into detector-local axes (world-space stored)
+      double lx = std::abs(emission_relative.X() * opDet.u_local_x.X() +
+                           emission_relative.Y() * opDet.u_local_x.Y() +
+                           emission_relative.Z() * opDet.u_local_x.Z());
+      double ly = std::abs(emission_relative.X() * opDet.u_local_y.X() +
+                           emission_relative.Y() * opDet.u_local_y.Y() +
+                           emission_relative.Z() * opDet.u_local_y.Z());
+      double lz = std::abs(emission_relative.X() * opDet.u_local_z.X() +
+                           emission_relative.Y() * opDet.u_local_z.Y() +
+                           emission_relative.Z() * opDet.u_local_z.Z());
+      geo::Vector_t const abs_emission_relative{lx, ly, lz};
       solid_angle_detector =
         Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative, opDet.orientation);
     }
@@ -804,8 +808,38 @@ namespace phot {
         length = -1;
         height = -1;
       }
-      opticalDetector.emplace_back(
-        SemiAnalyticalModel::OpticalDetector{height, length, center, type, orientation});
+
+      // build OpticalDetector and populate world-space local axes & normal
+      SemiAnalyticalModel::OpticalDetector od;
+      od.h = height;
+      od.w = length;
+      od.center = center;
+      od.type = type;
+      od.orientation = orientation;
+
+      // compute opdet local axes in world coordinates
+      using LocalVec = geo::OpDetGeo::LocalVector_t;
+      geo::Vector_t wx = opDet.toWorldCoords(LocalVec{1.0, 0.0, 0.0});
+      geo::Vector_t wy = opDet.toWorldCoords(LocalVec{0.0, 1.0, 0.0});
+      geo::Vector_t wz = opDet.toWorldCoords(LocalVec{0.0, 0.0, 1.0});
+      auto normalize = [](geo::Vector_t const& v) -> geo::Vector_t {
+        const double r = std::sqrt(v.X() * v.X() + v.Y() * v.Y() + v.Z() * v.Z());
+        if (r > 0.0) return geo::Vector_t{v.X() / r, v.Y() / r, v.Z() / r};
+        return geo::Vector_t{0.0, 0.0, 0.0};
+      };
+      od.u_local_x = normalize(wx);
+      od.u_local_y = normalize(wy);
+      od.u_local_z = normalize(wz);
+
+      // choose detector normal according to local orientation (preserve existing convention)
+      if (od.orientation == 0)
+        od.normal = od.u_local_x;
+      else if (od.orientation == 1)
+        od.normal = od.u_local_y;
+      else
+        od.normal = od.u_local_z;
+
+      opticalDetector.emplace_back(std::move(od));
     }
     return opticalDetector;
   }
