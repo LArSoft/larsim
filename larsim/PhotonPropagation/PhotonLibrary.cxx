@@ -5,14 +5,15 @@
 #include "larsim/PhotonPropagation/PhotonLibrary.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "RooDouble.h"
-#include "RooInt.h"
 #include "RtypesCore.h"
 #include "TBranch.h"
+#include "TClass.h"
+#include "TDirectory.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TKey.h"
 #include "TNamed.h"
+#include "TParameter.h"
 #include "TString.h"
 #include "TTree.h"
 #include "TVector.h"
@@ -21,19 +22,66 @@
 
 namespace {
 
-  template <typename RooT, typename T>
-  struct RooReader {
+  /// Reads a scalar metadata value with the specified `key` from `srcDir`,
+  /// supporting both the current format (`TParameter<T>`) and the legacy one
+  /// (RooFit's `RooInt` and `RooDouble`). Missing keys end up in `missingKeys`.
+  template <typename T>
+  struct MetadataReader {
     TDirectory& srcDir;
     std::vector<std::string>& missingKeys;
 
-    std::optional<T> operator()(std::string const& key)
+    std::optional<T> operator()(std::string const& key) const
     {
-      RooT const* value = srcDir.Get<RooT>(key.c_str());
-      if (value) return std::make_optional<T>(*value);
+      if (auto const* param = srcDir.Get<TParameter<T>>(key.c_str())) return param->GetVal();
+      if (auto value = readLegacy(key)) return value;
       missingKeys.push_back(key);
       return std::nullopt;
     }
-  }; // RooReader
+
+  private:
+    /// Reads a value stored as RooFit `RooInt` or `RooDouble` without relying
+    /// on RooFit itself: `RooInt` does not exist any more (since ROOT 6.30),
+    /// and its objects can be read back only through the "emulated" class that
+    /// ROOT builds from the streamer information stored in the file itself.
+    std::optional<T> readLegacy(std::string const& key) const
+    {
+      TKey* dirKey = srcDir.GetKey(key.c_str());
+      if (!dirKey) return std::nullopt;
+      std::string const className = dirKey->GetClassName();
+      bool const isInt = (className == "RooInt");
+      if (!isInt && className != "RooDouble") return std::nullopt;
+      TClass* actualClass = TClass::GetClass(className.c_str());
+      if (!actualClass) return std::nullopt;
+      // ReadObjectAny() (unlike ReadObj()) streams emulated classes correctly
+      void* obj = dirKey->ReadObjectAny(nullptr);
+      if (!obj) return std::nullopt;
+      std::optional<T> value;
+      if (Longptr_t const offset = actualClass->GetDataMemberOffset("_value"); offset > 0) {
+        auto const* valuePtr = reinterpret_cast<char const*>(obj) + offset;
+        value = isInt ? static_cast<T>(*reinterpret_cast<Int_t const*>(valuePtr)) :
+                        static_cast<T>(*reinterpret_cast<Double_t const*>(valuePtr));
+      }
+      actualClass->Destructor(obj);
+      return value;
+    }
+  }; // MetadataReader
+
+  /// Stores `value` as a `TParameter<T>` with the specified `name` in `destDir`.
+  /// `art::TFileDirectory::makeAndRegister()` can't be used since `TParameter`
+  /// provides neither `SetName()` nor `SetTitle()`; instead, the parameter is
+  /// registered on construction, in the directory `art::TFileDirectory::make()`
+  /// has made current.
+  template <typename T>
+  void storeParameter(art::TFileDirectory& destDir, std::string const& name, T value)
+  {
+    struct Registrar {
+      Registrar(std::string const& name, T value)
+      {
+        gDirectory->Append(new TParameter<T>(name.c_str(), value));
+      }
+    };
+    delete destDir.make<Registrar>(name, value);
+  }
 
 } // local namespace
 
@@ -463,8 +511,8 @@ namespace phot {
 
     std::vector<std::string> missingKeys;
 
-    RooReader<RooInt, Int_t> readInt{srcDir, missingKeys};
-    RooReader<RooDouble, Double_t> readDouble{srcDir, missingKeys};
+    MetadataReader<Int_t> readInt{srcDir, missingKeys};
+    MetadataReader<Double_t> readDouble{srcDir, missingKeys};
 
     // FIXME: Not sure initializing to 0 is appropriate.
     double xMin{};
@@ -510,45 +558,36 @@ namespace phot {
 
     assert(fDir);
 
-    // NVoxels
-    fDir->makeAndRegister<RooInt>("NVoxels", "Total number of voxels in the library", fNVoxels);
-
-    // NChannels
-    fDir->makeAndRegister<RooInt>(
-      "NChannels", "Total number of optical detector channels in the library", fNOpChannels);
+    // total number of voxels and of optical detector channels in the library
+    storeParameter<Int_t>(*fDir, "NVoxels", size_t2int(fNVoxels));
+    storeParameter<Int_t>(*fDir, "NChannels", size_t2int(fNOpChannels));
 
     if (!hasVoxelDef()) return;
     sim::PhotonVoxelDef const& voxelDef = GetVoxelDef();
 
-    // lower point
+    // lower point covered by the library (world coordinates, cm)
     geo::Point_t const& lower = voxelDef.GetRegionLowerCorner();
-    fDir->makeAndRegister<RooDouble>(
-      "MinX", "Lower x coordinate covered by the library (world coordinates, cm)", lower.X());
-    fDir->makeAndRegister<RooDouble>(
-      "MinY", "Lower y coordinate covered by the library (world coordinates, cm)", lower.Y());
-    fDir->makeAndRegister<RooDouble>(
-      "MinZ", "Lower z coordinate covered by the library (world coordinates, cm)", lower.Z());
+    storeParameter<Double_t>(*fDir, "MinX", lower.X());
+    storeParameter<Double_t>(*fDir, "MinY", lower.Y());
+    storeParameter<Double_t>(*fDir, "MinZ", lower.Z());
 
-    // upper point
+    // upper point covered by the library (world coordinates, cm)
     geo::Point_t const& upper = voxelDef.GetRegionUpperCorner();
-    fDir->makeAndRegister<RooDouble>(
-      "MaxX", "Upper x coordinate covered by the library (world coordinates, cm)", upper.X());
-    fDir->makeAndRegister<RooDouble>(
-      "MaxY", "Upper y coordinate covered by the library (world coordinates, cm)", upper.Y());
-    fDir->makeAndRegister<RooDouble>(
-      "MaxZ", "Upper z coordinate covered by the library (world coordinates, cm)", upper.Z());
+    storeParameter<Double_t>(*fDir, "MaxX", upper.X());
+    storeParameter<Double_t>(*fDir, "MaxY", upper.Y());
+    storeParameter<Double_t>(*fDir, "MaxZ", upper.Z());
 
-    // steps
+    // size of a voxel on each direction (cm)
     geo::Vector_t const& stepSizes = voxelDef.GetVoxelSize();
-    fDir->makeAndRegister<RooDouble>("StepX", "Size on x direction of a voxel (cm)", stepSizes.X());
-    fDir->makeAndRegister<RooDouble>("StepY", "Size on y direction of a voxel (cm)", stepSizes.Y());
-    fDir->makeAndRegister<RooDouble>("StepZ", "Size on z direction of a voxel (cm)", stepSizes.Z());
+    storeParameter<Double_t>(*fDir, "StepX", stepSizes.X());
+    storeParameter<Double_t>(*fDir, "StepY", stepSizes.Y());
+    storeParameter<Double_t>(*fDir, "StepZ", stepSizes.Z());
 
-    // divisions
+    // steps on each direction
     auto const& steps = voxelDef.GetSteps();
-    fDir->makeAndRegister<RooInt>("NDivX", "Steps on the x direction", steps[0]);
-    fDir->makeAndRegister<RooInt>("NDivY", "Steps on the y direction", steps[1]);
-    fDir->makeAndRegister<RooInt>("NDivZ", "Steps on the z direction", steps[2]);
+    storeParameter<Int_t>(*fDir, "NDivX", steps[0]);
+    storeParameter<Int_t>(*fDir, "NDivY", steps[1]);
+    storeParameter<Int_t>(*fDir, "NDivZ", steps[2]);
 
   } // PhotonLibrary::StoreMetadata()
 
