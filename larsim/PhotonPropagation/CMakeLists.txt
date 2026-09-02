@@ -43,7 +43,6 @@ cet_make_library(SOURCE
   cetlib::cetlib
   ROOT::Tree
   ROOT::MathCore
-  ROOT::RooFitCore
   CLHEP::Random
   Boost::boost
 )
