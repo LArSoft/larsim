@@ -315,7 +315,8 @@ void cheat::RecoCheckAna::CheckRecoClusters(art::Event const& evt,
   art::FindMany<recob::Hit> fmh(clscol, evt, label);
 
   for (size_t c = 0; c < clscol->size(); ++c)
-    this->CheckReco(clockData, clscol->at(c).ID(), allhits, fmh.at(c), fG4ClusterIDToPurityEfficiency);
+    this->CheckReco(
+      clockData, clscol->at(c).ID(), allhits, fmh.at(c), fG4ClusterIDToPurityEfficiency);
 
   return;
 }
