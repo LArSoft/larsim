@@ -394,6 +394,25 @@ namespace cheat {
   }
 
   //-----------------------------------------------------------------------------------
+  double BackTracker::HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                                          std::set<int> const& trackIds,
+                                          std::vector<recob::Hit const*> const& hits) const
+  {
+    int desired = 0;
+    for (const auto& hit : hits) {
+      std::vector<sim::TrackIDE> hitTrackIDEs = HitToTrackIDEs(clockData, *hit);
+      for (const auto& tIDE : hitTrackIDEs) {
+        if (trackIds.find(tIDE.trackID) != trackIds.end()) {
+          ++desired;
+          break;
+        }
+      }
+    }
+    if (hits.size() > 0) { return double(double(desired) / double(hits.size())); }
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------------
   double BackTracker::HitChargeCollectionPurity(detinfo::DetectorClocksData const& clockData,
                                                 std::set<int> const& trackIds,
                                                 std::vector<art::Ptr<recob::Hit>> const& hits) const
@@ -452,6 +471,41 @@ namespace cheat {
   }
 
   //-----------------------------------------------------------------------------------
+  double BackTracker::HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                              std::set<int> const& trackIds,
+                                              std::vector<recob::Hit const*> const& hits,
+                                              std::vector<recob::Hit const*> const& allHits,
+                                              geo::View_t const& view) const
+  {
+    int desired = 0, total = 0;
+
+    for (const auto& hit : hits) {
+      std::vector<sim::TrackIDE> hitTrackIDEs = HitToTrackIDEs(clockData, *hit);
+      for (const auto& trackIDE : hitTrackIDEs) {
+        if (trackIds.find(trackIDE.trackID) != trackIds.end() &&
+            trackIDE.energyFrac >= fMinHitEnergyFraction) {
+          ++desired;
+          break;
+        }
+      }
+    }
+
+    for (const auto& hit : allHits) {
+      if (hit->View() != view && view != geo::k3D) { continue; }
+      std::vector<sim::TrackIDE> hitTrackIDEs = HitToTrackIDEs(clockData, *hit);
+      for (const auto& hitIDE : hitTrackIDEs) {
+        if (trackIds.find(hitIDE.trackID) != trackIds.end() &&
+            hitIDE.energyFrac >= fMinHitEnergyFraction) {
+          ++total;
+          break;
+        }
+      }
+    }
+    if (total >= 0) { return double(double(desired) / double(total)); }
+    return 0.;
+  }
+
+  //-----------------------------------------------------------------------------------
   double BackTracker::HitChargeCollectionEfficiency(
     detinfo::DetectorClocksData const& clockData,
     std::set<int> const& trackIds,
@@ -503,6 +557,23 @@ namespace cheat {
     }   // End for hits
     return tids;
   } // End GetSetOfTrackIds
+
+  //-----------------------------------------------------------------------------------
+  std::set<int> BackTracker::GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
+                                              std::vector<recob::Hit const*> const& hits) const
+  {
+    std::set<int> tids;
+    for (const auto& hit : hits) {
+      const double start = hit->PeakTimeMinusRMS(fHitTimeRMS);
+      const double end = hit->PeakTimePlusRMS(fHitTimeRMS);
+      std::vector<sim::TrackIDE> trackIDEs =
+        ChannelToTrackIDEs(clockData, hit->Channel(), start, end);
+      for (const auto& ide : trackIDEs) {
+        tids.insert(ide.trackID);
+      }
+    }
+    return tids;
+  }
 
   //-----------------------------------------------------------------------------------
   std::set<int> BackTracker::GetSetOfEveIds(detinfo::DetectorClocksData const& clockData,

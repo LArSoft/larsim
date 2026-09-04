@@ -532,7 +532,7 @@ void cheat::RecoCheckAna::FillResults(detinfo::DetectorClocksData const& clockDa
   // fill the tree vectors
   for (int trackID : fBT->GetSetOfTrackIds()) {
 
-    const simb::MCParticle* part = fPI->TrackIdToParticle(trackID);
+    const simb::MCParticle* part = fPI->TrackIdToParticle_P(trackID);
 
     ftrackid = std::abs(trackID);
     fpdg = part->PdgCode();
