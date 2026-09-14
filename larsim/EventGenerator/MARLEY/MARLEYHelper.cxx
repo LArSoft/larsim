@@ -267,6 +267,7 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
 
   // If dumping has been enabled (indicated by a non-null fDumpTree), then ...
   if ( fDumpTree ) {
+
     // 1. Save the run information to the TFile associated with fDumpTree
     // (if it exists and the run information has not been saved previously).
     TFile* dump_file = fDumpTree->GetCurrentFile();

@@ -16,6 +16,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art_root_io/detail/RootDirectorySentry.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/types/Table.h"
 
@@ -31,6 +32,7 @@
 #include "larsim/EventGenerator/MARLEY/MARLEYHelper.h"
 
 // ROOT includes
+#include "TFile.h"
 #include "TTree.h"
 
 namespace evgen {
@@ -99,14 +101,32 @@ evgen::MarleyGen::MarleyGen(const Parameters& p)
   , fSubRunNumber(0)
   , fEventNumber(0)
 {
-  // Configure the module (including MARLEY itself) using the FHiCL parameters
-  this->reconfigure(p);
 
   // Create a ROOT TTree using the TFileService that will store the MARLEY
   // event objects (useful for debugging purposes). Management of the branch
   // holding event data is handled by MARLEYHelper.
   art::ServiceHandle<art::TFileService const> tfs;
-  fEventTree = tfs->make<TTree>("MARLEY_event_tree", "HepMC3-format MARLEY events");
+
+  // The commented-out code below creates the MARLEY_event_tree in a subfolder
+  // of the "hist" TFile. We deliberately create the TTree manually here so that
+  // it can reside in the root folder of the TFile. This facilitates processing
+  // of the dumped events using the same workflow as standalone MARLEY, e.g.,
+  // 'marley summarize' and related tools.
+  //fEventTree = tfs->make<TTree>("MARLEY_event_tree", "HepMC3-format MARLEY events");
+
+  // Use brackets so that sentry will go out of scope right away, restoring
+  // the old gDirectory value upon its destruction
+  {
+    // Protect the gDirectory state in the same way that tfs->make<TTree>()
+    // does internally
+    art::detail::RootDirectorySentry sentry;
+
+    // Set the root of the managed TFile as the current directory
+    tfs->file().cd();
+
+    // Create the MARLEY event TTree within it
+    fEventTree = new TTree("MARLEY_event_tree", "HepMC3-format MARLEY events");
+  }
 
   // Add branches that give the art::Event run, subrun, and event numbers for
   // easy match-ups between the MARLEY and art TTrees. All three are recorded
@@ -114,6 +134,9 @@ evgen::MarleyGen::MarleyGen(const Parameters& p)
   fEventTree->Branch("run_number", &fRunNumber, "run_number/i");
   fEventTree->Branch("subrun_number", &fSubRunNumber, "subrun_number/i");
   fEventTree->Branch("event_number", &fEventNumber, "event_number/i");
+
+  // Configure the module (including MARLEY itself) using the FHiCL parameters
+  this->reconfigure(p);
 
   produces<std::vector<simb::MCTruth>>();
   produces<sumdata::RunData, art::InRun>();
