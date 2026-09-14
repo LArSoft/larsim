@@ -47,7 +47,6 @@ namespace evgen {
   class MARLEYHelper {
 
   public:
-
     // If a non-nullptr TTree* is supplied, then the run information
     // (HepMC3::GenRunInfoData) and generated events (HepMC3::GenEventData)
     // will be dumped in a format similar to standalone "marley generate"
@@ -69,7 +68,7 @@ namespace evgen {
 
   protected:
     void add_marley_particles(simb::MCTruth& truth,
-                              const std::vector< std::shared_ptr< HepMC3::GenParticle > >& particles,
+                              const std::vector<std::shared_ptr<HepMC3::GenParticle>>& particles,
                               const TLorentzVector& vtx_pos,
                               double conv_factor,
                               bool track);
@@ -93,8 +92,8 @@ namespace evgen {
     TTree* fDumpTree = nullptr;
 
     // Storage used to help with dumping
-    std::shared_ptr< HepMC3::GenRunInfo > fRunInfo;
-    std::unique_ptr< HepMC3::GenEventData > fEventData;
+    std::shared_ptr<HepMC3::GenRunInfo> fRunInfo;
+    std::unique_ptr<HepMC3::GenEventData> fEventData;
     HepMC3::GenEventData* fEventDataPtr = nullptr;
 
   }; // class evgen::MARLEYHelper

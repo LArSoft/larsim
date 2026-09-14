@@ -16,8 +16,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/detail/RootDirectorySentry.h"
 #include "art_root_io/TFileService.h"
+#include "art_root_io/detail/RootDirectorySentry.h"
 #include "fhiclcpp/types/Table.h"
 
 // art extensions
@@ -96,10 +96,7 @@ private:
 
 //------------------------------------------------------------------------------
 evgen::MarleyGen::MarleyGen(const Parameters& p)
-  : EDProducer{p.get_PSet()}
-  , fRunNumber(0)
-  , fSubRunNumber(0)
-  , fEventNumber(0)
+  : EDProducer{p.get_PSet()}, fRunNumber(0), fSubRunNumber(0), fEventNumber(0)
 {
 
   // Create a ROOT TTree using the TFileService that will store the MARLEY
@@ -190,7 +187,5 @@ void evgen::MarleyGen::reconfigure(const Parameters& p)
   fhicl::ParameterSet marley_pset = p.get_PSet().get<fhicl::ParameterSet>("marley_parameters");
   fMarleyHelper = std::make_unique<MARLEYHelper>(marley_pset, *seed_service, "MARLEY", fEventTree);
 }
-
-
 
 DEFINE_ART_MODULE(evgen::MarleyGen)

@@ -91,15 +91,16 @@ evgen::MARLEYHelper::MARLEYHelper(const fhicl::ParameterSet& pset,
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYHelper::add_marley_particles(simb::MCTruth& truth,
-                                               const std::vector< std::shared_ptr< HepMC3::GenParticle > >& particles,
-                                               const TLorentzVector& vtx_pos,
-                                               double conv_factor,
-                                               bool track)
+void evgen::MARLEYHelper::add_marley_particles(
+  simb::MCTruth& truth,
+  const std::vector<std::shared_ptr<HepMC3::GenParticle>>& particles,
+  const TLorentzVector& vtx_pos,
+  double conv_factor,
+  bool track)
 {
   // Loop over the vector of MARLEY particles and add simb::MCParticle
   // versions of each of them to the MCTruth object.
-  for ( const auto& p : particles ) {
+  for (const auto& p : particles) {
     // Treat all of these particles as primaries, which have negative
     // track IDs by convention
     int trackID = -1 * (truth.NParticles() + 1);
@@ -142,51 +143,50 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
   // simb::MCTruth expects.
   double conv_factor = 1.;
   auto ev_energy_unit = event->momentum_unit();
-  if ( ev_energy_unit == HepMC3::Units::MEV ) {
-    conv_factor = MeV_to_GeV;
-  }
-  else if ( ev_energy_unit != HepMC3::Units::GEV ) {
+  if (ev_energy_unit == HepMC3::Units::MEV) { conv_factor = MeV_to_GeV; }
+  else if (ev_energy_unit != HepMC3::Units::GEV) {
     throw cet::exception("MARLEYHelper") << "Unrecognized energy unit"
-      << " encountered in a MARLEY event";
+                                         << " encountered in a MARLEY event";
   }
 
   // MARLEY v2 follows the NuHepMC standard
   // (https://doi.org/10.21468/SciPostPhysCodeb.57) in labeling initial
   // particles with either the "projectile" or "target" status codes. We
   // collect the projectile(s) first and then append the target(s).
-  auto initial_particles = marley_hepmc3::get_particles_with_status(
-    marley_hepmc3::NUHEPMC_PROJECTILE_STATUS, *event );
+  auto initial_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_PROJECTILE_STATUS, *event);
 
-  auto target_particles = marley_hepmc3::get_particles_with_status(
-    marley_hepmc3::NUHEPMC_TARGET_STATUS, *event );
+  auto target_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_TARGET_STATUS, *event);
 
-  for ( const auto& t : target_particles ) initial_particles.push_back( t );
+  for (const auto& t : target_particles)
+    initial_particles.push_back(t);
 
   // Final-state particles have a single status code
-  auto final_particles = marley_hepmc3::get_particles_with_status(
-    marley_hepmc3::NUHEPMC_FINAL_STATE_STATUS, *event );
+  auto final_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_FINAL_STATE_STATUS, *event);
 
   // Add the initial and final state particles to the MCTruth object.
   add_marley_particles(truth, initial_particles, vtx_pos, conv_factor, false);
   add_marley_particles(truth, final_particles, vtx_pos, conv_factor, true);
 
   // calculate a few parameters for the call to SetNeutrino
-  const auto& nu = marley_hepmc3::get_projectile( *event );
+  const auto& nu = marley_hepmc3::get_projectile(*event);
   const auto& p4_nu = nu->momentum();
 
-  const auto& lep = marley_hepmc3::get_ejectile( *event );
+  const auto& lep = marley_hepmc3::get_ejectile(*event);
   const auto& p4_lep = lep->momentum();
 
-  double qt = ( p4_nu.e() - p4_lep.e() ) * conv_factor;
-  double qx = ( p4_nu.px() - p4_lep.px() ) * conv_factor;
-  double qy = ( p4_nu.py() - p4_lep.py() ) * conv_factor;
-  double qz = ( p4_nu.pz() - p4_lep.pz() ) * conv_factor;
+  double qt = (p4_nu.e() - p4_lep.e()) * conv_factor;
+  double qx = (p4_nu.px() - p4_lep.px()) * conv_factor;
+  double qy = (p4_nu.py() - p4_lep.py()) * conv_factor;
+  double qz = (p4_nu.pz() - p4_lep.pz()) * conv_factor;
 
   double Q2 = qx * qx + qy * qy + qz * qz - qt * qt;
 
   // For definitions of Bjorken x, etc., a good reference is Mark Thomson's
   // set of slides on deep inelastic scattering (http://tinyurl.com/hcn5n6l)
-  const auto& tgt = marley_hepmc3::get_target( *event );
+  const auto& tgt = marley_hepmc3::get_target(*event);
   double m_tgt = tgt->generated_mass() * conv_factor;
   double bjorken_x = Q2 / (2. * m_tgt * qt);
   // Units cancel in the ratio, so no conv_factor is applied for y
@@ -196,17 +196,14 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
   // calculating W (the final-state invariant mass of the hadronic system)
   // since the other parameters (x, y) also take into account the 2-to-2
   // scattering reaction only.
-  const auto& res = marley_hepmc3::get_residue( *event );
+  const auto& res = marley_hepmc3::get_residue(*event);
   double hadronic_mass_W = res->generated_mass() * conv_factor;
 
   // Retrieve the MARLEY process type code for the generated event
   ProcType proc_type = ProcType::Unknown;
 
-  auto proc_attr = event->attribute< HepMC3::IntAttribute >(
-    "signal_process_id" );
-  if ( proc_attr ) {
-    proc_type = marley_hepmc3::from_nuhepmc_proc_id( proc_attr->value() );
-  }
+  auto proc_attr = event->attribute<HepMC3::IntAttribute>("signal_process_id");
+  if (proc_attr) { proc_type = marley_hepmc3::from_nuhepmc_proc_id(proc_attr->value()); }
 
   int cc_nc = simb::kCC;
   int mode = simb::kUnknownInteraction;
@@ -216,44 +213,39 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
   constexpr int NUANCE_CCQE = 1;
   constexpr int NUANCE_NCEL = 2;
   constexpr int NUANCE_NuElectron = 98;
-  if ( proc_type == ProcType::NeutrinoCC_Discrete
-    || proc_type == ProcType::NeutrinoCC_Continuum )
-  {
+  if (proc_type == ProcType::NeutrinoCC_Discrete || proc_type == ProcType::NeutrinoCC_Continuum) {
     mode = simb::kQE;
     itype += NUANCE_CCQE; // CCQE in NUANCE labeling
     struck_nucleon_pdg = marley_utils::NEUTRON;
   }
-  else if ( proc_type == ProcType::AntiNeutrinoCC_Discrete
-    || proc_type == ProcType::AntiNeutrinoCC_Continuum )
-  {
+  else if (proc_type == ProcType::AntiNeutrinoCC_Discrete ||
+           proc_type == ProcType::AntiNeutrinoCC_Continuum) {
     mode = simb::kQE;
     itype += NUANCE_CCQE; // CCQE in NUANCE labeling
     struck_nucleon_pdg = marley_utils::PROTON;
   }
-  else if ( proc_type == ProcType::NC_Discrete
-    || proc_type == ProcType::NC_Continuum )
-  {
+  else if (proc_type == ProcType::NC_Discrete || proc_type == ProcType::NC_Continuum) {
     cc_nc = simb::kNC;
     mode = simb::kQE;
     itype += NUANCE_NCEL; // NCEL in NUANCE labeling
     // Currently MARLEY doesn't label the struck nucleon for NC events (no
     // direct knockout). TODO: revisit if this changes
   }
-  else if ( proc_type == ProcType::NuElectronElastic ) {
+  else if (proc_type == ProcType::NuElectronElastic) {
     mode = simb::kNuElectronElastic;
     itype += NUANCE_NuElectron; // NCEL in NUANCE labeling
   }
 
-  truth.SetNeutrino( cc_nc,
-                     mode,
-                     itype,
-                     tgt->pid(),
-                     struck_nucleon_pdg,
-                     0, // MARLEY handles low enough energies that we shouldn't need HitQuark
+  truth.SetNeutrino(cc_nc,
+                    mode,
+                    itype,
+                    tgt->pid(),
+                    struck_nucleon_pdg,
+                    0, // MARLEY handles low enough energies that we shouldn't need HitQuark
                     hadronic_mass_W,
                     bjorken_x,
                     inelasticity_y,
-                    Q2 );
+                    Q2);
 
   // Process the MARLEY logging messages (if any) captured by our
   // stringstream and forward them to the messagefacility logger
@@ -266,45 +258,44 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
   fMarleyLogStream = std::stringstream();
 
   // If dumping has been enabled (indicated by a non-null fDumpTree), then ...
-  if ( fDumpTree ) {
+  if (fDumpTree) {
 
     // 1. Save the run information to the TFile associated with fDumpTree
     // (if it exists and the run information has not been saved previously).
     TFile* dump_file = fDumpTree->GetCurrentFile();
-    if ( dump_file ) {
+    if (dump_file) {
       auto ev_run_info = event->run_info();
-      if ( !fRunInfo && ev_run_info ) {
+      if (!fRunInfo && ev_run_info) {
         fRunInfo = ev_run_info;
-        auto temp_run_info_data = std::make_unique< HepMC3::GenRunInfoData >();
-        fRunInfo->write_data( *temp_run_info_data );
+        auto temp_run_info_data = std::make_unique<HepMC3::GenRunInfoData>();
+        fRunInfo->write_data(*temp_run_info_data);
 
-        dump_file->WriteObject( temp_run_info_data.get(), "MARLEY_run_info",
-          "WriteDelete" );
+        dump_file->WriteObject(temp_run_info_data.get(), "MARLEY_run_info", "WriteDelete");
       }
       // Also a check for a drift in the run information, which should never
       // happen under correct code execution.
-      else if ( fRunInfo != ev_run_info ) {
+      else if (fRunInfo != ev_run_info) {
         throw cet::exception("MARLEYHelper") << "Unexpected change in MARLEY"
-          << " run information";
+                                             << " run information";
       }
     }
 
     // 2. Create a branch to store the event data (if one does not already
     //    exist)
-    if ( !fEventData ) {
-      fEventData = std::make_unique< HepMC3::GenEventData >();
+    if (!fEventData) {
+      fEventData = std::make_unique<HepMC3::GenEventData>();
       // We use a bare pointer here so that the pointer-to-pointer branch
       // addressing machinery in ROOT is happy. We also use a std::unique_ptr
       // for convenient management of the associated memory.
       fEventDataPtr = fEventData.get();
-      fDumpTree->Branch( "event", &fEventDataPtr );
+      fDumpTree->Branch("event", &fEventDataPtr);
     }
 
     // 3. Update the event data associated with the branch (thus queueing
     //    it up for writing upon a call to TTree::Fill(), which is deferred
     //    to the caller rather than handled by MARLEYHelper itself).
     this->clear_event_data();
-    event->write_data( *fEventData );
+    event->write_data(*fEventData);
   }
 
   // Hand back the completed simb::MCTruth object
@@ -385,7 +376,8 @@ void evgen::MARLEYHelper::reconfigure(const fhicl::ParameterSet& pset)
 
 //------------------------------------------------------------------------------
 // Removes any prior event information in the temporary storage used for dumping
-void evgen::MARLEYHelper::clear_event_data() {
+void evgen::MARLEYHelper::clear_event_data()
+{
   fEventData->particles.clear();
   fEventData->vertices.clear();
   fEventData->links1.clear();
