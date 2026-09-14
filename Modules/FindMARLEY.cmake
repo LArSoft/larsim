@@ -16,13 +16,13 @@ unset(_fm_fphsa_extra_args)
 if (MARLEY_CONFIG_EXECUTABLE)
   if (NOT MARLEY_FOUND)
     execute_process(COMMAND ${MARLEY_CONFIG_EXECUTABLE}
-      --use-root --cxx-std --version --incdir
+      --use-root --cxx-std --version
       OUTPUT_VARIABLE _fm_config_output
       OUTPUT_STRIP_TRAILING_WHITESPACE
       ERROR_QUIET
     )
     string(REGEX MATCH
-      "^(yes|no)[ \\t]+c\\+\\+([0-9]+)[ \\t]+([^ \\t]+)[ \\t]+(.*)$"
+      "^(yes|no)[ \\t]+c\\+\\+([0-9]+)[ \\t]+([^ \\t]+)$"
       _fm_config_output
       "${_fm_config_output}")
     unset(_fm_config_output)
@@ -34,7 +34,7 @@ if (MARLEY_CONFIG_EXECUTABLE)
     endif()
     set(MARLEY_CXX_STANDARD "${CMAKE_MATCH_2}")
     set(MARLEY_VERSION "${CMAKE_MATCH_3}")
-    set(MARLEY_INCLUDE_DIR "${CMAKE_MATCH_4}")
+    set(MARLEY_INCLUDE_DIR "$ENV{MARLEY_INC}")
     set(MARLEY_LIBRARIES)
     foreach (_fm_lib IN LISTS _fm_libs)
       find_library(${_fm_lib}_LIBRARY NAMES ${_fm_lib} HINTS ENV MARLEY_LIB)
