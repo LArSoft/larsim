@@ -29,6 +29,7 @@
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenParticle.h"
 #include "HepMC3/GenRunInfo.h"
+#include "HepMC3/GenVertex.h"
 
 // MARLEY includes
 #include "marley/JSONConfig.hh"
@@ -114,6 +115,30 @@ void evgen::MARLEYHelper::add_marley_particles(
     double E = mom4.e() * conv_factor;
     TLorentzVector mom(px, py, pz, E);
 
+    // Double-check the 4-position units used in the event. If they're not
+    // cm, then we need an extra conversion factor
+    double pos4_conv_factor = 1.;
+    auto ev_pos4_unit = p->parent_event()->length_unit();
+    if (ev_pos4_unit == HepMC3::Units::MM) { pos4_conv_factor = 10.; }
+    else if (ev_pos4_unit != HepMC3::Units::CM) {
+      throw cet::exception("MARLEYHelper") << "Unrecognized length unit"
+                                           << " encountered in a MARLEY event";
+    }
+
+    // Get the 4-position of the MARLEY particle's production vertex
+    const HepMC3::FourVector& pos4_p = p->production_vertex()->position();
+
+    // Get the particle production time
+    double tp = pos4_p.t(); // particle production time in cm
+    tp *= pos4_conv_factor * 1e9 * marley_utils::hbar / marley_utils::hbar_c /
+          marley_utils::fm_to_cm; // convert to ns (units assumed in MCTruth)
+
+    // Adjust the input vertex position by the particle's production coordinates
+    TLorentzVector vtx_pos_adjusted(pos4_conv_factor * pos4_p.x() + vtx_pos.X(),
+                                    pos4_conv_factor * pos4_p.y() + vtx_pos.Y(),
+                                    pos4_conv_factor * pos4_p.z() + vtx_pos.Z(),
+                                    tp + vtx_pos.T());
+
     int status = 0; // don't track the particles in LArG4 by default
     if (track) status = 1;
 
@@ -124,7 +149,7 @@ void evgen::MARLEYHelper::add_marley_particles(
                           mass,
                           status);
 
-    part.AddTrajectoryPoint(vtx_pos, mom);
+    part.AddTrajectoryPoint(vtx_pos_adjusted, mom);
     truth.Add(part);
   }
 }
