@@ -7,43 +7,34 @@ mark_as_advanced(MARLEY_CONFIG_EXECUTABLE)
 
 set(_fm_libs MARLEY)
 set(_fm_progs marley)
-set(_fm_transitive_deps_MARLEY)
-set(_fm_transitive_deps_MARLEY_ROOT MARLEY::MARLEY ROOT::Tree ROOT::Hist ROOT::RIO)
-set(_fm_deps GSL)
+set(_fm_transitive_deps_MARLEY MARLEY::MARLEY HepMC3::HepMC3 ROOT::Tree ROOT::Hist ROOT::RIO)
+set(_fm_deps GSL HepMC3 ROOT)
 set(_fm_fp_ROOT_args COMPONENTS Core Tree Hist RIO)
 
 unset(_fm_fphsa_extra_required_vars)
 unset(_fm_fphsa_extra_args)
 if (MARLEY_CONFIG_EXECUTABLE)
-  if (MARLEY_FOUND)
-    if (MARLEY_ROOT)
-      list(PREPEND _fm_libs MARLEY_ROOT)
-      list(PREPEND _fm_deps ROOT)
-      list(APPEND _fm_progs marsum mroot)
-    endif()
-  else()
+  if (NOT MARLEY_FOUND)
     execute_process(COMMAND ${MARLEY_CONFIG_EXECUTABLE}
-      --use-root --cxx-std --version --incdir
+      --use-root --cxx-std --version
       OUTPUT_VARIABLE _fm_config_output
       OUTPUT_STRIP_TRAILING_WHITESPACE
       ERROR_QUIET
     )
     string(REGEX MATCH
-      "^(yes|no)[ \\t]+c\\+\\+([0-9]+)[ \\t]+([^ \\t]+)[ \\t]+(.*)$"
+      "^(yes|no)[ \\t]+c\\+\\+([0-9]+)[ \\t]+([^ \\t]+)$"
       _fm_config_output
       "${_fm_config_output}")
     unset(_fm_config_output)
     if (CMAKE_MATCH_1 STREQUAL "yes")
-      list(PREPEND _fm_libs MARLEY_ROOT)
-      list(PREPEND _fm_deps ROOT)
-      list(APPEND _fm_progs marsum mroot)
+      list(APPEND _fm_progs mroot)
       set(MARLEY_DEFINITIONS "USE_ROOT")
     else()
       unset(MARLEY_DEFINITIONS)
     endif()
     set(MARLEY_CXX_STANDARD "${CMAKE_MATCH_2}")
     set(MARLEY_VERSION "${CMAKE_MATCH_3}")
-    set(MARLEY_INCLUDE_DIR "${CMAKE_MATCH_4}")
+    set(MARLEY_INCLUDE_DIR "$ENV{MARLEY_INC}")
     set(MARLEY_LIBRARIES)
     foreach (_fm_lib IN LISTS _fm_libs)
       find_library(${_fm_lib}_LIBRARY NAMES ${_fm_lib} HINTS ENV MARLEY_LIB)
@@ -110,14 +101,9 @@ if (MARLEY_FOUND)
         IMPORTED_LOCATION "${${_fm_lib}_LIBRARY}"
         INTERFACE_COMPILE_FEATURES "cxx_std_${MARLEY_CXX_STANDARD}"
         INTERFACE_INCLUDE_DIRECTORIES "${MARLEY_INCLUDE_DIR}")
-      if (_fm_lib STREQUAL "MARLEY_ROOT")
+      if (_fm_transitive_deps_${_fm_lib})
         set_property(TARGET MARLEY::${_fm_lib}
-          APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
-          "${MARLEY_DEFINITIONS}")
-      endif()
-      if (_fm_transitive_deps_${fm_lib})
-        set_property(TARGET MARLEY::${_fm_lib}
-          APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${_fm_transitive_deps_${fm_lib}}")
+          APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${_fm_transitive_deps_${_fm_lib}}")
       endif()
       unset(_fm_transitive_deps_${_fm_lib})
     endif()

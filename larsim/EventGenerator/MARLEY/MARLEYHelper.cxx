@@ -3,7 +3,7 @@
 /// \brief LArSoft interface to the MARLEY (Model of Argon Reaction Low Energy
 /// Yields) supernova neutrino event generator
 ///
-/// \author Steven Gardiner <sjgardiner@ucdavis.edu>
+/// \author Steven Gardiner <gardiner@fnal.gov>
 //////////////////////////////////////////////////////////////////////////////
 
 // framework includes
@@ -17,25 +17,39 @@
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 // ROOT includes
+#include "TFile.h"
 #include "TInterpreter.h"
 #include "TROOT.h"
 
+// HepMC3 includes
+#include "HepMC3/Attribute.h"
+#include "HepMC3/Data/GenEventData.h"
+#include "HepMC3/Data/GenRunInfoData.h"
+#include "HepMC3/FourVector.h"
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenParticle.h"
+#include "HepMC3/GenRunInfo.h"
+#include "HepMC3/GenVertex.h"
+
 // MARLEY includes
-#include "marley/Event.hh"
-#include "marley/Particle.hh"
-#include "marley/RootJSONConfig.hh"
+#include "marley/JSONConfig.hh"
+#include "marley/Reaction.hh"
+#include "marley/hepmc3_utils.hh"
+
+using ProcType = marley::Reaction::ProcessType;
 
 namespace {
-  // We need to convert from MARLEY's energy units (MeV) to LArSoft's
-  // (GeV) using this conversion factor
+  // MARLEY's native energy units (MeV) may be converted to LArSoft's (GeV)
+  // using this conversion factor
   constexpr double MeV_to_GeV = 1e-3;
 }
 
 //------------------------------------------------------------------------------
 evgen::MARLEYHelper::MARLEYHelper(const fhicl::ParameterSet& pset,
                                   rndm::NuRandomService& rand_service,
-                                  const std::string& helper_name)
-  : fHelperName(helper_name)
+                                  const std::string& helper_name,
+                                  TTree* dump_tree)
+  : fHelperName(helper_name), fDumpTree(dump_tree)
 {
   // Configure MARLEY using the FHiCL parameters
   this->reconfigure(pset);
@@ -75,31 +89,55 @@ evgen::MARLEYHelper::MARLEYHelper(const fhicl::ParameterSet& pset,
   // Log initialization information from the MARLEY generator
   MF_LOG_INFO(fHelperName) << fMarleyLogStream.str();
   fMarleyLogStream = std::stringstream();
-
-  // Do any needed setup of the MARLEY class dictionaries
-  load_marley_dictionaries();
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYHelper::add_marley_particles(simb::MCTruth& truth,
-                                               const std::vector<marley::Particle*>& particles,
-                                               const TLorentzVector& vtx_pos,
-                                               bool track)
+void evgen::MARLEYHelper::add_marley_particles(
+  simb::MCTruth& truth,
+  const std::vector<std::shared_ptr<HepMC3::GenParticle>>& particles,
+  const TLorentzVector& vtx_pos,
+  double conv_factor,
+  bool track)
 {
   // Loop over the vector of MARLEY particles and add simb::MCParticle
   // versions of each of them to the MCTruth object.
-  for (const marley::Particle* p : particles) {
+  for (const auto& p : particles) {
     // Treat all of these particles as primaries, which have negative
     // track IDs by convention
     int trackID = -1 * (truth.NParticles() + 1);
 
-    int pdg = p->pdg_code();
-    double mass = p->mass() * MeV_to_GeV;
-    double px = p->px() * MeV_to_GeV;
-    double py = p->py() * MeV_to_GeV;
-    double pz = p->pz() * MeV_to_GeV;
-    double E = p->total_energy() * MeV_to_GeV;
+    int pdg = p->pid();
+    double mass = p->generated_mass() * conv_factor;
+    const auto& mom4 = p->momentum();
+    double px = mom4.px() * conv_factor;
+    double py = mom4.py() * conv_factor;
+    double pz = mom4.pz() * conv_factor;
+    double E = mom4.e() * conv_factor;
     TLorentzVector mom(px, py, pz, E);
+
+    // Double-check the 4-position units used in the event. If they're not
+    // cm, then we need an extra conversion factor
+    double pos4_conv_factor = 1.;
+    auto ev_pos4_unit = p->parent_event()->length_unit();
+    if (ev_pos4_unit == HepMC3::Units::MM) { pos4_conv_factor = 10.; }
+    else if (ev_pos4_unit != HepMC3::Units::CM) {
+      throw cet::exception("MARLEYHelper") << "Unrecognized length unit"
+                                           << " encountered in a MARLEY event";
+    }
+
+    // Get the 4-position of the MARLEY particle's production vertex
+    const HepMC3::FourVector& pos4_p = p->production_vertex()->position();
+
+    // Get the particle production time
+    double tp = pos4_p.t(); // particle production time in cm
+    tp *= pos4_conv_factor * 1e9 * marley_utils::hbar / marley_utils::hbar_c /
+          marley_utils::fm_to_cm; // convert to ns (units assumed in MCTruth)
+
+    // Adjust the input vertex position by the particle's production coordinates
+    TLorentzVector vtx_pos_adjusted(pos4_conv_factor * pos4_p.x() + vtx_pos.X(),
+                                    pos4_conv_factor * pos4_p.y() + vtx_pos.Y(),
+                                    pos4_conv_factor * pos4_p.z() + vtx_pos.Z(),
+                                    tp + vtx_pos.T());
 
     int status = 0; // don't track the particles in LArG4 by default
     if (track) status = 1;
@@ -111,60 +149,128 @@ void evgen::MARLEYHelper::add_marley_particles(simb::MCTruth& truth,
                           mass,
                           status);
 
-    part.AddTrajectoryPoint(vtx_pos, mom);
+    part.AddTrajectoryPoint(vtx_pos_adjusted, mom);
     truth.Add(part);
   }
 }
 
 //------------------------------------------------------------------------------
-simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos,
-                                                  marley::Event* marley_event)
+simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
 {
   simb::MCTruth truth;
 
   truth.SetOrigin(simb::kSuperNovaNeutrino);
 
-  marley::Event event = fMarleyGenerator->create_event();
+  auto event = fMarleyGenerator->create_event();
+
+  // Double-check the energy units used in the event. If they're in MeV (the
+  // usual case for MARLEY), then we will need to convert to the GeV units that
+  // simb::MCTruth expects.
+  double conv_factor = 1.;
+  auto ev_energy_unit = event->momentum_unit();
+  if (ev_energy_unit == HepMC3::Units::MEV) { conv_factor = MeV_to_GeV; }
+  else if (ev_energy_unit != HepMC3::Units::GEV) {
+    throw cet::exception("MARLEYHelper") << "Unrecognized energy unit"
+                                         << " encountered in a MARLEY event";
+  }
+
+  // MARLEY v2 follows the NuHepMC standard
+  // (https://doi.org/10.21468/SciPostPhysCodeb.57) in labeling initial
+  // particles with either the "projectile" or "target" status codes. We
+  // collect the projectile(s) first and then append the target(s).
+  auto initial_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_PROJECTILE_STATUS, *event);
+
+  auto target_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_TARGET_STATUS, *event);
+
+  for (const auto& t : target_particles)
+    initial_particles.push_back(t);
+
+  // Final-state particles have a single status code
+  auto final_particles =
+    marley_hepmc3::get_particles_with_status(marley_hepmc3::NUHEPMC_FINAL_STATE_STATUS, *event);
 
   // Add the initial and final state particles to the MCTruth object.
-  add_marley_particles(truth, event.get_initial_particles(), vtx_pos, false);
-  add_marley_particles(truth, event.get_final_particles(), vtx_pos, true);
+  add_marley_particles(truth, initial_particles, vtx_pos, conv_factor, false);
+  add_marley_particles(truth, final_particles, vtx_pos, conv_factor, true);
 
   // calculate a few parameters for the call to SetNeutrino
-  const marley::Particle& nu = event.projectile();
-  const marley::Particle& lep = event.ejectile();
-  double qx = nu.px() - lep.px();
-  double qy = nu.py() - lep.py();
-  double qz = nu.pz() - lep.pz();
-  double Enu = nu.total_energy();
-  double Elep = lep.total_energy();
-  double Q2 = qx * qx + qy * qy + qz * qz - std::pow(Enu - Elep, 2);
+  const auto& nu = marley_hepmc3::get_projectile(*event);
+  const auto& p4_nu = nu->momentum();
+
+  const auto& lep = marley_hepmc3::get_ejectile(*event);
+  const auto& p4_lep = lep->momentum();
+
+  double qt = (p4_nu.e() - p4_lep.e()) * conv_factor;
+  double qx = (p4_nu.px() - p4_lep.px()) * conv_factor;
+  double qy = (p4_nu.py() - p4_lep.py()) * conv_factor;
+  double qz = (p4_nu.pz() - p4_lep.pz()) * conv_factor;
+
+  double Q2 = qx * qx + qy * qy + qz * qz - qt * qt;
 
   // For definitions of Bjorken x, etc., a good reference is Mark Thomson's
   // set of slides on deep inelastic scattering (http://tinyurl.com/hcn5n6l)
-  double bjorken_x = Q2 / (2 * event.target().mass() * (Enu - Elep));
-  double inelasticity_y = 1. - Elep / Enu;
+  const auto& tgt = marley_hepmc3::get_target(*event);
+  double m_tgt = tgt->generated_mass() * conv_factor;
+  double bjorken_x = Q2 / (2. * m_tgt * qt);
+  // Units cancel in the ratio, so no conv_factor is applied for y
+  double inelasticity_y = 1. - p4_lep.e() / p4_nu.e();
 
   // Include the initial excitation energy of the final-state nucleus when
   // calculating W (the final-state invariant mass of the hadronic system)
-  // since the other parameters (X, Y) also take into account the 2-2
+  // since the other parameters (x, y) also take into account the 2-to-2
   // scattering reaction only.
-  const marley::Particle& res = event.residue();
-  double hadronic_mass_W = res.mass() + event.Ex();
+  const auto& res = marley_hepmc3::get_residue(*event);
+  double hadronic_mass_W = res->generated_mass() * conv_factor;
 
-  // TODO: do a more careful job of setting the parameters here
-  truth.SetNeutrino(simb::kCC,                 // change when MARLEY can handle NC
-                    simb::kUnknownInteraction, // not sure what the mode should be
-                    simb::kUnknownInteraction, // not sure what the interaction type should be
-                    marley_utils::get_nucleus_pid(18, 40), // Ar-40 PDG code
-                    marley_utils::NEUTRON,                 // nucleon PDG
+  // Retrieve the MARLEY process type code for the generated event
+  ProcType proc_type = ProcType::Unknown;
+
+  auto proc_attr = event->attribute<HepMC3::IntAttribute>("signal_process_id");
+  if (proc_attr) { proc_type = marley_hepmc3::from_nuhepmc_proc_id(proc_attr->value()); }
+
+  int cc_nc = simb::kCC;
+  int mode = simb::kUnknownInteraction;
+  int itype = simb::kNuanceOffset;
+  int struck_nucleon_pdg = 0;
+
+  constexpr int NUANCE_CCQE = 1;
+  constexpr int NUANCE_NCEL = 2;
+  constexpr int NUANCE_NuElectron = 98;
+  if (proc_type == ProcType::NeutrinoCC_Discrete || proc_type == ProcType::NeutrinoCC_Continuum) {
+    mode = simb::kQE;
+    itype += NUANCE_CCQE; // CCQE in NUANCE labeling
+    struck_nucleon_pdg = marley_utils::NEUTRON;
+  }
+  else if (proc_type == ProcType::AntiNeutrinoCC_Discrete ||
+           proc_type == ProcType::AntiNeutrinoCC_Continuum) {
+    mode = simb::kQE;
+    itype += NUANCE_CCQE; // CCQE in NUANCE labeling
+    struck_nucleon_pdg = marley_utils::PROTON;
+  }
+  else if (proc_type == ProcType::NC_Discrete || proc_type == ProcType::NC_Continuum) {
+    cc_nc = simb::kNC;
+    mode = simb::kQE;
+    itype += NUANCE_NCEL; // NCEL in NUANCE labeling
+    // Currently MARLEY doesn't label the struck nucleon for NC events (no
+    // direct knockout). TODO: revisit if this changes
+  }
+  else if (proc_type == ProcType::NuElectronElastic) {
+    mode = simb::kNuElectronElastic;
+    itype += NUANCE_NuElectron; // NCEL in NUANCE labeling
+  }
+
+  truth.SetNeutrino(cc_nc,
+                    mode,
+                    itype,
+                    tgt->pid(),
+                    struck_nucleon_pdg,
                     0, // MARLEY handles low enough energies that we shouldn't need HitQuark
-                    hadronic_mass_W * MeV_to_GeV,
-                    bjorken_x,      // dimensionless
-                    inelasticity_y, // dimensionless
-                    Q2 * std::pow(MeV_to_GeV, 2));
-
-  if (marley_event) *marley_event = event;
+                    hadronic_mass_W,
+                    bjorken_x,
+                    inelasticity_y,
+                    Q2);
 
   // Process the MARLEY logging messages (if any) captured by our
   // stringstream and forward them to the messagefacility logger
@@ -176,6 +282,48 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos,
   // Reset the MARLEY log stream
   fMarleyLogStream = std::stringstream();
 
+  // If dumping has been enabled (indicated by a non-null fDumpTree), then ...
+  if (fDumpTree) {
+
+    // 1. Save the run information to the TFile associated with fDumpTree
+    // (if it exists and the run information has not been saved previously).
+    TFile* dump_file = fDumpTree->GetCurrentFile();
+    if (dump_file) {
+      auto ev_run_info = event->run_info();
+      if (!fRunInfo && ev_run_info) {
+        fRunInfo = ev_run_info;
+        auto temp_run_info_data = std::make_unique<HepMC3::GenRunInfoData>();
+        fRunInfo->write_data(*temp_run_info_data);
+
+        dump_file->WriteObject(temp_run_info_data.get(), "MARLEY_run_info", "WriteDelete");
+      }
+      // Also a check for a drift in the run information, which should never
+      // happen under correct code execution.
+      else if (fRunInfo != ev_run_info) {
+        throw cet::exception("MARLEYHelper") << "Unexpected change in MARLEY"
+                                             << " run information";
+      }
+    }
+
+    // 2. Create a branch to store the event data (if one does not already
+    //    exist)
+    if (!fEventData) {
+      fEventData = std::make_unique<HepMC3::GenEventData>();
+      // We use a bare pointer here so that the pointer-to-pointer branch
+      // addressing machinery in ROOT is happy. We also use a std::unique_ptr
+      // for convenient management of the associated memory.
+      fEventDataPtr = fEventData.get();
+      fDumpTree->Branch("event", &fEventDataPtr);
+    }
+
+    // 3. Update the event data associated with the branch (thus queueing
+    //    it up for writing upon a call to TTree::Fill(), which is deferred
+    //    to the caller rather than handled by MARLEYHelper itself).
+    this->clear_event_data();
+    event->write_data(*fEventData);
+  }
+
+  // Hand back the completed simb::MCTruth object
   return truth;
 }
 
@@ -245,53 +393,21 @@ void evgen::MARLEYHelper::reconfigure(const fhicl::ParameterSet& pset)
   MF_LOG_INFO("MARLEYHelper " + fHelperName) << "MARLEY will now use"
                                                 " the JSON configuration\n"
                                              << json.dump_string() << '\n';
-  marley::RootJSONConfig config(json);
+  marley::JSONConfig config(json);
 
   // Create a new marley::Generator object based on the current configuration
   fMarleyGenerator = std::make_unique<marley::Generator>(config.create_generator());
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYHelper::load_marley_dictionaries()
+// Removes any prior event information in the temporary storage used for dumping
+void evgen::MARLEYHelper::clear_event_data()
 {
-  static bool already_loaded_marley_dict = false;
-
-  if (already_loaded_marley_dict) return;
-
-  // Current (24 July 2016) versions of ROOT 6 require runtime
-  // loading of headers for custom classes in order to use
-  // dictionaries correctly. If we're running ROOT 6+, do the
-  // loading here, and give the user guidance if there are any
-  // problems.
-  //
-  // This is the same technique used in the MARLEY source code
-  // for the executable (src/marley.cc). If you change how this
-  // code works, please sync changes with the executable as well.
-  if (gROOT->GetVersionInt() >= 60000) {
-    MF_LOG_INFO("MARLEYHelper " + fHelperName)
-      << "ROOT 6 or greater"
-      << " detected. Loading class information\nfrom headers"
-      << " \"marley/Particle.hh\" and \"marley/Event.hh\"";
-    TInterpreter::EErrorCode* ec = new TInterpreter::EErrorCode();
-    gInterpreter->ProcessLine("#include \"marley/Particle.hh\"", ec);
-    if (*ec != 0)
-      throw cet::exception("MARLEYHelper " + fHelperName)
-        << "Error loading MARLEY header Particle.hh. For MARLEY headers stored"
-        << " in /path/to/include/marley/, please add /path/to/include"
-        << " to your ROOT_INCLUDE_PATH environment variable and"
-        << " try again.";
-    gInterpreter->ProcessLine("#include \"marley/Event.hh\"");
-    if (*ec != 0)
-      throw cet::exception("MARLEYHelper")
-        << "Error loading"
-        << " MARLEY header Event.hh. For MARLEY headers stored in"
-        << " /path/to/include/marley/, please add /path/to/include"
-        << " to your ROOT_INCLUDE_PATH environment variable and"
-        << " try again.";
-  }
-
-  // No further action is required for ROOT 5 because the compiled
-  // dictionaries (which are linked to this algorithm) contain all of
-  // the needed information
-  already_loaded_marley_dict = true;
+  fEventData->particles.clear();
+  fEventData->vertices.clear();
+  fEventData->links1.clear();
+  fEventData->links2.clear();
+  fEventData->attribute_id.clear();
+  fEventData->attribute_name.clear();
+  fEventData->attribute_string.clear();
 }
