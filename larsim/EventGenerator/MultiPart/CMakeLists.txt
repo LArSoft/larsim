@@ -22,6 +22,7 @@ cet_build_plugin( MultiPartRain art::module
             ROOT::EG
         )
 
+
 cet_build_plugin( MultiPartVertex art::module
         LIBRARIES PRIVATE
             larcorealg::Geometry
@@ -45,6 +46,13 @@ cet_build_plugin( MultiPartVertex art::module
             canvas::canvas
             ROOT::EG
         )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12.5")
+    # GCC 12.5 (and above) aggressively/spuriously warns about array-bounds issues.
+    target_compile_options(larsim_EventGenerator_MultiPart_MultiPartVertex_module
+                           PRIVATE "-Wno-error=array-bounds")
+endif()
 
 install_fhicl()
 install_source()
