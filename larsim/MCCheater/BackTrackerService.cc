@@ -261,6 +261,14 @@ namespace cheat {
   }
 
   //---------------------------------------------------------------------
+  double BackTrackerService::HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                                                 std::set<int> const& trackIds,
+                                                 std::vector<recob::Hit const*> const& hits) const
+  {
+    return BackTracker::HitCollectionPurity(clockData, trackIds, hits);
+  }
+
+  //---------------------------------------------------------------------
   double BackTrackerService::HitChargeCollectionPurity(
     detinfo::DetectorClocksData const& clockData,
     std::set<int> const& trackIds,
@@ -276,6 +284,16 @@ namespace cheat {
     std::vector<art::Ptr<recob::Hit>> const& hits,
     std::vector<art::Ptr<recob::Hit>> const& allhits,
     geo::View_t const& view) const
+  {
+    return BackTracker::HitCollectionEfficiency(clockData, trackIds, hits, allhits, view);
+  }
+
+  //---------------------------------------------------------------------
+  double BackTrackerService::HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                                     std::set<int> const& trackIds,
+                                                     std::vector<recob::Hit const*> const& hits,
+                                                     std::vector<recob::Hit const*> const& allhits,
+                                                     geo::View_t const& view) const
   {
     return BackTracker::HitCollectionEfficiency(clockData, trackIds, hits, allhits, view);
   }
@@ -307,6 +325,14 @@ namespace cheat {
   std::set<int> BackTrackerService::GetSetOfTrackIds(
     detinfo::DetectorClocksData const& clockData,
     std::vector<art::Ptr<recob::Hit>> const& hits) const
+  {
+    return BackTracker::GetSetOfTrackIds(clockData, hits);
+  }
+
+  //---------------------------------------------------------------------
+  std::set<int> BackTrackerService::GetSetOfTrackIds(
+    detinfo::DetectorClocksData const& clockData,
+    std::vector<recob::Hit const*> const& hits) const
   {
     return BackTracker::GetSetOfTrackIds(clockData, hits);
   }

@@ -118,6 +118,9 @@ namespace cheat {
     double HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
                                std::set<int> const& trackIds,
                                std::vector<art::Ptr<recob::Hit>> const& hits) const;
+    double HitCollectionPurity(detinfo::DetectorClocksData const& clockData,
+                               std::set<int> const& trackIds,
+                               std::vector<recob::Hit const*> const& hits) const;
     double HitChargeCollectionPurity(detinfo::DetectorClocksData const& clockData,
                                      std::set<int> const& trackIds,
                                      std::vector<art::Ptr<recob::Hit>> const& hits) const;
@@ -126,6 +129,11 @@ namespace cheat {
                                    std::set<int> const& trackIds,
                                    std::vector<art::Ptr<recob::Hit>> const& hits,
                                    std::vector<art::Ptr<recob::Hit>> const& allhits,
+                                   geo::View_t const& view) const;
+    double HitCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
+                                   std::set<int> const& trackIds,
+                                   std::vector<recob::Hit const*> const& hits,
+                                   std::vector<recob::Hit const*> const& allhits,
                                    geo::View_t const& view) const;
     double HitChargeCollectionEfficiency(detinfo::DetectorClocksData const& clockData,
                                          std::set<int> const& trackIds,
@@ -138,6 +146,8 @@ namespace cheat {
 
     std::set<int> GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
                                    std::vector<art::Ptr<recob::Hit>> const& hits) const;
+    std::set<int> GetSetOfTrackIds(detinfo::DetectorClocksData const& clockData,
+                                   std::vector<recob::Hit const*> const& hits) const;
     std::set<int> GetSetOfEveIds(detinfo::DetectorClocksData const& clockData,
                                  std::vector<art::Ptr<recob::Hit>> const& hits) const;
 

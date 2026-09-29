@@ -5,6 +5,17 @@
 //
 // Generated at Tue Dec 13 15:48:59 2016 by Kazuhiro Terao using artmod
 // from cetpkgsupport v1_11_00.
+//
+// Modified to support beam-mode hemisphere start position:
+//   particles are generated on the surface of a hemisphere of configurable
+//   radius, centered on a beam entrance point, with the flat face of the
+//   hemisphere flush with the detector entrance.  The momentum direction
+//   is always aimed from the surface point back through the entrance and
+//   into the detector.
+//
+// Further modified: allow random target point around beam entrance
+//   (BeamTargetRadius) so that particles are aimed at a random point
+//   within a disk of that radius, simulating a finite beam spot.
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -47,6 +58,28 @@ struct PartGenParam {
   double weight;
 };
 
+struct ProfileParam {
+  std::string name;
+  double profile_weight;
+  size_t multi_min;
+  size_t multi_max;
+
+  int
+    incoming_nu_pdg; // Optional truth-record annotation (e.g. 12 for nue, 14 for numu). Default: 0 (unset)
+  int
+    interaction_mode; // Optional truth-record annotation: simb::kCC (0) or simb::kNC (1). Default: simb::kCC
+
+  // Required Particle Settings
+  bool has_required_particle;
+  std::vector<int> required_pdg;
+  std::vector<double> required_mass;
+  std::array<double, 2> required_range; // Stores min/max bounds
+  bool required_use_mom;                // true if MomRange, false if KERange
+
+  // Particle Pool Configuration
+  std::vector<PartGenParam> particle_param_v;
+};
+
 class MultiPartVertex;
 
 class MultiPartVertex : public art::EDProducer {
@@ -70,12 +103,22 @@ public:
   TVector3 GenPosition();
   TVector3 GenBoost();
 
+  // Beam-mode generators
+  TVector3 GenBeamEntrancePosition();
+  TVector3 GenBeamTarget() const;
+  std::array<double, 3U> GenBeamDirection(const TVector3& start_pos, const TVector3& target) const;
+
   std::array<double, 3U> extractDirection() const;
   TVector3 GenMomentum(const PartGenParam& param, const double& mass);
   TVector3 GenMomentum(const PartGenParam& param, const double& mass, bool& same_range);
+  TVector3 GenMomentum(const PartGenParam& param,
+                       const double& mass,
+                       bool& same_range,
+                       const std::array<double, 3>& dir);
 
   double GenMomentumSF(const double& sf, const double& mass, const double& p);
-  std::vector<size_t> GenParticles() const;
+  std::vector<size_t> GenParticles(const std::vector<PartGenParam>& pool,
+                                   int target_hadron_multiplicity) const;
 
 private:
   CLHEP::HepRandomEngine& fFlatEngine;
@@ -85,8 +128,8 @@ private:
   // exception thrower
   void abort(const std::string msg) const;
 
-  // array of particle info for generation
-  std::vector<PartGenParam> _param_v;
+  // array of interaction profiles for generation
+  std::vector<ProfileParam> _profiles_v;
 
   // g4 time of generation
   double _t0;
@@ -100,10 +143,6 @@ private:
   // TPC range
   std::vector<std::vector<unsigned short>> _tpc_v;
 
-  // multiplicity constraint
-  size_t _multi_min;
-  size_t _multi_max;
-
   // Range of boosts
   std::array<double, 2> _gamma_beta_range;
 
@@ -112,6 +151,28 @@ private:
 
   bool _use_boost;
   bool _revert;
+
+  std::vector<PartGenParam> parseParticlePool(const fhicl::ParameterSet& pool_ps,
+                                              const std::string& profile_name) const;
+
+  // ---------------------------------------------------------------
+  // Beam-mode members
+  // ---------------------------------------------------------------
+  bool _beam_mode;
+
+  // Centre of the hemisphere = the nominal beam entrance point on the
+  // detector face, in LArSoft cm coordinates.
+  std::array<double, 3> _beam_entrance;
+
+  // Radius of the hemisphere [cm].  Particles are placed on this surface.
+  double _beam_radius;
+
+  // Unit vector pointing *into* the detector from the entrance face.
+  std::array<double, 3> _beam_inward_dir;
+
+  // Radius (in cm) of the disk in which the random target point is generated
+  // around _beam_entrance.  If zero, target = _beam_entrance exactly.
+  double _beam_target_radius;
 };
 
 void MultiPartVertex::abort(const std::string msg) const
@@ -121,6 +182,85 @@ void MultiPartVertex::abort(const std::string msg) const
 }
 
 MultiPartVertex::~MultiPartVertex() {}
+
+std::vector<PartGenParam> MultiPartVertex::parseParticlePool(const fhicl::ParameterSet& pool_ps,
+                                                             const std::string& profile_name) const
+{
+  std::vector<PartGenParam> particle_param_v;
+
+  auto const pdg_v = pool_ps.get<std::vector<std::vector<int>>>("PDGCode");
+  auto const minmult_v = pool_ps.get<std::vector<unsigned short>>("MinMulti");
+  auto const maxmult_v = pool_ps.get<std::vector<unsigned short>>("MaxMulti");
+  auto const weight_v = pool_ps.get<std::vector<double>>("ProbWeight");
+
+  auto kerange_v = pool_ps.get<std::vector<std::vector<double>>>("KERange", {});
+  auto momrange_v = pool_ps.get<std::vector<std::vector<double>>>("MomRange", {});
+
+  if ((kerange_v.empty() && momrange_v.empty()) || (!kerange_v.empty() && !momrange_v.empty())) {
+    this->abort("Only one of KERange or MomRange must be empty in pool for profile " +
+                profile_name);
+  }
+
+  bool use_mom = false;
+  if (kerange_v.empty()) {
+    kerange_v = momrange_v;
+    use_mom = true;
+  }
+
+  if (pdg_v.size() != kerange_v.size() || pdg_v.size() != minmult_v.size() ||
+      pdg_v.size() != maxmult_v.size() || pdg_v.size() != weight_v.size())
+    this->abort("Configuration parameters have incompatible lengths in pool for profile " +
+                profile_name);
+
+  auto db = TDatabasePDG::Instance();
+  for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
+    auto const& pdg = pdg_v[idx];
+    auto const& kerange = kerange_v[idx];
+    if (pdg.empty()) this->abort("PDG code not given in pool for profile " + profile_name);
+    if (kerange.size() != 2)
+      this->abort("Incompatible length @ KE/Mom vector in pool for profile " + profile_name);
+
+    PartGenParam param;
+    param.use_mom = use_mom;
+    param.pdg = pdg;
+    param.kerange[0] = kerange[0];
+    param.kerange[1] = kerange[1];
+    param.mass.resize(pdg.size());
+    if (minmult_v[idx] > maxmult_v[idx]) {
+      this->abort("MinMulti > MaxMulti for species at index " + std::to_string(idx) +
+                  " in pool for profile " + profile_name);
+    }
+    param.multi[0] = minmult_v[idx];
+    param.multi[1] = maxmult_v[idx];
+    param.weight = weight_v[idx];
+    for (size_t i = 0; i < pdg.size(); ++i) {
+      auto particle = db->GetParticle(param.pdg[i]);
+      if (!particle) {
+        this->abort("Unknown PDG code: " + std::to_string(param.pdg[i]) + " in pool for profile " +
+                    profile_name);
+      }
+      param.mass[i] = particle->Mass();
+    }
+
+    if (kerange[0] < 0 || kerange[1] < 0)
+      this->abort("Negative energy is not allowed in pool for profile " + profile_name);
+    if (param.kerange[0] > param.kerange[1])
+      this->abort("KE/Mom range has no phase space in pool for profile " + profile_name);
+
+    if (_debug > 0) {
+      std::cout << "Profile " << profile_name << " particle pool (PDG";
+      for (auto const& p_code : param.pdg)
+        std::cout << " " << p_code;
+      std::cout << ")" << std::endl
+                << (param.use_mom ? "    Mom range ....... " : "    KE range ....... ")
+                << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl;
+    }
+
+    particle_param_v.push_back(std::move(param));
+  }
+
+  return particle_param_v;
+}
 
 MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   : EDProducer(p)
@@ -145,61 +285,176 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
   _t0_sigma = p.get<double>("G4TimeJitter");
   if (_t0_sigma < 0) this->abort("Cannot have a negative value for G4 time jitter");
 
-  _multi_min = p.get<size_t>("MultiMin");
-  _multi_max = p.get<size_t>("MultiMax");
+  // ---------------------------------------------------------------
+  // Beam-mode configuration
+  // ---------------------------------------------------------------
+  _beam_mode = p.get<bool>("BeamMode", false);
+  _beam_radius = p.get<double>("BeamRadius", 10.0); // cm
+  _beam_target_radius = p.get<double>("BeamTargetRadius", 0.0);
+  if (_beam_target_radius < 0.0) this->abort("BeamTargetRadius must be >= 0");
 
+  auto beam_entrance_v = p.get<std::vector<double>>("BeamEntrance", {94.8, 142.6, 0.7});
+  if (beam_entrance_v.size() != 3)
+    this->abort("BeamEntrance must have exactly 3 elements [x, y, z]");
+  _beam_entrance = {beam_entrance_v[0], beam_entrance_v[1], beam_entrance_v[2]};
+
+  auto beam_inward_v = p.get<std::vector<double>>("BeamInwardDirection", {0.0, 0.0, 1.0});
+  if (beam_inward_v.size() != 3) this->abort("BeamInwardDirection must have exactly 3 elements");
+  double norm =
+    std::sqrt(beam_inward_v[0] * beam_inward_v[0] + beam_inward_v[1] * beam_inward_v[1] +
+              beam_inward_v[2] * beam_inward_v[2]);
+  if (norm < 1e-9) this->abort("BeamInwardDirection has zero magnitude!");
+  _beam_inward_dir = {beam_inward_v[0] / norm, beam_inward_v[1] / norm, beam_inward_v[2] / norm};
+
+  if (_beam_radius <= 0.) this->abort("BeamRadius must be positive!");
+
+  if (_beam_mode && _debug > 0) {
+    std::cout << "[MultiPartVertex] BeamMode ENABLED\n"
+              << "  Entrance  : (" << _beam_entrance[0] << ", " << _beam_entrance[1] << ", "
+              << _beam_entrance[2] << ") cm\n"
+              << "  Radius    : " << _beam_radius << " cm\n"
+              << "  Inward dir: (" << _beam_inward_dir[0] << ", " << _beam_inward_dir[1] << ", "
+              << _beam_inward_dir[2] << ")\n"
+              << "  Target radius : " << _beam_target_radius << " cm\n";
+  }
+
+  // ---------------------------------------------------------------
+  // Original TPC-based geometry (still required by the constructor
+  // even in beam mode, for the particle parameter sanity checks)
+  // ---------------------------------------------------------------
   _tpc_v = p.get<std::vector<std::vector<unsigned short>>>("TPCRange");
   auto const xrange = p.get<std::vector<double>>("XRange");
   auto const yrange = p.get<std::vector<double>>("YRange");
   auto const zrange = p.get<std::vector<double>>("ZRange");
 
-  auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
   _gamma_beta_range =
     p.get<std::array<double, 2>>("GammaBetaRange", {0.0, 0.0}); // _gamma_beta denotes gamma * beta
+  if (_gamma_beta_range[0] > _gamma_beta_range[1]) { this->abort("Incompatible boost range!"); }
 
-  auto const pdg_v = part_cfg.get<std::vector<std::vector<int>>>("PDGCode");
-  auto const minmult_v = part_cfg.get<std::vector<unsigned short>>("MinMulti");
-  auto const maxmult_v = part_cfg.get<std::vector<unsigned short>>("MaxMulti");
-  auto const weight_v = part_cfg.get<std::vector<double>>("ProbWeight");
+  if (p.has_key("InteractionProfiles")) {
+    auto const profile_ps_v = p.get<std::vector<fhicl::ParameterSet>>("InteractionProfiles");
+    for (auto const& prof_ps : profile_ps_v) {
+      ProfileParam profile;
+      profile.name = prof_ps.get<std::string>("Name");
+      profile.profile_weight = prof_ps.get<double>("ProbabilityWeight");
+      if (profile.profile_weight < 0.0) {
+        this->abort("ProbabilityWeight must be non-negative in profile " + profile.name);
+      }
+      if (profile.profile_weight == 0.0) {
+        mf::LogWarning("MultiPartVertex")
+          << "Profile " << profile.name
+          << " has ProbabilityWeight set to 0.0 and will never be selected.";
+      }
 
-  auto kerange_v = part_cfg.get<std::vector<std::vector<double>>>("KERange");
-  auto momrange_v = part_cfg.get<std::vector<std::vector<double>>>("MomRange");
+      profile.multi_min = prof_ps.get<size_t>("MultiMin");
+      profile.multi_max = prof_ps.get<size_t>("MultiMax");
+      profile.incoming_nu_pdg = prof_ps.get<int>("IncomingNuPDG", 0);
+      profile.interaction_mode = prof_ps.get<int>("InteractionMode", simb::kCC);
 
-  if ((kerange_v.empty() && momrange_v.empty()) || (!kerange_v.empty() && !momrange_v.empty())) {
-    this->abort("Only one of KERange or MomRange must be empty!");
+      // Required Particle Pool
+      profile.has_required_particle = prof_ps.has_key("RequiredParticlePool");
+      if (profile.has_required_particle) {
+        auto const req_ps = prof_ps.get<fhicl::ParameterSet>("RequiredParticlePool");
+        profile.required_pdg = req_ps.get<std::vector<int>>("PDGCode");
+        if (profile.required_pdg.empty()) {
+          this->abort("RequiredParticlePool PDGCode must not be empty in profile " + profile.name);
+        }
+
+        auto req_kerange_v = req_ps.get<std::vector<double>>("KERange", {});
+        auto req_momrange_v = req_ps.get<std::vector<double>>("MomRange", {});
+        if ((req_kerange_v.empty() && req_momrange_v.empty()) ||
+            (!req_kerange_v.empty() && !req_momrange_v.empty())) {
+          this->abort(
+            "Only one of KERange or MomRange must be empty for RequiredParticlePool in profile " +
+            profile.name);
+        }
+        profile.required_use_mom = req_kerange_v.empty();
+        auto const& req_range = profile.required_use_mom ? req_momrange_v : req_kerange_v;
+        if (req_range.size() != 2) {
+          this->abort("Incompatible length @ required particle energy/momentum range in profile " +
+                      profile.name);
+        }
+        profile.required_range[0] = req_range[0];
+        profile.required_range[1] = req_range[1];
+        if (profile.required_range[0] > profile.required_range[1]) {
+          this->abort("RequiredParticlePool range has no phase space in profile " + profile.name);
+        }
+        if (profile.required_range[0] < 0 || profile.required_range[1] < 0) {
+          this->abort(
+            "Negative energy/momentum is not allowed in RequiredParticlePool in profile " +
+            profile.name);
+        }
+
+        // Populate mass
+        auto db = TDatabasePDG::Instance();
+        profile.required_mass.resize(profile.required_pdg.size());
+        for (size_t i = 0; i < profile.required_pdg.size(); ++i) {
+          auto particle = db->GetParticle(profile.required_pdg[i]);
+          if (!particle) {
+            this->abort("Unknown PDG code in RequiredParticlePool: " +
+                        std::to_string(profile.required_pdg[i]));
+          }
+          profile.required_mass[i] = particle->Mass();
+        }
+      }
+
+      // Particle Pool
+      auto const particle_ps = prof_ps.get<fhicl::ParameterSet>("ParticlePool");
+      profile.particle_param_v = parseParticlePool(particle_ps, profile.name);
+
+      // Multiplicity validation
+      size_t particle_multi_min = 0;
+      for (auto const& param : profile.particle_param_v) {
+        particle_multi_min += param.multi[0];
+      }
+      size_t min_total_mult = particle_multi_min + (profile.has_required_particle ? 1 : 0);
+      if (profile.multi_min < min_total_mult) {
+        this->abort("MultiMin (" + std::to_string(profile.multi_min) +
+                    ") is less than the sum of minimum multiplicities (" +
+                    std::to_string(min_total_mult) + ") for profile " + profile.name);
+      }
+      if (profile.multi_max < profile.multi_min) {
+        this->abort("Overall MultiMax < overall MultiMin in profile " + profile.name);
+      }
+
+      _profiles_v.push_back(std::move(profile));
+    }
+  }
+  else {
+    // Fallback
+    ProfileParam profile;
+    profile.name = "LegacyDefault";
+    profile.profile_weight = 1.0;
+    profile.multi_min = p.get<size_t>("MultiMin");
+    profile.multi_max = p.get<size_t>("MultiMax");
+    profile.incoming_nu_pdg = 16; // Legacy defaults to tau neutrino
+    profile.interaction_mode = 0; // Legacy default mode is CC (simb::kCC)
+    profile.has_required_particle = false;
+
+    auto const part_cfg = p.get<fhicl::ParameterSet>("ParticleParameter");
+    profile.particle_param_v = parseParticlePool(part_cfg, profile.name);
+
+    size_t particle_multi_min = 0;
+    for (auto const& param : profile.particle_param_v) {
+      particle_multi_min += param.multi[0];
+    }
+    if (profile.multi_min < particle_multi_min) {
+      this->abort("MultiMin (" + std::to_string(profile.multi_min) +
+                  ") is less than the sum of minimum multiplicities (" +
+                  std::to_string(particle_multi_min) + ") for fallback profile");
+    }
+    if (profile.multi_max < profile.multi_min) {
+      this->abort("Overall MultiMax < overall MultiMin for fallback profile");
+    }
+
+    _profiles_v.push_back(std::move(profile));
   }
 
-  bool use_mom = false;
-  if (kerange_v.empty()) {
-    kerange_v = momrange_v;
-    use_mom = true;
-  }
-  // sanity check
-  if (pdg_v.size() != kerange_v.size() || pdg_v.size() != minmult_v.size() ||
-      pdg_v.size() != maxmult_v.size() || pdg_v.size() != weight_v.size())
-    this->abort("configuration parameters have incompatible lengths!");
+  if (_profiles_v.empty()) { this->abort("No interaction profiles loaded!"); }
 
-  // further sanity check (1 more depth for some double-array)
-  for (auto const& r : pdg_v) {
-    if (r.empty()) this->abort("PDG code not given!");
-  }
-  for (auto const& r : kerange_v) {
-    if (r.size() != 2) this->abort("Incompatible legnth @ KE vector!");
-  }
-  if (_gamma_beta_range[0] > _gamma_beta_range[1]) this->abort("Incompatible boost range!");
-
-  size_t multi_min = 0;
-  for (size_t idx = 0; idx < minmult_v.size(); ++idx) {
-    if (minmult_v[idx] > maxmult_v[idx]) this->abort("Particle MinMulti > Particle MaxMulti!");
-    if (minmult_v[idx] > _multi_max) this->abort("Particle MinMulti > overall MultiMax!");
-    multi_min += minmult_v[idx];
-  }
-  _multi_min = std::max(_multi_min, multi_min);
-  if (_multi_max < _multi_min) this->abort("Overall MultiMax <= overall MultiMin!");
-
-  if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible legnth @ X vector!");
-  if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible legnth @ Y vector!");
-  if (!zrange.empty() && zrange.size() > 2) this->abort("Incompatible legnth @ Z vector!");
+  if (!xrange.empty() && xrange.size() > 2) this->abort("Incompatible length @ X vector!");
+  if (!yrange.empty() && yrange.size() > 2) this->abort("Incompatible length @ Y vector!");
+  if (!zrange.empty() && zrange.size() > 2) this->abort("Incompatible length @ Z vector!");
 
   // slight modification from mpv: define the overall volume across specified TPC IDs + range options
   double xmin, xmax, ymin, ymax, zmin, zmax;
@@ -266,42 +521,29 @@ MultiPartVertex::MultiPartVertex(fhicl::ParameterSet const& p)
               << "Z " << _zrange[0] << " => " << _zrange[1] << std::endl;
   }
 
-  // register
-  auto db = TDatabasePDG::Instance();
-  for (size_t idx = 0; idx < pdg_v.size(); ++idx) {
-    auto const& pdg = pdg_v[idx];
-    auto const& kerange = kerange_v[idx];
-    PartGenParam param;
-    param.use_mom = use_mom;
-    param.pdg = pdg;
-    param.kerange[0] = kerange[0];
-    param.kerange[1] = kerange[1];
-    param.mass.resize(pdg.size());
-    param.multi[0] = minmult_v[idx];
-    param.multi[1] = maxmult_v[idx];
-    param.weight = weight_v[idx];
-    for (size_t i = 0; i < pdg.size(); ++i)
-      param.mass[i] = db->GetParticle(param.pdg[i])->Mass();
-
-    // sanity check
-    if (kerange[0] < 0 || kerange[1] < 0)
-      this->abort("You provided negative energy? Fuck off Mr. Trump.");
-
-    // overall range check
-    if (param.kerange[0] > param.kerange[1]) this->abort("KE range has no phase space...");
-
-    if (_debug > 0) {
-      std::cout << "Generating particle (PDG";
-      for (auto const& pdg : param.pdg)
-        std::cout << " " << pdg;
-      std::cout << ")" << std::endl
-                << (param.use_mom ? "    KE range ....... " : "    Mom range ....... ")
-                << param.kerange[0] << " => " << param.kerange[1] << " MeV" << std::endl
-                << std::endl;
-    }
-
-    _param_v.push_back(param);
-  }
+  // ---------------------------------------------------------------
+  // Advisory: this generator samples phase space with intentionally
+  // broad, approximately uniform distributions (flat in KE/momentum,
+  // isotropic in angle, uniform in vertex position).  These choices
+  // maximise coverage of the detector response space and are well
+  // suited for training and validating AI/ML reconstruction models,
+  // but they do NOT reflect any physically motivated interaction
+  // cross-section or flux weighting.  Generated samples should NOT
+  // be used for physics analyses that require a realistic prior on
+  // particle kinematics or interaction rates.
+  // ---------------------------------------------------------------
+  mf::LogWarning("MultiPartVertex")
+    << "\n"
+    << "************************************************************\n"
+    << "  MultiPartVertex: INTENDED FOR AI/ML TRAINING USE ONLY\n"
+    << "  This generator samples phase space with broad, approximately\n"
+    << "  uniform distributions (flat in KE/momentum, isotropic in\n"
+    << "  angle, uniform in vertex position) to maximise detector-\n"
+    << "  response coverage for training and validating reconstruction\n"
+    << "  models.  It does NOT apply physical cross-section or flux\n"
+    << "  weighting and is NOT suitable for physics analyses requiring\n"
+    << "  a realistic kinematic or rate prior.\n"
+    << "************************************************************\n";
 }
 
 void MultiPartVertex::beginRun(art::Run& run)
@@ -316,24 +558,25 @@ void MultiPartVertex::beginRun(art::Run& run)
   return;
 }
 
-std::vector<size_t> MultiPartVertex::GenParticles() const
+std::vector<size_t> MultiPartVertex::GenParticles(const std::vector<PartGenParam>& pool,
+                                                  int target_hadron_multiplicity) const
 {
 
   std::vector<size_t> result;
-  std::vector<size_t> gen_count_v(_param_v.size(), 0);
+  std::vector<size_t> gen_count_v(pool.size(), 0);
 
-  int num_part = (int)(fFlatRandom->fire(_multi_min, _multi_max + 1 - 1.e-10));
+  int num_part = target_hadron_multiplicity;
 
   // generate min multiplicity first
-  std::vector<double> weight_v(_param_v.size(), 0);
-  for (size_t idx = 0; idx < _param_v.size(); ++idx) {
-    weight_v[idx] = _param_v[idx].weight;
-    for (size_t ctr = 0; ctr < _param_v[idx].multi[0]; ++ctr) {
+  std::vector<double> weight_v(pool.size(), 0);
+  for (size_t idx = 0; idx < pool.size(); ++idx) {
+    weight_v[idx] = pool[idx].weight;
+    for (size_t ctr = 0; ctr < pool[idx].multi[0]; ++ctr) {
       result.push_back(idx);
       gen_count_v[idx] += 1;
       num_part -= 1;
     }
-    if (gen_count_v[idx] >= _param_v[idx].multi[1]) weight_v[idx] = 0.;
+    if (gen_count_v[idx] >= pool[idx].multi[1]) weight_v[idx] = 0.;
   }
 
   assert(num_part >= 0);
@@ -358,13 +601,14 @@ std::vector<size_t> MultiPartVertex::GenParticles() const
 
     // if generation count exceeds max, set probability weight to be 0
     gen_count_v[idx] += 1;
-    if (gen_count_v[idx] >= _param_v[idx].multi[1]) weight_v[idx] = 0.;
+    if (gen_count_v[idx] >= pool[idx].multi[1]) weight_v[idx] = 0.;
 
     --num_part;
   }
   return result;
 }
 
+// used when _beam_mode == false
 TVector3 MultiPartVertex::GenPosition()
 {
 
@@ -380,6 +624,93 @@ TVector3 MultiPartVertex::GenPosition()
   return TVector3(x, y, z);
 }
 
+// ---------------------------------------------------------------------------
+// Beam-mode: uniform sample on the upstream hemisphere of radius _beam_radius
+// centred on _beam_entrance.
+TVector3 MultiPartVertex::GenBeamEntrancePosition()
+{
+  double ct = fFlatRandom->fire(0.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+
+  TVector3 n_up(-_beam_inward_dir[0], -_beam_inward_dir[1], -_beam_inward_dir[2]);
+
+  TVector3 arb(1., 0., 0.);
+  if (std::fabs(n_up.Dot(arb)) > 0.9) arb = TVector3(0., 1., 0.);
+
+  TVector3 e1 = (arb - n_up * n_up.Dot(arb)).Unit();
+  TVector3 e2 = n_up.Cross(e1).Unit();
+
+  TVector3 offset =
+    _beam_radius * (st * TMath::Cos(phi) * e1 + st * TMath::Sin(phi) * e2 + ct * n_up);
+
+  TVector3 pos(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Start position: (" << pos.X() << ", " << pos.Y() << ", " << pos.Z()
+              << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
+
+  return pos;
+}
+
+// ---------------------------------------------------------------------------
+// Generate a random target point within a disk of radius _beam_target_radius
+// centred on _beam_entrance, in the plane perpendicular to _beam_inward_dir.
+TVector3 MultiPartVertex::GenBeamTarget() const
+{
+  if (_beam_target_radius <= 0.0)
+    return TVector3(_beam_entrance[0], _beam_entrance[1], _beam_entrance[2]);
+
+  TVector3 n_in(_beam_inward_dir[0], _beam_inward_dir[1], _beam_inward_dir[2]);
+  TVector3 arb(1., 0., 0.);
+  if (std::fabs(n_in.Dot(arb)) > 0.9) arb = TVector3(0., 1., 0.);
+  TVector3 u = (arb - n_in * n_in.Dot(arb)).Unit();
+  TVector3 v = n_in.Cross(u).Unit();
+
+  double r = std::sqrt(fFlatRandom->fire()) * _beam_target_radius;
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+  TVector3 offset = r * (std::cos(phi) * u + std::sin(phi) * v);
+
+  TVector3 target(
+    _beam_entrance[0] + offset.X(), _beam_entrance[1] + offset.Y(), _beam_entrance[2] + offset.Z());
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Target point: (" << target.X() << ", " << target.Y() << ", "
+              << target.Z() << ") cm\n"
+              << "           Offset from entrance: (" << offset.X() << ", " << offset.Y() << ", "
+              << offset.Z() << ") cm" << std::endl;
+
+  return target;
+}
+
+// ---------------------------------------------------------------------------
+// Returns the unit vector from start_pos toward target.
+std::array<double, 3U> MultiPartVertex::GenBeamDirection(const TVector3& start_pos,
+                                                         const TVector3& target) const
+{
+  TVector3 dir = (target - start_pos).Unit();
+
+  if (_debug > 0)
+    std::cout << "[BeamMode] Direction: (" << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")"
+              << std::endl;
+
+  return {dir.X(), dir.Y(), dir.Z()};
+}
+
+// ---------------------------------------------------------------------------
+// Isotropic direction sampler (original, used when _beam_mode == false).
+std::array<double, 3U> MultiPartVertex::extractDirection() const
+{
+  double ct = fFlatRandom->fire(-1.0, 1.0);
+  double st = TMath::Sqrt(1.0 - ct * ct);
+  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
+  return {st * TMath::Cos(phi), st * TMath::Sin(phi), ct};
+}
+
+// ---------------------------------------------------------------------------
 TVector3 MultiPartVertex::GenBoost()
 {
 
@@ -407,18 +738,6 @@ TVector3 MultiPartVertex::GenBoost()
   }
 
   return TVector3(bx, by, bz);
-}
-
-std::array<double, 3U> MultiPartVertex::extractDirection() const
-{
-  double ct = fFlatRandom->fire(-1.0, 1.0);
-  double st = TMath::Sqrt(1.0 - ct * ct);
-  double phi = fFlatRandom->fire(0.0, 2.0 * M_PI);
-  double px = st * TMath::Cos(phi);
-  double py = st * TMath::Sin(phi);
-  double pz = ct;
-  std::array<double, 3U> result = {px, py, pz};
-  return result;
 }
 
 TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param, const double& mass)
@@ -490,6 +809,32 @@ TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
   return TVector3(px, py, pz);
 }
 
+// ---------------------------------------------------------------------------
+// Beam-mode overload: direction is supplied explicitly instead of sampled isotropically.
+TVector3 MultiPartVertex::GenMomentum(const PartGenParam& param,
+                                      const double& mass,
+                                      bool& same_range,
+                                      const std::array<double, 3>& dir)
+{
+  if (!same_range) return GenMomentum(param, mass);
+
+  double tot_energy = 0;
+  if (param.use_mom)
+    tot_energy = std::hypot(fFlatRandom->fire(param.kerange[0], param.kerange[1]), mass);
+  else
+    tot_energy = fFlatRandom->fire(param.kerange[0], 1) + mass;
+
+  double mom_mag = sqrt(cet::square(tot_energy) - cet::square(mass));
+
+  if (_debug > 1)
+    std::cout << "    Direction : (" << dir[0] << "," << dir[1] << "," << dir[2] << ")\n"
+              << "    Momentum  : " << mom_mag << " [MeV/c]\n"
+              << "    Energy    : " << tot_energy << " [MeV/c^2]" << std::endl;
+
+  return TVector3(dir[0] * mom_mag, dir[1] * mom_mag, dir[2] * mom_mag);
+}
+
+// ---------------------------------------------------------------------------
 double MultiPartVertex::GenMomentumSF(const double& sf, const double& m, const double& p)
 {
   double p_sf =
@@ -508,7 +853,21 @@ void MultiPartVertex::produce(art::Event& e)
 
   double g4_time = fFlatRandom->fire(_t0 - _t0_sigma / 2., _t0 + _t0_sigma / 2.);
 
-  TVector3 position = GenPosition();
+  // ------------------------------------------------------------------
+  // Determine start position and beam direction for this event
+  // ------------------------------------------------------------------
+  TVector3 position;
+  std::array<double, 3> beam_dir{}; // only used in beam mode
+
+  if (_beam_mode) {
+    position = GenBeamEntrancePosition();
+    TVector3 target = GenBeamTarget();
+    beam_dir = GenBeamDirection(position, target);
+  }
+  else {
+    position = GenPosition();
+  }
+
   double x = position.X();
   double y = position.Y();
   double z = position.Z();
@@ -532,13 +891,70 @@ void MultiPartVertex::produce(art::Event& e)
   std::vector<double> py_vec;
   std::vector<double> pz_vec;
 
-  auto const param_idx_v = GenParticles();
+  double total_weight = 0.0;
+  for (auto const& prof : _profiles_v) {
+    total_weight += prof.profile_weight;
+  }
+  if (total_weight <= 0.0) { this->abort("Total profile weight must be positive!"); }
+  double rval = fFlatRandom->fire(0, total_weight);
+  const ProfileParam* active_prof = nullptr;
+  for (auto const& prof : _profiles_v) {
+    rval -= prof.profile_weight;
+    if (rval <= 0.0) {
+      active_prof = &prof;
+      break;
+    }
+  }
+  if (!active_prof) { active_prof = &_profiles_v.back(); }
+
+  int total_mult = fFlatRandom->fire(active_prof->multi_min, active_prof->multi_max + 1 - 1.e-10);
+
+  if (active_prof->has_required_particle) {
+    size_t req_idx = (size_t)(fFlatRandom->fire(0, active_prof->required_pdg.size() - 1.e-10));
+    int req_pdg = active_prof->required_pdg[req_idx];
+    double req_mass = active_prof->required_mass[req_idx];
+
+    PartGenParam req_param;
+    req_param.pdg = {req_pdg};
+    req_param.mass = {req_mass};
+    req_param.kerange = {active_prof->required_range[0], active_prof->required_range[1]};
+    req_param.use_mom = active_prof->required_use_mom;
+    req_param.multi = {1, 1};
+
+    bool same_range = false;
+    TVector3 req_mom;
+    if (_beam_mode && !_revert) {
+      double tot_energy = 0;
+      if (req_param.use_mom)
+        tot_energy =
+          std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
+      else
+        tot_energy = fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]) + req_mass;
+      double mom_mag = cet::diff_of_squares(tot_energy, req_mass);
+      req_mom = TVector3(beam_dir.data()) * mom_mag;
+    }
+    else {
+      req_mom = GenMomentum(req_param, req_mass, same_range);
+    }
+    double req_E = sqrt(req_mom.Mag2() + req_mass * req_mass);
+
+    TLorentzVector mom(req_mom.X(), req_mom.Y(), req_mom.Z(), req_E);
+    if (_use_boost) mom.Boost(bx, by, bz);
+
+    simb::MCParticle part(part_v.size(), req_pdg, "primary", 0, req_mass, 1);
+    part.AddTrajectoryPoint(pos, mom);
+    part_v.emplace_back(std::move(part));
+
+    total_mult -= 1;
+  }
+
+  auto const param_idx_v = GenParticles(active_prof->particle_param_v, total_mult);
   if (_debug)
     std::cout << "Event Vertex @ (" << x << "," << y << "," << z << ") ... " << param_idx_v.size()
               << " particles..." << std::endl;
 
   for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-    auto const& param = _param_v[param_idx_v[idx]];
+    auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
     bool same_range = true;
     // decide which particle
     size_t pdg_index = (size_t)(fFlatRandom->fire(0, param.pdg.size() - 1.e-10));
@@ -549,6 +965,9 @@ void MultiPartVertex::produce(art::Event& e)
     // empty  TVector3 momentum
     TVector3 momentum;
     if (_revert) { momentum = GenMomentum(param, mass); }
+    else if (_beam_mode) {
+      momentum = GenMomentum(param, mass, same_range, beam_dir);
+    }
     else {
       momentum = GenMomentum(param, mass, same_range);
     }
@@ -585,7 +1004,7 @@ void MultiPartVertex::produce(art::Event& e)
 
     if (total_KE > 1.) {
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = _param_v[param_idx_v[idx]];
+        auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
 
         if (param.kerange[1] != 1) {
           // lepton scale here.
@@ -618,9 +1037,8 @@ void MultiPartVertex::produce(art::Event& e)
         }
       }
     }
-
-    else {
-
+    // Ensure total_KE is above a small threshold (1.e-10 MeV) to prevent division by zero or near-zero during scaling
+    else if (total_KE > 1.e-10) {
       double gen_total_KE = fFlatRandom->fire(0, 1);
       double total_KE_sf = gen_total_KE / total_KE;
       if (_debug)
@@ -628,7 +1046,7 @@ void MultiPartVertex::produce(art::Event& e)
                   << std::endl;
 
       for (size_t idx = 0; idx < param_idx_v.size(); ++idx) {
-        auto const& param = _param_v[param_idx_v[idx]];
+        auto const& param = active_prof->particle_param_v[param_idx_v[idx]];
         double mom_sf = 1;
         double temp_p =
           sqrt(cet::square(px_vec[idx]) + cet::square(py_vec[idx]) + cet::square(pz_vec[idx]));
@@ -654,7 +1072,8 @@ void MultiPartVertex::produce(art::Event& e)
   }
   if (_debug) std::cout << "Total number particles: " << mct.NParticles() << std::endl;
 
-  simb::MCParticle nu(mct.NParticles(), 16, "primary", mct.NParticles(), 0, 0);
+  simb::MCParticle nu(
+    mct.NParticles(), active_prof->incoming_nu_pdg, "primary", mct.NParticles(), 0, 0);
   double px = 0;
   double py = 0;
   double pz = 0;
@@ -672,19 +1091,10 @@ void MultiPartVertex::produce(art::Event& e)
   for (auto& part : part_v)
     mct.Add(part);
 
-  // Set the neutrino for the MCTruth object:
-  // NOTE: currently these parameters are all pretty much a guess...
+  // Truth-record annotation only: IncomingNuPDG and InteractionMode are user-defined metadata.
+  // They do not imply physically consistent neutrino-interaction kinematics.
   mct.SetNeutrino(
-    simb::kCC,
-    simb::kQE,   // not sure what the mode should be here, assumed that these are all QE???
-    simb::kCCQE, // not sure what the int_type should be either...
-    0,           // target is AR40? not sure how to specify that...
-    0,           // nucleon pdg ???
-    0,           // quark pdg ???
-    -1.0,        // W ??? - not sure how to calculate this from the above
-    -1.0,        // X ??? - not sure how to calculate this from the above
-    -1.0,        // Y ??? - not sure how to calculate this from the above
-    -1.0);       // Qsqr ??? - not sure how to calculate this from the above
+    active_prof->interaction_mode, simb::kQE, simb::kCCQE, 0, 0, 0, -1.0, -1.0, -1.0, -1.0);
 
   mctArray->push_back(mct);
 

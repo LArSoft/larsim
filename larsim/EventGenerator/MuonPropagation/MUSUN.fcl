@@ -10,13 +10,6 @@ standard_MUSUN:
  ChargeRatio:            1.38       # Ratio of particle/anti-particle
                                     # For one particle type set equal to 0.
 
- # Directory where ROOT pdf file is. If not using one of the standard configurations
- # you will !!NEED!! to change this to your own directory!!!
- InputDir:               "/dune/data/users/warburton/MUSUN/"
- InputFile1:             "muint-dune4850-mr-new.dat" # Table of muon intensities for theta and phi
- InputFile2:             "musp-dune4850-mr-new.dat"  # Binary file of energies for theta and depths
- InputFile3:             "depth-dune4850-mr-new.dat" # Table of slant depths for theta and phi
-
  CavernAngle:            7          # Angle of the detector from the East to South.
  RockDensity:            2.70       # Default rock density is 2.70 g cm-3. If this is
  			 	    # changed then the three input files need to be
