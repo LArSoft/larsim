@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "canvas/Persistency/Common/FindManyP.h"
+#include "lardata/ArtDataHelper/GetManyByRegexTag.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 
 namespace cheat {
@@ -32,10 +33,12 @@ namespace cheat {
   {
     if (this->SimChannelsReady()) { return; }
     // The SimChannels list needs to be built.
-    const auto& simChannelsHandle =
-      evt.template getValidHandle<std::vector<sim::SimChannel>>(fSimChannelModuleLabel);
 
-    art::fill_ptr_vector(fSimChannels, simChannelsHandle);
+    auto simchannels_many = lar::util::getManyByRegexTag<std::vector<sim::SimChannel>>(
+      evt, art::InputTag(fSimChannelModuleLabel));
+    for (auto simChannelsHandle : simchannels_many) {
+      art::fill_ptr_vector(fSimChannels, simChannelsHandle);
+    }
 
     auto comparesclambda = [](art::Ptr<sim::SimChannel> a, art::Ptr<sim::SimChannel> b) {
       return (a->Channel() < b->Channel());

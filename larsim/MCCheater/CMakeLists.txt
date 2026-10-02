@@ -16,6 +16,7 @@ cet_make_library(LIBRARY_NAME larsim_MCCheater_PhotonBackTracker
   SOURCE PhotonBackTracker.cc
   LIBRARIES
   PUBLIC
+  lardata::ArtDataHelper
   larcoreobj::SimpleTypesAndConstants
   lardataobj::RecoBase
   lardataobj::Simulation
@@ -32,6 +33,7 @@ cet_make_library(LIBRARY_NAME larsim_MCCheater_BackTracker
   SOURCE BackTracker.cc
   LIBRARIES
   PUBLIC
+  lardata::ArtDataHelper
   larsim::MCCheater_ParticleInventory
   larcoreobj::SimpleTypesAndConstants
   lardataobj::RecoBase
