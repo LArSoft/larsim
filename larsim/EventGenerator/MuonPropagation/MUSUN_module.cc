@@ -586,8 +586,8 @@ namespace evgen {
     double pdgfire = flat.fire();
     if (pdgfire < ChargeCheck) PdgCode = -PdgCode;
 
-    static TDatabasePDG pdgt;
-    TParticlePDG* pdgp = pdgt.GetParticle(PdgCode);
+    auto pdgt = TDatabasePDG::Instance();
+    TParticlePDG* pdgp = pdgt->GetParticle(PdgCode);
     if (pdgp) m = pdgp->Mass();
 
     //std::cout << pdgfire << " " << ChargeCheck << " " << PdgCode << " " << m << std::endl;
