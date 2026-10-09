@@ -55,8 +55,9 @@ namespace evgen {
       // Hard-coded value taken from fhiclcpp/detail/printing_helpers.cc
       if (atom_val != "@nil") {
         std::istringstream iss(atom_val);
+        marley::StreamReader temp_sr(iss);
         // Utility function defined in marley/JSON.hh
-        json_atom = marley::parse_next(iss);
+        json_atom = marley::parse_next(temp_sr);
       }
       if (in_seq_) { json[seq_index_++] = json_atom; }
       else {

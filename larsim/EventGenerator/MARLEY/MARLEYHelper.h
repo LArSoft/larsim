@@ -30,14 +30,16 @@ namespace rndm {
 
 // ROOT includes
 #include "TLorentzVector.h"
+#include "TTree.h"
+
+// HepMC3 includes
+#include "HepMC3/Data/GenEventData.h"
 
 // MARLEY includes
 #include "marley/Generator.hh"
 
 namespace marley {
-  class Event;
   class JSON;
-  class Particle;
 }
 
 namespace evgen {
@@ -45,17 +47,19 @@ namespace evgen {
   class MARLEYHelper {
 
   public:
+    // If a non-nullptr TTree* is supplied, then the run information
+    // (HepMC3::GenRunInfoData) and generated events (HepMC3::GenEventData)
+    // will be dumped in a format similar to standalone "marley generate"
     MARLEYHelper(const fhicl::ParameterSet& pset,
                  rndm::NuRandomService& rand_service,
-                 const std::string& generator_name);
+                 const std::string& generator_name,
+                 TTree* dump_tree);
 
     void reconfigure(const fhicl::ParameterSet& pset);
 
-    // If a non-null marley::Event* is supplied, the marley::Event
     // object corresponding to the generated MCTruth object is loaded
     // into the target of the pointer.
-    simb::MCTruth create_MCTruth(const TLorentzVector& vtx_pos,
-                                 marley::Event* marley_event = nullptr);
+    simb::MCTruth create_MCTruth(const TLorentzVector& vtx_pos);
 
     marley::Generator& get_generator() { return *fMarleyGenerator; }
     const marley::Generator& get_generator() const { return *fMarleyGenerator; }
@@ -64,9 +68,12 @@ namespace evgen {
 
   protected:
     void add_marley_particles(simb::MCTruth& truth,
-                              const std::vector<marley::Particle*>& particles,
+                              const std::vector<std::shared_ptr<HepMC3::GenParticle>>& particles,
                               const TLorentzVector& vtx_pos,
+                              double conv_factor,
                               bool track);
+
+    void clear_event_data();
 
     void load_full_paths_into_json(marley::JSON& json,
                                    const std::string& array_name,
@@ -81,9 +88,13 @@ namespace evgen {
     // and redirect it to the LArSoft logger
     std::stringstream fMarleyLogStream;
 
-    // Loads ROOT dictionaries for the MARLEY Event and Particle classes.
-    // This allows a module to write the generated events to a TTree.
-    void load_marley_dictionaries();
+    // TTree to use for optionally dumping event and run information
+    TTree* fDumpTree = nullptr;
+
+    // Storage used to help with dumping
+    std::shared_ptr<HepMC3::GenRunInfo> fRunInfo;
+    std::unique_ptr<HepMC3::GenEventData> fEventData;
+    HepMC3::GenEventData* fEventDataPtr = nullptr;
 
   }; // class evgen::MARLEYHelper
 
