@@ -79,6 +79,16 @@ cet_build_plugin(POTaccumulator art::EDAnalyzer
   range-v3::range-v3
 )
 
+cet_build_plugin(G4GPSAngDist art::tool
+  LIBRARIES
+    PRIVATE
+      larcoreobj::headers
+      larcoreobj::geo_vectors
+      fhiclcpp::fhiclcpp
+      CLHEP::CLHEP
+      Geant4::G4event
+)
+
 cet_build_plugin(RadioGen art::EDProducer
   LIBRARIES PRIVATE
   larcore::Geometry_Geometry_service
