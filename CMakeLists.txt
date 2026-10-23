@@ -49,6 +49,7 @@ find_package(CLHEP COMPONENTS Evaluator Geometry Random Vector REQUIRED EXPORT)
 find_package(CRY REQUIRED EXPORT) # find module in nutools
 find_package(GENIE REQUIRED EXPORT) # find module in nugen
 find_package(Geant4 REQUIRED EXPORT)
+find_package(HepMC3 REQUIRED EXPORT)
 find_package(MARLEY REQUIRED EXPORT)
 find_package(ROOT COMPONENTS Core EG GenVector Geom Gpad Hist MathCore Matrix Physics RIO RooFitCore Tree REQUIRED EXPORT)
 find_package(Range-v3 REQUIRED)
