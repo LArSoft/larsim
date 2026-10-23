@@ -79,13 +79,31 @@ cet_build_plugin(POTaccumulator art::EDAnalyzer
   range-v3::range-v3
 )
 
-cet_build_plugin(G4GPSAngDist art::tool
+cet_make_library(
+  LIBRARY_NAME AngDistGen 
+  INTERFACE 
+  SOURCE IAngDist.h
+  LIBRARIES
+  larcoreobj::geo_vectors
+  fhiclcpp::fhiclcpp
+  CLHEP::Random
+)
+
+cet_write_plugin_builder(
+  evgen::IAngDist art::tool Modules
+  INSTALL_BUILDER)
+
+include(evgen::IAngDist)
+
+cet_build_plugin(G4GPSAngDist evgen::IAngDist
   LIBRARIES
     PRIVATE
-      larcoreobj::headers
+      AngDistGen
       larcoreobj::geo_vectors
-      fhiclcpp::fhiclcpp
-      CLHEP::CLHEP
+      art::Utilities
+      canvas::canvas
+      fhiclcpp::types
+      cetlib_except::cetlib_except
       Geant4::G4event
 )
 
@@ -103,12 +121,14 @@ cet_build_plugin(RadioGen art::EDProducer
   nugen::EventGeneratorBase
   nurandom::RandomUtils_NuRandomService_service
   nusimdata::SimulationBase
+  art::Utilities
   art::Framework_Principal
   art::Framework_Services_Registry
   messagefacility::MF_MessageLogger
   fhiclcpp::fhiclcpp
   cetlib::cetlib
   cetlib_except::cetlib_except
+  CLHEP::Random
 )
 
 cet_build_plugin(SNNueAr40CCGen art::EDProducer

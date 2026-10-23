@@ -50,6 +50,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities//ToolMacros.h"
+#include "art/Utilities/make_tool.h"
 #include "cetlib/exempt_ptr.h"
 #include "cetlib/search_path.h"
 #include "cetlib_except/exception.h"
@@ -81,6 +83,7 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
 #include "lardataalg/DetectorInfo/DetectorTimings.h"
+#include "larsim/EventGenerator/IAngDist.h"
 
 // root includes
 
@@ -211,7 +214,10 @@ namespace evgen {
 
     /// Checks that the node represents a box well aligned to world frame axes.
     void SampleOne(unsigned int i, simb::MCTruth& mct);
-
+    
+    /// Tool to generate particle directions.
+    std::unique_ptr<IAngDist> fAngDist = {};
+    /// Generate the lorentz vector for a particle with momentum p and mass m, with direction sampled with fAngDist.
     TLorentzVector dirCalc(double p, double m);
 
     void readfile(std::string nuclide, std::string const& filename, std::string const& PathToFile);
@@ -288,6 +294,7 @@ namespace evgen {
   //____________________________________________________________________________
   RadioGen::RadioGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
+    , fAngDist(art::make_tool<IAngDist>(pset.get<fhicl::ParameterSet>("AngDist")))
     , fX0{pset.get<std::vector<double>>("X0", {})}
     , fY0{pset.get<std::vector<double>>("Y0", {})}
     , fZ0{pset.get<std::vector<double>>("Z0", {})}
@@ -679,15 +686,18 @@ namespace evgen {
   TLorentzVector RadioGen::dirCalc(double p, double m)
   {
     CLHEP::RandFlat flat(fEngine);
-    // isotropic production angle for the decay product
-    double costheta = (2.0 * flat.fire() - 1.0);
-    if (costheta < -1.0) costheta = -1.0;
-    if (costheta > 1.0) costheta = 1.0;
-    double const sintheta = sqrt(1.0 - costheta * costheta);
-    double const phi = 2.0 * M_PI * flat.fire();
-    return TLorentzVector{p * sintheta * std::cos(phi),
-                          p * sintheta * std::sin(phi),
-                          p * costheta,
+    /*
+     * // isotropic production angle for the decay product
+     * double costheta = (2.0 * flat.fire() - 1.0);
+     * if (costheta < -1.0) costheta = -1.0;
+     * if (costheta > 1.0) costheta = 1.0;
+     * double const sintheta = sqrt(1.0 - costheta * costheta);
+     * double const phi = 2.0 * M_PI * flat.fire();
+     */
+    geo::Vector_t dir = fAngDist->generate(fEngine);
+    return TLorentzVector{p * dir.X(),
+                          p * dir.Y(), 
+                          p * dir.Z(), 
                           std::sqrt(p * p + m * m)};
   }
 
@@ -748,7 +758,7 @@ namespace evgen {
         alphahist->SetBinError(i + 1, 0);
       }
       alphaintegral.push_back(alphahist->Integral());
-      alphaspectrum.push_back(move(alphahist));
+      alphaspectrum.push_back(std::move(alphahist));
     }
     else {
       alphaintegral.push_back(0);
@@ -769,7 +779,7 @@ namespace evgen {
         betahist->SetBinError(i + 1, 0);
       }
       betaintegral.push_back(betahist->Integral());
-      betaspectrum.push_back(move(betahist));
+      betaspectrum.push_back(std::move(betahist));
     }
     else {
       betaintegral.push_back(0);
@@ -789,7 +799,7 @@ namespace evgen {
         gammahist->SetBinError(i + 1, 0);
       }
       gammaintegral.push_back(gammahist->Integral());
-      gammaspectrum.push_back(move(gammahist));
+      gammaspectrum.push_back(std::move(gammahist));
     }
     else {
       gammaintegral.push_back(0);
@@ -809,7 +819,7 @@ namespace evgen {
         neutronhist->SetBinError(i + 1, 0);
       }
       neutronintegral.push_back(neutronhist->Integral());
-      neutronspectrum.push_back(move(neutronhist));
+      neutronspectrum.push_back(std::move(neutronhist));
     }
     else {
       neutronintegral.push_back(0);
