@@ -328,7 +328,8 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
 }
 
 //------------------------------------------------------------------------------
-std::string evgen::MARLEYHelper::find_file(const std::string& fileName, const std::string& fileType)
+std::string evgen::MARLEYHelper::find_file(const std::string& fileName,
+                                           const std::string& fileType)
 {
   cet::search_path searchPath("FW_SEARCH_PATH");
 
@@ -344,27 +345,35 @@ std::string evgen::MARLEYHelper::find_file(const std::string& fileName, const st
 
 //------------------------------------------------------------------------------
 void evgen::MARLEYHelper::load_full_paths_into_json(marley::JSON& json,
-                                                    const std::string& key,
-                                                    bool missing_ok)
+                                                    const std::string& key)
 {
-  if (json.has_key(key)) {
-
-    marley::JSON& value = json.at(key);
-
-    if (value.is_array()) {
-      // Replace each file name (which may appear in the FHiCL configuration
-      // without a full path) with the full path found using cetlib
-      for (auto& element : value.array_range()) {
-        element = find_file(element.to_string(), key);
-      }
-    }
-
-    else
-      value = find_file(value.to_string(), key);
-  }
-  else if (!missing_ok)
+  if (!json.has_key(key))
     throw cet::exception("MARLEYHelper")
       << "Missing \"" << key << "\" key in the MARLEY parameters.";
+
+  // A name that is not on FW_SEARCH_PATH is left as it was given. MARLEY
+  // resolves such a name itself, searching the data directory that ships with
+  // it and then the current working directory, and reports every path it
+  // tried if the file is still not found. Rewriting the name here when
+  // cetlib does find it keeps an experiment's own copy of a data file taking
+  // precedence over MARLEY's.
+  cet::search_path searchPath("FW_SEARCH_PATH");
+
+  auto rewrite_if_found = [&searchPath](marley::JSON& value) {
+    std::string fullName;
+    searchPath.find_file(value.to_string(), fullName);
+    if (!fullName.empty()) value = fullName;
+  };
+
+  marley::JSON& value = json.at(key);
+
+  if (value.is_array()) {
+    for (auto& element : value.array_range()) {
+      rewrite_if_found(element);
+    }
+  }
+  else
+    rewrite_if_found(value);
 }
 
 //------------------------------------------------------------------------------
@@ -376,10 +385,9 @@ void evgen::MARLEYHelper::reconfigure(const fhicl::ParameterSet& pset)
 
   marley::JSON& json = mpsw.get_json();
 
-  // Update the reaction and structure data file names to the full paths
-  // using cetlib to search for them
-  load_full_paths_into_json(json, "reactions", false);
-  load_full_paths_into_json(json, "structure", true);
+  // Update the reaction data file names to the full paths using cetlib to
+  // search for them
+  load_full_paths_into_json(json, "reactions");
 
   // Also update the path for a neutrino source spectrum given in a ROOT
   // TFile

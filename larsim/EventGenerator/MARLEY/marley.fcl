@@ -58,7 +58,7 @@ standard_marley:
       z: 1.0
     }
 
-    # Recommended MARLEY v2.0.0 configuration for the reaction
+    # Recommended MARLEY v2.1.0 configuration for the reaction
     # ve + 40Ar --> e- + 40K*. One can also add neutrino-electron
     # elastic scattering by appending the commented-out file to the list.
     reactions: [ "ve40ArCC_Bhattacharya2009-Discrete.react",
