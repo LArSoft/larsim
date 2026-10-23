@@ -328,8 +328,7 @@ simb::MCTruth evgen::MARLEYHelper::create_MCTruth(const TLorentzVector& vtx_pos)
 }
 
 //------------------------------------------------------------------------------
-std::string evgen::MARLEYHelper::find_file(const std::string& fileName,
-                                           const std::string& fileType)
+std::string evgen::MARLEYHelper::find_file(const std::string& fileName, const std::string& fileType)
 {
   cet::search_path searchPath("FW_SEARCH_PATH");
 
@@ -344,8 +343,7 @@ std::string evgen::MARLEYHelper::find_file(const std::string& fileName,
 }
 
 //------------------------------------------------------------------------------
-void evgen::MARLEYHelper::load_full_paths_into_json(marley::JSON& json,
-                                                    const std::string& key)
+void evgen::MARLEYHelper::load_full_paths_into_json(marley::JSON& json, const std::string& key)
 {
   if (!json.has_key(key))
     throw cet::exception("MARLEYHelper")

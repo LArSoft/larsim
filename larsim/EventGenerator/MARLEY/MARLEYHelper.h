@@ -75,8 +75,7 @@ namespace evgen {
 
     void clear_event_data();
 
-    void load_full_paths_into_json(marley::JSON& json,
-                                   const std::string& array_name);
+    void load_full_paths_into_json(marley::JSON& json, const std::string& array_name);
 
     std::unique_ptr<marley::Generator> fMarleyGenerator;
 
