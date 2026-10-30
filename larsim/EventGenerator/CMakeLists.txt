@@ -80,9 +80,9 @@ cet_build_plugin(POTaccumulator art::EDAnalyzer
 )
 
 cet_make_library(
-  LIBRARY_NAME AngDistGen 
+  LIBRARY_NAME DirectionGenerator 
   INTERFACE 
-  SOURCE IAngDist.h
+  SOURCE DirectionGenerator.h
   LIBRARIES
   larcoreobj::geo_vectors
   fhiclcpp::fhiclcpp
@@ -90,15 +90,15 @@ cet_make_library(
 )
 
 cet_write_plugin_builder(
-  evgen::IAngDist art::tool Modules
+  evgen::IDirectionGenerator art::tool Modules
   INSTALL_BUILDER)
 
-include(evgen::IAngDist)
+include(evgen::IDirectionGenerator)
 
-cet_build_plugin(G4GPSAngDist evgen::IAngDist
+cet_build_plugin(G4GPSAngDist evgen::IDirectionGenerator
   LIBRARIES
     PRIVATE
-      AngDistGen
+      DirectionGenerator
       larcoreobj::geo_vectors
       art::Utilities
       canvas::canvas

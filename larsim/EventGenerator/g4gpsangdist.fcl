@@ -1,0 +1,48 @@
+BEGIN_PROLOG
+
+g4gpsangdist_iso : {
+  tool_type: "G4GPSAngDist"
+  distType: "iso"
+}
+
+g4gpsangdist_cos : {
+  tool_type: "G4GPSAngDist"
+  distType: "cos"
+}
+
+theta_setting_0_90 : {
+  minTheta: 0.0
+  maxTheta: 1.5707
+}
+
+g4gps_dir_pos_z : {
+  rot1: [1, 0, 0]
+  rot2: [0, -1, 0]
+}
+
+g4gps_dir_neg_z : {
+  rot1: [1, 0, 0]
+  rot2: [0, 1, 0]
+}
+
+g4gps_dir_pos_x : {
+  rot1: [0, 1, 0]
+  rot2: [0, 0, -1]
+}
+
+g4gps_dir_neg_x : {
+  rot1: [0, 1, 0]
+  rot2: [0, 0, 1]
+}
+
+g4gps_dir_pos_y : {
+  rot1: [0, 0, 1]
+  rot2: [-1, 0, 0]
+}
+
+g4gps_dir_neg_y : {
+  rot1: [0, 0, 1]
+  rot2: [1, 0, 0]
+}
+
+END_PROLOG

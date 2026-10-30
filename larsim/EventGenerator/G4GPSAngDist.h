@@ -1,5 +1,5 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        : G4GPSAngDist.h
  * @created     : Friday Oct 16, 2026 15:34:16 CEST
  */
@@ -8,8 +8,7 @@
 
 #define LARSIM_G4GPSANGDIST_H
 
-#include "IAngDist.h"
-#include "art/Utilities/ToolMacros.h"
+#include "DirectionGenerator.h"
 #include "art/Utilities/ToolConfigTable.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -34,25 +33,25 @@ namespace evgen {
       G4EngineGuard(G4EngineGuard const&) = delete;
       G4EngineGuard& operator=(G4EngineGuard const&) = delete;
     private:
-      CLHEP::HepRandomEngine* fPrevious;
+      CLHEP::HepRandomEngine* fPrevious = {};
     };
   }
 
-  class G4GPSAngDist : public IAngDist {
+  class G4GPSAngDist : public IDirectionGenerator {
     public:
       struct Config {
-        fhicl::Atom<std::string> type{fhicl::Name{"type"}, 
+        fhicl::Atom<std::string> type{fhicl::Name{"distType"}, 
           fhicl::Comment{
             "Type of angular distribution to use in G4GPSAngDistribution\n"
             "Options: iso [default], cos, planar, beam1d, beam2d, focused, user"
           }, "iso"};
-        fhicl::Sequence<int, 3> rot1{fhicl::Name{"rot1"}, 
+        fhicl::Sequence<double, 3> rot1{fhicl::Name{"rot1"}, 
           fhicl::Comment{
             "Defines the first (x' direction) rotation vector AR1 [default (1,0,0)]\n"
             "for the angular distribution and is not necessarily a unit vector.\n"
             "Used with /gps/ang/rot2 to compute the angular distribution rotation matrix."
           }, {1,0,0}};
-        fhicl::Sequence<int, 3> rot2{fhicl::Name{"rot2"}, 
+        fhicl::Sequence<double, 3> rot2{fhicl::Name{"rot2"}, 
           fhicl::Comment{
             "Defines the second rotation vector AR2 [default (0,1,0)]\n"
             "for the angular distribution and is not necessarily a unit vector.\n"
@@ -90,25 +89,32 @@ namespace evgen {
           fhicl::Comment{
             "Sets the focus point [default 0,0,0] of the beam. Units are mm."
           }, {0.,0.,0.}};
-        fhicl::Atom<bool> user_coord{fhicl::Name{"user_coord"},
-          fhicl::Comment{
-            "Calculate the angular distribution with respect to the user defined co-ordinate system (true),\n"
-            "or with respect to the global co-ordinate system (false, default)."
-          }, false};
         fhicl::Atom<bool> surfnorm{fhicl::Name{"surfnorm"},
           fhicl::Comment{
             "Allows user to choose whether angular distributions are with respect to\n"
             "the coordinate system (false, default) or surface normals (true)\n"
             "for user-defined distributions."
           }, false};
+        fhicl::Atom<int> verbosity{fhicl::Name{"verbosity"},
+          fhicl::Comment{
+            "Sets the verbosity level [default 0] for the G4GPSAngDist tool."
+          }, 0};
       };
 
       using Parameters = art::ToolConfigTable<Config>;
 
       explicit G4GPSAngDist(Parameters const& config);
+
       geo::Vector_t generate(CLHEP::HepRandomEngine& engine) override;
 
+    protected:
+      void dumpSettingsImpl(std::ostream& out) const override;
+
+
     private:
+      G4ThreeVector fAngRef1 = {};
+      G4ThreeVector fAngRef2 = {};
+
       std::unique_ptr<G4SPSAngDistribution> fAngDist;
       std::unique_ptr<G4SPSRandomGenerator> fRandGen;
       std::unique_ptr<G4SPSPosDistribution> fPosDist;
@@ -119,6 +125,9 @@ namespace evgen {
       fRandGen{std::make_unique<G4SPSRandomGenerator>()},
       fPosDist{std::make_unique<G4SPSPosDistribution>()}
   {
+    // Set verbosity
+    fAngDist->SetVerbosity(config().verbosity());
+    
     // Validate type
     static const std::array<std::string, 7> validTypes{
       "iso", "cos", "planar", "beam1d", "beam2d", "focused", "user"};
@@ -151,13 +160,15 @@ namespace evgen {
     fAngDist->SetMaxPhi(config().maxPhi());
 
     // Rotation vectors must be non-zero
-    auto isZero = [](auto const& v) { return v[0] == 0 && v[1] == 0 && v[2] == 0; };
+    auto isZero = [](auto const& v) { return std::abs(v[0]) < 1e-8 && std::abs(v[1]) < 1e-8 && std::abs(v[2]) < 1e-8; };
     if (isZero(config().rot1()) || isZero(config().rot2())) {
       throw art::Exception(art::errors::Configuration)
         << "G4GPSAngDist: 'rot1' and 'rot2' must be non-zero vectors.";
     }
+    fAngRef1.set(config().rot1()[0], config().rot1()[1], config().rot1()[2]);
     fAngDist->DefineAngRefAxes("angref1", 
         G4ThreeVector(config().rot1()[0], config().rot1()[1], config().rot1()[2]));
+    fAngRef2.set(config().rot2()[0], config().rot2()[1], config().rot2()[2]);
     fAngDist->DefineAngRefAxes("angref2",
         G4ThreeVector(config().rot2()[0], config().rot2()[1], config().rot2()[2]));
 
@@ -166,7 +177,6 @@ namespace evgen {
     fAngDist->SetBeamSigmaInAngY(config().sigma_y());
     fAngDist->SetFocusPoint(
         G4ThreeVector(config().focuspoint()[0], config().focuspoint()[1], config().focuspoint()[2]));
-    fAngDist->SetUseUserAngAxis(config().user_coord());
     fAngDist->SetUserWRTSurface(config().surfnorm());
 
     // Set the random generator for pos and ang distributions to use the same engine
@@ -180,6 +190,18 @@ namespace evgen {
     G4EngineGuard guard{engine};
     G4ParticleMomentum dir = fAngDist->GenerateOne();
     return {dir.x(), dir.y(), dir.z()};
+  }
+
+  void G4GPSAngDist::dumpSettingsImpl(std::ostream& out) const
+  {
+    out << "G4GPSAngDist settings:\n"
+      << "  type: " << fAngDist->GetDistType() << "\n"
+      << "  minTheta: " << fAngDist->GetMinTheta() << " rad\n"
+      << "  maxTheta: " << fAngDist->GetMaxTheta() << " rad\n"
+      << "  minPhi: " << fAngDist->GetMinPhi() << " rad\n"
+      << "  maxPhi: " << fAngDist->GetMaxPhi() << " rad\n"
+      << "  rot1: (" << fAngRef1.x() << ", " << fAngRef1.y() << ", " << fAngRef1.z() << ")\n"
+      << "  rot2: (" << fAngRef2.x() << ", " << fAngRef2.y() << ", " << fAngRef2.z() << ")\n";
   }
 } // namespace evgen
 
