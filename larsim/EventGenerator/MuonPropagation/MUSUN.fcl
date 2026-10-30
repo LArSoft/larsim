@@ -84,6 +84,10 @@ standard_MUSUN:
  T0:                     0.         # starting time
  SigmaT:                 0.         # variation in the starting time
  TDist:                  0          # 0 - uniform, 1 - gaussian
+
+ InputFile1:             "muint-dune4850-mr-new.dat" # Table of muon intensities for theta and phi
+ InputFile2:             "musp-dune4850-mr-new.dat"  # Binary file of energies for theta and depths
+ InputFile3:             "depth-dune4850-mr-new.dat" # Table of slant depths for theta and phi             
 }
 
 END_PROLOG

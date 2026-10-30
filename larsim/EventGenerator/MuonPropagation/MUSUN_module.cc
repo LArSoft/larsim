@@ -225,7 +225,6 @@ namespace evgen {
     int fPDG;            ///< PDG code of particles to generate
     double fChargeRatio; ///< Charge ratio of particle / anti-particle
 
-    std::string fInputDir;   ///< Input Directory
     std::string fInputFile1; ///< Input File 1
     std::string fInputFile2; ///< Input File 2
     std::string fInputFile3; ///< Input File 3
@@ -338,7 +337,6 @@ namespace evgen {
                                                                                  "Seed"))
     , fPDG{pset.get<int>("PDG")}
     , fChargeRatio{pset.get<double>("ChargeRatio")}
-    , fInputDir{pset.get<std::string>("InputDir")}
     , fInputFile1{pset.get<std::string>("InputFile1")}
     , fInputFile2{pset.get<std::string>("InputFile2")}
     , fInputFile3{pset.get<std::string>("InputFile3")}
@@ -736,14 +734,13 @@ namespace evgen {
         fmu[a][b] = 0;
 
     std::ostringstream File1LocStream;
-    File1LocStream << fInputDir << fInputFile1;
     std::string File1Loc = File1LocStream.str();
     cet::search_path sp1("FW_SEARCH_PATH");
     if (sp1.find_file(fInputFile1, fROOTfile)) File1Loc = fROOTfile;
     std::ifstream file1(File1Loc.c_str(), std::ios::in);
     if (!file1.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH."
         << "\n\n";
 
     while (file1.good()) {
@@ -766,14 +763,13 @@ namespace evgen {
     file1.close();
 
     std::ostringstream File2LocStream;
-    File2LocStream << fInputDir << fInputFile2;
     std::string File2Loc = File2LocStream.str();
     cet::search_path sp2("FW_SEARCH_PATH");
     if (sp2.find_file(fInputFile2, fROOTfile)) File2Loc = fROOTfile;
     std::ifstream file2(File2Loc.c_str(), std::ios::binary | std::ios::in);
     if (!file2.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH."
         << "\n\n";
 
     int i1 = 0, i2 = 0, i3 = 0;
@@ -803,14 +799,13 @@ namespace evgen {
     //std::cout << "Set spmu to some value..." << std::endl;
 
     std::ostringstream File3LocStream;
-    File3LocStream << fInputDir << fInputFile3;
     std::string File3Loc = File3LocStream.str();
     cet::search_path sp3("FW_SEARCH_PATH");
     if (sp3.find_file(fInputFile3, fROOTfile)) File3Loc = fROOTfile;
     std::ifstream file3(File3Loc.c_str(), std::ios::in);
     if (!file3.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH or at " << fInputDir
+        << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH."
         << "\n\n";
 
     lineNumber = index = 0;
