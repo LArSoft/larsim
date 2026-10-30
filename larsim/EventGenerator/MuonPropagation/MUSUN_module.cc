@@ -337,9 +337,9 @@ namespace evgen {
                                                                                  "Seed"))
     , fPDG{pset.get<int>("PDG")}
     , fChargeRatio{pset.get<double>("ChargeRatio")}
-    , fInputFile1{pset.get<std::string>("InputFile1")}
-    , fInputFile2{pset.get<std::string>("InputFile2")}
-    , fInputFile3{pset.get<std::string>("InputFile3")}
+    , fInputFile1{pset.get<std::string>("InputFile1", "muint-dune4850-mr-new.dat")}  //Table of muon intensities for theta and phi
+    , fInputFile2{pset.get<std::string>("InputFile2", "musp-dune4850-mr-new.dat")}   //Binary file of energies for theta and depths
+    , fInputFile3{pset.get<std::string>("InputFile3", "depth-dune4850-mr-new.dat")}  //Table of slant depths for theta and phi
     , fCavernAngle{pset.get<double>("CavernAngle")}
     , fRockDensity{pset.get<double>("RockDensity")}
     , fEmin{pset.get<double>("Emin")}
@@ -740,7 +740,7 @@ namespace evgen {
     std::ifstream file1(File1Loc.c_str(), std::ios::in);
     if (!file1.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile1 " << fInputFile1 << " not found in FW_SEARCH_PATH."
+        << "\nFile1 " << fInputFile1 << " not found."
         << "\n\n";
 
     while (file1.good()) {
@@ -769,7 +769,7 @@ namespace evgen {
     std::ifstream file2(File2Loc.c_str(), std::ios::binary | std::ios::in);
     if (!file2.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile2 " << fInputFile2 << " not found in FW_SEARCH_PATH."
+        << "\nFile2 " << fInputFile2 << " not found."
         << "\n\n";
 
     int i1 = 0, i2 = 0, i3 = 0;
@@ -805,7 +805,7 @@ namespace evgen {
     std::ifstream file3(File3Loc.c_str(), std::ios::in);
     if (!file3.good())
       throw cet::exception("MUSUNGen")
-        << "\nFile3 " << fInputFile3 << " not found in FW_SEARCH_PATH."
+        << "\nFile3 " << fInputFile3 << " not found."
         << "\n\n";
 
     lineNumber = index = 0;
