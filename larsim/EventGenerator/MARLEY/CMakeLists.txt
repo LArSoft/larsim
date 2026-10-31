@@ -13,7 +13,6 @@ cet_make_library(SOURCE
   PRIVATE
   larcore::Geometry_Geometry_service
   larcorealg::Geometry
-  MARLEY::MARLEY_ROOT
   ROOT::Core
   nurandom::RandomUtils_NuRandomService_service
   cetlib_except::cetlib_except
@@ -47,7 +46,6 @@ cet_build_plugin(MARLEYTimeGen art::EDProducer
   canvas::canvas
   cetlib_except::cetlib_except
   MARLEY::MARLEY
-  MARLEY::MARLEY_ROOT
   ROOT::Hist
   ROOT::RIO
   ROOT::Tree
