@@ -9,7 +9,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 find_package(cetmodules 3.24.00 REQUIRED)
-project(larsim VERSION 10.23.02 LANGUAGES CXX)
+project(larsim VERSION 10.24.00 LANGUAGES CXX)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -49,7 +49,6 @@ find_package(CLHEP COMPONENTS Evaluator Geometry Random Vector REQUIRED EXPORT)
 find_package(CRY REQUIRED EXPORT) # find module in nutools
 find_package(GENIE REQUIRED EXPORT) # find module in nugen
 find_package(Geant4 REQUIRED EXPORT)
-find_package(HepMC3 REQUIRED EXPORT)
 find_package(MARLEY REQUIRED EXPORT)
 find_package(ROOT COMPONENTS Core EG GenVector Geom Gpad Hist MathCore Matrix Physics RIO RooFitCore Tree REQUIRED EXPORT)
 find_package(Range-v3 REQUIRED)
