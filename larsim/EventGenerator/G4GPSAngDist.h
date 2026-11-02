@@ -8,10 +8,14 @@
 
 #define LARSIM_G4GPSANGDIST_H
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "DirectionGenerator.h"
 #include "art/Utilities/ToolConfigTable.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "cetlib_except/exception.h"
 #include "canvas/Utilities/Exception.h"
 
@@ -19,6 +23,9 @@
 #include "Geant4/G4SPSRandomGenerator.hh"
 #include "Geant4/G4SPSPosDistribution.hh"
 #include "Geant4/G4RandomTools.hh"
+
+#include "TFile.h"
+#include "TH1.h"
 
 namespace evgen {
   namespace {
@@ -43,7 +50,7 @@ namespace evgen {
         fhicl::Atom<std::string> type{fhicl::Name{"distType"}, 
           fhicl::Comment{
             "Type of angular distribution to use in G4GPSAngDistribution\n"
-            "Options: iso [default], cos, planar, beam1d, beam2d, focused, user"
+            "Options: iso [default], cos, planar, beam1d, beam2d, user"
           }, "iso"};
         fhicl::Sequence<double, 3> rot1{fhicl::Name{"rot1"}, 
           fhicl::Comment{
@@ -89,17 +96,30 @@ namespace evgen {
           fhicl::Comment{
             "Sets the focus point [default 0,0,0] of the beam. Units are mm."
           }, {0.,0.,0.}};
-        fhicl::Atom<bool> surfnorm{fhicl::Name{"surfnorm"},
-          fhicl::Comment{
-            "Allows user to choose whether angular distributions are with respect to\n"
-            "the coordinate system (false, default) or surface normals (true)\n"
-            "for user-defined distributions."
-          }, false};
         fhicl::Atom<int> verbosity{fhicl::Name{"verbosity"},
           fhicl::Comment{
             "Sets the verbosity level [default 0] for the G4GPSAngDist tool."
           }, 0};
+
+        struct UserHistConfig {
+          fhicl::OptionalSequence<double> x{fhicl::Name("x"),
+            fhicl::Comment("Points: lower edge first, then upper bin edges, ascending [rad]")};
+          fhicl::OptionalSequence<double> y{fhicl::Name("y"),
+            fhicl::Comment("Probability density per interval; y[0] must be 0; same length as x")};
+          fhicl::OptionalAtom<std::string> file{fhicl::Name("file"),
+            fhicl::Comment("ROOT file, searched in FW_SEARCH_PATH")};
+          fhicl::OptionalAtom<std::string> name{fhicl::Name("name"),
+            fhicl::Comment("TH1 name; bin contents are the mass per bin")};
+        };
+
+        fhicl::OptionalTable<UserHistConfig> thetaHist{fhicl::Name("thetaHist"), 
+          fhicl::Comment("User-defined theta distribution (for \"user\" type); must provide either x and y or file and name")};
+        fhicl::OptionalTable<UserHistConfig> phiHist{fhicl::Name("phiHist"), 
+          fhicl::Comment("User-defined phi distribution (for \"user\" type); must provide either x and y or file and name")};
       };
+
+      // Data structure for user historgram data (angle [rad], mass)
+      using HistData_t = std::vector<std::pair<double,double>>; 
 
       using Parameters = art::ToolConfigTable<Config>;
 
@@ -112,12 +132,16 @@ namespace evgen {
 
 
     private:
-      G4ThreeVector fAngRef1 = {};
-      G4ThreeVector fAngRef2 = {};
+      geo::Vector_t fAngRef1 = {};
+      geo::Vector_t fAngRef2 = {};
 
       std::unique_ptr<G4SPSAngDistribution> fAngDist;
       std::unique_ptr<G4SPSRandomGenerator> fRandGen;
       std::unique_ptr<G4SPSPosDistribution> fPosDist;
+
+      static HistData_t readHist(const Config::UserHistConfig& config, const std::string& label);
+      static void validate_user_hist(HistData_t& pts, const std::string& label, double min, double max);
+      static HistData_t fromTH1(const TH1& h);
   };
 
     G4GPSAngDist::G4GPSAngDist(Parameters const& config)
@@ -127,17 +151,10 @@ namespace evgen {
   {
     // Set verbosity
     fAngDist->SetVerbosity(config().verbosity());
-    
-    // Validate type
-    static const std::array<std::string, 7> validTypes{
-      "iso", "cos", "planar", "beam1d", "beam2d", "focused", "user"};
-    const std::string type = config().type();
-    if (std::find(validTypes.begin(), validTypes.end(), type) == validTypes.end()) {
-      throw art::Exception(art::errors::Configuration)
-        << "G4GPSAngDist: invalid 'type' \"" << type << "\".\n"
-        << "Valid options: iso, cos, planar, beam1d, beam2d, focused, user.";
-    }
-    fAngDist->SetAngDistType( type );
+
+    // Disable user-defined angular distribution and rotation axes
+    fAngDist->SetUserWRTSurface( false ); 
+    fAngDist->SetUseUserAngAxis( false ); 
 
     // Validate angular ranges
     if (config().minTheta() < 0. || config().maxTheta() > CLHEP::pi
@@ -159,30 +176,64 @@ namespace evgen {
     fAngDist->SetMinPhi(config().minPhi());
     fAngDist->SetMaxPhi(config().maxPhi());
 
+    // Validate type
+    static const std::array<std::string, 7> validTypes{
+      "iso", "cos", "planar", "beam1d", "beam2d", "user"};
+    const std::string type = config().type();
+    if (std::find(validTypes.begin(), validTypes.end(), type) == validTypes.end()) {
+      throw art::Exception(art::errors::Configuration)
+        << "G4GPSAngDist: invalid 'type' \"" << type << "\".\n"
+        << "Valid options: iso, cos, planar, beam1d, beam2d, user.";
+    }
+    fAngDist->SetAngDistType( type );
+
+    // Validate rotation vectors
     // Rotation vectors must be non-zero
-    auto isZero = [](auto const& v) { return std::abs(v[0]) < 1e-8 && std::abs(v[1]) < 1e-8 && std::abs(v[2]) < 1e-8; };
-    if (isZero(config().rot1()) || isZero(config().rot2())) {
+    geo::Vector_t v1{config().rot1()[0], config().rot1()[1], config().rot1()[2]};
+    geo::Vector_t v2{config().rot2()[0], config().rot2()[1], config().rot2()[2]};
+    if (v1.Mag2() < 1e-8 || v2.Mag2() < 1e-8) {
       throw art::Exception(art::errors::Configuration)
         << "G4GPSAngDist: 'rot1' and 'rot2' must be non-zero vectors.";
     }
-    fAngRef1.set(config().rot1()[0], config().rot1()[1], config().rot1()[2]);
+    // Rotation vectors must not be parallel
+    if (std::abs(v1.Cross(v2).Mag2()) < 1e-8) {
+      throw art::Exception(art::errors::Configuration)
+        << "G4GPSAngDist: 'rot1' and 'rot2' must not be parallel vectors.";
+    }
+    fAngRef1.SetCoordinates(config().rot1()[0], config().rot1()[1], config().rot1()[2]);
     fAngDist->DefineAngRefAxes("angref1", 
         G4ThreeVector(config().rot1()[0], config().rot1()[1], config().rot1()[2]));
-    fAngRef2.set(config().rot2()[0], config().rot2()[1], config().rot2()[2]);
+    fAngRef2.SetCoordinates(config().rot2()[0], config().rot2()[1], config().rot2()[2]);
     fAngDist->DefineAngRefAxes("angref2",
         G4ThreeVector(config().rot2()[0], config().rot2()[1], config().rot2()[2]));
 
     fAngDist->SetBeamSigmaInAngR(config().sigma_r());
     fAngDist->SetBeamSigmaInAngX(config().sigma_x());
     fAngDist->SetBeamSigmaInAngY(config().sigma_y());
-    fAngDist->SetFocusPoint(
-        G4ThreeVector(config().focuspoint()[0], config().focuspoint()[1], config().focuspoint()[2]));
-    fAngDist->SetUserWRTSurface(config().surfnorm());
+
+
+    // Set the user histograms if provided
+    Config::UserHistConfig th_config, ph_config;
+    bool const hasTheta = config().thetaHist(th_config);
+    bool const hasPhi   = config().phiHist(ph_config);
+    if (!hasTheta && !hasPhi) throw art::Exception(art::errors::Configuration)
+      << "distType user needs thetaHist and/or phiHist\n";
+    if (hasTheta) {
+      auto pts = readHist(th_config, "thetaHist");
+      validate_user_hist(pts, "thetaHist", config().minTheta(), config().maxTheta());
+      for (auto const& [x, w] : pts) fAngDist->UserDefAngTheta(G4ThreeVector{x, w, 0.});
+    }
+    if (hasPhi) {
+      auto pts = readHist(ph_config, "phiHist");
+      validate_user_hist(pts, "phiHist", config().minPhi(), config().maxPhi());
+      for (auto const& [x, w] : pts) fAngDist->UserDefAngPhi(G4ThreeVector{x, w, 0.});
+    }
 
     // Set the random generator for pos and ang distributions to use the same engine
     fPosDist->SetBiasRndm( fRandGen.get() );
     fAngDist->SetBiasRndm( fRandGen.get() );
     fAngDist->SetPosDistribution( fPosDist.get() );
+
   }
 
   geo::Vector_t G4GPSAngDist::generate(CLHEP::HepRandomEngine& engine)
@@ -190,6 +241,96 @@ namespace evgen {
     G4EngineGuard guard{engine};
     G4ParticleMomentum dir = fAngDist->GenerateOne();
     return {dir.x(), dir.y(), dir.z()};
+  }
+
+  G4GPSAngDist::HistData_t G4GPSAngDist::readHist(const Config::UserHistConfig& config, const std::string& label)
+  {
+    std::vector<double> xs, ys;
+    std::string file, name;
+    bool const hasXY = config.x(xs) && config.y(ys);
+    bool const hasRoot = config.file(file) && config.name(name);
+    if (hasXY == hasRoot)
+      throw art::Exception(art::errors::Configuration)
+        << label << ": give either x and y, or file and name\n";
+    if (hasXY) {
+      if (xs.size() != ys.size()) throw art::Exception(art::errors::Configuration)
+        << label << ": x and y differ in length\n";
+      G4GPSAngDist::HistData_t pts;
+      for (std::size_t i = 0; i < xs.size(); ++i) pts.emplace_back(xs[i], ys[i]);
+      return pts;
+    }
+    cet::search_path search_path{"FW_SEARCH_PATH"};
+    std::string path;
+    if (!search_path.find_file(file, path)) throw art::Exception(art::errors::Configuration)
+      << label << ": cannot find " << file << " in FW_SEARCH_PATH\n";
+    std::unique_ptr<TFile> f{TFile::Open(path.c_str(), "READ")};
+    auto* h = f ? f->Get<TH1>(name.c_str()) : nullptr;
+    if (!h) throw art::Exception(art::errors::Configuration)
+      << label << ": histogram " << name << " not found in " << path << '\n';
+    return fromTH1(*h);   // values copied; the file can close afterwards
+  }
+
+  G4GPSAngDist::HistData_t G4GPSAngDist::fromTH1(const TH1& h)
+  {
+    G4GPSAngDist::HistData_t pts;
+    pts.emplace_back(h.GetXaxis()->GetBinLowEdge(1), 0.);
+    for (int i = 1; i <= h.GetNbinsX(); ++i)
+      pts.emplace_back(h.GetXaxis()->GetBinUpEdge(i), h.GetBinContent(i));
+    return pts;
+  }
+
+  void G4GPSAngDist::validate_user_hist(G4GPSAngDist::HistData_t& data, std::string const& label, double min, double max)
+  {
+    auto bad = [&](char const* why) {
+      throw art::Exception(art::errors::Configuration) << label << ": " << why << '\n';
+    };
+    if (data.size() < 2 || data.size() > 1024) bad("need 2..1024 points");
+    if (data.front().second != 0.) bad("y[0] must be 0 (it would be a point mass)");
+
+    G4GPSAngDist::HistData_t adjusted_data; 
+    adjusted_data.reserve(data.size()+2);
+    adjusted_data.push_back( data.front() ); 
+
+    bool support = false; 
+    bool removedWeight = false; 
+
+    for (std::size_t i = 1; i < data.size(); ++i) {
+      const double& lower = data[i-1].first;
+      const double& upper = data[i].first;
+      const double& weight = data[i].second;
+
+      if (!std::isfinite(upper) || !(upper > lower)) 
+        bad("x values must be finite and strictly increasing");
+      if (!std::isfinite(weight) || weight < 0.)
+        bad("y values must be finite and non-negative");
+
+      double left = lower; 
+      auto append = [&](double right) {
+        const bool is_inside = (left >= min && right <= max);
+        const double fraction = is_inside ? (right - left) / (upper - lower): 0.;
+        adjusted_data.emplace_back(right, weight*fraction);
+        if (is_inside && fraction > 0.) support = true;
+        if (!is_inside && weight > 0.) removedWeight = true;
+        left = right;
+      };
+
+      if (min > lower && min < upper) append(min);
+      if (max > lower && max < upper) append(max);
+      append(upper);
+    }
+
+    if (!support) bad("no support in the specified range");
+    if (adjusted_data.size() < 2) bad("not enough points in the specified range");
+    if (adjusted_data.size() > 1024) bad("too many points in the specified range");
+
+    data.swap(adjusted_data);
+
+    if (removedWeight) {
+      mf::LogWarning("G4GPSAngDist")
+        << label << ": set histogram weight outside [" << min << ", " << max
+        << "] to zero.";
+    }
+
   }
 
   void G4GPSAngDist::dumpSettingsImpl(std::ostream& out) const

@@ -104,7 +104,10 @@ cet_build_plugin(G4GPSAngDist evgen::IDirectionGenerator
       canvas::canvas
       fhiclcpp::types
       cetlib_except::cetlib_except
+      messagefacility::MF_MessageLogger
       Geant4::G4event
+      ROOT::Core
+      ROOT::Hist
 )
 
 cet_build_plugin(RadioGen art::EDProducer
