@@ -140,8 +140,8 @@ namespace evgen {
       std::unique_ptr<G4SPSPosDistribution> fPosDist;
 
       static HistData_t readHist(const Config::UserHistConfig& config, const std::string& label);
-      static void validate_user_hist(HistData_t& pts, const std::string& label, double min, double max);
       static HistData_t fromTH1(const TH1& h);
+      static void validate_user_hist(HistData_t& pts, const std::string& label, double min, double max);
   };
 
     G4GPSAngDist::G4GPSAngDist(Parameters const& config)
@@ -177,7 +177,7 @@ namespace evgen {
     fAngDist->SetMaxPhi(config().maxPhi());
 
     // Validate type
-    static const std::array<std::string, 7> validTypes{
+    static const std::array<std::string, 6> validTypes{
       "iso", "cos", "planar", "beam1d", "beam2d", "user"};
     const std::string type = config().type();
     if (std::find(validTypes.begin(), validTypes.end(), type) == validTypes.end()) {
@@ -211,22 +211,27 @@ namespace evgen {
     fAngDist->SetBeamSigmaInAngX(config().sigma_x());
     fAngDist->SetBeamSigmaInAngY(config().sigma_y());
 
-
     // Set the user histograms if provided
-    Config::UserHistConfig th_config, ph_config;
-    bool const hasTheta = config().thetaHist(th_config);
-    bool const hasPhi   = config().phiHist(ph_config);
-    if (!hasTheta && !hasPhi) throw art::Exception(art::errors::Configuration)
-      << "distType user needs thetaHist and/or phiHist\n";
-    if (hasTheta) {
-      auto pts = readHist(th_config, "thetaHist");
-      validate_user_hist(pts, "thetaHist", config().minTheta(), config().maxTheta());
-      for (auto const& [x, w] : pts) fAngDist->UserDefAngTheta(G4ThreeVector{x, w, 0.});
-    }
-    if (hasPhi) {
-      auto pts = readHist(ph_config, "phiHist");
-      validate_user_hist(pts, "phiHist", config().minPhi(), config().maxPhi());
-      for (auto const& [x, w] : pts) fAngDist->UserDefAngPhi(G4ThreeVector{x, w, 0.});
+    if ( type == "user" ) {
+      mf::LogInfo("G4GPSAngDist") << "Using user-defined angular distribution"
+        << "thetaHist present: " << config().thetaHist().has_value()
+        << ", phiHist present: " << config().phiHist().has_value();
+
+      Config::UserHistConfig th_config, phi_config;
+      bool const hasTheta = config().thetaHist(th_config);
+      bool const hasPhi   = config().phiHist(phi_config);
+      if (!hasTheta && !hasPhi) throw art::Exception(art::errors::Configuration)
+        << "distType user needs thetaHist and/or phiHist\n";
+      if (hasTheta) {
+        auto pts = readHist(th_config, "thetaHist");
+        validate_user_hist(pts, "thetaHist", config().minTheta(), config().maxTheta());
+        for (auto const& [x, w] : pts) fAngDist->UserDefAngTheta(G4ThreeVector{x, w, 0.});
+      }
+      if (hasPhi) {
+        auto pts = readHist(phi_config, "phiHist");
+        validate_user_hist(pts, "phiHist", config().minPhi(), config().maxPhi());
+        for (auto const& [x, w] : pts) fAngDist->UserDefAngPhi(G4ThreeVector{x, w, 0.});
+      }
     }
 
     // Set the random generator for pos and ang distributions to use the same engine
@@ -343,6 +348,7 @@ namespace evgen {
       << "  maxPhi: " << fAngDist->GetMaxPhi() << " rad\n"
       << "  rot1: (" << fAngRef1.x() << ", " << fAngRef1.y() << ", " << fAngRef1.z() << ")\n"
       << "  rot2: (" << fAngRef2.x() << ", " << fAngRef2.y() << ", " << fAngRef2.z() << ")\n";
+
   }
 } // namespace evgen
 
