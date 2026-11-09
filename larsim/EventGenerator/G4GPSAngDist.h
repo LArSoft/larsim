@@ -105,11 +105,11 @@ namespace evgen {
           fhicl::OptionalSequence<double> x{fhicl::Name("x"),
             fhicl::Comment("Points: lower edge first, then upper bin edges, ascending [rad]")};
           fhicl::OptionalSequence<double> y{fhicl::Name("y"),
-            fhicl::Comment("Probability density per interval; y[0] must be 0; same length as x")};
+            fhicl::Comment("Probability per interval; y[0] must be 0; same length as x")};
           fhicl::OptionalAtom<std::string> file{fhicl::Name("file"),
             fhicl::Comment("ROOT file, searched in FW_SEARCH_PATH")};
           fhicl::OptionalAtom<std::string> name{fhicl::Name("name"),
-            fhicl::Comment("TH1 name; bin contents are the mass per bin")};
+            fhicl::Comment("TH1 name; bin contents are the probability per bin")};
         };
 
         fhicl::OptionalTable<UserHistConfig> thetaHist{fhicl::Name("thetaHist"), 
