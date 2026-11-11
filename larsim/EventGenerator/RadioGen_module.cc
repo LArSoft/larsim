@@ -5,15 +5,15 @@
 /// Module designed to produce a set list of particles for MC to model radiological decays
 ///
 /// \author  trj@fnal.gov
-//           Nov 2026 D Guffanti 
+//           Nov 2026 D Guffanti
 //             Added the optional `DirGenTools` parameter: a list of art tools
 //             (`evgen::IDirectionGenerator`), one per entry of `Nuclide` and in the
 //             same order, that sample the direction of the generated particle instead of
-//             the built-in isotropic sampling. This could be used to model the 
+//             the built-in isotropic sampling. This could be used to model the
 //             effect of external backgrounds entering the detector from a specific
-//             direction. 
-//             Tools draw from the module's NuRandomService-managed engine, 
-//             so reproducibility follows the NuRandomService policy. 
+//             direction.
+//             Tools draw from the module's NuRandomService-managed engine,
+//             so reproducibility follows the NuRandomService policy.
 //             A tool must return a unit vector, otherwise the module will throw an exception.
 //             An empty table `{}` keeps the corresponding source isotropic.
 //             Nuclides with special treatment (222Rn, 59Ni, 42Ar and its
@@ -21,9 +21,9 @@
 //             configuring a tool for them is an error.
 //             Without `DirGenTools` the behaviour is unchanged. dirCalc() takes an
 //             optional source index (std::nullopt = isotropic) for using the tool.
-//             Sources expanded from the same `Volumes` entry share one tool. 
+//             Sources expanded from the same `Volumes` entry share one tool.
 //             If no index is provided, the direction is always isotropic.
-//             
+//
 //
 //           Rn222 generation feature added by gleb.sinev@duke.edu
 //           (based on a generator by jason.stock@mines.sdsmt.edu)
@@ -56,14 +56,14 @@
 #include <cassert>
 #include <cmath>
 #include <iterator>
-#include <optional>
 #include <memory>
+#include <optional>
 #include <regex>
+#include <set>
 #include <string>
 #include <sys/stat.h>
 #include <utility> // std::pair<>, std::tuple<>
 #include <vector>
-#include <set>
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
@@ -246,7 +246,7 @@ namespace evgen {
 
     /// Generates the particles of all decays in the expanded source `i`.
     void SampleOne(unsigned int i, simb::MCTruth& mct);
-    
+
     /// Direction tools, one per configuration entry (same indexing as the `Nuclide`
     /// parameter); null for entries left isotropic (`{}`). Empty if not configured.
     std::vector<std::unique_ptr<IDirectionGenerator>> fDirGenerators = {};
@@ -341,16 +341,14 @@ namespace {
 }
 
 namespace {
-  std::vector<std::unique_ptr<evgen::IDirectionGenerator>>
-  makeDirGenerators(fhicl::ParameterSet const& pset)
+  std::vector<std::unique_ptr<evgen::IDirectionGenerator>> makeDirGenerators(
+    fhicl::ParameterSet const& pset)
   {
     std::vector<std::unique_ptr<evgen::IDirectionGenerator>> tools;
     const auto pset_tools = pset.get<std::vector<fhicl::ParameterSet>>("DirGenTools", {});
     tools.reserve(pset_tools.size());
     for (const auto& p : pset_tools) {
-      if (p.is_empty()) {
-        tools.push_back(nullptr);
-      }
+      if (p.is_empty()) { tools.push_back(nullptr); }
       else {
         tools.push_back(art::make_tool<evgen::IDirectionGenerator>(p));
       }
@@ -365,7 +363,7 @@ namespace evgen {
   //____________________________________________________________________________
   RadioGen::RadioGen(fhicl::ParameterSet const& pset)
     : EDProducer{pset}
-    , fDirGenerators{ makeDirGenerators(pset) }
+    , fDirGenerators{makeDirGenerators(pset)}
     , fX0{pset.get<std::vector<double>>("X0", {})}
     , fY0{pset.get<std::vector<double>>("Y0", {})}
     , fZ0{pset.get<std::vector<double>>("Z0", {})}
@@ -478,7 +476,7 @@ namespace evgen {
       throw cet::exception("RadioGen") << "Different size Y1 vector and Nuclide vector\n";
     if (fZ1.size() != nsize)
       throw cet::exception("RadioGen") << "Different size Z1 vector and Nuclide vector\n";
-    
+
     // DirGenTools, if present, must have one entry per configured entry (as Nuclide)
     if (!fDirGenerators.empty() && fDirGenerators.size() != nuclide.size()) {
       throw art::Exception(art::errors::Configuration)
@@ -788,12 +786,10 @@ namespace evgen {
         geo::Vector_t const dir = tool->generate(fEngine);
         if (!(std::abs(dir.Mag2() - 1.) < 1e-6)) {
           throw art::Exception(art::errors::LogicError)
-            << "Direction tool for source " << fNuclide.at(*isource) << " returned non-unit vector " << dir << '\n';
+            << "Direction tool for source " << fNuclide.at(*isource) << " returned non-unit vector "
+            << dir << '\n';
         }
-        return TLorentzVector{p * dir.X(),
-          p * dir.Y(), 
-          p * dir.Z(), 
-          std::sqrt(p * p + m * m)};
+        return TLorentzVector{p * dir.X(), p * dir.Y(), p * dir.Z(), std::sqrt(p * p + m * m)};
       }
     }
 
@@ -805,9 +801,9 @@ namespace evgen {
     double const sintheta = sqrt(1.0 - costheta * costheta);
     double const phi = 2.0 * M_PI * flat.fire();
     return TLorentzVector{p * sintheta * std::cos(phi),
-      p * sintheta * std::sin(phi), 
-      p * costheta,
-      std::sqrt(p * p + m * m)};
+                          p * sintheta * std::sin(phi),
+                          p * costheta,
+                          std::sqrt(p * p + m * m)};
   }
 
   // only reads those files that are on the fNuclide list.  Copy information from the TGraphs to TH1D's
