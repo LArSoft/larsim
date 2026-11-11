@@ -1,5 +1,7 @@
 BEGIN_PROLOG
 
+# Distribution presets. Other parameters use the tool's defaults unless
+# supplied separately.
 g4gpsangdist_iso : {
   tool_type: "G4GPSAngDist"
   distType: "iso"
@@ -10,36 +12,47 @@ g4gpsangdist_cos : {
   distType: "cos"
 }
 
+# Restrict theta to approximately 0-90 degrees, in radians.
 theta_setting_0_90 : {
   minTheta: 0.0
   maxTheta: 1.5707
 }
 
+# Angular reference-axis presets. Each table supplies rot1 and rot2 for the
+# named nominal direction; combine it with a distribution configuration.
+# These do not restrict theta or phi and do not move the source position.
+
+# Theta = 0 is along (0, 0, 1)
 g4gps_dir_pos_z : {
   rot1: [1, 0, 0]
   rot2: [0, -1, 0]
 }
 
+# Theta = 0 is along (0, 0, -1)
 g4gps_dir_neg_z : {
   rot1: [1, 0, 0]
   rot2: [0, 1, 0]
 }
 
+# Theta = 0 is along (1, 0, 0)
 g4gps_dir_pos_x : {
   rot1: [0, 1, 0]
   rot2: [0, 0, -1]
 }
 
+# Theta = 0 is along (-1, 0, 0)
 g4gps_dir_neg_x : {
   rot1: [0, 1, 0]
   rot2: [0, 0, 1]
 }
 
+# Theta = 0 is along (0, 1, 0)
 g4gps_dir_pos_y : {
   rot1: [0, 0, 1]
   rot2: [-1, 0, 0]
 }
 
+# Theta = 0 is along (0, -1, 0)
 g4gps_dir_neg_y : {
   rot1: [0, 0, 1]
   rot2: [1, 0, 0]

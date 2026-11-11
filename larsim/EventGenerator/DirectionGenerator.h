@@ -2,7 +2,7 @@
  * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        : DirectionGenerator.h
  * @created     : Friday Oct 16, 2026 15:30:33 CEST
- * @description : Interface for algorithms that generate a particle direction.
+ * @brief       : Interface for particle direction generators.
  */
 
 #ifndef LARSIM_DIRECTIONGENERATOR_H
@@ -16,13 +16,21 @@
 #include <type_traits>
 
 namespace evgen {
-  /// Interface for algorithms that generate a particle direction.
+  /**
+   * @brief Interface for algorithms that generate particle directions.
+   *
+   * Implementations sample unit vectors in the detector coordinate frame
+   * using the random engine supplied by the caller.
+   */
   class IDirectionGenerator {
     public:
       virtual ~IDirectionGenerator() noexcept = default;
 
 
-      /// Dump the configuration of the generator to the output.
+      /**
+       * @brief Writes the generator configuration to an output stream.
+       * @param out Output stream or stream-like object accepting a string.
+       */
       template <typename Stream>
         void dumpSettings(Stream&& out) const 
         {
@@ -39,6 +47,10 @@ namespace evgen {
       virtual geo::Vector_t generate(CLHEP::HepRandomEngine& engine) = 0;
 
     protected:
+      /**
+       * @brief Writes implementation-specific settings to a standard stream.
+       * @param out Output stream.
+       */
       virtual void dumpSettingsImpl(std::ostream& out) const = 0;
   };
 } 

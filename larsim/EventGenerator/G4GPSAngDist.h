@@ -2,6 +2,10 @@
  * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        : G4GPSAngDist.h
  * @created     : Friday Oct 16, 2026 15:34:16 CEST
+ * @brief Direction-generation tool wrapping Geant4's GPS angular distribution.
+ *
+ * Configures a G4SPSAngDistribution from FHiCL and samples directions using
+ * the CLHEP random engine supplied by the caller.
  */
 
 #ifndef LARSIM_G4GPSANGDIST_H
@@ -29,9 +33,14 @@
 
 namespace evgen {
   namespace {
+    /**
+     * @brief Temporarily installs a CLHEP engine as the Geant4 random engine.
+     *
+     * Restores the previous engine when the guard is destroyed.
+     */
     class G4EngineGuard {
-    public:
-      explicit G4EngineGuard(CLHEP::HepRandomEngine& engine)
+      public:
+        explicit G4EngineGuard(CLHEP::HepRandomEngine& engine)
         : fPrevious{G4Random::getTheEngine()}
       {
         G4Random::setTheEngine(&engine);
@@ -44,8 +53,21 @@ namespace evgen {
     };
   }
 
+  /**
+   * @brief Samples particle directions using a Geant4 GPS angular distribution.
+   *
+   * Supported distribution types are `iso`, `cos`, `planar`, `beam1d`,
+   * `beam2d`, and `user`. Angular limits and rotation axes are configured
+   * through FHiCL. For `user`, theta and/or phi histograms can be supplied
+   * as arrays or read from ROOT histograms.
+   *
+   * @note Histogram bin contents represent probability per interval, not
+   * probability density. The tool removes weight outside the configured
+   * angular range, splitting bins at the range boundaries if necessary.
+   */
   class G4GPSAngDist : public IDirectionGenerator {
     public:
+      /// FHiCL parameters for the angular distribution.
       struct Config {
         fhicl::Atom<std::string> type{fhicl::Name{"distType"}, 
           fhicl::Comment{
@@ -92,15 +114,19 @@ namespace evgen {
           fhicl::Comment{
             "Sets the standard deviation [default 0 rad] of beam directional profile in y. Units are rad."
           }, 0.};
-        fhicl::Sequence<double,3> focuspoint{fhicl::Name{"focuspoint"},
-          fhicl::Comment{
-            "Sets the focus point [default 0,0,0] of the beam. Units are mm."
-          }, {0.,0.,0.}};
         fhicl::Atom<int> verbosity{fhicl::Name{"verbosity"},
           fhicl::Comment{
             "Sets the verbosity level [default 0] for the G4GPSAngDist tool."
           }, 0};
 
+        /**
+         * @brief Configuration for a user-defined angular histogram.
+         *
+         * Supply either `x` and `y`, or `file` and `name`. For arrays, `x`
+         * contains the lower edge followed by upper bin edges, in radians;
+         * `y` contains interval weights and must start with zero. ROOT files
+         * are searched for in `FW_SEARCH_PATH`.
+         */
         struct UserHistConfig {
           fhicl::OptionalSequence<double> x{fhicl::Name("x"),
             fhicl::Comment("Points: lower edge first, then upper bin edges, ascending [rad]")};
@@ -118,16 +144,27 @@ namespace evgen {
           fhicl::Comment("User-defined phi distribution (for \"user\" type); must provide either x and y or file and name")};
       };
 
-      // Data structure for user historgram data (angle [rad], mass)
+      /// Histogram points as (angle in radians, interval weight) pairs.
       using HistData_t = std::vector<std::pair<double,double>>; 
 
       using Parameters = art::ToolConfigTable<Config>;
 
+      /**
+       * @brief Configures the Geant4 angular distribution.
+       * @param config Validated FHiCL tool configuration.
+       * @throws art::Exception If configuration values or histograms are invalid.
+       */
       explicit G4GPSAngDist(Parameters const& config);
 
+      /**
+       * @brief Samples a direction using the supplied random engine.
+       * @param engine CLHEP engine temporarily installed for the Geant4 call.
+       * @return Sampled direction vector.
+       */
       geo::Vector_t generate(CLHEP::HepRandomEngine& engine) override;
 
     protected:
+      /// Writes the configured distribution type, angular limits, and axes.
       void dumpSettingsImpl(std::ostream& out) const override;
 
 
@@ -139,8 +176,25 @@ namespace evgen {
       std::unique_ptr<G4SPSRandomGenerator> fRandGen;
       std::unique_ptr<G4SPSPosDistribution> fPosDist;
 
+      /**
+       * @brief Reads histogram points from FHiCL arrays or a ROOT histogram.
+       * @param config Histogram source configuration.
+       * @param label Histogram name used in diagnostic messages.
+       * @return Histogram edges and interval weights.
+       */
       static HistData_t readHist(const Config::UserHistConfig& config, const std::string& label);
+
+      /// Copies ROOT histogram bin edges and contents into histogram points.
       static HistData_t fromTH1(const TH1& h);
+
+      /**
+       * @brief Validates and restricts histogram weights to an angular range.
+       * @param pts Histogram points, modified in place.
+       * @param label Histogram name used in diagnostic messages.
+       * @param min Lower angular limit in radians.
+       * @param max Upper angular limit in radians.
+       * @throws art::Exception If the histogram fails validation.
+       */
       static void validate_user_hist(HistData_t& pts, const std::string& label, double min, double max);
   };
 
