@@ -79,6 +79,37 @@ cet_build_plugin(POTaccumulator art::EDAnalyzer
   range-v3::range-v3
 )
 
+cet_make_library(
+  LIBRARY_NAME DirectionGenerator 
+  INTERFACE 
+  SOURCE DirectionGenerator.h
+  LIBRARIES
+  larcoreobj::geo_vectors
+  fhiclcpp::fhiclcpp
+  CLHEP::Random
+)
+
+cet_write_plugin_builder(
+  evgen::IDirectionGenerator art::tool Modules
+  INSTALL_BUILDER)
+
+include(evgen::IDirectionGenerator)
+
+cet_build_plugin(G4GPSAngDist evgen::IDirectionGenerator
+  LIBRARIES
+    PRIVATE
+      DirectionGenerator
+      larcoreobj::geo_vectors
+      art::Utilities
+      canvas::canvas
+      fhiclcpp::types
+      cetlib_except::cetlib_except
+      messagefacility::MF_MessageLogger
+      Geant4::G4event
+      ROOT::Core
+      ROOT::Hist
+)
+
 cet_build_plugin(RadioGen art::EDProducer
   LIBRARIES PRIVATE
   larcore::Geometry_Geometry_service
@@ -93,12 +124,14 @@ cet_build_plugin(RadioGen art::EDProducer
   nugen::EventGeneratorBase
   nurandom::RandomUtils_NuRandomService_service
   nusimdata::SimulationBase
+  art::Utilities
   art::Framework_Principal
   art::Framework_Services_Registry
   messagefacility::MF_MessageLogger
   fhiclcpp::fhiclcpp
   cetlib::cetlib
   cetlib_except::cetlib_except
+  CLHEP::Random
 )
 
 cet_build_plugin(SNNueAr40CCGen art::EDProducer
