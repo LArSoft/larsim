@@ -930,7 +930,7 @@ void MultiPartVertex::produce(art::Event& e)
           std::hypot(fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]), req_mass);
       else
         tot_energy = fFlatRandom->fire(req_param.kerange[0], req_param.kerange[1]) + req_mass;
-      double mom_mag = cet::diff_of_squares(tot_energy, req_mass);
+      double mom_mag = std::sqrt(cet::diff_of_squares(tot_energy, req_mass));
       req_mom = TVector3(beam_dir.data()) * mom_mag;
     }
     else {
