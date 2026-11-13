@@ -4,3 +4,4 @@ cet_enable_asserts()
 
 add_subdirectory(EventGenerator)
 add_subdirectory(PhotonPropagation)
+add_subdirectory(MergeSimSources)
