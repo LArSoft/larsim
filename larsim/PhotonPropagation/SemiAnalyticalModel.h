@@ -167,6 +167,10 @@ namespace phot {
     // flag to apply border corrections for vertical direction only
     bool fVerticalBorderCorrectionMode;
 
+    // flag to apply border correction offset
+    bool fApplyBorderCorrectionZOffset;
+    double fBorderCorrectionZOffset; // in cm
+
     // Tool to to determine visibility of optical detectors from scintillation emission points
     std::shared_ptr<OpticalPath> fOpticalPath;
   };

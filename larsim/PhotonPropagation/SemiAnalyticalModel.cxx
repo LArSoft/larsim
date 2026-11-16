@@ -70,6 +70,8 @@ namespace phot {
       "MaxPDDistance",
       1000); // max distance between scintillation and PD to evaluate light, default 10m
     fVerticalBorderCorrectionMode = VUVHitsParams.get<bool>("VerticalBorderCorrectionMode", false);
+    fApplyBorderCorrectionZOffset = VUVHitsParams.get<bool>("ApplyBorderCorrectionZOffset", false);
+    fBorderCorrectionZOffset = VUVHitsParams.get<double>("BorderCorrectionZOffset", 0.0);
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -171,6 +173,11 @@ namespace phot {
                 << ", w = " << fOpDetector[i].w << " along " << fOpDetector[i].u_w
                 << std::endl;
     }
+    // cathode center
+    std::cout << "SemiAnalyticalModel: Cathode center = " << fcathode_centre[0] << ", " << fcathode_centre[1] << ", " << fcathode_centre[2] << std::endl;
+    // border offset
+    std::cout << "SemiAnalyticalModel: Border correction offset mode = " << fApplyBorderCorrectionZOffset << std::endl;
+    std::cout << "SemiAnalyticalModel: Border correction Z offset = " << fBorderCorrectionZOffset << " cm" << std::endl;
 
     // set absorption length
     fvuv_absorption_length = VUVAbsorptionLength();
@@ -278,11 +285,28 @@ namespace phot {
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
     // special case: VerticalBorderCorrectionMode use non-beam axis (Y standard, X laterals)
+    // special vase: ApplyBorderCorrectionZOffset, add offset to radial distance in beam direction (Z)
     double r = 0;
     if (fVerticalBorderCorrectionMode) {
       if (opDet.orientation == 1) r = std::abs(ScintPoint.X() - fcathode_centre[0]);      // laterals [long], use X
       else if (opDet.orientation == 2) r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // laterals [short], use Y
       else r = std::abs(ScintPoint.Y() - fcathode_centre[1]);                             // anode/cathode, use Y
+    }
+    else if (fApplyBorderCorrectionZOffset) {
+      // only apply shift in Z, only relevant orientations are 0 and 1, for 2 it is the same as standard mode
+      if (opDet.orientation == 0) {
+        float delta_Y = ScintPoint.Y() - fcathode_centre[1];
+        float delta_Z = std::abs(ScintPoint.Z() - fcathode_centre[2]) - fBorderCorrectionZOffset;
+        r = std::hypot(delta_Y, delta_Z);
+      }
+      else if (opDet.orientation == 1) {
+        float delta_X = ScintPoint.X() - fcathode_centre[0];
+        float delta_Z = std::abs(ScintPoint.Z() - fcathode_centre[2]) - fBorderCorrectionZOffset;
+        r = std::hypot(delta_X, delta_Z);
+      }
+      else {
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
+      }
     }
     else {
       if (opDet.orientation == 2)
@@ -363,7 +387,7 @@ namespace phot {
 
     // check sensible visibility values, catch occasional issues at large angles
     if (!std::isfinite(visibility) || visibility < 0 || visibility > 1) visibility = 0;
-  
+
     return visibility;
   }
 
