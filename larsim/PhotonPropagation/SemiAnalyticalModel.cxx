@@ -157,28 +157,6 @@ namespace phot {
     if (fNTPC > 1 && fDriftDistance < 50)
       fDriftDistance = fGeom.TPC(geo::TPCID{0, 1}).DriftDistance();
 
-    // Testing Outputs - To remove
-    std::cout << "SemiAnalyticalModel: Drift distance = " << fDriftDistance << std::endl;
-    std::cout << "SemiAnalyticalModel: Active Volume boundaries from " << fActiveVolumes.size() << " volumes:" << std::endl;
-    for (auto const& [iCryo, box] : ::ranges::views::enumerate(fActiveVolumes)) {
-      std::cout << " - C:" << iCryo << ": " << box.Min() << " -- " << box.Max() << " cm" << std::endl;
-    }
-    std::cout << "SemiAnalyticalModel: PD geometry properties: " << fNOpDets << " detectors" << std::endl;
-    for (size_t i = 0; i < fNOpDets; ++i) {
-      std::cout << " - OpDet " << i << ": type = " << fOpDetector[i].type
-                << ", center = " << fOpDetector[i].center
-                << ", orientation = " << fOpDetector[i].orientation
-                << ", normal = " << fOpDetector[i].normal
-                << ", h = " << fOpDetector[i].h << " along " << fOpDetector[i].u_h
-                << ", w = " << fOpDetector[i].w << " along " << fOpDetector[i].u_w
-                << std::endl;
-    }
-    // cathode center
-    std::cout << "SemiAnalyticalModel: Cathode center = " << fcathode_centre[0] << ", " << fcathode_centre[1] << ", " << fcathode_centre[2] << std::endl;
-    // border offset
-    std::cout << "SemiAnalyticalModel: Border correction offset mode = " << fApplyBorderCorrectionZOffset << std::endl;
-    std::cout << "SemiAnalyticalModel: Border correction Z offset = " << fBorderCorrectionZOffset << " cm" << std::endl;
-
     // set absorption length
     fvuv_absorption_length = VUVAbsorptionLength();
     mf::LogInfo("SemiAnalyticalModel")
