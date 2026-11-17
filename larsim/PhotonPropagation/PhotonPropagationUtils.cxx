@@ -3,9 +3,40 @@
 // Utility functions
 ////////////////////////////////////////////////////////////////////////
 #include "larsim/PhotonPropagation/PhotonPropagationUtils.h"
+
+#include "larcorealg/Geometry/OpDetGeo.h"
+
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <iterator>
 
 namespace phot {
+
+  //......................................................................
+  // world-space description of the window of a box-shaped optical detector
+  OpDetWindow opDetWindow(geo::OpDetGeo const& opDet)
+  {
+    using LocalVec = geo::OpDetGeo::LocalVector_t;
+
+    // box sizes along the local X, Y and Z axes, and those axes in world coordinates
+    std::array<double, 3> const size{opDet.Width(), opDet.Height(), opDet.Length()};
+    std::array<geo::Vector_t, 3> const axis{opDet.toWorldCoords(LocalVec{1., 0., 0.}),
+                                            opDet.toWorldCoords(LocalVec{0., 1., 0.}),
+                                            opDet.toWorldCoords(LocalVec{0., 0., 1.})};
+
+    // normal is the thinnest axis (ties resolve to the first, so local X is the default)
+    std::size_t const n = std::distance(size.begin(), std::min_element(size.begin(), size.end()));
+    std::size_t const i_h = (n + 1) % 3;
+    std::size_t const i_w = (n + 2) % 3;
+
+    double const nx = std::abs(axis[n].X());
+    double const ny = std::abs(axis[n].Y());
+    double const nz = std::abs(axis[n].Z());
+    int const orientation = (nx >= ny && nx >= nz) ? 0 : (ny >= nz ? 1 : 2);
+
+    return OpDetWindow{axis[n], axis[i_h], axis[i_w], size[i_h], size[i_w], orientation};
+  }
 
   //......................................................................
   // fast approximation to acos, This implementation foillows the functional

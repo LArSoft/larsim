@@ -68,7 +68,7 @@ namespace phot {
     , fGeom(*(lar::providerFrom<geo::Geometry>()))
     , fplane_depth(std::abs(fGeom.TPC().GetCathodeCenter().X()))
     , fOpDetCenter(opDetCenters())
-    , fOpDetOrientation(opDetOrientations())
+    , fOpDetNormal(opDetNormals())
   {
     mf::LogInfo("PropagationTimeModel")
       << "Initializing Photon propagation time model." << std::endl;
@@ -117,11 +117,7 @@ namespace phot {
       if (!Reflected) {
         double distance =
           std::hypot(x0.X() - opDetCenter.X(), x0.Y() - opDetCenter.Y(), x0.Z() - opDetCenter.Z());
-        double cosine;
-        if (fOpDetOrientation[OpChannel] == 1)
-          cosine = std::abs(x0.Y() - opDetCenter.Y()) / distance;
-        else
-          cosine = std::abs(x0.X() - opDetCenter.X()) / distance;
+        double cosine = std::abs((x0 - opDetCenter).Dot(fOpDetNormal[OpChannel])) / distance;
 
         double theta = fast_acos(cosine) * 180. / CLHEP::pi;
         int angle_bin = theta / fangle_bin_timing_vuv;
@@ -451,28 +447,15 @@ namespace phot {
     return opDetCenter;
   }
 
-  std::vector<int> PropagationTimeModel::opDetOrientations() const
+  std::vector<geo::Vector_t> PropagationTimeModel::opDetNormals() const
   {
-    std::vector<int> opDetOrientation;
+    std::vector<geo::Vector_t> opDetNormal;
     for (size_t const i : util::counter(fGeom.NOpDets())) {
       geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
-      if (opDet.isSphere()) { // dome PMTs
-        opDetOrientation.push_back(0);
-      }
-      else if (opDet.isBar()) {
-        // determine orientation to get correction OpDet dimensions
-        if (opDet.Width() > opDet.Height()) { // laterals, Y dimension smallest
-          opDetOrientation.push_back(1);
-        }
-        else { // anode/cathode (default), X dimension smallest
-          opDetOrientation.push_back(0);
-        }
-      }
-      else {
-        opDetOrientation.push_back(0);
-      }
+      // PMTs (dome and disk) are assumed to face along X
+      opDetNormal.push_back(opDet.isBar() ? opDetWindow(opDet).normal : geo::Vector_t{1., 0., 0.});
     }
-    return opDetOrientation;
+    return opDetNormal;
   }
 
 } // namespace phot
