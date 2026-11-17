@@ -188,6 +188,12 @@ namespace phot {
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
     fTimingParTF1LookupTable.clear();
+    fCompact = false;
+    fVoxelRow.clear();
+    fRowChunks.clear();
+    fReflRowChunks.clear();
+    fZeroRow.clear();
+    fNRows = 0;
 
     fNVoxels = NVoxels;
     fNOpChannels = NOpChannels;
@@ -218,6 +224,12 @@ namespace phot {
     fReflTLookupTable.clear();
     fTimingParLookupTable.clear();
     fTimingParTF1LookupTable.clear();
+    fCompact = false;
+    fVoxelRow.clear();
+    fRowChunks.clear();
+    fReflRowChunks.clear();
+    fZeroRow.clear();
+    fNRows = 0;
 
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: "
                                  << LibraryFile.c_str() << std::endl;
@@ -272,8 +284,16 @@ namespace phot {
     // where `resize()` never increases the memory; `data_init()` allocates
     // all the storage we need at once, effectively suppressing the laziness
     // of the vector (by design, that was only relevant in `CreateEmptyLibrary()`)
+    // Without timing parametrisation only the voxels present in the file get storage (see `fCompact`);
+    // the lazy vectors are sized but never allocated in that case.
+    fCompact = (getTiming == 0);
     fLookupTable.resize(LibrarySize());
-    fLookupTable.data_init(LibrarySize());
+    if (fCompact) {
+      fVoxelRow.assign(fNVoxels, -1);
+      fZeroRow.assign(fNOpChannels, 0.0f);
+    }
+    else
+      fLookupTable.data_init(LibrarySize());
 
     if (fHasTiming != 0) {
       timing_par.resize(getTiming);
@@ -294,7 +314,7 @@ namespace phot {
     }
     if (fHasReflected) {
       fReflLookupTable.resize(LibrarySize());
-      fReflLookupTable.data_init(LibrarySize());
+      if (!fCompact) fReflLookupTable.data_init(LibrarySize());
     }
     if (fHasReflectedT0) {
       fReflTLookupTable.resize(LibrarySize());
@@ -306,6 +326,13 @@ namespace phot {
     for (size_t i = 0; i != NEntries; ++i) {
 
       tt->GetEntry(i);
+
+      if (fCompact && ((Voxel < 0) || (size_t(Voxel) >= fNVoxels) || (OpChannel < 0) ||
+                       (size_t(OpChannel) >= fNOpChannels)))
+        throw cet::exception("PhotonLibrary")
+          << "Entry " << i << " of the photon library has voxel " << Voxel << " and channel "
+          << OpChannel << ", outside the " << fNVoxels << " voxels x " << fNOpChannels
+          << " channels expected\n";
 
       // Set the visibility at this optical channel
       uncheckedAccess(Voxel, OpChannel) = Visibility;
@@ -338,6 +365,8 @@ namespace phot {
         log << "; " << GetVoxelDef();
       else
         log << " (no voxel geometry included)";
+      if (fCompact)
+        log << "; compact storage: " << fNRows << " of " << fNVoxels << " voxels have entries";
     }
 
     try {
@@ -437,10 +466,26 @@ namespace phot {
 
   //----------------------------------------------------
 
+  size_t PhotonLibrary::addCompactRow(size_t Voxel)
+  {
+    const size_t row = fNRows++;
+    if (row % kRowsPerChunk == 0) {
+      // value-initialised, so entries missing from the file read as zero, as in the full table
+      fRowChunks.emplace_back(new float[kRowsPerChunk * fNOpChannels]());
+      if (fHasReflected) fReflRowChunks.emplace_back(new float[kRowsPerChunk * fNOpChannels]());
+    }
+    fVoxelRow[Voxel] = static_cast<std::int32_t>(row);
+    return row;
+  }
+
+  //----------------------------------------------------
+
   float const* PhotonLibrary::GetCounts(size_t Voxel) const
   {
     if (Voxel >= fNVoxels)
       return nullptr;
+    else if (fCompact)
+      return compactCounts(fRowChunks, Voxel);
     else
       return fLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }
@@ -489,6 +534,8 @@ namespace phot {
   {
     if (Voxel >= fNVoxels)
       return nullptr;
+    else if (fCompact)
+      return compactCounts(fReflRowChunks, Voxel);
     else
       return fReflLookupTable.data_address(uncheckedIndex(Voxel, 0));
   }

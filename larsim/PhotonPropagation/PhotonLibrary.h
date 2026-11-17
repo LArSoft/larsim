@@ -13,8 +13,11 @@ class TTree;
 
 #include "lardataobj/Utilities/LazyVector.h"
 
+#include <cstdint>
 #include <limits> // std::numeric_limits
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace art {
   class TFileDirectory;
@@ -117,6 +120,39 @@ namespace phot {
     util::LazyVector<float> fLookupTable;
     util::LazyVector<float> fReflLookupTable;
     util::LazyVector<float> fReflTLookupTable;
+
+    // Compact storage, used when the library is loaded from file without timing parametrisation
+    // (`LoadLibraryFromFile()`): only voxels with at least one entry in the file get a row of
+    // `fNOpChannels` values; all the others share `fZeroRow`. Rows live in fixed-size chunks so
+    // that the pointers handed out by `GetCounts()` stay valid.
+    using RowChunks_t = std::vector<std::unique_ptr<float[]>>;
+    static constexpr size_t kRowsPerChunk = 4096;
+    bool fCompact = false;               ///< Whether the compact storage is in use.
+    std::vector<std::int32_t> fVoxelRow; ///< Row of each voxel, -1 if it has no entries.
+    RowChunks_t fRowChunks;              ///< Direct visibilities.
+    RowChunks_t fReflRowChunks;          ///< Reflected visibilities.
+    std::vector<float> fZeroRow;         ///< What voxels without entries point to.
+    size_t fNRows = 0;                   ///< Number of rows in use.
+
+    /// Allocates a row for `Voxel` (compact storage) and returns its index.
+    size_t addCompactRow(size_t Voxel);
+
+    float* compactRow(RowChunks_t const& chunks, size_t row) const
+    {
+      return chunks[row / kRowsPerChunk].get() + (row % kRowsPerChunk) * fNOpChannels;
+    }
+
+    float const* compactCounts(RowChunks_t const& chunks, size_t Voxel) const
+    {
+      auto const row = fVoxelRow[Voxel];
+      return (row < 0) ? fZeroRow.data() : compactRow(chunks, row);
+    }
+
+    float& compactAccess(RowChunks_t const& chunks, size_t Voxel, size_t OpChannel)
+    {
+      auto const row = (fVoxelRow[Voxel] < 0) ? addCompactRow(Voxel) : size_t(fVoxelRow[Voxel]);
+      return compactRow(chunks, row)[OpChannel];
+    }
     util::LazyVector<std::vector<float>> fTimingParLookupTable;
     util::LazyVector<TF1> fTimingParTF1LookupTable;
     std::string fTimingParFormula;
@@ -142,24 +178,28 @@ namespace phot {
     /// Unchecked access to a visibility datum
     float uncheckedAccess(size_t Voxel, size_t OpChannel) const
     {
+      if (fCompact) return compactCounts(fRowChunks, Voxel)[OpChannel];
       return fLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a visibility datum
     float& uncheckedAccess(size_t Voxel, size_t OpChannel)
     {
+      if (fCompact) return compactAccess(fRowChunks, Voxel, OpChannel);
       return fLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected visibility datum
     float uncheckedAccessRefl(size_t Voxel, size_t OpChannel) const
     {
+      if (fCompact) return compactCounts(fReflRowChunks, Voxel)[OpChannel];
       return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
     /// Unchecked access to a reflected visibility datum
     float& uncheckedAccessRefl(size_t Voxel, size_t OpChannel)
     {
+      if (fCompact) return compactAccess(fReflRowChunks, Voxel, OpChannel);
       return fReflLookupTable[uncheckedIndex(Voxel, OpChannel)];
     }
 
