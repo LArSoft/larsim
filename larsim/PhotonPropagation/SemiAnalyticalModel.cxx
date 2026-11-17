@@ -266,9 +266,12 @@ namespace phot {
     // special vase: ApplyBorderCorrectionZOffset, add offset to radial distance in beam direction (Z)
     double r = 0;
     if (fVerticalBorderCorrectionMode) {
-      if (opDet.orientation == 1) r = std::abs(ScintPoint.X() - fcathode_centre[0]);      // laterals [long], use X
-      else if (opDet.orientation == 2) r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // laterals [short], use Y
-      else r = std::abs(ScintPoint.Y() - fcathode_centre[1]);                             // anode/cathode, use Y
+      if (opDet.orientation == 1)
+        r = std::abs(ScintPoint.X() - fcathode_centre[0]); // laterals [long], use X
+      else if (opDet.orientation == 2)
+        r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // laterals [short], use Y
+      else
+        r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // anode/cathode, use Y
     }
     else if (fApplyBorderCorrectionZOffset) {
       // only apply shift in Z, only relevant orientations are 0 and 1, for 2 it is the same as standard mode

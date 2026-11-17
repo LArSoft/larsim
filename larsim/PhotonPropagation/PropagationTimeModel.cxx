@@ -453,8 +453,7 @@ namespace phot {
     for (size_t const i : util::counter(fGeom.NOpDets())) {
       geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
       // PMTs (dome and disk) are assumed to face along X
-      opDetNormal.push_back(opDet.isBar() ? opDetWindow(opDet).normal :
-                                            geo::Vector_t{1., 0., 0.});
+      opDetNormal.push_back(opDet.isBar() ? opDetWindow(opDet).normal : geo::Vector_t{1., 0., 0.});
     }
     return opDetNormal;
   }
