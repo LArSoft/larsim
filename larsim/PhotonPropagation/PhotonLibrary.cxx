@@ -18,7 +18,9 @@
 #include "TTree.h"
 #include "TVector.h"
 
+#include <algorithm>
 #include <cassert>
+#include <limits>
 
 namespace {
 
@@ -127,10 +129,6 @@ namespace phot {
              "parameters, which was not simulated.";
       }
       tt->Branch("timing_par", timing_par, Form("timing_par[%i]/F", size_t2int(storeTiming)));
-      if (fLookupTable.size() != fTimingParLookupTable.size())
-        throw cet::exception(" Photon Library ")
-          << "Time propagation lookup table is different size than Direct table \n"
-          << "this should not be happening. ";
     }
 
     if (storeReflected) {
@@ -140,10 +138,6 @@ namespace phot {
           << "StoreLibraryToFile() requested to store reflected light, which was not simulated.";
       }
       tt->Branch("ReflVisibility", &ReflVisibility, "ReflVisibility/F");
-      if (fLookupTable.size() != fReflLookupTable.size())
-        throw cet::exception(" Photon Library ")
-          << "Reflected light lookup table is different size than Direct table \n"
-          << "this should not be happening. ";
     }
     if (storeReflT0) {
       if (!hasReflectedT0()) {
@@ -183,25 +177,60 @@ namespace phot {
                                          size_t storeTiming /* = false */
   )
   {
-    fLookupTable.clear();
-    fReflLookupTable.clear();
-    fReflTLookupTable.clear();
-    fTimingParLookupTable.clear();
-    fTimingParTF1LookupTable.clear();
-
     fNVoxels = NVoxels;
     fNOpChannels = NOpChannels;
 
-    fLookupTable.resize(LibrarySize());
     fHasReflected = storeReflected;
-    if (storeReflected) fReflLookupTable.resize(LibrarySize());
     fHasReflectedT0 = storeReflT0;
-    if (storeReflT0) fReflTLookupTable.resize(LibrarySize());
     fHasTiming = storeTiming;
-    if (storeTiming != 0) {
-      fTimingParLookupTable.resize(LibrarySize());
-      fTimingParTF1LookupTable.resize(LibrarySize());
+    fTimingParNParameters = storeTiming;
+    fTimingParFormula.clear(); // no formula: GetTimingTF1s() is not available
+
+    resetStorage(storeReflected, storeReflT0, storeTiming);
+  }
+
+  //------------------------------------------------------------
+
+  void PhotonLibrary::resetStorage(bool storeReflected, bool storeReflT0, size_t storeTiming)
+  {
+    if (fNVoxels > size_t(std::numeric_limits<std::int32_t>::max())) {
+      throw cet::exception("PhotonLibrary")
+        << "Photon library with " << fNVoxels << " voxels: at most "
+        << std::numeric_limits<std::int32_t>::max() << " are supported.\n";
     }
+
+    fVoxelTableIdx.assign(fNVoxels, NotFoundIdx);
+    fVoxelTableIdx.shrink_to_fit();
+    fNFilledVoxels = 0;
+
+    fCounts.reset(fNOpChannels);
+    fReflCounts.reset(storeReflected ? fNOpChannels : 0);
+    fReflT0s.reset(storeReflT0 ? fNOpChannels : 0);
+    fTimingPars.reset(fNOpChannels * storeTiming);
+
+    fZeroRow.assign(
+      std::max({fCounts.width(), fReflCounts.width(), fReflT0s.width(), fTimingPars.width()}),
+      0.0f);
+
+    fTimingTF1Row.clear();
+    fTimingParRow.clear();
+    invalidateTimingRows();
+  }
+
+  //------------------------------------------------------------
+
+  size_t PhotonLibrary::tableIdxForWriting(size_t Voxel)
+  {
+    std::int32_t& tableIdx = fVoxelTableIdx[Voxel];
+    if (tableIdx == NotFoundIdx) {
+      if (fNFilledVoxels >= size_t(std::numeric_limits<std::int32_t>::max())) {
+        throw cet::exception("PhotonLibrary") << "Too many filled voxels in the library.\n";
+      }
+      for (PropertyTable* table : {&fCounts, &fReflCounts, &fReflT0s, &fTimingPars})
+        table->addRow(fNFilledVoxels);
+      tableIdx = static_cast<std::int32_t>(fNFilledVoxels++);
+    }
+    return static_cast<size_t>(tableIdx);
   }
 
   //------------------------------------------------------------
@@ -211,14 +240,8 @@ namespace phot {
                                           bool getReflected,
                                           bool getReflT0,
                                           size_t getTiming,
-                                          int fTimingMaxRange)
+                                          int maxRange)
   {
-    fLookupTable.clear();
-    fReflLookupTable.clear();
-    fReflTLookupTable.clear();
-    fTimingParLookupTable.clear();
-    fTimingParTF1LookupTable.clear();
-
     mf::LogInfo("PhotonLibrary") << "Reading photon library from input file: "
                                  << LibraryFile.c_str() << std::endl;
 
@@ -267,39 +290,27 @@ namespace phot {
     fNVoxels = NVoxels;
     fNOpChannels = PhotonLibrary::ExtractNOpChannels(tt); // EXPENSIVE!!!
 
-    // with STL vectors, where `resize()` directly controls the allocation of
-    // memory, reserving the space is redundant; not so with `util::LazyVector`,
-    // where `resize()` never increases the memory; `data_init()` allocates
-    // all the storage we need at once, effectively suppressing the laziness
-    // of the vector (by design, that was only relevant in `CreateEmptyLibrary()`)
-    fLookupTable.resize(LibrarySize());
-    fLookupTable.data_init(LibrarySize());
-
+    fTimingParNParameters = getTiming;
+    fTimingMaxRange = maxRange;
+    fTimingParFormula.clear();
     if (fHasTiming != 0) {
       timing_par.resize(getTiming);
       tt->SetBranchAddress("timing_par", timing_par.data());
-      fTimingParNParameters = fHasTiming;
       // should be pSrcDir->Get()? kept as is for backward compatibility
       TNamed* n = (TNamed*)f->Get("fTimingParFormula");
-      if (!n)
-        mf::LogError("PhotonLibrary")
-          << "Error reading the photon propagation formula. Please check the photon library."
-          << std::endl;
+      if (!n) {
+        throw cet::exception("PhotonLibrary")
+          << "Error reading the photon propagation formula 'fTimingParFormula' from "
+          << LibraryFile << ". Please check the photon library.\n";
+      }
       fTimingParFormula = n->GetTitle();
-      fTimingParTF1LookupTable.resize(LibrarySize());
-      fTimingParTF1LookupTable.data_init(LibrarySize());
       mf::LogInfo("PhotonLibrary")
         << "Time parametrization is activated. Using the formula: " << fTimingParFormula << " with "
         << fTimingParNParameters << " parameters." << std::endl;
     }
-    if (fHasReflected) {
-      fReflLookupTable.resize(LibrarySize());
-      fReflLookupTable.data_init(LibrarySize());
-    }
-    if (fHasReflectedT0) {
-      fReflTLookupTable.resize(LibrarySize());
-      fReflTLookupTable.data_init(LibrarySize());
-    }
+
+    // only the voxels with entries in the file are filled (see `fVoxelTableIdx`)
+    resetStorage(getReflected, getReflT0, getTiming);
 
     size_t NEntries = tt->GetEntries();
 
@@ -307,30 +318,31 @@ namespace phot {
 
       tt->GetEntry(i);
 
+      if ((Voxel < 0) || (size_t(Voxel) >= fNVoxels) || (OpChannel < 0) ||
+          (size_t(OpChannel) >= fNOpChannels)) {
+        throw cet::exception("PhotonLibrary")
+          << "Entry " << i << " of the photon library " << LibraryFile << " has voxel " << Voxel
+          << " and channel " << OpChannel << ", outside the " << fNVoxels << " voxels x "
+          << fNOpChannels << " channels expected.\n";
+      }
+
       // Set the visibility at this optical channel
       uncheckedAccess(Voxel, OpChannel) = Visibility;
 
       if (fHasReflected) uncheckedAccessRefl(Voxel, OpChannel) = ReflVisibility;
       if (fHasReflectedT0) uncheckedAccessReflT(Voxel, OpChannel) = ReflTfirst;
-      if (fHasTiming != 0) {
-        // TODO: use TF1::Copy
-        TF1 timingfunction(Form("timing_%i_%i", Voxel, OpChannel),
-                           fTimingParFormula.c_str(),
-                           timing_par[0],
-                           fTimingMaxRange);
-        timingfunction.SetParameter(
-          0,
-          0.0); //first parameter is now in the range. Let's do this to keep compatible with old libraries.
-        for (size_t k = 1; k < fTimingParNParameters; k++) {
-          timingfunction.SetParameter(k, timing_par[k]);
-        }
-
-        uncheckedAccessTimingTF1(Voxel, OpChannel) = timingfunction;
-      }
+      // the parameters are stored as they are; see `fillTimingTF1Row()` for their use
+      for (size_t k = 0; k < fTimingParNParameters; ++k)
+        uncheckedAccessTimingPar(Voxel, OpChannel, k) = timing_par[k];
     } // for entries
+
+    if (fHasTiming != 0) makeTimingTF1Row();
 
     LoadMetadata(*pSrcDir);
     {
+      size_t const allocated = fCounts.allocatedBytes() + fReflCounts.allocatedBytes() +
+                               fReflT0s.allocatedBytes() + fTimingPars.allocatedBytes() +
+                               fVoxelTableIdx.size() * sizeof(fVoxelTableIdx.front());
       mf::LogInfo log("PhotonLibrary");
       log << "Photon lookup table size : " << NVoxels << " voxels,  " << fNOpChannels
           << " channels";
@@ -338,6 +350,8 @@ namespace phot {
         log << "; " << GetVoxelDef();
       else
         log << " (no voxel geometry included)";
+      log << "; " << fNFilledVoxels << " voxels filled, " << (allocated / 1048576)
+          << " MiB allocated";
     }
 
     try {
@@ -401,6 +415,9 @@ namespace phot {
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary") << "Error - attempting to set timing t0 count in voxel "
                                     << Voxel << " which is out of range";
+    else if (parnum >= fTimingParNParameters)
+      mf::LogError("PhotonLibrary") << "Error - attempting to set timing parameter " << parnum
+                                    << " but the library has " << fTimingParNParameters;
     else
       uncheckedAccessTimingPar(Voxel, OpChannel, parnum) = Count;
   }
@@ -408,11 +425,19 @@ namespace phot {
 
   void PhotonLibrary::SetTimingTF1(size_t Voxel, size_t OpChannel, TF1 func)
   {
+    // Only the parameters are stored, in the layout of the library files:
+    // the lower end of the range takes the place of parameter 0 (see `fillTimingTF1Row()`).
     if ((Voxel >= fNVoxels) || (OpChannel >= fNOpChannels))
       mf::LogError("PhotonLibrary") << "Error - attempting to set a propagation function in voxel "
                                     << Voxel << " which is out of range";
-    else
-      uncheckedAccessTimingTF1(Voxel, OpChannel) = func;
+    else if (fTimingParNParameters == 0)
+      mf::LogError("PhotonLibrary")
+        << "Error - attempting to set a propagation function in a library without timing";
+    else {
+      uncheckedAccessTimingPar(Voxel, OpChannel, 0) = func.GetXmin();
+      for (size_t k = 1; k < fTimingParNParameters; ++k)
+        uncheckedAccessTimingPar(Voxel, OpChannel, k) = func.GetParameter(k);
+    }
   }
   //----------------------------------------------------
 
@@ -442,65 +467,93 @@ namespace phot {
     if (Voxel >= fNVoxels)
       return nullptr;
     else
-      return fLookupTable.data_address(uncheckedIndex(Voxel, 0));
+      return valuesOf(fCounts, Voxel);
   }
 
   //----------------------------------------------------
 
   const std::vector<float>* PhotonLibrary::GetTimingPars(size_t Voxel) const
   {
-    if (Voxel >= fNVoxels)
-      return nullptr;
-    else
-      return fTimingParLookupTable.data_address(uncheckedIndex(Voxel, 0));
+    if ((Voxel >= fNVoxels) || (fHasTiming == 0)) return nullptr;
+    fillTimingParRow(Voxel);
+    return fTimingParRow.data();
   }
 
   //----------------------------------------------------
 
   TF1* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
   {
-    if (Voxel >= fNVoxels) return nullptr;
-    /*
-     * Sorry, Universe, but we can't undergo ROOT's bad design hell.
-     * TF1::GetRandom() is non-const member, because it uses some internal
-     * integral information which can be produced on the spot instead than
-     * always be present. That's called caching, it's Good, but it must not
-     * interfere with constantness of the interface (in fact, this is one of
-     * the few acceptable uses of `mutable` members).
-     * Because of this, this method can't return a constant `TF1`, therefore
-     * it can't be constant, therefore the underlying access returning a
-     * constant object is not acceptable.
-     * So I do the Bad thing.
-     * Plus I opened JIRA ROOT-9549
-     * (https://sft.its.cern.ch/jira/browse/ROOT-9549).
-     * After that is solved, this method should become:
-     *
-     * TF1 const* PhotonLibrary::GetTimingTF1s(size_t Voxel) const
-     *
-     * and the users should update their code accordingly.
-     */
-    else
-      return const_cast<TF1*>(fTimingParTF1LookupTable.data_address(uncheckedIndex(Voxel, 0)));
+    if ((Voxel >= fNVoxels) || (fHasTiming == 0)) return nullptr;
+    if (fTimingTF1Row.empty()) {
+      throw cet::exception("PhotonLibrary")
+        << "GetTimingTF1s(): no time parametrization formula is available; the timing functions "
+           "can be used only with a library loaded from a file with time parametrization.\n";
+    }
+    // the functions are not constant because `TF1::GetRandom()` is not (ROOT-9549)
+    fillTimingTF1Row(Voxel);
+    return fTimingTF1Row.data();
+  }
+
+  //----------------------------------------------------
+
+  void PhotonLibrary::makeTimingTF1Row()
+  {
+    TF1 const prototype("PhotonLibraryTiming", fTimingParFormula.c_str(), 0.0, fTimingMaxRange);
+    fTimingTF1Row.assign(fNOpChannels, prototype);
+    fTimingTF1RowVoxel.reset();
+  }
+
+  //----------------------------------------------------
+
+  void PhotonLibrary::fillTimingTF1Row(size_t Voxel) const
+  {
+    if (fTimingTF1RowVoxel == Voxel) return; // keeps the integrals cached by `GetRandom()`
+    float const* pars = valuesOf(fTimingPars, Voxel);
+    for (size_t channel = 0; channel < fNOpChannels; ++channel) {
+      float const* channelPars = pars + channel * fTimingParNParameters;
+      TF1& function = fTimingTF1Row[channel];
+      // the first parameter is the lower end of the range, and the parameter itself is 0,
+      // for compatibility with old libraries
+      function.SetRange(channelPars[0], fTimingMaxRange);
+      function.SetParameter(0, 0.0);
+      for (size_t k = 1; k < fTimingParNParameters; ++k)
+        function.SetParameter(k, channelPars[k]);
+    }
+    fTimingTF1RowVoxel = Voxel;
+  }
+
+  //----------------------------------------------------
+
+  void PhotonLibrary::fillTimingParRow(size_t Voxel) const
+  {
+    if (fTimingParRowVoxel == Voxel) return;
+    float const* pars = valuesOf(fTimingPars, Voxel);
+    fTimingParRow.resize(fNOpChannels);
+    for (size_t channel = 0; channel < fNOpChannels; ++channel) {
+      float const* channelPars = pars + channel * fTimingParNParameters;
+      fTimingParRow[channel].assign(channelPars, channelPars + fTimingParNParameters);
+    }
+    fTimingParRowVoxel = Voxel;
   }
 
   //----------------------------------------------------
 
   float const* PhotonLibrary::GetReflCounts(size_t Voxel) const
   {
-    if (Voxel >= fNVoxels)
+    if ((Voxel >= fNVoxels) || !fHasReflected)
       return nullptr;
     else
-      return fReflLookupTable.data_address(uncheckedIndex(Voxel, 0));
+      return valuesOf(fReflCounts, Voxel);
   }
 
   //----------------------------------------------------
 
   float const* PhotonLibrary::GetReflT0s(size_t Voxel) const
   {
-    if (Voxel >= fNVoxels)
+    if ((Voxel >= fNVoxels) || !fHasReflectedT0)
       return nullptr;
     else
-      return fReflTLookupTable.data_address(uncheckedIndex(Voxel, 0));
+      return valuesOf(fReflT0s, Voxel);
   }
 
   //------------------------------------------------------------
