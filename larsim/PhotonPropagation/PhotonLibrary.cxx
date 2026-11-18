@@ -300,8 +300,8 @@ namespace phot {
       TNamed* n = (TNamed*)f->Get("fTimingParFormula");
       if (!n) {
         throw cet::exception("PhotonLibrary")
-          << "Error reading the photon propagation formula 'fTimingParFormula' from "
-          << LibraryFile << ". Please check the photon library.\n";
+          << "Error reading the photon propagation formula 'fTimingParFormula' from " << LibraryFile
+          << ". Please check the photon library.\n";
       }
       fTimingParFormula = n->GetTitle();
       mf::LogInfo("PhotonLibrary")

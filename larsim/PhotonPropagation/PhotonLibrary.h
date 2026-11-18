@@ -161,13 +161,13 @@ namespace phot {
       }
 
       float* row(size_t row) { return fChunks[row / RowsPerChunk].get() + offset(row); }
-      float const* row(size_t row) const
-      {
-        return fChunks[row / RowsPerChunk].get() + offset(row);
-      }
+      float const* row(size_t row) const { return fChunks[row / RowsPerChunk].get() + offset(row); }
 
       /// Memory allocated for the values, in bytes.
-      size_t allocatedBytes() const { return fChunks.size() * RowsPerChunk * fWidth * sizeof(float); }
+      size_t allocatedBytes() const
+      {
+        return fChunks.size() * RowsPerChunk * fWidth * sizeof(float);
+      }
 
     private:
       static constexpr size_t RowsPerChunk = 4096;
@@ -200,8 +200,8 @@ namespace phot {
     // Scratch rows handed out by `GetTimingTF1s()` and `GetTimingPars()`, one entry per channel,
     // describing the voxel they were last filled for.
     //
-    // TF1s are very large in memory compared to its underlying data, so we keep one per channel 
-    // and set its range and parameters for the requested voxel. We implictly require calls to 
+    // TF1s are very large in memory compared to its underlying data, so we keep one per channel
+    // and set its range and parameters for the requested voxel. We implictly require calls to
     // relinquish the TF1s after use.
     mutable std::vector<TF1> fTimingTF1Row;
     mutable std::optional<size_t> fTimingTF1RowVoxel;
