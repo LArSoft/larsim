@@ -72,7 +72,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Utilities//ToolMacros.h"
+#include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
 #include "cetlib/exempt_ptr.h"
 #include "cetlib/search_path.h"
