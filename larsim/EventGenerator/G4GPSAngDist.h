@@ -61,6 +61,12 @@ namespace evgen {
    * through FHiCL. For `user`, theta and/or phi histograms can be supplied
    * as arrays or read from ROOT histograms.
    *
+   * @note For `user` type, at least one of `thetaHist` and `phiHist` is required.
+   * Following the G4SPSAngDistribution behavior, if only one is given,
+   * the other angle is sampled isotropically within its configured range
+   * (`minTheta`/`maxTheta` or `minPhi`/`maxPhi`): uniform in cos(theta) for theta,
+   * uniform in phi for phi.
+   *
    * @note Histogram bin contents represent probability per interval, not
    * probability density. The tool removes weight outside the configured
    * angular range, splitting bins at the range boundaries if necessary.
@@ -151,12 +157,14 @@ namespace evgen {
 
       fhicl::OptionalTable<UserHistConfig> thetaHist{
         fhicl::Name("thetaHist"),
-        fhicl::Comment("User-defined theta distribution (for \"user\" type); must provide either x "
-                       "and y or file and name")};
+        fhicl::Comment(
+          "User-defined theta distribution (for \"user\" type); must provide either x "
+          "and y or file and name. If only thetaHist is provided, phi is sampled isotropically.")};
       fhicl::OptionalTable<UserHistConfig> phiHist{
         fhicl::Name("phiHist"),
-        fhicl::Comment("User-defined phi distribution (for \"user\" type); must provide either x "
-                       "and y or file and name")};
+        fhicl::Comment(
+          "User-defined phi distribution (for \"user\" type); must provide either x "
+          "and y or file and name. If only phiHist is provided, theta is sampled isotropically.")};
     };
 
     /// Histogram points as (angle in radians, interval weight) pairs.
