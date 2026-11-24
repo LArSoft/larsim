@@ -15,7 +15,7 @@ g4gpsangdist_cos : {
 # Restrict theta to approximately 0-90 degrees, in radians.
 theta_setting_0_90 : {
   minTheta: 0.0
-  maxTheta: 1.5707
+  maxTheta: 1.5707963
 }
 
 # Angular reference-axis presets. Each table supplies rot1 and rot2 for the
