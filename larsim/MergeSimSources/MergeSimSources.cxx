@@ -10,10 +10,35 @@
 */
 
 #include <algorithm>
+#include <cstdint>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 
 #include "MergeSimSources.h"
+#include "lardataobj/Simulation/sim.h"
+
+namespace {
+
+  int offsetSignedTrackID(int id, int offset)
+  {
+    // Invalid identity must remain invalid, even when sources have nonzero offsets.
+    if (id == sim::NoParticleId) return id;
+
+    auto const wideID = static_cast<std::int64_t>(id);
+    auto const wideOffset = static_cast<std::int64_t>(offset);
+    auto const result = id >= 0 ? wideID + wideOffset : wideID - wideOffset;
+    if (result < std::numeric_limits<int>::min() || result > std::numeric_limits<int>::max() ||
+        result == sim::NoParticleId) {
+      std::ostringstream message;
+      message << "Cannot offset track ID " << id << " by " << offset
+              << ": result is out of range or equals NoParticleId";
+      throw std::overflow_error(message.str());
+    }
+    return static_cast<int>(result);
+  }
+
+} // namespace
 
 sim::MergeSimSourcesUtility::MergeSimSourcesUtility(const std::vector<int>& offsets)
   : fG4TrackIDOffsets(offsets)
@@ -250,9 +275,8 @@ sim::SimEnergyDeposit sim::MergeSimSourcesUtility::offsetSimEnergyDepositTrackID
   int offset)
 {
 
-  auto tid = (edep.TrackID() >= 0) ? (edep.TrackID() + offset) : (edep.TrackID() - offset);
-  auto orig_tid =
-    (edep.OrigTrackID() >= 0) ? (edep.OrigTrackID() + offset) : (edep.OrigTrackID() - offset);
+  auto const tid = offsetSignedTrackID(edep.TrackID(), offset);
+  auto const orig_tid = offsetSignedTrackID(edep.OrigTrackID(), offset);
 
   return sim::SimEnergyDeposit{
     edep.NumPhotons(),      // np
@@ -300,10 +324,10 @@ sim::ParticleAncestryMap sim::MergeSimSourcesUtility::offsetParticleAncestryMapT
   std::map<int, std::set<int>> newMap;
 
   for (auto const& [ancestor, descendants] : pam.GetMap()) {
-    const int newAnc = (ancestor >= 0) ? ancestor + offset : ancestor - offset;
+    const int newAnc = offsetSignedTrackID(ancestor, offset);
 
     for (auto const& descendant : descendants) {
-      const int newDesc = (descendant >= 0) ? descendant + offset : descendant - offset;
+      const int newDesc = offsetSignedTrackID(descendant, offset);
       newMap[newAnc].insert(newDesc);
     }
   }
