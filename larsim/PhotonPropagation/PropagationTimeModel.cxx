@@ -14,6 +14,10 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "Math/Functor.h"
+#include "Math/Integrator.h"
+#include "Math/IntegratorOptions.h"
+#include "TF1.h"
 #include "TMath.h"
 
 #include <iostream>
@@ -54,6 +58,80 @@ namespace {
     if (x[0] <= par[0]) return 0.;
     return par[3] * TMath::Landau(x[0], par[1], par[2]);
   }
+
+  // Quantile of a TF1 over its range, following TF1::GetQuantiles step by step
+  // (bin integrals, parabolic interpolation inside the bin) so the result is the same.
+  // TF1::GetQuantiles calls TF1::Integral twice per bin, and each call builds a new
+  // integrator through the ROOT plugin manager; with 1000-10000 bins per function and
+  // one function per (distance, angle) that dominated the job start-up. Here one
+  // integrator, with the same type and tolerances, is reused for every bin.
+  double quantileSingleIntegrator(TF1& f, const double prob)
+  {
+    const int npx = std::max(f.GetNpx(), 2);
+    const double xMin = f.GetXmin();
+    const double xMax = f.GetXmax();
+    const double dx = (xMax - xMin) / npx;
+
+    ROOT::Math::Functor1D wf([&f](double x) {
+      double xx[1] = {x};
+      return f.EvalPar(xx, nullptr);
+    });
+    ROOT::Math::IntegratorOneDim iod(wf,
+                                     ROOT::Math::IntegratorOneDimOptions::DefaultIntegratorType(),
+                                     ROOT::Math::IntegratorOneDimOptions::DefaultAbsTolerance(),
+                                     ROOT::Math::IntegratorOneDimOptions::DefaultRelTolerance());
+
+    std::vector<double> integral(npx + 1, 0.);
+    for (int i = 0; i < npx; ++i) {
+      double integ = iod.Integral(double(xMin + i * dx), double(xMin + i * dx + dx));
+      if (integ < 0) integ = -integ;
+      integral[i + 1] = integral[i] + integ;
+    }
+    if (integral[npx] == 0) {
+      mf::LogError("PropagationTimeModel") << "Integral of VUV timing function is zero";
+      return 0.;
+    }
+    const double total = integral[npx];
+    for (int i = 1; i <= npx; ++i)
+      integral[i] /= total;
+
+    const double r = prob;
+    int bin = std::max(TMath::BinarySearch(npx + 1, integral.data(), r), (Long64_t)0);
+    if (bin == npx) return xMax;
+    while (bin < npx - 1 && TMath::AreEqualRel(integral[bin + 1], r, 1E-12)) {
+      if (TMath::AreEqualRel(integral[bin + 2], r, 1E-12))
+        bin++;
+      else
+        break;
+    }
+
+    // parabola coefficients, needed only for the bin that holds the quantile
+    const double x0 = xMin + dx * bin;
+    const double r2 = integral[bin + 1] - integral[bin];
+    const double r1 = iod.Integral(x0, x0 + 0.5 * dx) / total;
+    double gamma = (2 * r2 - 4 * r1) / (dx * dx);
+    const double beta = r2 / dx - gamma * dx;
+    const double alpha = x0;
+    gamma *= 2;
+
+    const double rr = r - integral[bin];
+    double q;
+    if (rr != 0.0) {
+      double xx = 0.0;
+      const double fac = -2. * gamma * rr / beta / beta;
+      if (fac != 0 && fac <= 1)
+        xx = (-beta + TMath::Sqrt(beta * beta + 2 * gamma * rr)) / gamma;
+      else if (beta != 0.)
+        xx = rr / beta;
+      q = alpha + xx;
+    }
+    else {
+      q = alpha;
+      if (integral[bin + 1] == r) q += dx;
+    }
+    return q;
+  }
+
 }
 
 namespace phot {
@@ -291,11 +369,9 @@ namespace phot {
         // store min/max, necessary to transform to the domain of the
         // original distribution
         // const size_t nq_max = 1;
-        double xq_max[1] = {0.975}; // include 97.5% of tail
-        double yq_max[1];
         VUVTiming.SetNpx(sampling);
-        VUVTiming.GetQuantiles(1, yq_max, xq_max);
-        double max = yq_max[0];
+        // include 97.5% of tail
+        double max = quantileSingleIntegrator(VUVTiming, 0.975);
         double min = t_direct_min;
         VUVTiming.SetRange(min, max);
         fVUV_max[angle_bin][index] = max;
