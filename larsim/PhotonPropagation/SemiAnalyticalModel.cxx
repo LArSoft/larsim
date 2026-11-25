@@ -70,6 +70,8 @@ namespace phot {
       "MaxPDDistance",
       1000); // max distance between scintillation and PD to evaluate light, default 10m
     fVerticalBorderCorrectionMode = VUVHitsParams.get<bool>("VerticalBorderCorrectionMode", false);
+    fApplyBorderCorrectionZOffset = VUVHitsParams.get<bool>("ApplyBorderCorrectionZOffset", false);
+    fBorderCorrectionZOffset = VUVHitsParams.get<double>("BorderCorrectionZOffset", 0.0);
 
     if (!fIsFlatPDCorr && !fIsDomePDCorr && !fIsFlatPDCorrLat) {
       throw cet::exception("SemiAnalyticalModel")
@@ -226,15 +228,10 @@ namespace phot {
     double solid_angle = 0.;
     // ARAPUCAS/Bars (rectangle)
     if (opDet.type == 0) {
-      // project the world-space relative vector into the detector local axes (stored in world coords)
-      double lx = std::abs(relative.X() * opDet.u_local_x.X() + relative.Y() * opDet.u_local_x.Y() +
-                           relative.Z() * opDet.u_local_x.Z());
-      double ly = std::abs(relative.X() * opDet.u_local_y.X() + relative.Y() * opDet.u_local_y.Y() +
-                           relative.Z() * opDet.u_local_y.Z());
-      double lz = std::abs(relative.X() * opDet.u_local_z.X() + relative.Y() * opDet.u_local_z.Y() +
-                           relative.Z() * opDet.u_local_z.Z());
-      geo::Vector_t const abs_relative{lx, ly, lz};
-      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_relative, opDet.orientation);
+      // position relative to the window centre, in the window's own frame
+      geo::Vector_t const window_relative{
+        relative.Dot(opDet.normal), relative.Dot(opDet.u_h), relative.Dot(opDet.u_w)};
+      solid_angle = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, window_relative);
     }
     // PMTs (dome)
     else if (opDet.type == 1) {
@@ -265,9 +262,33 @@ namespace phot {
 
     // determine GH parameters, accounting for border effects
     // radial distance from centre of detector (Y-Z standard / X-Z laterals)
-    // special case: VerticalBorderCorrectionMode use Y direction only
+    // special case: VerticalBorderCorrectionMode use non-beam axis (Y standard, X laterals)
+    // special vase: ApplyBorderCorrectionZOffset, add offset to radial distance in beam direction (Z)
     double r = 0;
-    if (fVerticalBorderCorrectionMode) { r = std::abs(ScintPoint.Y() - fcathode_centre[1]); }
+    if (fVerticalBorderCorrectionMode) {
+      if (opDet.orientation == 1)
+        r = std::abs(ScintPoint.X() - fcathode_centre[0]); // laterals [long], use X
+      else if (opDet.orientation == 2)
+        r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // laterals [short], use Y
+      else
+        r = std::abs(ScintPoint.Y() - fcathode_centre[1]); // anode/cathode, use Y
+    }
+    else if (fApplyBorderCorrectionZOffset) {
+      // only apply shift in Z, only relevant orientations are 0 and 1, for 2 it is the same as standard mode
+      if (opDet.orientation == 0) {
+        float delta_Y = ScintPoint.Y() - fcathode_centre[1];
+        float delta_Z = std::abs(ScintPoint.Z() - fcathode_centre[2]) - fBorderCorrectionZOffset;
+        r = std::hypot(delta_Y, delta_Z);
+      }
+      else if (opDet.orientation == 1) {
+        float delta_X = ScintPoint.X() - fcathode_centre[0];
+        float delta_Z = std::abs(ScintPoint.Z() - fcathode_centre[2]) - fBorderCorrectionZOffset;
+        r = std::hypot(delta_X, delta_Z);
+      }
+      else {
+        r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
+      }
+    }
     else {
       if (opDet.orientation == 2)
         r = std::hypot(ScintPoint.X() - fcathode_centre[0], ScintPoint.Y() - fcathode_centre[1]);
@@ -343,7 +364,12 @@ namespace phot {
     if (!std::isfinite(GH_correction) || GH_correction < 0 || GH_correction > 10) GH_correction = 0;
 
     // determine corrected visibility of photo-detector
-    return GH_correction * visibility_geo / cosine;
+    double visibility = GH_correction * visibility_geo / cosine;
+
+    // check sensible visibility values, catch occasional issues at large angles
+    if (!std::isfinite(visibility) || visibility < 0 || visibility > 1) visibility = 0;
+
+    return visibility;
   }
 
   //......................................................................
@@ -378,8 +404,8 @@ namespace phot {
     }
 
     // calculate solid angle of anode/cathode from the scintillation point,
-    // orientation always = 0 (anode/cathode)
-    double solid_angle_cathode = Rectangle_SolidAngle(plane_dimensions, ScintPoint_relative, 0);
+    // plane normal is always along X, so the world frame is already the plane's frame
+    double solid_angle_cathode = Rectangle_SolidAngle(plane_dimensions, ScintPoint_relative);
 
     // calculate distance and angle between ScintPoint and hotspot
     // vast majority of hits in hotspot region directly infront of scintpoint,
@@ -474,19 +500,11 @@ namespace phot {
     double solid_angle_detector = 0.;
     // ARAPUCAS/Bars (rectangle)
     if (opDet.type == 0) {
-      // project emission_relative into detector-local axes (world-space stored)
-      double lx = std::abs(emission_relative.X() * opDet.u_local_x.X() +
-                           emission_relative.Y() * opDet.u_local_x.Y() +
-                           emission_relative.Z() * opDet.u_local_x.Z());
-      double ly = std::abs(emission_relative.X() * opDet.u_local_y.X() +
-                           emission_relative.Y() * opDet.u_local_y.Y() +
-                           emission_relative.Z() * opDet.u_local_y.Z());
-      double lz = std::abs(emission_relative.X() * opDet.u_local_z.X() +
-                           emission_relative.Y() * opDet.u_local_z.Y() +
-                           emission_relative.Z() * opDet.u_local_z.Z());
-      geo::Vector_t const abs_emission_relative{lx, ly, lz};
-      solid_angle_detector =
-        Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, abs_emission_relative, opDet.orientation);
+      // position relative to the window centre, in the window's own frame
+      geo::Vector_t const window_relative{emission_relative.Dot(opDet.normal),
+                                          emission_relative.Dot(opDet.u_h),
+                                          emission_relative.Dot(opDet.u_w)};
+      solid_angle_detector = Rectangle_SolidAngle(Dims{opDet.h, opDet.w}, window_relative);
     }
     // PMTS (dome)
     else if (opDet.type == 1) {
@@ -655,37 +673,15 @@ namespace phot {
     return 4. * fast_acos(std::sqrt(aux));
   }
 
-  double SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o,
-                                                   geo::Vector_t const& v,
-                                                   int OpDetOrientation) const
+  double SemiAnalyticalModel::Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v) const
   {
-    // v is the position of the track segment with respect to
-    // the center position of the arapuca window
+    // v is the position of the track segment with respect to the center of the
+    // rectangle, in the rectangle's own frame: X along its normal, Y along the
+    // edge of length o.h and Z along the edge of length o.w
+    const double d1 = std::abs(v.Y()); // in-plane coordinate paired with o.h
+    const double d2 = std::abs(v.X()); // distance from the rectangle's plane
+    const double d3 = std::abs(v.Z()); // in-plane coordinate paired with o.w
 
-    // solid angle calculation depends on orientation of PD, set correct distances
-    // to use
-    double d1;
-    double d2;
-    double d3; // in-plane coordinate paired with o.w
-    if (OpDetOrientation == 2) {
-      // lateral PD, arapuca plane fixed in z direction
-      d1 = std::abs(v.X());
-      d2 = std::abs(v.Z());
-      d3 = std::abs(v.Y());
-    }
-    else if (OpDetOrientation == 1) {
-      // lateral PD, arapuca plane fixed in y direction
-      d1 = std::abs(v.X());
-      d2 = std::abs(v.Y());
-      d3 = std::abs(v.Z());
-    }
-    else {
-      // anode/cathode PD, arapuca plane fixed in x direction [default]
-      d1 = std::abs(v.Y());
-      d2 = std::abs(v.X());
-      d3 = std::abs(v.Z());
-    }
-    // arapuca plane fixed in x direction
     if (isApproximatelyZero(d1) && isApproximatelyZero(d3)) {
       return Rectangle_SolidAngle(o.h, o.w, d2);
     }
@@ -774,70 +770,27 @@ namespace phot {
     std::vector<SemiAnalyticalModel::OpticalDetector> opticalDetector;
     for (size_t const i : util::counter(fNOpDets)) {
       geo::OpDetGeo const& opDet = fGeom.OpDetGeoFromOpDet(i);
-      geo::Point_t center = opDet.GetCenter();
-      double height;
-      double length;
-      int type;
-      int orientation;
-      if (opDet.isSphere()) { // dome PMTs
-        type = 1;             // dome
-        orientation = 0;      // anode/cathode (default)
-        length = -1;
-        height = -1;
-      }
-      else if (opDet.isBar()) {
-        type = 0; // (X)Arapucas/Bars
-        // determine orientation to get correction OpDet dimensions
-        length = opDet.Length();
-        height = opDet.Height();
-        if (opDet.Width() > opDet.Length()) { // laterals along x-y plane, Z dimension smallest
-          orientation = 2;
-          length = opDet.Width();
-        }
-        else if (opDet.Width() > opDet.Height()) { // laterals along x-z plane, Y dimension smallest
-          orientation = 1;
-          height = opDet.Width();
-        }
-        else { // anode/cathode (default), X dimension smallest
-          orientation = 0;
-        }
-      }
-      else {
-        type = 2;        // disk PMTs
-        orientation = 0; // anode/cathode (default)
-        length = -1;
-        height = -1;
-      }
 
-      // build OpticalDetector and populate world-space local axes & normal
       SemiAnalyticalModel::OpticalDetector od;
-      od.h = height;
-      od.w = length;
-      od.center = center;
-      od.type = type;
-      od.orientation = orientation;
+      od.center = opDet.GetCenter();
 
-      // compute opdet local axes in world coordinates
-      using LocalVec = geo::OpDetGeo::LocalVector_t;
-      geo::Vector_t wx = opDet.toWorldCoords(LocalVec{1.0, 0.0, 0.0});
-      geo::Vector_t wy = opDet.toWorldCoords(LocalVec{0.0, 1.0, 0.0});
-      geo::Vector_t wz = opDet.toWorldCoords(LocalVec{0.0, 0.0, 1.0});
-      auto normalize = [](geo::Vector_t const& v) -> geo::Vector_t {
-        const double r = std::sqrt(v.X() * v.X() + v.Y() * v.Y() + v.Z() * v.Z());
-        if (r > 0.0) return geo::Vector_t{v.X() / r, v.Y() / r, v.Z() / r};
-        return geo::Vector_t{0.0, 0.0, 0.0};
-      };
-      od.u_local_x = normalize(wx);
-      od.u_local_y = normalize(wy);
-      od.u_local_z = normalize(wz);
-
-      // choose detector normal according to local orientation (preserve existing convention)
-      if (od.orientation == 0)
-        od.normal = od.u_local_x;
-      else if (od.orientation == 1)
-        od.normal = od.u_local_y;
-      else
-        od.normal = od.u_local_z;
+      if (opDet.isBar()) { // (X)Arapucas/Bars
+        OpDetWindow const window = opDetWindow(opDet);
+        od.type = 0;
+        od.h = window.h;
+        od.w = window.w;
+        od.orientation = window.orientation;
+        od.normal = window.normal;
+        od.u_h = window.u_h;
+        od.u_w = window.u_w;
+      }
+      else { // dome or disk PMTs, assumed to face along X
+        od.type = opDet.isSphere() ? 1 : 2;
+        od.h = -1;
+        od.w = -1;
+        od.orientation = 0;
+        od.normal = geo::Vector_t{1., 0., 0.};
+      }
 
       opticalDetector.emplace_back(std::move(od));
     }

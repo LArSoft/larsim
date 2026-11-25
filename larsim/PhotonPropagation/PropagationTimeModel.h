@@ -69,7 +69,7 @@ namespace phot {
 
     geo::Point_t cathodeCentre() const;
     std::vector<geo::Point_t> opDetCenters() const;
-    std::vector<int> opDetOrientations() const;
+    std::vector<geo::Vector_t> opDetNormals() const;
 
     // configuration
     const bool fGeoPropTimeOnly;
@@ -84,7 +84,7 @@ namespace phot {
 
     // photodetector geometry properties
     const std::vector<geo::Point_t> fOpDetCenter;
-    const std::vector<int> fOpDetOrientation;
+    const std::vector<geo::Vector_t> fOpDetNormal; // world-space unit normals
 
     // For VUV propagation time parametrization
     double fstep_size, fvuv_vgroup_mean, fvuv_vgroup_max, fmin_d, finflexion_point_distance,

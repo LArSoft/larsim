@@ -63,16 +63,14 @@ namespace phot {
 
     // structure for optical detector information
     struct OpticalDetector {
-      double h; // height
-      double w; // width
+      double h; // edge length along u_h
+      double w; // edge length along u_w
       geo::Point_t center;
       int type;
-      int orientation;
-      // world-space unit normal (normal to detector face) and detector local axes expressed in world coords
-      geo::Vector_t normal;    // unit normal in world coordinates
-      geo::Vector_t u_local_x; // world-space direction of opdet local X
-      geo::Vector_t u_local_y; // world-space direction of opdet local Y
-      geo::Vector_t u_local_z; // world-space direction of opdet local Z
+      int orientation;      // world axis the normal lies along: 0 = X, 1 = Y, 2 = Z
+      geo::Vector_t normal; // unit normal in world coordinates
+      geo::Vector_t u_h;    // world-space direction of the edge of length h (rectangles only)
+      geo::Vector_t u_w;    // world-space direction of the edge of length w (rectangles only)
     };
 
     // direct light photo-detector visibility calculation
@@ -91,9 +89,8 @@ namespace phot {
     // solid angle calculations
     // rectangular aperture
     double Rectangle_SolidAngle(const double a, const double b, const double d) const;
-    double Rectangle_SolidAngle(Dims const& o,
-                                geo::Vector_t const& v,
-                                const int OpDetOrientation) const;
+    // v is in the rectangle's own frame: X along the normal, Y along o.h, Z along o.w
+    double Rectangle_SolidAngle(Dims const& o, geo::Vector_t const& v) const;
     // circular aperture
     double Disk_SolidAngle(const double d, const double h, const double b) const;
     // dome aperture calculation
@@ -169,6 +166,10 @@ namespace phot {
 
     // flag to apply border corrections for vertical direction only
     bool fVerticalBorderCorrectionMode;
+
+    // flag to apply border correction offset
+    bool fApplyBorderCorrectionZOffset;
+    double fBorderCorrectionZOffset; // in cm
 
     // Tool to to determine visibility of optical detectors from scintillation emission points
     std::shared_ptr<OpticalPath> fOpticalPath;
